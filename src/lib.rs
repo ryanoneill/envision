@@ -47,6 +47,7 @@
 //! }
 //! ```
 
+pub mod adapter;
 pub mod annotation;
 pub mod app;
 pub mod backend;
@@ -54,6 +55,7 @@ pub mod harness;
 pub mod input;
 
 // Re-export commonly used types
+pub use adapter::DualBackend;
 pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
 pub use app::{App, Command, Runtime, RuntimeConfig};
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
@@ -62,6 +64,7 @@ pub use input::{EventQueue, SimulatedEvent};
 
 /// Prelude module for convenient imports
 pub mod prelude {
+    pub use crate::adapter::DualBackend;
     pub use crate::annotation::{Annotate, Annotation, AnnotationRegistry, RegionInfo, WidgetType};
     pub use crate::app::{App, Command, Runtime, RuntimeConfig, Update};
     pub use crate::backend::{CaptureBackend, EnhancedCell, FrameSnapshot, OutputFormat};
