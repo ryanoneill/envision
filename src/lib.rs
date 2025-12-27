@@ -31,14 +31,32 @@
 //! let output = terminal.backend().to_string();
 //! println!("{}", output);
 //! ```
+//!
+//! ## Input Simulation
+//!
+//! ```rust
+//! use envision::input::{EventQueue, KeyCode};
+//!
+//! let mut queue = EventQueue::new();
+//! queue.type_str("hello");
+//! queue.enter();
+//!
+//! // Events can be consumed by your app's event loop
+//! while let Some(event) = queue.pop() {
+//!     // handle event...
+//! }
+//! ```
 
 pub mod backend;
+pub mod input;
 
 // Re-export commonly used types
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
+pub use input::{EventQueue, SimulatedEvent};
 
 /// Prelude module for convenient imports
 pub mod prelude {
     pub use crate::backend::{CaptureBackend, EnhancedCell, FrameSnapshot, OutputFormat};
+    pub use crate::input::{EventQueue, KeyCode, KeyModifiers, SimulatedEvent};
     pub use ratatui::prelude::*;
 }
