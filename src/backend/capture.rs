@@ -100,6 +100,91 @@ pub struct CursorSnapshot {
     pub visible: bool,
 }
 
+impl FrameSnapshot {
+    /// Returns the content of a specific row as a string.
+    pub fn row_content(&self, y: u16) -> String {
+        if y >= self.size.1 {
+            return String::new();
+        }
+
+        let start = (y as usize) * (self.size.0 as usize);
+        let end = start + self.size.0 as usize;
+        if end <= self.cells.len() {
+            self.cells[start..end]
+                .iter()
+                .map(|c| c.symbol())
+                .collect()
+        } else {
+            String::new()
+        }
+    }
+
+    /// Renders the snapshot as plain text.
+    pub fn to_plain(&self) -> String {
+        let mut lines = Vec::with_capacity(self.size.1 as usize);
+        for y in 0..self.size.1 {
+            lines.push(self.row_content(y));
+        }
+        lines.join("\n")
+    }
+
+    /// Renders the snapshot with ANSI color codes.
+    pub fn to_ansi(&self) -> String {
+        use crate::backend::cell::SerializableColor;
+
+        let mut output = String::new();
+
+        for y in 0..self.size.1 {
+            let start = (y as usize) * (self.size.0 as usize);
+            let end = start + self.size.0 as usize;
+
+            if end <= self.cells.len() {
+                for cell in &self.cells[start..end] {
+                    // Apply foreground color
+                    if cell.fg != SerializableColor::Reset {
+                        output.push_str(&cell.fg.to_ansi_fg());
+                    }
+
+                    // Apply background color
+                    if cell.bg != SerializableColor::Reset {
+                        output.push_str(&cell.bg.to_ansi_bg());
+                    }
+
+                    // Apply modifiers
+                    output.push_str(&cell.modifiers.to_ansi());
+
+                    // Write the symbol
+                    output.push_str(cell.symbol());
+
+                    // Reset if we had any styling
+                    if cell.fg != SerializableColor::Reset
+                        || cell.bg != SerializableColor::Reset
+                        || !cell.modifiers.is_empty()
+                    {
+                        output.push_str("\x1b[0m");
+                    }
+                }
+            }
+
+            if y + 1 < self.size.1 {
+                output.push('\n');
+            }
+        }
+
+        output
+    }
+
+    /// Returns true if the snapshot contains the given text.
+    pub fn contains_text(&self, needle: &str) -> bool {
+        for y in 0..self.size.1 {
+            if self.row_content(y).contains(needle) {
+                return true;
+            }
+        }
+        false
+    }
+}
+
 impl CaptureBackend {
     /// Creates a new CaptureBackend with the specified dimensions.
     pub fn new(width: u16, height: u16) -> Self {
