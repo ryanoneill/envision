@@ -1,0 +1,31 @@
+[package]
+name = "envision"
+version = "0.1.0"
+edition = "2024"
+description = "A ratatui framework for collaborative TUI development with headless testing support"
+license = "MIT"
+repository = "https://github.com/ryanoneill/envision"
+keywords = ["tui", "terminal", "ratatui", "testing", "headless"]
+categories = ["command-line-interface", "development-tools::testing"]
+
+[dependencies]
+ratatui = "0.29"
+crossterm = "0.28"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+unicode-width = "0.2"
+
+[dev-dependencies]
+insta = { version = "1.41", features = ["json"] }
+tokio = { version = "1", features = ["full", "test-util"] }
+pretty_assertions = "1.4"
+
+[features]
+default = []
+tokio = ["dep:tokio"]
+
+[dependencies.tokio]
+version = "1"
+features = ["sync", "rt", "macros"]
+optional = true
