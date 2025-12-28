@@ -1,0 +1,26 @@
+# Tarpaulin configuration for envision
+# Run with: cargo tarpaulin
+
+[default]
+# Output formats
+out = ["Html", "Json"]
+output-dir = "coverage"
+
+# Test configuration
+all-features = true
+test-threads = 1
+
+# Exclude test code from coverage
+exclude-files = ["tests/*", "examples/*"]
+
+# Timeout per test (seconds)
+timeout = "120s"
+
+# Skip functions that are hard to test
+# skip-clean = true
+
+[ci]
+# CI-specific settings
+out = ["Xml", "Json"]
+output-dir = "coverage"
+all-features = true
