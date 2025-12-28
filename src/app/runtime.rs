@@ -597,6 +597,7 @@ mod tests {
     #[derive(Clone, Default)]
     struct EventState {
         events_received: u32,
+        last_key: Option<char>,
         ticks: u32,
         quit: bool,
     }
@@ -621,7 +622,10 @@ mod tests {
             msg: Self::Message,
         ) -> super::super::Command<Self::Message> {
             match msg {
-                EventMsg::KeyPressed(_) => state.events_received += 1,
+                EventMsg::KeyPressed(c) => {
+                    state.events_received += 1;
+                    state.last_key = Some(c);
+                }
                 EventMsg::Tick => state.ticks += 1,
                 EventMsg::Quit => state.quit = true,
             }
@@ -773,9 +777,14 @@ mod tests {
 
         let mut runtime: Runtime<CmdApp, _> = Runtime::headless(80, 24).unwrap();
 
-        // Process init command
+        // Process init command (Set(10))
         runtime.process_commands();
         assert_eq!(runtime.state().value, 10);
+
+        // Manually dispatch Double message to test that variant
+        runtime.dispatch(CmdMsg::Double);
+        runtime.process_commands();
+        assert_eq!(runtime.state().value, 20);
     }
 
     #[test]
