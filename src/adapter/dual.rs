@@ -417,4 +417,120 @@ mod tests {
         assert_eq!(dual.capture().width(), 80);
         assert_eq!(dual.capture().height(), 24);
     }
+
+    #[test]
+    fn test_dual_backend_with_history() {
+        let primary = CaptureBackend::new(80, 24);
+        let capture = CaptureBackend::with_history(80, 24, 5);
+        let dual = DualBackend::with_history(primary, capture, true);
+
+        assert_eq!(dual.capture().width(), 80);
+    }
+
+    #[test]
+    fn test_dual_backend_disable_sync_sizes() {
+        let primary = CaptureBackend::new(80, 24);
+        let capture = CaptureBackend::new(80, 24);
+        let dual = DualBackend::new(primary, capture).disable_sync_sizes();
+
+        // sync_sizes is now false, we can verify by checking construction worked
+        assert_eq!(dual.capture().width(), 80);
+    }
+
+    #[test]
+    fn test_dual_backend_primary_mut() {
+        let primary = CaptureBackend::new(80, 24);
+        let capture = CaptureBackend::new(80, 24);
+        let mut dual = DualBackend::new(primary, capture);
+
+        // Access mutable reference to primary
+        let primary = dual.primary_mut();
+        assert_eq!(primary.width(), 80);
+    }
+
+    #[test]
+    fn test_dual_backend_capture_mut() {
+        let primary = CaptureBackend::new(80, 24);
+        let capture = CaptureBackend::new(80, 24);
+        let mut dual = DualBackend::new(primary, capture);
+
+        // Access mutable reference to capture and modify
+        let capture = dual.capture_mut();
+        capture.set_cursor_position(Position::new(5, 5)).unwrap();
+
+        assert_eq!(dual.capture().cursor_position(), Position::new(5, 5));
+    }
+
+    #[test]
+    fn test_dual_backend_captured_ansi() {
+        use ratatui::style::Color;
+
+        let primary = CaptureBackend::new(20, 5);
+        let capture = CaptureBackend::new(20, 5);
+        let mut dual = DualBackend::new(primary, capture);
+
+        // Set some colored text
+        let mut cell = Cell::default();
+        cell.set_char('R');
+        cell.set_fg(Color::Red);
+        dual.draw(vec![(0_u16, 0_u16, &cell)].into_iter()).unwrap();
+
+        let ansi = dual.captured_ansi();
+        assert!(ansi.contains("R"));
+        // ANSI output should include escape codes for red
+        assert!(ansi.contains("\x1b[31m"));
+    }
+
+    #[test]
+    fn test_dual_backend_clear_region() {
+        let primary = CaptureBackend::new(10, 5);
+        let capture = CaptureBackend::new(10, 5);
+        let mut dual = DualBackend::new(primary, capture);
+
+        // Set some content
+        let mut cell = Cell::default();
+        cell.set_char('X');
+        dual.draw(vec![(5_u16, 2_u16, &cell)].into_iter()).unwrap();
+
+        // Clear using ClearType::All
+        dual.clear_region(ClearType::All).unwrap();
+
+        assert_eq!(dual.capture().cell(5, 2).unwrap().symbol(), " ");
+    }
+
+    #[test]
+    fn test_dual_backend_window_size() {
+        let primary = CaptureBackend::new(80, 24);
+        let capture = CaptureBackend::new(80, 24);
+        let mut dual = DualBackend::new(primary, capture);
+
+        let window = dual.window_size().unwrap();
+        assert_eq!(window.columns_rows.width, 80);
+        assert_eq!(window.columns_rows.height, 24);
+    }
+
+    #[test]
+    fn test_dual_backend_builder_no_sync_sizes() {
+        let primary = CaptureBackend::new(80, 24);
+        let dual = DualBackendBuilder::new(primary)
+            .no_sync_sizes()
+            .build()
+            .unwrap();
+
+        // sync_sizes is false but we can verify builder worked
+        assert_eq!(dual.capture().width(), 80);
+    }
+
+    #[test]
+    fn test_dual_backend_builder_no_history() {
+        let primary = CaptureBackend::new(80, 24);
+        let dual = DualBackendBuilder::new(primary)
+            .capture_size(60, 20)
+            .build()
+            .unwrap();
+
+        // No history, just custom size
+        assert_eq!(dual.capture().width(), 60);
+        assert_eq!(dual.capture().height(), 20);
+    }
 }

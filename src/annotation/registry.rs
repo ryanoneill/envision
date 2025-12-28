@@ -428,4 +428,192 @@ mod tests {
         assert!(tree.contains("Input"));
         assert!(tree.contains("Button"));
     }
+
+    #[test]
+    fn test_registry_clear() {
+        let mut registry = AnnotationRegistry::new();
+
+        registry.register(Rect::new(0, 0, 10, 1), Annotation::button("a"));
+        registry.register(Rect::new(0, 2, 10, 1), Annotation::button("b"));
+
+        assert_eq!(registry.len(), 2);
+
+        registry.clear();
+
+        assert_eq!(registry.len(), 0);
+        assert!(registry.is_empty());
+    }
+
+    #[test]
+    fn test_registry_is_empty() {
+        let registry = AnnotationRegistry::new();
+        assert!(registry.is_empty());
+
+        let mut registry2 = AnnotationRegistry::new();
+        registry2.register(Rect::new(0, 0, 10, 1), Annotation::button("btn"));
+        assert!(!registry2.is_empty());
+    }
+
+    #[test]
+    fn test_registry_regions_at() {
+        let mut registry = AnnotationRegistry::new();
+
+        // Container at depth 0
+        registry.open(Rect::new(0, 0, 80, 24), Annotation::container("main"));
+        // Button at depth 1
+        registry.register(Rect::new(10, 10, 20, 3), Annotation::button("submit"));
+        registry.close();
+
+        // Point inside button overlaps both container and button
+        let regions = registry.regions_at(15, 11);
+        assert_eq!(regions.len(), 2);
+    }
+
+    #[test]
+    fn test_registry_interactive_regions() {
+        let mut registry = AnnotationRegistry::new();
+
+        // Non-interactive
+        registry.register(Rect::new(0, 0, 80, 24), Annotation::container("main"));
+        registry.register(Rect::new(0, 0, 10, 1), Annotation::label("title"));
+
+        // Interactive
+        registry.register(Rect::new(0, 2, 10, 1), Annotation::button("btn"));
+        registry.register(Rect::new(0, 4, 10, 1), Annotation::input("input"));
+        registry.register(Rect::new(0, 6, 10, 1), Annotation::checkbox("checkbox"));
+
+        let interactive = registry.interactive_regions();
+        assert_eq!(interactive.len(), 3);
+    }
+
+    #[test]
+    fn test_registry_root_regions() {
+        let mut registry = AnnotationRegistry::new();
+
+        // Root level
+        registry.open(Rect::new(0, 0, 40, 24), Annotation::container("left"));
+        registry.register(Rect::new(5, 5, 10, 1), Annotation::button("btn1"));
+        registry.close();
+
+        registry.open(Rect::new(40, 0, 40, 24), Annotation::container("right"));
+        registry.register(Rect::new(45, 5, 10, 1), Annotation::button("btn2"));
+        registry.close();
+
+        let roots = registry.root_regions();
+        assert_eq!(roots.len(), 2);
+    }
+
+    #[test]
+    fn test_registry_children_of() {
+        let mut registry = AnnotationRegistry::new();
+
+        let parent = registry.open(Rect::new(0, 0, 80, 24), Annotation::container("parent"));
+        registry.register(Rect::new(5, 5, 10, 1), Annotation::button("child1"));
+        registry.register(Rect::new(5, 8, 10, 1), Annotation::button("child2"));
+        registry.close();
+
+        let children = registry.children_of(parent);
+        assert_eq!(children.len(), 2);
+
+        // Non-existent index returns empty
+        let children = registry.children_of(999);
+        assert!(children.is_empty());
+    }
+
+    #[test]
+    fn test_registry_regions_accessor() {
+        let mut registry = AnnotationRegistry::new();
+
+        registry.register(Rect::new(0, 0, 10, 1), Annotation::button("a"));
+        registry.register(Rect::new(0, 2, 10, 1), Annotation::button("b"));
+
+        let regions = registry.regions();
+        assert_eq!(regions.len(), 2);
+    }
+
+    #[test]
+    fn test_serializable_rect_from_rect() {
+        let ratatui_rect = Rect::new(10, 20, 30, 40);
+        let serializable: SerializableRect = ratatui_rect.into();
+
+        assert_eq!(serializable.x, 10);
+        assert_eq!(serializable.y, 20);
+        assert_eq!(serializable.width, 30);
+        assert_eq!(serializable.height, 40);
+    }
+
+    #[test]
+    fn test_rect_from_serializable_rect() {
+        let serializable = SerializableRect::new(10, 20, 30, 40);
+        let ratatui_rect: Rect = serializable.into();
+
+        assert_eq!(ratatui_rect.x, 10);
+        assert_eq!(ratatui_rect.y, 20);
+        assert_eq!(ratatui_rect.width, 30);
+        assert_eq!(ratatui_rect.height, 40);
+    }
+
+    #[test]
+    fn test_registry_get_non_existent() {
+        let registry = AnnotationRegistry::new();
+        assert!(registry.get(0).is_none());
+        assert!(registry.get(999).is_none());
+    }
+
+    #[test]
+    fn test_registry_get_by_id_not_found() {
+        let mut registry = AnnotationRegistry::new();
+        registry.register(Rect::new(0, 0, 10, 1), Annotation::button("exists"));
+
+        assert!(registry.get_by_id("nonexistent").is_none());
+    }
+
+    #[test]
+    fn test_registry_focused_region_none() {
+        let mut registry = AnnotationRegistry::new();
+
+        registry.register(Rect::new(0, 0, 10, 1), Annotation::input("a"));
+        registry.register(Rect::new(0, 2, 10, 1), Annotation::input("b"));
+
+        // No focused region
+        assert!(registry.focused_region().is_none());
+    }
+
+    #[test]
+    fn test_registry_close_at_zero_depth() {
+        let mut registry = AnnotationRegistry::new();
+
+        // Register without opening
+        registry.register(Rect::new(0, 0, 10, 1), Annotation::button("btn"));
+
+        // Close when already at depth 0 should not panic
+        registry.close();
+        registry.close(); // Extra close
+
+        assert_eq!(registry.len(), 1);
+    }
+
+    #[test]
+    fn test_registry_default() {
+        let registry = AnnotationRegistry::default();
+        assert!(registry.is_empty());
+    }
+
+    #[test]
+    fn test_region_info_fields() {
+        let mut registry = AnnotationRegistry::new();
+
+        let parent_idx = registry.open(Rect::new(0, 0, 80, 24), Annotation::container("parent"));
+        let child_idx = registry.register(Rect::new(5, 5, 10, 1), Annotation::button("child"));
+        registry.close();
+
+        let child = registry.get(child_idx).unwrap();
+        assert_eq!(child.area.x, 5);
+        assert_eq!(child.area.y, 5);
+        assert_eq!(child.area.width, 10);
+        assert_eq!(child.area.height, 1);
+        assert_eq!(child.parent, Some(parent_idx));
+        assert!(child.children.is_empty());
+        assert_eq!(child.depth, 1);
+    }
 }

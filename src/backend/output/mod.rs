@@ -57,4 +57,88 @@ mod tests {
     fn test_output_format_default() {
         assert_eq!(OutputFormat::default(), OutputFormat::Plain);
     }
+
+    #[test]
+    fn test_output_format_render_plain() {
+        let mut backend = CaptureBackend::new(5, 1);
+        for (i, c) in "Hello".chars().enumerate() {
+            if let Some(cell) = backend.cell_mut(i as u16, 0) {
+                cell.set_char(c);
+            }
+        }
+
+        let output = OutputFormat::Plain.render(&backend);
+        assert_eq!(output.trim(), "Hello");
+    }
+
+    #[test]
+    fn test_output_format_render_ansi() {
+        use crate::backend::cell::SerializableColor;
+
+        let mut backend = CaptureBackend::new(5, 1);
+        if let Some(cell) = backend.cell_mut(0, 0) {
+            cell.set_char('R');
+            cell.fg = SerializableColor::Red;
+        }
+
+        let output = OutputFormat::Ansi.render(&backend);
+        assert!(output.contains("\x1b[31m")); // Red color code
+        assert!(output.contains("R"));
+    }
+
+    #[test]
+    fn test_output_format_render_json() {
+        let mut backend = CaptureBackend::new(3, 1);
+        if let Some(cell) = backend.cell_mut(0, 0) {
+            cell.set_char('X');
+        }
+
+        let output = OutputFormat::Json.render(&backend);
+        assert!(output.starts_with("{"));
+        assert!(output.ends_with("}"));
+        assert!(output.contains("\"width\":3"));
+        assert!(output.contains("\"height\":1"));
+    }
+
+    #[test]
+    fn test_output_format_render_json_pretty() {
+        let mut backend = CaptureBackend::new(3, 1);
+        if let Some(cell) = backend.cell_mut(0, 0) {
+            cell.set_char('Y');
+        }
+
+        let output = OutputFormat::JsonPretty.render(&backend);
+        // Pretty JSON has newlines and indentation
+        assert!(output.contains("\n"));
+        assert!(output.contains("  ")); // Indentation
+        assert!(output.contains("\"width\""));
+    }
+
+    #[test]
+    fn test_output_format_clone() {
+        let format = OutputFormat::Ansi;
+        let cloned = format.clone();
+        assert_eq!(format, cloned);
+    }
+
+    #[test]
+    fn test_output_format_copy() {
+        let format = OutputFormat::Json;
+        let copied = format; // Copy
+        assert_eq!(format, copied);
+    }
+
+    #[test]
+    fn test_output_format_debug() {
+        let format = OutputFormat::Plain;
+        let debug = format!("{:?}", format);
+        assert_eq!(debug, "Plain");
+    }
+
+    #[test]
+    fn test_output_format_equality() {
+        assert_eq!(OutputFormat::Plain, OutputFormat::Plain);
+        assert_ne!(OutputFormat::Plain, OutputFormat::Ansi);
+        assert_ne!(OutputFormat::Json, OutputFormat::JsonPretty);
+    }
 }

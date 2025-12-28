@@ -420,4 +420,183 @@ mod tests {
 
         assert_eq!(queue.len(), 3); // down, drag, up
     }
+
+    #[test]
+    fn test_delete() {
+        let mut queue = EventQueue::new();
+        queue.delete();
+
+        assert_eq!(queue.len(), 1);
+        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Delete)));
+    }
+
+    #[test]
+    fn test_home_end() {
+        let mut queue = EventQueue::new();
+        queue.home();
+        queue.end();
+
+        assert_eq!(queue.len(), 2);
+        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Home)));
+        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::End)));
+    }
+
+    #[test]
+    fn test_page_up_down() {
+        let mut queue = EventQueue::new();
+        queue.page_up();
+        queue.page_down();
+
+        assert_eq!(queue.len(), 2);
+        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::PageUp)));
+        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::PageDown)));
+    }
+
+    #[test]
+    fn test_function_keys() {
+        let mut queue = EventQueue::new();
+        queue.function(1);
+        queue.function(12);
+
+        assert_eq!(queue.len(), 2);
+        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::F(1))));
+        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::F(12))));
+    }
+
+    #[test]
+    fn test_scroll_down() {
+        let mut queue = EventQueue::new();
+        queue.scroll_down(5, 10);
+
+        assert_eq!(queue.len(), 1);
+        let event = queue.pop().unwrap();
+        assert!(event.is_mouse());
+    }
+
+    #[test]
+    fn test_resize() {
+        let mut queue = EventQueue::new();
+        queue.resize(120, 40);
+
+        assert_eq!(queue.len(), 1);
+        if let Some(SimulatedEvent::Resize(w, h)) = queue.pop() {
+            assert_eq!(w, 120);
+            assert_eq!(h, 40);
+        } else {
+            panic!("Expected Resize event");
+        }
+    }
+
+    #[test]
+    fn test_paste() {
+        let mut queue = EventQueue::new();
+        queue.paste("pasted text");
+
+        assert_eq!(queue.len(), 1);
+        if let Some(SimulatedEvent::Paste(content)) = queue.pop() {
+            assert_eq!(content, "pasted text");
+        } else {
+            panic!("Expected Paste event");
+        }
+    }
+
+    #[test]
+    fn test_iter() {
+        let mut queue = EventQueue::new();
+        queue.char('a');
+        queue.char('b');
+        queue.char('c');
+
+        let events: Vec<_> = queue.iter().collect();
+        assert_eq!(events.len(), 3);
+
+        // Queue should still have all events
+        assert_eq!(queue.len(), 3);
+    }
+
+    #[test]
+    fn test_drain() {
+        let mut queue = EventQueue::new();
+        queue.char('x');
+        queue.char('y');
+
+        let drained: Vec<_> = queue.drain().collect();
+        assert_eq!(drained.len(), 2);
+
+        // Queue should now be empty
+        assert!(queue.is_empty());
+    }
+
+    #[test]
+    fn test_poll() {
+        let mut queue = EventQueue::new();
+        queue.char('p');
+
+        let event = queue.poll(Duration::from_millis(100));
+        assert_eq!(event, Some(SimulatedEvent::char('p')));
+
+        // Empty queue returns None
+        let event = queue.poll(Duration::from_millis(100));
+        assert!(event.is_none());
+    }
+
+    #[test]
+    fn test_extend() {
+        let mut queue = EventQueue::new();
+        queue.char('a');
+
+        let more_events = vec![
+            SimulatedEvent::char('b'),
+            SimulatedEvent::char('c'),
+        ];
+        queue.extend(more_events);
+
+        assert_eq!(queue.len(), 3);
+    }
+
+    #[test]
+    fn test_extend_trait() {
+        let mut queue = EventQueue::new();
+
+        let events = vec![
+            SimulatedEvent::char('x'),
+            SimulatedEvent::char('y'),
+        ];
+
+        // Using Extend trait
+        <EventQueue as Extend<SimulatedEvent>>::extend(&mut queue, events);
+
+        assert_eq!(queue.len(), 2);
+    }
+
+    #[test]
+    fn test_queue_clone() {
+        let mut queue = EventQueue::new();
+        queue.char('a');
+        queue.char('b');
+
+        let cloned = queue.clone();
+        assert_eq!(queue.len(), cloned.len());
+    }
+
+    #[test]
+    fn test_queue_debug() {
+        let queue = EventQueue::new();
+        let debug = format!("{:?}", queue);
+        assert!(debug.contains("EventQueue"));
+    }
+
+    #[test]
+    fn test_queue_default() {
+        let queue = EventQueue::default();
+        assert!(queue.is_empty());
+    }
+
+    #[test]
+    fn test_key_method() {
+        let mut queue = EventQueue::new();
+        queue.key(KeyCode::Insert);
+
+        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Insert)));
+    }
 }

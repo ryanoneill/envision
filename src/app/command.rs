@@ -326,4 +326,151 @@ mod tests {
         let messages = handler.take_messages();
         assert_eq!(messages, vec![OuterMsg::Inner(TestMsg::A)]);
     }
+
+    #[test]
+    fn test_command_batch_empty() {
+        let cmd: Command<TestMsg> = Command::batch(Vec::new());
+        assert!(cmd.is_none());
+    }
+
+    #[test]
+    fn test_command_clone_message() {
+        let cmd = Command::message(TestMsg::A);
+        let cloned = cmd.clone();
+
+        let mut handler = CommandHandler::new();
+        handler.execute(cloned);
+
+        let messages = handler.take_messages();
+        assert_eq!(messages, vec![TestMsg::A]);
+    }
+
+    #[test]
+    fn test_command_clone_batch() {
+        let cmd = Command::batch([TestMsg::A, TestMsg::B]);
+        let cloned = cmd.clone();
+
+        let mut handler = CommandHandler::new();
+        handler.execute(cloned);
+
+        let messages = handler.take_messages();
+        assert_eq!(messages, vec![TestMsg::A, TestMsg::B]);
+    }
+
+    #[test]
+    fn test_command_clone_quit() {
+        let cmd: Command<TestMsg> = Command::quit();
+        let cloned = cmd.clone();
+
+        let mut handler = CommandHandler::new();
+        handler.execute(cloned);
+
+        assert!(handler.should_quit());
+    }
+
+    #[test]
+    fn test_command_clone_callback_skipped() {
+        let cmd = Command::perform(|| Some(TestMsg::A));
+        let cloned = cmd.clone();
+
+        // Callbacks can't be cloned, so cloned should have no actions
+        assert!(cloned.is_none());
+    }
+
+    #[test]
+    fn test_command_debug() {
+        let cmd = Command::message(TestMsg::A);
+        let debug_str = format!("{:?}", cmd);
+
+        assert!(debug_str.contains("Command"));
+        assert!(debug_str.contains("action_count"));
+        assert!(debug_str.contains("1"));
+    }
+
+    #[test]
+    fn test_command_map_batch() {
+        #[derive(Clone, Debug, PartialEq)]
+        enum OuterMsg {
+            Inner(TestMsg),
+        }
+
+        let cmd = Command::batch([TestMsg::A, TestMsg::B]);
+        let mapped = cmd.map(OuterMsg::Inner);
+
+        let mut handler = CommandHandler::new();
+        handler.execute(mapped);
+
+        let messages = handler.take_messages();
+        assert_eq!(
+            messages,
+            vec![OuterMsg::Inner(TestMsg::A), OuterMsg::Inner(TestMsg::B)]
+        );
+    }
+
+    #[test]
+    fn test_command_map_quit() {
+        #[derive(Clone, Debug, PartialEq)]
+        enum OuterMsg {
+            Inner(TestMsg),
+        }
+
+        let cmd: Command<TestMsg> = Command::quit();
+        let mapped: Command<OuterMsg> = cmd.map(OuterMsg::Inner);
+
+        let mut handler = CommandHandler::new();
+        handler.execute(mapped);
+
+        assert!(handler.should_quit());
+    }
+
+    #[test]
+    fn test_command_map_callback() {
+        #[derive(Clone, Debug, PartialEq)]
+        enum OuterMsg {
+            Inner(TestMsg),
+        }
+
+        let cmd = Command::perform(|| Some(TestMsg::A));
+        let mapped = cmd.map(OuterMsg::Inner);
+
+        let mut handler = CommandHandler::new();
+        handler.execute(mapped);
+
+        let messages = handler.take_messages();
+        assert_eq!(messages, vec![OuterMsg::Inner(TestMsg::A)]);
+    }
+
+    #[test]
+    fn test_command_map_callback_none() {
+        #[derive(Clone, Debug, PartialEq)]
+        enum OuterMsg {
+            Inner(TestMsg),
+        }
+
+        let cmd: Command<TestMsg> = Command::perform(|| None);
+        let mapped: Command<OuterMsg> = cmd.map(OuterMsg::Inner);
+
+        let mut handler = CommandHandler::new();
+        handler.execute(mapped);
+
+        let messages = handler.take_messages();
+        assert!(messages.is_empty());
+    }
+
+    #[test]
+    fn test_command_handler_reset_quit() {
+        let mut handler: CommandHandler<TestMsg> = CommandHandler::new();
+        handler.execute(Command::quit());
+        assert!(handler.should_quit());
+
+        handler.reset_quit();
+        assert!(!handler.should_quit());
+    }
+
+    #[test]
+    fn test_command_handler_default() {
+        let handler: CommandHandler<TestMsg> = CommandHandler::default();
+        assert!(!handler.should_quit());
+        assert!(handler.pending_messages.is_empty());
+    }
 }
