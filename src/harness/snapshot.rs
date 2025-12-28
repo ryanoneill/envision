@@ -956,4 +956,73 @@ mod tests {
         let content = std::fs::read_to_string(&path).unwrap();
         assert!(content.contains("Plain"));
     }
+
+    #[test]
+    fn test_assert_snapshot_eq_matching() {
+        let mut harness = TestHarness::new(20, 2);
+        harness
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Same"), frame.area());
+            })
+            .unwrap();
+
+        let snapshot1 = harness.snapshot();
+        let snapshot2 = harness.snapshot();
+
+        // Should not panic - snapshots are identical
+        assert_snapshot_eq(&snapshot1, &snapshot2);
+    }
+
+    #[test]
+    #[should_panic(expected = "Snapshots differ")]
+    fn test_assert_snapshot_eq_different() {
+        let mut harness1 = TestHarness::new(20, 2);
+        harness1
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("First"), frame.area());
+            })
+            .unwrap();
+
+        let mut harness2 = TestHarness::new(20, 2);
+        harness2
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Second"), frame.area());
+            })
+            .unwrap();
+
+        // Should panic - snapshots differ
+        assert_snapshot_eq(&harness1.snapshot(), &harness2.snapshot());
+    }
+
+    #[test]
+    fn test_assert_snapshot_text_matching() {
+        let mut harness = TestHarness::new(10, 1);
+        harness
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Hello     "), frame.area());
+            })
+            .unwrap();
+
+        let snapshot = harness.snapshot();
+        let expected = snapshot.to_plain();
+
+        // Should not panic - text matches
+        assert_snapshot_text(&snapshot, &expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Snapshot text differs")]
+    fn test_assert_snapshot_text_different() {
+        let mut harness = TestHarness::new(10, 1);
+        harness
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Actual"), frame.area());
+            })
+            .unwrap();
+
+        let snapshot = harness.snapshot();
+
+        // Should panic - text doesn't match
+        assert_snapshot_text(&snapshot, "Wrong text");
+    }
 }
