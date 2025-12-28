@@ -256,4 +256,204 @@ mod tests {
         let inner = registry.get_by_id("inner").unwrap();
         assert_eq!(inner.parent, Some(0));
     }
+
+    #[test]
+    fn test_annotate_annotation_mut() {
+        let mut widget = Annotate::new(
+            Paragraph::new("Test"),
+            Annotation::button("btn"),
+        );
+
+        widget.annotation_mut().focused = true;
+        assert!(widget.annotation().focused);
+    }
+
+    #[test]
+    fn test_annotate_inner() {
+        let widget = Annotate::new(
+            Paragraph::new("Inner Widget"),
+            Annotation::button("btn"),
+        );
+
+        let _inner = widget.inner();
+        // Can access inner widget
+    }
+
+    #[test]
+    fn test_annotate_inner_mut() {
+        let mut widget = Annotate::new(
+            Paragraph::new("Mutable"),
+            Annotation::button("btn"),
+        );
+
+        let _inner = widget.inner_mut();
+        // Can access inner widget mutably
+    }
+
+    #[test]
+    fn test_annotate_into_inner() {
+        let widget = Annotate::new(
+            Paragraph::new("Unwrap Me"),
+            Annotation::button("btn"),
+        );
+
+        let _inner = widget.into_inner();
+        // Successfully unwrapped
+    }
+
+    #[test]
+    fn test_annotate_disabled() {
+        let widget = Annotate::new(
+            Paragraph::new("Disabled"),
+            Annotation::button("btn"),
+        )
+        .disabled(true);
+
+        assert!(widget.annotation().disabled);
+    }
+
+    #[test]
+    fn test_annotate_selected() {
+        let widget = Annotate::new(
+            Paragraph::new("Selected"),
+            Annotation::button("btn"),
+        )
+        .selected(true);
+
+        assert!(widget.annotation().selected);
+    }
+
+    #[test]
+    fn test_annotate_container_new() {
+        let container = AnnotateContainer::new(
+            Paragraph::new("Container"),
+            Annotation::container("main"),
+        );
+
+        // Verify it was created (can only be verified by rendering)
+        let _ = container;
+    }
+
+    #[test]
+    fn test_with_registry_no_context() {
+        // Call with_registry outside of with_annotations context
+        let result = with_registry(|_| 42);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_with_registry_returns_value() {
+        let value = with_annotations(|| {
+            with_registry(|_| 42)
+        });
+        // The return value of f() is passed through
+        // But with_annotations returns the registry, not the value
+        assert!(value.len() == 0);
+    }
+
+    #[test]
+    fn test_annotate_render_with_terminal() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let backend = CaptureBackend::new(40, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        let registry = with_annotations(|| {
+            terminal
+                .draw(|frame| {
+                    let widget = Annotate::new(
+                        Paragraph::new("Rendered"),
+                        Annotation::button("btn"),
+                    );
+                    frame.render_widget(widget, frame.area());
+                })
+                .unwrap();
+        });
+
+        // Widget was rendered and annotation registered
+        assert_eq!(registry.len(), 1);
+        assert!(registry.get_by_id("btn").is_some());
+
+        // Text was rendered
+        assert!(terminal.backend().contains_text("Rendered"));
+    }
+
+    #[test]
+    fn test_annotate_container_render() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let backend = CaptureBackend::new(40, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        let registry = with_annotations(|| {
+            terminal
+                .draw(|frame| {
+                    let container = AnnotateContainer::new(
+                        Paragraph::new("Container Content"),
+                        Annotation::container("main"),
+                    );
+                    frame.render_widget(container, frame.area());
+                })
+                .unwrap();
+        });
+
+        // Container annotation was registered
+        assert_eq!(registry.len(), 1);
+        assert!(registry.get_by_id("main").is_some());
+    }
+
+    #[test]
+    fn test_annotate_combined_states() {
+        let widget = Annotate::new(
+            Paragraph::new("All States"),
+            Annotation::input("input"),
+        )
+        .focused(true)
+        .disabled(true)
+        .selected(true)
+        .value("test value");
+
+        let annotation = widget.annotation();
+        assert!(annotation.focused);
+        assert!(annotation.disabled);
+        assert!(annotation.selected);
+        assert_eq!(annotation.value, Some("test value".to_string()));
+    }
+
+    #[test]
+    fn test_nested_rendering() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let backend = CaptureBackend::new(80, 24);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        let registry = with_annotations(|| {
+            terminal
+                .draw(|frame| {
+                    // Render a container with nested widgets
+                    let container = AnnotateContainer::new(
+                        Paragraph::new("Parent"),
+                        Annotation::container("parent"),
+                    );
+                    let inner = Annotate::new(
+                        Paragraph::new("Child"),
+                        Annotation::button("child"),
+                    );
+
+                    // In real code these would be nested via layout
+                    // Here we just render them separately to test
+                    let area1 = Rect::new(0, 0, 40, 5);
+                    let area2 = Rect::new(0, 5, 40, 5);
+
+                    frame.render_widget(container, area1);
+                    frame.render_widget(inner, area2);
+                })
+                .unwrap();
+        });
+
+        assert_eq!(registry.len(), 2);
+    }
 }

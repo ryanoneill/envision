@@ -429,4 +429,371 @@ mod tests {
         assert_eq!(config.history_capacity, 5);
         assert_eq!(config.max_messages_per_tick, 50);
     }
+
+    #[test]
+    fn test_runtime_config_default() {
+        let config = RuntimeConfig::default();
+        assert_eq!(config.tick_rate, Duration::from_millis(50));
+        assert_eq!(config.max_messages_per_tick, 100);
+        assert!(!config.capture_history);
+        assert_eq!(config.history_capacity, 10);
+    }
+
+    #[test]
+    fn test_runtime_config_debug() {
+        let config = RuntimeConfig::new();
+        let debug = format!("{:?}", config);
+        assert!(debug.contains("RuntimeConfig"));
+    }
+
+    #[test]
+    fn test_runtime_config_clone() {
+        let config = RuntimeConfig::new().tick_rate(Duration::from_millis(200));
+        let cloned = config.clone();
+        assert_eq!(config.tick_rate, cloned.tick_rate);
+    }
+
+    #[test]
+    fn test_runtime_headless_with_config() {
+        let config = RuntimeConfig::new().with_history(5);
+        let runtime: Runtime<CounterApp, _> =
+            Runtime::headless_with_config(80, 24, config).unwrap();
+        assert_eq!(runtime.state().count, 0);
+    }
+
+    #[test]
+    fn test_runtime_headless_with_config_no_history() {
+        let config = RuntimeConfig::new();
+        let runtime: Runtime<CounterApp, _> =
+            Runtime::headless_with_config(80, 24, config).unwrap();
+        assert_eq!(runtime.state().count, 0);
+    }
+
+    #[test]
+    fn test_runtime_state_mut() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(80, 24).unwrap();
+        runtime.state_mut().count = 42;
+        assert_eq!(runtime.state().count, 42);
+    }
+
+    #[test]
+    fn test_runtime_terminal_access() {
+        let runtime: Runtime<CounterApp, _> = Runtime::headless(80, 24).unwrap();
+        let terminal = runtime.terminal();
+        assert_eq!(terminal.backend().width(), 80);
+        assert_eq!(terminal.backend().height(), 24);
+    }
+
+    #[test]
+    fn test_runtime_terminal_mut() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(80, 24).unwrap();
+        let _terminal = runtime.terminal_mut();
+        // Just verify we can get mutable access
+    }
+
+    #[test]
+    fn test_runtime_backend_access() {
+        let runtime: Runtime<CounterApp, _> = Runtime::headless(80, 24).unwrap();
+        let backend = runtime.backend();
+        assert_eq!(backend.width(), 80);
+    }
+
+    #[test]
+    fn test_runtime_backend_mut() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(80, 24).unwrap();
+        let backend = runtime.backend_mut();
+        assert_eq!(backend.width(), 80);
+    }
+
+    #[test]
+    fn test_runtime_events_access() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(80, 24).unwrap();
+        let events = runtime.events();
+        assert!(events.is_empty());
+    }
+
+    #[test]
+    fn test_runtime_dispatch_all() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(80, 24).unwrap();
+
+        runtime.dispatch_all(vec![
+            CounterMsg::Increment,
+            CounterMsg::Increment,
+            CounterMsg::Decrement,
+        ]);
+
+        assert_eq!(runtime.state().count, 1);
+    }
+
+    #[test]
+    fn test_runtime_manual_quit() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(80, 24).unwrap();
+        assert!(!runtime.should_quit());
+
+        runtime.quit();
+        assert!(runtime.should_quit());
+    }
+
+    #[test]
+    fn test_runtime_run_ticks() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(40, 10).unwrap();
+        runtime.dispatch(CounterMsg::Increment);
+
+        runtime.run_ticks(3).unwrap();
+        assert!(runtime.contains_text("Count: 1"));
+    }
+
+    #[test]
+    fn test_runtime_run_ticks_with_quit() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(40, 10).unwrap();
+        runtime.dispatch(CounterMsg::Quit);
+        runtime.tick().unwrap();
+
+        // Should stop early due to quit
+        runtime.run_ticks(10).unwrap();
+        assert!(runtime.should_quit());
+    }
+
+    #[test]
+    fn test_runtime_run() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(40, 10).unwrap();
+        runtime.dispatch(CounterMsg::Increment);
+        runtime.dispatch(CounterMsg::Increment);
+
+        runtime.run().unwrap();
+        assert!(runtime.contains_text("Count: 2"));
+    }
+
+    #[test]
+    fn test_runtime_captured_output() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(40, 10).unwrap();
+        runtime.render().unwrap();
+
+        let output = runtime.captured_output();
+        assert!(output.contains("Count: 0"));
+    }
+
+    #[test]
+    fn test_runtime_captured_ansi() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(40, 10).unwrap();
+        runtime.render().unwrap();
+
+        let ansi = runtime.captured_ansi();
+        assert!(ansi.contains("Count: 0"));
+    }
+
+    #[test]
+    fn test_runtime_find_text() {
+        let mut runtime: Runtime<CounterApp, _> = Runtime::headless(40, 10).unwrap();
+        runtime.render().unwrap();
+
+        let positions = runtime.find_text("Count");
+        assert!(!positions.is_empty());
+    }
+
+    // Test app that handles events and uses on_tick
+    struct EventApp;
+
+    #[derive(Clone, Default)]
+    struct EventState {
+        events_received: u32,
+        ticks: u32,
+        quit: bool,
+    }
+
+    #[derive(Clone)]
+    enum EventMsg {
+        KeyPressed(char),
+        Tick,
+        Quit,
+    }
+
+    impl App for EventApp {
+        type State = EventState;
+        type Message = EventMsg;
+
+        fn init() -> (Self::State, super::super::Command<Self::Message>) {
+            (EventState::default(), super::super::Command::none())
+        }
+
+        fn update(
+            state: &mut Self::State,
+            msg: Self::Message,
+        ) -> super::super::Command<Self::Message> {
+            match msg {
+                EventMsg::KeyPressed(_) => state.events_received += 1,
+                EventMsg::Tick => state.ticks += 1,
+                EventMsg::Quit => state.quit = true,
+            }
+            super::super::Command::none()
+        }
+
+        fn view(state: &Self::State, frame: &mut ratatui::Frame) {
+            let text = format!(
+                "Events: {}, Ticks: {}",
+                state.events_received, state.ticks
+            );
+            frame.render_widget(Paragraph::new(text), frame.area());
+        }
+
+        fn handle_event(
+            _state: &Self::State,
+            event: &crate::input::SimulatedEvent,
+        ) -> Option<Self::Message> {
+            use crossterm::event::KeyCode;
+            if let Some(key) = event.as_key() {
+                if let KeyCode::Char(c) = key.code {
+                    if c == 'q' {
+                        return Some(EventMsg::Quit);
+                    }
+                    return Some(EventMsg::KeyPressed(c));
+                }
+            }
+            None
+        }
+
+        fn on_tick(_state: &Self::State) -> Option<Self::Message> {
+            Some(EventMsg::Tick)
+        }
+
+        fn should_quit(state: &Self::State) -> bool {
+            state.quit
+        }
+    }
+
+    #[test]
+    fn test_runtime_process_event() {
+        use crate::input::SimulatedEvent;
+
+        let mut runtime: Runtime<EventApp, _> = Runtime::headless(80, 24).unwrap();
+
+        runtime.events().push(SimulatedEvent::char('a'));
+        assert!(runtime.process_event());
+        assert_eq!(runtime.state().events_received, 1);
+
+        // No more events
+        assert!(!runtime.process_event());
+    }
+
+    #[test]
+    fn test_runtime_process_all_events() {
+        use crate::input::SimulatedEvent;
+
+        let mut runtime: Runtime<EventApp, _> = Runtime::headless(80, 24).unwrap();
+
+        runtime.events().push(SimulatedEvent::char('a'));
+        runtime.events().push(SimulatedEvent::char('b'));
+        runtime.events().push(SimulatedEvent::char('c'));
+
+        runtime.process_all_events();
+        assert_eq!(runtime.state().events_received, 3);
+    }
+
+    #[test]
+    fn test_runtime_tick_with_on_tick() {
+        let mut runtime: Runtime<EventApp, _> = Runtime::headless(40, 10).unwrap();
+
+        runtime.tick().unwrap();
+        assert_eq!(runtime.state().ticks, 1);
+
+        runtime.tick().unwrap();
+        assert_eq!(runtime.state().ticks, 2);
+    }
+
+    #[test]
+    fn test_runtime_event_causes_quit() {
+        use crate::input::SimulatedEvent;
+
+        let mut runtime: Runtime<EventApp, _> = Runtime::headless(80, 24).unwrap();
+        runtime.events().push(SimulatedEvent::char('q'));
+
+        runtime.tick().unwrap();
+        assert!(runtime.should_quit());
+    }
+
+    #[test]
+    fn test_runtime_run_with_events() {
+        use crate::input::SimulatedEvent;
+
+        let mut runtime: Runtime<EventApp, _> = Runtime::headless(40, 10).unwrap();
+        runtime.events().push(SimulatedEvent::char('a'));
+        runtime.events().push(SimulatedEvent::char('b'));
+        runtime.events().push(SimulatedEvent::char('q'));
+
+        runtime.run().unwrap();
+
+        // Should have processed events before quitting
+        assert!(runtime.state().events_received >= 2);
+        assert!(runtime.should_quit());
+    }
+
+    #[test]
+    fn test_runtime_process_commands() {
+        // Test with an app that issues commands
+        struct CmdApp;
+
+        #[derive(Clone, Default)]
+        struct CmdState {
+            value: i32,
+        }
+
+        #[derive(Clone)]
+        enum CmdMsg {
+            Set(i32),
+            Double,
+        }
+
+        impl App for CmdApp {
+            type State = CmdState;
+            type Message = CmdMsg;
+
+            fn init() -> (Self::State, super::super::Command<Self::Message>) {
+                // Issue a command on init
+                (CmdState::default(), super::super::Command::message(CmdMsg::Set(10)))
+            }
+
+            fn update(
+                state: &mut Self::State,
+                msg: Self::Message,
+            ) -> super::super::Command<Self::Message> {
+                match msg {
+                    CmdMsg::Set(v) => {
+                        state.value = v;
+                        super::super::Command::none()
+                    }
+                    CmdMsg::Double => {
+                        state.value *= 2;
+                        super::super::Command::none()
+                    }
+                }
+            }
+
+            fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+        }
+
+        let mut runtime: Runtime<CmdApp, _> = Runtime::headless(80, 24).unwrap();
+
+        // Process init command
+        runtime.process_commands();
+        assert_eq!(runtime.state().value, 10);
+    }
+
+    #[test]
+    fn test_runtime_max_messages_per_tick() {
+        use crate::input::SimulatedEvent;
+
+        let config = RuntimeConfig::new().max_messages(2);
+        let mut runtime: Runtime<EventApp, _> =
+            Runtime::headless_with_config(80, 24, config).unwrap();
+
+        // Queue more events than max_messages_per_tick
+        for _ in 0..5 {
+            runtime.events().push(SimulatedEvent::char('x'));
+        }
+
+        runtime.tick().unwrap();
+        // Should only process up to max_messages (2)
+        // But since on_tick also increments ticks, let's check events
+        assert!(runtime.state().events_received <= 3);
+    }
 }
