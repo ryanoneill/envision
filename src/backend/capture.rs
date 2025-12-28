@@ -362,14 +362,6 @@ impl CaptureBackend {
         (y as usize) * (self.width as usize) + (x as usize)
     }
 
-    /// Converts a linear index to (x, y) coordinates.
-    #[allow(dead_code)]
-    fn pos_of(&self, index: usize) -> (u16, u16) {
-        let x = (index % self.width as usize) as u16;
-        let y = (index / self.width as usize) as u16;
-        (x, y)
-    }
-
     /// Saves the current state to history (if enabled).
     fn save_to_history(&mut self) {
         if self.history_capacity > 0 {

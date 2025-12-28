@@ -122,19 +122,6 @@ pub trait App: Sized {
     }
 }
 
-/// A boxed dynamic app for runtime flexibility.
-///
-/// This allows storing apps with different State/Message types
-/// behind a common interface.
-#[allow(dead_code)]
-pub trait DynApp {
-    /// Returns the app name for debugging.
-    fn name(&self) -> &'static str;
-
-    /// Initializes and runs the app with the given runtime.
-    fn run(&self) -> std::io::Result<()>;
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -206,6 +193,174 @@ mod tests {
 
         // Original snapshot unchanged
         assert_eq!(snapshot.counter, 1);
+        assert_eq!(state.counter, 2);
+    }
+
+    #[test]
+    fn test_default_handle_event() {
+        let (state, _) = TestApp::init();
+        let event = SimulatedEvent::char('a');
+
+        // Default implementation returns None
+        let result = TestApp::handle_event(&state, &event);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_default_should_quit() {
+        let (state, _) = TestApp::init();
+
+        // Default implementation returns false
+        assert!(!TestApp::should_quit(&state));
+    }
+
+    #[test]
+    fn test_default_on_tick() {
+        let (state, _) = TestApp::init();
+
+        // Default implementation returns None
+        let result = TestApp::on_tick(&state);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_default_on_exit() {
+        let (state, _) = TestApp::init();
+
+        // Default implementation does nothing (no panic)
+        TestApp::on_exit(&state);
+    }
+
+    #[test]
+    fn test_app_view() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let (state, _) = TestApp::init();
+        let backend = CaptureBackend::new(80, 24);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                TestApp::view(&state, frame);
+            })
+            .unwrap();
+
+        let text = terminal.backend().to_string();
+        assert!(text.contains("Counter: 0"));
+    }
+
+    // Test an app with custom implementations of optional methods
+    struct CustomApp;
+
+    #[derive(Clone, Default)]
+    struct CustomState {
+        should_exit: bool,
+        tick_count: u32,
+    }
+
+    #[derive(Clone)]
+    enum CustomMsg {
+        Tick,
+        Quit,
+        KeyPressed(char),
+    }
+
+    impl App for CustomApp {
+        type State = CustomState;
+        type Message = CustomMsg;
+
+        fn init() -> (Self::State, Command<Self::Message>) {
+            (CustomState::default(), Command::none())
+        }
+
+        fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+            match msg {
+                CustomMsg::Tick => state.tick_count += 1,
+                CustomMsg::Quit => state.should_exit = true,
+                CustomMsg::KeyPressed(_) => {}
+            }
+            Command::none()
+        }
+
+        fn view(_state: &Self::State, _frame: &mut Frame) {}
+
+        fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
+            use crossterm::event::KeyCode;
+            if let Some(key) = event.as_key() {
+                if let KeyCode::Char(c) = key.code {
+                    if c == 'q' {
+                        return Some(CustomMsg::Quit);
+                    }
+                    return Some(CustomMsg::KeyPressed(c));
+                }
+            }
+            None
+        }
+
+        fn should_quit(state: &Self::State) -> bool {
+            state.should_exit
+        }
+
+        fn on_tick(_state: &Self::State) -> Option<Self::Message> {
+            Some(CustomMsg::Tick)
+        }
+
+        fn on_exit(_state: &Self::State) {
+            // Could save state or cleanup here
+        }
+    }
+
+    #[test]
+    fn test_custom_handle_event() {
+        let (state, _) = CustomApp::init();
+
+        // Test quit key
+        let quit_event = SimulatedEvent::char('q');
+        let result = CustomApp::handle_event(&state, &quit_event);
+        assert!(matches!(result, Some(CustomMsg::Quit)));
+
+        // Test other key
+        let other_event = SimulatedEvent::char('a');
+        let result = CustomApp::handle_event(&state, &other_event);
+        assert!(matches!(result, Some(CustomMsg::KeyPressed('a'))));
+    }
+
+    #[test]
+    fn test_custom_should_quit() {
+        let (mut state, _) = CustomApp::init();
+
+        assert!(!CustomApp::should_quit(&state));
+
+        CustomApp::update(&mut state, CustomMsg::Quit);
+        assert!(CustomApp::should_quit(&state));
+    }
+
+    #[test]
+    fn test_custom_on_tick() {
+        let (state, _) = CustomApp::init();
+
+        let result = CustomApp::on_tick(&state);
+        assert!(matches!(result, Some(CustomMsg::Tick)));
+    }
+
+    #[test]
+    fn test_custom_on_exit() {
+        let (state, _) = CustomApp::init();
+
+        // Should not panic
+        CustomApp::on_exit(&state);
+    }
+
+    #[test]
+    fn test_message_clone() {
+        let msg = TestMsg::Increment;
+        let cloned = msg.clone();
+
+        let (mut state, _) = TestApp::init();
+        TestApp::update(&mut state, msg);
+        TestApp::update(&mut state, cloned);
+
         assert_eq!(state.counter, 2);
     }
 }
