@@ -2,7 +2,7 @@
 name = "envision"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.80"
+rust-version = "1.81"
 description = "A ratatui framework for collaborative TUI development with headless testing support"
 license = "MIT"
 repository = "https://github.com/ryanoneill/envision"
