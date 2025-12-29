@@ -1,5 +1,6 @@
 //! Enhanced cell type that captures more information than ratatui's Cell.
 
+use compact_str::CompactString;
 use ratatui::style::{Color, Modifier, Style};
 use serde::{Deserialize, Serialize};
 use unicode_width::UnicodeWidthStr;
@@ -13,7 +14,7 @@ use unicode_width::UnicodeWidthStr;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EnhancedCell {
     /// The symbol (grapheme cluster) displayed in this cell
-    symbol: String,
+    symbol: CompactString,
 
     /// Foreground color
     pub fg: SerializableColor,
@@ -38,7 +39,7 @@ impl EnhancedCell {
     /// Creates a new empty cell
     pub fn new() -> Self {
         Self {
-            symbol: " ".to_string(),
+            symbol: CompactString::from(" "),
             fg: SerializableColor::Reset,
             bg: SerializableColor::Reset,
             modifiers: SerializableModifier::empty(),
@@ -49,7 +50,7 @@ impl EnhancedCell {
     }
 
     /// Creates a cell with the given symbol
-    pub fn with_symbol(symbol: impl Into<String>) -> Self {
+    pub fn with_symbol(symbol: impl Into<CompactString>) -> Self {
         Self {
             symbol: symbol.into(),
             ..Self::new()
@@ -60,7 +61,7 @@ impl EnhancedCell {
     pub fn from_ratatui_cell(cell: &ratatui::buffer::Cell, frame: u64) -> Self {
         let style = cell.style();
         Self {
-            symbol: cell.symbol().to_string(),
+            symbol: CompactString::from(cell.symbol()),
             fg: style.fg.map(SerializableColor::from).unwrap_or(SerializableColor::Reset),
             bg: style.bg.map(SerializableColor::from).unwrap_or(SerializableColor::Reset),
             modifiers: SerializableModifier::from(style.add_modifier),
@@ -76,7 +77,7 @@ impl EnhancedCell {
     }
 
     /// Sets the symbol in this cell
-    pub fn set_symbol(&mut self, symbol: impl Into<String>) {
+    pub fn set_symbol(&mut self, symbol: impl Into<CompactString>) {
         self.symbol = symbol.into();
     }
 
@@ -116,7 +117,7 @@ impl EnhancedCell {
 
     /// Resets the cell to empty state
     pub fn reset(&mut self) {
-        self.symbol = " ".to_string();
+        self.symbol = CompactString::from(" ");
         self.fg = SerializableColor::Reset;
         self.bg = SerializableColor::Reset;
         self.modifiers = SerializableModifier::empty();
@@ -832,7 +833,7 @@ mod tests {
     #[test]
     fn test_cell_serialization() {
         let cell = EnhancedCell {
-            symbol: "X".to_string(),
+            symbol: CompactString::from("X"),
             fg: SerializableColor::Red,
             bg: SerializableColor::Blue,
             modifiers: SerializableModifier {
@@ -852,7 +853,7 @@ mod tests {
     #[test]
     fn test_cell_serialization_with_underline_color() {
         let cell = EnhancedCell {
-            symbol: "Y".to_string(),
+            symbol: CompactString::from("Y"),
             fg: SerializableColor::Reset,
             bg: SerializableColor::Reset,
             modifiers: SerializableModifier::empty(),

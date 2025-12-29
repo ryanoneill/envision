@@ -284,7 +284,7 @@ fn bench_diff(c: &mut Criterion) {
         }
 
         let snapshot1 = backend1.snapshot();
-        let snapshot2 = backend2.snapshot();
+        let _snapshot2 = backend2.snapshot();
 
         group.bench_with_input(
             BenchmarkId::new("identical", format!("{}x{}", width, height)),
