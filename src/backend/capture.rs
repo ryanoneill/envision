@@ -3,6 +3,7 @@
 //! This module provides a ratatui `Backend` implementation that captures
 //! all rendering operations for inspection, testing, and headless operation.
 
+use std::collections::VecDeque;
 use std::fmt;
 use std::io;
 
@@ -68,7 +69,7 @@ pub struct CaptureBackend {
     current_frame: u64,
 
     /// History of frame snapshots (if enabled)
-    history: Vec<FrameSnapshot>,
+    history: VecDeque<FrameSnapshot>,
 
     /// Maximum history size (0 = disabled)
     history_capacity: usize,
@@ -196,7 +197,7 @@ impl CaptureBackend {
             cursor_position: Position::new(0, 0),
             cursor_visible: true,
             current_frame: 0,
-            history: Vec::new(),
+            history: VecDeque::new(),
             history_capacity: 0,
         }
     }
@@ -211,7 +212,7 @@ impl CaptureBackend {
     pub fn with_history(width: u16, height: u16, history_capacity: usize) -> Self {
         let mut backend = Self::new(width, height);
         backend.history_capacity = history_capacity;
-        backend.history = Vec::with_capacity(history_capacity);
+        backend.history = VecDeque::with_capacity(history_capacity);
         backend
     }
 
@@ -294,13 +295,13 @@ impl CaptureBackend {
     }
 
     /// Returns the frame history (if history tracking is enabled).
-    pub fn history(&self) -> &[FrameSnapshot] {
+    pub fn history(&self) -> &VecDeque<FrameSnapshot> {
         &self.history
     }
 
     /// Computes the diff between the current frame and the previous one.
     pub fn diff_from_previous(&self) -> Option<FrameDiff> {
-        self.history.last().map(|prev| self.diff_from(prev))
+        self.history.back().map(|prev| self.diff_from(prev))
     }
 
     /// Computes the diff between the current state and a snapshot.
@@ -366,9 +367,9 @@ impl CaptureBackend {
     fn save_to_history(&mut self) {
         if self.history_capacity > 0 {
             if self.history.len() >= self.history_capacity {
-                self.history.remove(0);
+                self.history.pop_front();
             }
-            self.history.push(self.snapshot());
+            self.history.push_back(self.snapshot());
         }
     }
 
