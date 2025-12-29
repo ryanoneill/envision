@@ -6,6 +6,7 @@
 use std::collections::VecDeque;
 use std::fmt;
 use std::io;
+use std::sync::Arc;
 
 use ratatui::backend::{Backend, ClearType, WindowSize};
 use ratatui::buffer::Cell;
@@ -79,6 +80,9 @@ pub struct CaptureBackend {
 ///
 /// This captures the complete state of the backend at a point in time,
 /// useful for comparing frames or serializing for testing.
+///
+/// Uses `Arc<[EnhancedCell]>` for copy-on-write semantics - snapshots
+/// share cell data until mutation is needed, avoiding expensive clones.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FrameSnapshot {
     /// The frame number
@@ -90,8 +94,32 @@ pub struct FrameSnapshot {
     /// Cursor state
     pub cursor: CursorSnapshot,
 
-    /// All cells in the buffer
-    pub cells: Vec<EnhancedCell>,
+    /// All cells in the buffer (shared via Arc for efficient cloning)
+    #[serde(serialize_with = "serialize_arc_cells")]
+    #[serde(deserialize_with = "deserialize_arc_cells")]
+    cells: Arc<[EnhancedCell]>,
+}
+
+/// Serialize Arc<[EnhancedCell]> as a regular slice
+fn serialize_arc_cells<S>(cells: &Arc<[EnhancedCell]>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    use serde::ser::SerializeSeq;
+    let mut seq = serializer.serialize_seq(Some(cells.len()))?;
+    for cell in cells.iter() {
+        seq.serialize_element(cell)?;
+    }
+    seq.end()
+}
+
+/// Deserialize into Arc<[EnhancedCell]>
+fn deserialize_arc_cells<'de, D>(deserializer: D) -> Result<Arc<[EnhancedCell]>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let vec = Vec::<EnhancedCell>::deserialize(deserializer)?;
+    Ok(Arc::from(vec))
 }
 
 /// Snapshot of cursor state
@@ -102,6 +130,11 @@ pub struct CursorSnapshot {
 }
 
 impl FrameSnapshot {
+    /// Returns the cells as a slice.
+    pub fn cells(&self) -> &[EnhancedCell] {
+        &self.cells
+    }
+
     /// Returns the content of a specific row as a string.
     pub fn row_content(&self, y: u16) -> String {
         if y >= self.size.1 {
@@ -290,7 +323,7 @@ impl CaptureBackend {
                 position: (self.cursor_position.x, self.cursor_position.y),
                 visible: self.cursor_visible,
             },
-            cells: self.cells.clone(),
+            cells: Arc::from(self.cells.as_slice()),
         }
     }
 
@@ -1160,15 +1193,21 @@ mod tests {
 
     #[test]
     fn test_snapshot_with_truncated_cells() {
-        // Test edge case where cells might be truncated
-        let backend = CaptureBackend::new(5, 3);
-        let snapshot = backend.snapshot();
+        // Test edge case where cells might be truncated (via deserialization)
+        // This simulates corrupted data or version mismatch scenarios
+        let modifiers = r#"{"bold":false,"dim":false,"italic":false,"underlined":false,"slow_blink":false,"rapid_blink":false,"reversed":false,"hidden":false,"crossed_out":false}"#;
+        let cell = format!(
+            r#"{{"symbol":" ","fg":"reset","bg":"reset","modifiers":{},"underline_color":null,"last_modified_frame":0,"skip":false}}"#,
+            modifiers
+        );
+        let json = format!(
+            r#"{{"frame":0,"size":[5,3],"cursor":{{"position":[0,0],"visible":true}},"cells":[{},{},{},{},{}]}}"#,
+            cell, cell, cell, cell, cell
+        );
 
-        // Create a snapshot with mismatched size for edge case testing
-        let mut modified_snapshot = snapshot.clone();
-        modified_snapshot.cells.truncate(5); // Fewer cells than expected
+        let modified_snapshot: FrameSnapshot = serde_json::from_str(&json).unwrap();
 
-        // row_content should handle this gracefully
+        // row_content should handle truncated cells gracefully
         let row = modified_snapshot.row_content(2);
         assert_eq!(row, ""); // Row 2 starts at index 10, but we only have 5 cells
     }
