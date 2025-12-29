@@ -1,6 +1,9 @@
-//! Simple example demonstrating CaptureBackend usage.
+//! CaptureBackend example demonstrating headless TUI rendering.
 //!
-//! Run with: cargo run --example simple
+//! This example shows how to use CaptureBackend to render a TUI
+//! without a real terminal, and inspect the output in various formats.
+//!
+//! Run with: cargo run --example capture_backend
 
 use envision::backend::CaptureBackend;
 use ratatui::layout::{Constraint, Layout};
