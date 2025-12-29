@@ -60,7 +60,8 @@ pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
 pub use app::{
     App, AsyncCommandHandler, AsyncRuntime, AsyncRuntimeConfig, Command, DebounceSubscription,
     FilterSubscription, IntervalImmediateSubscription, Runtime, RuntimeConfig, Subscription,
-    SubscriptionExt, TakeSubscription, ThrottleSubscription, TickSubscription, TimerSubscription,
+    SubscriptionExt, TakeSubscription, TerminalEventSubscription, ThrottleSubscription,
+    TickSubscription, TimerSubscription,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};

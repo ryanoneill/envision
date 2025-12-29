@@ -92,10 +92,10 @@ pub use command::{Command, CommandHandler};
 pub use model::App;
 pub use runtime::{Runtime, RuntimeConfig};
 pub use subscription::{
-    batch, interval_immediate, tick, BatchSubscription, BoxedSubscription, ChannelSubscription,
-    DebounceSubscription, FilterSubscription, IntervalImmediateBuilder,
+    batch, interval_immediate, terminal_events, tick, BatchSubscription, BoxedSubscription,
+    ChannelSubscription, DebounceSubscription, FilterSubscription, IntervalImmediateBuilder,
     IntervalImmediateSubscription, MappedSubscription, StreamSubscription, Subscription,
-    SubscriptionExt, TakeSubscription, ThrottleSubscription, TickSubscription,
-    TickSubscriptionBuilder, TimerSubscription,
+    SubscriptionExt, TakeSubscription, TerminalEventSubscription, ThrottleSubscription,
+    TickSubscription, TickSubscriptionBuilder, TimerSubscription,
 };
 pub use update::{Update, UpdateResult};
