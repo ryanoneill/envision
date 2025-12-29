@@ -79,6 +79,7 @@
 //! ```
 
 mod async_command;
+mod async_runtime;
 mod command;
 mod model;
 mod runtime;
@@ -86,6 +87,7 @@ mod subscription;
 mod update;
 
 pub use async_command::AsyncCommandHandler;
+pub use async_runtime::{AsyncRuntime, AsyncRuntimeConfig};
 pub use command::{Command, CommandHandler};
 pub use model::App;
 pub use runtime::{Runtime, RuntimeConfig};
