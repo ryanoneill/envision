@@ -315,13 +315,99 @@ where
 }
 
 /// Extension trait for subscriptions.
+///
+/// Provides fluent methods for composing and transforming subscriptions.
+///
+/// # Example
+///
+/// ```ignore
+/// use envision::app::{SubscriptionExt, tick};
+/// use std::time::Duration;
+///
+/// // Create a tick subscription with filtering and limiting
+/// let sub = tick(Duration::from_millis(100))
+///     .with_message(|| Msg::Tick)
+///     .filter(|msg| msg.should_process())
+///     .take(10)
+///     .throttle(Duration::from_millis(200));
+/// ```
 pub trait SubscriptionExt<M>: Subscription<M> + Sized {
     /// Maps the messages of this subscription.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let sub = tick(Duration::from_secs(1))
+    ///     .with_message(|| 42)
+    ///     .map(|n| Msg::Value(n));
+    /// ```
     fn map<N, F>(self, f: F) -> MappedSubscription<M, N, F, Self>
     where
         F: Fn(M) -> N + Send + 'static,
     {
         MappedSubscription::new(self, f)
+    }
+
+    /// Filters messages from this subscription.
+    ///
+    /// Only messages for which the predicate returns `true` are emitted.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let sub = some_subscription
+    ///     .filter(|msg| msg.is_important());
+    /// ```
+    fn filter<P>(self, predicate: P) -> FilterSubscription<M, Self, P>
+    where
+        P: Fn(&M) -> bool + Send + 'static,
+    {
+        FilterSubscription::new(self, predicate)
+    }
+
+    /// Takes only the first N messages from this subscription.
+    ///
+    /// After N messages, the subscription ends.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let sub = some_subscription.take(5);
+    /// ```
+    fn take(self, count: usize) -> TakeSubscription<M, Self> {
+        TakeSubscription::new(self, count)
+    }
+
+    /// Debounces messages from this subscription.
+    ///
+    /// Only emits a message after a quiet period has passed. If a new message
+    /// arrives before the quiet period expires, the timer resets. Only the most
+    /// recent message is emitted.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// // Only emit after 300ms of no new messages
+    /// let sub = some_subscription.debounce(Duration::from_millis(300));
+    /// ```
+    fn debounce(self, duration: Duration) -> DebounceSubscription<M, Self> {
+        DebounceSubscription::new(self, duration)
+    }
+
+    /// Throttles messages from this subscription.
+    ///
+    /// Limits the rate of message emission. At most one message is emitted
+    /// per duration. The first message passes immediately, subsequent messages
+    /// are dropped until the duration has passed.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// // Emit at most once every 100ms
+    /// let sub = some_subscription.throttle(Duration::from_millis(100));
+    /// ```
+    fn throttle(self, duration: Duration) -> ThrottleSubscription<M, Self> {
+        ThrottleSubscription::new(self, duration)
     }
 }
 
@@ -1647,5 +1733,186 @@ mod tests {
             state: crossterm::event::KeyEventState::empty(),
         });
         assert_eq!((sub.event_handler)(q_event), Some(TestMsgWithQuit::Quit));
+    }
+
+    // Tests for SubscriptionExt fluent methods
+
+    #[tokio::test]
+    async fn test_subscription_ext_filter() {
+        let cancel = CancellationToken::new();
+        let values = vec![
+            TestMsg::Value(1),
+            TestMsg::Value(2),
+            TestMsg::Value(3),
+            TestMsg::Value(4),
+        ];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+
+        // Use fluent filter method
+        let sub = Box::new(inner.filter(|msg| {
+            matches!(msg, TestMsg::Value(n) if *n % 2 == 0)
+        }));
+
+        let mut stream = sub.into_stream(cancel);
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(4)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_subscription_ext_take() {
+        let cancel = CancellationToken::new();
+        let values = vec![
+            TestMsg::Value(1),
+            TestMsg::Value(2),
+            TestMsg::Value(3),
+            TestMsg::Value(4),
+        ];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+
+        // Use fluent take method
+        let sub = Box::new(inner.take(2));
+
+        let mut stream = sub.into_stream(cancel);
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_subscription_ext_debounce() {
+        let cancel = CancellationToken::new();
+        let values = vec![TestMsg::Value(1), TestMsg::Value(2)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+
+        // Use fluent debounce method
+        let sub = Box::new(inner.debounce(Duration::from_secs(10)));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Should emit pending on stream end
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_subscription_ext_throttle() {
+        let cancel = CancellationToken::new();
+        let values = vec![
+            TestMsg::Value(1),
+            TestMsg::Value(2),
+            TestMsg::Value(3),
+        ];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+
+        // Use fluent throttle method with long duration
+        let sub = Box::new(inner.throttle(Duration::from_secs(10)));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Only first should pass
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_subscription_ext_chaining() {
+        let cancel = CancellationToken::new();
+        let values = vec![
+            TestMsg::Value(1),
+            TestMsg::Value(2),
+            TestMsg::Value(3),
+            TestMsg::Value(4),
+            TestMsg::Value(5),
+            TestMsg::Value(6),
+        ];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+
+        // Chain multiple extension methods
+        let sub = Box::new(
+            inner
+                .filter(|msg| matches!(msg, TestMsg::Value(n) if *n % 2 == 0))
+                .take(2)
+        );
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Should filter to even (2, 4, 6) then take 2 (2, 4)
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(4)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_subscription_ext_map_and_filter() {
+        let cancel = CancellationToken::new();
+        let inner = TickSubscription::new(Duration::from_millis(10), || 42i32);
+
+        // Map then filter
+        let sub = Box::new(
+            inner
+                .map(TestMsg::Value)
+                .filter(|msg| matches!(msg, TestMsg::Value(n) if *n > 0))
+                .take(1)
+        );
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(42)));
+
+        cancel.cancel();
+    }
+
+    #[tokio::test]
+    async fn test_subscription_ext_filter_map_take() {
+        let cancel = CancellationToken::new();
+        let values = vec![1i32, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+
+        // Filter, map, then take
+        let sub = Box::new(
+            inner
+                .filter(|n| n % 2 == 0)         // Keep even: 2, 4, 6, 8, 10
+                .map(|n| TestMsg::Value(n * 10)) // Multiply by 10
+                .take(3)                         // Take first 3
+        );
+
+        let mut stream = sub.into_stream(cancel);
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(20)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(40)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(60)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
     }
 }
