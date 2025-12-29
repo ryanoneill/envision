@@ -580,6 +580,176 @@ where
     }
 }
 
+/// A subscription that debounces messages from an inner subscription.
+///
+/// Debouncing delays message emission until a quiet period has passed.
+/// If a new message arrives before the quiet period expires, the timer resets.
+/// Only the most recent message is emitted after the quiet period.
+///
+/// This is useful for scenarios like search-as-you-type where you want to
+/// wait until the user stops typing before triggering a search.
+///
+/// # Example
+///
+/// ```ignore
+/// // Only emit after 300ms of no new messages
+/// some_subscription.debounce(Duration::from_millis(300))
+/// ```
+pub struct DebounceSubscription<M, S>
+where
+    S: Subscription<M>,
+{
+    inner: Box<S>,
+    duration: Duration,
+    _phantom: std::marker::PhantomData<M>,
+}
+
+impl<M, S> DebounceSubscription<M, S>
+where
+    S: Subscription<M>,
+{
+    /// Creates a debounced subscription.
+    pub fn new(inner: S, duration: Duration) -> Self {
+        Self {
+            inner: Box::new(inner),
+            duration,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<M, S> Subscription<M> for DebounceSubscription<M, S>
+where
+    M: Send + 'static,
+    S: Subscription<M>,
+{
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        use tokio_stream::StreamExt;
+
+        let duration = self.duration;
+        let mut inner = self.inner.into_stream(cancel.clone());
+
+        Box::pin(async_stream::stream! {
+            let mut pending: Option<M> = None;
+            let mut deadline: Option<tokio::time::Instant> = None;
+
+            loop {
+                tokio::select! {
+                    biased;
+
+                    // Check for cancellation first
+                    _ = cancel.cancelled() => {
+                        break;
+                    }
+
+                    // Check if deadline has passed
+                    _ = async {
+                        match deadline {
+                            Some(d) => tokio::time::sleep_until(d).await,
+                            None => std::future::pending::<()>().await,
+                        }
+                    } => {
+                        if let Some(m) = pending.take() {
+                            deadline = None;
+                            yield m;
+                        }
+                    }
+
+                    // Check for new messages
+                    msg = inner.next() => {
+                        match msg {
+                            Some(m) => {
+                                pending = Some(m);
+                                deadline = Some(tokio::time::Instant::now() + duration);
+                            }
+                            None => {
+                                // Stream ended, emit any pending message
+                                if let Some(m) = pending.take() {
+                                    yield m;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    }
+}
+
+/// A subscription that throttles messages from an inner subscription.
+///
+/// Throttling limits the rate of message emission. At most one message
+/// is emitted per duration. The first message is emitted immediately,
+/// and subsequent messages are dropped until the duration has passed.
+///
+/// This is useful for limiting API calls or expensive operations.
+///
+/// # Example
+///
+/// ```ignore
+/// // Emit at most once every 100ms
+/// some_subscription.throttle(Duration::from_millis(100))
+/// ```
+pub struct ThrottleSubscription<M, S>
+where
+    S: Subscription<M>,
+{
+    inner: Box<S>,
+    duration: Duration,
+    _phantom: std::marker::PhantomData<M>,
+}
+
+impl<M, S> ThrottleSubscription<M, S>
+where
+    S: Subscription<M>,
+{
+    /// Creates a throttled subscription.
+    pub fn new(inner: S, duration: Duration) -> Self {
+        Self {
+            inner: Box::new(inner),
+            duration,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<M, S> Subscription<M> for ThrottleSubscription<M, S>
+where
+    M: Send + 'static,
+    S: Subscription<M>,
+{
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        use tokio_stream::StreamExt;
+
+        let duration = self.duration;
+        let mut inner = self.inner.into_stream(cancel);
+
+        Box::pin(async_stream::stream! {
+            let mut last_emit: Option<tokio::time::Instant> = None;
+
+            while let Some(msg) = inner.next().await {
+                let now = tokio::time::Instant::now();
+                let should_emit = match last_emit {
+                    None => true,
+                    Some(last) => now.duration_since(last) >= duration,
+                };
+
+                if should_emit {
+                    last_emit = Some(now);
+                    yield msg;
+                }
+            }
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -989,6 +1159,202 @@ mod tests {
 
         let msg = stream.next().await;
         assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_debounce_subscription() {
+        let cancel = CancellationToken::new();
+        let (tx, rx) = mpsc::channel(10);
+        let inner = ChannelSubscription::new(rx);
+        let sub = Box::new(DebounceSubscription::new(inner, Duration::from_millis(50)));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Send multiple messages quickly (should be debounced to just the last one)
+        tx.send(TestMsg::Value(1)).await.unwrap();
+        tx.send(TestMsg::Value(2)).await.unwrap();
+        tx.send(TestMsg::Value(3)).await.unwrap();
+
+        // Give debounce time to process
+        tokio::time::sleep(Duration::from_millis(100)).await;
+
+        // Should only get the last value
+        let msg = tokio::time::timeout(Duration::from_millis(50), stream.next()).await;
+        assert_eq!(msg.unwrap(), Some(TestMsg::Value(3)));
+
+        // Close channel
+        drop(tx);
+
+        // Stream should end
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_debounce_emits_pending_on_stream_end() {
+        let cancel = CancellationToken::new();
+        let values = vec![TestMsg::Value(1), TestMsg::Value(2)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(DebounceSubscription::new(inner, Duration::from_secs(10)));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Even with long debounce, pending message should emit when stream ends
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_debounce_with_slow_messages() {
+        let cancel = CancellationToken::new();
+        let (tx, rx) = mpsc::channel(10);
+        let inner = ChannelSubscription::new(rx);
+        // Short debounce window
+        let sub = Box::new(DebounceSubscription::new(inner, Duration::from_millis(20)));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Send first message
+        tx.send(TestMsg::Value(1)).await.unwrap();
+        // Wait longer than debounce
+        tokio::time::sleep(Duration::from_millis(50)).await;
+
+        // Should get first message
+        let msg = tokio::time::timeout(Duration::from_millis(50), stream.next()).await;
+        assert_eq!(msg.unwrap(), Some(TestMsg::Value(1)));
+
+        // Send second message
+        tx.send(TestMsg::Value(2)).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+
+        // Should get second message
+        let msg = tokio::time::timeout(Duration::from_millis(50), stream.next()).await;
+        assert_eq!(msg.unwrap(), Some(TestMsg::Value(2)));
+
+        cancel.cancel();
+    }
+
+    #[tokio::test]
+    async fn test_debounce_cancellation() {
+        let cancel = CancellationToken::new();
+        let (tx, rx) = mpsc::channel(10);
+        let inner = ChannelSubscription::new(rx);
+        let sub = Box::new(DebounceSubscription::new(inner, Duration::from_secs(10)));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Send a message (won't emit due to long debounce)
+        tx.send(TestMsg::Value(1)).await.unwrap();
+
+        // Cancel immediately
+        cancel.cancel();
+
+        // Stream should end without emitting
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_throttle_subscription() {
+        let cancel = CancellationToken::new();
+        let values = vec![
+            TestMsg::Value(1),
+            TestMsg::Value(2),
+            TestMsg::Value(3),
+            TestMsg::Value(4),
+            TestMsg::Value(5),
+        ];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        // Very long throttle - should only get the first message
+        let sub = Box::new(ThrottleSubscription::new(inner, Duration::from_secs(10)));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Should get first message immediately (throttle allows first through)
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        // Stream ends (all others were throttled)
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_throttle_allows_spaced_messages() {
+        let cancel = CancellationToken::new();
+        let (tx, rx) = mpsc::channel(10);
+        let inner = ChannelSubscription::new(rx);
+        let sub = Box::new(ThrottleSubscription::new(inner, Duration::from_millis(20)));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // First message - should pass
+        tx.send(TestMsg::Value(1)).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(10)).await;
+        let msg = tokio::time::timeout(Duration::from_millis(50), stream.next()).await;
+        assert_eq!(msg.unwrap(), Some(TestMsg::Value(1)));
+
+        // Wait longer than throttle duration
+        tokio::time::sleep(Duration::from_millis(30)).await;
+
+        // Second message after throttle period - should pass
+        tx.send(TestMsg::Value(2)).await.unwrap();
+        let msg = tokio::time::timeout(Duration::from_millis(50), stream.next()).await;
+        assert_eq!(msg.unwrap(), Some(TestMsg::Value(2)));
+
+        cancel.cancel();
+    }
+
+    #[tokio::test]
+    async fn test_throttle_drops_rapid_messages() {
+        let cancel = CancellationToken::new();
+        // Use a finite stream of values that arrive "instantly"
+        let values = vec![
+            TestMsg::Value(1),
+            TestMsg::Value(2),
+            TestMsg::Value(3),
+            TestMsg::Value(4),
+            TestMsg::Value(5),
+        ];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        // With a long throttle, only the first message should pass
+        let sub = Box::new(ThrottleSubscription::new(inner, Duration::from_millis(100)));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Should get first message (allowed through)
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        // Stream ends (all others 2,3,4,5 were throttled/dropped)
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_throttle_zero_duration() {
+        let cancel = CancellationToken::new();
+        let values = vec![TestMsg::Value(1), TestMsg::Value(2), TestMsg::Value(3)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        // Zero throttle - all messages should pass
+        let sub = Box::new(ThrottleSubscription::new(inner, Duration::ZERO));
+
+        let mut stream = sub.into_stream(cancel);
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(3)));
 
         let msg = stream.next().await;
         assert_eq!(msg, None);
