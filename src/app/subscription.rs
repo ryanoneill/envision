@@ -1377,7 +1377,8 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(100)).await;
 
         // Should only get the last value
-        let msg = tokio::time::timeout(Duration::from_millis(50), stream.next()).await;
+        // Use a longer timeout to handle coverage instrumentation overhead
+        let msg = tokio::time::timeout(Duration::from_millis(500), stream.next()).await;
         assert_eq!(msg.unwrap(), Some(TestMsg::Value(3)));
 
         // Close channel
