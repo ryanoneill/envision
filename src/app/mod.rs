@@ -87,7 +87,7 @@ mod subscription;
 mod update;
 
 pub use async_command::AsyncCommandHandler;
-pub use async_runtime::{AsyncRuntime, AsyncRuntimeConfig};
+pub use async_runtime::{AsyncRuntime, AsyncRuntimeConfig, BoxedError};
 pub use command::{Command, CommandHandler};
 pub use model::App;
 pub use runtime::{Runtime, RuntimeConfig};

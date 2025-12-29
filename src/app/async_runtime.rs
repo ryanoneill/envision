@@ -14,6 +14,12 @@ use ratatui::Terminal;
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 
+/// A boxed error that is Send + Sync.
+///
+/// This type is used for collecting errors from async operations that can
+/// fail. It allows any error type that implements the standard error traits.
+pub type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
+
 use super::async_command::AsyncCommandHandler;
 use super::model::App;
 use super::subscription::{BoxedSubscription, Subscription};
@@ -124,6 +130,12 @@ where
     /// Receiver for async messages
     message_rx: mpsc::Receiver<A::Message>,
 
+    /// Sender for errors from async operations
+    error_tx: mpsc::Sender<BoxedError>,
+
+    /// Receiver for errors from async operations
+    error_rx: mpsc::Receiver<BoxedError>,
+
     /// Cancellation token for graceful shutdown
     cancel_token: CancellationToken,
 
@@ -171,6 +183,7 @@ where
         let (state, init_cmd) = A::init();
 
         let (message_tx, message_rx) = mpsc::channel(config.message_channel_capacity);
+        let (error_tx, error_rx) = mpsc::channel(config.message_channel_capacity);
         let cancel_token = CancellationToken::new();
 
         let mut commands = AsyncCommandHandler::new();
@@ -185,6 +198,8 @@ where
             should_quit: false,
             message_tx,
             message_rx,
+            error_tx,
+            error_rx,
             cancel_token,
             subscriptions: Vec::new(),
         };
@@ -242,6 +257,54 @@ where
     /// This is useful for sending messages from external async tasks.
     pub fn message_sender(&self) -> mpsc::Sender<A::Message> {
         self.message_tx.clone()
+    }
+
+    /// Returns a sender that can be used to report errors from async operations.
+    ///
+    /// This is useful for sending errors from external async tasks.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let error_tx = runtime.error_sender();
+    /// tokio::spawn(async move {
+    ///     if let Err(e) = some_fallible_operation().await {
+    ///         let _ = error_tx.send(Box::new(e)).await;
+    ///     }
+    /// });
+    /// ```
+    pub fn error_sender(&self) -> mpsc::Sender<BoxedError> {
+        self.error_tx.clone()
+    }
+
+    /// Takes all collected errors from async operations.
+    ///
+    /// Returns all errors that have been received since the last call.
+    /// After calling this method, the error queue is emptied.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// for error in runtime.take_errors() {
+    ///     eprintln!("Async error: {}", error);
+    /// }
+    /// ```
+    pub fn take_errors(&mut self) -> Vec<BoxedError> {
+        let mut errors = Vec::new();
+        while let Ok(err) = self.error_rx.try_recv() {
+            errors.push(err);
+        }
+        errors
+    }
+
+    /// Returns true if there are pending errors.
+    ///
+    /// This is a quick check to see if any errors have been reported
+    /// without consuming them.
+    pub fn has_errors(&self) -> bool {
+        // Note: We can't check is_empty() directly, but we can check the sender count
+        // We use a workaround by checking if the receiver is closed
+        !self.error_rx.is_empty()
     }
 
     /// Adds a subscription to the runtime.
@@ -687,5 +750,108 @@ mod tests {
         runtime.quit();
         assert!(runtime.should_quit());
         assert!(runtime.cancellation_token().is_cancelled());
+    }
+
+    #[test]
+    fn test_async_runtime_error_sender() {
+        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let _error_tx = runtime.error_sender();
+        // Just verify we can get an error sender
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_take_errors() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let error_tx = runtime.error_sender();
+
+        // No errors initially
+        let errors = runtime.take_errors();
+        assert!(errors.is_empty());
+
+        // Send an error
+        let err: BoxedError = Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "test error",
+        ));
+        error_tx.send(err).await.unwrap();
+
+        // Should have one error
+        let errors = runtime.take_errors();
+        assert_eq!(errors.len(), 1);
+        assert!(errors[0].to_string().contains("test error"));
+
+        // Errors are consumed
+        let errors = runtime.take_errors();
+        assert!(errors.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_multiple_errors() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let error_tx = runtime.error_sender();
+
+        // Send multiple errors
+        for i in 0..3 {
+            let err: BoxedError = Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("error {}", i),
+            ));
+            error_tx.send(err).await.unwrap();
+        }
+
+        // Should have all three errors
+        let errors = runtime.take_errors();
+        assert_eq!(errors.len(), 3);
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_has_errors() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let error_tx = runtime.error_sender();
+
+        // No errors initially
+        assert!(!runtime.has_errors());
+
+        // Send an error
+        let err: BoxedError = Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "test error",
+        ));
+        error_tx.send(err).await.unwrap();
+
+        // Give the channel a moment to process
+        tokio::time::sleep(Duration::from_millis(1)).await;
+
+        // Should have errors now
+        assert!(runtime.has_errors());
+
+        // Consume the errors
+        let _ = runtime.take_errors();
+
+        // No more errors
+        assert!(!runtime.has_errors());
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_error_from_spawned_task() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let error_tx = runtime.error_sender();
+
+        // Spawn a task that reports an error
+        tokio::spawn(async move {
+            let err: BoxedError = Box::new(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "resource not found",
+            ));
+            let _ = error_tx.send(err).await;
+        });
+
+        // Wait for the task to complete
+        tokio::time::sleep(Duration::from_millis(10)).await;
+
+        // Should have the error
+        let errors = runtime.take_errors();
+        assert_eq!(errors.len(), 1);
+        assert!(errors[0].to_string().contains("resource not found"));
     }
 }
