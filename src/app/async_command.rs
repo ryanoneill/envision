@@ -10,10 +10,13 @@ use std::pin::Pin;
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 
-use super::command::{Command, CommandAction};
+use super::command::{AsyncFallibleResult, BoxedError, Command, CommandAction};
 
 /// A boxed future that produces an optional message.
 pub type BoxedFuture<M> = Pin<Box<dyn Future<Output = Option<M>> + Send + 'static>>;
+
+/// A boxed future that can fail - errors are sent to the error channel.
+pub type BoxedFallibleFuture<M> = Pin<Box<dyn Future<Output = AsyncFallibleResult<M>> + Send + 'static>>;
 
 /// Handles execution of async commands.
 ///
@@ -23,6 +26,7 @@ pub type BoxedFuture<M> = Pin<Box<dyn Future<Output = Option<M>> + Send + 'stati
 pub struct AsyncCommandHandler<M> {
     pending_messages: Vec<M>,
     pending_futures: Vec<BoxedFuture<M>>,
+    pending_fallible_futures: Vec<BoxedFallibleFuture<M>>,
     should_quit: bool,
 }
 
@@ -32,6 +36,7 @@ impl<M: Send + 'static> AsyncCommandHandler<M> {
         Self {
             pending_messages: Vec::new(),
             pending_futures: Vec::new(),
+            pending_fallible_futures: Vec::new(),
             should_quit: false,
         }
     }
@@ -60,6 +65,9 @@ impl<M: Send + 'static> AsyncCommandHandler<M> {
                 CommandAction::Async(fut) => {
                     self.pending_futures.push(fut);
                 }
+                CommandAction::AsyncFallible(fut) => {
+                    self.pending_fallible_futures.push(fut);
+                }
             }
         }
     }
@@ -68,9 +76,17 @@ impl<M: Send + 'static> AsyncCommandHandler<M> {
     ///
     /// Each future is spawned with access to the message sender and cancellation token.
     /// When a future completes with `Some(message)`, the message is sent to the runtime.
-    pub fn spawn_pending(&mut self, tx: mpsc::Sender<M>, cancel: CancellationToken) {
+    ///
+    /// For fallible futures, errors are sent to the error channel instead.
+    pub fn spawn_pending(
+        &mut self,
+        msg_tx: mpsc::Sender<M>,
+        err_tx: mpsc::Sender<BoxedError>,
+        cancel: CancellationToken,
+    ) {
+        // Spawn regular async futures
         for fut in self.pending_futures.drain(..) {
-            let tx = tx.clone();
+            let tx = msg_tx.clone();
             let cancel = cancel.clone();
 
             tokio::spawn(async move {
@@ -79,6 +95,36 @@ impl<M: Send + 'static> AsyncCommandHandler<M> {
                         if let Some(msg) = result {
                             // Ignore send errors - the runtime may have shut down
                             let _ = tx.send(msg).await;
+                        }
+                    }
+                    _ = cancel.cancelled() => {
+                        // Task was cancelled, exit gracefully
+                    }
+                }
+            });
+        }
+
+        // Spawn fallible async futures
+        for fut in self.pending_fallible_futures.drain(..) {
+            let msg_tx = msg_tx.clone();
+            let err_tx = err_tx.clone();
+            let cancel = cancel.clone();
+
+            tokio::spawn(async move {
+                tokio::select! {
+                    result = fut => {
+                        match result {
+                            Ok(Some(msg)) => {
+                                // Send message on success
+                                let _ = msg_tx.send(msg).await;
+                            }
+                            Ok(None) => {
+                                // No message to send
+                            }
+                            Err(e) => {
+                                // Send error to error channel
+                                let _ = err_tx.send(e).await;
+                            }
                         }
                     }
                     _ = cancel.cancelled() => {
@@ -184,40 +230,43 @@ mod tests {
     #[tokio::test]
     async fn test_async_handler_spawn_and_receive() {
         let mut handler: AsyncCommandHandler<TestMsg> = AsyncCommandHandler::new();
-        let (tx, mut rx) = mpsc::channel(10);
+        let (msg_tx, mut msg_rx) = mpsc::channel(10);
+        let (err_tx, _err_rx) = mpsc::channel(10);
         let cancel = CancellationToken::new();
 
         handler.execute(Command::perform_async(async { Some(TestMsg::AsyncResult(42)) }));
 
-        handler.spawn_pending(tx, cancel);
+        handler.spawn_pending(msg_tx, err_tx, cancel);
         assert!(!handler.has_pending_futures());
 
         // Receive the message from the spawned task
-        let msg = rx.recv().await.expect("Should receive message");
+        let msg = msg_rx.recv().await.expect("Should receive message");
         assert_eq!(msg, TestMsg::AsyncResult(42));
     }
 
     #[tokio::test]
     async fn test_async_handler_spawn_none_result() {
         let mut handler: AsyncCommandHandler<TestMsg> = AsyncCommandHandler::new();
-        let (tx, mut rx) = mpsc::channel(10);
+        let (msg_tx, mut msg_rx) = mpsc::channel(10);
+        let (err_tx, _err_rx) = mpsc::channel(10);
         let cancel = CancellationToken::new();
 
         handler.execute(Command::perform_async(async { None }));
 
-        handler.spawn_pending(tx, cancel);
+        handler.spawn_pending(msg_tx, err_tx, cancel);
 
         // Give the task time to complete
         tokio::time::sleep(Duration::from_millis(10)).await;
 
         // Should not receive any message
-        assert!(rx.try_recv().is_err());
+        assert!(msg_rx.try_recv().is_err());
     }
 
     #[tokio::test]
     async fn test_async_handler_cancellation() {
         let mut handler: AsyncCommandHandler<TestMsg> = AsyncCommandHandler::new();
-        let (tx, mut rx) = mpsc::channel(10);
+        let (msg_tx, mut msg_rx) = mpsc::channel(10);
+        let (err_tx, _err_rx) = mpsc::channel(10);
         let cancel = CancellationToken::new();
 
         // Create a slow async command
@@ -226,7 +275,7 @@ mod tests {
             Some(TestMsg::AsyncResult(42))
         }));
 
-        handler.spawn_pending(tx, cancel.clone());
+        handler.spawn_pending(msg_tx, err_tx, cancel.clone());
 
         // Cancel immediately
         cancel.cancel();
@@ -235,13 +284,14 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(10)).await;
 
         // Should not receive any message
-        assert!(rx.try_recv().is_err());
+        assert!(msg_rx.try_recv().is_err());
     }
 
     #[tokio::test]
     async fn test_async_handler_multiple_async() {
         let mut handler: AsyncCommandHandler<TestMsg> = AsyncCommandHandler::new();
-        let (tx, mut rx) = mpsc::channel(10);
+        let (msg_tx, mut msg_rx) = mpsc::channel(10);
+        let (err_tx, _err_rx) = mpsc::channel(10);
         let cancel = CancellationToken::new();
 
         handler.execute(Command::perform_async(async { Some(TestMsg::AsyncResult(1)) }));
@@ -250,12 +300,12 @@ mod tests {
 
         assert_eq!(handler.pending_future_count(), 3);
 
-        handler.spawn_pending(tx, cancel);
+        handler.spawn_pending(msg_tx, err_tx, cancel);
 
         // Collect all messages
         let mut messages = Vec::new();
         for _ in 0..3 {
-            let msg = rx.recv().await.expect("Should receive message");
+            let msg = msg_rx.recv().await.expect("Should receive message");
             messages.push(msg);
         }
 

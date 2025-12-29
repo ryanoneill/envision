@@ -344,8 +344,11 @@ where
 
     /// Spawns any pending async commands.
     fn spawn_pending_commands(&mut self) {
-        self.commands
-            .spawn_pending(self.message_tx.clone(), self.cancel_token.clone());
+        self.commands.spawn_pending(
+            self.message_tx.clone(),
+            self.error_tx.clone(),
+            self.cancel_token.clone(),
+        );
     }
 
     /// Processes any pending sync commands and returns resulting messages.

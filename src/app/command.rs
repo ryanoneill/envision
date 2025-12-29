@@ -16,6 +16,12 @@ pub struct Command<M> {
     actions: Vec<CommandAction<M>>,
 }
 
+/// A boxed error type for fallible async commands.
+pub type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
+
+/// Result type for fallible async commands.
+pub type AsyncFallibleResult<M> = Result<Option<M>, BoxedError>;
+
 pub(crate) enum CommandAction<M> {
     /// A message to dispatch immediately
     Message(M),
@@ -31,6 +37,9 @@ pub(crate) enum CommandAction<M> {
 
     /// An async future to execute
     Async(Pin<Box<dyn Future<Output = Option<M>> + Send + 'static>>),
+
+    /// An async future that can fail - errors are sent to the error channel
+    AsyncFallible(Pin<Box<dyn Future<Output = AsyncFallibleResult<M>> + Send + 'static>>),
 }
 
 impl<M> Command<M> {
@@ -135,6 +144,41 @@ impl<M> Command<M> {
         }
     }
 
+    /// Creates a command from an async operation that reports errors to the error channel.
+    ///
+    /// On success, the callback is called to optionally produce a message.
+    /// On failure, the error is sent to the runtime's error channel via
+    /// [`AsyncRuntime::take_errors`](crate::AsyncRuntime::take_errors).
+    ///
+    /// This is useful when you want errors to be collected rather than
+    /// converted to messages.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// // Errors go to runtime.take_errors()
+    /// Command::try_perform_async(
+    ///     async { fetch_data().await },
+    ///     |data| Some(Msg::DataLoaded(data))
+    /// )
+    /// ```
+    pub fn try_perform_async<Fut, T, E, F>(future: Fut, on_success: F) -> Self
+    where
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        E: std::error::Error + Send + Sync + 'static,
+        F: FnOnce(T) -> Option<M> + Send + 'static,
+        M: Send + 'static,
+    {
+        Self {
+            actions: vec![CommandAction::AsyncFallible(Box::pin(async move {
+                match future.await {
+                    Ok(value) => Ok(on_success(value)),
+                    Err(e) => Err(Box::new(e) as BoxedError),
+                }
+            }))],
+        }
+    }
+
     /// Combines multiple commands into one.
     pub fn combine(commands: impl IntoIterator<Item = Command<M>>) -> Self {
         let mut actions = Vec::new();
@@ -180,6 +224,12 @@ impl<M> Command<M> {
                 CommandAction::Async(fut) => {
                     let f = f.clone();
                     CommandAction::Async(Box::pin(async move { fut.await.map(|m| f(m)) }))
+                }
+                CommandAction::AsyncFallible(fut) => {
+                    let f = f.clone();
+                    CommandAction::AsyncFallible(Box::pin(async move {
+                        fut.await.map(|opt| opt.map(|m| f(m)))
+                    }))
                 }
             })
             .collect();
@@ -252,7 +302,7 @@ impl<M> CommandHandler<M> {
                         self.pending_messages.push(m);
                     }
                 }
-                CommandAction::Async(_) => {
+                CommandAction::Async(_) | CommandAction::AsyncFallible(_) => {
                     // Async actions are handled by the async runtime
                 }
             }
@@ -658,5 +708,88 @@ mod tests {
         let messages = handler.take_messages();
         assert_eq!(messages, vec![TestMsg::A]);
         assert!(handler.should_quit());
+    }
+
+    #[test]
+    fn test_command_try_perform_async_ok() {
+        let cmd: Command<TestMsg> =
+            Command::try_perform_async(async { Ok::<_, std::io::Error>(42) }, |n| {
+                Some(TestMsg::Value(n))
+            });
+
+        // Command should not be empty
+        assert!(!cmd.is_none());
+
+        // Sync handler skips async actions
+        let mut handler = CommandHandler::new();
+        handler.execute(cmd);
+        assert!(handler.take_messages().is_empty());
+    }
+
+    #[test]
+    fn test_command_try_perform_async_err() {
+        let cmd: Command<TestMsg> = Command::try_perform_async(
+            async { Err::<i32, _>(std::io::Error::other("test error")) },
+            |n| Some(TestMsg::Value(n)),
+        );
+
+        assert!(!cmd.is_none());
+    }
+
+    #[test]
+    fn test_command_try_perform_async_returns_none() {
+        let cmd: Command<TestMsg> =
+            Command::try_perform_async(async { Ok::<_, std::io::Error>(42) }, |_n| None);
+
+        assert!(!cmd.is_none());
+    }
+
+    #[test]
+    fn test_command_map_async_fallible() {
+        #[derive(Clone, Debug, PartialEq)]
+        enum OuterMsg {
+            Inner(TestMsg),
+        }
+
+        let cmd: Command<TestMsg> =
+            Command::try_perform_async(async { Ok::<_, std::io::Error>(42) }, |n| {
+                Some(TestMsg::Value(n))
+            });
+
+        let mapped: Command<OuterMsg> = cmd.map(OuterMsg::Inner);
+
+        // Mapped command should still exist
+        assert!(!mapped.is_none());
+    }
+
+    #[test]
+    fn test_command_clone_async_fallible_skipped() {
+        let cmd: Command<TestMsg> =
+            Command::try_perform_async(async { Ok::<_, std::io::Error>(42) }, |n| {
+                Some(TestMsg::Value(n))
+            });
+
+        let cloned = cmd.clone();
+
+        // AsyncFallible can't be cloned, so cloned should be empty
+        assert!(cloned.is_none());
+    }
+
+    #[test]
+    fn test_command_combine_with_async_fallible() {
+        let cmd = Command::combine([
+            Command::message(TestMsg::A),
+            Command::try_perform_async(async { Ok::<_, std::io::Error>(42) }, |n| {
+                Some(TestMsg::Value(n))
+            }),
+            Command::message(TestMsg::C),
+        ]);
+
+        let mut handler = CommandHandler::new();
+        handler.execute(cmd);
+
+        // Only sync messages are processed
+        let messages = handler.take_messages();
+        assert_eq!(messages, vec![TestMsg::A, TestMsg::C]);
     }
 }
