@@ -58,8 +58,9 @@ pub mod input;
 pub use adapter::DualBackend;
 pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
 pub use app::{
-    App, AsyncCommandHandler, AsyncRuntime, AsyncRuntimeConfig, Command, Runtime, RuntimeConfig,
-    Subscription, SubscriptionExt, TickSubscription, TimerSubscription,
+    App, AsyncCommandHandler, AsyncRuntime, AsyncRuntimeConfig, Command, FilterSubscription,
+    IntervalImmediateSubscription, Runtime, RuntimeConfig, Subscription, SubscriptionExt,
+    TakeSubscription, TickSubscription, TimerSubscription,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};

@@ -366,6 +366,220 @@ pub fn batch<M: Send + 'static>(subscriptions: Vec<BoxedSubscription<M>>) -> Bat
     BatchSubscription::new(subscriptions)
 }
 
+/// A subscription that fires immediately, then at regular intervals.
+///
+/// Unlike [`TickSubscription`], this fires the first message immediately
+/// without waiting for the interval.
+///
+/// # Example
+///
+/// ```ignore
+/// IntervalImmediateSubscription::new(Duration::from_secs(1), || Msg::Tick)
+/// ```
+pub struct IntervalImmediateSubscription<M, F>
+where
+    F: Fn() -> M + Send + 'static,
+{
+    interval: Duration,
+    message_fn: F,
+}
+
+impl<M, F> IntervalImmediateSubscription<M, F>
+where
+    F: Fn() -> M + Send + 'static,
+{
+    /// Creates a new interval immediate subscription.
+    pub fn new(interval: Duration, message_fn: F) -> Self {
+        Self {
+            interval,
+            message_fn,
+        }
+    }
+}
+
+impl<M: Send + 'static, F: Fn() -> M + Send + 'static> Subscription<M>
+    for IntervalImmediateSubscription<M, F>
+{
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        let interval_duration = self.interval;
+        let message_fn = self.message_fn;
+
+        Box::pin(async_stream::stream! {
+            // Fire immediately
+            yield (message_fn)();
+
+            let mut interval = tokio::time::interval(interval_duration);
+            // Skip the first tick since we already fired
+            interval.tick().await;
+
+            loop {
+                tokio::select! {
+                    _ = interval.tick() => {
+                        yield (message_fn)();
+                    }
+                    _ = cancel.cancelled() => {
+                        break;
+                    }
+                }
+            }
+        })
+    }
+}
+
+/// Builder for interval immediate subscriptions with a fluent API.
+pub struct IntervalImmediateBuilder {
+    interval: Duration,
+}
+
+impl IntervalImmediateBuilder {
+    /// Creates an interval immediate subscription builder.
+    pub fn every(interval: Duration) -> Self {
+        Self { interval }
+    }
+
+    /// Sets the message to produce on each tick.
+    pub fn with_message<M, F>(self, message_fn: F) -> IntervalImmediateSubscription<M, F>
+    where
+        F: Fn() -> M + Send + 'static,
+    {
+        IntervalImmediateSubscription::new(self.interval, message_fn)
+    }
+}
+
+/// Creates an interval immediate subscription builder that fires immediately.
+///
+/// # Example
+///
+/// ```ignore
+/// interval_immediate(Duration::from_secs(1)).with_message(|| Msg::Tick)
+/// ```
+pub fn interval_immediate(interval: Duration) -> IntervalImmediateBuilder {
+    IntervalImmediateBuilder::every(interval)
+}
+
+/// A subscription that filters messages from an inner subscription.
+///
+/// Only messages for which the predicate returns `true` are emitted.
+///
+/// # Example
+///
+/// ```ignore
+/// some_subscription.filter(|msg| msg.is_important())
+/// ```
+pub struct FilterSubscription<M, S, P>
+where
+    S: Subscription<M>,
+    P: Fn(&M) -> bool + Send + 'static,
+{
+    inner: Box<S>,
+    predicate: P,
+    _phantom: std::marker::PhantomData<M>,
+}
+
+impl<M, S, P> FilterSubscription<M, S, P>
+where
+    S: Subscription<M>,
+    P: Fn(&M) -> bool + Send + 'static,
+{
+    /// Creates a filtered subscription.
+    pub fn new(inner: S, predicate: P) -> Self {
+        Self {
+            inner: Box::new(inner),
+            predicate,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<M, S, P> Subscription<M> for FilterSubscription<M, S, P>
+where
+    M: Send + 'static,
+    S: Subscription<M>,
+    P: Fn(&M) -> bool + Send + 'static,
+{
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        use tokio_stream::StreamExt;
+
+        let predicate = self.predicate;
+        let mut inner = self.inner.into_stream(cancel);
+
+        Box::pin(async_stream::stream! {
+            while let Some(msg) = inner.next().await {
+                if (predicate)(&msg) {
+                    yield msg;
+                }
+            }
+        })
+    }
+}
+
+/// A subscription that takes only the first N messages from an inner subscription.
+///
+/// After N messages, the subscription ends.
+///
+/// # Example
+///
+/// ```ignore
+/// some_subscription.take(5)
+/// ```
+pub struct TakeSubscription<M, S>
+where
+    S: Subscription<M>,
+{
+    inner: Box<S>,
+    count: usize,
+    _phantom: std::marker::PhantomData<M>,
+}
+
+impl<M, S> TakeSubscription<M, S>
+where
+    S: Subscription<M>,
+{
+    /// Creates a take subscription.
+    pub fn new(inner: S, count: usize) -> Self {
+        Self {
+            inner: Box::new(inner),
+            count,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<M, S> Subscription<M> for TakeSubscription<M, S>
+where
+    M: Send + 'static,
+    S: Subscription<M>,
+{
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        use tokio_stream::StreamExt;
+
+        let count = self.count;
+        let mut inner = self.inner.into_stream(cancel);
+
+        Box::pin(async_stream::stream! {
+            let mut taken = 0;
+            while taken < count {
+                match inner.next().await {
+                    Some(msg) => {
+                        taken += 1;
+                        yield msg;
+                    }
+                    None => break,
+                }
+            }
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -551,5 +765,232 @@ mod tests {
         let timer = TimerSubscription::after(Duration::from_secs(5), TestMsg::Timer);
         assert_eq!(timer.delay, Duration::from_secs(5));
         assert_eq!(timer.message, TestMsg::Timer);
+    }
+
+    #[tokio::test]
+    async fn test_interval_immediate_subscription() {
+        let cancel = CancellationToken::new();
+        let sub = Box::new(IntervalImmediateSubscription::new(
+            Duration::from_millis(100),
+            || TestMsg::Tick,
+        ));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Should fire immediately without waiting for interval
+        let start = std::time::Instant::now();
+        let msg = stream.next().await;
+        let elapsed = start.elapsed();
+
+        assert_eq!(msg, Some(TestMsg::Tick));
+        // First message should be immediate (less than the interval)
+        assert!(
+            elapsed < Duration::from_millis(50),
+            "First message should be immediate, took {:?}",
+            elapsed
+        );
+
+        cancel.cancel();
+    }
+
+    #[tokio::test]
+    async fn test_interval_immediate_builder() {
+        let cancel = CancellationToken::new();
+        let sub = Box::new(interval_immediate(Duration::from_millis(100)).with_message(|| TestMsg::Tick));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Should fire immediately
+        let start = std::time::Instant::now();
+        let msg = stream.next().await;
+        let elapsed = start.elapsed();
+
+        assert_eq!(msg, Some(TestMsg::Tick));
+        assert!(elapsed < Duration::from_millis(50));
+
+        cancel.cancel();
+    }
+
+    #[tokio::test]
+    async fn test_interval_immediate_vs_tick() {
+        // Compare immediate subscription vs regular tick subscription
+        let cancel1 = CancellationToken::new();
+        let cancel2 = CancellationToken::new();
+
+        let immediate = Box::new(IntervalImmediateSubscription::new(
+            Duration::from_millis(50),
+            || TestMsg::Tick,
+        ));
+        let regular = Box::new(TickSubscription::new(Duration::from_millis(50), || {
+            TestMsg::Tick
+        }));
+
+        let mut immediate_stream = immediate.into_stream(cancel1.clone());
+        let mut regular_stream = regular.into_stream(cancel2.clone());
+
+        // Time the first message from each
+        let immediate_start = std::time::Instant::now();
+        let _ = immediate_stream.next().await;
+        let immediate_elapsed = immediate_start.elapsed();
+
+        let regular_start = std::time::Instant::now();
+        let _ = regular_stream.next().await;
+        let regular_elapsed = regular_start.elapsed();
+
+        // Immediate should be much faster for first message
+        assert!(
+            immediate_elapsed < regular_elapsed,
+            "Immediate: {:?}, Regular: {:?}",
+            immediate_elapsed,
+            regular_elapsed
+        );
+
+        cancel1.cancel();
+        cancel2.cancel();
+    }
+
+    #[tokio::test]
+    async fn test_filter_subscription() {
+        let cancel = CancellationToken::new();
+        let values = vec![
+            TestMsg::Value(1),
+            TestMsg::Value(2),
+            TestMsg::Value(3),
+            TestMsg::Value(4),
+            TestMsg::Value(5),
+        ];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(FilterSubscription::new(inner, |msg| {
+            matches!(msg, TestMsg::Value(n) if *n % 2 == 0)
+        }));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Should only get even values
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(4)));
+
+        // Stream should end
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_filter_subscription_all_filtered() {
+        let cancel = CancellationToken::new();
+        let values = vec![TestMsg::Value(1), TestMsg::Value(3), TestMsg::Value(5)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(FilterSubscription::new(inner, |msg| {
+            matches!(msg, TestMsg::Value(n) if *n % 2 == 0)
+        }));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // All values are odd, so nothing should pass through
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_filter_subscription_none_filtered() {
+        let cancel = CancellationToken::new();
+        let values = vec![TestMsg::Value(2), TestMsg::Value(4)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(FilterSubscription::new(inner, |_| true));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // All values should pass through
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(4)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_take_subscription() {
+        let cancel = CancellationToken::new();
+        let values = vec![
+            TestMsg::Value(1),
+            TestMsg::Value(2),
+            TestMsg::Value(3),
+            TestMsg::Value(4),
+            TestMsg::Value(5),
+        ];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(TakeSubscription::new(inner, 3));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Should only get first 3 values
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(3)));
+
+        // Stream should end after 3
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_take_subscription_zero() {
+        let cancel = CancellationToken::new();
+        let values = vec![TestMsg::Value(1), TestMsg::Value(2)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(TakeSubscription::new(inner, 0));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Should get nothing
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_take_subscription_more_than_available() {
+        let cancel = CancellationToken::new();
+        let values = vec![TestMsg::Value(1), TestMsg::Value(2)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(TakeSubscription::new(inner, 100));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Should get all available values then end
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_take_one() {
+        let cancel = CancellationToken::new();
+        let values = vec![TestMsg::Value(1), TestMsg::Value(2), TestMsg::Value(3)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(TakeSubscription::new(inner, 1));
+
+        let mut stream = sub.into_stream(cancel);
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
     }
 }

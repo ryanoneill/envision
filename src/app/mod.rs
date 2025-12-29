@@ -92,8 +92,9 @@ pub use command::{Command, CommandHandler};
 pub use model::App;
 pub use runtime::{Runtime, RuntimeConfig};
 pub use subscription::{
-    batch, tick, BatchSubscription, BoxedSubscription, ChannelSubscription, MappedSubscription,
-    StreamSubscription, Subscription, SubscriptionExt, TickSubscription, TickSubscriptionBuilder,
-    TimerSubscription,
+    batch, interval_immediate, tick, BatchSubscription, BoxedSubscription, ChannelSubscription,
+    FilterSubscription, IntervalImmediateBuilder, IntervalImmediateSubscription, MappedSubscription,
+    StreamSubscription, Subscription, SubscriptionExt, TakeSubscription, TickSubscription,
+    TickSubscriptionBuilder, TimerSubscription,
 };
 pub use update::{Update, UpdateResult};
