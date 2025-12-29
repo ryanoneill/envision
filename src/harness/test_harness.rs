@@ -156,7 +156,7 @@ impl TestHarness {
         self.events.tab();
     }
 
-    /// Simulates Ctrl+<key>.
+    /// Simulates `Ctrl+<key>`.
     pub fn ctrl(&mut self, c: char) {
         self.events.ctrl(c);
     }

@@ -177,7 +177,7 @@ where
         self.runtime.events().tab();
     }
 
-    /// Simulates Ctrl+<key>.
+    /// Simulates `Ctrl+<key>`.
     pub fn ctrl(&mut self, c: char) {
         self.runtime.events().ctrl(c);
     }
