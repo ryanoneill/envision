@@ -82,10 +82,16 @@ mod async_command;
 mod command;
 mod model;
 mod runtime;
+mod subscription;
 mod update;
 
 pub use async_command::AsyncCommandHandler;
 pub use command::{Command, CommandHandler};
 pub use model::App;
 pub use runtime::{Runtime, RuntimeConfig};
+pub use subscription::{
+    batch, tick, BatchSubscription, BoxedSubscription, ChannelSubscription, MappedSubscription,
+    StreamSubscription, Subscription, SubscriptionExt, TickSubscription, TickSubscriptionBuilder,
+    TimerSubscription,
+};
 pub use update::{Update, UpdateResult};

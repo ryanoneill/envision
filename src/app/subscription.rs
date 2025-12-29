@@ -1,0 +1,555 @@
+//! Subscriptions for long-running async operations in TEA applications.
+//!
+//! Subscriptions are async streams that produce messages over time. They're useful
+//! for timers, websockets, file watchers, and other ongoing async operations.
+//!
+//! # Example
+//!
+//! ```ignore
+//! use envision::app::{Subscription, TickSubscription};
+//! use std::time::Duration;
+//!
+//! // Create a subscription that fires every second
+//! let tick = TickSubscription::every(Duration::from_secs(1));
+//! ```
+
+use std::pin::Pin;
+use std::time::Duration;
+
+use tokio::sync::mpsc;
+use tokio_stream::Stream;
+use tokio_util::sync::CancellationToken;
+
+/// A subscription that produces messages over time.
+///
+/// Subscriptions are long-running async streams that emit messages. They're
+/// typically used for timers, events from external sources, or any ongoing
+/// async operation that produces multiple messages.
+pub trait Subscription<M>: Send + 'static {
+    /// Converts this subscription into a stream of messages.
+    ///
+    /// The stream runs until it naturally ends or the cancellation token is triggered.
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>>;
+}
+
+/// A boxed subscription.
+pub type BoxedSubscription<M> = Box<dyn Subscription<M>>;
+
+/// A subscription that fires at regular intervals.
+///
+/// Each tick produces a message using the provided function.
+///
+/// # Example
+///
+/// ```ignore
+/// TickSubscription::every(Duration::from_secs(1))
+///     .with_message(|| Msg::Tick)
+/// ```
+pub struct TickSubscription<M, F>
+where
+    F: Fn() -> M + Send + 'static,
+{
+    interval: Duration,
+    message_fn: F,
+}
+
+impl<M, F> TickSubscription<M, F>
+where
+    F: Fn() -> M + Send + 'static,
+{
+    /// Creates a new tick subscription with the given interval and message function.
+    pub fn new(interval: Duration, message_fn: F) -> Self {
+        Self {
+            interval,
+            message_fn,
+        }
+    }
+}
+
+impl<M: Send + 'static, F: Fn() -> M + Send + 'static> Subscription<M> for TickSubscription<M, F> {
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        let interval_duration = self.interval;
+        let message_fn = self.message_fn;
+
+        Box::pin(async_stream::stream! {
+            let mut interval = tokio::time::interval(interval_duration);
+            loop {
+                tokio::select! {
+                    _ = interval.tick() => {
+                        yield (message_fn)();
+                    }
+                    _ = cancel.cancelled() => {
+                        break;
+                    }
+                }
+            }
+        })
+    }
+}
+
+/// Builder for tick subscriptions with a fluent API.
+pub struct TickSubscriptionBuilder {
+    interval: Duration,
+}
+
+impl TickSubscriptionBuilder {
+    /// Creates a tick subscription builder with the given interval.
+    pub fn every(interval: Duration) -> Self {
+        Self { interval }
+    }
+
+    /// Sets the message to produce on each tick.
+    pub fn with_message<M, F>(self, message_fn: F) -> TickSubscription<M, F>
+    where
+        F: Fn() -> M + Send + 'static,
+    {
+        TickSubscription::new(self.interval, message_fn)
+    }
+}
+
+/// Creates a tick subscription builder.
+///
+/// # Example
+///
+/// ```ignore
+/// tick(Duration::from_secs(1)).with_message(|| Msg::Tick)
+/// ```
+pub fn tick(interval: Duration) -> TickSubscriptionBuilder {
+    TickSubscriptionBuilder::every(interval)
+}
+
+/// A subscription that fires once after a delay.
+///
+/// # Example
+///
+/// ```ignore
+/// TimerSubscription::after(Duration::from_secs(5), Msg::Timeout)
+/// ```
+pub struct TimerSubscription<M> {
+    delay: Duration,
+    message: M,
+}
+
+impl<M> TimerSubscription<M> {
+    /// Creates a timer that fires the given message after the delay.
+    pub fn after(delay: Duration, message: M) -> Self {
+        Self { delay, message }
+    }
+}
+
+impl<M: Send + 'static> Subscription<M> for TimerSubscription<M> {
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        let delay = self.delay;
+        let message = self.message;
+
+        Box::pin(async_stream::stream! {
+            tokio::select! {
+                _ = tokio::time::sleep(delay) => {
+                    yield message;
+                }
+                _ = cancel.cancelled() => {}
+            }
+        })
+    }
+}
+
+/// A subscription that receives messages from a channel.
+///
+/// This is useful for receiving events from external sources like
+/// websockets, file watchers, or other async operations.
+///
+/// # Example
+///
+/// ```ignore
+/// let (tx, rx) = tokio::sync::mpsc::channel(100);
+/// let subscription = ChannelSubscription::new(rx);
+/// ```
+pub struct ChannelSubscription<M> {
+    receiver: mpsc::Receiver<M>,
+}
+
+impl<M> ChannelSubscription<M> {
+    /// Creates a subscription from a channel receiver.
+    pub fn new(receiver: mpsc::Receiver<M>) -> Self {
+        Self { receiver }
+    }
+}
+
+impl<M: Send + 'static> Subscription<M> for ChannelSubscription<M> {
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        let mut receiver = self.receiver;
+
+        Box::pin(async_stream::stream! {
+            loop {
+                tokio::select! {
+                    msg = receiver.recv() => {
+                        match msg {
+                            Some(m) => yield m,
+                            None => break, // Channel closed
+                        }
+                    }
+                    _ = cancel.cancelled() => {
+                        break;
+                    }
+                }
+            }
+        })
+    }
+}
+
+/// A subscription that wraps a stream directly.
+///
+/// This allows using any async stream as a subscription.
+///
+/// # Example
+///
+/// ```ignore
+/// let stream = async_stream::stream! {
+///     for i in 0..10 {
+///         yield Msg::Count(i);
+///         tokio::time::sleep(Duration::from_secs(1)).await;
+///     }
+/// };
+/// let subscription = StreamSubscription::new(stream);
+/// ```
+pub struct StreamSubscription<S> {
+    stream: S,
+}
+
+impl<S> StreamSubscription<S> {
+    /// Creates a subscription from any stream.
+    pub fn new(stream: S) -> Self {
+        Self { stream }
+    }
+}
+
+impl<M, S> Subscription<M> for StreamSubscription<S>
+where
+    M: Send + 'static,
+    S: Stream<Item = M> + Send + Unpin + 'static,
+{
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        use tokio_stream::StreamExt;
+        let mut inner = self.stream;
+
+        Box::pin(async_stream::stream! {
+            loop {
+                tokio::select! {
+                    item = inner.next() => {
+                        match item {
+                            Some(m) => yield m,
+                            None => break, // Stream ended
+                        }
+                    }
+                    _ = cancel.cancelled() => {
+                        break;
+                    }
+                }
+            }
+        })
+    }
+}
+
+/// A subscription that maps the messages of an inner subscription.
+pub struct MappedSubscription<M, N, F, S>
+where
+    S: Subscription<M>,
+    F: Fn(M) -> N + Send + 'static,
+{
+    inner: Box<S>,
+    map_fn: F,
+    _phantom: std::marker::PhantomData<(M, N)>,
+}
+
+impl<M, N, F, S> MappedSubscription<M, N, F, S>
+where
+    S: Subscription<M>,
+    F: Fn(M) -> N + Send + 'static,
+{
+    /// Creates a mapped subscription.
+    pub fn new(inner: S, map_fn: F) -> Self {
+        Self {
+            inner: Box::new(inner),
+            map_fn,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<M, N, F, S> Subscription<N> for MappedSubscription<M, N, F, S>
+where
+    M: Send + 'static,
+    N: Send + 'static,
+    F: Fn(M) -> N + Send + 'static,
+    S: Subscription<M>,
+{
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = N> + Send>> {
+        use tokio_stream::StreamExt;
+        let mut inner_stream = self.inner.into_stream(cancel);
+        let map_fn = self.map_fn;
+
+        Box::pin(async_stream::stream! {
+            while let Some(m) = inner_stream.next().await {
+                yield (map_fn)(m);
+            }
+        })
+    }
+}
+
+/// Extension trait for subscriptions.
+pub trait SubscriptionExt<M>: Subscription<M> + Sized {
+    /// Maps the messages of this subscription.
+    fn map<N, F>(self, f: F) -> MappedSubscription<M, N, F, Self>
+    where
+        F: Fn(M) -> N + Send + 'static,
+    {
+        MappedSubscription::new(self, f)
+    }
+}
+
+impl<M, S: Subscription<M>> SubscriptionExt<M> for S {}
+
+
+/// A batch of subscriptions combined into one.
+pub struct BatchSubscription<M> {
+    subscriptions: Vec<BoxedSubscription<M>>,
+}
+
+impl<M> BatchSubscription<M> {
+    /// Creates a batch of subscriptions.
+    pub fn new(subscriptions: Vec<BoxedSubscription<M>>) -> Self {
+        Self { subscriptions }
+    }
+}
+
+impl<M: Send + 'static> Subscription<M> for BatchSubscription<M> {
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        use futures_util::stream::SelectAll;
+        use tokio_stream::StreamExt;
+
+        let mut select_all = SelectAll::new();
+        for sub in self.subscriptions {
+            select_all.push(sub.into_stream(cancel.clone()));
+        }
+
+        Box::pin(async_stream::stream! {
+            while let Some(msg) = select_all.next().await {
+                yield msg;
+            }
+        })
+    }
+}
+
+/// Combines multiple subscriptions into one.
+pub fn batch<M: Send + 'static>(subscriptions: Vec<BoxedSubscription<M>>) -> BatchSubscription<M> {
+    BatchSubscription::new(subscriptions)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Duration;
+    use tokio_stream::StreamExt;
+
+    #[derive(Clone, Debug, PartialEq)]
+    enum TestMsg {
+        Tick,
+        Timer,
+        Value(i32),
+    }
+
+    #[tokio::test]
+    async fn test_tick_subscription() {
+        let cancel = CancellationToken::new();
+        let sub = Box::new(TickSubscription::new(Duration::from_millis(10), || {
+            TestMsg::Tick
+        }));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Get first tick
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Tick));
+
+        // Cancel and verify stream ends
+        cancel.cancel();
+    }
+
+    #[tokio::test]
+    async fn test_tick_builder() {
+        let cancel = CancellationToken::new();
+        let sub = Box::new(tick(Duration::from_millis(10)).with_message(|| TestMsg::Tick));
+
+        let mut stream = sub.into_stream(cancel.clone());
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Tick));
+
+        cancel.cancel();
+    }
+
+    #[tokio::test]
+    async fn test_timer_subscription() {
+        let cancel = CancellationToken::new();
+        let sub = Box::new(TimerSubscription::after(
+            Duration::from_millis(10),
+            TestMsg::Timer,
+        ));
+
+        let mut stream = sub.into_stream(cancel);
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Timer));
+
+        // Timer should only fire once
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_timer_cancellation() {
+        let cancel = CancellationToken::new();
+        let sub = Box::new(TimerSubscription::after(
+            Duration::from_secs(10),
+            TestMsg::Timer,
+        ));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Cancel before timer fires
+        cancel.cancel();
+
+        // Stream should end
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_channel_subscription() {
+        let cancel = CancellationToken::new();
+        let (tx, rx) = mpsc::channel(10);
+        let sub = Box::new(ChannelSubscription::new(rx));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Send messages
+        tx.send(TestMsg::Value(1)).await.unwrap();
+        tx.send(TestMsg::Value(2)).await.unwrap();
+
+        // Receive messages
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        // Drop sender to close channel
+        drop(tx);
+
+        // Stream should end
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_stream_subscription() {
+        let cancel = CancellationToken::new();
+        let values = vec![TestMsg::Value(1), TestMsg::Value(2), TestMsg::Value(3)];
+        let inner_stream = tokio_stream::iter(values);
+        let sub = Box::new(StreamSubscription::new(inner_stream));
+
+        let mut stream = sub.into_stream(cancel);
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(2)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(3)));
+
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_mapped_subscription() {
+        let cancel = CancellationToken::new();
+        let inner = TickSubscription::new(Duration::from_millis(10), || 42i32);
+        let sub = Box::new(inner.map(TestMsg::Value));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(42)));
+
+        cancel.cancel();
+    }
+
+    #[tokio::test]
+    async fn test_batch_subscription() {
+        let cancel = CancellationToken::new();
+        let (tx, rx) = mpsc::channel(10);
+
+        let timer = Box::new(TimerSubscription::after(
+            Duration::from_millis(5),
+            TestMsg::Timer,
+        )) as BoxedSubscription<TestMsg>;
+        let channel =
+            Box::new(ChannelSubscription::new(rx)) as BoxedSubscription<TestMsg>;
+
+        let sub = Box::new(batch(vec![timer, channel]));
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Send a channel message
+        tx.send(TestMsg::Value(1)).await.unwrap();
+
+        // Collect messages (order may vary)
+        let mut received = Vec::new();
+        for _ in 0..2 {
+            if let Some(msg) = stream.next().await {
+                received.push(msg);
+            }
+        }
+
+        assert!(received.contains(&TestMsg::Timer));
+        assert!(received.contains(&TestMsg::Value(1)));
+
+        cancel.cancel();
+    }
+
+    #[test]
+    fn test_tick_builder_every() {
+        let builder = TickSubscriptionBuilder::every(Duration::from_secs(1));
+        let sub = builder.with_message(|| TestMsg::Tick);
+        assert_eq!(sub.interval, Duration::from_secs(1));
+    }
+
+    #[test]
+    fn test_timer_after() {
+        let timer = TimerSubscription::after(Duration::from_secs(5), TestMsg::Timer);
+        assert_eq!(timer.delay, Duration::from_secs(5));
+        assert_eq!(timer.message, TestMsg::Timer);
+    }
+}

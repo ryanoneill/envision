@@ -19,6 +19,8 @@ compact_str = { version = "0.8", features = ["serde"] }
 tokio = { version = "1", features = ["sync", "rt", "macros", "time"] }
 tokio-stream = "0.1"
 tokio-util = "0.7"
+async-stream = "0.3"
+futures-util = "0.3"
 
 [dev-dependencies]
 insta = { version = "1.41", features = ["json"] }
