@@ -27,10 +27,10 @@
 //! }
 //! ```
 
-mod annotation;
 mod registry;
+mod types;
 mod widget;
 
-pub use annotation::{Annotation, WidgetType};
 pub use registry::{AnnotationRegistry, RegionInfo, SerializableRect};
+pub use types::{Annotation, WidgetType};
 pub use widget::{with_annotations, with_registry, Annotate, AnnotateContainer};

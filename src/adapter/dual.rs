@@ -148,10 +148,11 @@ impl<P: Backend> Backend for DualBackend<P> {
         let cells: Vec<_> = content.collect();
 
         // Draw to primary
-        self.primary.draw(cells.iter().map(|&(x, y, c)| (x, y, c)))?;
+        self.primary
+            .draw(cells.iter().map(|&(x, y, c)| (x, y, c)))?;
 
         // Draw to capture
-        self.capture.draw(cells.into_iter().map(|(x, y, c)| (x, y, c)))?;
+        self.capture.draw(cells.into_iter())?;
 
         Ok(())
     }
@@ -377,7 +378,8 @@ mod tests {
         for (i, c) in "Hello".chars().enumerate() {
             let mut cell = Cell::default();
             cell.set_char(c);
-            dual.draw(vec![(i as u16, 0_u16, &cell)].into_iter()).unwrap();
+            dual.draw(vec![(i as u16, 0_u16, &cell)].into_iter())
+                .unwrap();
         }
 
         assert!(dual.contains_text("Hello"));

@@ -192,7 +192,11 @@ impl EventQueue {
     /// Adds mouse events to simulate a drag from one position to another.
     pub fn drag(&mut self, from: (u16, u16), to: (u16, u16)) {
         self.push(SimulatedEvent::click(from.0, from.1));
-        self.push(SimulatedEvent::mouse_drag(to.0, to.1, crossterm::event::MouseButton::Left));
+        self.push(SimulatedEvent::mouse_drag(
+            to.0,
+            to.1,
+            crossterm::event::MouseButton::Left,
+        ));
         self.push(SimulatedEvent::mouse_up(to.0, to.1));
     }
 
@@ -375,12 +379,9 @@ mod tests {
 
     #[test]
     fn test_from_iterator() {
-        let queue: EventQueue = vec![
-            SimulatedEvent::char('a'),
-            SimulatedEvent::char('b'),
-        ]
-        .into_iter()
-        .collect();
+        let queue: EventQueue = vec![SimulatedEvent::char('a'), SimulatedEvent::char('b')]
+            .into_iter()
+            .collect();
 
         assert_eq!(queue.len(), 2);
     }
@@ -545,10 +546,7 @@ mod tests {
         let mut queue = EventQueue::new();
         queue.char('a');
 
-        let more_events = vec![
-            SimulatedEvent::char('b'),
-            SimulatedEvent::char('c'),
-        ];
+        let more_events = vec![SimulatedEvent::char('b'), SimulatedEvent::char('c')];
         queue.extend(more_events);
 
         assert_eq!(queue.len(), 3);
@@ -558,10 +556,7 @@ mod tests {
     fn test_extend_trait() {
         let mut queue = EventQueue::new();
 
-        let events = vec![
-            SimulatedEvent::char('x'),
-            SimulatedEvent::char('y'),
-        ];
+        let events = vec![SimulatedEvent::char('x'), SimulatedEvent::char('y')];
 
         // Using Extend trait
         <EventQueue as Extend<SimulatedEvent>>::extend(&mut queue, events);

@@ -50,11 +50,15 @@ impl App for CounterApp {
         match msg {
             Msg::Increment => {
                 state.count += 1;
-                state.history.push(format!("Incremented to {}", state.count));
+                state
+                    .history
+                    .push(format!("Incremented to {}", state.count));
             }
             Msg::Decrement => {
                 state.count -= 1;
-                state.history.push(format!("Decremented to {}", state.count));
+                state
+                    .history
+                    .push(format!("Decremented to {}", state.count));
             }
             Msg::Reset => {
                 state.count = 0;
@@ -88,7 +92,11 @@ impl App for CounterApp {
 
         // Title
         let title = Paragraph::new("Counter App - TEA Architecture Demo")
-            .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
+            .style(
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            )
             .alignment(Alignment::Center)
             .block(Block::default().borders(Borders::ALL));
         frame.render_widget(title, chunks[0]);

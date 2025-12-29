@@ -772,10 +772,7 @@ mod tests {
         assert!(errors.is_empty());
 
         // Send an error
-        let err: BoxedError = Box::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "test error",
-        ));
+        let err: BoxedError = Box::new(std::io::Error::other("test error"));
         error_tx.send(err).await.unwrap();
 
         // Should have one error
@@ -795,10 +792,7 @@ mod tests {
 
         // Send multiple errors
         for i in 0..3 {
-            let err: BoxedError = Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("error {}", i),
-            ));
+            let err: BoxedError = Box::new(std::io::Error::other(format!("error {}", i)));
             error_tx.send(err).await.unwrap();
         }
 
@@ -816,10 +810,7 @@ mod tests {
         assert!(!runtime.has_errors());
 
         // Send an error
-        let err: BoxedError = Box::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "test error",
-        ));
+        let err: BoxedError = Box::new(std::io::Error::other("test error"));
         error_tx.send(err).await.unwrap();
 
         // Give the channel a moment to process
@@ -884,22 +875,19 @@ mod tests {
         fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
             match msg {
                 FallibleMsg::FetchSuccess => {
-                    Command::try_perform_async(
-                        async { Ok::<_, std::io::Error>(42) },
-                        |n| Some(FallibleMsg::Loaded(n)),
-                    )
+                    Command::try_perform_async(async { Ok::<_, std::io::Error>(42) }, |n| {
+                        Some(FallibleMsg::Loaded(n))
+                    })
                 }
-                FallibleMsg::FetchFailure => {
-                    Command::try_perform_async(
-                        async {
-                            Err::<i32, _>(std::io::Error::new(
-                                std::io::ErrorKind::NotFound,
-                                "data not found",
-                            ))
-                        },
-                        |n| Some(FallibleMsg::Loaded(n)),
-                    )
-                }
+                FallibleMsg::FetchFailure => Command::try_perform_async(
+                    async {
+                        Err::<i32, _>(std::io::Error::new(
+                            std::io::ErrorKind::NotFound,
+                            "data not found",
+                        ))
+                    },
+                    |n| Some(FallibleMsg::Loaded(n)),
+                ),
                 FallibleMsg::Loaded(n) => {
                     state.value = Some(n);
                     Command::none()

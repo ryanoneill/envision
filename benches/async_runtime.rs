@@ -82,9 +82,12 @@ fn bench_async_runtime_creation(c: &mut Criterion) {
             |b, &(w, h)| {
                 let config = AsyncRuntimeConfig::new().with_history(10);
                 b.iter(|| {
-                    let runtime: AsyncRuntime<BenchApp, _> =
-                        AsyncRuntime::headless_with_config(black_box(w), black_box(h), config.clone())
-                            .unwrap();
+                    let runtime: AsyncRuntime<BenchApp, _> = AsyncRuntime::headless_with_config(
+                        black_box(w),
+                        black_box(h),
+                        config.clone(),
+                    )
+                    .unwrap();
                     runtime
                 });
             },
@@ -211,9 +214,8 @@ fn bench_subscription_creation(c: &mut Criterion) {
 
     group.bench_function("tick_subscription", |b| {
         b.iter(|| {
-            let sub = TickSubscription::new(black_box(Duration::from_millis(100)), || {
-                BenchMsg::Tick
-            });
+            let sub =
+                TickSubscription::new(black_box(Duration::from_millis(100)), || BenchMsg::Tick);
             black_box(sub)
         });
     });

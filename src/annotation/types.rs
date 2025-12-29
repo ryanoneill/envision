@@ -103,10 +103,7 @@ impl WidgetType {
     pub fn is_container(&self) -> bool {
         matches!(
             self,
-            WidgetType::Container
-                | WidgetType::Dialog
-                | WidgetType::Scroll
-                | WidgetType::Sidebar
+            WidgetType::Container | WidgetType::Dialog | WidgetType::Scroll | WidgetType::Sidebar
         )
     }
 }
@@ -115,8 +112,7 @@ impl std::fmt::Display for WidgetType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             WidgetType::Custom(name) => write!(f, "{}", name),
-            other => write!(f, "{:?}", other).map(|_| ())
-                .and_then(|_| Ok(())),
+            other => write!(f, "{:?}", other),
         }
     }
 }
@@ -375,9 +371,7 @@ mod tests {
 
     #[test]
     fn test_annotation_description() {
-        let ann = Annotation::button("ok")
-            .with_label("OK")
-            .with_focus(true);
+        let ann = Annotation::button("ok").with_label("OK").with_focus(true);
 
         let desc = ann.description();
         assert!(desc.contains("Button"));
@@ -422,7 +416,10 @@ mod tests {
     fn test_widget_type_display() {
         assert_eq!(format!("{}", WidgetType::Button), "Button");
         assert_eq!(format!("{}", WidgetType::Input), "Input");
-        assert_eq!(format!("{}", WidgetType::Custom("MyWidget".to_string())), "MyWidget");
+        assert_eq!(
+            format!("{}", WidgetType::Custom("MyWidget".to_string())),
+            "MyWidget"
+        );
     }
 
     #[test]

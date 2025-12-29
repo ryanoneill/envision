@@ -181,11 +181,7 @@ fn demo_interactive_widgets() {
         println!(
             "  {:?} - {}{}{}",
             region.annotation.widget_type,
-            region
-                .annotation
-                .label
-                .as_deref()
-                .unwrap_or("unlabeled"),
+            region.annotation.label.as_deref().unwrap_or("unlabeled"),
             focus_marker,
             disabled_marker
         );
@@ -205,7 +201,7 @@ fn demo_annotation_registry() {
                 let area = frame.area();
 
                 // Create a list of items
-                let items = vec![
+                let items = [
                     ("item-1", "First Item", true),
                     ("item-2", "Second Item", false),
                     ("item-3", "Third Item", false),
@@ -281,11 +277,9 @@ fn demo_harness_integration() {
     harness
         .render(|frame| {
             let area = frame.area();
-            let chunks = Layout::horizontal([
-                Constraint::Percentage(50),
-                Constraint::Percentage(50),
-            ])
-            .split(area);
+            let chunks =
+                Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)])
+                    .split(area);
 
             // Sidebar with tabs
             let sidebar = Annotate::new(

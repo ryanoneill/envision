@@ -14,10 +14,11 @@ mod plain;
 use crate::backend::CaptureBackend;
 
 /// Available output formats for rendering captured frames.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum OutputFormat {
     /// Plain text without any styling information.
     /// Best for simple assertions and text comparisons.
+    #[default]
     Plain,
 
     /// ANSI escape codes for full color and styling.
@@ -40,12 +41,6 @@ impl OutputFormat {
             OutputFormat::Json => json::render(backend, false),
             OutputFormat::JsonPretty => json::render(backend, true),
         }
-    }
-}
-
-impl Default for OutputFormat {
-    fn default() -> Self {
-        OutputFormat::Plain
     }
 }
 
@@ -117,7 +112,7 @@ mod tests {
     #[test]
     fn test_output_format_clone() {
         let format = OutputFormat::Ansi;
-        let cloned = format.clone();
+        let cloned = format; // Copy, not clone
         assert_eq!(format, cloned);
     }
 

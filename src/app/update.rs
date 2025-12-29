@@ -97,11 +97,7 @@ pub trait Update {
     type Message;
 
     /// Perform the update.
-    fn update(
-        &self,
-        state: &mut Self::State,
-        msg: Self::Message,
-    ) -> Command<Self::Message>;
+    fn update(&self, state: &mut Self::State, msg: Self::Message) -> Command<Self::Message>;
 }
 
 /// A function-based update implementation.
@@ -188,8 +184,7 @@ mod tests {
 
     #[test]
     fn test_update_result_state() {
-        let result: UpdateResult<TestState, TestMsg> =
-            UpdateResult::state(TestState { value: 42 });
+        let result: UpdateResult<TestState, TestMsg> = UpdateResult::state(TestState { value: 42 });
         assert_eq!(result.state.unwrap().value, 42);
         assert!(result.command.is_none());
     }
@@ -204,10 +199,8 @@ mod tests {
 
     #[test]
     fn test_update_result_with() {
-        let result = UpdateResult::with(
-            TestState { value: 10 },
-            Command::message(TestMsg::Finished),
-        );
+        let result =
+            UpdateResult::with(TestState { value: 10 }, Command::message(TestMsg::Finished));
         assert_eq!(result.state.unwrap().value, 10);
         assert!(!result.command.is_none());
     }
@@ -232,8 +225,7 @@ mod tests {
 
     #[test]
     fn test_map_state() {
-        let result: UpdateResult<TestState, TestMsg> =
-            UpdateResult::state(TestState { value: 42 });
+        let result: UpdateResult<TestState, TestMsg> = UpdateResult::state(TestState { value: 42 });
 
         let mapped = result.map_state(|s| s.value);
         assert_eq!(mapped.state, Some(42));
@@ -241,8 +233,7 @@ mod tests {
 
     #[test]
     fn test_and_command() {
-        let result: UpdateResult<TestState, TestMsg> =
-            UpdateResult::state(TestState { value: 10 });
+        let result: UpdateResult<TestState, TestMsg> = UpdateResult::state(TestState { value: 10 });
 
         let with_cmd = result.and_command(Command::message(TestMsg::Finished));
         assert!(with_cmd.state.is_some());
@@ -306,8 +297,7 @@ mod tests {
 
     #[test]
     fn test_update_result_debug() {
-        let result: UpdateResult<TestState, TestMsg> =
-            UpdateResult::state(TestState { value: 1 });
+        let result: UpdateResult<TestState, TestMsg> = UpdateResult::state(TestState { value: 1 });
         let debug = format!("{:?}", result);
         assert!(debug.contains("UpdateResult"));
         assert!(debug.contains("state"));

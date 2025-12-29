@@ -26,11 +26,11 @@
 mod events;
 mod queue;
 
-pub use events::{SimulatedEvent, KeyEventBuilder, MouseEventBuilder};
+pub use events::{KeyEventBuilder, MouseEventBuilder, SimulatedEvent};
 pub use queue::EventQueue;
 
 // Re-export crossterm event types for convenience
 pub use crossterm::event::{
-    KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers,
-    MouseButton, MouseEvent, MouseEventKind,
+    KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseButton, MouseEvent,
+    MouseEventKind,
 };

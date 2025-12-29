@@ -44,7 +44,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Style::default().fg(Color::Green),
             ),
             Line::styled("• Full frame capture", Style::default().fg(Color::Yellow)),
-            Line::styled("• Multiple output formats", Style::default().fg(Color::Magenta)),
+            Line::styled(
+                "• Multiple output formats",
+                Style::default().fg(Color::Magenta),
+            ),
         ])
         .block(Block::default().borders(Borders::ALL).title("Content"));
 
@@ -77,10 +80,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         terminal.backend().width(),
         terminal.backend().height()
     );
-    println!(
-        "Cursor visible: {}",
-        terminal.backend().is_cursor_visible()
-    );
+    println!("Cursor visible: {}", terminal.backend().is_cursor_visible());
 
     Ok(())
 }

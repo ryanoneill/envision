@@ -8,6 +8,8 @@
 //!
 //! Run with: cargo run --example test_harness
 
+use std::ops::Not;
+
 use envision::harness::{Assertion, TestHarness};
 use envision::prelude::*;
 use ratatui::layout::{Alignment, Constraint, Layout};
@@ -27,6 +29,7 @@ struct TodoState {
 }
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 enum TodoMsg {
     Add(String),
     Remove(usize),
@@ -73,12 +76,15 @@ impl App for TodoApp {
     fn view(state: &TodoState, frame: &mut Frame) {
         let area = frame.area();
 
-        let chunks =
-            Layout::vertical([Constraint::Length(3), Constraint::Min(0)]).split(area);
+        let chunks = Layout::vertical([Constraint::Length(3), Constraint::Min(0)]).split(area);
 
         // Header
         let header = Paragraph::new(format!("Todo List ({} items)", state.items.len()))
-            .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
+            .style(
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            )
             .alignment(Alignment::Center)
             .block(Block::default().borders(Borders::ALL).title("Header"));
         frame.render_widget(header, chunks[0]);
@@ -184,8 +190,8 @@ fn demo_assertions() {
     harness
         .render(|frame| {
             let text = "Error: File not found\nWarning: Low memory\nInfo: Operation complete";
-            let para = Paragraph::new(text)
-                .block(Block::default().borders(Borders::ALL).title("Logs"));
+            let para =
+                Paragraph::new(text).block(Block::default().borders(Borders::ALL).title("Logs"));
             frame.render_widget(para, frame.area());
         })
         .unwrap();
@@ -206,7 +212,7 @@ fn demo_assertions() {
     }
 
     // Check for specific patterns
-    let not_critical = Assertion::not(Assertion::contains("CRITICAL"));
+    let not_critical = Assertion::contains("CRITICAL").not();
     match not_critical.check(&harness) {
         Ok(()) => println!("No CRITICAL errors found!"),
         Err(e) => println!("Unexpected: {}", e),
@@ -234,8 +240,8 @@ fn demo_content_queries() {
     harness
         .render(|frame| {
             let text = "Name: Alice\nAge: 30\nCity: New York";
-            let para = Paragraph::new(text)
-                .block(Block::default().borders(Borders::ALL).title("Profile"));
+            let para =
+                Paragraph::new(text).block(Block::default().borders(Borders::ALL).title("Profile"));
             frame.render_widget(para, frame.area());
         })
         .unwrap();

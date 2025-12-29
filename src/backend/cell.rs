@@ -62,8 +62,14 @@ impl EnhancedCell {
         let style = cell.style();
         Self {
             symbol: CompactString::from(cell.symbol()),
-            fg: style.fg.map(SerializableColor::from).unwrap_or(SerializableColor::Reset),
-            bg: style.bg.map(SerializableColor::from).unwrap_or(SerializableColor::Reset),
+            fg: style
+                .fg
+                .map(SerializableColor::from)
+                .unwrap_or(SerializableColor::Reset),
+            bg: style
+                .bg
+                .map(SerializableColor::from)
+                .unwrap_or(SerializableColor::Reset),
             modifiers: SerializableModifier::from(style.add_modifier),
             underline_color: style.underline_color.map(SerializableColor::from),
             last_modified_frame: frame,
@@ -100,8 +106,12 @@ impl EnhancedCell {
         if let Some(bg) = style.bg {
             self.bg = SerializableColor::from(bg);
         }
-        self.modifiers = self.modifiers.union(SerializableModifier::from(style.add_modifier));
-        self.modifiers = self.modifiers.difference(SerializableModifier::from(style.sub_modifier));
+        self.modifiers = self
+            .modifiers
+            .union(SerializableModifier::from(style.add_modifier));
+        self.modifiers = self
+            .modifiers
+            .difference(SerializableModifier::from(style.sub_modifier));
         if let Some(underline) = style.underline_color {
             self.underline_color = Some(SerializableColor::from(underline));
         }
@@ -219,7 +229,7 @@ impl From<SerializableColor> for Color {
 
 impl SerializableColor {
     /// Returns the ANSI escape code for this color as foreground
-    pub fn to_ansi_fg(&self) -> String {
+    pub fn to_ansi_fg(self) -> String {
         match self {
             SerializableColor::Reset => "\x1b[39m".to_string(),
             SerializableColor::Black => "\x1b[30m".to_string(),
@@ -244,7 +254,7 @@ impl SerializableColor {
     }
 
     /// Returns the ANSI escape code for this color as background
-    pub fn to_ansi_bg(&self) -> String {
+    pub fn to_ansi_bg(self) -> String {
         match self {
             SerializableColor::Reset => "\x1b[49m".to_string(),
             SerializableColor::Black => "\x1b[40m".to_string(),
@@ -343,7 +353,7 @@ impl SerializableModifier {
     }
 
     /// Returns the ANSI escape codes for these modifiers
-    pub fn to_ansi(&self) -> String {
+    pub fn to_ansi(self) -> String {
         let mut codes = Vec::new();
         if self.bold {
             codes.push("1");
@@ -497,8 +507,7 @@ mod tests {
     #[test]
     fn test_enhanced_cell_set_style_with_underline_color() {
         let mut cell = EnhancedCell::new();
-        let style = Style::new()
-            .underline_color(Color::Green);
+        let style = Style::new().underline_color(Color::Green);
 
         cell.set_style(style);
 
@@ -568,7 +577,11 @@ mod tests {
     fn test_enhanced_cell_from_ratatui_cell() {
         let mut ratatui_cell = ratatui::buffer::Cell::default();
         ratatui_cell.set_char('Z');
-        ratatui_cell.set_style(Style::new().fg(Color::Yellow).add_modifier(Modifier::ITALIC));
+        ratatui_cell.set_style(
+            Style::new()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::ITALIC),
+        );
 
         let cell = EnhancedCell::from_ratatui_cell(&ratatui_cell, 42);
 
@@ -636,7 +649,14 @@ mod tests {
     fn test_serializable_color_rgb() {
         let color = Color::Rgb(10, 20, 30);
         let serializable = SerializableColor::from(color);
-        assert_eq!(serializable, SerializableColor::Rgb { r: 10, g: 20, b: 30 });
+        assert_eq!(
+            serializable,
+            SerializableColor::Rgb {
+                r: 10,
+                g: 20,
+                b: 30
+            }
+        );
         assert_eq!(Color::from(serializable), color);
     }
 
@@ -656,7 +676,12 @@ mod tests {
     fn test_ansi_fg_codes() {
         assert_eq!(SerializableColor::Red.to_ansi_fg(), "\x1b[31m");
         assert_eq!(
-            SerializableColor::Rgb { r: 255, g: 128, b: 0 }.to_ansi_fg(),
+            SerializableColor::Rgb {
+                r: 255,
+                g: 128,
+                b: 0
+            }
+            .to_ansi_fg(),
             "\x1b[38;2;255;128;0m"
         );
         assert_eq!(SerializableColor::Indexed(42).to_ansi_fg(), "\x1b[38;5;42m");
@@ -711,14 +736,22 @@ mod tests {
     #[test]
     fn test_ansi_bg_rgb() {
         assert_eq!(
-            SerializableColor::Rgb { r: 10, g: 20, b: 30 }.to_ansi_bg(),
+            SerializableColor::Rgb {
+                r: 10,
+                g: 20,
+                b: 30
+            }
+            .to_ansi_bg(),
             "\x1b[48;2;10;20;30m"
         );
     }
 
     #[test]
     fn test_ansi_bg_indexed() {
-        assert_eq!(SerializableColor::Indexed(123).to_ansi_bg(), "\x1b[48;5;123m");
+        assert_eq!(
+            SerializableColor::Indexed(123).to_ansi_bg(),
+            "\x1b[48;5;123m"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -767,8 +800,14 @@ mod tests {
 
     #[test]
     fn test_serializable_modifier_union() {
-        let a = SerializableModifier { bold: true, ..Default::default() };
-        let b = SerializableModifier { italic: true, ..Default::default() };
+        let a = SerializableModifier {
+            bold: true,
+            ..Default::default()
+        };
+        let b = SerializableModifier {
+            italic: true,
+            ..Default::default()
+        };
         let union = a.union(b);
 
         assert!(union.bold);
@@ -778,8 +817,15 @@ mod tests {
 
     #[test]
     fn test_serializable_modifier_difference() {
-        let a = SerializableModifier { bold: true, italic: true, ..Default::default() };
-        let b = SerializableModifier { bold: true, ..Default::default() };
+        let a = SerializableModifier {
+            bold: true,
+            italic: true,
+            ..Default::default()
+        };
+        let b = SerializableModifier {
+            bold: true,
+            ..Default::default()
+        };
         let diff = a.difference(b);
 
         assert!(!diff.bold);

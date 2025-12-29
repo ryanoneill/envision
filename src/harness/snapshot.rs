@@ -82,8 +82,7 @@ impl Snapshot {
     /// Loads a snapshot from a JSON file.
     pub fn load_from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let content = std::fs::read_to_string(path)?;
-        serde_json::from_str(&content)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+        serde_json::from_str(&content).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
     }
 
     /// Compares this snapshot to another.
@@ -297,13 +296,10 @@ impl SnapshotTest {
             ));
             std::fs::write(&new_path, &actual)?;
 
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!(
-                    "Snapshot '{}' differs. New snapshot written to {:?}",
-                    name, new_path
-                ),
-            ));
+            return Err(io::Error::other(format!(
+                "Snapshot '{}' differs. New snapshot written to {:?}",
+                name, new_path
+            )));
         }
 
         Ok(())
@@ -319,9 +315,11 @@ mod tests {
     #[test]
     fn test_snapshot_creation() {
         let mut harness = TestHarness::new(40, 5);
-        harness.render(|frame| {
-            frame.render_widget(Paragraph::new("Test"), frame.area());
-        }).unwrap();
+        harness
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Test"), frame.area());
+            })
+            .unwrap();
 
         let snapshot = harness.snapshot();
         assert!(snapshot.to_plain().contains("Test"));
@@ -330,9 +328,11 @@ mod tests {
     #[test]
     fn test_snapshot_formats() {
         let mut harness = TestHarness::new(20, 2);
-        harness.render(|frame| {
-            frame.render_widget(Paragraph::new("Hello"), frame.area());
-        }).unwrap();
+        harness
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Hello"), frame.area());
+            })
+            .unwrap();
 
         let snapshot = harness.snapshot();
 
@@ -352,14 +352,18 @@ mod tests {
     #[test]
     fn test_snapshot_diff() {
         let mut harness1 = TestHarness::new(20, 2);
-        harness1.render(|frame| {
-            frame.render_widget(Paragraph::new("Hello"), frame.area());
-        }).unwrap();
+        harness1
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Hello"), frame.area());
+            })
+            .unwrap();
 
         let mut harness2 = TestHarness::new(20, 2);
-        harness2.render(|frame| {
-            frame.render_widget(Paragraph::new("World"), frame.area());
-        }).unwrap();
+        harness2
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("World"), frame.area());
+            })
+            .unwrap();
 
         let snap1 = harness1.snapshot();
         let snap2 = harness2.snapshot();
@@ -372,14 +376,18 @@ mod tests {
     #[test]
     fn test_snapshot_matches() {
         let mut harness1 = TestHarness::new(20, 2);
-        harness1.render(|frame| {
-            frame.render_widget(Paragraph::new("Same"), frame.area());
-        }).unwrap();
+        harness1
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Same"), frame.area());
+            })
+            .unwrap();
 
         let mut harness2 = TestHarness::new(20, 2);
-        harness2.render(|frame| {
-            frame.render_widget(Paragraph::new("Same"), frame.area());
-        }).unwrap();
+        harness2
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Same"), frame.area());
+            })
+            .unwrap();
 
         let snap1 = harness1.snapshot();
         let snap2 = harness2.snapshot();
@@ -390,14 +398,18 @@ mod tests {
     #[test]
     fn test_snapshot_diff_format() {
         let mut harness1 = TestHarness::new(20, 2);
-        harness1.render(|frame| {
-            frame.render_widget(Paragraph::new("A"), frame.area());
-        }).unwrap();
+        harness1
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("A"), frame.area());
+            })
+            .unwrap();
 
         let mut harness2 = TestHarness::new(20, 2);
-        harness2.render(|frame| {
-            frame.render_widget(Paragraph::new("B"), frame.area());
-        }).unwrap();
+        harness2
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("B"), frame.area());
+            })
+            .unwrap();
 
         let diff = harness1.snapshot().diff(&harness2.snapshot());
         let formatted = diff.format();
@@ -409,9 +421,11 @@ mod tests {
     #[test]
     fn test_empty_diff() {
         let mut harness = TestHarness::new(20, 2);
-        harness.render(|frame| {
-            frame.render_widget(Paragraph::new("Test"), frame.area());
-        }).unwrap();
+        harness
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Test"), frame.area());
+            })
+            .unwrap();
 
         let snap = harness.snapshot();
         let diff = snap.diff(&snap);
@@ -423,9 +437,11 @@ mod tests {
     #[test]
     fn test_snapshot_serialization() {
         let mut harness = TestHarness::new(20, 2);
-        harness.render(|frame| {
-            frame.render_widget(Paragraph::new("Serialize"), frame.area());
-        }).unwrap();
+        harness
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Serialize"), frame.area());
+            })
+            .unwrap();
 
         let snapshot = harness.snapshot();
         let json = snapshot.to_json().unwrap();
@@ -564,9 +580,7 @@ mod tests {
             .unwrap();
 
         let snapshot = harness.snapshot();
-        snapshot
-            .write_to_file(&path, SnapshotFormat::Json)
-            .unwrap();
+        snapshot.write_to_file(&path, SnapshotFormat::Json).unwrap();
 
         assert!(path.exists());
 
@@ -926,9 +940,7 @@ mod tests {
             .unwrap();
 
         let snapshot = harness.snapshot();
-        snapshot
-            .write_to_file(&path, SnapshotFormat::Ansi)
-            .unwrap();
+        snapshot.write_to_file(&path, SnapshotFormat::Ansi).unwrap();
 
         let content = std::fs::read_to_string(&path).unwrap();
         assert!(content.contains("ANSI"));

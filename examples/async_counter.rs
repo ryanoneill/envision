@@ -31,6 +31,7 @@ struct State {
 
 /// Messages for the async counter
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 enum Msg {
     /// Increment the counter
     Increment,
@@ -107,7 +108,11 @@ impl App for AsyncCounterApp {
 
         // Title
         let title = Paragraph::new("Async Counter - Subscription Demo")
-            .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
+            .style(
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            )
             .alignment(Alignment::Center)
             .block(Block::default().borders(Borders::ALL));
         frame.render_widget(title, chunks[0]);
@@ -142,12 +147,10 @@ impl App for AsyncCounterApp {
         } else {
             Span::styled("OFF", Style::default().fg(Color::Red))
         };
-        let auto_para = Paragraph::new(Line::from(vec![
-            Span::raw("Auto-Increment: "),
-            auto_status,
-        ]))
-        .alignment(Alignment::Center)
-        .block(Block::default().borders(Borders::ALL));
+        let auto_para =
+            Paragraph::new(Line::from(vec![Span::raw("Auto-Increment: "), auto_status]))
+                .alignment(Alignment::Center)
+                .block(Block::default().borders(Borders::ALL));
         frame.render_widget(auto_para, chunks[3]);
 
         // Async result
@@ -215,7 +218,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         runtime.process_pending();
         runtime.render()?;
         println!("After tick {}:", i + 1);
-        println!("Count: {}, Ticks: {}\n", runtime.state().count, runtime.state().ticks);
+        println!(
+            "Count: {}, Ticks: {}\n",
+            runtime.state().count,
+            runtime.state().ticks
+        );
     }
 
     // Trigger async operation
@@ -236,10 +243,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Count: {}", runtime.state().count);
     println!("  Ticks: {}", runtime.state().ticks);
     println!("  Auto: {}", runtime.state().auto_increment);
-    println!(
-        "  Async Result: {:?}",
-        runtime.state().async_result
-    );
+    println!("  Async Result: {:?}", runtime.state().async_result);
 
     Ok(())
 }

@@ -413,7 +413,6 @@ pub trait SubscriptionExt<M>: Subscription<M> + Sized {
 
 impl<M, S: Subscription<M>> SubscriptionExt<M> for S {}
 
-
 /// A batch of subscriptions combined into one.
 pub struct BatchSubscription<M> {
     subscriptions: Vec<BoxedSubscription<M>>,
@@ -1094,8 +1093,7 @@ mod tests {
             Duration::from_millis(5),
             TestMsg::Timer,
         )) as BoxedSubscription<TestMsg>;
-        let channel =
-            Box::new(ChannelSubscription::new(rx)) as BoxedSubscription<TestMsg>;
+        let channel = Box::new(ChannelSubscription::new(rx)) as BoxedSubscription<TestMsg>;
 
         let sub = Box::new(batch(vec![timer, channel]));
         let mut stream = sub.into_stream(cancel.clone());
@@ -1160,7 +1158,8 @@ mod tests {
     #[tokio::test]
     async fn test_interval_immediate_builder() {
         let cancel = CancellationToken::new();
-        let sub = Box::new(interval_immediate(Duration::from_millis(100)).with_message(|| TestMsg::Tick));
+        let sub =
+            Box::new(interval_immediate(Duration::from_millis(100)).with_message(|| TestMsg::Tick));
 
         let mut stream = sub.into_stream(cancel.clone());
 
@@ -1224,9 +1223,10 @@ mod tests {
             TestMsg::Value(5),
         ];
         let inner = StreamSubscription::new(tokio_stream::iter(values));
-        let sub = Box::new(FilterSubscription::new(inner, |msg| {
-            matches!(msg, TestMsg::Value(n) if *n % 2 == 0)
-        }));
+        let sub = Box::new(FilterSubscription::new(
+            inner,
+            |msg| matches!(msg, TestMsg::Value(n) if *n % 2 == 0),
+        ));
 
         let mut stream = sub.into_stream(cancel);
 
@@ -1247,9 +1247,10 @@ mod tests {
         let cancel = CancellationToken::new();
         let values = vec![TestMsg::Value(1), TestMsg::Value(3), TestMsg::Value(5)];
         let inner = StreamSubscription::new(tokio_stream::iter(values));
-        let sub = Box::new(FilterSubscription::new(inner, |msg| {
-            matches!(msg, TestMsg::Value(n) if *n % 2 == 0)
-        }));
+        let sub = Box::new(FilterSubscription::new(
+            inner,
+            |msg| matches!(msg, TestMsg::Value(n) if *n % 2 == 0),
+        ));
 
         let mut stream = sub.into_stream(cancel);
 
@@ -1749,9 +1750,7 @@ mod tests {
         let inner = StreamSubscription::new(tokio_stream::iter(values));
 
         // Use fluent filter method
-        let sub = Box::new(inner.filter(|msg| {
-            matches!(msg, TestMsg::Value(n) if *n % 2 == 0)
-        }));
+        let sub = Box::new(inner.filter(|msg| matches!(msg, TestMsg::Value(n) if *n % 2 == 0)));
 
         let mut stream = sub.into_stream(cancel);
 
@@ -1813,11 +1812,7 @@ mod tests {
     #[tokio::test]
     async fn test_subscription_ext_throttle() {
         let cancel = CancellationToken::new();
-        let values = vec![
-            TestMsg::Value(1),
-            TestMsg::Value(2),
-            TestMsg::Value(3),
-        ];
+        let values = vec![TestMsg::Value(1), TestMsg::Value(2), TestMsg::Value(3)];
         let inner = StreamSubscription::new(tokio_stream::iter(values));
 
         // Use fluent throttle method with long duration
@@ -1850,7 +1845,7 @@ mod tests {
         let sub = Box::new(
             inner
                 .filter(|msg| matches!(msg, TestMsg::Value(n) if *n % 2 == 0))
-                .take(2)
+                .take(2),
         );
 
         let mut stream = sub.into_stream(cancel);
@@ -1876,7 +1871,7 @@ mod tests {
             inner
                 .map(TestMsg::Value)
                 .filter(|msg| matches!(msg, TestMsg::Value(n) if *n > 0))
-                .take(1)
+                .take(1),
         );
 
         let mut stream = sub.into_stream(cancel.clone());
@@ -1896,9 +1891,9 @@ mod tests {
         // Filter, map, then take
         let sub = Box::new(
             inner
-                .filter(|n| n % 2 == 0)         // Keep even: 2, 4, 6, 8, 10
+                .filter(|n| n % 2 == 0) // Keep even: 2, 4, 6, 8, 10
                 .map(|n| TestMsg::Value(n * 10)) // Multiply by 10
-                .take(3)                         // Take first 3
+                .take(3), // Take first 3
         );
 
         let mut stream = sub.into_stream(cancel);

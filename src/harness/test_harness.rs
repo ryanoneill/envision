@@ -4,9 +4,7 @@ use std::io;
 
 use ratatui::Terminal;
 
-use crate::annotation::{
-    with_annotations, AnnotationRegistry, RegionInfo, WidgetType,
-};
+use crate::annotation::{with_annotations, AnnotationRegistry, RegionInfo, WidgetType};
 use crate::backend::CaptureBackend;
 use crate::input::{EventQueue, SimulatedEvent};
 
@@ -46,8 +44,7 @@ impl TestHarness {
     /// Creates a new test harness with the given dimensions.
     pub fn new(width: u16, height: u16) -> Self {
         let backend = CaptureBackend::new(width, height);
-        let terminal = Terminal::new(backend)
-            .expect("Failed to create terminal");
+        let terminal = Terminal::new(backend).expect("Failed to create terminal");
 
         Self {
             terminal,
@@ -102,10 +99,7 @@ impl TestHarness {
 
     /// Returns a snapshot of the current frame.
     pub fn snapshot(&self) -> Snapshot {
-        Snapshot::new(
-            self.terminal.backend().snapshot(),
-            self.annotations.clone(),
-        )
+        Snapshot::new(self.terminal.backend().snapshot(), self.annotations.clone())
     }
 
     /// Returns a reference to the backend.
@@ -241,14 +235,18 @@ impl TestHarness {
 
     /// Finds the first position of text on screen.
     pub fn find_text(&self, needle: &str) -> Option<(u16, u16)> {
-        self.terminal.backend().find_text(needle)
+        self.terminal
+            .backend()
+            .find_text(needle)
             .first()
             .map(|p| (p.x, p.y))
     }
 
     /// Finds all positions of text on screen.
     pub fn find_all_text(&self, needle: &str) -> Vec<(u16, u16)> {
-        self.terminal.backend().find_text(needle)
+        self.terminal
+            .backend()
+            .find_text(needle)
             .iter()
             .map(|p| (p.x, p.y))
             .collect()
@@ -397,12 +395,11 @@ mod tests {
     fn test_harness_render() {
         let mut harness = TestHarness::new(80, 24);
 
-        harness.render(|frame| {
-            frame.render_widget(
-                Paragraph::new("Hello, World!"),
-                frame.area(),
-            );
-        }).unwrap();
+        harness
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Hello, World!"), frame.area());
+            })
+            .unwrap();
 
         assert_eq!(harness.frame_count(), 1);
         assert!(harness.contains("Hello, World!"));
@@ -412,16 +409,18 @@ mod tests {
     fn test_harness_annotations() {
         let mut harness = TestHarness::new(80, 24);
 
-        harness.render(|frame| {
-            let area = frame.area();
-            frame.render_widget(
-                Annotate::new(
-                    Paragraph::new("Submit"),
-                    Annotation::button("submit").with_label("Submit Button"),
-                ),
-                area,
-            );
-        }).unwrap();
+        harness
+            .render(|frame| {
+                let area = frame.area();
+                frame.render_widget(
+                    Annotate::new(
+                        Paragraph::new("Submit"),
+                        Annotation::button("submit").with_label("Submit Button"),
+                    ),
+                    area,
+                );
+            })
+            .unwrap();
 
         assert!(harness.get_by_id("submit").is_some());
         let buttons = harness.find_by_type(&WidgetType::Button);
@@ -442,16 +441,15 @@ mod tests {
     fn test_harness_click_on() {
         let mut harness = TestHarness::new(80, 24);
 
-        harness.render(|frame| {
-            let area = ratatui::layout::Rect::new(10, 5, 20, 3);
-            frame.render_widget(
-                Annotate::new(
-                    Paragraph::new("Click Me"),
-                    Annotation::button("btn"),
-                ),
-                area,
-            );
-        }).unwrap();
+        harness
+            .render(|frame| {
+                let area = ratatui::layout::Rect::new(10, 5, 20, 3);
+                frame.render_widget(
+                    Annotate::new(Paragraph::new("Click Me"), Annotation::button("btn")),
+                    area,
+                );
+            })
+            .unwrap();
 
         assert!(harness.click_on("btn"));
         assert_eq!(harness.events().len(), 1);
@@ -463,12 +461,11 @@ mod tests {
     fn test_harness_assert_contains() {
         let mut harness = TestHarness::new(80, 24);
 
-        harness.render(|frame| {
-            frame.render_widget(
-                Paragraph::new("Expected Text"),
-                frame.area(),
-            );
-        }).unwrap();
+        harness
+            .render(|frame| {
+                frame.render_widget(Paragraph::new("Expected Text"), frame.area());
+            })
+            .unwrap();
 
         harness.assert_contains("Expected Text");
         harness.assert_not_contains("Unexpected");
@@ -485,12 +482,14 @@ mod tests {
     fn test_harness_region_content() {
         let mut harness = TestHarness::new(80, 24);
 
-        harness.render(|frame| {
-            frame.render_widget(
-                Paragraph::new("ABCDEFGHIJ"),
-                ratatui::layout::Rect::new(0, 0, 10, 1),
-            );
-        }).unwrap();
+        harness
+            .render(|frame| {
+                frame.render_widget(
+                    Paragraph::new("ABCDEFGHIJ"),
+                    ratatui::layout::Rect::new(0, 0, 10, 1),
+                );
+            })
+            .unwrap();
 
         let content = harness.region_content(2, 0, 4, 1);
         assert_eq!(content, "CDEF");
@@ -500,16 +499,18 @@ mod tests {
     fn test_harness_focused() {
         let mut harness = TestHarness::new(80, 24);
 
-        harness.render(|frame| {
-            let area = frame.area();
-            frame.render_widget(
-                Annotate::new(
-                    Paragraph::new("Input"),
-                    Annotation::input("name").with_focus(true),
-                ),
-                area,
-            );
-        }).unwrap();
+        harness
+            .render(|frame| {
+                let area = frame.area();
+                frame.render_widget(
+                    Annotate::new(
+                        Paragraph::new("Input"),
+                        Annotation::input("name").with_focus(true),
+                    ),
+                    area,
+                );
+            })
+            .unwrap();
 
         let focused = harness.focused().unwrap();
         assert!(focused.annotation.has_id("name"));

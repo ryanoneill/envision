@@ -344,7 +344,11 @@ mod tests {
 
         if let Some(cell) = backend.cell_mut(0, 0) {
             cell.set_char('X');
-            cell.fg = SerializableColor::Rgb { r: 255, g: 128, b: 64 };
+            cell.fg = SerializableColor::Rgb {
+                r: 255,
+                g: 128,
+                b: 64,
+            };
         }
 
         let output = render(&backend);

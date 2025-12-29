@@ -1,8 +1,8 @@
 //! Event types for input simulation.
 
 use crossterm::event::{
-    KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers,
-    MouseButton, MouseEvent, MouseEventKind,
+    KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseButton, MouseEvent,
+    MouseEventKind,
 };
 
 /// A simulated input event.
@@ -453,7 +453,10 @@ mod tests {
         let mouse = event.as_mouse().unwrap();
         assert_eq!(mouse.column, 10);
         assert_eq!(mouse.row, 20);
-        assert!(matches!(mouse.kind, MouseEventKind::Down(MouseButton::Left)));
+        assert!(matches!(
+            mouse.kind,
+            MouseEventKind::Down(MouseButton::Left)
+        ));
     }
 
     #[test]
@@ -462,7 +465,10 @@ mod tests {
         let mouse = event.as_mouse().unwrap();
         assert_eq!(mouse.column, 5);
         assert_eq!(mouse.row, 15);
-        assert!(matches!(mouse.kind, MouseEventKind::Down(MouseButton::Right)));
+        assert!(matches!(
+            mouse.kind,
+            MouseEventKind::Down(MouseButton::Right)
+        ));
     }
 
     #[test]
@@ -485,7 +491,10 @@ mod tests {
     fn test_simulated_event_mouse_drag() {
         let event = SimulatedEvent::mouse_drag(10, 20, MouseButton::Left);
         let mouse = event.as_mouse().unwrap();
-        assert!(matches!(mouse.kind, MouseEventKind::Drag(MouseButton::Left)));
+        assert!(matches!(
+            mouse.kind,
+            MouseEventKind::Drag(MouseButton::Left)
+        ));
     }
 
     #[test]
@@ -600,11 +609,7 @@ mod tests {
 
     #[test]
     fn test_key_event_builder() {
-        let event = KeyEventBuilder::new()
-            .char('x')
-            .ctrl()
-            .shift()
-            .build();
+        let event = KeyEventBuilder::new().char('x').ctrl().shift().build();
 
         assert_eq!(event.code, KeyCode::Char('x'));
         assert!(event.modifiers.contains(KeyModifiers::CONTROL));
@@ -613,19 +618,14 @@ mod tests {
 
     #[test]
     fn test_key_event_builder_code() {
-        let event = KeyEventBuilder::new()
-            .code(KeyCode::F(1))
-            .build();
+        let event = KeyEventBuilder::new().code(KeyCode::F(1)).build();
 
         assert_eq!(event.code, KeyCode::F(1));
     }
 
     #[test]
     fn test_key_event_builder_alt() {
-        let event = KeyEventBuilder::new()
-            .char('a')
-            .alt()
-            .build();
+        let event = KeyEventBuilder::new().char('a').alt().build();
 
         assert!(event.modifiers.contains(KeyModifiers::ALT));
     }
@@ -633,10 +633,7 @@ mod tests {
     #[test]
     fn test_key_event_builder_modifiers() {
         let mods = KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT;
-        let event = KeyEventBuilder::new()
-            .char('a')
-            .modifiers(mods)
-            .build();
+        let event = KeyEventBuilder::new().char('a').modifiers(mods).build();
 
         assert_eq!(event.modifiers, mods);
     }
@@ -653,9 +650,7 @@ mod tests {
 
     #[test]
     fn test_key_event_builder_into_event() {
-        let event = KeyEventBuilder::new()
-            .char('b')
-            .into_event();
+        let event = KeyEventBuilder::new().char('b').into_event();
 
         assert!(event.is_key());
         assert_eq!(event.as_key().unwrap().code, KeyCode::Char('b'));
@@ -682,89 +677,81 @@ mod tests {
 
         assert_eq!(event.column, 5);
         assert_eq!(event.row, 10);
-        assert!(matches!(event.kind, MouseEventKind::Down(MouseButton::Right)));
+        assert!(matches!(
+            event.kind,
+            MouseEventKind::Down(MouseButton::Right)
+        ));
         assert!(event.modifiers.contains(KeyModifiers::CONTROL));
     }
 
     #[test]
     fn test_mouse_event_builder_click() {
-        let event = MouseEventBuilder::new()
-            .at(10, 20)
-            .click()
-            .build();
+        let event = MouseEventBuilder::new().at(10, 20).click().build();
 
-        assert!(matches!(event.kind, MouseEventKind::Down(MouseButton::Left)));
+        assert!(matches!(
+            event.kind,
+            MouseEventKind::Down(MouseButton::Left)
+        ));
     }
 
     #[test]
     fn test_mouse_event_builder_middle_click() {
-        let event = MouseEventBuilder::new()
-            .middle_click()
-            .build();
+        let event = MouseEventBuilder::new().middle_click().build();
 
-        assert!(matches!(event.kind, MouseEventKind::Down(MouseButton::Middle)));
+        assert!(matches!(
+            event.kind,
+            MouseEventKind::Down(MouseButton::Middle)
+        ));
     }
 
     #[test]
     fn test_mouse_event_builder_up() {
-        let event = MouseEventBuilder::new()
-            .up()
-            .build();
+        let event = MouseEventBuilder::new().up().build();
 
         assert!(matches!(event.kind, MouseEventKind::Up(MouseButton::Left)));
     }
 
     #[test]
     fn test_mouse_event_builder_drag() {
-        let event = MouseEventBuilder::new()
-            .drag()
-            .build();
+        let event = MouseEventBuilder::new().drag().build();
 
-        assert!(matches!(event.kind, MouseEventKind::Drag(MouseButton::Left)));
+        assert!(matches!(
+            event.kind,
+            MouseEventKind::Drag(MouseButton::Left)
+        ));
     }
 
     #[test]
     fn test_mouse_event_builder_scroll_up() {
-        let event = MouseEventBuilder::new()
-            .scroll_up()
-            .build();
+        let event = MouseEventBuilder::new().scroll_up().build();
 
         assert!(matches!(event.kind, MouseEventKind::ScrollUp));
     }
 
     #[test]
     fn test_mouse_event_builder_scroll_down() {
-        let event = MouseEventBuilder::new()
-            .scroll_down()
-            .build();
+        let event = MouseEventBuilder::new().scroll_down().build();
 
         assert!(matches!(event.kind, MouseEventKind::ScrollDown));
     }
 
     #[test]
     fn test_mouse_event_builder_alt() {
-        let event = MouseEventBuilder::new()
-            .alt()
-            .build();
+        let event = MouseEventBuilder::new().alt().build();
 
         assert!(event.modifiers.contains(KeyModifiers::ALT));
     }
 
     #[test]
     fn test_mouse_event_builder_shift() {
-        let event = MouseEventBuilder::new()
-            .shift()
-            .build();
+        let event = MouseEventBuilder::new().shift().build();
 
         assert!(event.modifiers.contains(KeyModifiers::SHIFT));
     }
 
     #[test]
     fn test_mouse_event_builder_into_event() {
-        let event = MouseEventBuilder::new()
-            .at(15, 25)
-            .click()
-            .into_event();
+        let event = MouseEventBuilder::new().at(15, 25).click().into_event();
 
         assert!(event.is_mouse());
         let mouse = event.as_mouse().unwrap();

@@ -633,10 +633,7 @@ mod tests {
         }
 
         fn view(state: &Self::State, frame: &mut ratatui::Frame) {
-            let text = format!(
-                "Events: {}, Ticks: {}",
-                state.events_received, state.ticks
-            );
+            let text = format!("Events: {}, Ticks: {}", state.events_received, state.ticks);
             frame.render_widget(Paragraph::new(text), frame.area());
         }
 
@@ -753,7 +750,10 @@ mod tests {
 
             fn init() -> (Self::State, super::super::Command<Self::Message>) {
                 // Issue a command on init
-                (CmdState::default(), super::super::Command::message(CmdMsg::Set(10)))
+                (
+                    CmdState::default(),
+                    super::super::Command::message(CmdMsg::Set(10)),
+                )
             }
 
             fn update(

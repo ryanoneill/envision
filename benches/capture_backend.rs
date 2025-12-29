@@ -130,13 +130,17 @@ fn bench_draw_styled(c: &mut Criterion) {
         })
         .collect();
 
-    group.bench_with_input(BenchmarkId::new("plain", "80x24"), &plain_cells, |b, cells| {
-        let mut backend = CaptureBackend::new(width, height);
-        b.iter(|| {
-            let content = cells.iter().map(|(x, y, c)| (*x, *y, c));
-            backend.draw(content).unwrap();
-        });
-    });
+    group.bench_with_input(
+        BenchmarkId::new("plain", "80x24"),
+        &plain_cells,
+        |b, cells| {
+            let mut backend = CaptureBackend::new(width, height);
+            b.iter(|| {
+                let content = cells.iter().map(|(x, y, c)| (*x, *y, c));
+                backend.draw(content).unwrap();
+            });
+        },
+    );
 
     group.bench_with_input(
         BenchmarkId::new("colored", "80x24"),
@@ -316,7 +320,12 @@ fn bench_output(c: &mut Criterion) {
         // Create a backend with some content
         let mut backend = CaptureBackend::new(width, height);
         for y in 0..height {
-            for (i, ch) in "Hello, World! ".chars().cycle().take(width as usize).enumerate() {
+            for (i, ch) in "Hello, World! "
+                .chars()
+                .cycle()
+                .take(width as usize)
+                .enumerate()
+            {
                 if let Some(cell) = backend.cell_mut(i as u16, y) {
                     cell.set_char(ch);
                 }

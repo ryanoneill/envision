@@ -144,10 +144,7 @@ impl FrameSnapshot {
         let start = (y as usize) * (self.size.0 as usize);
         let end = start + self.size.0 as usize;
         if end <= self.cells.len() {
-            self.cells[start..end]
-                .iter()
-                .map(|c| c.symbol())
-                .collect()
+            self.cells[start..end].iter().map(|c| c.symbol()).collect()
         } else {
             String::new()
         }
@@ -286,10 +283,7 @@ impl CaptureBackend {
 
         let start = self.index_of(0, y);
         let end = start + self.width as usize;
-        self.cells[start..end]
-            .iter()
-            .map(|c| c.symbol())
-            .collect()
+        self.cells[start..end].iter().map(|c| c.symbol()).collect()
     }
 
     /// Returns all content as a vector of row strings.

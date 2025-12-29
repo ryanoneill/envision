@@ -3,7 +3,7 @@
 use ratatui::layout::Rect;
 use serde::{Deserialize, Serialize};
 
-use super::annotation::{Annotation, WidgetType};
+use super::types::{Annotation, WidgetType};
 
 /// Information about an annotated region.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -53,7 +53,12 @@ impl From<SerializableRect> for Rect {
 impl SerializableRect {
     /// Creates a new rect.
     pub fn new(x: u16, y: u16, width: u16, height: u16) -> Self {
-        Self { x, y, width, height }
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 
     /// Returns true if this rect contains the given point.
@@ -192,9 +197,7 @@ impl AnnotationRegistry {
 
     /// Finds the first region with the given id.
     pub fn get_by_id(&self, id: &str) -> Option<&RegionInfo> {
-        self.regions
-            .iter()
-            .find(|r| r.annotation.has_id(id))
+        self.regions.iter().find(|r| r.annotation.has_id(id))
     }
 
     /// Finds regions by widget type.
@@ -215,17 +218,12 @@ impl AnnotationRegistry {
 
     /// Returns the currently focused region, if any.
     pub fn focused_region(&self) -> Option<&RegionInfo> {
-        self.regions
-            .iter()
-            .find(|r| r.annotation.focused)
+        self.regions.iter().find(|r| r.annotation.focused)
     }
 
     /// Returns root regions (depth 0).
     pub fn root_regions(&self) -> Vec<&RegionInfo> {
-        self.regions
-            .iter()
-            .filter(|r| r.depth == 0)
-            .collect()
+        self.regions.iter().filter(|r| r.depth == 0).collect()
     }
 
     /// Returns children of a region.
@@ -282,10 +280,7 @@ mod tests {
     fn test_registry_register() {
         let mut registry = AnnotationRegistry::new();
 
-        let idx = registry.register(
-            Rect::new(0, 0, 80, 24),
-            Annotation::container("main"),
-        );
+        let idx = registry.register(Rect::new(0, 0, 80, 24), Annotation::container("main"));
 
         assert_eq!(idx, 0);
         assert_eq!(registry.len(), 1);
@@ -296,16 +291,10 @@ mod tests {
         let mut registry = AnnotationRegistry::new();
 
         // Open container
-        let container = registry.open(
-            Rect::new(0, 0, 80, 24),
-            Annotation::container("main"),
-        );
+        let container = registry.open(Rect::new(0, 0, 80, 24), Annotation::container("main"));
 
         // Add child
-        let button = registry.register(
-            Rect::new(10, 10, 20, 3),
-            Annotation::button("submit"),
-        );
+        let button = registry.register(Rect::new(10, 10, 20, 3), Annotation::button("submit"));
 
         // Close container
         registry.close();
@@ -379,10 +368,7 @@ mod tests {
     fn test_registry_focused() {
         let mut registry = AnnotationRegistry::new();
 
-        registry.register(
-            Rect::new(0, 0, 10, 1),
-            Annotation::input("a"),
-        );
+        registry.register(Rect::new(0, 0, 10, 1), Annotation::input("a"));
         registry.register(
             Rect::new(0, 2, 10, 1),
             Annotation::input("b").with_focus(true),

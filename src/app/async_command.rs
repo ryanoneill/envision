@@ -16,7 +16,8 @@ use super::command::{AsyncFallibleResult, BoxedError, Command, CommandAction};
 pub type BoxedFuture<M> = Pin<Box<dyn Future<Output = Option<M>> + Send + 'static>>;
 
 /// A boxed future that can fail - errors are sent to the error channel.
-pub type BoxedFallibleFuture<M> = Pin<Box<dyn Future<Output = AsyncFallibleResult<M>> + Send + 'static>>;
+pub type BoxedFallibleFuture<M> =
+    Pin<Box<dyn Future<Output = AsyncFallibleResult<M>> + Send + 'static>>;
 
 /// Handles execution of async commands.
 ///
@@ -220,7 +221,9 @@ mod tests {
     fn test_async_handler_async_command_pending() {
         let mut handler: AsyncCommandHandler<TestMsg> = AsyncCommandHandler::new();
 
-        handler.execute(Command::perform_async(async { Some(TestMsg::AsyncResult(42)) }));
+        handler.execute(Command::perform_async(async {
+            Some(TestMsg::AsyncResult(42))
+        }));
 
         assert!(handler.has_pending_futures());
         assert_eq!(handler.pending_future_count(), 1);
@@ -234,7 +237,9 @@ mod tests {
         let (err_tx, _err_rx) = mpsc::channel(10);
         let cancel = CancellationToken::new();
 
-        handler.execute(Command::perform_async(async { Some(TestMsg::AsyncResult(42)) }));
+        handler.execute(Command::perform_async(async {
+            Some(TestMsg::AsyncResult(42))
+        }));
 
         handler.spawn_pending(msg_tx, err_tx, cancel);
         assert!(!handler.has_pending_futures());
@@ -294,9 +299,15 @@ mod tests {
         let (err_tx, _err_rx) = mpsc::channel(10);
         let cancel = CancellationToken::new();
 
-        handler.execute(Command::perform_async(async { Some(TestMsg::AsyncResult(1)) }));
-        handler.execute(Command::perform_async(async { Some(TestMsg::AsyncResult(2)) }));
-        handler.execute(Command::perform_async(async { Some(TestMsg::AsyncResult(3)) }));
+        handler.execute(Command::perform_async(async {
+            Some(TestMsg::AsyncResult(1))
+        }));
+        handler.execute(Command::perform_async(async {
+            Some(TestMsg::AsyncResult(2))
+        }));
+        handler.execute(Command::perform_async(async {
+            Some(TestMsg::AsyncResult(3))
+        }));
 
         assert_eq!(handler.pending_future_count(), 3);
 

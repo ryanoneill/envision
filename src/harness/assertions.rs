@@ -71,11 +71,7 @@ pub enum Assertion {
     NotContains(String),
 
     /// Assert that text appears at a specific position.
-    TextAt {
-        text: String,
-        x: u16,
-        y: u16,
-    },
+    TextAt { text: String, x: u16, y: u16 },
 
     /// Assert that a widget with the given id exists.
     WidgetExists(String),
@@ -90,10 +86,7 @@ pub enum Assertion {
     WidgetDisabled(String),
 
     /// Assert that a widget with the given id has a specific value.
-    WidgetValue {
-        id: String,
-        value: String,
-    },
+    WidgetValue { id: String, value: String },
 
     /// Assert that there are exactly N widgets of a given type.
     WidgetCount {
@@ -105,16 +98,10 @@ pub enum Assertion {
     ScreenEquals(String),
 
     /// Assert that a specific row matches.
-    RowEquals {
-        row: u16,
-        content: String,
-    },
+    RowEquals { row: u16, content: String },
 
     /// Assert that a row contains the given text.
-    RowContains {
-        row: u16,
-        text: String,
-    },
+    RowContains { row: u16, text: String },
 
     /// Logical AND of multiple assertions.
     All(Vec<Assertion>),
@@ -139,7 +126,11 @@ impl Assertion {
 
     /// Creates a TextAt assertion.
     pub fn text_at(text: impl Into<String>, x: u16, y: u16) -> Self {
-        Self::TextAt { text: text.into(), x, y }
+        Self::TextAt {
+            text: text.into(),
+            x,
+            y,
+        }
     }
 
     /// Creates a WidgetExists assertion.
@@ -164,7 +155,10 @@ impl Assertion {
 
     /// Creates a WidgetValue assertion.
     pub fn widget_value(id: impl Into<String>, value: impl Into<String>) -> Self {
-        Self::WidgetValue { id: id.into(), value: value.into() }
+        Self::WidgetValue {
+            id: id.into(),
+            value: value.into(),
+        }
     }
 
     /// Creates a WidgetCount assertion.
@@ -179,12 +173,18 @@ impl Assertion {
 
     /// Creates a RowEquals assertion.
     pub fn row_equals(row: u16, content: impl Into<String>) -> Self {
-        Self::RowEquals { row, content: content.into() }
+        Self::RowEquals {
+            row,
+            content: content.into(),
+        }
     }
 
     /// Creates a RowContains assertion.
     pub fn row_contains(row: u16, text: impl Into<String>) -> Self {
-        Self::RowContains { row, text: text.into() }
+        Self::RowContains {
+            row,
+            text: text.into(),
+        }
     }
 
     /// Creates an All assertion (all must pass).
@@ -195,11 +195,6 @@ impl Assertion {
     /// Creates an Any assertion (at least one must pass).
     pub fn any(assertions: Vec<Assertion>) -> Self {
         Self::Any(assertions)
-    }
-
-    /// Negates the assertion.
-    pub fn not(self) -> Self {
-        Self::Not(Box::new(self))
     }
 
     /// Checks the assertion against the test harness.
@@ -213,7 +208,8 @@ impl Assertion {
                         "Contains",
                         format!("screen to contain '{}'", text),
                         "text not found",
-                    ).with_context(harness.screen()))
+                    )
+                    .with_context(harness.screen()))
                 }
             }
 
@@ -225,7 +221,8 @@ impl Assertion {
                         "NotContains",
                         format!("screen to NOT contain '{}'", text),
                         "text was found",
-                    ).with_context(harness.screen()))
+                    )
+                    .with_context(harness.screen()))
                 }
             }
 
@@ -261,7 +258,8 @@ impl Assertion {
                         "WidgetExists",
                         format!("widget '{}' to exist", id),
                         "widget not found",
-                    ).with_context(harness.annotations().format_tree()))
+                    )
+                    .with_context(harness.annotations().format_tree()))
                 }
             }
 
@@ -273,62 +271,57 @@ impl Assertion {
                         "WidgetNotExists",
                         format!("widget '{}' to NOT exist", id),
                         "widget was found",
-                    ).with_context(harness.annotations().format_tree()))
+                    )
+                    .with_context(harness.annotations().format_tree()))
                 }
             }
 
-            Assertion::WidgetFocused(id) => {
-                match harness.get_by_id(id) {
-                    Some(region) if region.annotation.focused => Ok(()),
-                    Some(_) => Err(AssertionError::new(
-                        "WidgetFocused",
-                        format!("widget '{}' to be focused", id),
-                        "widget is not focused",
-                    )),
-                    None => Err(AssertionError::new(
-                        "WidgetFocused",
-                        format!("widget '{}' to be focused", id),
-                        "widget not found",
-                    )),
-                }
-            }
+            Assertion::WidgetFocused(id) => match harness.get_by_id(id) {
+                Some(region) if region.annotation.focused => Ok(()),
+                Some(_) => Err(AssertionError::new(
+                    "WidgetFocused",
+                    format!("widget '{}' to be focused", id),
+                    "widget is not focused",
+                )),
+                None => Err(AssertionError::new(
+                    "WidgetFocused",
+                    format!("widget '{}' to be focused", id),
+                    "widget not found",
+                )),
+            },
 
-            Assertion::WidgetDisabled(id) => {
-                match harness.get_by_id(id) {
-                    Some(region) if region.annotation.disabled => Ok(()),
-                    Some(_) => Err(AssertionError::new(
-                        "WidgetDisabled",
-                        format!("widget '{}' to be disabled", id),
-                        "widget is not disabled",
-                    )),
-                    None => Err(AssertionError::new(
-                        "WidgetDisabled",
-                        format!("widget '{}' to be disabled", id),
-                        "widget not found",
-                    )),
-                }
-            }
+            Assertion::WidgetDisabled(id) => match harness.get_by_id(id) {
+                Some(region) if region.annotation.disabled => Ok(()),
+                Some(_) => Err(AssertionError::new(
+                    "WidgetDisabled",
+                    format!("widget '{}' to be disabled", id),
+                    "widget is not disabled",
+                )),
+                None => Err(AssertionError::new(
+                    "WidgetDisabled",
+                    format!("widget '{}' to be disabled", id),
+                    "widget not found",
+                )),
+            },
 
-            Assertion::WidgetValue { id, value } => {
-                match harness.get_by_id(id) {
-                    Some(region) => {
-                        if region.annotation.value.as_deref() == Some(value.as_str()) {
-                            Ok(())
-                        } else {
-                            Err(AssertionError::new(
-                                "WidgetValue",
-                                format!("widget '{}' to have value '{}'", id, value),
-                                format!("value is {:?}", region.annotation.value),
-                            ))
-                        }
+            Assertion::WidgetValue { id, value } => match harness.get_by_id(id) {
+                Some(region) => {
+                    if region.annotation.value.as_deref() == Some(value.as_str()) {
+                        Ok(())
+                    } else {
+                        Err(AssertionError::new(
+                            "WidgetValue",
+                            format!("widget '{}' to have value '{}'", id, value),
+                            format!("value is {:?}", region.annotation.value),
+                        ))
                     }
-                    None => Err(AssertionError::new(
-                        "WidgetValue",
-                        format!("widget '{}' to have value '{}'", id, value),
-                        "widget not found",
-                    )),
                 }
-            }
+                None => Err(AssertionError::new(
+                    "WidgetValue",
+                    format!("widget '{}' to have value '{}'", id, value),
+                    "widget not found",
+                )),
+            },
 
             Assertion::WidgetCount { widget_type, count } => {
                 let actual = harness.find_by_type(widget_type).len();
@@ -352,10 +345,8 @@ impl Assertion {
                         "ScreenEquals",
                         "screen to match exactly",
                         "content differs",
-                    ).with_context(format!(
-                        "Expected:\n{}\n\nActual:\n{}",
-                        expected, actual
-                    )))
+                    )
+                    .with_context(format!("Expected:\n{}\n\nActual:\n{}", expected, actual)))
                 }
             }
 
@@ -405,22 +396,31 @@ impl Assertion {
                 ))
             }
 
-            Assertion::Not(inner) => {
-                match inner.check(harness) {
-                    Ok(()) => Err(AssertionError::new(
-                        "Not",
-                        "assertion to fail",
-                        "assertion passed",
-                    )),
-                    Err(_) => Ok(()),
-                }
-            }
+            Assertion::Not(inner) => match inner.check(harness) {
+                Ok(()) => Err(AssertionError::new(
+                    "Not",
+                    "assertion to fail",
+                    "assertion passed",
+                )),
+                Err(_) => Ok(()),
+            },
         }
+    }
+}
+
+impl std::ops::Not for Assertion {
+    type Output = Self;
+
+    /// Negates the assertion.
+    fn not(self) -> Self::Output {
+        Self::Not(Box::new(self))
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::ops::Not;
+
     use super::*;
     use crate::annotation::{Annotate, Annotation};
     use ratatui::widgets::Paragraph;
@@ -428,12 +428,11 @@ mod tests {
     fn harness_with_content(content: &str) -> TestHarness {
         let mut harness = TestHarness::new(80, 24);
         let content = content.to_string();
-        harness.render(|frame| {
-            frame.render_widget(
-                Paragraph::new(content.clone()),
-                frame.area(),
-            );
-        }).unwrap();
+        harness
+            .render(|frame| {
+                frame.render_widget(Paragraph::new(content.clone()), frame.area());
+            })
+            .unwrap();
         harness
     }
 
@@ -465,15 +464,14 @@ mod tests {
     #[test]
     fn test_assertion_widget_exists() {
         let mut harness = TestHarness::new(80, 24);
-        harness.render(|frame| {
-            frame.render_widget(
-                Annotate::new(
-                    Paragraph::new("Button"),
-                    Annotation::button("submit"),
-                ),
-                frame.area(),
-            );
-        }).unwrap();
+        harness
+            .render(|frame| {
+                frame.render_widget(
+                    Annotate::new(Paragraph::new("Button"), Annotation::button("submit")),
+                    frame.area(),
+                );
+            })
+            .unwrap();
 
         assert!(Assertion::widget_exists("submit").check(&harness).is_ok());
         assert!(Assertion::widget_exists("cancel").check(&harness).is_err());
@@ -482,15 +480,17 @@ mod tests {
     #[test]
     fn test_assertion_widget_focused() {
         let mut harness = TestHarness::new(80, 24);
-        harness.render(|frame| {
-            frame.render_widget(
-                Annotate::new(
-                    Paragraph::new("Input"),
-                    Annotation::input("name").with_focus(true),
-                ),
-                frame.area(),
-            );
-        }).unwrap();
+        harness
+            .render(|frame| {
+                frame.render_widget(
+                    Annotate::new(
+                        Paragraph::new("Input"),
+                        Annotation::input("name").with_focus(true),
+                    ),
+                    frame.area(),
+                );
+            })
+            .unwrap();
 
         assert!(Assertion::widget_focused("name").check(&harness).is_ok());
     }
@@ -498,22 +498,28 @@ mod tests {
     #[test]
     fn test_assertion_widget_count() {
         let mut harness = TestHarness::new(80, 24);
-        harness.render(|frame| {
-            let area1 = ratatui::layout::Rect::new(0, 0, 10, 1);
-            let area2 = ratatui::layout::Rect::new(0, 1, 10, 1);
+        harness
+            .render(|frame| {
+                let area1 = ratatui::layout::Rect::new(0, 0, 10, 1);
+                let area2 = ratatui::layout::Rect::new(0, 1, 10, 1);
 
-            frame.render_widget(
-                Annotate::new(Paragraph::new("A"), Annotation::button("a")),
-                area1,
-            );
-            frame.render_widget(
-                Annotate::new(Paragraph::new("B"), Annotation::button("b")),
-                area2,
-            );
-        }).unwrap();
+                frame.render_widget(
+                    Annotate::new(Paragraph::new("A"), Annotation::button("a")),
+                    area1,
+                );
+                frame.render_widget(
+                    Annotate::new(Paragraph::new("B"), Annotation::button("b")),
+                    area2,
+                );
+            })
+            .unwrap();
 
-        assert!(Assertion::widget_count(WidgetType::Button, 2).check(&harness).is_ok());
-        assert!(Assertion::widget_count(WidgetType::Button, 1).check(&harness).is_err());
+        assert!(Assertion::widget_count(WidgetType::Button, 2)
+            .check(&harness)
+            .is_ok());
+        assert!(Assertion::widget_count(WidgetType::Button, 1)
+            .check(&harness)
+            .is_err());
     }
 
     #[test]
@@ -568,8 +574,7 @@ mod tests {
 
     #[test]
     fn test_assertion_error_display() {
-        let error = AssertionError::new("Test", "expected", "actual")
-            .with_context("Some context");
+        let error = AssertionError::new("Test", "expected", "actual").with_context("Some context");
 
         let display = format!("{}", error);
         assert!(display.contains("Test"));
@@ -595,19 +600,20 @@ mod tests {
         harness
             .render(|frame| {
                 frame.render_widget(
-                    Annotate::new(
-                        Paragraph::new("Button"),
-                        Annotation::button("submit"),
-                    ),
+                    Annotate::new(Paragraph::new("Button"), Annotation::button("submit")),
                     frame.area(),
                 );
             })
             .unwrap();
 
         // Should pass when widget doesn't exist
-        assert!(Assertion::widget_not_exists("cancel").check(&harness).is_ok());
+        assert!(Assertion::widget_not_exists("cancel")
+            .check(&harness)
+            .is_ok());
         // Should fail when widget exists
-        assert!(Assertion::widget_not_exists("submit").check(&harness).is_err());
+        assert!(Assertion::widget_not_exists("submit")
+            .check(&harness)
+            .is_err());
     }
 
     #[test]
@@ -628,21 +634,24 @@ mod tests {
                 );
                 // Enabled button
                 frame.render_widget(
-                    Annotate::new(
-                        Paragraph::new("Enabled"),
-                        Annotation::button("enabled_btn"),
-                    ),
+                    Annotate::new(Paragraph::new("Enabled"), Annotation::button("enabled_btn")),
                     area2,
                 );
             })
             .unwrap();
 
         // Should pass when widget is disabled
-        assert!(Assertion::widget_disabled("disabled_btn").check(&harness).is_ok());
+        assert!(Assertion::widget_disabled("disabled_btn")
+            .check(&harness)
+            .is_ok());
         // Should fail when widget is not disabled
-        assert!(Assertion::widget_disabled("enabled_btn").check(&harness).is_err());
+        assert!(Assertion::widget_disabled("enabled_btn")
+            .check(&harness)
+            .is_err());
         // Should fail when widget doesn't exist
-        assert!(Assertion::widget_disabled("nonexistent").check(&harness).is_err());
+        assert!(Assertion::widget_disabled("nonexistent")
+            .check(&harness)
+            .is_err());
     }
 
     #[test]
@@ -663,23 +672,28 @@ mod tests {
                 );
                 // Input without value
                 frame.render_widget(
-                    Annotate::new(
-                        Paragraph::new("Empty"),
-                        Annotation::input("empty"),
-                    ),
+                    Annotate::new(Paragraph::new("Empty"), Annotation::input("empty")),
                     area2,
                 );
             })
             .unwrap();
 
         // Should pass when widget has the expected value
-        assert!(Assertion::widget_value("name", "John").check(&harness).is_ok());
+        assert!(Assertion::widget_value("name", "John")
+            .check(&harness)
+            .is_ok());
         // Should fail when widget has different value
-        assert!(Assertion::widget_value("name", "Jane").check(&harness).is_err());
+        assert!(Assertion::widget_value("name", "Jane")
+            .check(&harness)
+            .is_err());
         // Should fail when widget has no value
-        assert!(Assertion::widget_value("empty", "anything").check(&harness).is_err());
+        assert!(Assertion::widget_value("empty", "anything")
+            .check(&harness)
+            .is_err());
         // Should fail when widget doesn't exist
-        assert!(Assertion::widget_value("nonexistent", "test").check(&harness).is_err());
+        assert!(Assertion::widget_value("nonexistent", "test")
+            .check(&harness)
+            .is_err());
     }
 
     #[test]
@@ -697,7 +711,9 @@ mod tests {
         // Should pass when screen matches exactly
         assert!(Assertion::screen_equals(&screen).check(&harness).is_ok());
         // Should fail when screen doesn't match
-        assert!(Assertion::screen_equals("Different content").check(&harness).is_err());
+        assert!(Assertion::screen_equals("Different content")
+            .check(&harness)
+            .is_err());
     }
 
     #[test]
@@ -708,7 +724,9 @@ mod tests {
         let row = harness.row(0);
         assert!(Assertion::row_equals(0, row).check(&harness).is_ok());
         // Should fail when row doesn't match
-        assert!(Assertion::row_equals(0, "Different").check(&harness).is_err());
+        assert!(Assertion::row_equals(0, "Different")
+            .check(&harness)
+            .is_err());
     }
 
     #[test]
@@ -719,7 +737,9 @@ mod tests {
         assert!(Assertion::text_at("Hello", 100, 0).check(&harness).is_err());
 
         // Check error message
-        let err = Assertion::text_at("Hello", 100, 0).check(&harness).unwrap_err();
+        let err = Assertion::text_at("Hello", 100, 0)
+            .check(&harness)
+            .unwrap_err();
         assert!(err.actual.contains("out of bounds"));
     }
 
@@ -766,7 +786,9 @@ mod tests {
     fn test_assertion_not_contains_error_has_context() {
         let harness = harness_with_content("Hello");
 
-        let err = Assertion::not_contains("Hello").check(&harness).unwrap_err();
+        let err = Assertion::not_contains("Hello")
+            .check(&harness)
+            .unwrap_err();
         assert!(err.context.is_some());
     }
 
@@ -774,7 +796,9 @@ mod tests {
     fn test_assertion_widget_exists_error_has_context() {
         let harness = TestHarness::new(80, 24);
 
-        let err = Assertion::widget_exists("missing").check(&harness).unwrap_err();
+        let err = Assertion::widget_exists("missing")
+            .check(&harness)
+            .unwrap_err();
         assert!(err.context.is_some());
     }
 
@@ -790,7 +814,9 @@ mod tests {
             })
             .unwrap();
 
-        let err = Assertion::widget_not_exists("btn").check(&harness).unwrap_err();
+        let err = Assertion::widget_not_exists("btn")
+            .check(&harness)
+            .unwrap_err();
         assert!(err.context.is_some());
     }
 
@@ -798,7 +824,9 @@ mod tests {
     fn test_assertion_screen_equals_error_has_context() {
         let harness = harness_with_content("Hello");
 
-        let err = Assertion::screen_equals("Different").check(&harness).unwrap_err();
+        let err = Assertion::screen_equals("Different")
+            .check(&harness)
+            .unwrap_err();
         assert!(err.context.is_some());
         assert!(err.context.unwrap().contains("Expected:"));
     }

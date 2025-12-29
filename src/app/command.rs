@@ -219,16 +219,16 @@ impl<M> Command<M> {
                 CommandAction::Quit => CommandAction::Quit,
                 CommandAction::Callback(cb) => {
                     let f = f.clone();
-                    CommandAction::Callback(Box::new(move || cb().map(|m| f(m))))
+                    CommandAction::Callback(Box::new(move || cb().map(&f)))
                 }
                 CommandAction::Async(fut) => {
                     let f = f.clone();
-                    CommandAction::Async(Box::pin(async move { fut.await.map(|m| f(m)) }))
+                    CommandAction::Async(Box::pin(async move { fut.await.map(&f) }))
                 }
                 CommandAction::AsyncFallible(fut) => {
                     let f = f.clone();
                     CommandAction::AsyncFallible(Box::pin(async move {
-                        fut.await.map(|opt| opt.map(|m| f(m)))
+                        fut.await.map(|opt| opt.map(&f))
                     }))
                 }
             })
@@ -390,10 +390,7 @@ mod tests {
 
     #[test]
     fn test_command_combine() {
-        let cmd = Command::combine([
-            Command::message(TestMsg::A),
-            Command::message(TestMsg::B),
-        ]);
+        let cmd = Command::combine([Command::message(TestMsg::A), Command::message(TestMsg::B)]);
 
         let mut handler = CommandHandler::new();
         handler.execute(cmd);
