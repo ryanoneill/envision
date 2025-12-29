@@ -4,6 +4,9 @@
 //! an update. They're the bridge between pure state updates and
 //! the outside world (IO, network, etc.).
 
+use std::future::Future;
+use std::pin::Pin;
+
 /// A command that can produce messages or perform side effects.
 ///
 /// Commands are returned from `update` functions to trigger
@@ -13,7 +16,7 @@ pub struct Command<M> {
     actions: Vec<CommandAction<M>>,
 }
 
-enum CommandAction<M> {
+pub(crate) enum CommandAction<M> {
     /// A message to dispatch immediately
     Message(M),
 
@@ -25,6 +28,9 @@ enum CommandAction<M> {
 
     /// A callback to execute (for sync side effects)
     Callback(Box<dyn FnOnce() -> Option<M> + Send + 'static>),
+
+    /// An async future to execute
+    Async(Pin<Box<dyn Future<Output = Option<M>> + Send + 'static>>),
 }
 
 impl<M> Command<M> {
@@ -78,6 +84,57 @@ impl<M> Command<M> {
         }
     }
 
+    /// Creates a command from an async operation.
+    ///
+    /// The future will be spawned and may optionally return a message.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// Command::perform_async(async {
+    ///     let result = fetch_data().await;
+    ///     Some(Msg::DataLoaded(result))
+    /// })
+    /// ```
+    pub fn perform_async<Fut>(future: Fut) -> Self
+    where
+        Fut: Future<Output = Option<M>> + Send + 'static,
+    {
+        Self {
+            actions: vec![CommandAction::Async(Box::pin(future))],
+        }
+    }
+
+    /// Creates a command from an async operation that can fail.
+    ///
+    /// On success, the future returns `Ok(Some(message))` or `Ok(None)`.
+    /// On failure, the error is converted to a message using the provided function.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// Command::perform_async_fallible(
+    ///     async { fetch_data().await },
+    ///     |result| match result {
+    ///         Ok(data) => Msg::DataLoaded(data),
+    ///         Err(e) => Msg::Error(e.to_string()),
+    ///     }
+    /// )
+    /// ```
+    pub fn perform_async_fallible<Fut, T, E, F>(future: Fut, on_result: F) -> Self
+    where
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        F: FnOnce(Result<T, E>) -> M + Send + 'static,
+        M: Send + 'static,
+    {
+        Self {
+            actions: vec![CommandAction::Async(Box::pin(async move {
+                let result = future.await;
+                Some(on_result(result))
+            }))],
+        }
+    }
+
     /// Combines multiple commands into one.
     pub fn combine(commands: impl IntoIterator<Item = Command<M>>) -> Self {
         let mut actions = Vec::new();
@@ -93,12 +150,19 @@ impl<M> Command<M> {
         self
     }
 
+    /// Consumes the command and returns its actions.
+    ///
+    /// This is used internally by the async command handler.
+    pub(crate) fn into_actions(self) -> Vec<CommandAction<M>> {
+        self.actions
+    }
+
     /// Maps the message type to a different type.
     pub fn map<N, F>(self, f: F) -> Command<N>
     where
         F: Fn(M) -> N + Clone + Send + 'static,
-        M: 'static,
-        N: 'static,
+        M: Send + 'static,
+        N: Send + 'static,
     {
         let actions = self
             .actions
@@ -112,6 +176,10 @@ impl<M> Command<M> {
                 CommandAction::Callback(cb) => {
                     let f = f.clone();
                     CommandAction::Callback(Box::new(move || cb().map(|m| f(m))))
+                }
+                CommandAction::Async(fut) => {
+                    let f = f.clone();
+                    CommandAction::Async(Box::pin(async move { fut.await.map(|m| f(m)) }))
                 }
             })
             .collect();
@@ -164,6 +232,9 @@ impl<M> CommandHandler<M> {
     }
 
     /// Executes a command and collects any resulting messages.
+    ///
+    /// Note: Async actions are skipped by this sync handler. Use `AsyncCommandHandler`
+    /// for full async support.
     pub fn execute(&mut self, command: Command<M>) {
         for action in command.actions {
             match action {
@@ -180,6 +251,9 @@ impl<M> CommandHandler<M> {
                     if let Some(m) = cb() {
                         self.pending_messages.push(m);
                     }
+                }
+                CommandAction::Async(_) => {
+                    // Async actions are handled by the async runtime
                 }
             }
         }
@@ -216,6 +290,7 @@ mod tests {
         A,
         B,
         C,
+        Value(i32),
     }
 
     #[test]
@@ -472,5 +547,116 @@ mod tests {
         let handler: CommandHandler<TestMsg> = CommandHandler::default();
         assert!(!handler.should_quit());
         assert!(handler.pending_messages.is_empty());
+    }
+
+    #[test]
+    fn test_command_perform_async() {
+        let cmd: Command<TestMsg> = Command::perform_async(async { Some(TestMsg::A) });
+
+        // Async commands are not empty
+        assert!(!cmd.is_none());
+
+        // Sync handler skips async actions
+        let mut handler = CommandHandler::new();
+        handler.execute(cmd);
+        assert!(handler.take_messages().is_empty());
+    }
+
+    #[test]
+    fn test_command_perform_async_none() {
+        let cmd: Command<TestMsg> = Command::perform_async(async { None });
+
+        assert!(!cmd.is_none());
+    }
+
+    #[test]
+    fn test_command_perform_async_fallible_ok() {
+        let cmd: Command<TestMsg> =
+            Command::perform_async_fallible(async { Ok::<_, std::io::Error>(42) }, |result| {
+                match result {
+                    Ok(n) => TestMsg::Value(n),
+                    Err(_) => TestMsg::A,
+                }
+            });
+
+        assert!(!cmd.is_none());
+    }
+
+    #[test]
+    fn test_command_perform_async_fallible_err() {
+        let cmd: Command<TestMsg> = Command::perform_async_fallible(
+            async { Err::<i32, _>(std::io::Error::other("test")) },
+            |result| match result {
+                Ok(n) => TestMsg::Value(n),
+                Err(_) => TestMsg::B,
+            },
+        );
+
+        assert!(!cmd.is_none());
+    }
+
+    #[test]
+    fn test_command_clone_async_skipped() {
+        let cmd: Command<TestMsg> = Command::perform_async(async { Some(TestMsg::A) });
+        let cloned = cmd.clone();
+
+        // Async actions can't be cloned, so cloned should be empty
+        assert!(cloned.is_none());
+    }
+
+    #[test]
+    fn test_command_map_async() {
+        #[derive(Clone, Debug, PartialEq)]
+        enum OuterMsg {
+            Inner(TestMsg),
+        }
+
+        let cmd: Command<TestMsg> = Command::perform_async(async { Some(TestMsg::A) });
+        let mapped: Command<OuterMsg> = cmd.map(OuterMsg::Inner);
+
+        // Mapped async command should still exist
+        assert!(!mapped.is_none());
+    }
+
+    #[test]
+    fn test_command_handler_skips_async() {
+        let cmd: Command<TestMsg> = Command::perform_async(async { Some(TestMsg::A) });
+
+        let mut handler = CommandHandler::new();
+        handler.execute(cmd);
+
+        // Sync handler ignores async actions
+        assert!(handler.take_messages().is_empty());
+        assert!(!handler.should_quit());
+    }
+
+    #[test]
+    fn test_command_combine_with_async() {
+        let cmd = Command::combine([
+            Command::message(TestMsg::A),
+            Command::perform_async(async { Some(TestMsg::B) }),
+            Command::message(TestMsg::C),
+        ]);
+
+        let mut handler = CommandHandler::new();
+        handler.execute(cmd);
+
+        // Only sync messages are processed
+        let messages = handler.take_messages();
+        assert_eq!(messages, vec![TestMsg::A, TestMsg::C]);
+    }
+
+    #[test]
+    fn test_command_and_with_async() {
+        let cmd = Command::message(TestMsg::A)
+            .and(Command::perform_async(async { Some(TestMsg::B) }))
+            .and(Command::quit());
+
+        let mut handler = CommandHandler::new();
+        handler.execute(cmd);
+
+        let messages = handler.take_messages();
+        assert_eq!(messages, vec![TestMsg::A]);
+        assert!(handler.should_quit());
     }
 }

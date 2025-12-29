@@ -78,11 +78,13 @@
 //! }
 //! ```
 
+mod async_command;
 mod command;
 mod model;
 mod runtime;
 mod update;
 
+pub use async_command::AsyncCommandHandler;
 pub use command::{Command, CommandHandler};
 pub use model::App;
 pub use runtime::{Runtime, RuntimeConfig};

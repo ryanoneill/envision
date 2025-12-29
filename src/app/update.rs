@@ -69,8 +69,8 @@ impl<S, M> UpdateResult<S, M> {
     pub fn map_message<N, F>(self, f: F) -> UpdateResult<S, N>
     where
         F: Fn(M) -> N + Clone + Send + 'static,
-        M: 'static,
-        N: 'static,
+        M: Send + 'static,
+        N: Send + 'static,
     {
         UpdateResult {
             state: self.state,
