@@ -57,18 +57,26 @@ pub mod input;
 // Re-export commonly used types
 pub use adapter::DualBackend;
 pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
-pub use app::{App, Command, Runtime, RuntimeConfig};
+pub use app::{
+    App, AsyncCommandHandler, AsyncRuntime, AsyncRuntimeConfig, Command, Runtime, RuntimeConfig,
+    Subscription, SubscriptionExt, TickSubscription, TimerSubscription,
+};
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
-pub use harness::{Assertion, Snapshot, TestHarness};
+pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{EventQueue, SimulatedEvent};
 
 /// Prelude module for convenient imports
 pub mod prelude {
     pub use crate::adapter::DualBackend;
     pub use crate::annotation::{Annotate, Annotation, AnnotationRegistry, RegionInfo, WidgetType};
-    pub use crate::app::{App, Command, Runtime, RuntimeConfig, Update};
+    pub use crate::app::{
+        App, AsyncCommandHandler, AsyncRuntime, AsyncRuntimeConfig, Command, Runtime,
+        RuntimeConfig, Subscription, SubscriptionExt, TickSubscription, TimerSubscription, Update,
+    };
     pub use crate::backend::{CaptureBackend, EnhancedCell, FrameSnapshot, OutputFormat};
-    pub use crate::harness::{Assertion, AssertionError, Snapshot, SnapshotFormat, TestHarness};
+    pub use crate::harness::{
+        Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
+    };
     pub use crate::input::{EventQueue, KeyCode, KeyModifiers, SimulatedEvent};
     pub use ratatui::prelude::*;
 }
