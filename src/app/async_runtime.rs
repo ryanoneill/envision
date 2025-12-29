@@ -857,4 +857,98 @@ mod tests {
         assert_eq!(errors.len(), 1);
         assert!(errors[0].to_string().contains("resource not found"));
     }
+
+    // Test app that uses try_perform_async for fallible operations
+    struct FallibleApp;
+
+    #[derive(Clone, Default)]
+    struct FallibleState {
+        value: Option<i32>,
+    }
+
+    #[derive(Clone, Debug)]
+    enum FallibleMsg {
+        FetchSuccess,
+        FetchFailure,
+        Loaded(i32),
+    }
+
+    impl App for FallibleApp {
+        type State = FallibleState;
+        type Message = FallibleMsg;
+
+        fn init() -> (Self::State, Command<Self::Message>) {
+            (FallibleState::default(), Command::none())
+        }
+
+        fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+            match msg {
+                FallibleMsg::FetchSuccess => {
+                    Command::try_perform_async(
+                        async { Ok::<_, std::io::Error>(42) },
+                        |n| Some(FallibleMsg::Loaded(n)),
+                    )
+                }
+                FallibleMsg::FetchFailure => {
+                    Command::try_perform_async(
+                        async {
+                            Err::<i32, _>(std::io::Error::new(
+                                std::io::ErrorKind::NotFound,
+                                "data not found",
+                            ))
+                        },
+                        |n| Some(FallibleMsg::Loaded(n)),
+                    )
+                }
+                FallibleMsg::Loaded(n) => {
+                    state.value = Some(n);
+                    Command::none()
+                }
+            }
+        }
+
+        fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_try_perform_async_success() {
+        let mut runtime: AsyncRuntime<FallibleApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // Dispatch a message that triggers a successful async operation
+        runtime.dispatch(FallibleMsg::FetchSuccess);
+
+        // Wait for the async task to complete
+        tokio::time::sleep(Duration::from_millis(20)).await;
+
+        // Process pending messages from the spawned task
+        runtime.process_pending();
+
+        // State should be updated with the loaded value
+        assert_eq!(runtime.state().value, Some(42));
+
+        // No errors should be in the channel
+        assert!(!runtime.has_errors());
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_try_perform_async_failure() {
+        let mut runtime: AsyncRuntime<FallibleApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // Dispatch a message that triggers a failing async operation
+        runtime.dispatch(FallibleMsg::FetchFailure);
+
+        // Wait for the async task to complete
+        tokio::time::sleep(Duration::from_millis(20)).await;
+
+        // Process pending (there shouldn't be any messages, just the error)
+        runtime.process_pending();
+
+        // State should NOT be updated (error occurred)
+        assert_eq!(runtime.state().value, None);
+
+        // Error should be in the channel
+        let errors = runtime.take_errors();
+        assert_eq!(errors.len(), 1);
+        assert!(errors[0].to_string().contains("data not found"));
+    }
 }
