@@ -338,8 +338,7 @@ impl TextAreaState {
                 .last()
                 .map(|(i, _)| i)
                 .unwrap_or(0);
-            self.lines[self.cursor_row]
-                .drain(self.cursor_col..prev_cursor);
+            self.lines[self.cursor_row].drain(self.cursor_col..prev_cursor);
             true
         } else if self.cursor_row > 0 {
             // Join with previous line
@@ -1213,8 +1212,7 @@ mod tests {
     #[test]
     fn test_set_value_same() {
         let mut state = TextAreaState::with_value("Same");
-        let output =
-            TextArea::update(&mut state, TextAreaMessage::SetValue("Same".to_string()));
+        let output = TextArea::update(&mut state, TextAreaMessage::SetValue("Same".to_string()));
         assert_eq!(output, None);
     }
 
@@ -1222,7 +1220,10 @@ mod tests {
     fn test_submit() {
         let mut state = TextAreaState::with_value("My content");
         let output = TextArea::update(&mut state, TextAreaMessage::Submit);
-        assert_eq!(output, Some(TextAreaOutput::Submitted("My content".to_string())));
+        assert_eq!(
+            output,
+            Some(TextAreaOutput::Submitted("My content".to_string()))
+        );
     }
 
     // Scroll Tests
