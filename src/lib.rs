@@ -67,7 +67,10 @@ pub use app::{
     TickSubscription, TimerSubscription,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
-pub use component::{Component, Focusable, Toggleable};
+pub use component::{
+    Component, Focusable, InputField, InputFieldState, InputMessage, InputOutput, ListMessage,
+    ListOutput, SelectableList, SelectableListState, Toggleable,
+};
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{EventQueue, SimulatedEvent};
 
@@ -80,7 +83,10 @@ pub mod prelude {
         RuntimeConfig, Subscription, SubscriptionExt, TickSubscription, TimerSubscription, Update,
     };
     pub use crate::backend::{CaptureBackend, EnhancedCell, FrameSnapshot, OutputFormat};
-    pub use crate::component::{Component, Focusable, Toggleable};
+    pub use crate::component::{
+        Component, Focusable, InputField, InputFieldState, InputMessage, InputOutput, ListMessage,
+        ListOutput, SelectableList, SelectableListState, Toggleable,
+    };
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
     };
