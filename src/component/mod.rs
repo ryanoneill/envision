@@ -108,6 +108,7 @@ mod progress_bar;
 mod radio_group;
 mod selectable_list;
 mod spinner;
+mod text_area;
 
 pub use button::{Button, ButtonMessage, ButtonOutput, ButtonState};
 pub use checkbox::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState};
@@ -117,6 +118,7 @@ pub use progress_bar::{ProgressBar, ProgressBarState, ProgressMessage, ProgressO
 pub use radio_group::{RadioGroup, RadioGroupState, RadioMessage, RadioOutput};
 pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableListState};
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
+pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
 
 /// A composable UI component with its own state and message handling.
 ///
