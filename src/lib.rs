@@ -70,7 +70,8 @@ pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 pub use component::{
     Button, ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
     CheckboxState, Component, FocusManager, Focusable, InputField, InputFieldState, InputMessage,
-    InputOutput, ListMessage, ListOutput, SelectableList, SelectableListState, Toggleable,
+    InputOutput, ListMessage, ListOutput, RadioGroup, RadioGroupState, RadioMessage, RadioOutput,
+    SelectableList, SelectableListState, Toggleable,
 };
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{EventQueue, SimulatedEvent};
@@ -87,8 +88,9 @@ pub mod prelude {
     pub use crate::component::{
         Button, ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage,
         CheckboxOutput, CheckboxState, Component, FocusManager, Focusable, InputField,
-        InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput, SelectableList,
-        SelectableListState, Toggleable,
+        InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput, RadioGroup,
+        RadioGroupState, RadioMessage, RadioOutput, SelectableList, SelectableListState,
+        Toggleable,
     };
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
