@@ -68,9 +68,9 @@ pub use app::{
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 pub use component::{
-    Button, ButtonMessage, ButtonOutput, ButtonState, Component, FocusManager, Focusable,
-    InputField, InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput,
-    SelectableList, SelectableListState, Toggleable,
+    Button, ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
+    CheckboxState, Component, FocusManager, Focusable, InputField, InputFieldState, InputMessage,
+    InputOutput, ListMessage, ListOutput, SelectableList, SelectableListState, Toggleable,
 };
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{EventQueue, SimulatedEvent};
@@ -85,9 +85,10 @@ pub mod prelude {
     };
     pub use crate::backend::{CaptureBackend, EnhancedCell, FrameSnapshot, OutputFormat};
     pub use crate::component::{
-        Button, ButtonMessage, ButtonOutput, ButtonState, Component, FocusManager, Focusable,
-        InputField, InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput,
-        SelectableList, SelectableListState, Toggleable,
+        Button, ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage,
+        CheckboxOutput, CheckboxState, Component, FocusManager, Focusable, InputField,
+        InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput, SelectableList,
+        SelectableListState, Toggleable,
     };
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
