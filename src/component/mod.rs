@@ -18,6 +18,7 @@
 //! - [`SelectableList`]: A scrollable list with keyboard navigation
 //! - [`InputField`]: A text input field with cursor navigation
 //! - [`Button`]: A clickable button with keyboard activation
+//! - [`Checkbox`]: A toggleable checkbox with keyboard activation
 //! - [`FocusManager`]: Focus coordination between components
 //!
 //! # Component vs App
@@ -100,11 +101,13 @@
 use ratatui::prelude::*;
 
 mod button;
+mod checkbox;
 mod focus_manager;
 mod input_field;
 mod selectable_list;
 
 pub use button::{Button, ButtonMessage, ButtonOutput, ButtonState};
+pub use checkbox::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState};
 pub use focus_manager::FocusManager;
 pub use input_field::{InputField, InputFieldState, InputMessage, InputOutput};
 pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableListState};
