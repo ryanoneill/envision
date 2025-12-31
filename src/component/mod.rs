@@ -17,6 +17,7 @@
 //!
 //! - [`SelectableList`]: A scrollable list with keyboard navigation
 //! - [`InputField`]: A text input field with cursor navigation
+//! - [`Button`]: A clickable button with keyboard activation
 //! - [`FocusManager`]: Focus coordination between components
 //!
 //! # Component vs App
@@ -98,10 +99,12 @@
 
 use ratatui::prelude::*;
 
+mod button;
 mod focus_manager;
 mod input_field;
 mod selectable_list;
 
+pub use button::{Button, ButtonMessage, ButtonOutput, ButtonState};
 pub use focus_manager::FocusManager;
 pub use input_field::{InputField, InputFieldState, InputMessage, InputOutput};
 pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableListState};
