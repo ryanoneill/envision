@@ -53,6 +53,7 @@ pub mod adapter;
 pub mod annotation;
 pub mod app;
 pub mod backend;
+pub mod component;
 pub mod harness;
 pub mod input;
 
@@ -66,6 +67,7 @@ pub use app::{
     TickSubscription, TimerSubscription,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
+pub use component::{Component, Focusable, Toggleable};
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{EventQueue, SimulatedEvent};
 
@@ -78,6 +80,7 @@ pub mod prelude {
         RuntimeConfig, Subscription, SubscriptionExt, TickSubscription, TimerSubscription, Update,
     };
     pub use crate::backend::{CaptureBackend, EnhancedCell, FrameSnapshot, OutputFormat};
+    pub use crate::component::{Component, Focusable, Toggleable};
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
     };
