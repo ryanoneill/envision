@@ -68,8 +68,8 @@ pub use app::{
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 pub use component::{
-    Component, Focusable, InputField, InputFieldState, InputMessage, InputOutput, ListMessage,
-    ListOutput, SelectableList, SelectableListState, Toggleable,
+    Component, Focusable, FocusManager, InputField, InputFieldState, InputMessage, InputOutput,
+    ListMessage, ListOutput, SelectableList, SelectableListState, Toggleable,
 };
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{EventQueue, SimulatedEvent};
@@ -84,8 +84,8 @@ pub mod prelude {
     };
     pub use crate::backend::{CaptureBackend, EnhancedCell, FrameSnapshot, OutputFormat};
     pub use crate::component::{
-        Component, Focusable, InputField, InputFieldState, InputMessage, InputOutput, ListMessage,
-        ListOutput, SelectableList, SelectableListState, Toggleable,
+        Component, Focusable, FocusManager, InputField, InputFieldState, InputMessage, InputOutput,
+        ListMessage, ListOutput, SelectableList, SelectableListState, Toggleable,
     };
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
