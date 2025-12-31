@@ -71,7 +71,14 @@ pub enum Assertion {
     NotContains(String),
 
     /// Assert that text appears at a specific position.
-    TextAt { text: String, x: u16, y: u16 },
+    TextAt {
+        /// The text to find.
+        text: String,
+        /// The x coordinate.
+        x: u16,
+        /// The y coordinate.
+        y: u16,
+    },
 
     /// Assert that a widget with the given id exists.
     WidgetExists(String),
@@ -86,11 +93,18 @@ pub enum Assertion {
     WidgetDisabled(String),
 
     /// Assert that a widget with the given id has a specific value.
-    WidgetValue { id: String, value: String },
+    WidgetValue {
+        /// The widget id.
+        id: String,
+        /// The expected value.
+        value: String,
+    },
 
     /// Assert that there are exactly N widgets of a given type.
     WidgetCount {
+        /// The type of widget to count.
         widget_type: WidgetType,
+        /// The expected count.
         count: usize,
     },
 
@@ -98,10 +112,20 @@ pub enum Assertion {
     ScreenEquals(String),
 
     /// Assert that a specific row matches.
-    RowEquals { row: u16, content: String },
+    RowEquals {
+        /// The row number.
+        row: u16,
+        /// The expected content.
+        content: String,
+    },
 
     /// Assert that a row contains the given text.
-    RowContains { row: u16, text: String },
+    RowContains {
+        /// The row number.
+        row: u16,
+        /// The text to find.
+        text: String,
+    },
 
     /// Logical AND of multiple assertions.
     All(Vec<Assertion>),
