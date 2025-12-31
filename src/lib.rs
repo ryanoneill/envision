@@ -1,3 +1,5 @@
+#![warn(missing_docs)]
+
 //! # Envision
 //!
 //! A ratatui framework for collaborative TUI development with headless testing support.

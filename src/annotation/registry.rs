@@ -27,9 +27,13 @@ pub struct RegionInfo {
 /// A serializable version of ratatui's Rect.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SerializableRect {
+    /// The x coordinate of the top-left corner.
     pub x: u16,
+    /// The y coordinate of the top-left corner.
     pub y: u16,
+    /// The width of the rectangle.
     pub width: u16,
+    /// The height of the rectangle.
     pub height: u16,
 }
 
