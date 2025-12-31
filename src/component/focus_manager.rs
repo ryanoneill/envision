@@ -408,7 +408,8 @@ mod tests {
 
     #[test]
     fn test_focus_next_basic() {
-        let mut focus = FocusManager::with_initial_focus(vec![TestField::A, TestField::B, TestField::C]);
+        let mut focus =
+            FocusManager::with_initial_focus(vec![TestField::A, TestField::B, TestField::C]);
 
         assert_eq!(focus.focus_next(), Some(&TestField::B));
         assert_eq!(focus.focused(), Some(&TestField::B));
@@ -419,7 +420,8 @@ mod tests {
 
     #[test]
     fn test_focus_next_wraps() {
-        let mut focus = FocusManager::with_initial_focus(vec![TestField::A, TestField::B, TestField::C]);
+        let mut focus =
+            FocusManager::with_initial_focus(vec![TestField::A, TestField::B, TestField::C]);
 
         focus.focus(&TestField::C);
         assert_eq!(focus.focus_next(), Some(&TestField::A)); // Wraps to first
@@ -434,7 +436,8 @@ mod tests {
 
     #[test]
     fn test_focus_prev_basic() {
-        let mut focus = FocusManager::with_initial_focus(vec![TestField::A, TestField::B, TestField::C]);
+        let mut focus =
+            FocusManager::with_initial_focus(vec![TestField::A, TestField::B, TestField::C]);
 
         focus.focus(&TestField::C);
 
@@ -447,7 +450,8 @@ mod tests {
 
     #[test]
     fn test_focus_prev_wraps() {
-        let mut focus = FocusManager::with_initial_focus(vec![TestField::A, TestField::B, TestField::C]);
+        let mut focus =
+            FocusManager::with_initial_focus(vec![TestField::A, TestField::B, TestField::C]);
 
         assert_eq!(focus.focus_prev(), Some(&TestField::C)); // Wraps to last
     }
