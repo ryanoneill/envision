@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-12-31
+
+### Added
+
+- **Component System**: TEA-style composable UI components
+  - `Component` trait for defining reusable components
+  - `Focusable` trait for keyboard focus management
+  - `Toggleable` trait for visibility toggling
+
+- **SelectableList Component**: Generic scrollable list with selection
+  - Keyboard navigation (Up, Down, Home, End, PageUp, PageDown)
+  - Selection tracking with change events
+  - Customizable rendering via `Display` trait
+  - Focusable with visual feedback
+
+- **InputField Component**: Text input with cursor navigation
+  - Character insertion and deletion
+  - Cursor movement (Left, Right, Home, End, word jumps)
+  - Word-level deletion (Ctrl+Backspace, Ctrl+Delete)
+  - Placeholder text support
+  - Unicode support
+  - Submit handling
+
 ## [0.1.0] - 2025-12-29
 
 ### Added
@@ -48,5 +71,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renders to both a real terminal and CaptureBackend
   - Useful for visual debugging while testing
 
-[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/ryanoneill/envision/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ryanoneill/envision/releases/tag/v0.1.0

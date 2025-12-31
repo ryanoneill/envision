@@ -13,6 +13,11 @@
 //! - [`Focusable`]: Components that can receive keyboard focus
 //! - [`Toggleable`]: Components that can be shown or hidden
 //!
+//! # Built-in Components
+//!
+//! - [`SelectableList`]: A scrollable list with keyboard navigation
+//! - [`InputField`]: A text input field with cursor navigation
+//!
 //! # Component vs App
 //!
 //! | Aspect | App | Component |
@@ -91,6 +96,12 @@
 //! ```
 
 use ratatui::prelude::*;
+
+mod input_field;
+mod selectable_list;
+
+pub use input_field::{InputField, InputFieldState, InputMessage, InputOutput};
+pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableListState};
 
 /// A composable UI component with its own state and message handling.
 ///
