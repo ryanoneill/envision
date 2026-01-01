@@ -17,8 +17,16 @@
 //!
 //! - [`SelectableList`]: A scrollable list with keyboard navigation
 //! - [`InputField`]: A text input field with cursor navigation
+//! - [`TextArea`]: A multi-line text editing component
 //! - [`Button`]: A clickable button with keyboard activation
 //! - [`Checkbox`]: A toggleable checkbox with keyboard activation
+//! - [`RadioGroup`]: Mutually exclusive option selection
+//! - [`Select`]: A dropdown selection component
+//! - [`Tabs`]: Horizontal tab navigation
+//! - [`Menu`]: Horizontal menu bar
+//! - [`Modal`]: Modal dialog with overlay backdrop
+//! - [`ProgressBar`]: Visual progress indicator
+//! - [`Spinner`]: Indeterminate loading indicator
 //! - [`FocusManager`]: Focus coordination between components
 //!
 //! # Component vs App
@@ -104,8 +112,11 @@ mod button;
 mod checkbox;
 mod focus_manager;
 mod input_field;
+mod menu;
+mod modal;
 mod progress_bar;
 mod radio_group;
+mod select;
 mod selectable_list;
 mod spinner;
 mod tabs;
@@ -115,8 +126,11 @@ pub use button::{Button, ButtonMessage, ButtonOutput, ButtonState};
 pub use checkbox::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState};
 pub use focus_manager::FocusManager;
 pub use input_field::{InputField, InputFieldState, InputMessage, InputOutput};
+pub use menu::{Menu, MenuItem, MenuMessage, MenuOutput, MenuState};
+pub use modal::{Modal, ModalMessage, ModalOutput, ModalState};
 pub use progress_bar::{ProgressBar, ProgressBarState, ProgressMessage, ProgressOutput};
 pub use radio_group::{RadioGroup, RadioGroupState, RadioMessage, RadioOutput};
+pub use select::{Select, SelectMessage, SelectOutput, SelectState};
 pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableListState};
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 pub use tabs::{TabMessage, TabOutput, Tabs, TabsState};
