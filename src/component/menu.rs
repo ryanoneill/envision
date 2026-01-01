@@ -332,10 +332,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let state = MenuState::new(vec![
-            MenuItem::new("File"),
-            MenuItem::new("Edit"),
-        ]);
+        let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
         assert_eq!(state.items().len(), 2);
         assert_eq!(state.selected_index(), 0);
         assert!(!Menu::is_focused(&state));
@@ -393,10 +390,7 @@ mod tests {
 
     #[test]
     fn test_selected_index_clamps() {
-        let mut state = MenuState::new(vec![
-            MenuItem::new("A"),
-            MenuItem::new("B"),
-        ]);
+        let mut state = MenuState::new(vec![MenuItem::new("A"), MenuItem::new("B")]);
 
         state.set_selected_index(10);
         assert_eq!(state.selected_index(), 1);
@@ -404,10 +398,7 @@ mod tests {
 
     #[test]
     fn test_selected_item() {
-        let state = MenuState::new(vec![
-            MenuItem::new("File"),
-            MenuItem::new("Edit"),
-        ]);
+        let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
 
         let item = state.selected_item().unwrap();
         assert_eq!(item.label, "File");
@@ -468,10 +459,7 @@ mod tests {
 
     #[test]
     fn test_select_item_out_of_bounds() {
-        let mut state = MenuState::new(vec![
-            MenuItem::new("A"),
-            MenuItem::new("B"),
-        ]);
+        let mut state = MenuState::new(vec![MenuItem::new("A"), MenuItem::new("B")]);
 
         Menu::update(&mut state, MenuMessage::SelectItem(10));
         // Should remain at 0
@@ -480,10 +468,7 @@ mod tests {
 
     #[test]
     fn test_activate_enabled() {
-        let mut state = MenuState::new(vec![
-            MenuItem::new("File"),
-            MenuItem::new("Edit"),
-        ]);
+        let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
 
         let output = Menu::update(&mut state, MenuMessage::Activate);
         assert_eq!(output, Some(MenuOutput::ItemActivated(0)));
@@ -491,10 +476,7 @@ mod tests {
 
     #[test]
     fn test_activate_disabled() {
-        let mut state = MenuState::new(vec![
-            MenuItem::disabled("File"),
-            MenuItem::new("Edit"),
-        ]);
+        let mut state = MenuState::new(vec![MenuItem::disabled("File"), MenuItem::new("Edit")]);
 
         let output = Menu::update(&mut state, MenuMessage::Activate);
         assert_eq!(output, None);
@@ -541,10 +523,7 @@ mod tests {
 
     #[test]
     fn test_clone() {
-        let state = MenuState::new(vec![
-            MenuItem::new("File"),
-            MenuItem::new("Edit"),
-        ]);
+        let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
         let cloned = state.clone();
         assert_eq!(cloned.items().len(), 2);
     }
@@ -580,10 +559,7 @@ mod tests {
         use crate::backend::CaptureBackend;
         use ratatui::Terminal;
 
-        let mut state = MenuState::new(vec![
-            MenuItem::new("File"),
-            MenuItem::new("Edit"),
-        ]);
+        let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
         Menu::focus(&mut state);
 
         let backend = CaptureBackend::new(80, 24);

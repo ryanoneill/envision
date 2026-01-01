@@ -351,13 +351,11 @@ impl Component for Select {
             format!("{} {}", state.placeholder, arrow)
         };
 
-        let paragraph = Paragraph::new(display_text)
-            .style(style)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(border_style),
-            );
+        let paragraph = Paragraph::new(display_text).style(style).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(border_style),
+        );
 
         if !state.is_open {
             frame.render_widget(paragraph, area);
@@ -393,7 +391,9 @@ impl Component for Select {
                         };
                         let text = format!("{}{}", prefix, opt);
                         let item_style = if idx == state.highlighted_index {
-                            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+                            Style::default()
+                                .fg(Color::Cyan)
+                                .add_modifier(Modifier::BOLD)
                         } else {
                             Style::default()
                         };
