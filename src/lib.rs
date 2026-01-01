@@ -72,8 +72,9 @@ pub use component::{
     CheckboxState, Component, FocusManager, Focusable, InputField, InputFieldState, InputMessage,
     InputOutput, ListMessage, ListOutput, ProgressBar, ProgressBarState, ProgressMessage,
     ProgressOutput, RadioGroup, RadioGroupState, RadioMessage, RadioOutput, SelectableList,
-    SelectableListState, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, TextArea,
-    TextAreaMessage, TextAreaOutput, TextAreaState, Toggleable,
+    SelectableListState, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, TabMessage,
+    TabOutput, Tabs, TabsState, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
+    Toggleable,
 };
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{EventQueue, SimulatedEvent};
@@ -93,8 +94,8 @@ pub mod prelude {
         InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput, ProgressBar,
         ProgressBarState, ProgressMessage, ProgressOutput, RadioGroup, RadioGroupState,
         RadioMessage, RadioOutput, SelectableList, SelectableListState, Spinner, SpinnerMessage,
-        SpinnerState, SpinnerStyle, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
-        Toggleable,
+        SpinnerState, SpinnerStyle, TabMessage, TabOutput, Tabs, TabsState, TextArea,
+        TextAreaMessage, TextAreaOutput, TextAreaState, Toggleable,
     };
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
