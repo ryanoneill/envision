@@ -75,7 +75,8 @@ pub use component::{
     RadioGroup, RadioGroupState, RadioMessage, RadioOutput, SelectableList, SelectableListState,
     SortDirection, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, TabMessage, TabOutput,
     Table, TableMessage, TableOutput, TableRow, TableState, Tabs, TabsState, TextArea,
-    TextAreaMessage, TextAreaOutput, TextAreaState, Toggleable,
+    TextAreaMessage, TextAreaOutput, TextAreaState, Toast, ToastItem, ToastLevel, ToastMessage,
+    ToastOutput, ToastState, Toggleable,
 };
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{EventQueue, SimulatedEvent};
@@ -98,7 +99,7 @@ pub mod prelude {
         SelectableList, SelectableListState, SortDirection, Spinner, SpinnerMessage, SpinnerState,
         SpinnerStyle, TabMessage, TabOutput, Table, TableMessage, TableOutput, TableRow,
         TableState, Tabs, TabsState, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
-        Toggleable,
+        Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, Toggleable,
     };
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,

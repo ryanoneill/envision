@@ -112,6 +112,7 @@ mod spinner;
 mod table;
 mod tabs;
 mod text_area;
+mod toast;
 
 pub use button::{Button, ButtonMessage, ButtonOutput, ButtonState};
 pub use checkbox::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState};
@@ -125,6 +126,7 @@ pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState};
 pub use tabs::{TabMessage, TabOutput, Tabs, TabsState};
 pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
+pub use toast::{Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState};
 
 /// A composable UI component with its own state and message handling.
 ///
