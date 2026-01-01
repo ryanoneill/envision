@@ -575,7 +575,9 @@ impl<T: TableRow + 'static> Component for Table<T> {
                     }
 
                     return match new_sort {
-                        Some((column, direction)) => Some(TableOutput::Sorted { column, direction }),
+                        Some((column, direction)) => {
+                            Some(TableOutput::Sorted { column, direction })
+                        }
                         None => Some(TableOutput::SortCleared),
                     };
                 }
@@ -629,9 +631,7 @@ impl<T: TableRow + 'static> Component for Table<T> {
             Style::default().add_modifier(Modifier::BOLD)
         };
 
-        let header = Row::new(header_cells)
-            .style(header_style)
-            .bottom_margin(1);
+        let header = Row::new(header_cells).style(header_style).bottom_margin(1);
 
         // Build data rows using display_order
         let rows: Vec<Row> = state
