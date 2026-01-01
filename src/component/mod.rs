@@ -108,6 +108,7 @@ mod progress_bar;
 mod radio_group;
 mod selectable_list;
 mod spinner;
+mod table;
 mod tabs;
 mod text_area;
 
@@ -119,6 +120,7 @@ pub use progress_bar::{ProgressBar, ProgressBarState, ProgressMessage, ProgressO
 pub use radio_group::{RadioGroup, RadioGroupState, RadioMessage, RadioOutput};
 pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableListState};
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
+pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState};
 pub use tabs::{TabMessage, TabOutput, Tabs, TabsState};
 pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
 
