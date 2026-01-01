@@ -102,6 +102,7 @@ use ratatui::prelude::*;
 
 mod button;
 mod checkbox;
+mod dialog;
 mod focus_manager;
 mod input_field;
 mod progress_bar;
@@ -114,6 +115,7 @@ mod text_area;
 
 pub use button::{Button, ButtonMessage, ButtonOutput, ButtonState};
 pub use checkbox::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState};
+pub use dialog::{Dialog, DialogButton, DialogMessage, DialogOutput, DialogState};
 pub use focus_manager::FocusManager;
 pub use input_field::{InputField, InputFieldState, InputMessage, InputOutput};
 pub use progress_bar::{ProgressBar, ProgressBarState, ProgressMessage, ProgressOutput};
