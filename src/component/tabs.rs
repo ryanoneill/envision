@@ -589,7 +589,10 @@ mod tests {
         // All messages should be ignored
         assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::Right), None);
         assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::Left), None);
-        assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::Select(2)), None);
+        assert_eq!(
+            Tabs::<&str>::update(&mut state, TabMessage::Select(2)),
+            None
+        );
         assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::First), None);
         assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::Last), None);
         assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::Confirm), None);
@@ -618,7 +621,10 @@ mod tests {
 
         assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::Right), None);
         assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::Left), None);
-        assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::Select(0)), None);
+        assert_eq!(
+            Tabs::<&str>::update(&mut state, TabMessage::Select(0)),
+            None
+        );
         assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::First), None);
         assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::Last), None);
     }
