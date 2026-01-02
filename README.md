@@ -10,6 +10,7 @@ A [ratatui](https://github.com/ratatui/ratatui) framework for collaborative TUI 
 
 ## Features
 
+- **Component Library** - 20+ ready-to-use UI components following TEA pattern
 - **Headless Testing** - Render your TUI without a terminal using `CaptureBackend`
 - **TEA Architecture** - The Elm Architecture pattern with `App`, `Runtime`, and `Command`
 - **Async Runtime** - Full async support with subscriptions, timers, and async commands
@@ -141,6 +142,72 @@ cargo run --example test_harness
 cargo run --example annotations
 ```
 
+## Components
+
+Envision provides a comprehensive library of reusable UI components, all following the TEA (The Elm Architecture) pattern with `Component`, `Focusable`, and `Toggleable` traits.
+
+### Input Components
+
+| Component | Description |
+|-----------|-------------|
+| `InputField` | Single-line text input with cursor navigation |
+| `TextArea` | Multi-line text editor with scrolling |
+| `Checkbox` | Toggleable checkbox with label |
+| `RadioGroup` | Single-selection radio button group |
+| `Select` | Dropdown selection widget |
+| `Dropdown` | Searchable/filterable select with type-to-filter |
+
+### Display Components
+
+| Component | Description |
+|-----------|-------------|
+| `ProgressBar` | Visual progress indicator with percentage |
+| `Spinner` | Animated loading indicator (multiple styles) |
+| `Toast` | Non-modal notification system with auto-dismiss |
+| `Tooltip` | Contextual information overlay |
+| `StatusBar` | Application status bar with sections |
+
+### Navigation Components
+
+| Component | Description |
+|-----------|-------------|
+| `Tabs` | Horizontal tab navigation |
+| `Menu` | Keyboard-navigable menu with shortcuts |
+| `Breadcrumb` | Navigation breadcrumb trail |
+| `Tree` | Hierarchical tree view with expand/collapse |
+
+### Layout Components
+
+| Component | Description |
+|-----------|-------------|
+| `Dialog` | Modal dialog overlay with buttons |
+| `Accordion` | Collapsible panel container |
+| `Table` | Data table with sorting and selection |
+| `SelectableList` | Scrollable list with keyboard navigation |
+
+### Utility
+
+| Component | Description |
+|-----------|-------------|
+| `Button` | Clickable button with keyboard activation |
+| `FocusManager` | Keyboard focus coordination |
+
+### Component Example
+
+```rust
+use envision::component::{Button, ButtonMessage, ButtonState, Component, Focusable};
+
+// Initialize state
+let mut state = ButtonState::new("Submit");
+
+// Handle messages
+Button::update(&mut state, ButtonMessage::Press);
+
+// Focus management
+Button::focus(&mut state);
+assert!(Button::is_focused(&state));
+```
+
 ## Architecture
 
 Envision follows The Elm Architecture (TEA) pattern:
@@ -169,6 +236,7 @@ Envision follows The Elm Architecture (TEA) pattern:
 
 | Module | Description |
 |--------|-------------|
+| `component` | 20+ reusable UI components with `Component`, `Focusable`, `Toggleable` traits |
 | `backend` | `CaptureBackend` for headless rendering |
 | `app` | TEA architecture: `App`, `Runtime`, `Command`, subscriptions |
 | `harness` | `TestHarness` and `AsyncTestHarness` for testing |
