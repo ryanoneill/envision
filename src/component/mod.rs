@@ -116,6 +116,7 @@ mod table;
 mod tabs;
 mod text_area;
 mod toast;
+mod tree;
 
 pub use button::{Button, ButtonMessage, ButtonOutput, ButtonState};
 pub use checkbox::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState};
@@ -135,6 +136,7 @@ pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRo
 pub use tabs::{TabMessage, TabOutput, Tabs, TabsState};
 pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
 pub use toast::{Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState};
+pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 
 /// A composable UI component with its own state and message handling.
 ///
