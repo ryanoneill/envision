@@ -100,6 +100,7 @@
 
 use ratatui::prelude::*;
 
+mod accordion;
 mod button;
 mod checkbox;
 mod dialog;
@@ -119,6 +120,7 @@ mod text_area;
 mod toast;
 mod tree;
 
+pub use accordion::{Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState};
 pub use button::{Button, ButtonMessage, ButtonOutput, ButtonState};
 pub use checkbox::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState};
 pub use dialog::{Dialog, DialogButton, DialogMessage, DialogOutput, DialogState};

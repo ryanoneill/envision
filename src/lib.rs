@@ -68,7 +68,8 @@ pub use app::{
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 pub use component::{
-    Button, ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
+    Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Button,
+    ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
     CheckboxState, Column, Component, Dialog, DialogButton, DialogMessage, DialogOutput,
     DialogState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, FocusManager, Focusable,
     InputField, InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput, Menu,
@@ -94,19 +95,20 @@ pub mod prelude {
     };
     pub use crate::backend::{CaptureBackend, EnhancedCell, FrameSnapshot, OutputFormat};
     pub use crate::component::{
-        Button, ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage,
-        CheckboxOutput, CheckboxState, Column, Component, Dialog, DialogButton, DialogMessage,
-        DialogOutput, DialogState, Dropdown, DropdownMessage, DropdownOutput, DropdownState,
-        FocusManager, Focusable, InputField, InputFieldState, InputMessage, InputOutput,
-        ListMessage, ListOutput, Menu, MenuItem, MenuMessage, MenuOutput, MenuState, ProgressBar,
-        ProgressBarState, ProgressMessage, ProgressOutput, RadioGroup, RadioGroupState,
-        RadioMessage, RadioOutput, Select, SelectMessage, SelectOutput, SelectState,
-        SelectableList, SelectableListState, SortDirection, Spinner, SpinnerMessage, SpinnerState,
-        SpinnerStyle, StatusBar, StatusBarItem, StatusBarMessage, StatusBarOutput, StatusBarState,
-        StatusBarStyle, TabMessage, TabOutput, Table, TableMessage, TableOutput, TableRow,
-        TableState, Tabs, TabsState, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
-        Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, Toggleable, Tree,
-        TreeMessage, TreeNode, TreeOutput, TreeState,
+        Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Button,
+        ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
+        CheckboxState, Column, Component, Dialog, DialogButton, DialogMessage, DialogOutput,
+        DialogState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, FocusManager,
+        Focusable, InputField, InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput,
+        Menu, MenuItem, MenuMessage, MenuOutput, MenuState, ProgressBar, ProgressBarState,
+        ProgressMessage, ProgressOutput, RadioGroup, RadioGroupState, RadioMessage, RadioOutput,
+        Select, SelectMessage, SelectOutput, SelectState, SelectableList, SelectableListState,
+        SortDirection, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar,
+        StatusBarItem, StatusBarMessage, StatusBarOutput, StatusBarState, StatusBarStyle,
+        TabMessage, TabOutput, Table, TableMessage, TableOutput, TableRow, TableState, Tabs,
+        TabsState, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState, Toast, ToastItem,
+        ToastLevel, ToastMessage, ToastOutput, ToastState, Toggleable, Tree, TreeMessage, TreeNode,
+        TreeOutput, TreeState,
     };
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
