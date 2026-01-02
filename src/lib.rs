@@ -75,6 +75,7 @@ pub use component::{
     ProgressBarState, ProgressMessage, ProgressOutput, RadioGroup, RadioGroupState, RadioMessage,
     RadioOutput, Select, SelectMessage, SelectOutput, SelectState, SelectableList,
     SelectableListState, SortDirection, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle,
+    StatusBar, StatusBarItem, StatusBarMessage, StatusBarOutput, StatusBarState, StatusBarStyle,
     TabMessage, TabOutput, Table, TableMessage, TableOutput, TableRow, TableState, Tabs, TabsState,
     TextArea, TextAreaMessage, TextAreaOutput, TextAreaState, Toast, ToastItem, ToastLevel,
     ToastMessage, ToastOutput, ToastState, Toggleable,
@@ -99,10 +100,11 @@ pub mod prelude {
         MenuOutput, MenuState, ProgressBar, ProgressBarState, ProgressMessage, ProgressOutput,
         RadioGroup, RadioGroupState, RadioMessage, RadioOutput, Select, SelectMessage,
         SelectOutput, SelectState, SelectableList, SelectableListState, SortDirection, Spinner,
-        SpinnerMessage, SpinnerState, SpinnerStyle, TabMessage, TabOutput, Table, TableMessage,
-        TableOutput, TableRow, TableState, Tabs, TabsState, TextArea, TextAreaMessage,
-        TextAreaOutput, TextAreaState, Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput,
-        ToastState, Toggleable,
+        SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarMessage,
+        StatusBarOutput, StatusBarState, StatusBarStyle, TabMessage, TabOutput, Table,
+        TableMessage, TableOutput, TableRow, TableState, Tabs, TabsState, TextArea,
+        TextAreaMessage, TextAreaOutput, TextAreaState, Toast, ToastItem, ToastLevel, ToastMessage,
+        ToastOutput, ToastState, Toggleable,
     };
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,

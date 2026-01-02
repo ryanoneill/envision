@@ -111,6 +111,7 @@ mod radio_group;
 mod select;
 mod selectable_list;
 mod spinner;
+mod status_bar;
 mod table;
 mod tabs;
 mod text_area;
@@ -127,6 +128,9 @@ pub use radio_group::{RadioGroup, RadioGroupState, RadioMessage, RadioOutput};
 pub use select::{Select, SelectMessage, SelectOutput, SelectState};
 pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableListState};
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
+pub use status_bar::{
+    StatusBar, StatusBarItem, StatusBarMessage, StatusBarOutput, StatusBarState, StatusBarStyle,
+};
 pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState};
 pub use tabs::{TabMessage, TabOutput, Tabs, TabsState};
 pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
