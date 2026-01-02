@@ -68,12 +68,13 @@ pub use app::{
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 pub use component::{
-    Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Button,
-    ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
-    CheckboxState, Column, Component, Dialog, DialogButton, DialogMessage, DialogOutput,
-    DialogState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, FocusManager, Focusable,
-    InputField, InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput, Menu,
-    MenuItem, MenuMessage, MenuOutput, MenuState, ProgressBar, ProgressBarState, ProgressMessage,
+    Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Breadcrumb,
+    BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Button, ButtonMessage,
+    ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState, Column,
+    Component, Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Dropdown,
+    DropdownMessage, DropdownOutput, DropdownState, FocusManager, Focusable, InputField,
+    InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput, Menu, MenuItem,
+    MenuMessage, MenuOutput, MenuState, ProgressBar, ProgressBarState, ProgressMessage,
     ProgressOutput, RadioGroup, RadioGroupState, RadioMessage, RadioOutput, Select, SelectMessage,
     SelectOutput, SelectState, SelectableList, SelectableListState, SortDirection, Spinner,
     SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarMessage,
@@ -95,7 +96,8 @@ pub mod prelude {
     };
     pub use crate::backend::{CaptureBackend, EnhancedCell, FrameSnapshot, OutputFormat};
     pub use crate::component::{
-        Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Button,
+        Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Breadcrumb,
+        BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Button,
         ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
         CheckboxState, Column, Component, Dialog, DialogButton, DialogMessage, DialogOutput,
         DialogState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, FocusManager,

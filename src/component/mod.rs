@@ -101,6 +101,7 @@
 use ratatui::prelude::*;
 
 mod accordion;
+mod breadcrumb;
 mod button;
 mod checkbox;
 mod dialog;
@@ -121,6 +122,9 @@ mod toast;
 mod tree;
 
 pub use accordion::{Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState};
+pub use breadcrumb::{
+    Breadcrumb, BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState,
+};
 pub use button::{Button, ButtonMessage, ButtonOutput, ButtonState};
 pub use checkbox::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState};
 pub use dialog::{Dialog, DialogButton, DialogMessage, DialogOutput, DialogState};
