@@ -81,7 +81,8 @@ pub use component::{
     StatusBarOutput, StatusBarState, StatusBarStyle, TabMessage, TabOutput, Table, TableMessage,
     TableOutput, TableRow, TableState, Tabs, TabsState, TextArea, TextAreaMessage, TextAreaOutput,
     TextAreaState, Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, Toggleable,
-    Tree, TreeMessage, TreeNode, TreeOutput, TreeState,
+    Tooltip, TooltipMessage, TooltipOutput, TooltipPosition, TooltipState, Tree, TreeMessage,
+    TreeNode, TreeOutput, TreeState,
 };
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{EventQueue, SimulatedEvent};
@@ -109,8 +110,9 @@ pub mod prelude {
         StatusBarItem, StatusBarMessage, StatusBarOutput, StatusBarState, StatusBarStyle,
         TabMessage, TabOutput, Table, TableMessage, TableOutput, TableRow, TableState, Tabs,
         TabsState, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState, Toast, ToastItem,
-        ToastLevel, ToastMessage, ToastOutput, ToastState, Toggleable, Tree, TreeMessage, TreeNode,
-        TreeOutput, TreeState,
+        ToastLevel, ToastMessage, ToastOutput, ToastState, Toggleable, Tooltip, TooltipMessage,
+        TooltipOutput, TooltipPosition, TooltipState, Tree, TreeMessage, TreeNode, TreeOutput,
+        TreeState,
     };
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,

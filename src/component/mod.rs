@@ -119,6 +119,7 @@ mod table;
 mod tabs;
 mod text_area;
 mod toast;
+mod tooltip;
 mod tree;
 
 pub use accordion::{Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState};
@@ -144,6 +145,7 @@ pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRo
 pub use tabs::{TabMessage, TabOutput, Tabs, TabsState};
 pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
 pub use toast::{Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState};
+pub use tooltip::{Tooltip, TooltipMessage, TooltipOutput, TooltipPosition, TooltipState};
 pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 
 /// A composable UI component with its own state and message handling.
