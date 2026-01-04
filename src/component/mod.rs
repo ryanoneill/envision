@@ -110,6 +110,7 @@ mod focus_manager;
 mod input_field;
 mod key_hints;
 mod menu;
+mod multi_progress;
 mod status_log;
 mod progress_bar;
 mod radio_group;
@@ -136,6 +137,10 @@ pub use focus_manager::FocusManager;
 pub use input_field::{InputField, InputFieldState, InputMessage, InputOutput};
 pub use key_hints::{KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsOutput, KeyHintsState};
 pub use menu::{Menu, MenuItem, MenuMessage, MenuOutput, MenuState};
+pub use multi_progress::{
+    MultiProgress, MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressItem,
+    ProgressItemStatus,
+};
 pub use progress_bar::{ProgressBar, ProgressBarState, ProgressMessage, ProgressOutput};
 pub use radio_group::{RadioGroup, RadioGroupState, RadioMessage, RadioOutput};
 pub use select::{Select, SelectMessage, SelectOutput, SelectState};
