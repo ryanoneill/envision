@@ -10,7 +10,7 @@ A [ratatui](https://github.com/ratatui/ratatui) framework for collaborative TUI 
 
 ## Features
 
-- **Component Library** - 20+ ready-to-use UI components following TEA pattern
+- **Component Library** - 25+ ready-to-use UI components following TEA pattern
 - **Headless Testing** - Render your TUI without a terminal using `CaptureBackend`
 - **TEA Architecture** - The Elm Architecture pattern with `App`, `Runtime`, and `Command`
 - **Async Runtime** - Full async support with subscriptions, timers, and async commands
@@ -162,10 +162,12 @@ Envision provides a comprehensive library of reusable UI components, all followi
 | Component | Description |
 |-----------|-------------|
 | `ProgressBar` | Visual progress indicator with percentage |
+| `MultiProgress` | Concurrent progress indicators for batch operations |
 | `Spinner` | Animated loading indicator (multiple styles) |
 | `Toast` | Non-modal notification system with auto-dismiss |
 | `Tooltip` | Contextual information overlay |
-| `StatusBar` | Application status bar with sections |
+| `StatusBar` | Application status bar with sections, timers, counters |
+| `StatusLog` | Scrolling status messages with severity levels |
 
 ### Navigation Components
 
@@ -174,6 +176,7 @@ Envision provides a comprehensive library of reusable UI components, all followi
 | `Tabs` | Horizontal tab navigation |
 | `Menu` | Keyboard-navigable menu with shortcuts |
 | `Breadcrumb` | Navigation breadcrumb trail |
+| `Router` | Multi-screen navigation with history |
 | `Tree` | Hierarchical tree view with expand/collapse |
 
 ### Layout Components
@@ -184,6 +187,7 @@ Envision provides a comprehensive library of reusable UI components, all followi
 | `Accordion` | Collapsible panel container |
 | `Table` | Data table with sorting and selection |
 | `SelectableList` | Scrollable list with keyboard navigation |
+| `LoadingList` | List with per-item loading and error states |
 
 ### Utility
 
@@ -191,6 +195,7 @@ Envision provides a comprehensive library of reusable UI components, all followi
 |-----------|-------------|
 | `Button` | Clickable button with keyboard activation |
 | `FocusManager` | Keyboard focus coordination |
+| `KeyHints` | Keyboard shortcut display bar |
 
 ### Component Example
 

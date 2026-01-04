@@ -108,13 +108,18 @@ mod dialog;
 mod dropdown;
 mod focus_manager;
 mod input_field;
+mod key_hints;
+mod loading_list;
 mod menu;
+mod multi_progress;
 mod progress_bar;
 mod radio_group;
+mod router;
 mod select;
 mod selectable_list;
 mod spinner;
 mod status_bar;
+mod status_log;
 mod table;
 mod tabs;
 mod text_area;
@@ -132,14 +137,30 @@ pub use dialog::{Dialog, DialogButton, DialogMessage, DialogOutput, DialogState}
 pub use dropdown::{Dropdown, DropdownMessage, DropdownOutput, DropdownState};
 pub use focus_manager::FocusManager;
 pub use input_field::{InputField, InputFieldState, InputMessage, InputOutput};
+pub use key_hints::{
+    KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsOutput, KeyHintsState,
+};
+pub use loading_list::{
+    ItemState, LoadingList, LoadingListItem, LoadingListMessage, LoadingListOutput,
+    LoadingListState,
+};
 pub use menu::{Menu, MenuItem, MenuMessage, MenuOutput, MenuState};
+pub use multi_progress::{
+    MultiProgress, MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressItem,
+    ProgressItemStatus,
+};
 pub use progress_bar::{ProgressBar, ProgressBarState, ProgressMessage, ProgressOutput};
 pub use radio_group::{RadioGroup, RadioGroupState, RadioMessage, RadioOutput};
+pub use router::{NavigationMode, Router, RouterMessage, RouterOutput, RouterState};
 pub use select::{Select, SelectMessage, SelectOutput, SelectState};
 pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableListState};
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 pub use status_bar::{
-    StatusBar, StatusBarItem, StatusBarMessage, StatusBarOutput, StatusBarState, StatusBarStyle,
+    Section, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarOutput,
+    StatusBarState, StatusBarStyle,
+};
+pub use status_log::{
+    StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState,
 };
 pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState};
 pub use tabs::{TabMessage, TabOutput, Tabs, TabsState};
