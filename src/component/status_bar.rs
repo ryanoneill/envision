@@ -3,6 +3,13 @@
 //! `StatusBar` provides a horizontal bar typically displayed at the bottom of the
 //! screen showing application status, mode indicators, and other information.
 //!
+//! # Features
+//!
+//! - **Static text**: Simple text labels
+//! - **Elapsed time**: Auto-updating time display (requires periodic Tick messages)
+//! - **Counters**: Numeric counters that can be incremented/set
+//! - **Heartbeat**: Animated activity indicator
+//!
 //! # Example
 //!
 //! ```rust
@@ -19,11 +26,162 @@
 //!     StatusBarItem::new("NORMAL").with_style(StatusBarStyle::Info),
 //! ]));
 //! ```
+//!
+//! # Dynamic Content Example
+//!
+//! ```rust
+//! use envision::component::{StatusBar, StatusBarMessage, StatusBarState, StatusBarItem, Section, Component};
+//!
+//! let mut state = StatusBarState::new();
+//!
+//! // Add an elapsed time display
+//! state.push_left(StatusBarItem::elapsed_time());
+//!
+//! // Add a counter
+//! state.push_right(StatusBarItem::counter().with_label("Items"));
+//!
+//! // Add a heartbeat
+//! state.push_right(StatusBarItem::heartbeat());
+//!
+//! // Update with tick (call periodically, e.g., every 100ms)
+//! StatusBar::update(&mut state, StatusBarMessage::Tick(100));
+//!
+//! // Increment the counter
+//! StatusBar::update(&mut state, StatusBarMessage::IncrementCounter {
+//!     section: Section::Right,
+//!     index: 0,
+//! });
+//! ```
 
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::Component;
+
+/// Section of the status bar for addressing items.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Section {
+    /// Left section.
+    Left,
+    /// Center section.
+    Center,
+    /// Right section.
+    Right,
+}
+
+/// Content type for status bar items.
+///
+/// Items can display static text or dynamic content that updates over time.
+#[derive(Clone, Debug, PartialEq)]
+pub enum StatusBarItemContent {
+    /// Static text content.
+    Static(String),
+    /// Elapsed time display.
+    ///
+    /// Shows time elapsed since the timer was started. Format depends on
+    /// `long_format`: short format is "MM:SS", long format is "HH:MM:SS".
+    ElapsedTime {
+        /// Accumulated elapsed time in milliseconds.
+        elapsed_ms: u64,
+        /// Whether the timer is currently running.
+        running: bool,
+        /// Whether to use long format (HH:MM:SS vs MM:SS).
+        long_format: bool,
+    },
+    /// Numeric counter display.
+    ///
+    /// Shows a counter value with an optional label.
+    Counter {
+        /// Current counter value.
+        value: u64,
+        /// Optional label (displayed before value).
+        label: Option<String>,
+    },
+    /// Animated heartbeat indicator.
+    ///
+    /// Shows an animated indicator to show activity.
+    Heartbeat {
+        /// Whether the heartbeat is active.
+        active: bool,
+        /// Current animation frame.
+        frame: usize,
+    },
+}
+
+impl StatusBarItemContent {
+    /// Creates static text content.
+    pub fn static_text(text: impl Into<String>) -> Self {
+        Self::Static(text.into())
+    }
+
+    /// Creates an elapsed time display.
+    pub fn elapsed_time() -> Self {
+        Self::ElapsedTime {
+            elapsed_ms: 0,
+            running: false,
+            long_format: false,
+        }
+    }
+
+    /// Creates a counter display.
+    pub fn counter() -> Self {
+        Self::Counter {
+            value: 0,
+            label: None,
+        }
+    }
+
+    /// Creates a heartbeat indicator.
+    pub fn heartbeat() -> Self {
+        Self::Heartbeat {
+            active: false,
+            frame: 0,
+        }
+    }
+
+    /// Returns the display text for this content.
+    fn display_text(&self) -> String {
+        match self {
+            Self::Static(text) => text.clone(),
+            Self::ElapsedTime {
+                elapsed_ms,
+                long_format,
+                ..
+            } => {
+                let total_seconds = elapsed_ms / 1000;
+                let hours = total_seconds / 3600;
+                let minutes = (total_seconds % 3600) / 60;
+                let seconds = total_seconds % 60;
+
+                if *long_format || hours > 0 {
+                    format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+                } else {
+                    format!("{:02}:{:02}", minutes, seconds)
+                }
+            }
+            Self::Counter { value, label } => {
+                if let Some(label) = label {
+                    format!("{}: {}", label, value)
+                } else {
+                    value.to_string()
+                }
+            }
+            Self::Heartbeat { active, frame } => {
+                const FRAMES: [&str; 4] = ["♡", "♥", "♥", "♡"];
+                if *active {
+                    FRAMES[*frame % FRAMES.len()].to_string()
+                } else {
+                    "♡".to_string()
+                }
+            }
+        }
+    }
+
+    /// Returns true if this is dynamic content that needs ticking.
+    fn is_dynamic(&self) -> bool {
+        !matches!(self, Self::Static(_))
+    }
+}
 
 /// Style variants for status bar items.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -58,10 +216,10 @@ impl StatusBarStyle {
 }
 
 /// A single item in the status bar.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct StatusBarItem {
-    /// The text content of the item.
-    text: String,
+    /// The content of the item.
+    content: StatusBarItemContent,
     /// The style of the item.
     style: StatusBarStyle,
     /// Whether to show a separator after this item.
@@ -69,7 +227,7 @@ pub struct StatusBarItem {
 }
 
 impl StatusBarItem {
-    /// Creates a new status bar item with the given text.
+    /// Creates a new status bar item with static text content.
     ///
     /// # Example
     ///
@@ -81,10 +239,112 @@ impl StatusBarItem {
     /// ```
     pub fn new(text: impl Into<String>) -> Self {
         Self {
-            text: text.into(),
+            content: StatusBarItemContent::Static(text.into()),
             style: StatusBarStyle::Default,
             separator: true,
         }
+    }
+
+    /// Creates a new status bar item with an elapsed time display.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let item = StatusBarItem::elapsed_time();
+    /// assert_eq!(item.text(), "00:00");
+    /// ```
+    pub fn elapsed_time() -> Self {
+        Self {
+            content: StatusBarItemContent::elapsed_time(),
+            style: StatusBarStyle::Default,
+            separator: true,
+        }
+    }
+
+    /// Creates an elapsed time display with long format (HH:MM:SS).
+    pub fn elapsed_time_long() -> Self {
+        Self {
+            content: StatusBarItemContent::ElapsedTime {
+                elapsed_ms: 0,
+                running: false,
+                long_format: true,
+            },
+            style: StatusBarStyle::Default,
+            separator: true,
+        }
+    }
+
+    /// Creates a new status bar item with a counter display.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let item = StatusBarItem::counter().with_label("Items");
+    /// ```
+    pub fn counter() -> Self {
+        Self {
+            content: StatusBarItemContent::counter(),
+            style: StatusBarStyle::Default,
+            separator: true,
+        }
+    }
+
+    /// Creates a new status bar item with a heartbeat indicator.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let item = StatusBarItem::heartbeat();
+    /// ```
+    pub fn heartbeat() -> Self {
+        Self {
+            content: StatusBarItemContent::heartbeat(),
+            style: StatusBarStyle::Default,
+            separator: true,
+        }
+    }
+
+    /// Sets the label for counter items.
+    ///
+    /// This only has an effect on Counter content types.
+    pub fn with_label(mut self, label: impl Into<String>) -> Self {
+        if let StatusBarItemContent::Counter {
+            value,
+            label: ref mut lbl,
+        } = self.content
+        {
+            *lbl = Some(label.into());
+            self.content = StatusBarItemContent::Counter {
+                value,
+                label: lbl.clone(),
+            };
+        }
+        self
+    }
+
+    /// Sets long format for elapsed time items.
+    ///
+    /// This only has an effect on ElapsedTime content types.
+    pub fn with_long_format(mut self, long: bool) -> Self {
+        if let StatusBarItemContent::ElapsedTime {
+            elapsed_ms,
+            running,
+            ..
+        } = self.content
+        {
+            self.content = StatusBarItemContent::ElapsedTime {
+                elapsed_ms,
+                running,
+                long_format: long,
+            };
+        }
+        self
     }
 
     /// Sets the style for this item.
@@ -117,14 +377,24 @@ impl StatusBarItem {
         self
     }
 
-    /// Returns the text content.
-    pub fn text(&self) -> &str {
-        &self.text
+    /// Returns the display text for this item.
+    pub fn text(&self) -> String {
+        self.content.display_text()
     }
 
-    /// Sets the text content.
+    /// Returns the content.
+    pub fn content(&self) -> &StatusBarItemContent {
+        &self.content
+    }
+
+    /// Returns a mutable reference to the content.
+    pub fn content_mut(&mut self) -> &mut StatusBarItemContent {
+        &mut self.content
+    }
+
+    /// Sets the text content (converts to static content).
     pub fn set_text(&mut self, text: impl Into<String>) {
-        self.text = text.into();
+        self.content = StatusBarItemContent::Static(text.into());
     }
 
     /// Returns the style.
@@ -146,6 +416,40 @@ impl StatusBarItem {
     pub fn set_separator(&mut self, separator: bool) {
         self.separator = separator;
     }
+
+    /// Returns true if this item has dynamic content.
+    pub fn is_dynamic(&self) -> bool {
+        self.content.is_dynamic()
+    }
+
+    /// Processes a tick for dynamic content.
+    ///
+    /// Returns true if the content was updated.
+    fn tick(&mut self, delta_ms: u64) -> bool {
+        match &mut self.content {
+            StatusBarItemContent::ElapsedTime {
+                elapsed_ms,
+                running,
+                ..
+            } => {
+                if *running {
+                    *elapsed_ms += delta_ms;
+                    true
+                } else {
+                    false
+                }
+            }
+            StatusBarItemContent::Heartbeat { active, frame } => {
+                if *active {
+                    *frame = (*frame + 1) % 4;
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
 }
 
 /// Messages that can be sent to a StatusBar.
@@ -165,6 +469,86 @@ pub enum StatusBarMessage {
     ClearCenter,
     /// Clear items from the right section.
     ClearRight,
+
+    // === Dynamic content messages ===
+    /// Update elapsed time for all running timers.
+    ///
+    /// The parameter is the time delta in milliseconds since the last tick.
+    Tick(u64),
+
+    /// Start an elapsed time timer.
+    StartTimer {
+        /// Which section contains the timer.
+        section: Section,
+        /// Index of the item in the section.
+        index: usize,
+    },
+
+    /// Stop an elapsed time timer.
+    StopTimer {
+        /// Which section contains the timer.
+        section: Section,
+        /// Index of the item in the section.
+        index: usize,
+    },
+
+    /// Reset an elapsed time timer to zero.
+    ResetTimer {
+        /// Which section contains the timer.
+        section: Section,
+        /// Index of the item in the section.
+        index: usize,
+    },
+
+    /// Increment a counter by 1.
+    IncrementCounter {
+        /// Which section contains the counter.
+        section: Section,
+        /// Index of the item in the section.
+        index: usize,
+    },
+
+    /// Decrement a counter by 1 (won't go below 0).
+    DecrementCounter {
+        /// Which section contains the counter.
+        section: Section,
+        /// Index of the item in the section.
+        index: usize,
+    },
+
+    /// Set a counter to a specific value.
+    SetCounter {
+        /// Which section contains the counter.
+        section: Section,
+        /// Index of the item in the section.
+        index: usize,
+        /// The value to set.
+        value: u64,
+    },
+
+    /// Activate a heartbeat indicator.
+    ActivateHeartbeat {
+        /// Which section contains the heartbeat.
+        section: Section,
+        /// Index of the item in the section.
+        index: usize,
+    },
+
+    /// Deactivate a heartbeat indicator.
+    DeactivateHeartbeat {
+        /// Which section contains the heartbeat.
+        section: Section,
+        /// Index of the item in the section.
+        index: usize,
+    },
+
+    /// Pulse a heartbeat once (activate, advance frame, then deactivate).
+    PulseHeartbeat {
+        /// Which section contains the heartbeat.
+        section: Section,
+        /// Index of the item in the section.
+        index: usize,
+    },
 }
 
 /// Output messages from a StatusBar.
@@ -339,6 +723,42 @@ impl StatusBarState {
     pub fn len(&self) -> usize {
         self.left.len() + self.center.len() + self.right.len()
     }
+
+    /// Returns the items in the specified section.
+    pub fn section(&self, section: Section) -> &[StatusBarItem] {
+        match section {
+            Section::Left => &self.left,
+            Section::Center => &self.center,
+            Section::Right => &self.right,
+        }
+    }
+
+    /// Returns a mutable reference to the items in the specified section.
+    pub fn section_mut(&mut self, section: Section) -> &mut Vec<StatusBarItem> {
+        match section {
+            Section::Left => &mut self.left,
+            Section::Center => &mut self.center,
+            Section::Right => &mut self.right,
+        }
+    }
+
+    /// Returns a mutable reference to an item by section and index.
+    pub fn get_item_mut(&mut self, section: Section, index: usize) -> Option<&mut StatusBarItem> {
+        self.section_mut(section).get_mut(index)
+    }
+
+    /// Processes a tick for all dynamic items.
+    fn tick_all(&mut self, delta_ms: u64) {
+        for item in &mut self.left {
+            item.tick(delta_ms);
+        }
+        for item in &mut self.center {
+            item.tick(delta_ms);
+        }
+        for item in &mut self.right {
+            item.tick(delta_ms);
+        }
+    }
 }
 
 /// A status bar component for displaying application state.
@@ -377,17 +797,17 @@ pub struct StatusBar;
 
 impl StatusBar {
     /// Renders a section of items to a span list.
-    fn render_section<'a>(items: &'a [StatusBarItem], separator: &'a str) -> Vec<Span<'a>> {
+    fn render_section(items: &[StatusBarItem], separator: &str) -> Vec<Span<'static>> {
         let mut spans = Vec::new();
 
         for (idx, item) in items.iter().enumerate() {
             let style = Style::default().fg(item.style.fg_color());
-            spans.push(Span::styled(item.text.as_str(), style));
+            spans.push(Span::styled(item.text(), style));
 
             // Add separator if not last item and item has separator enabled
             if idx < items.len() - 1 && item.has_separator() {
                 spans.push(Span::styled(
-                    separator,
+                    separator.to_string(),
                     Style::default().fg(Color::DarkGray),
                 ));
             }
@@ -428,6 +848,94 @@ impl Component for StatusBar {
             }
             StatusBarMessage::ClearRight => {
                 state.right.clear();
+            }
+
+            // Dynamic content messages
+            StatusBarMessage::Tick(delta_ms) => {
+                state.tick_all(delta_ms);
+            }
+
+            StatusBarMessage::StartTimer { section, index } => {
+                if let Some(item) = state.get_item_mut(section, index) {
+                    if let StatusBarItemContent::ElapsedTime { running, .. } = &mut item.content {
+                        *running = true;
+                    }
+                }
+            }
+
+            StatusBarMessage::StopTimer { section, index } => {
+                if let Some(item) = state.get_item_mut(section, index) {
+                    if let StatusBarItemContent::ElapsedTime { running, .. } = &mut item.content {
+                        *running = false;
+                    }
+                }
+            }
+
+            StatusBarMessage::ResetTimer { section, index } => {
+                if let Some(item) = state.get_item_mut(section, index) {
+                    if let StatusBarItemContent::ElapsedTime {
+                        elapsed_ms,
+                        running,
+                        ..
+                    } = &mut item.content
+                    {
+                        *elapsed_ms = 0;
+                        *running = false;
+                    }
+                }
+            }
+
+            StatusBarMessage::IncrementCounter { section, index } => {
+                if let Some(item) = state.get_item_mut(section, index) {
+                    if let StatusBarItemContent::Counter { value, .. } = &mut item.content {
+                        *value = value.saturating_add(1);
+                    }
+                }
+            }
+
+            StatusBarMessage::DecrementCounter { section, index } => {
+                if let Some(item) = state.get_item_mut(section, index) {
+                    if let StatusBarItemContent::Counter { value, .. } = &mut item.content {
+                        *value = value.saturating_sub(1);
+                    }
+                }
+            }
+
+            StatusBarMessage::SetCounter {
+                section,
+                index,
+                value: new_value,
+            } => {
+                if let Some(item) = state.get_item_mut(section, index) {
+                    if let StatusBarItemContent::Counter { value, .. } = &mut item.content {
+                        *value = new_value;
+                    }
+                }
+            }
+
+            StatusBarMessage::ActivateHeartbeat { section, index } => {
+                if let Some(item) = state.get_item_mut(section, index) {
+                    if let StatusBarItemContent::Heartbeat { active, .. } = &mut item.content {
+                        *active = true;
+                    }
+                }
+            }
+
+            StatusBarMessage::DeactivateHeartbeat { section, index } => {
+                if let Some(item) = state.get_item_mut(section, index) {
+                    if let StatusBarItemContent::Heartbeat { active, .. } = &mut item.content {
+                        *active = false;
+                    }
+                }
+            }
+
+            StatusBarMessage::PulseHeartbeat { section, index } => {
+                if let Some(item) = state.get_item_mut(section, index) {
+                    if let StatusBarItemContent::Heartbeat { active, frame } = &mut item.content {
+                        *active = true;
+                        *frame = (*frame + 1) % 4;
+                    }
+                }
             }
         }
         None
@@ -1057,5 +1565,634 @@ mod tests {
         let spans = StatusBar::render_section(&items, " | ");
         // A + separator + B = 3 spans
         assert_eq!(spans.len(), 3);
+    }
+
+    // ========================================
+    // Dynamic Content Tests
+    // ========================================
+
+    // StatusBarItemContent tests
+
+    #[test]
+    fn test_content_static_text() {
+        let content = StatusBarItemContent::static_text("Hello");
+        assert_eq!(content.display_text(), "Hello");
+        assert!(!content.is_dynamic());
+    }
+
+    #[test]
+    fn test_content_elapsed_time_default() {
+        let content = StatusBarItemContent::elapsed_time();
+        assert_eq!(content.display_text(), "00:00");
+        assert!(content.is_dynamic());
+    }
+
+    #[test]
+    fn test_content_elapsed_time_formatting() {
+        let content = StatusBarItemContent::ElapsedTime {
+            elapsed_ms: 65_000, // 1 min 5 sec
+            running: false,
+            long_format: false,
+        };
+        assert_eq!(content.display_text(), "01:05");
+    }
+
+    #[test]
+    fn test_content_elapsed_time_long_format() {
+        let content = StatusBarItemContent::ElapsedTime {
+            elapsed_ms: 3_665_000, // 1 hr 1 min 5 sec
+            running: false,
+            long_format: true,
+        };
+        assert_eq!(content.display_text(), "01:01:05");
+    }
+
+    #[test]
+    fn test_content_elapsed_time_auto_long_format() {
+        // When hours > 0, should auto-switch to long format
+        let content = StatusBarItemContent::ElapsedTime {
+            elapsed_ms: 3_665_000, // 1 hr 1 min 5 sec
+            running: false,
+            long_format: false, // Not explicit, but should show hours
+        };
+        assert_eq!(content.display_text(), "01:01:05");
+    }
+
+    #[test]
+    fn test_content_counter_default() {
+        let content = StatusBarItemContent::counter();
+        assert_eq!(content.display_text(), "0");
+    }
+
+    #[test]
+    fn test_content_counter_with_value() {
+        let content = StatusBarItemContent::Counter {
+            value: 42,
+            label: None,
+        };
+        assert_eq!(content.display_text(), "42");
+    }
+
+    #[test]
+    fn test_content_counter_with_label() {
+        let content = StatusBarItemContent::Counter {
+            value: 5,
+            label: Some("Items".to_string()),
+        };
+        assert_eq!(content.display_text(), "Items: 5");
+    }
+
+    #[test]
+    fn test_content_heartbeat_inactive() {
+        let content = StatusBarItemContent::Heartbeat {
+            active: false,
+            frame: 0,
+        };
+        assert_eq!(content.display_text(), "♡");
+    }
+
+    #[test]
+    fn test_content_heartbeat_active_frames() {
+        // Frame 0
+        let content0 = StatusBarItemContent::Heartbeat {
+            active: true,
+            frame: 0,
+        };
+        assert_eq!(content0.display_text(), "♡");
+
+        // Frame 1
+        let content1 = StatusBarItemContent::Heartbeat {
+            active: true,
+            frame: 1,
+        };
+        assert_eq!(content1.display_text(), "♥");
+
+        // Frame 2
+        let content2 = StatusBarItemContent::Heartbeat {
+            active: true,
+            frame: 2,
+        };
+        assert_eq!(content2.display_text(), "♥");
+
+        // Frame 3
+        let content3 = StatusBarItemContent::Heartbeat {
+            active: true,
+            frame: 3,
+        };
+        assert_eq!(content3.display_text(), "♡");
+    }
+
+    // StatusBarItem factory method tests
+
+    #[test]
+    fn test_item_elapsed_time() {
+        let item = StatusBarItem::elapsed_time();
+        assert_eq!(item.text(), "00:00");
+        assert!(item.is_dynamic());
+    }
+
+    #[test]
+    fn test_item_elapsed_time_long() {
+        let item = StatusBarItem::elapsed_time_long();
+        assert_eq!(item.text(), "00:00:00");
+    }
+
+    #[test]
+    fn test_item_counter() {
+        let item = StatusBarItem::counter();
+        assert_eq!(item.text(), "0");
+    }
+
+    #[test]
+    fn test_item_counter_with_label() {
+        let item = StatusBarItem::counter().with_label("Count");
+        assert_eq!(item.text(), "Count: 0");
+    }
+
+    #[test]
+    fn test_item_heartbeat() {
+        let item = StatusBarItem::heartbeat();
+        assert_eq!(item.text(), "♡");
+    }
+
+    #[test]
+    fn test_item_with_long_format() {
+        let item = StatusBarItem::elapsed_time().with_long_format(true);
+        assert_eq!(item.text(), "00:00:00");
+    }
+
+    // Section tests
+
+    #[test]
+    fn test_section_enum() {
+        assert_ne!(Section::Left, Section::Center);
+        assert_ne!(Section::Center, Section::Right);
+        assert_ne!(Section::Left, Section::Right);
+    }
+
+    #[test]
+    fn test_state_section() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::new("L"));
+        state.push_center(StatusBarItem::new("C"));
+        state.push_right(StatusBarItem::new("R"));
+
+        assert_eq!(state.section(Section::Left).len(), 1);
+        assert_eq!(state.section(Section::Center).len(), 1);
+        assert_eq!(state.section(Section::Right).len(), 1);
+    }
+
+    #[test]
+    fn test_state_section_mut() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::new("L"));
+
+        state.section_mut(Section::Left).push(StatusBarItem::new("L2"));
+        assert_eq!(state.section(Section::Left).len(), 2);
+    }
+
+    #[test]
+    fn test_state_get_item_mut() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::new("Test"));
+
+        let item = state.get_item_mut(Section::Left, 0);
+        assert!(item.is_some());
+        item.unwrap().set_text("Updated");
+        assert_eq!(state.left()[0].text(), "Updated");
+    }
+
+    #[test]
+    fn test_state_get_item_mut_invalid_index() {
+        let mut state = StatusBarState::new();
+        assert!(state.get_item_mut(Section::Left, 0).is_none());
+    }
+
+    // Timer message tests
+
+    #[test]
+    fn test_tick_message() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::elapsed_time());
+
+        // Start the timer
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::StartTimer {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+
+        // Tick 5 seconds
+        StatusBar::update(&mut state, StatusBarMessage::Tick(5000));
+        assert_eq!(state.left()[0].text(), "00:05");
+
+        // Tick another 65 seconds
+        StatusBar::update(&mut state, StatusBarMessage::Tick(65000));
+        assert_eq!(state.left()[0].text(), "01:10");
+    }
+
+    #[test]
+    fn test_start_timer() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::elapsed_time());
+
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::StartTimer {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+
+        if let StatusBarItemContent::ElapsedTime { running, .. } = state.left()[0].content() {
+            assert!(*running);
+        } else {
+            panic!("Expected ElapsedTime content");
+        }
+    }
+
+    #[test]
+    fn test_stop_timer() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::elapsed_time());
+
+        // Start then stop
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::StartTimer {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::StopTimer {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+
+        if let StatusBarItemContent::ElapsedTime { running, .. } = state.left()[0].content() {
+            assert!(!*running);
+        } else {
+            panic!("Expected ElapsedTime content");
+        }
+    }
+
+    #[test]
+    fn test_reset_timer() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::elapsed_time());
+
+        // Start, tick, then reset
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::StartTimer {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+        StatusBar::update(&mut state, StatusBarMessage::Tick(10000));
+        assert_eq!(state.left()[0].text(), "00:10");
+
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::ResetTimer {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+        assert_eq!(state.left()[0].text(), "00:00");
+    }
+
+    #[test]
+    fn test_timer_stopped_no_tick() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::elapsed_time());
+
+        // Timer not started, ticking should not change time
+        StatusBar::update(&mut state, StatusBarMessage::Tick(5000));
+        assert_eq!(state.left()[0].text(), "00:00");
+    }
+
+    // Counter message tests
+
+    #[test]
+    fn test_increment_counter() {
+        let mut state = StatusBarState::new();
+        state.push_right(StatusBarItem::counter());
+
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::IncrementCounter {
+                section: Section::Right,
+                index: 0,
+            },
+        );
+        assert_eq!(state.right()[0].text(), "1");
+
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::IncrementCounter {
+                section: Section::Right,
+                index: 0,
+            },
+        );
+        assert_eq!(state.right()[0].text(), "2");
+    }
+
+    #[test]
+    fn test_decrement_counter() {
+        let mut state = StatusBarState::new();
+        state.push_right(StatusBarItem::counter());
+
+        // Set to 5, then decrement
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::SetCounter {
+                section: Section::Right,
+                index: 0,
+                value: 5,
+            },
+        );
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::DecrementCounter {
+                section: Section::Right,
+                index: 0,
+            },
+        );
+        assert_eq!(state.right()[0].text(), "4");
+    }
+
+    #[test]
+    fn test_decrement_counter_no_underflow() {
+        let mut state = StatusBarState::new();
+        state.push_right(StatusBarItem::counter());
+
+        // Try to decrement below 0
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::DecrementCounter {
+                section: Section::Right,
+                index: 0,
+            },
+        );
+        assert_eq!(state.right()[0].text(), "0");
+    }
+
+    #[test]
+    fn test_set_counter() {
+        let mut state = StatusBarState::new();
+        state.push_right(StatusBarItem::counter().with_label("Items"));
+
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::SetCounter {
+                section: Section::Right,
+                index: 0,
+                value: 42,
+            },
+        );
+        assert_eq!(state.right()[0].text(), "Items: 42");
+    }
+
+    // Heartbeat message tests
+
+    #[test]
+    fn test_activate_heartbeat() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::heartbeat());
+
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::ActivateHeartbeat {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+
+        if let StatusBarItemContent::Heartbeat { active, .. } = state.left()[0].content() {
+            assert!(*active);
+        } else {
+            panic!("Expected Heartbeat content");
+        }
+    }
+
+    #[test]
+    fn test_deactivate_heartbeat() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::heartbeat());
+
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::ActivateHeartbeat {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::DeactivateHeartbeat {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+
+        if let StatusBarItemContent::Heartbeat { active, .. } = state.left()[0].content() {
+            assert!(!*active);
+        } else {
+            panic!("Expected Heartbeat content");
+        }
+    }
+
+    #[test]
+    fn test_pulse_heartbeat() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::heartbeat());
+
+        // First pulse
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::PulseHeartbeat {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+
+        if let StatusBarItemContent::Heartbeat { active, frame } = state.left()[0].content() {
+            assert!(*active);
+            assert_eq!(*frame, 1);
+        } else {
+            panic!("Expected Heartbeat content");
+        }
+    }
+
+    #[test]
+    fn test_heartbeat_tick() {
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::heartbeat());
+
+        // Activate and tick
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::ActivateHeartbeat {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+
+        StatusBar::update(&mut state, StatusBarMessage::Tick(100));
+
+        if let StatusBarItemContent::Heartbeat { frame, .. } = state.left()[0].content() {
+            assert_eq!(*frame, 1);
+        } else {
+            panic!("Expected Heartbeat content");
+        }
+    }
+
+    // View tests for dynamic content
+
+    #[test]
+    fn test_view_elapsed_time() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::elapsed_time());
+
+        let backend = CaptureBackend::new(80, 1);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                StatusBar::view(&state, frame, frame.area());
+            })
+            .unwrap();
+
+        let output = terminal.backend().to_string();
+        assert!(output.contains("00:00"));
+    }
+
+    #[test]
+    fn test_view_counter_with_label() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let mut state = StatusBarState::new();
+        state.push_right(StatusBarItem::counter().with_label("Files"));
+
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::SetCounter {
+                section: Section::Right,
+                index: 0,
+                value: 15,
+            },
+        );
+
+        let backend = CaptureBackend::new(80, 1);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                StatusBar::view(&state, frame, frame.area());
+            })
+            .unwrap();
+
+        let output = terminal.backend().to_string();
+        assert!(output.contains("Files: 15"));
+    }
+
+    #[test]
+    fn test_view_heartbeat() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let mut state = StatusBarState::new();
+        state.push_left(StatusBarItem::heartbeat());
+
+        let backend = CaptureBackend::new(80, 1);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                StatusBar::view(&state, frame, frame.area());
+            })
+            .unwrap();
+
+        let output = terminal.backend().to_string();
+        assert!(output.contains("♡"));
+    }
+
+    // Integration tests for dynamic content
+
+    #[test]
+    fn test_media_player_status_bar() {
+        let mut state = StatusBarState::new();
+
+        // Left: elapsed time
+        state.push_left(StatusBarItem::elapsed_time().with_style(StatusBarStyle::Info));
+
+        // Center: file name
+        state.push_center(StatusBarItem::new("song.mp3"));
+
+        // Right: heartbeat for activity
+        state.push_right(StatusBarItem::heartbeat());
+
+        assert_eq!(state.len(), 3);
+        assert!(state.left()[0].is_dynamic());
+    }
+
+    #[test]
+    fn test_file_processor_status_bar() {
+        let mut state = StatusBarState::new();
+
+        // Left: timer for processing
+        state.push_left(StatusBarItem::elapsed_time_long());
+
+        // Center: file count
+        state.push_center(StatusBarItem::counter().with_label("Processed"));
+
+        // Right: remaining count
+        state.push_right(StatusBarItem::counter().with_label("Remaining"));
+
+        // Simulate processing
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::StartTimer {
+                section: Section::Left,
+                index: 0,
+            },
+        );
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::SetCounter {
+                section: Section::Right,
+                index: 0,
+                value: 100,
+            },
+        );
+
+        // Process one file
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::IncrementCounter {
+                section: Section::Center,
+                index: 0,
+            },
+        );
+        StatusBar::update(
+            &mut state,
+            StatusBarMessage::DecrementCounter {
+                section: Section::Right,
+                index: 0,
+            },
+        );
+
+        assert_eq!(state.center()[0].text(), "Processed: 1");
+        assert_eq!(state.right()[0].text(), "Remaining: 99");
     }
 }

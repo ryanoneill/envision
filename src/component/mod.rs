@@ -142,7 +142,8 @@ pub use select::{Select, SelectMessage, SelectOutput, SelectState};
 pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableListState};
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 pub use status_bar::{
-    StatusBar, StatusBarItem, StatusBarMessage, StatusBarOutput, StatusBarState, StatusBarStyle,
+    Section, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarOutput,
+    StatusBarState, StatusBarStyle,
 };
 pub use status_log::{
     StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState,
