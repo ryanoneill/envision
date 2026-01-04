@@ -1344,7 +1344,6 @@ mod tests {
     #[derive(Clone)]
     enum TickingMsg {
         Tick,
-        Quit,
     }
 
     impl App for TickingApp {
@@ -1363,7 +1362,6 @@ mod tests {
                         state.quit = true;
                     }
                 }
-                TickingMsg::Quit => state.quit = true,
             }
             Command::none()
         }
@@ -1418,7 +1416,6 @@ mod tests {
     #[derive(Clone)]
     enum InitCommandMsg {
         Initialized,
-        Quit,
     }
 
     impl App for InitCommandApp {
@@ -1436,7 +1433,6 @@ mod tests {
         fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
             match msg {
                 InitCommandMsg::Initialized => state.initialized = true,
-                InitCommandMsg::Quit => {}
             }
             Command::none()
         }
