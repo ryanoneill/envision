@@ -1911,4 +1911,250 @@ mod tests {
         let msg = stream.next().await;
         assert_eq!(msg, None);
     }
+
+    #[tokio::test]
+    async fn test_empty_batch_subscription() {
+        let cancel = CancellationToken::new();
+        let sub = Box::new(batch::<TestMsg>(vec![]));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Empty batch should end immediately
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_channel_subscription_cancellation() {
+        let cancel = CancellationToken::new();
+        let (tx, rx) = mpsc::channel(10);
+        let sub = Box::new(ChannelSubscription::new(rx));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Send a message
+        tx.send(TestMsg::Value(1)).await.unwrap();
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        // Cancel the subscription
+        cancel.cancel();
+
+        // Stream should end
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_stream_subscription_cancellation() {
+        let cancel = CancellationToken::new();
+        let (tx, rx) = mpsc::channel(10);
+        let receiver_stream = tokio_stream::wrappers::ReceiverStream::new(rx);
+        let sub = Box::new(StreamSubscription::new(receiver_stream));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Send a message
+        tx.send(TestMsg::Value(1)).await.unwrap();
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Value(1)));
+
+        // Cancel the subscription
+        cancel.cancel();
+
+        // Stream should end
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_interval_immediate_cancellation() {
+        let cancel = CancellationToken::new();
+        let sub = Box::new(IntervalImmediateSubscription::new(
+            Duration::from_millis(10),
+            || TestMsg::Tick,
+        ));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Get the immediate first message
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Tick));
+
+        // Get the second message after interval
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Tick));
+
+        // Cancel the subscription
+        cancel.cancel();
+
+        // Yield to let cancellation propagate
+        tokio::task::yield_now().await;
+
+        // Stream should eventually end (might get one more buffered message on some platforms)
+        let mut ended = false;
+        for _ in 0..3 {
+            let msg = stream.next().await;
+            if msg.is_none() {
+                ended = true;
+                break;
+            }
+        }
+        assert!(ended, "Stream should have ended after cancellation");
+    }
+
+    #[tokio::test]
+    async fn test_debounce_empty_stream() {
+        let cancel = CancellationToken::new();
+        let values: Vec<TestMsg> = vec![];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(DebounceSubscription::new(inner, Duration::from_millis(50)));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Empty stream should end immediately with no pending message
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_mapped_subscription_empty_stream() {
+        let cancel = CancellationToken::new();
+        let values: Vec<i32> = vec![];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(MappedSubscription::new(inner, TestMsg::Value));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Mapped empty stream should end immediately
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[test]
+    fn test_filter_subscription_new() {
+        let values = vec![TestMsg::Value(1)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let _sub = FilterSubscription::new(inner, |_| true);
+        // Construction test - subscription created successfully
+    }
+
+    #[test]
+    fn test_take_subscription_new() {
+        let values = vec![TestMsg::Value(1)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = TakeSubscription::new(inner, 5);
+        assert_eq!(sub.count, 5);
+    }
+
+    #[test]
+    fn test_debounce_subscription_new() {
+        let values = vec![TestMsg::Value(1)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = DebounceSubscription::new(inner, Duration::from_millis(100));
+        assert_eq!(sub.duration, Duration::from_millis(100));
+    }
+
+    #[test]
+    fn test_throttle_subscription_new() {
+        let values = vec![TestMsg::Value(1)];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = ThrottleSubscription::new(inner, Duration::from_millis(200));
+        assert_eq!(sub.duration, Duration::from_millis(200));
+    }
+
+    #[test]
+    fn test_mapped_subscription_new() {
+        let values = vec![42i32];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let _sub = MappedSubscription::new(inner, TestMsg::Value);
+        // Construction test - subscription created successfully
+    }
+
+    #[test]
+    fn test_batch_subscription_new() {
+        let subs: Vec<BoxedSubscription<TestMsg>> = vec![];
+        let sub = BatchSubscription::new(subs);
+        assert!(sub.subscriptions.is_empty());
+    }
+
+    #[test]
+    fn test_interval_immediate_builder_every() {
+        let builder = IntervalImmediateBuilder::every(Duration::from_secs(2));
+        let sub = builder.with_message(|| TestMsg::Tick);
+        assert_eq!(sub.interval, Duration::from_secs(2));
+    }
+
+    #[tokio::test]
+    async fn test_tick_cancellation() {
+        let cancel = CancellationToken::new();
+        let sub = Box::new(TickSubscription::new(Duration::from_millis(10), || {
+            TestMsg::Tick
+        }));
+
+        let mut stream = sub.into_stream(cancel.clone());
+
+        // Get first tick
+        let msg = stream.next().await;
+        assert_eq!(msg, Some(TestMsg::Tick));
+
+        // Cancel before next tick
+        cancel.cancel();
+
+        // Yield to let cancellation propagate
+        tokio::task::yield_now().await;
+
+        // Stream should eventually end (might get one more buffered message on some platforms)
+        let mut ended = false;
+        for _ in 0..3 {
+            let msg = stream.next().await;
+            if msg.is_none() {
+                ended = true;
+                break;
+            }
+        }
+        assert!(ended, "Stream should have ended after cancellation");
+    }
+
+    #[tokio::test]
+    async fn test_filter_subscription_empty_input() {
+        let cancel = CancellationToken::new();
+        let values: Vec<TestMsg> = vec![];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(FilterSubscription::new(inner, |_| true));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Empty input ends immediately
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_throttle_empty_stream() {
+        let cancel = CancellationToken::new();
+        let values: Vec<TestMsg> = vec![];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(ThrottleSubscription::new(inner, Duration::from_millis(50)));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Empty stream ends immediately
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
+
+    #[tokio::test]
+    async fn test_take_empty_stream() {
+        let cancel = CancellationToken::new();
+        let values: Vec<TestMsg> = vec![];
+        let inner = StreamSubscription::new(tokio_stream::iter(values));
+        let sub = Box::new(TakeSubscription::new(inner, 10));
+
+        let mut stream = sub.into_stream(cancel);
+
+        // Empty stream ends immediately
+        let msg = stream.next().await;
+        assert_eq!(msg, None);
+    }
 }

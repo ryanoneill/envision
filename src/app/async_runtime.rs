@@ -939,4 +939,514 @@ mod tests {
         assert_eq!(errors.len(), 1);
         assert!(errors[0].to_string().contains("data not found"));
     }
+
+    #[test]
+    fn test_async_runtime_headless_with_config() {
+        let config = AsyncRuntimeConfig::new().with_history(5);
+        let runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::headless_with_config(80, 24, config).unwrap();
+        assert_eq!(runtime.state().count, 0);
+    }
+
+    #[test]
+    fn test_async_runtime_headless_with_config_no_history() {
+        let config = AsyncRuntimeConfig::new(); // capture_history is false by default
+        let runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::headless_with_config(80, 24, config).unwrap();
+        assert_eq!(runtime.state().count, 0);
+    }
+
+    #[test]
+    fn test_async_runtime_state_mut() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        runtime.state_mut().count = 42;
+        assert_eq!(runtime.state().count, 42);
+    }
+
+    #[test]
+    fn test_async_runtime_terminal() {
+        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let terminal = runtime.terminal();
+        assert_eq!(terminal.size().unwrap().width, 80);
+    }
+
+    #[test]
+    fn test_async_runtime_terminal_mut() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let _terminal = runtime.terminal_mut();
+        // Just verify we can get a mutable reference
+    }
+
+    #[test]
+    fn test_async_runtime_backend() {
+        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let backend = runtime.backend();
+        assert_eq!(backend.size().unwrap().width, 80);
+    }
+
+    #[test]
+    fn test_async_runtime_backend_mut() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let _backend = runtime.backend_mut();
+        // Just verify we can get a mutable reference
+    }
+
+    #[test]
+    fn test_async_runtime_events() {
+        use crate::input::SimulatedEvent;
+        use crossterm::event::KeyCode;
+
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let events = runtime.events();
+
+        // Add some events to the queue
+        events.push(SimulatedEvent::key(KeyCode::Enter));
+
+        assert!(!events.is_empty());
+    }
+
+    #[test]
+    fn test_async_runtime_process_event() {
+        use crate::input::SimulatedEvent;
+        use crossterm::event::KeyCode;
+
+        // App that handles key events
+        struct KeyApp;
+
+        #[derive(Clone, Default)]
+        struct KeyState {
+            key_pressed: bool,
+        }
+
+        #[derive(Clone)]
+        enum KeyMsg {
+            KeyPress,
+        }
+
+        impl App for KeyApp {
+            type State = KeyState;
+            type Message = KeyMsg;
+
+            fn init() -> (Self::State, Command<Self::Message>) {
+                (KeyState::default(), Command::none())
+            }
+
+            fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+                match msg {
+                    KeyMsg::KeyPress => state.key_pressed = true,
+                }
+                Command::none()
+            }
+
+            fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+
+            fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
+                if let SimulatedEvent::Key(_) = event {
+                    Some(KeyMsg::KeyPress)
+                } else {
+                    None
+                }
+            }
+        }
+
+        let mut runtime: AsyncRuntime<KeyApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // No events to process
+        assert!(!runtime.process_event());
+
+        // Add an event
+        runtime.events().push(SimulatedEvent::key(KeyCode::Enter));
+
+        // Process the event
+        assert!(runtime.process_event());
+        assert!(runtime.state().key_pressed);
+
+        // No more events
+        assert!(!runtime.process_event());
+    }
+
+    #[test]
+    fn test_async_runtime_process_all_events() {
+        use crate::input::SimulatedEvent;
+        use crossterm::event::KeyCode;
+
+        // App that counts key presses
+        struct CountKeyApp;
+
+        #[derive(Clone, Default)]
+        struct CountKeyState {
+            count: i32,
+        }
+
+        #[derive(Clone)]
+        enum CountKeyMsg {
+            KeyPress,
+        }
+
+        impl App for CountKeyApp {
+            type State = CountKeyState;
+            type Message = CountKeyMsg;
+
+            fn init() -> (Self::State, Command<Self::Message>) {
+                (CountKeyState::default(), Command::none())
+            }
+
+            fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+                match msg {
+                    CountKeyMsg::KeyPress => state.count += 1,
+                }
+                Command::none()
+            }
+
+            fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+
+            fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
+                if let SimulatedEvent::Key(_) = event {
+                    Some(CountKeyMsg::KeyPress)
+                } else {
+                    None
+                }
+            }
+        }
+
+        let mut runtime: AsyncRuntime<CountKeyApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // Add multiple events
+        for _ in 0..5 {
+            runtime.events().push(SimulatedEvent::key(KeyCode::Enter));
+        }
+
+        // Process all events
+        runtime.process_all_events();
+        assert_eq!(runtime.state().count, 5);
+    }
+
+    #[test]
+    fn test_async_runtime_captured_output() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+        runtime.dispatch(CounterMsg::IncrementBy(42));
+        runtime.render().unwrap();
+
+        let output = runtime.captured_output();
+        assert!(output.contains("Count: 42"));
+    }
+
+    #[test]
+    fn test_async_runtime_captured_ansi() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+        runtime.dispatch(CounterMsg::Increment);
+        runtime.render().unwrap();
+
+        let ansi = runtime.captured_ansi();
+        assert!(ansi.contains("Count: 1"));
+    }
+
+    #[test]
+    fn test_async_runtime_find_text() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+        runtime.dispatch(CounterMsg::Increment);
+        runtime.render().unwrap();
+
+        let positions = runtime.find_text("Count");
+        assert!(!positions.is_empty());
+    }
+
+    #[test]
+    fn test_async_runtime_run_ticks_with_quit() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // Dispatch quit message so it quits before all ticks
+        runtime.dispatch(CounterMsg::Quit);
+        runtime.run_ticks(100).unwrap(); // Request 100 ticks but should quit earlier
+
+        assert!(runtime.should_quit());
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_subscribe() {
+        use crate::app::subscription::TickSubscription;
+
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // Subscribe to a tick that fires every 10ms
+        let sub = TickSubscription::new(Duration::from_millis(10), || CounterMsg::Increment);
+        runtime.subscribe(sub);
+
+        // Spawn a task to send quit after some ticks
+        let tx = runtime.message_sender();
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+            let _ = tx.send(CounterMsg::Quit).await;
+        });
+
+        // Run the event loop - subscriptions are polled here
+        runtime.run().await.unwrap();
+
+        // Should have received some increment messages (subscriptions work during run())
+        // Note: Subscriptions are only polled during run(), so count may or may not be > 0
+        // depending on timing. The key test is that we quit cleanly.
+        assert!(runtime.should_quit());
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_subscribe_all() {
+        use crate::app::subscription::{BoxedSubscription, TickSubscription};
+
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // Create multiple subscriptions
+        let sub1: BoxedSubscription<CounterMsg> =
+            Box::new(TickSubscription::new(Duration::from_millis(10), || {
+                CounterMsg::Increment
+            }));
+        let sub2: BoxedSubscription<CounterMsg> =
+            Box::new(TickSubscription::new(Duration::from_millis(10), || {
+                CounterMsg::Increment
+            }));
+
+        runtime.subscribe_all(vec![sub1, sub2]);
+
+        // Wait a bit for ticks
+        tokio::time::sleep(Duration::from_millis(50)).await;
+
+        // Clean up
+        runtime.quit();
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_run() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+
+        // Increment counter
+        runtime.dispatch(CounterMsg::Increment);
+
+        // Spawn task to quit after a short delay
+        let tx = runtime.message_sender();
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+            let _ = tx.send(CounterMsg::Quit).await;
+        });
+
+        // Run the event loop
+        runtime.run().await.unwrap();
+
+        // Should have quit
+        assert!(runtime.should_quit());
+        assert!(runtime.contains_text("Count: 1"));
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_run_with_events() {
+        use crate::input::SimulatedEvent;
+        use crossterm::event::{KeyCode, KeyEvent};
+
+        // App that increments on any key and quits on 'q'
+        struct EventDrivenApp;
+
+        #[derive(Clone, Default)]
+        struct EventDrivenState {
+            count: i32,
+            quit: bool,
+        }
+
+        #[derive(Clone)]
+        enum EventDrivenMsg {
+            Increment,
+            Quit,
+        }
+
+        impl App for EventDrivenApp {
+            type State = EventDrivenState;
+            type Message = EventDrivenMsg;
+
+            fn init() -> (Self::State, Command<Self::Message>) {
+                (EventDrivenState::default(), Command::none())
+            }
+
+            fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+                match msg {
+                    EventDrivenMsg::Increment => state.count += 1,
+                    EventDrivenMsg::Quit => state.quit = true,
+                }
+                Command::none()
+            }
+
+            fn view(state: &Self::State, frame: &mut ratatui::Frame) {
+                let text = format!("Count: {}", state.count);
+                frame.render_widget(Paragraph::new(text), frame.area());
+            }
+
+            fn should_quit(state: &Self::State) -> bool {
+                state.quit
+            }
+
+            fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
+                if let SimulatedEvent::Key(KeyEvent { code, .. }) = event {
+                    if *code == KeyCode::Char('q') {
+                        Some(EventDrivenMsg::Quit)
+                    } else {
+                        Some(EventDrivenMsg::Increment)
+                    }
+                } else {
+                    None
+                }
+            }
+        }
+
+        let mut runtime: AsyncRuntime<EventDrivenApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // Add some key events
+        runtime.events().push(SimulatedEvent::char('a'));
+        runtime.events().push(SimulatedEvent::char('b'));
+
+        // Spawn task to quit after processing events
+        let tx = runtime.message_sender();
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(100)).await;
+            let _ = tx.send(EventDrivenMsg::Quit).await;
+        });
+
+        // Run the event loop
+        runtime.run().await.unwrap();
+
+        assert!(runtime.should_quit());
+        assert!(runtime.state().count >= 2); // At least 2 key events processed
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_run_cancelled() {
+        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        let token = runtime.cancellation_token();
+
+        // Spawn task to cancel after a short delay
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+            token.cancel();
+        });
+
+        // Run the event loop
+        runtime.run().await.unwrap();
+
+        // Should have quit due to cancellation
+        assert!(runtime.should_quit());
+    }
+
+    // Test app with on_tick handler
+    struct TickingApp;
+
+    #[derive(Clone, Default)]
+    struct TickingState {
+        ticks: i32,
+        quit: bool,
+    }
+
+    #[derive(Clone)]
+    enum TickingMsg {
+        Tick,
+    }
+
+    impl App for TickingApp {
+        type State = TickingState;
+        type Message = TickingMsg;
+
+        fn init() -> (Self::State, Command<Self::Message>) {
+            (TickingState::default(), Command::none())
+        }
+
+        fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+            match msg {
+                TickingMsg::Tick => {
+                    state.ticks += 1;
+                    if state.ticks >= 3 {
+                        state.quit = true;
+                    }
+                }
+            }
+            Command::none()
+        }
+
+        fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+
+        fn should_quit(state: &Self::State) -> bool {
+            state.quit
+        }
+
+        fn on_tick(_state: &Self::State) -> Option<Self::Message> {
+            Some(TickingMsg::Tick)
+        }
+    }
+
+    #[test]
+    fn test_async_runtime_tick_with_on_tick() {
+        let mut runtime: AsyncRuntime<TickingApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // Each tick should increment
+        runtime.tick().unwrap();
+        assert_eq!(runtime.state().ticks, 1);
+
+        runtime.tick().unwrap();
+        assert_eq!(runtime.state().ticks, 2);
+
+        // Third tick should trigger quit
+        runtime.tick().unwrap();
+        assert_eq!(runtime.state().ticks, 3);
+        assert!(runtime.should_quit());
+    }
+
+    #[tokio::test]
+    async fn test_async_runtime_run_with_on_tick() {
+        let mut runtime: AsyncRuntime<TickingApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // Run the event loop - should quit after 3 ticks
+        runtime.run().await.unwrap();
+
+        assert!(runtime.should_quit());
+        assert!(runtime.state().ticks >= 3);
+    }
+
+    // Test app with init command
+    struct InitCommandApp;
+
+    #[derive(Clone, Default)]
+    struct InitCommandState {
+        initialized: bool,
+    }
+
+    #[derive(Clone)]
+    enum InitCommandMsg {
+        Initialized,
+    }
+
+    impl App for InitCommandApp {
+        type State = InitCommandState;
+        type Message = InitCommandMsg;
+
+        fn init() -> (Self::State, Command<Self::Message>) {
+            // Return a command that sends Initialized message
+            (
+                InitCommandState::default(),
+                Command::message(InitCommandMsg::Initialized),
+            )
+        }
+
+        fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+            match msg {
+                InitCommandMsg::Initialized => state.initialized = true,
+            }
+            Command::none()
+        }
+
+        fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+    }
+
+    #[test]
+    fn test_async_runtime_init_command() {
+        let mut runtime: AsyncRuntime<InitCommandApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+
+        // Process sync commands from init
+        runtime.process_pending();
+
+        assert!(runtime.state().initialized);
+    }
 }
