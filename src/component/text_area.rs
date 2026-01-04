@@ -1412,4 +1412,221 @@ mod tests {
         assert!(state.is_empty());
         assert!(!state.focused);
     }
+
+    #[test]
+    fn test_set_value_empty_string() {
+        let mut state = TextAreaState::with_value("Hello\nWorld");
+        state.set_value("");
+        assert!(state.is_empty());
+        assert_eq!(state.line_count(), 1);
+        assert_eq!(state.cursor_position(), (0, 0));
+    }
+
+    #[test]
+    fn test_set_placeholder_method() {
+        let mut state = TextAreaState::new();
+        state.set_placeholder("Type here...");
+        assert_eq!(state.placeholder(), "Type here...");
+    }
+
+    #[test]
+    fn test_cursor_col_accessor() {
+        let state = TextAreaState::with_value("Hello");
+        assert_eq!(state.cursor_col(), 5);
+    }
+
+    #[test]
+    fn test_word_left_at_line_start() {
+        let mut state = TextAreaState::with_value("Hello\nWorld");
+        state.set_cursor(1, 0); // Start of "World"
+        TextArea::update(&mut state, TextAreaMessage::WordLeft);
+        // Should wrap to end of previous line
+        assert_eq!(state.cursor_position(), (0, 5));
+    }
+
+    #[test]
+    fn test_word_left_skip_whitespace() {
+        let mut state = TextAreaState::with_value("hello   world");
+        state.set_cursor(0, 8); // In the middle of spaces
+        TextArea::update(&mut state, TextAreaMessage::WordLeft);
+        assert!(state.cursor_col() < 8);
+    }
+
+    #[test]
+    fn test_word_right_at_line_end() {
+        let mut state = TextAreaState::with_value("Hello\nWorld");
+        state.set_cursor(0, 5); // End of "Hello"
+        TextArea::update(&mut state, TextAreaMessage::WordRight);
+        // Should wrap to start of next line
+        assert_eq!(state.cursor_position(), (1, 0));
+    }
+
+    #[test]
+    fn test_word_right_skip_word() {
+        let mut state = TextAreaState::with_value("abc def");
+        state.set_cursor(0, 0);
+        TextArea::update(&mut state, TextAreaMessage::WordRight);
+        // Should skip past "abc " to start of "def"
+        assert_eq!(state.cursor_position(), (0, 4));
+    }
+
+    #[test]
+    fn test_delete_line_last_line() {
+        let mut state = TextAreaState::with_value("Line 1\nLine 2");
+        state.set_cursor(1, 3); // On last line
+        TextArea::update(&mut state, TextAreaMessage::DeleteLine);
+        // Should adjust cursor_row when deleting the last line
+        assert_eq!(state.line_count(), 1);
+        assert_eq!(state.cursor_row(), 0);
+    }
+
+    #[test]
+    fn test_delete_line_single_empty() {
+        let mut state = TextArea::init();
+        // Single empty line - should return None
+        let output = TextArea::update(&mut state, TextAreaMessage::DeleteLine);
+        assert_eq!(output, None);
+    }
+
+    #[test]
+    fn test_delete_to_end_at_end() {
+        let mut state = TextAreaState::with_value("Hello");
+        // Cursor already at end
+        let output = TextArea::update(&mut state, TextAreaMessage::DeleteToEnd);
+        assert_eq!(output, None);
+    }
+
+    #[test]
+    fn test_delete_to_start_at_start() {
+        let mut state = TextAreaState::with_value("Hello");
+        state.set_cursor(0, 0);
+        let output = TextArea::update(&mut state, TextAreaMessage::DeleteToStart);
+        assert_eq!(output, None);
+    }
+
+    #[test]
+    fn test_view_with_scroll() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        // Create a long content that needs scrolling
+        let mut state = TextAreaState::with_value(
+            "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10",
+        );
+        state.focused = true;
+
+        let backend = CaptureBackend::new(40, 5); // Small height to trigger scrolling
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                TextArea::view(&state, frame, frame.area());
+            })
+            .unwrap();
+
+        // Should render without panic
+    }
+
+    #[test]
+    fn test_view_cursor_above_scroll() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let mut state = TextAreaState::with_value("1\n2\n3\n4\n5\n6\n7\n8\n9\n10");
+        state.scroll_offset = 5; // Scroll down
+        state.set_cursor(2, 0); // Cursor above scroll
+        state.focused = true;
+
+        let backend = CaptureBackend::new(40, 5);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                TextArea::view(&state, frame, frame.area());
+            })
+            .unwrap();
+
+        // Should adjust scroll to show cursor
+    }
+
+    #[test]
+    fn test_ensure_cursor_visible_zero_lines() {
+        let mut state = TextAreaState::with_value("Hello");
+        state.ensure_cursor_visible(0);
+        // Should not panic or change anything
+        assert_eq!(state.scroll_offset(), 0);
+    }
+
+    #[test]
+    fn test_text_area_message_debug() {
+        let msg = TextAreaMessage::Insert('x');
+        let debug = format!("{:?}", msg);
+        assert!(debug.contains("Insert"));
+    }
+
+    #[test]
+    fn test_text_area_message_eq() {
+        assert_eq!(TextAreaMessage::Left, TextAreaMessage::Left);
+        assert_eq!(TextAreaMessage::Right, TextAreaMessage::Right);
+        assert_eq!(TextAreaMessage::Up, TextAreaMessage::Up);
+        assert_eq!(TextAreaMessage::Down, TextAreaMessage::Down);
+        assert_eq!(TextAreaMessage::Home, TextAreaMessage::Home);
+        assert_eq!(TextAreaMessage::End, TextAreaMessage::End);
+        assert_eq!(TextAreaMessage::TextStart, TextAreaMessage::TextStart);
+        assert_eq!(TextAreaMessage::TextEnd, TextAreaMessage::TextEnd);
+        assert_eq!(TextAreaMessage::WordLeft, TextAreaMessage::WordLeft);
+        assert_eq!(TextAreaMessage::WordRight, TextAreaMessage::WordRight);
+        assert_eq!(TextAreaMessage::Insert('a'), TextAreaMessage::Insert('a'));
+        assert_eq!(TextAreaMessage::NewLine, TextAreaMessage::NewLine);
+        assert_eq!(TextAreaMessage::Backspace, TextAreaMessage::Backspace);
+        assert_eq!(TextAreaMessage::Delete, TextAreaMessage::Delete);
+        assert_eq!(TextAreaMessage::DeleteLine, TextAreaMessage::DeleteLine);
+        assert_eq!(TextAreaMessage::DeleteToEnd, TextAreaMessage::DeleteToEnd);
+        assert_eq!(
+            TextAreaMessage::DeleteToStart,
+            TextAreaMessage::DeleteToStart
+        );
+        assert_eq!(TextAreaMessage::Clear, TextAreaMessage::Clear);
+        assert_eq!(TextAreaMessage::Submit, TextAreaMessage::Submit);
+    }
+
+    #[test]
+    fn test_text_area_output_debug() {
+        let out = TextAreaOutput::Changed("test".to_string());
+        let debug = format!("{:?}", out);
+        assert!(debug.contains("Changed"));
+    }
+
+    #[test]
+    fn test_text_area_output_eq() {
+        let out1 = TextAreaOutput::Changed("a".to_string());
+        let out2 = TextAreaOutput::Changed("a".to_string());
+        assert_eq!(out1, out2);
+
+        let out3 = TextAreaOutput::Submitted("b".to_string());
+        let out4 = TextAreaOutput::Submitted("b".to_string());
+        assert_eq!(out3, out4);
+    }
+
+    #[test]
+    fn test_state_debug() {
+        let state = TextAreaState::with_value("test");
+        let debug = format!("{:?}", state);
+        assert!(debug.contains("TextAreaState"));
+    }
+
+    #[test]
+    fn test_backspace_unicode() {
+        let mut state = TextAreaState::with_value("日本");
+        TextArea::update(&mut state, TextAreaMessage::Backspace);
+        assert_eq!(state.value(), "日");
+    }
+
+    #[test]
+    fn test_delete_unicode() {
+        let mut state = TextAreaState::with_value("日本");
+        state.set_cursor(0, 0);
+        TextArea::update(&mut state, TextAreaMessage::Delete);
+        assert_eq!(state.value(), "本");
+    }
 }

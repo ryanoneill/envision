@@ -1262,4 +1262,207 @@ mod tests {
         assert_eq!(flat[1].path, vec![1]);
         assert_eq!(flat[2].path, vec![2]);
     }
+
+    #[test]
+    fn test_view_focused_selection() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let root = TreeNode::new("Root", ());
+        let mut state = TreeState::new(vec![root]);
+        state.focused = true; // Set focused for different highlight style
+
+        let backend = CaptureBackend::new(40, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                Tree::view(&state, frame, frame.area());
+            })
+            .unwrap();
+
+        let output = terminal.backend().to_string();
+        assert!(output.contains("Root"));
+    }
+
+    #[test]
+    fn test_view_unfocused_selection() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let root = TreeNode::new("Root", ());
+        let mut state = TreeState::new(vec![root]);
+        state.focused = false; // Unfocused state
+
+        let backend = CaptureBackend::new(40, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                Tree::view(&state, frame, frame.area());
+            })
+            .unwrap();
+
+        let output = terminal.backend().to_string();
+        assert!(output.contains("Root"));
+    }
+
+    #[test]
+    fn test_collapse_with_child_selected() {
+        // When collapsing a node while a child is selected, selection should adjust
+        let mut root = TreeNode::new_expanded("Root", ());
+        root.add_child(TreeNode::new("Child 1", ()));
+        root.add_child(TreeNode::new("Child 2", ()));
+
+        let mut state = TreeState::new(vec![root]);
+        // Select the last child
+        state.selected_index = 2;
+
+        // Navigate back to root and collapse
+        state.selected_index = 0;
+        let output = Tree::update(&mut state, TreeMessage::Collapse);
+
+        assert_eq!(output, Some(TreeOutput::Collapsed(vec![0])));
+        // Selection should still be valid
+        assert_eq!(state.selected_index(), 0);
+    }
+
+    #[test]
+    fn test_toggle_collapse_adjusts_selection() {
+        // When toggling to collapse while a child is selected beyond the new range
+        let mut root = TreeNode::new_expanded("Root", ());
+        root.add_child(TreeNode::new("Child 1", ()));
+        root.add_child(TreeNode::new("Child 2", ()));
+        root.add_child(TreeNode::new("Child 3", ()));
+
+        let mut state = TreeState::new(vec![root]);
+        // Select the last child (index 3)
+        state.selected_index = 3;
+
+        // Navigate to root and toggle (collapse)
+        state.selected_index = 0;
+        let output = Tree::update(&mut state, TreeMessage::Toggle);
+
+        assert_eq!(output, Some(TreeOutput::Collapsed(vec![0])));
+        // Selection should be clamped to valid range
+        assert!(state.selected_index() < state.visible_count());
+    }
+
+    #[test]
+    fn test_get_node_deep_path() {
+        let mut root = TreeNode::new_expanded("Root", 0);
+        let mut child = TreeNode::new_expanded("Child", 1);
+        child.add_child(TreeNode::new("Grandchild", 2));
+        root.add_child(child);
+
+        let state = TreeState::new(vec![root]);
+
+        // Select grandchild
+        let mut temp_state = state.clone();
+        temp_state.selected_index = 2;
+        let selected = temp_state.selected_node();
+        assert!(selected.is_some());
+        assert_eq!(*selected.unwrap().data(), 2);
+    }
+
+    #[test]
+    fn test_tree_message_debug() {
+        let msg = TreeMessage::SelectNext;
+        let debug = format!("{:?}", msg);
+        assert_eq!(debug, "SelectNext");
+    }
+
+    #[test]
+    fn test_tree_output_debug() {
+        let out = TreeOutput::Selected(vec![0, 1, 2]);
+        let debug = format!("{:?}", out);
+        assert!(debug.contains("Selected"));
+    }
+
+    #[test]
+    fn test_tree_message_eq() {
+        assert_eq!(TreeMessage::Expand, TreeMessage::Expand);
+        assert_eq!(TreeMessage::Collapse, TreeMessage::Collapse);
+        assert_eq!(TreeMessage::Toggle, TreeMessage::Toggle);
+        assert_eq!(TreeMessage::Select, TreeMessage::Select);
+        assert_eq!(TreeMessage::SelectNext, TreeMessage::SelectNext);
+        assert_eq!(TreeMessage::SelectPrevious, TreeMessage::SelectPrevious);
+        assert_eq!(TreeMessage::ExpandAll, TreeMessage::ExpandAll);
+        assert_eq!(TreeMessage::CollapseAll, TreeMessage::CollapseAll);
+    }
+
+    #[test]
+    fn test_tree_output_eq() {
+        let out1 = TreeOutput::Selected(vec![0]);
+        let out2 = TreeOutput::Selected(vec![0]);
+        assert_eq!(out1, out2);
+
+        let out3 = TreeOutput::Expanded(vec![0, 1]);
+        let out4 = TreeOutput::Expanded(vec![0, 1]);
+        assert_eq!(out3, out4);
+
+        let out5 = TreeOutput::Collapsed(vec![2]);
+        let out6 = TreeOutput::Collapsed(vec![2]);
+        assert_eq!(out5, out6);
+    }
+
+    #[test]
+    fn test_node_debug() {
+        let node = TreeNode::new("Test", 42);
+        let debug = format!("{:?}", node);
+        assert!(debug.contains("TreeNode"));
+    }
+
+    #[test]
+    fn test_state_debug() {
+        let state: TreeState<i32> = TreeState::default();
+        let debug = format!("{:?}", state);
+        assert!(debug.contains("TreeState"));
+    }
+
+    #[test]
+    fn test_view_leaf_node_no_indicator() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        // A leaf node (no children) should show no expand/collapse indicator
+        let leaf = TreeNode::new("Leaf", ());
+        let state = TreeState::new(vec![leaf]);
+
+        let backend = CaptureBackend::new(40, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                Tree::view(&state, frame, frame.area());
+            })
+            .unwrap();
+
+        let output = terminal.backend().to_string();
+        // Should contain the label
+        assert!(output.contains("Leaf"));
+        // Should not contain expand/collapse indicators
+        assert!(!output.contains("▶"));
+        assert!(!output.contains("▼"));
+    }
+
+    #[test]
+    fn test_expand_on_leaf_node() {
+        let leaf = TreeNode::new("Leaf", ());
+        let mut state = TreeState::new(vec![leaf]);
+
+        // Expanding a leaf should do nothing
+        let output = Tree::update(&mut state, TreeMessage::Expand);
+        assert_eq!(output, None);
+    }
+
+    #[test]
+    fn test_collapse_on_leaf_node() {
+        let leaf = TreeNode::new("Leaf", ());
+        let mut state = TreeState::new(vec![leaf]);
+
+        // Collapsing a leaf should do nothing
+        let output = Tree::update(&mut state, TreeMessage::Collapse);
+        assert_eq!(output, None);
+    }
 }

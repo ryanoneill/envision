@@ -1436,4 +1436,170 @@ mod tests {
         let output = Table::<TestRow>::update(&mut state, TableMessage::PageUp(100));
         assert_eq!(output, Some(TableOutput::SelectionChanged(0)));
     }
+
+    #[test]
+    fn test_with_selected_empty() {
+        let state: TableState<TestRow> = TableState::with_selected(vec![], test_columns(), 5);
+        assert!(state.is_empty());
+        assert_eq!(state.selected_index(), None);
+    }
+
+    #[test]
+    fn test_set_rows_to_empty() {
+        let mut state = TableState::new(test_rows(), test_columns());
+        assert_eq!(state.selected_index(), Some(0));
+
+        state.set_rows(vec![]);
+        assert!(state.is_empty());
+        assert_eq!(state.selected_index(), None);
+    }
+
+    #[test]
+    fn test_set_rows_with_no_prior_selection() {
+        let mut state = TableState::new(test_rows(), test_columns());
+        state.set_selected(None);
+        assert_eq!(state.selected_index(), None);
+
+        state.set_rows(vec![TestRow::new("New", "1")]);
+        // Should set selection to 0 when none was set
+        assert_eq!(state.selected_index(), Some(0));
+    }
+
+    #[test]
+    fn test_set_selected_out_of_bounds() {
+        let mut state = TableState::new(test_rows(), test_columns());
+        // Try to set selection out of bounds
+        state.set_selected(Some(100));
+        // Should be ignored, selection unchanged
+        assert_eq!(state.selected_index(), Some(0));
+    }
+
+    #[test]
+    fn test_view_descending_sort_indicator() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let mut state = TableState::new(test_rows(), test_columns());
+        // Sort ascending first, then descending
+        Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+        Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+
+        let backend = CaptureBackend::new(40, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                Table::<TestRow>::view(&state, frame, frame.area());
+            })
+            .unwrap();
+
+        let output = terminal.backend().to_string();
+        assert!(output.contains("↓")); // Descending indicator
+    }
+
+    #[test]
+    fn test_clear_sort_preserves_selection() {
+        let mut state = TableState::with_selected(test_rows(), test_columns(), 1);
+        // Initially selected: Alice (index 1 in original order)
+
+        // Sort ascending by name
+        Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+        // Alice is now at display position 0
+
+        // Clear sort
+        Table::<TestRow>::update(&mut state, TableMessage::ClearSort);
+
+        // Selection should still point to Alice (back at index 1)
+        let selected = state.selected_row().unwrap();
+        assert_eq!(selected.name, "Alice");
+    }
+
+    #[test]
+    fn test_view_unfocused() {
+        use crate::backend::CaptureBackend;
+        use ratatui::Terminal;
+
+        let mut state = TableState::new(test_rows(), test_columns());
+        state.focused = false;
+
+        let backend = CaptureBackend::new(40, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| {
+                Table::<TestRow>::view(&state, frame, frame.area());
+            })
+            .unwrap();
+
+        let output = terminal.backend().to_string();
+        assert!(output.contains("Charlie"));
+    }
+
+    #[test]
+    fn test_table_message_debug() {
+        let msg = TableMessage::SortBy(0);
+        let debug = format!("{:?}", msg);
+        assert!(debug.contains("SortBy"));
+    }
+
+    #[test]
+    fn test_table_message_eq() {
+        assert_eq!(TableMessage::Up, TableMessage::Up);
+        assert_eq!(TableMessage::Down, TableMessage::Down);
+        assert_eq!(TableMessage::First, TableMessage::First);
+        assert_eq!(TableMessage::Last, TableMessage::Last);
+        assert_eq!(TableMessage::PageUp(5), TableMessage::PageUp(5));
+        assert_eq!(TableMessage::PageDown(10), TableMessage::PageDown(10));
+        assert_eq!(TableMessage::Select, TableMessage::Select);
+        assert_eq!(TableMessage::SortBy(0), TableMessage::SortBy(0));
+        assert_eq!(TableMessage::ClearSort, TableMessage::ClearSort);
+    }
+
+    #[test]
+    fn test_table_output_debug() {
+        let out: TableOutput<TestRow> = TableOutput::SelectionChanged(1);
+        let debug = format!("{:?}", out);
+        assert!(debug.contains("SelectionChanged"));
+    }
+
+    #[test]
+    fn test_table_output_eq() {
+        let out1: TableOutput<TestRow> = TableOutput::SelectionChanged(1);
+        let out2: TableOutput<TestRow> = TableOutput::SelectionChanged(1);
+        assert_eq!(out1, out2);
+
+        let out3: TableOutput<TestRow> = TableOutput::SortCleared;
+        let out4: TableOutput<TestRow> = TableOutput::SortCleared;
+        assert_eq!(out3, out4);
+    }
+
+    #[test]
+    fn test_column_debug() {
+        let col = Column::new("Header", Constraint::Length(10));
+        let debug = format!("{:?}", col);
+        assert!(debug.contains("Column"));
+    }
+
+    #[test]
+    fn test_state_debug() {
+        let state = TableState::new(test_rows(), test_columns());
+        let debug = format!("{:?}", state);
+        assert!(debug.contains("TableState"));
+    }
+
+    #[test]
+    fn test_page_up_at_first() {
+        let mut state = TableState::new(test_rows(), test_columns());
+        // Already at first, PageUp should return None
+        let output = Table::<TestRow>::update(&mut state, TableMessage::PageUp(2));
+        assert_eq!(output, None);
+    }
+
+    #[test]
+    fn test_page_down_at_last() {
+        let mut state = TableState::with_selected(test_rows(), test_columns(), 2);
+        // Already at last, PageDown should return None
+        let output = Table::<TestRow>::update(&mut state, TableMessage::PageDown(2));
+        assert_eq!(output, None);
+    }
 }
