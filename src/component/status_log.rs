@@ -536,9 +536,7 @@ impl Component for StatusLog {
         }
 
         let block = if let Some(title) = &state.title {
-            Block::default()
-                .borders(Borders::ALL)
-                .title(title.as_str())
+            Block::default().borders(Borders::ALL).title(title.as_str())
         } else {
             Block::default().borders(Borders::ALL)
         };

@@ -1747,7 +1747,9 @@ mod tests {
         let mut state = StatusBarState::new();
         state.push_left(StatusBarItem::new("L"));
 
-        state.section_mut(Section::Left).push(StatusBarItem::new("L2"));
+        state
+            .section_mut(Section::Left)
+            .push(StatusBarItem::new("L2"));
         assert_eq!(state.section(Section::Left).len(), 2);
     }
 

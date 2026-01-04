@@ -263,19 +263,12 @@ impl<S: Clone + PartialEq> Component for Router<S> {
                 state.current = screen.clone();
                 state.enforce_history_limit();
 
-                Some(RouterOutput::ScreenChanged {
-                    from,
-                    to: screen,
-                })
+                Some(RouterOutput::ScreenChanged { from, to: screen })
             }
 
             RouterMessage::NavigateWith(screen, mode) => match mode {
-                NavigationMode::Push => {
-                    Self::update(state, RouterMessage::Navigate(screen))
-                }
-                NavigationMode::Replace => {
-                    Self::update(state, RouterMessage::Replace(screen))
-                }
+                NavigationMode::Push => Self::update(state, RouterMessage::Navigate(screen)),
+                NavigationMode::Replace => Self::update(state, RouterMessage::Replace(screen)),
             },
 
             RouterMessage::Replace(screen) => {
@@ -286,10 +279,7 @@ impl<S: Clone + PartialEq> Component for Router<S> {
                 let from = state.current.clone();
                 state.current = screen.clone();
 
-                Some(RouterOutput::ScreenChanged {
-                    from,
-                    to: screen,
-                })
+                Some(RouterOutput::ScreenChanged { from, to: screen })
             }
 
             RouterMessage::Back => {
@@ -441,7 +431,10 @@ mod tests {
 
         assert!(matches!(
             output,
-            Some(RouterOutput::ScreenChanged { from: TestScreen::Home, to: TestScreen::Settings })
+            Some(RouterOutput::ScreenChanged {
+                from: TestScreen::Home,
+                to: TestScreen::Settings
+            })
         ));
         assert_eq!(state.current(), &TestScreen::Settings);
         assert!(state.can_go_back());
@@ -492,7 +485,10 @@ mod tests {
 
         assert!(matches!(
             output,
-            Some(RouterOutput::ScreenChanged { from: TestScreen::Settings, to: TestScreen::Profile })
+            Some(RouterOutput::ScreenChanged {
+                from: TestScreen::Settings,
+                to: TestScreen::Profile
+            })
         ));
         assert_eq!(state.current(), &TestScreen::Profile);
         // History should still have Home (Settings was replaced)
@@ -517,7 +513,9 @@ mod tests {
 
         assert!(matches!(
             output,
-            Some(RouterOutput::NavigatedBack { to: TestScreen::Settings })
+            Some(RouterOutput::NavigatedBack {
+                to: TestScreen::Settings
+            })
         ));
         assert_eq!(state.current(), &TestScreen::Settings);
         assert!(state.can_go_back());
@@ -570,7 +568,10 @@ mod tests {
 
         let output = Router::update(&mut state, RouterMessage::Reset(TestScreen::About));
 
-        assert!(matches!(output, Some(RouterOutput::Reset(TestScreen::About))));
+        assert!(matches!(
+            output,
+            Some(RouterOutput::Reset(TestScreen::About))
+        ));
         assert_eq!(state.current(), &TestScreen::About);
         assert!(!state.can_go_back());
     }

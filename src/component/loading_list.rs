@@ -580,9 +580,7 @@ impl<T: Clone> Component for LoadingList<T> {
         }
 
         let block = if let Some(title) = &state.title {
-            Block::default()
-                .borders(Borders::ALL)
-                .title(title.as_str())
+            Block::default().borders(Borders::ALL).title(title.as_str())
         } else {
             Block::default().borders(Borders::ALL)
         };
@@ -606,7 +604,10 @@ impl<T: Clone> Component for LoadingList<T> {
                     let state_symbol = item.state.symbol(state.spinner_frame);
 
                     if let ItemState::Error(msg) = &item.state {
-                        format!("{} {} {} - Error: {}", select_marker, state_symbol, item.label, msg)
+                        format!(
+                            "{} {} {} - Error: {}",
+                            select_marker, state_symbol, item.label, msg
+                        )
                     } else {
                         format!("{} {} {}", select_marker, state_symbol, item.label)
                     }
@@ -897,7 +898,10 @@ mod tests {
 
         assert!(matches!(
             output,
-            Some(LoadingListOutput::ItemStateChanged { index: 0, state: ItemState::Loading })
+            Some(LoadingListOutput::ItemStateChanged {
+                index: 0,
+                state: ItemState::Loading
+            })
         ));
         assert!(state.items()[0].is_loading());
     }
@@ -912,7 +916,10 @@ mod tests {
 
         assert!(matches!(
             output,
-            Some(LoadingListOutput::ItemStateChanged { index: 0, state: ItemState::Ready })
+            Some(LoadingListOutput::ItemStateChanged {
+                index: 0,
+                state: ItemState::Ready
+            })
         ));
     }
 
@@ -931,7 +938,10 @@ mod tests {
 
         assert!(matches!(
             output,
-            Some(LoadingListOutput::ItemStateChanged { index: 0, state: ItemState::Error(_) })
+            Some(LoadingListOutput::ItemStateChanged {
+                index: 0,
+                state: ItemState::Error(_)
+            })
         ));
     }
 
@@ -945,7 +955,10 @@ mod tests {
 
         assert!(matches!(
             output,
-            Some(LoadingListOutput::ItemStateChanged { index: 0, state: ItemState::Ready })
+            Some(LoadingListOutput::ItemStateChanged {
+                index: 0,
+                state: ItemState::Ready
+            })
         ));
         assert!(state.items()[0].is_ready());
     }

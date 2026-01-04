@@ -599,10 +599,7 @@ mod tests {
 
     #[test]
     fn test_state_with_hints() {
-        let hints = vec![
-            KeyHint::new("a", "Action A"),
-            KeyHint::new("b", "Action B"),
-        ];
+        let hints = vec![KeyHint::new("a", "Action A"), KeyHint::new("b", "Action B")];
         let state = KeyHintsState::with_hints(hints);
         assert_eq!(state.len(), 2);
     }
@@ -773,8 +770,7 @@ mod tests {
 
     #[test]
     fn test_update_enable_hint() {
-        let mut state =
-            KeyHintsState::with_hints(vec![KeyHint::new("a", "A").with_enabled(false)]);
+        let mut state = KeyHintsState::with_hints(vec![KeyHint::new("a", "A").with_enabled(false)]);
         KeyHints::update(&mut state, KeyHintsMessage::EnableHint("a".to_string()));
         assert!(state.hints()[0].is_enabled());
     }
@@ -789,7 +785,10 @@ mod tests {
     #[test]
     fn test_update_set_layout() {
         let mut state = KeyHints::init();
-        KeyHints::update(&mut state, KeyHintsMessage::SetLayout(KeyHintsLayout::Inline));
+        KeyHints::update(
+            &mut state,
+            KeyHintsMessage::SetLayout(KeyHintsLayout::Inline),
+        );
         assert_eq!(state.layout(), KeyHintsLayout::Inline);
     }
 

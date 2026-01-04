@@ -520,9 +520,7 @@ impl Component for MultiProgress {
         }
 
         let block = if let Some(title) = &state.title {
-            Block::default()
-                .borders(Borders::ALL)
-                .title(title.as_str())
+            Block::default().borders(Borders::ALL).title(title.as_str())
         } else {
             Block::default().borders(Borders::ALL)
         };
@@ -758,8 +756,14 @@ mod tests {
         state.add("id2", "Item 2");
         state.add("id3", "Item 3");
 
-        MultiProgress::update(&mut state, MultiProgressMessage::Complete("id1".to_string()));
-        MultiProgress::update(&mut state, MultiProgressMessage::Complete("id2".to_string()));
+        MultiProgress::update(
+            &mut state,
+            MultiProgressMessage::Complete("id1".to_string()),
+        );
+        MultiProgress::update(
+            &mut state,
+            MultiProgressMessage::Complete("id2".to_string()),
+        );
 
         assert_eq!(state.completed_count(), 2);
     }
@@ -904,7 +908,10 @@ mod tests {
         let mut state = MultiProgressState::new();
         state.add("id1", "Item 1");
 
-        let output = MultiProgress::update(&mut state, MultiProgressMessage::Complete("id1".to_string()));
+        let output = MultiProgress::update(
+            &mut state,
+            MultiProgressMessage::Complete("id1".to_string()),
+        );
 
         assert_eq!(
             output,
@@ -920,7 +927,10 @@ mod tests {
         let mut state = MultiProgressState::new().with_auto_remove(true);
         state.add("id1", "Item 1");
 
-        let output = MultiProgress::update(&mut state, MultiProgressMessage::Complete("id1".to_string()));
+        let output = MultiProgress::update(
+            &mut state,
+            MultiProgressMessage::Complete("id1".to_string()),
+        );
 
         assert_eq!(
             output,
@@ -953,7 +963,8 @@ mod tests {
         let mut state = MultiProgressState::new();
         state.add("id1", "Item 1");
 
-        let output = MultiProgress::update(&mut state, MultiProgressMessage::Remove("id1".to_string()));
+        let output =
+            MultiProgress::update(&mut state, MultiProgressMessage::Remove("id1".to_string()));
 
         assert_eq!(
             output,
@@ -1137,7 +1148,10 @@ mod tests {
         let mut state = MultiProgressState::new();
         state.add("id1", "Item 1");
 
-        MultiProgress::update(&mut state, MultiProgressMessage::Complete("id1".to_string()));
+        MultiProgress::update(
+            &mut state,
+            MultiProgressMessage::Complete("id1".to_string()),
+        );
 
         let backend = CaptureBackend::new(60, 10);
         let mut terminal = Terminal::new(backend).unwrap();

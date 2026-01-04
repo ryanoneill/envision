@@ -112,7 +112,6 @@ mod key_hints;
 mod loading_list;
 mod menu;
 mod multi_progress;
-mod status_log;
 mod progress_bar;
 mod radio_group;
 mod router;
@@ -120,6 +119,7 @@ mod select;
 mod selectable_list;
 mod spinner;
 mod status_bar;
+mod status_log;
 mod table;
 mod tabs;
 mod text_area;
@@ -137,7 +137,9 @@ pub use dialog::{Dialog, DialogButton, DialogMessage, DialogOutput, DialogState}
 pub use dropdown::{Dropdown, DropdownMessage, DropdownOutput, DropdownState};
 pub use focus_manager::FocusManager;
 pub use input_field::{InputField, InputFieldState, InputMessage, InputOutput};
-pub use key_hints::{KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsOutput, KeyHintsState};
+pub use key_hints::{
+    KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsOutput, KeyHintsState,
+};
 pub use loading_list::{
     ItemState, LoadingList, LoadingListItem, LoadingListMessage, LoadingListOutput,
     LoadingListState,
