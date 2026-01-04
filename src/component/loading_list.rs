@@ -1177,4 +1177,229 @@ mod tests {
         assert_eq!(cloned.len(), 3);
         assert_eq!(cloned.selected(), Some(1));
     }
+
+    // ========================================
+    // Additional Coverage Tests
+    // ========================================
+
+    #[test]
+    fn test_view_zero_size_area() {
+        let items = make_items();
+        let state = LoadingListState::with_items(items, |i| i.name.clone());
+        let backend = CaptureBackend::new(60, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        // Test with zero width
+        terminal
+            .draw(|frame| {
+                LoadingList::view(&state, frame, Rect::new(0, 0, 0, 10));
+            })
+            .unwrap();
+
+        // Test with zero height
+        terminal
+            .draw(|frame| {
+                LoadingList::view(&state, frame, Rect::new(0, 0, 60, 0));
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn test_view_without_indicators() {
+        let items = make_items();
+        let mut state =
+            LoadingListState::with_items(items, |i| i.name.clone()).with_indicators(false);
+        state.set_selected(Some(0));
+
+        let backend = CaptureBackend::new(60, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| LoadingList::view(&state, frame, frame.area()))
+            .unwrap();
+
+        let output = terminal.backend().to_string();
+        assert!(output.contains("Item One"));
+    }
+
+    #[test]
+    fn test_view_without_indicators_with_error() {
+        let items = make_items();
+        let mut state =
+            LoadingListState::with_items(items, |i| i.name.clone()).with_indicators(false);
+        state.set_error(0, "Failed");
+
+        let backend = CaptureBackend::new(60, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        terminal
+            .draw(|frame| LoadingList::view(&state, frame, frame.area()))
+            .unwrap();
+
+        let output = terminal.backend().to_string();
+        assert!(output.contains("Error"));
+        assert!(output.contains("Failed"));
+    }
+
+    #[test]
+    fn test_update_set_items() {
+        let mut state: LoadingListState<TestItem> = LoadingListState::new();
+        state.set_selected(Some(0));
+
+        let items = make_items();
+        LoadingList::update(&mut state, LoadingListMessage::SetItems(items));
+
+        assert_eq!(state.len(), 3);
+        assert!(state.selected().is_none()); // Selection cleared
+        assert_eq!(state.items()[0].label(), "Item 1"); // Uses default labeling
+    }
+
+    #[test]
+    fn test_update_invalid_index() {
+        let items = make_items();
+        let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+        // SetLoading with invalid index
+        let output = LoadingList::update(&mut state, LoadingListMessage::SetLoading(100));
+        assert!(output.is_none());
+
+        // SetReady with invalid index
+        let output = LoadingList::update(&mut state, LoadingListMessage::SetReady(100));
+        assert!(output.is_none());
+
+        // SetError with invalid index
+        let output = LoadingList::update(
+            &mut state,
+            LoadingListMessage::SetError {
+                index: 100,
+                message: "Error".to_string(),
+            },
+        );
+        assert!(output.is_none());
+
+        // ClearError with invalid index
+        let output = LoadingList::update(&mut state, LoadingListMessage::ClearError(100));
+        assert!(output.is_none());
+    }
+
+    #[test]
+    fn test_up_no_selection() {
+        let items = make_items();
+        let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+        // No selection set
+
+        let output = LoadingList::update(&mut state, LoadingListMessage::Up);
+        assert_eq!(state.selected(), Some(2)); // Goes to last item
+        assert!(matches!(
+            output,
+            Some(LoadingListOutput::SelectionChanged(2))
+        ));
+    }
+
+    #[test]
+    fn test_down_no_selection() {
+        let items = make_items();
+        let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+        // No selection set
+
+        let output = LoadingList::update(&mut state, LoadingListMessage::Down);
+        assert_eq!(state.selected(), Some(0)); // Goes to first item
+        assert!(matches!(
+            output,
+            Some(LoadingListOutput::SelectionChanged(0))
+        ));
+    }
+
+    #[test]
+    fn test_first_empty_list() {
+        let mut state: LoadingListState<TestItem> = LoadingListState::new();
+
+        let output = LoadingList::update(&mut state, LoadingListMessage::First);
+        assert!(output.is_none());
+    }
+
+    #[test]
+    fn test_last_empty_list() {
+        let mut state: LoadingListState<TestItem> = LoadingListState::new();
+
+        let output = LoadingList::update(&mut state, LoadingListMessage::Last);
+        assert!(output.is_none());
+    }
+
+    #[test]
+    fn test_get_mut() {
+        let items = make_items();
+        let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+        if let Some(item) = state.get_mut(0) {
+            item.set_label("Modified");
+        }
+        assert_eq!(state.items()[0].label(), "Modified");
+
+        assert!(state.get_mut(100).is_none());
+    }
+
+    #[test]
+    fn test_items_mut() {
+        let items = make_items();
+        let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+        state.items_mut().push(LoadingListItem::new(
+            TestItem {
+                id: 4,
+                name: "Item Four".to_string(),
+            },
+            "Item Four",
+        ));
+
+        assert_eq!(state.len(), 4);
+    }
+
+    #[test]
+    fn test_set_title() {
+        let mut state: LoadingListState<String> = LoadingListState::new();
+        assert!(state.title().is_none());
+
+        state.set_title(Some("New Title".to_string()));
+        assert_eq!(state.title(), Some("New Title"));
+
+        state.set_title(None);
+        assert!(state.title().is_none());
+    }
+
+    #[test]
+    fn test_set_show_indicators() {
+        let mut state: LoadingListState<String> = LoadingListState::new();
+        assert!(state.show_indicators());
+
+        state.set_show_indicators(false);
+        assert!(!state.show_indicators());
+    }
+
+    #[test]
+    fn test_set_loading_invalid_index() {
+        let items = make_items();
+        let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+        // This should not panic
+        state.set_loading(100);
+        state.set_ready(100);
+        state.set_error(100, "Error");
+    }
+
+    #[test]
+    fn test_spinner_animation_frames() {
+        let state = ItemState::Loading;
+        // Test all 4 spinner frames
+        let frame0 = state.symbol(0);
+        let frame1 = state.symbol(1);
+        let frame2 = state.symbol(2);
+        let frame3 = state.symbol(3);
+        let frame4 = state.symbol(4); // Should wrap to frame 0
+
+        assert_eq!(frame0, frame4);
+        assert_ne!(frame0, frame1);
+        assert_ne!(frame1, frame2);
+        assert_ne!(frame2, frame3);
+    }
 }

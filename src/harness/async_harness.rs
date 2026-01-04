@@ -659,4 +659,121 @@ mod tests {
 
         assert!(harness.contains_text("Count: 1"));
     }
+
+    #[test]
+    fn test_async_harness_state_mut() {
+        let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+        harness.state_mut().count = 42;
+        assert_eq!(harness.state().count, 42);
+    }
+
+    #[test]
+    fn test_async_harness_screen_ansi() {
+        let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+        harness.render().unwrap();
+
+        let screen_ansi = harness.screen_ansi();
+        assert!(screen_ansi.contains("Count: 0"));
+    }
+
+    #[test]
+    fn test_async_harness_backend() {
+        use ratatui::backend::Backend;
+        let harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+        let backend = harness.backend();
+        assert_eq!(backend.size().unwrap().width, 80);
+    }
+
+    #[test]
+    fn test_async_harness_backend_mut() {
+        let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+        let _backend = harness.backend_mut();
+        // Just verify we can get a mutable reference
+    }
+
+    #[tokio::test]
+    async fn test_async_harness_message_sender() {
+        let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+        let sender = harness.message_sender();
+
+        // Send a message via the channel
+        sender.send(TestMsg::Increment).await.unwrap();
+
+        // Let the runtime process it
+        tokio::time::sleep(Duration::from_millis(1)).await;
+        harness.runtime.process_pending();
+
+        assert_eq!(harness.state().count, 1);
+    }
+
+    #[test]
+    fn test_async_harness_subscribe() {
+        use crate::app::TickSubscription;
+
+        let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+        let sub = TickSubscription::new(Duration::from_millis(10), || TestMsg::Increment);
+        harness.subscribe(sub);
+        // Just verify we can add a subscription
+    }
+
+    #[test]
+    fn test_async_harness_subscribe_all() {
+        use crate::app::{BoxedSubscription, TickSubscription};
+
+        let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+
+        let sub1: BoxedSubscription<TestMsg> =
+            Box::new(TickSubscription::new(Duration::from_millis(10), || {
+                TestMsg::Increment
+            }));
+        let sub2: BoxedSubscription<TestMsg> =
+            Box::new(TickSubscription::new(Duration::from_millis(10), || {
+                TestMsg::Increment
+            }));
+
+        harness.subscribe_all(vec![sub1, sub2]);
+        // Just verify we can add multiple subscriptions
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn test_async_harness_wait_for_text_timeout() {
+        let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+
+        // Don't dispatch anything that changes text to "Count: 5"
+        let success = harness
+            .wait_for_text("Count: 5", Duration::from_millis(100))
+            .await;
+
+        assert!(!success);
+    }
+
+    #[test]
+    #[should_panic(expected = "Expected screen to contain 'MISSING'")]
+    fn test_async_harness_assert_contains_panic() {
+        let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+        harness.render().unwrap();
+
+        // This should panic because 'MISSING' is not on screen
+        harness.assert_contains("MISSING");
+    }
+
+    #[test]
+    #[should_panic(expected = "Expected screen to NOT contain 'Count'")]
+    fn test_async_harness_assert_not_contains_panic() {
+        let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+        harness.render().unwrap();
+
+        // This should panic because 'Count' is on screen
+        harness.assert_not_contains("Count");
+    }
+
+    #[test]
+    fn test_async_harness_events_direct() {
+        let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+
+        let events = harness.events();
+        events.push(SimulatedEvent::char('a'));
+
+        assert!(!harness.events().is_empty());
+    }
 }
