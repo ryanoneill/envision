@@ -109,6 +109,7 @@ mod dropdown;
 mod focus_manager;
 mod input_field;
 mod key_hints;
+mod loading_list;
 mod menu;
 mod multi_progress;
 mod status_log;
@@ -137,6 +138,10 @@ pub use dropdown::{Dropdown, DropdownMessage, DropdownOutput, DropdownState};
 pub use focus_manager::FocusManager;
 pub use input_field::{InputField, InputFieldState, InputMessage, InputOutput};
 pub use key_hints::{KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsOutput, KeyHintsState};
+pub use loading_list::{
+    ItemState, LoadingList, LoadingListItem, LoadingListMessage, LoadingListOutput,
+    LoadingListState,
+};
 pub use menu::{Menu, MenuItem, MenuMessage, MenuOutput, MenuState};
 pub use multi_progress::{
     MultiProgress, MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressItem,
