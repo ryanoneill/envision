@@ -110,6 +110,7 @@ mod focus_manager;
 mod input_field;
 mod key_hints;
 mod menu;
+mod status_log;
 mod progress_bar;
 mod radio_group;
 mod select;
@@ -142,6 +143,9 @@ pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableLis
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 pub use status_bar::{
     StatusBar, StatusBarItem, StatusBarMessage, StatusBarOutput, StatusBarState, StatusBarStyle,
+};
+pub use status_log::{
+    StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState,
 };
 pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState};
 pub use tabs::{TabMessage, TabOutput, Tabs, TabsState};
