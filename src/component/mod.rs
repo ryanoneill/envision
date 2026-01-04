@@ -114,6 +114,7 @@ mod multi_progress;
 mod status_log;
 mod progress_bar;
 mod radio_group;
+mod router;
 mod select;
 mod selectable_list;
 mod spinner;
@@ -143,6 +144,7 @@ pub use multi_progress::{
 };
 pub use progress_bar::{ProgressBar, ProgressBarState, ProgressMessage, ProgressOutput};
 pub use radio_group::{RadioGroup, RadioGroupState, RadioMessage, RadioOutput};
+pub use router::{NavigationMode, Router, RouterMessage, RouterOutput, RouterState};
 pub use select::{Select, SelectMessage, SelectOutput, SelectState};
 pub use selectable_list::{ListMessage, ListOutput, SelectableList, SelectableListState};
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
