@@ -25,6 +25,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// A menu item.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -262,7 +263,7 @@ impl Component for Menu {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         let mut menu_text = String::new();
 
         for (idx, item) in state.items.iter().enumerate() {
@@ -281,9 +282,9 @@ impl Component for Menu {
 
         // Determine style based on state
         let style = if state.focused {
-            Style::default().fg(Color::Yellow)
+            theme.focused_style()
         } else {
-            Style::default()
+            theme.normal_style()
         };
 
         let paragraph = Paragraph::new(menu_text).style(style);
@@ -531,6 +532,7 @@ mod tests {
     #[test]
     fn test_view() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let state = MenuState::new(vec![
@@ -544,7 +546,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Menu::view(&state, frame, frame.area());
+                Menu::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -557,6 +559,7 @@ mod tests {
     #[test]
     fn test_view_focused() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
@@ -567,7 +570,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Menu::view(&state, frame, frame.area());
+                Menu::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -579,6 +582,7 @@ mod tests {
     #[test]
     fn test_view_selected() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state = MenuState::new(vec![
@@ -594,7 +598,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Menu::view(&state, frame, frame.area());
+                Menu::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -605,6 +609,7 @@ mod tests {
     #[test]
     fn test_view_empty() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let state = MenuState::new(vec![]);
@@ -614,7 +619,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Menu::view(&state, frame, frame.area());
+                Menu::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 

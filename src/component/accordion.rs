@@ -34,6 +34,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// A single accordion panel with a title and content.
 ///
@@ -469,7 +470,7 @@ impl Component for Accordion {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         if state.panels.is_empty() {
             return;
         }
@@ -487,13 +488,11 @@ impl Component for Accordion {
             let header = format!("{} {}", icon, panel.title);
 
             let header_style = if state.disabled {
-                Style::default().fg(Color::DarkGray)
+                theme.disabled_style()
             } else if is_focused_panel {
-                Style::default()
-                    .fg(Color::Yellow)
-                    .add_modifier(Modifier::BOLD)
+                theme.focused_bold_style()
             } else {
-                Style::default()
+                theme.normal_style()
             };
 
             let header_area = Rect::new(area.x, y, area.width, 1);
@@ -510,9 +509,9 @@ impl Component for Accordion {
                     let content_area =
                         Rect::new(area.x + 2, y, area.width.saturating_sub(2), content_height);
                     let content_style = if state.disabled {
-                        Style::default().fg(Color::DarkGray)
+                        theme.disabled_style()
                     } else {
-                        Style::default().fg(Color::Gray)
+                        theme.placeholder_style()
                     };
                     frame.render_widget(
                         Paragraph::new(panel.content.as_str()).style(content_style),
@@ -1002,13 +1001,14 @@ mod tests {
         use ratatui::Terminal;
 
         let state = AccordionState::default();
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Accordion::view(&state, frame, frame.area());
+                Accordion::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1022,13 +1022,14 @@ mod tests {
         use ratatui::Terminal;
 
         let state = AccordionState::from_pairs(vec![("Section 1", "Content 1")]);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Accordion::view(&state, frame, frame.area());
+                Accordion::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1045,13 +1046,14 @@ mod tests {
         let state = AccordionState::new(vec![
             AccordionPanel::new("Section 1", "Content 1").expanded()
         ]);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Accordion::view(&state, frame, frame.area());
+                Accordion::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1070,13 +1072,14 @@ mod tests {
             AccordionPanel::new("Expanded", "Expanded content").expanded(),
             AccordionPanel::new("Collapsed", "Collapsed content"),
         ]);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Accordion::view(&state, frame, frame.area());
+                Accordion::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1093,13 +1096,14 @@ mod tests {
 
         let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
         Accordion::focus(&mut state);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Accordion::view(&state, frame, frame.area());
+                Accordion::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1118,13 +1122,14 @@ mod tests {
             "Line 1\nLine 2\nLine 3",
         )
         .expanded()]);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Accordion::view(&state, frame, frame.area());
+                Accordion::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 

@@ -35,6 +35,7 @@
 //!
 //! ```rust
 //! use envision::component::{Component, Focusable};
+//! use envision::theme::Theme;
 //! use ratatui::prelude::*;
 //!
 //! struct Counter;
@@ -73,11 +74,11 @@
 //!         Some(CounterOutput::ValueChanged(state.value))
 //!     }
 //!
-//!     fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+//!     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
 //!         let style = if state.focused {
-//!             Style::default().fg(Color::Yellow)
+//!             theme.focused_style()
 //!         } else {
-//!             Style::default()
+//!             theme.normal_style()
 //!         };
 //!         let text = format!("Count: {}", state.value);
 //!         frame.render_widget(
@@ -99,6 +100,8 @@
 //! ```
 
 use ratatui::prelude::*;
+
+use crate::theme::Theme;
 
 mod accordion;
 mod breadcrumb;
@@ -226,7 +229,11 @@ pub trait Component: Sized {
     /// Unlike [`App::view`](crate::app::App::view) which renders to the full
     /// frame, components render to a specific `Rect` area provided by their
     /// parent.
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect);
+    ///
+    /// The `theme` parameter provides the color scheme to use for rendering.
+    /// Use [`Theme::default()`] for the standard color scheme, or
+    /// [`Theme::nord()`] for the Nord color palette.
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme);
 }
 
 /// A component that can receive keyboard focus.
@@ -246,6 +253,7 @@ pub trait Component: Sized {
 ///
 /// ```rust
 /// use envision::component::{Component, Focusable};
+/// use envision::theme::Theme;
 /// use ratatui::prelude::*;
 ///
 /// struct TextInput;
@@ -267,7 +275,7 @@ pub trait Component: Sized {
 /// #     type Output = TextInputOutput;
 /// #     fn init() -> Self::State { TextInputState::default() }
 /// #     fn update(_: &mut Self::State, _: Self::Message) -> Option<Self::Output> { None }
-/// #     fn view(_: &Self::State, _: &mut Frame, _: Rect) {}
+/// #     fn view(_: &Self::State, _: &mut Frame, _: Rect, _: &Theme) {}
 /// # }
 /// #
 /// impl Focusable for TextInput {
@@ -312,6 +320,7 @@ pub trait Focusable: Component {
 ///
 /// ```rust
 /// use envision::component::{Component, Toggleable};
+/// use envision::theme::Theme;
 /// use ratatui::prelude::*;
 ///
 /// struct HelpPanel;
@@ -333,7 +342,7 @@ pub trait Focusable: Component {
 /// #     type Output = HelpPanelOutput;
 /// #     fn init() -> Self::State { HelpPanelState { visible: false, content: String::new() } }
 /// #     fn update(_: &mut Self::State, _: Self::Message) -> Option<Self::Output> { None }
-/// #     fn view(_: &Self::State, _: &mut Frame, _: Rect) {}
+/// #     fn view(_: &Self::State, _: &mut Frame, _: Rect, _: &Theme) {}
 /// # }
 /// #
 /// impl Toggleable for HelpPanel {
@@ -387,6 +396,7 @@ pub trait Toggleable: Component {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::theme::Theme;
     use ratatui::widgets::Paragraph;
 
     // Test component implementation
@@ -431,7 +441,7 @@ mod tests {
             Some(TestCounterOutput::Changed(state.value))
         }
 
-        fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+        fn view(state: &Self::State, frame: &mut Frame, area: Rect, _theme: &Theme) {
             let text = format!("Count: {}", state.value);
             frame.render_widget(Paragraph::new(text), area);
         }
@@ -492,10 +502,11 @@ mod tests {
         let state = TestCounter::init();
         let backend = CaptureBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
+        let theme = Theme::default();
 
         terminal
             .draw(|frame| {
-                TestCounter::view(&state, frame, frame.area());
+                TestCounter::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -628,7 +639,7 @@ mod tests {
             None // No output needed
         }
 
-        fn view(_state: &Self::State, _frame: &mut Frame, _area: Rect) {}
+        fn view(_state: &Self::State, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
     }
 
     #[test]

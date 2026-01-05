@@ -32,6 +32,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Gauge};
 
 use super::Component;
+use crate::theme::Theme;
 
 /// Messages that can be sent to a ProgressBar.
 #[derive(Clone, Debug, PartialEq)]
@@ -226,7 +227,7 @@ impl Component for ProgressBar {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         let label = match &state.label {
             Some(l) => format!("{} {}%", l, state.percentage()),
             None => format!("{}%", state.percentage()),
@@ -234,7 +235,7 @@ impl Component for ProgressBar {
 
         let gauge = Gauge::default()
             .block(Block::default().borders(Borders::ALL))
-            .gauge_style(Style::default().fg(Color::Cyan).bg(Color::Black))
+            .gauge_style(theme.progress_filled_style())
             .percent(state.percentage())
             .label(label);
 
@@ -451,13 +452,14 @@ mod tests {
 
         let mut state = ProgressBarState::with_progress(0.5);
         state.set_label(Some("Loading".to_string()));
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                ProgressBar::view(&state, frame, frame.area());
+                ProgressBar::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -472,13 +474,14 @@ mod tests {
         use ratatui::Terminal;
 
         let state = ProgressBarState::with_progress(0.75);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                ProgressBar::view(&state, frame, frame.area());
+                ProgressBar::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 

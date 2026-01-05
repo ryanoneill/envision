@@ -34,6 +34,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{List, ListItem};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Messages that can be sent to a RadioGroup.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -270,7 +271,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         let items: Vec<ListItem> = state
             .options
             .iter()
@@ -280,11 +281,11 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
                 let text = format!("{} {}", indicator, option);
 
                 let style = if state.disabled {
-                    Style::default().fg(Color::DarkGray)
+                    theme.disabled_style()
                 } else if i == state.selected && state.focused {
-                    Style::default().fg(Color::Yellow)
+                    theme.focused_style()
                 } else {
-                    Style::default()
+                    theme.normal_style()
                 };
 
                 ListItem::new(text).style(style)
@@ -520,13 +521,14 @@ mod tests {
 
         let mut state = RadioGroupState::with_selected(vec!["Option A", "Option B", "Option C"], 1);
         state.focused = true;
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                RadioGroup::<&str>::view(&state, frame, frame.area());
+                RadioGroup::<&str>::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -543,13 +545,14 @@ mod tests {
 
         let mut state = RadioGroupState::new(vec!["Test"]);
         state.set_disabled(true);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                RadioGroup::<&str>::view(&state, frame, frame.area());
+                RadioGroup::<&str>::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -589,13 +592,14 @@ mod tests {
 
         let mut state = RadioGroupState::with_selected(vec!["A", "B", "C"], 1);
         state.focused = false; // Explicitly unfocused
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                RadioGroup::<&str>::view(&state, frame, frame.area());
+                RadioGroup::<&str>::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -613,13 +617,14 @@ mod tests {
         // Render with focused but rendering non-selected items
         let mut state = RadioGroupState::with_selected(vec!["First", "Second", "Third"], 0);
         state.focused = true;
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(50, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                RadioGroup::<&str>::view(&state, frame, frame.area());
+                RadioGroup::<&str>::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 

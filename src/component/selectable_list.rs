@@ -24,6 +24,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, ListState};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Messages that can be sent to a SelectableList.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -219,7 +220,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         // Default view uses Display trait - users can implement custom rendering
         let items: Vec<ListItem> = state
             .items
@@ -227,14 +228,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             .map(|item| ListItem::new(format!("{}", item)))
             .collect();
 
-        let highlight_style = if state.focused {
-            Style::default()
-                .bg(Color::Blue)
-                .fg(Color::White)
-                .add_modifier(Modifier::BOLD)
-        } else {
-            Style::default().bg(Color::DarkGray).fg(Color::White)
-        };
+        let highlight_style = theme.selected_highlight_style(state.focused);
 
         let list = List::new(items)
             .block(Block::default().borders(Borders::ALL))
@@ -510,13 +504,14 @@ mod tests {
 
         let mut state = SelectableListState::with_items(vec!["Item 1", "Item 2", "Item 3"]);
         state.focused = true;
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                SelectableList::<&str>::view(&state, frame, frame.area());
+                SelectableList::<&str>::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -533,13 +528,14 @@ mod tests {
 
         let mut state = SelectableListState::with_items(vec!["A", "B", "C"]);
         state.focused = false; // Explicitly unfocused
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                SelectableList::<&str>::view(&state, frame, frame.area());
+                SelectableList::<&str>::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 

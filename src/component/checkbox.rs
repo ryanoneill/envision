@@ -31,6 +31,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Messages that can be sent to a Checkbox.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -187,16 +188,16 @@ impl Component for Checkbox {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         let check_mark = if state.checked { "x" } else { " " };
         let text = format!("[{}] {}", check_mark, state.label);
 
         let style = if state.disabled {
-            Style::default().fg(Color::DarkGray)
+            theme.disabled_style()
         } else if state.focused {
-            Style::default().fg(Color::Yellow)
+            theme.focused_style()
         } else {
-            Style::default()
+            theme.normal_style()
         };
 
         let paragraph = Paragraph::new(text).style(style);
@@ -356,13 +357,14 @@ mod tests {
         use ratatui::Terminal;
 
         let state = CheckboxState::new("Unchecked");
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(30, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Checkbox::view(&state, frame, frame.area());
+                Checkbox::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -376,13 +378,14 @@ mod tests {
         use ratatui::Terminal;
 
         let state = CheckboxState::checked("Checked");
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(30, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Checkbox::view(&state, frame, frame.area());
+                Checkbox::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -397,13 +400,14 @@ mod tests {
 
         let mut state = CheckboxState::new("Focused");
         Checkbox::set_focused(&mut state, true);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(30, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Checkbox::view(&state, frame, frame.area());
+                Checkbox::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -418,13 +422,14 @@ mod tests {
 
         let mut state = CheckboxState::new("Disabled");
         state.set_disabled(true);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(30, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Checkbox::view(&state, frame, frame.area());
+                Checkbox::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 

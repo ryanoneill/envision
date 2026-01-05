@@ -25,6 +25,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Messages that can be sent to a TextArea.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -696,7 +697,7 @@ impl Component for TextArea {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         let inner_height = area.height.saturating_sub(2) as usize; // Account for borders
 
         // Ensure cursor is visible
@@ -725,17 +726,17 @@ impl Component for TextArea {
         };
 
         let style = if state.focused {
-            Style::default().fg(Color::Yellow)
+            theme.focused_style()
         } else if state.is_empty() && !state.placeholder.is_empty() {
-            Style::default().fg(Color::DarkGray)
+            theme.placeholder_style()
         } else {
-            Style::default()
+            theme.normal_style()
         };
 
         let border_style = if state.focused {
-            Style::default().fg(Color::Yellow)
+            theme.focused_border_style()
         } else {
-            Style::default()
+            theme.border_style()
         };
 
         let paragraph = Paragraph::new(display_text).style(style).block(
@@ -1274,13 +1275,14 @@ mod tests {
 
         let mut state = TextAreaState::with_value("Hello");
         state.focused = true;
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                TextArea::view(&state, frame, frame.area());
+                TextArea::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1294,13 +1296,14 @@ mod tests {
         use ratatui::Terminal;
 
         let state = TextAreaState::with_value("Hello");
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                TextArea::view(&state, frame, frame.area());
+                TextArea::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1314,13 +1317,14 @@ mod tests {
         use ratatui::Terminal;
 
         let state = TextAreaState::with_placeholder("Enter text...");
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                TextArea::view(&state, frame, frame.area());
+                TextArea::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1336,13 +1340,14 @@ mod tests {
         use ratatui::Terminal;
 
         let state = TextAreaState::with_value("Line 1\nLine 2\nLine 3");
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                TextArea::view(&state, frame, frame.area());
+                TextArea::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1514,13 +1519,14 @@ mod tests {
             "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10",
         );
         state.focused = true;
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 5); // Small height to trigger scrolling
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                TextArea::view(&state, frame, frame.area());
+                TextArea::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1536,13 +1542,14 @@ mod tests {
         state.scroll_offset = 5; // Scroll down
         state.set_cursor(2, 0); // Cursor above scroll
         state.focused = true;
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                TextArea::view(&state, frame, frame.area());
+                TextArea::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 

@@ -28,6 +28,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Messages that can be sent to a Tabs component.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -314,43 +315,33 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         let titles: Vec<Line> = state
             .tabs
             .iter()
             .enumerate()
             .map(|(i, tab)| {
                 let style = if state.disabled {
-                    Style::default().fg(Color::DarkGray)
+                    theme.disabled_style()
                 } else if i == state.selected {
-                    if state.focused {
-                        Style::default()
-                            .fg(Color::Yellow)
-                            .add_modifier(Modifier::BOLD)
-                    } else {
-                        Style::default().add_modifier(Modifier::BOLD)
-                    }
+                    theme.selected_style(state.focused)
                 } else {
-                    Style::default()
+                    theme.normal_style()
                 };
                 Line::from(Span::styled(format!(" {} ", tab), style))
             })
             .collect();
 
         let border_style = if state.focused && !state.disabled {
-            Style::default().fg(Color::Yellow)
+            theme.focused_border_style()
         } else {
-            Style::default()
+            theme.border_style()
         };
 
         let highlight_style = if state.disabled {
-            Style::default().fg(Color::DarkGray)
-        } else if state.focused {
-            Style::default()
-                .fg(Color::Yellow)
-                .add_modifier(Modifier::BOLD)
+            theme.disabled_style()
         } else {
-            Style::default().add_modifier(Modifier::BOLD)
+            theme.selected_style(state.focused)
         };
 
         let tabs_widget = ratatui::widgets::Tabs::new(titles)
@@ -667,7 +658,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tabs::<&str>::view(&state, frame, frame.area());
+                Tabs::<&str>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -690,7 +681,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tabs::<&str>::view(&state, frame, frame.area());
+                Tabs::<&str>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -712,7 +703,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tabs::<&str>::view(&state, frame, frame.area());
+                Tabs::<&str>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -732,7 +723,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tabs::<&str>::view(&state, frame, frame.area());
+                Tabs::<&str>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 

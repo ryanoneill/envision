@@ -23,6 +23,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Messages that can be sent to an InputField.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -395,7 +396,7 @@ impl Component for InputField {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         let display_text = if state.value.is_empty() && !state.placeholder.is_empty() {
             state.placeholder.clone()
         } else {
@@ -403,17 +404,17 @@ impl Component for InputField {
         };
 
         let style = if state.focused {
-            Style::default().fg(Color::Yellow)
+            theme.focused_style()
         } else if state.value.is_empty() && !state.placeholder.is_empty() {
-            Style::default().fg(Color::DarkGray)
+            theme.placeholder_style()
         } else {
-            Style::default()
+            theme.normal_style()
         };
 
         let border_style = if state.focused {
-            Style::default().fg(Color::Yellow)
+            theme.focused_border_style()
         } else {
-            Style::default()
+            theme.border_style()
         };
 
         let paragraph = Paragraph::new(display_text).style(style).block(
@@ -701,13 +702,14 @@ mod tests {
 
         let mut state = InputFieldState::with_value("Hello");
         state.focused = true;
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                InputField::view(&state, frame, frame.area());
+                InputField::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -722,13 +724,14 @@ mod tests {
 
         let mut state = InputField::init();
         state.set_placeholder("Enter text...");
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(40, 10);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                InputField::view(&state, frame, frame.area());
+                InputField::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 

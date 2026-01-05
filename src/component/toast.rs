@@ -32,6 +32,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
 use super::Component;
+use crate::theme::Theme;
 
 /// Default maximum number of visible toasts.
 const DEFAULT_MAX_VISIBLE: usize = 5;
@@ -428,7 +429,7 @@ impl Component for Toast {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         if state.toasts.is_empty() {
             return;
         }
@@ -450,11 +451,11 @@ impl Component for Toast {
 
             let toast_area = Rect::new(x, y, toast_width, toast_height.min(area.bottom() - y));
 
-            let (border_color, prefix) = match toast.level {
-                ToastLevel::Info => (Color::Blue, "i"),
-                ToastLevel::Success => (Color::Green, "+"),
-                ToastLevel::Warning => (Color::Yellow, "!"),
-                ToastLevel::Error => (Color::Red, "x"),
+            let (border_style, prefix) = match toast.level {
+                ToastLevel::Info => (theme.info_style(), "i"),
+                ToastLevel::Success => (theme.success_style(), "+"),
+                ToastLevel::Warning => (theme.warning_style(), "!"),
+                ToastLevel::Error => (theme.error_style(), "x"),
             };
 
             // Clear the area for overlay effect
@@ -462,7 +463,7 @@ impl Component for Toast {
 
             let block = Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(border_color));
+                .border_style(border_style);
 
             let text = format!("[{}] {}", prefix, toast.message);
             let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
@@ -946,7 +947,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Toast::view(&state, frame, frame.area());
+                Toast::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -965,7 +966,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Toast::view(&state, frame, frame.area());
+                Toast::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -985,7 +986,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Toast::view(&state, frame, frame.area());
+                Toast::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1007,7 +1008,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Toast::view(&state, frame, frame.area());
+                Toast::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1028,7 +1029,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Toast::view(&state, frame, frame.area());
+                Toast::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1046,7 +1047,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Toast::view(&state, frame, frame.area());
+                Toast::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1064,7 +1065,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Toast::view(&state, frame, frame.area());
+                Toast::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1082,7 +1083,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Toast::view(&state, frame, frame.area());
+                Toast::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 

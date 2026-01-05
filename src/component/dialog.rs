@@ -22,6 +22,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
 use super::{Component, Focusable, Toggleable};
+use crate::theme::Theme;
 
 /// A button configuration for a dialog.
 ///
@@ -397,7 +398,7 @@ impl Component for Dialog {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         if !state.visible {
             return;
         }
@@ -417,7 +418,7 @@ impl Component for Dialog {
         let block = Block::default()
             .title(format!(" {} ", state.title))
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::White));
+            .border_style(theme.border_style());
 
         let inner = block.inner(dialog_area);
         frame.render_widget(block, dialog_area);
@@ -436,7 +437,7 @@ impl Component for Dialog {
         frame.render_widget(message, chunks[0]);
 
         // Render buttons horizontally centered
-        render_buttons(state, frame, chunks[1]);
+        render_buttons(state, frame, chunks[1], theme);
     }
 }
 
@@ -471,7 +472,7 @@ fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
 }
 
 /// Renders the dialog buttons horizontally centered.
-fn render_buttons(state: &DialogState, frame: &mut Frame, area: Rect) {
+fn render_buttons(state: &DialogState, frame: &mut Frame, area: Rect, theme: &Theme) {
     if state.buttons.is_empty() {
         return;
     }
@@ -497,19 +498,17 @@ fn render_buttons(state: &DialogState, frame: &mut Frame, area: Rect) {
         let is_primary = i == state.primary_button;
 
         let style = if is_focused {
-            Style::default()
-                .fg(Color::Yellow)
-                .add_modifier(Modifier::BOLD)
+            theme.focused_bold_style()
         } else if is_primary {
             Style::default().add_modifier(Modifier::BOLD)
         } else {
-            Style::default()
+            theme.normal_style()
         };
 
         let border_style = if is_focused {
-            Style::default().fg(Color::Yellow)
+            theme.focused_border_style()
         } else {
-            Style::default()
+            theme.border_style()
         };
 
         let btn = Paragraph::new(button.label.as_str())
@@ -980,13 +979,14 @@ mod tests {
     #[test]
     fn test_view_when_hidden() {
         let state = DialogState::alert("Title", "Message");
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Dialog::view(&state, frame, frame.area());
+                Dialog::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1004,13 +1004,14 @@ mod tests {
     fn test_view_renders() {
         let mut state = DialogState::alert("Test Title", "Test message content.");
         Dialog::show(&mut state);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Dialog::view(&state, frame, frame.area());
+                Dialog::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1022,13 +1023,14 @@ mod tests {
     fn test_view_title() {
         let mut state = DialogState::alert("My Dialog Title", "Message");
         Dialog::show(&mut state);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Dialog::view(&state, frame, frame.area());
+                Dialog::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1040,13 +1042,14 @@ mod tests {
     fn test_view_message() {
         let mut state = DialogState::alert("Title", "This is the message content.");
         Dialog::show(&mut state);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Dialog::view(&state, frame, frame.area());
+                Dialog::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1058,13 +1061,14 @@ mod tests {
     fn test_view_buttons() {
         let mut state = DialogState::confirm("Title", "Message");
         Dialog::show(&mut state);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Dialog::view(&state, frame, frame.area());
+                Dialog::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1078,13 +1082,14 @@ mod tests {
         let mut state = DialogState::confirm("Title", "Message");
         Dialog::show(&mut state);
         Dialog::focus(&mut state);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Dialog::view(&state, frame, frame.area());
+                Dialog::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1097,13 +1102,14 @@ mod tests {
     fn test_view_primary_button() {
         let mut state = DialogState::confirm("Title", "Message");
         Dialog::show(&mut state);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Dialog::view(&state, frame, frame.area());
+                Dialog::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -1116,13 +1122,14 @@ mod tests {
     fn test_view_multiline_message() {
         let mut state = DialogState::alert("Title", "Line 1\nLine 2\nLine 3");
         Dialog::show(&mut state);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Dialog::view(&state, frame, frame.area());
+                Dialog::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 

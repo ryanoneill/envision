@@ -28,6 +28,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Messages that can be sent to a Button.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -148,19 +149,19 @@ impl Component for Button {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         let style = if state.disabled {
-            Style::default().fg(Color::DarkGray)
+            theme.disabled_style()
         } else if state.focused {
-            Style::default().fg(Color::Yellow)
+            theme.focused_style()
         } else {
-            Style::default()
+            theme.normal_style()
         };
 
         let border_style = if state.focused && !state.disabled {
-            Style::default().fg(Color::Yellow)
+            theme.focused_border_style()
         } else {
-            Style::default()
+            theme.border_style()
         };
 
         let paragraph = Paragraph::new(state.label.as_str())
@@ -281,13 +282,14 @@ mod tests {
         use ratatui::Terminal;
 
         let state = ButtonState::new("Click");
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(20, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Button::view(&state, frame, frame.area());
+                Button::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -302,13 +304,14 @@ mod tests {
 
         let mut state = ButtonState::new("Focused");
         Button::set_focused(&mut state, true);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(20, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Button::view(&state, frame, frame.area());
+                Button::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 
@@ -323,13 +326,14 @@ mod tests {
 
         let mut state = ButtonState::new("Disabled");
         state.set_disabled(true);
+        let theme = Theme::default();
 
         let backend = CaptureBackend::new(20, 5);
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
             .draw(|frame| {
-                Button::view(&state, frame, frame.area());
+                Button::view(&state, frame, frame.area(), &theme);
             })
             .unwrap();
 

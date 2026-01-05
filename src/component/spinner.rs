@@ -38,6 +38,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::Component;
+use crate::theme::Theme;
 
 /// Built-in spinner animation styles.
 ///
@@ -314,7 +315,7 @@ impl Component for Spinner {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         let spinner_char = if state.spinning {
             state.current_frame().to_string()
         } else {
@@ -326,7 +327,7 @@ impl Component for Spinner {
             None => spinner_char,
         };
 
-        let paragraph = Paragraph::new(text).style(Style::default().fg(Color::Cyan));
+        let paragraph = Paragraph::new(text).style(theme.info_style());
 
         frame.render_widget(paragraph, area);
     }
@@ -563,7 +564,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Spinner::view(&state, frame, frame.area());
+                Spinner::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -585,7 +586,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Spinner::view(&state, frame, frame.area());
+                Spinner::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -606,7 +607,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Spinner::view(&state, frame, frame.area());
+                Spinner::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
