@@ -56,6 +56,7 @@ pub mod backend;
 pub mod component;
 pub mod harness;
 pub mod input;
+pub mod theme;
 
 // Re-export commonly used types
 pub use adapter::DualBackend;
@@ -86,6 +87,7 @@ pub use component::{
 };
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{EventQueue, SimulatedEvent};
+pub use theme::Theme;
 
 /// Prelude module for convenient imports
 pub mod prelude {
@@ -118,5 +120,6 @@ pub mod prelude {
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
     };
     pub use crate::input::{EventQueue, KeyCode, KeyModifiers, SimulatedEvent};
+    pub use crate::theme::Theme;
     pub use ratatui::prelude::*;
 }
