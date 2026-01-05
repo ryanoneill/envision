@@ -185,7 +185,12 @@ impl App for ThemedApp {
                 .split(chunks[2]);
 
         // Render button using Component trait
-        Button::view(&state.button_state, frame, button_checkbox_chunks[0], &theme);
+        Button::view(
+            &state.button_state,
+            frame,
+            button_checkbox_chunks[0],
+            &theme,
+        );
 
         // Render checkbox using Component trait
         Checkbox::view(

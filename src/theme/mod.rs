@@ -260,9 +260,7 @@ impl Theme {
                 .fg(self.foreground)
                 .add_modifier(Modifier::BOLD)
         } else {
-            Style::default()
-                .bg(self.disabled)
-                .fg(self.foreground)
+            Style::default().bg(self.disabled).fg(self.foreground)
         }
     }
 
@@ -308,7 +306,9 @@ impl Theme {
 
     /// Returns a style for the filled portion of progress bars.
     pub fn progress_filled_style(&self) -> Style {
-        Style::default().fg(self.progress_filled).bg(self.progress_empty)
+        Style::default()
+            .fg(self.progress_filled)
+            .bg(self.progress_empty)
     }
 }
 

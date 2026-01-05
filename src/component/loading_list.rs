@@ -720,7 +720,10 @@ mod tests {
         let theme = Theme::default();
         assert_eq!(ItemState::Ready.style(&theme), theme.normal_style());
         assert_eq!(ItemState::Loading.style(&theme), theme.warning_style());
-        assert_eq!(ItemState::Error("".to_string()).style(&theme), theme.error_style());
+        assert_eq!(
+            ItemState::Error("".to_string()).style(&theme),
+            theme.error_style()
+        );
     }
 
     // ========================================

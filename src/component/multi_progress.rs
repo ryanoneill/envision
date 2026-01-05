@@ -607,10 +607,19 @@ mod tests {
     #[test]
     fn test_status_styles() {
         let theme = Theme::default();
-        assert_eq!(ProgressItemStatus::Pending.style(&theme), theme.disabled_style());
+        assert_eq!(
+            ProgressItemStatus::Pending.style(&theme),
+            theme.disabled_style()
+        );
         assert_eq!(ProgressItemStatus::Active.style(&theme), theme.info_style());
-        assert_eq!(ProgressItemStatus::Completed.style(&theme), theme.success_style());
-        assert_eq!(ProgressItemStatus::Failed.style(&theme), theme.error_style());
+        assert_eq!(
+            ProgressItemStatus::Completed.style(&theme),
+            theme.success_style()
+        );
+        assert_eq!(
+            ProgressItemStatus::Failed.style(&theme),
+            theme.error_style()
+        );
     }
 
     #[test]
