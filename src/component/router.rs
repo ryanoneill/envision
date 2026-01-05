@@ -45,6 +45,7 @@
 use ratatui::prelude::*;
 
 use super::Component;
+use crate::theme::Theme;
 
 /// Navigation mode for screen transitions.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -308,7 +309,7 @@ impl<S: Clone + PartialEq> Component for Router<S> {
         }
     }
 
-    fn view(_state: &Self::State, _frame: &mut Frame, _area: Rect) {
+    fn view(_state: &Self::State, _frame: &mut Frame, _area: Rect, _theme: &Theme) {
         // Router is state-only - no view implementation.
         // The parent application should render based on state.current()
     }
@@ -622,7 +623,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| Router::view(&state, frame, frame.area()))
+            .draw(|frame| Router::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         // View should do nothing - output should be empty

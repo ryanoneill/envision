@@ -27,6 +27,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::Component;
+use crate::theme::Theme;
 
 /// Layout style for key hints display.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -484,7 +485,7 @@ impl Component for KeyHints {
         None // Display-only, no output
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         if state.hints.is_empty() || area.width == 0 || area.height == 0 {
             return;
         }
@@ -496,12 +497,19 @@ impl Component for KeyHints {
 
         let mut spans = Vec::new();
 
+        // Use theme for key style (focused/success color for keys)
+        let key_style = if state.key_style == Style::default().fg(Color::Green) {
+            theme.success_style()
+        } else {
+            state.key_style
+        };
+
         for (i, hint) in visible.iter().enumerate() {
             if i > 0 {
                 spans.push(Span::raw(&state.hint_separator));
             }
 
-            spans.push(Span::styled(&hint.key, state.key_style));
+            spans.push(Span::styled(&hint.key, key_style));
             spans.push(Span::raw(&state.key_action_separator));
             spans.push(Span::styled(&hint.action, state.action_style));
         }
@@ -817,7 +825,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| KeyHints::view(&state, frame, frame.area()))
+            .draw(|frame| KeyHints::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         // Empty state should render nothing
@@ -832,7 +840,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| KeyHints::view(&state, frame, frame.area()))
+            .draw(|frame| KeyHints::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -851,7 +859,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| KeyHints::view(&state, frame, frame.area()))
+            .draw(|frame| KeyHints::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -871,7 +879,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| KeyHints::view(&state, frame, frame.area()))
+            .draw(|frame| KeyHints::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -890,7 +898,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| KeyHints::view(&state, frame, frame.area()))
+            .draw(|frame| KeyHints::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
