@@ -57,6 +57,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::Component;
+use crate::theme::Theme;
 
 /// Section of the status bar for addressing items.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -202,15 +203,15 @@ pub enum StatusBarStyle {
 }
 
 impl StatusBarStyle {
-    /// Returns the foreground color for this style.
-    fn fg_color(&self) -> Color {
+    /// Returns the style for this status bar style variant.
+    fn style(self, theme: &Theme) -> Style {
         match self {
-            Self::Default => Color::White,
-            Self::Info => Color::Blue,
-            Self::Success => Color::Green,
-            Self::Warning => Color::Yellow,
-            Self::Error => Color::Red,
-            Self::Muted => Color::DarkGray,
+            Self::Default => theme.normal_style(),
+            Self::Info => theme.info_style(),
+            Self::Success => theme.success_style(),
+            Self::Warning => theme.warning_style(),
+            Self::Error => theme.error_style(),
+            Self::Muted => theme.disabled_style(),
         }
     }
 }
@@ -797,19 +798,20 @@ pub struct StatusBar;
 
 impl StatusBar {
     /// Renders a section of items to a span list.
-    fn render_section(items: &[StatusBarItem], separator: &str) -> Vec<Span<'static>> {
+    fn render_section(
+        items: &[StatusBarItem],
+        separator: &str,
+        theme: &Theme,
+    ) -> Vec<Span<'static>> {
         let mut spans = Vec::new();
 
         for (idx, item) in items.iter().enumerate() {
-            let style = Style::default().fg(item.style.fg_color());
+            let style = item.style.style(theme);
             spans.push(Span::styled(item.text(), style));
 
             // Add separator if not last item and item has separator enabled
             if idx < items.len() - 1 && item.has_separator() {
-                spans.push(Span::styled(
-                    separator.to_string(),
-                    Style::default().fg(Color::DarkGray),
-                ));
+                spans.push(Span::styled(separator.to_string(), theme.disabled_style()));
             }
         }
 
@@ -941,14 +943,14 @@ impl Component for StatusBar {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         // Render background
         let bg_style = Style::default().bg(state.background);
 
         // Calculate section widths
-        let left_spans = Self::render_section(&state.left, &state.separator);
-        let center_spans = Self::render_section(&state.center, &state.separator);
-        let right_spans = Self::render_section(&state.right, &state.separator);
+        let left_spans = Self::render_section(&state.left, &state.separator, theme);
+        let center_spans = Self::render_section(&state.center, &state.separator, theme);
+        let right_spans = Self::render_section(&state.right, &state.separator, theme);
 
         // Calculate the width of each section
         let left_width: usize = left_spans.iter().map(|s| s.content.len()).sum();
@@ -1015,13 +1017,14 @@ mod tests {
     }
 
     #[test]
-    fn test_style_fg_color() {
-        assert_eq!(StatusBarStyle::Default.fg_color(), Color::White);
-        assert_eq!(StatusBarStyle::Info.fg_color(), Color::Blue);
-        assert_eq!(StatusBarStyle::Success.fg_color(), Color::Green);
-        assert_eq!(StatusBarStyle::Warning.fg_color(), Color::Yellow);
-        assert_eq!(StatusBarStyle::Error.fg_color(), Color::Red);
-        assert_eq!(StatusBarStyle::Muted.fg_color(), Color::DarkGray);
+    fn test_style_method() {
+        let theme = Theme::default();
+        assert_eq!(StatusBarStyle::Default.style(&theme), theme.normal_style());
+        assert_eq!(StatusBarStyle::Info.style(&theme), theme.info_style());
+        assert_eq!(StatusBarStyle::Success.style(&theme), theme.success_style());
+        assert_eq!(StatusBarStyle::Warning.style(&theme), theme.warning_style());
+        assert_eq!(StatusBarStyle::Error.style(&theme), theme.error_style());
+        assert_eq!(StatusBarStyle::Muted.style(&theme), theme.disabled_style());
     }
 
     // StatusBarItem tests
@@ -1317,7 +1320,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1339,7 +1342,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1360,7 +1363,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1381,7 +1384,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1404,7 +1407,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1428,7 +1431,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1452,7 +1455,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1474,7 +1477,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1496,7 +1499,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1548,21 +1551,24 @@ mod tests {
 
     #[test]
     fn test_render_section_empty() {
-        let spans = StatusBar::render_section(&[], " | ");
+        let theme = Theme::default();
+        let spans = StatusBar::render_section(&[], " | ", &theme);
         assert!(spans.is_empty());
     }
 
     #[test]
     fn test_render_section_single_item() {
+        let theme = Theme::default();
         let items = vec![StatusBarItem::new("Test")];
-        let spans = StatusBar::render_section(&items, " | ");
+        let spans = StatusBar::render_section(&items, " | ", &theme);
         assert_eq!(spans.len(), 1);
     }
 
     #[test]
     fn test_render_section_multiple_items() {
+        let theme = Theme::default();
         let items = vec![StatusBarItem::new("A"), StatusBarItem::new("B")];
-        let spans = StatusBar::render_section(&items, " | ");
+        let spans = StatusBar::render_section(&items, " | ", &theme);
         // A + separator + B = 3 spans
         assert_eq!(spans.len(), 3);
     }
@@ -2070,7 +2076,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -2100,7 +2106,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -2121,7 +2127,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area());
+                StatusBar::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 

@@ -29,6 +29,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Status of a progress item.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -45,13 +46,13 @@ pub enum ProgressItemStatus {
 }
 
 impl ProgressItemStatus {
-    /// Returns the color for this status.
-    pub fn color(&self) -> Color {
+    /// Returns the style for this status using the theme.
+    pub fn style(&self, theme: &Theme) -> Style {
         match self {
-            Self::Pending => Color::DarkGray,
-            Self::Active => Color::Blue,
-            Self::Completed => Color::Green,
-            Self::Failed => Color::Red,
+            Self::Pending => theme.disabled_style(),
+            Self::Active => theme.info_style(),
+            Self::Completed => theme.success_style(),
+            Self::Failed => theme.error_style(),
         }
     }
 
@@ -514,7 +515,7 @@ impl Component for MultiProgress {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         if area.width == 0 || area.height == 0 {
             return;
         }
@@ -543,7 +544,7 @@ impl Component for MultiProgress {
             .take(visible_count)
             .map(|item| {
                 let symbol = item.status.symbol();
-                let color = item.status.color();
+                let style = item.status.style(theme);
 
                 // Build the content string
                 let content = if item.status == ProgressItemStatus::Failed {
@@ -568,7 +569,7 @@ impl Component for MultiProgress {
                     format!("{} {}", symbol, item.label)
                 };
 
-                ListItem::new(content).style(Style::default().fg(color))
+                ListItem::new(content).style(style)
             })
             .collect();
 
@@ -604,11 +605,21 @@ mod tests {
     }
 
     #[test]
-    fn test_status_colors() {
-        assert_eq!(ProgressItemStatus::Pending.color(), Color::DarkGray);
-        assert_eq!(ProgressItemStatus::Active.color(), Color::Blue);
-        assert_eq!(ProgressItemStatus::Completed.color(), Color::Green);
-        assert_eq!(ProgressItemStatus::Failed.color(), Color::Red);
+    fn test_status_styles() {
+        let theme = Theme::default();
+        assert_eq!(
+            ProgressItemStatus::Pending.style(&theme),
+            theme.disabled_style()
+        );
+        assert_eq!(ProgressItemStatus::Active.style(&theme), theme.info_style());
+        assert_eq!(
+            ProgressItemStatus::Completed.style(&theme),
+            theme.success_style()
+        );
+        assert_eq!(
+            ProgressItemStatus::Failed.style(&theme),
+            theme.error_style()
+        );
     }
 
     #[test]
@@ -1069,7 +1080,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| MultiProgress::view(&state, frame, frame.area()))
+            .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         // Should render border only
@@ -1095,7 +1106,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| MultiProgress::view(&state, frame, frame.area()))
+            .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1111,7 +1122,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| MultiProgress::view(&state, frame, frame.area()))
+            .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1135,7 +1146,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| MultiProgress::view(&state, frame, frame.area()))
+            .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1157,7 +1168,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| MultiProgress::view(&state, frame, frame.area()))
+            .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1188,14 +1199,14 @@ mod tests {
         // Test with zero width
         terminal
             .draw(|frame| {
-                MultiProgress::view(&state, frame, Rect::new(0, 0, 0, 10));
+                MultiProgress::view(&state, frame, Rect::new(0, 0, 0, 10), &Theme::default());
             })
             .unwrap();
 
         // Test with zero height
         terminal
             .draw(|frame| {
-                MultiProgress::view(&state, frame, Rect::new(0, 0, 60, 0));
+                MultiProgress::view(&state, frame, Rect::new(0, 0, 60, 0), &Theme::default());
             })
             .unwrap();
     }
@@ -1209,7 +1220,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| MultiProgress::view(&state, frame, frame.area()))
+            .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1234,7 +1245,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| MultiProgress::view(&state, frame, frame.area()))
+            .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();

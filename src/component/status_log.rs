@@ -24,6 +24,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Severity level for status log entries.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -530,7 +531,7 @@ impl Component for StatusLog {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         if area.width == 0 || area.height == 0 {
             return;
         }
@@ -550,7 +551,12 @@ impl Component for StatusLog {
             .take(inner.height as usize)
             .map(|entry| {
                 let prefix = entry.level.prefix();
-                let color = entry.level.color();
+                let style = match entry.level {
+                    StatusLogLevel::Info => theme.info_style(),
+                    StatusLogLevel::Success => theme.success_style(),
+                    StatusLogLevel::Warning => theme.warning_style(),
+                    StatusLogLevel::Error => theme.error_style(),
+                };
 
                 let content = if state.show_timestamps {
                     if let Some(ts) = &entry.timestamp {
@@ -562,7 +568,7 @@ impl Component for StatusLog {
                     format!("{} {}", prefix, entry.message)
                 };
 
-                ListItem::new(content).style(Style::default().fg(color))
+                ListItem::new(content).style(style)
             })
             .collect();
 
@@ -1072,7 +1078,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| StatusLog::view(&state, frame, frame.area()))
+            .draw(|frame| StatusLog::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         // Should render border only
@@ -1090,7 +1096,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| StatusLog::view(&state, frame, frame.area()))
+            .draw(|frame| StatusLog::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1108,7 +1114,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| StatusLog::view(&state, frame, frame.area()))
+            .draw(|frame| StatusLog::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1124,7 +1130,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| StatusLog::view(&state, frame, frame.area()))
+            .draw(|frame| StatusLog::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1144,7 +1150,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| StatusLog::view(&state, frame, frame.area()))
+            .draw(|frame| StatusLog::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();

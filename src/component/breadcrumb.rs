@@ -35,6 +35,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// A single breadcrumb segment.
 ///
@@ -474,7 +475,7 @@ impl Component for Breadcrumb {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         if state.segments.is_empty() {
             return;
         }
@@ -484,7 +485,7 @@ impl Component for Breadcrumb {
 
         // Add ellipsis if truncated
         if state.is_truncated() {
-            spans.push(Span::styled("…", Style::default().fg(Color::DarkGray)));
+            spans.push(Span::styled("…", theme.disabled_style()));
             spans.push(Span::raw(&state.separator));
         }
 
@@ -494,17 +495,17 @@ impl Component for Breadcrumb {
             let is_focused_segment = state.focused && seg_idx == state.focused_index;
 
             let style = if state.disabled {
-                Style::default().fg(Color::DarkGray)
+                theme.disabled_style()
             } else if is_focused_segment {
-                Style::default()
-                    .fg(Color::Yellow)
+                theme
+                    .focused_style()
                     .add_modifier(Modifier::BOLD | Modifier::UNDERLINED)
             } else if is_last {
                 // Current location - bold, not underlined
                 Style::default().add_modifier(Modifier::BOLD)
             } else {
                 // Navigable segments
-                Style::default().fg(Color::Cyan)
+                theme.info_style()
             };
 
             spans.push(Span::styled(segment.label(), style));
@@ -1019,6 +1020,7 @@ mod tests {
     #[test]
     fn test_view_empty() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let state = BreadcrumbState::default();
@@ -1028,7 +1030,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Breadcrumb::view(&state, frame, frame.area());
+                Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1040,6 +1042,7 @@ mod tests {
     #[test]
     fn test_view_single() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let state = BreadcrumbState::from_labels(vec!["Home"]);
@@ -1049,7 +1052,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Breadcrumb::view(&state, frame, frame.area());
+                Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1060,6 +1063,7 @@ mod tests {
     #[test]
     fn test_view_multiple() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let state = BreadcrumbState::from_labels(vec!["Home", "Products", "Item"]);
@@ -1069,7 +1073,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Breadcrumb::view(&state, frame, frame.area());
+                Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1083,6 +1087,7 @@ mod tests {
     #[test]
     fn test_view_focused_highlight() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
@@ -1094,7 +1099,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Breadcrumb::view(&state, frame, frame.area());
+                Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1106,6 +1111,7 @@ mod tests {
     #[test]
     fn test_view_truncated() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state =
@@ -1117,7 +1123,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Breadcrumb::view(&state, frame, frame.area());
+                Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1131,6 +1137,7 @@ mod tests {
     #[test]
     fn test_view_custom_separator() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state = BreadcrumbState::from_labels(vec!["Home", "Docs"]);
@@ -1141,7 +1148,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Breadcrumb::view(&state, frame, frame.area());
+                Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1152,6 +1159,7 @@ mod tests {
     #[test]
     fn test_view_disabled() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
@@ -1162,7 +1170,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Breadcrumb::view(&state, frame, frame.area());
+                Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 

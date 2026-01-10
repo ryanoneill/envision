@@ -30,6 +30,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Messages that can be sent to a Dropdown.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -473,19 +474,19 @@ impl Component for Dropdown {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         let style = if state.disabled {
-            Style::default().fg(Color::DarkGray)
+            theme.disabled_style()
         } else if state.focused {
-            Style::default().fg(Color::Yellow)
+            theme.focused_style()
         } else {
-            Style::default()
+            theme.normal_style()
         };
 
         let border_style = if state.focused && !state.disabled {
-            Style::default().fg(Color::Yellow)
+            theme.focused_border_style()
         } else {
-            Style::default()
+            theme.border_style()
         };
 
         // Determine what to show in the input area
@@ -508,7 +509,7 @@ impl Component for Dropdown {
             && !state.disabled
             && !state.focused
         {
-            Style::default().fg(Color::DarkGray)
+            theme.placeholder_style()
         } else {
             style
         };
@@ -544,7 +545,7 @@ impl Component for Dropdown {
                 if state.filtered_indices.is_empty() {
                     // Show "no matches" message
                     let no_match = Paragraph::new("  No matches")
-                        .style(Style::default().fg(Color::DarkGray))
+                        .style(theme.placeholder_style())
                         .block(
                             Block::default()
                                 .borders(Borders::ALL)
@@ -565,11 +566,9 @@ impl Component for Dropdown {
                             };
                             let text = format!("{}{}", prefix, opt);
                             let item_style = if i == state.highlighted_index {
-                                Style::default()
-                                    .fg(Color::Cyan)
-                                    .add_modifier(Modifier::BOLD)
+                                theme.selected_style(state.focused)
                             } else {
-                                Style::default()
+                                theme.normal_style()
                             };
                             ListItem::new(text).style(item_style)
                         })
@@ -1140,7 +1139,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Dropdown::view(&state, frame, frame.area());
+                Dropdown::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1160,7 +1159,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Dropdown::view(&state, frame, frame.area());
+                Dropdown::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1181,7 +1180,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Dropdown::view(&state, frame, frame.area());
+                Dropdown::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1205,7 +1204,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Dropdown::view(&state, frame, frame.area());
+                Dropdown::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1229,7 +1228,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Dropdown::view(&state, frame, frame.area());
+                Dropdown::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1252,7 +1251,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Dropdown::view(&state, frame, frame.area());
+                Dropdown::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1273,7 +1272,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Dropdown::view(&state, frame, frame.area());
+                Dropdown::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 

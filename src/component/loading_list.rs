@@ -34,6 +34,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Loading state of an individual item.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -84,12 +85,12 @@ impl ItemState {
         }
     }
 
-    /// Returns the color for this state.
-    pub fn color(&self) -> Color {
+    /// Returns the style for this state using the theme.
+    pub fn style(&self, theme: &Theme) -> Style {
         match self {
-            Self::Ready => Color::Reset,
-            Self::Loading => Color::Yellow,
-            Self::Error(_) => Color::Red,
+            Self::Ready => theme.normal_style(),
+            Self::Loading => theme.warning_style(),
+            Self::Error(_) => theme.error_style(),
         }
     }
 }
@@ -574,7 +575,7 @@ impl<T: Clone> Component for LoadingList<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         if area.width == 0 || area.height == 0 {
             return;
         }
@@ -618,9 +619,9 @@ impl<T: Clone> Component for LoadingList<T> {
                 };
 
                 let style = if is_selected {
-                    Style::default().fg(Color::Yellow).bold()
+                    theme.focused_bold_style()
                 } else {
-                    Style::default().fg(item.state.color())
+                    item.state.style(theme)
                 };
 
                 ListItem::new(content).style(style)
@@ -715,10 +716,14 @@ mod tests {
     }
 
     #[test]
-    fn test_item_state_colors() {
-        assert_eq!(ItemState::Ready.color(), Color::Reset);
-        assert_eq!(ItemState::Loading.color(), Color::Yellow);
-        assert_eq!(ItemState::Error("".to_string()).color(), Color::Red);
+    fn test_item_state_styles() {
+        let theme = Theme::default();
+        assert_eq!(ItemState::Ready.style(&theme), theme.normal_style());
+        assert_eq!(ItemState::Loading.style(&theme), theme.warning_style());
+        assert_eq!(
+            ItemState::Error("".to_string()).style(&theme),
+            theme.error_style()
+        );
     }
 
     // ========================================
@@ -1105,7 +1110,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| LoadingList::view(&state, frame, frame.area()))
+            .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         // Should render border only
@@ -1123,7 +1128,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| LoadingList::view(&state, frame, frame.area()))
+            .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1142,7 +1147,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| LoadingList::view(&state, frame, frame.area()))
+            .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1159,7 +1164,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| LoadingList::view(&state, frame, frame.area()))
+            .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1192,14 +1197,14 @@ mod tests {
         // Test with zero width
         terminal
             .draw(|frame| {
-                LoadingList::view(&state, frame, Rect::new(0, 0, 0, 10));
+                LoadingList::view(&state, frame, Rect::new(0, 0, 0, 10), &Theme::default());
             })
             .unwrap();
 
         // Test with zero height
         terminal
             .draw(|frame| {
-                LoadingList::view(&state, frame, Rect::new(0, 0, 60, 0));
+                LoadingList::view(&state, frame, Rect::new(0, 0, 60, 0), &Theme::default());
             })
             .unwrap();
     }
@@ -1215,7 +1220,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| LoadingList::view(&state, frame, frame.area()))
+            .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();
@@ -1233,7 +1238,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
 
         terminal
-            .draw(|frame| LoadingList::view(&state, frame, frame.area()))
+            .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
             .unwrap();
 
         let output = terminal.backend().to_string();

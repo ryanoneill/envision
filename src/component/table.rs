@@ -58,6 +58,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Cell, Row};
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// Trait for types that can be displayed as table rows.
 ///
@@ -605,7 +606,7 @@ impl<T: TableRow + 'static> Component for Table<T> {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         // Build header row with sort indicators
         let header_cells: Vec<Cell> = state
             .columns
@@ -626,7 +627,7 @@ impl<T: TableRow + 'static> Component for Table<T> {
             .collect();
 
         let header_style = if state.disabled {
-            Style::default().fg(Color::DarkGray)
+            theme.disabled_style()
         } else {
             Style::default().add_modifier(Modifier::BOLD)
         };
@@ -650,20 +651,15 @@ impl<T: TableRow + 'static> Component for Table<T> {
         let widths: Vec<Constraint> = state.columns.iter().map(|c| c.width).collect();
 
         let border_style = if state.focused && !state.disabled {
-            Style::default().fg(Color::Yellow)
+            theme.focused_border_style()
         } else {
-            Style::default()
+            theme.border_style()
         };
 
         let row_highlight_style = if state.disabled {
-            Style::default().bg(Color::DarkGray)
-        } else if state.focused {
-            Style::default()
-                .bg(Color::Blue)
-                .fg(Color::White)
-                .add_modifier(Modifier::BOLD)
+            theme.disabled_style()
         } else {
-            Style::default().bg(Color::DarkGray)
+            theme.selected_highlight_style(state.focused)
         };
 
         let table = ratatui::widgets::Table::new(rows, widths)
@@ -1218,6 +1214,7 @@ mod tests {
     #[test]
     fn test_view_renders() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let state = TableState::new(test_rows(), test_columns());
@@ -1227,7 +1224,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Table::<TestRow>::view(&state, frame, frame.area());
+                Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1242,6 +1239,7 @@ mod tests {
     #[test]
     fn test_view_with_header() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let state = TableState::new(test_rows(), test_columns());
@@ -1251,7 +1249,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Table::<TestRow>::view(&state, frame, frame.area());
+                Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1263,6 +1261,7 @@ mod tests {
     #[test]
     fn test_view_with_sort_indicator() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state = TableState::new(test_rows(), test_columns());
@@ -1273,7 +1272,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Table::<TestRow>::view(&state, frame, frame.area());
+                Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1284,6 +1283,7 @@ mod tests {
     #[test]
     fn test_view_focused() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state = TableState::new(test_rows(), test_columns());
@@ -1294,7 +1294,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Table::<TestRow>::view(&state, frame, frame.area());
+                Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1305,6 +1305,7 @@ mod tests {
     #[test]
     fn test_view_disabled() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state = TableState::new(test_rows(), test_columns());
@@ -1315,7 +1316,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Table::<TestRow>::view(&state, frame, frame.area());
+                Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1326,6 +1327,7 @@ mod tests {
     #[test]
     fn test_view_empty() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let state: TableState<TestRow> = TableState::new(vec![], test_columns());
@@ -1335,7 +1337,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Table::<TestRow>::view(&state, frame, frame.area());
+                Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1477,6 +1479,7 @@ mod tests {
     #[test]
     fn test_view_descending_sort_indicator() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state = TableState::new(test_rows(), test_columns());
@@ -1489,7 +1492,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Table::<TestRow>::view(&state, frame, frame.area());
+                Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1517,6 +1520,7 @@ mod tests {
     #[test]
     fn test_view_unfocused() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut state = TableState::new(test_rows(), test_columns());
@@ -1527,7 +1531,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Table::<TestRow>::view(&state, frame, frame.area());
+                Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 

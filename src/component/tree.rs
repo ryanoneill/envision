@@ -25,6 +25,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, Focusable};
+use crate::theme::Theme;
 
 /// A node in the tree hierarchy.
 #[derive(Clone, Debug)]
@@ -425,7 +426,7 @@ pub struct Tree<T>(std::marker::PhantomData<T>);
 
 impl<T: Clone + 'static> Tree<T> {
     /// Renders the tree to a list of styled lines.
-    fn render_lines(state: &TreeState<T>, width: u16) -> Vec<Line<'static>> {
+    fn render_lines(state: &TreeState<T>, width: u16, theme: &Theme) -> Vec<Line<'static>> {
         let flat = state.flatten();
         let mut lines = Vec::new();
 
@@ -451,15 +452,10 @@ impl<T: Clone + 'static> Tree<T> {
             // Pad to full width for selection highlight
             let padded = format!("{:<width$}", text, width = width as usize);
 
-            let style = if is_selected && state.focused {
-                Style::default()
-                    .bg(Color::Blue)
-                    .fg(Color::White)
-                    .add_modifier(Modifier::BOLD)
-            } else if is_selected {
-                Style::default().bg(Color::DarkGray).fg(Color::White)
+            let style = if is_selected {
+                theme.selected_highlight_style(state.focused)
             } else {
-                Style::default()
+                theme.normal_style()
             };
 
             lines.push(Line::from(Span::styled(padded, style)));
@@ -562,8 +558,8 @@ impl<T: Clone + 'static> Component for Tree<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
-        let lines = Self::render_lines(state, area.width);
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        let lines = Self::render_lines(state, area.width, theme);
         let text = Text::from(lines);
         let paragraph = Paragraph::new(text);
         frame.render_widget(paragraph, area);
@@ -1086,6 +1082,7 @@ mod tests {
     #[test]
     fn test_view_empty() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let state: TreeState<()> = TreeState::new(Vec::new());
@@ -1095,7 +1092,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tree::view(&state, frame, frame.area());
+                Tree::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1105,6 +1102,7 @@ mod tests {
     #[test]
     fn test_view_single_node() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let root = TreeNode::new("Root", ());
@@ -1115,7 +1113,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tree::view(&state, frame, frame.area());
+                Tree::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1126,6 +1124,7 @@ mod tests {
     #[test]
     fn test_view_with_children() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut root = TreeNode::new_expanded("Parent", ());
@@ -1138,7 +1137,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tree::view(&state, frame, frame.area());
+                Tree::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1150,6 +1149,7 @@ mod tests {
     #[test]
     fn test_view_collapsed_indicator() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut root = TreeNode::new("Root", ()); // Collapsed
@@ -1162,7 +1162,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tree::view(&state, frame, frame.area());
+                Tree::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1173,6 +1173,7 @@ mod tests {
     #[test]
     fn test_view_expanded_indicator() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let mut root = TreeNode::new_expanded("Root", ());
@@ -1185,7 +1186,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tree::view(&state, frame, frame.area());
+                Tree::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1266,6 +1267,7 @@ mod tests {
     #[test]
     fn test_view_focused_selection() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let root = TreeNode::new("Root", ());
@@ -1277,7 +1279,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tree::view(&state, frame, frame.area());
+                Tree::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1288,6 +1290,7 @@ mod tests {
     #[test]
     fn test_view_unfocused_selection() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         let root = TreeNode::new("Root", ());
@@ -1299,7 +1302,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tree::view(&state, frame, frame.area());
+                Tree::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 
@@ -1423,6 +1426,7 @@ mod tests {
     #[test]
     fn test_view_leaf_node_no_indicator() {
         use crate::backend::CaptureBackend;
+        use crate::theme::Theme;
         use ratatui::Terminal;
 
         // A leaf node (no children) should show no expand/collapse indicator
@@ -1434,7 +1438,7 @@ mod tests {
 
         terminal
             .draw(|frame| {
-                Tree::view(&state, frame, frame.area());
+                Tree::view(&state, frame, frame.area(), &Theme::default());
             })
             .unwrap();
 

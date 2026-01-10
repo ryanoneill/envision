@@ -25,6 +25,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
 use super::{Component, Toggleable};
+use crate::theme::Theme;
 
 /// Position of the tooltip relative to its target.
 ///
@@ -445,8 +446,9 @@ impl Component for Tooltip {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, _theme: &Theme) {
         // Use the area as both target and bounds for basic view
+        // Note: Tooltip uses its own colors from state rather than theme
         Self::view_at(state, frame, area, area);
     }
 }
