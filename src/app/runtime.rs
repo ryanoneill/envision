@@ -1,17 +1,53 @@
 //! Runtime for executing TEA applications.
 //!
 //! The runtime manages the main loop, event handling, and rendering.
+//!
+//! # Two Runtime Modes
+//!
+//! Envision supports two distinct runtime modes:
+//!
+//! ## Terminal Mode
+//!
+//! For running applications in a real terminal:
+//!
+//! ```ignore
+//! // Simple usage
+//! Runtime::<MyApp>::terminal()?.run()?;
+//! ```
+//!
+//! This sets up raw mode, alternate screen, and mouse capture, then runs
+//! a blocking event loop that polls for real terminal events.
+//!
+//! ## Virtual Terminal Mode
+//!
+//! For programmatic control (AI agents, automation, testing):
+//!
+//! ```ignore
+//! let mut vt = Runtime::<MyApp>::virtual_terminal(80, 24)?;
+//! vt.send(Event::key('j'));
+//! vt.step()?;
+//! println!("{}", vt.display());
+//! ```
+//!
+//! Events are injected programmatically and the display can be inspected.
 
-use std::io;
+use std::io::{self, Stdout};
 use std::time::Duration;
 
-use ratatui::backend::Backend;
+use crossterm::event::{
+    DisableMouseCapture, EnableMouseCapture, Event as CrosstermEvent, KeyEventKind,
+};
+use crossterm::terminal::{
+    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
+};
+use crossterm::ExecutableCommand;
+use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::Terminal;
 
 use super::command::CommandHandler;
 use super::model::App;
 use crate::backend::CaptureBackend;
-use crate::input::EventQueue;
+use crate::input::{Event, EventQueue};
 
 /// Configuration for the runtime.
 #[derive(Clone, Debug)]
@@ -89,15 +125,178 @@ pub struct Runtime<A: App, B: Backend> {
     should_quit: bool,
 }
 
+// =============================================================================
+// Terminal Mode - for real terminal applications
+// =============================================================================
+
+impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
+    /// Creates a new runtime connected to a real terminal.
+    ///
+    /// This sets up the terminal for TUI operation:
+    /// - Enables raw mode (input is not line-buffered)
+    /// - Enters alternate screen (preserves the original terminal content)
+    /// - Enables mouse capture
+    ///
+    /// Call `run()` to start the interactive event loop.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// fn main() -> std::io::Result<()> {
+    ///     Runtime::<MyApp>::terminal()?.run()
+    /// }
+    /// ```
+    pub fn terminal() -> io::Result<Self> {
+        Self::terminal_with_config(RuntimeConfig::default())
+    }
+
+    /// Creates a terminal runtime with custom configuration.
+    pub fn terminal_with_config(config: RuntimeConfig) -> io::Result<Self> {
+        // Set up terminal
+        enable_raw_mode()?;
+        let mut stdout = io::stdout();
+        stdout.execute(EnterAlternateScreen)?;
+        stdout.execute(EnableMouseCapture)?;
+
+        let backend = CrosstermBackend::new(stdout);
+        Self::with_backend_and_config(backend, config)
+    }
+
+    /// Runs the interactive event loop until the application quits.
+    ///
+    /// This is the main entry point for terminal applications. It:
+    /// - Polls for terminal events (keyboard, mouse, resize)
+    /// - Dispatches events through the App's `handle_event`
+    /// - Calls `on_tick` at the configured interval
+    /// - Renders the UI
+    /// - Cleans up the terminal on exit
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// fn main() -> std::io::Result<()> {
+    ///     Runtime::<MyApp>::terminal()?.run()
+    /// }
+    /// ```
+    pub fn run(mut self) -> io::Result<()> {
+        // Initial render
+        self.render()?;
+
+        let result = self.run_event_loop();
+
+        // Cleanup terminal - always attempt cleanup even on error
+        let cleanup_result = self.cleanup_terminal();
+
+        // Call on_exit
+        A::on_exit(&self.state);
+
+        // Return the first error if any
+        result.and(cleanup_result)
+    }
+
+    /// The internal event loop.
+    fn run_event_loop(&mut self) -> io::Result<()> {
+        loop {
+            // Check if we should quit
+            if self.should_quit || A::should_quit(&self.state) {
+                break;
+            }
+
+            // Poll for events with timeout
+            if crossterm::event::poll(self.config.tick_rate)? {
+                let event = crossterm::event::read()?;
+
+                // Convert crossterm event to our Event type and dispatch
+                if let Some(envision_event) = Self::convert_crossterm_event(&event) {
+                    if let Some(msg) = A::handle_event(&self.state, &envision_event) {
+                        self.dispatch(msg);
+                    }
+                }
+            }
+
+            // Process any pending commands
+            self.process_commands();
+
+            // Handle tick
+            if let Some(msg) = A::on_tick(&self.state) {
+                self.dispatch(msg);
+            }
+
+            // Check quit flag again after processing
+            if self.should_quit || A::should_quit(&self.state) {
+                break;
+            }
+
+            // Render
+            self.render()?;
+        }
+
+        Ok(())
+    }
+
+    /// Converts a crossterm event to our Event type.
+    fn convert_crossterm_event(event: &CrosstermEvent) -> Option<Event> {
+        match event {
+            CrosstermEvent::Key(key_event) => {
+                // Only handle key press events, not release or repeat
+                if key_event.kind == KeyEventKind::Press {
+                    Some(Event::Key(*key_event))
+                } else {
+                    None
+                }
+            }
+            CrosstermEvent::Mouse(mouse_event) => Some(Event::Mouse(*mouse_event)),
+            CrosstermEvent::Resize(width, height) => Some(Event::Resize(*width, *height)),
+            CrosstermEvent::FocusGained => Some(Event::FocusGained),
+            CrosstermEvent::FocusLost => Some(Event::FocusLost),
+            CrosstermEvent::Paste(text) => Some(Event::Paste(text.clone())),
+        }
+    }
+
+    /// Cleans up terminal state.
+    fn cleanup_terminal(&mut self) -> io::Result<()> {
+        disable_raw_mode()?;
+        self.terminal
+            .backend_mut()
+            .execute(LeaveAlternateScreen)?;
+        self.terminal.backend_mut().execute(DisableMouseCapture)?;
+        self.terminal.show_cursor()?;
+        Ok(())
+    }
+}
+
+// =============================================================================
+// Virtual Terminal Mode - for programmatic control (agents, testing)
+// =============================================================================
+
 impl<A: App> Runtime<A, CaptureBackend> {
-    /// Creates a new runtime with a capture backend for headless operation.
-    pub fn headless(width: u16, height: u16) -> io::Result<Self> {
+    /// Creates a virtual terminal for programmatic control.
+    ///
+    /// A virtual terminal is not connected to a physical terminal. Instead:
+    /// - Events are injected via `send()`
+    /// - The application is stepped forward via `step()`
+    /// - The display can be inspected via `display()`
+    ///
+    /// This is useful for:
+    /// - AI agents driving the application
+    /// - Automation and scripting
+    /// - Testing
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let mut vt = Runtime::<MyApp>::virtual_terminal(80, 24)?;
+    /// vt.send(Event::key(KeyCode::Char('j')));
+    /// vt.step()?;
+    /// assert!(vt.display().contains("expected text"));
+    /// ```
+    pub fn virtual_terminal(width: u16, height: u16) -> io::Result<Self> {
         let backend = CaptureBackend::new(width, height);
         Self::with_backend(backend)
     }
 
-    /// Creates a new runtime with history tracking.
-    pub fn headless_with_config(
+    /// Creates a virtual terminal with custom configuration.
+    pub fn virtual_terminal_with_config(
         width: u16,
         height: u16,
         config: RuntimeConfig,
@@ -108,6 +307,75 @@ impl<A: App> Runtime<A, CaptureBackend> {
             CaptureBackend::new(width, height)
         };
         Self::with_backend_and_config(backend, config)
+    }
+
+    /// Sends an event to the virtual terminal.
+    ///
+    /// The event is queued and will be processed on the next `step()`.
+    pub fn send(&mut self, event: Event) {
+        self.events.push(event);
+    }
+
+    /// Steps the application forward.
+    ///
+    /// This processes all pending events, runs any commands, calls `on_tick`,
+    /// and renders the UI.
+    pub fn step(&mut self) -> io::Result<()> {
+        // Process pending commands
+        self.process_commands();
+
+        // Process all pending events
+        let mut messages_processed = 0;
+        while self.process_event() && messages_processed < self.config.max_messages_per_tick {
+            messages_processed += 1;
+        }
+
+        // Handle tick
+        if let Some(msg) = A::on_tick(&self.state) {
+            self.dispatch(msg);
+        }
+
+        // Check if we should quit
+        if A::should_quit(&self.state) {
+            self.should_quit = true;
+        }
+
+        // Render
+        self.render()?;
+
+        Ok(())
+    }
+
+    /// Returns the current display content as plain text.
+    ///
+    /// This is what would be shown on a terminal screen.
+    pub fn display(&self) -> String {
+        self.terminal.backend().to_string()
+    }
+
+    /// Returns the display content with ANSI color codes.
+    pub fn display_ansi(&self) -> String {
+        self.terminal.backend().to_ansi()
+    }
+
+    // -------------------------------------------------------------------------
+    // Legacy aliases (deprecated, for backwards compatibility)
+    // -------------------------------------------------------------------------
+
+    /// Creates a new runtime with a capture backend for headless operation.
+    #[deprecated(since = "0.4.0", note = "Use `virtual_terminal` instead")]
+    pub fn headless(width: u16, height: u16) -> io::Result<Self> {
+        Self::virtual_terminal(width, height)
+    }
+
+    /// Creates a new runtime with history tracking.
+    #[deprecated(since = "0.4.0", note = "Use `virtual_terminal_with_config` instead")]
+    pub fn headless_with_config(
+        width: u16,
+        height: u16,
+        config: RuntimeConfig,
+    ) -> io::Result<Self> {
+        Self::virtual_terminal_with_config(width, height, config)
     }
 }
 
@@ -145,13 +413,13 @@ impl<A: App, B: Backend> Runtime<A, B> {
         &mut self.state
     }
 
-    /// Returns a reference to the terminal.
-    pub fn terminal(&self) -> &Terminal<B> {
+    /// Returns a reference to the inner ratatui Terminal.
+    pub fn inner_terminal(&self) -> &Terminal<B> {
         &self.terminal
     }
 
-    /// Returns a mutable reference to the terminal.
-    pub fn terminal_mut(&mut self) -> &mut Terminal<B> {
+    /// Returns a mutable reference to the inner ratatui Terminal.
+    pub fn inner_terminal_mut(&mut self) -> &mut Terminal<B> {
         &mut self.terminal
     }
 
@@ -261,24 +529,6 @@ impl<A: App, B: Backend> Runtime<A, B> {
         self.should_quit = true;
     }
 
-    /// Runs the application until it quits.
-    ///
-    /// For headless/testing mode, this processes all queued events
-    /// and renders once, then returns.
-    pub fn run(&mut self) -> io::Result<()> {
-        while !self.should_quit && !self.events.is_empty() {
-            self.tick()?;
-        }
-
-        // Final render if there are no events
-        if !self.should_quit {
-            self.tick()?;
-        }
-
-        A::on_exit(&self.state);
-        Ok(())
-    }
-
     /// Runs for a specified number of ticks.
     pub fn run_ticks(&mut self, ticks: usize) -> io::Result<()> {
         for _ in 0..ticks {
@@ -291,26 +541,52 @@ impl<A: App, B: Backend> Runtime<A, B> {
     }
 }
 
-// Convenience methods for CaptureBackend
+// Additional convenience methods for CaptureBackend (virtual terminal)
 impl<A: App> Runtime<A, CaptureBackend> {
     /// Returns the captured output as a string.
+    #[deprecated(since = "0.4.0", note = "Use `display()` instead")]
     pub fn captured_output(&self) -> String {
-        self.terminal.backend().to_string()
+        self.display()
     }
 
     /// Returns the captured output with ANSI colors.
+    #[deprecated(since = "0.4.0", note = "Use `display_ansi()` instead")]
     pub fn captured_ansi(&self) -> String {
-        self.terminal.backend().to_ansi()
+        self.display_ansi()
     }
 
-    /// Returns true if the captured output contains the given text.
+    /// Returns true if the display contains the given text.
     pub fn contains_text(&self, needle: &str) -> bool {
         self.terminal.backend().contains_text(needle)
     }
 
-    /// Finds all positions of the given text.
+    /// Finds all positions of the given text in the display.
     pub fn find_text(&self, needle: &str) -> Vec<ratatui::layout::Position> {
         self.terminal.backend().find_text(needle)
+    }
+
+    /// Runs the virtual terminal by processing all queued events.
+    ///
+    /// This processes all events in the queue and renders, then returns.
+    /// Unlike the terminal mode `run()`, this does not block.
+    ///
+    /// For finer control, use `step()` instead.
+    #[deprecated(
+        since = "0.4.0",
+        note = "Use `step()` for fine-grained control of virtual terminals"
+    )]
+    pub fn run(&mut self) -> io::Result<()> {
+        while !self.should_quit && !self.events.is_empty() {
+            self.tick()?;
+        }
+
+        // Final render if there are no events
+        if !self.should_quit {
+            self.tick()?;
+        }
+
+        A::on_exit(&self.state);
+        Ok(())
     }
 }
 
@@ -477,17 +753,19 @@ mod tests {
     }
 
     #[test]
-    fn test_runtime_terminal_access() {
+    fn test_runtime_inner_terminal_access() {
+        #[allow(deprecated)]
         let runtime: Runtime<CounterApp, _> = Runtime::headless(80, 24).unwrap();
-        let terminal = runtime.terminal();
+        let terminal = runtime.inner_terminal();
         assert_eq!(terminal.backend().width(), 80);
         assert_eq!(terminal.backend().height(), 24);
     }
 
     #[test]
-    fn test_runtime_terminal_mut() {
+    fn test_runtime_inner_terminal_mut() {
+        #[allow(deprecated)]
         let mut runtime: Runtime<CounterApp, _> = Runtime::headless(80, 24).unwrap();
-        let _terminal = runtime.terminal_mut();
+        let _terminal = runtime.inner_terminal_mut();
         // Just verify we can get mutable access
     }
 
@@ -804,5 +1082,110 @@ mod tests {
         // Should only process up to max_messages (2)
         // But since on_tick also increments ticks, let's check events
         assert!(runtime.state().events_received <= 3);
+    }
+
+    // =========================================================================
+    // New Virtual Terminal API Tests
+    // =========================================================================
+
+    #[test]
+    fn test_virtual_terminal_new() {
+        let vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        assert_eq!(vt.state().count, 0);
+    }
+
+    #[test]
+    fn test_virtual_terminal_with_config() {
+        let config = RuntimeConfig::new().with_history(5);
+        let vt: Runtime<CounterApp, _> =
+            Runtime::virtual_terminal_with_config(80, 24, config).unwrap();
+        assert_eq!(vt.state().count, 0);
+    }
+
+    #[test]
+    fn test_virtual_terminal_send_and_step() {
+        use crate::input::Event;
+
+        let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+        // Send events
+        vt.send(Event::char('a'));
+        vt.send(Event::char('b'));
+
+        // Step processes the events
+        vt.step().unwrap();
+
+        assert_eq!(vt.state().events_received, 2);
+    }
+
+    #[test]
+    fn test_virtual_terminal_display() {
+        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+        vt.dispatch(CounterMsg::Increment);
+        vt.step().unwrap();
+
+        let display = vt.display();
+        assert!(display.contains("Count: 1"));
+    }
+
+    #[test]
+    fn test_virtual_terminal_display_ansi() {
+        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+        vt.dispatch(CounterMsg::Increment);
+        vt.step().unwrap();
+
+        let display = vt.display_ansi();
+        assert!(display.contains("Count: 1"));
+    }
+
+    #[test]
+    fn test_virtual_terminal_quit_via_event() {
+        use crate::input::Event;
+
+        let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+        vt.send(Event::char('q'));
+        vt.step().unwrap();
+
+        assert!(vt.should_quit());
+    }
+
+    #[test]
+    fn test_virtual_terminal_multiple_steps() {
+        use crate::input::Event;
+
+        let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+        // First step with one event
+        vt.send(Event::char('a'));
+        vt.step().unwrap();
+        assert_eq!(vt.state().events_received, 1);
+
+        // Second step with two events
+        vt.send(Event::char('b'));
+        vt.send(Event::char('c'));
+        vt.step().unwrap();
+        assert_eq!(vt.state().events_received, 3);
+    }
+
+    #[test]
+    fn test_virtual_terminal_contains_text() {
+        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+        vt.step().unwrap();
+
+        assert!(vt.contains_text("Count: 0"));
+        assert!(!vt.contains_text("Not Here"));
+    }
+
+    #[test]
+    fn test_virtual_terminal_find_text() {
+        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+        vt.step().unwrap();
+
+        let positions = vt.find_text("Count");
+        assert!(!positions.is_empty());
+
+        let positions = vt.find_text("Not Here");
+        assert!(positions.is_empty());
     }
 }
