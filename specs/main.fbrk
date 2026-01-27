@@ -1,0 +1,391 @@
+// Envision TUI Framework Specification
+// =====================================
+//
+// This specification defines the formal model for Envision, a ratatui framework
+// that supports both interactive terminal use and programmatic control via
+// virtual terminals.
+
+module envision
+
+// =============================================================================
+// Core Types
+// =============================================================================
+
+/// Events represent terminal input from any source (real terminal or programmatic).
+enum Event {
+    Key,
+    Mouse,
+    Resize,
+    FocusGained,
+    FocusLost,
+    Paste,
+}
+
+/// Commands are side effects returned from update functions.
+enum Command {
+    NoOp,
+    Quit,
+    Message,
+    Batch,
+    Async,
+}
+
+/// The interface mode determines how the runtime interacts with its environment.
+enum InterfaceMode {
+    /// Connected to a real terminal with stdin/stdout.
+    Terminal,
+    /// Virtual terminal for programmatic control.
+    Virtual,
+}
+
+/// Runtime configuration options.
+type RuntimeConfig {
+    tick_rate_ms: Int,
+    max_messages_per_tick: Int,
+    capture_history: Bool,
+    history_capacity: Int,
+}
+
+/// Terminal setup state for real terminal mode.
+type TerminalSetup {
+    raw_mode_enabled: Bool,
+    alternate_screen: Bool,
+    mouse_capture: Bool,
+}
+
+/// Display buffer for virtual terminal mode.
+type DisplayBuffer {
+    width: Int,
+    height: Int,
+}
+
+// Refined types with constraints
+type PositiveInt = Int where self > 0
+type Dimension = Int where self > 0 and self <= 65535
+
+// =============================================================================
+// Runtime State Machine
+// =============================================================================
+
+state Runtime {
+    // Core state
+    mode: InterfaceMode,
+    should_quit: Bool,
+
+    // Event handling
+    event_queue_length: Int,
+    pending_commands_count: Int,
+
+    // Dimensions (for virtual mode)
+    width: Int,
+    height: Int,
+
+    // Terminal setup state
+    raw_mode_enabled: Bool,
+    alternate_screen_active: Bool,
+    mouse_capture_enabled: Bool,
+
+    // ==========================================================================
+    // Invariants
+    // ==========================================================================
+
+    invariant "Terminal mode has proper setup" {
+        mode == InterfaceMode::Terminal implies (
+            raw_mode_enabled and alternate_screen_active
+        )
+    }
+
+    invariant "Virtual mode has valid dimensions" {
+        mode == InterfaceMode::Virtual implies (
+            width > 0 and height > 0
+        )
+    }
+
+    invariant "Event queue is non-negative" {
+        event_queue_length >= 0
+    }
+
+    invariant "Dimensions are bounded" {
+        width >= 0 and width <= 65535 and
+        height >= 0 and height <= 65535
+    }
+}
+
+// =============================================================================
+// Actions - Terminal Mode
+// =============================================================================
+
+/// Initialize as a terminal runtime connected to a real terminal.
+action init_terminal() -> Bool
+    ensures {
+        mode' == InterfaceMode::Terminal
+        and raw_mode_enabled'
+        and alternate_screen_active'
+        and mouse_capture_enabled'
+        and not should_quit'
+        and event_queue_length' == 0
+        and result == true
+    }
+
+/// Run the terminal event loop until the application quits.
+/// This is a blocking operation.
+action run_terminal() -> Bool
+    requires {
+        mode == InterfaceMode::Terminal
+        and not should_quit
+    }
+    ensures {
+        should_quit'
+        and result == true
+    }
+
+// =============================================================================
+// Actions - Virtual Terminal Mode
+// =============================================================================
+
+/// Initialize as a virtual terminal for programmatic control.
+action init_virtual(w: Int, h: Int) -> Bool
+    requires {
+        w > 0 and h > 0
+    }
+    ensures {
+        mode' == InterfaceMode::Virtual
+        and width' == w
+        and height' == h
+        and event_queue_length' == 0
+        and not should_quit'
+        and result == true
+    }
+
+/// Send an event to the virtual terminal's event queue.
+action send(event: Event) -> Bool
+    requires {
+        mode == InterfaceMode::Virtual
+    }
+    ensures {
+        event_queue_length' == event_queue_length + 1
+        and mode' == mode
+        and should_quit' == should_quit
+        and width' == width
+        and height' == height
+        and result == true
+    }
+
+/// Process all pending events, run tick, and render.
+action step() -> Bool
+    requires {
+        mode == InterfaceMode::Virtual
+    }
+    ensures {
+        event_queue_length' == 0
+        and mode' == mode
+        and width' == width
+        and height' == height
+        and result == true
+    }
+
+/// Get the current display content as plain text.
+action display() -> String
+    requires {
+        mode == InterfaceMode::Virtual
+    }
+
+/// Get the current display content with ANSI color codes.
+action display_ansi() -> String
+    requires {
+        mode == InterfaceMode::Virtual
+    }
+
+// =============================================================================
+// Actions - Common Operations
+// =============================================================================
+
+/// Dispatch a message to update the application state.
+action dispatch() -> Bool
+    ensures {
+        mode' == mode
+        and width' == width
+        and height' == height
+        and result == true
+    }
+
+/// Render the current state to the terminal/buffer.
+action render() -> Bool
+    ensures {
+        mode' == mode
+        and width' == width
+        and height' == height
+        and result == true
+    }
+
+/// Signal that the runtime should quit.
+action quit() -> Bool
+    ensures {
+        should_quit'
+        and mode' == mode
+        and result == true
+    }
+
+/// Check if the runtime should quit.
+action check_should_quit() -> Bool
+    ensures {
+        result == should_quit
+    }
+
+// =============================================================================
+// Properties (expressed as type-level constraints)
+// =============================================================================
+
+// Note: State-level properties are expressed as invariants in the Runtime state block.
+// Type-level properties can be expressed here using forall quantifiers over types.
+
+property "RuntimeConfig has valid tick rate" {
+    forall c: RuntimeConfig => c.tick_rate_ms > 0
+}
+
+property "RuntimeConfig has valid history capacity" {
+    forall c: RuntimeConfig => c.history_capacity >= 0
+}
+
+property "Display buffer has valid dimensions" {
+    forall d: DisplayBuffer => d.width > 0 and d.height > 0
+}
+
+// =============================================================================
+// Scenarios
+// =============================================================================
+
+scenario "Create virtual terminal" {
+    given {
+        mode = InterfaceMode::Virtual
+        width = 0
+        height = 0
+        event_queue_length = 0
+        should_quit = false
+    }
+    when {
+        ok = init_virtual(80, 24)
+    }
+    then {
+        mode == InterfaceMode::Virtual
+        and width == 80
+        and height == 24
+        and event_queue_length == 0
+        and not should_quit
+    }
+}
+
+scenario "Send events to virtual terminal" {
+    given {
+        mode = InterfaceMode::Virtual
+        width = 80
+        height = 24
+        event_queue_length = 0
+        should_quit = false
+    }
+    when {
+        r1 = send(Event::Key)
+        r2 = send(Event::Key)
+    }
+    then {
+        event_queue_length == 2
+    }
+}
+
+scenario "Step processes all events" {
+    given {
+        mode = InterfaceMode::Virtual
+        width = 80
+        height = 24
+        event_queue_length = 2
+        should_quit = false
+    }
+    when {
+        ok = step()
+    }
+    then {
+        event_queue_length == 0
+    }
+}
+
+scenario "Quit signal is set" {
+    given {
+        mode = InterfaceMode::Virtual
+        width = 80
+        height = 24
+        event_queue_length = 0
+        should_quit = false
+    }
+    when {
+        ok = quit()
+    }
+    then {
+        should_quit
+    }
+}
+
+scenario "Terminal mode initialization" {
+    given {
+        mode = InterfaceMode::Terminal
+        raw_mode_enabled = false
+        alternate_screen_active = false
+        mouse_capture_enabled = false
+        should_quit = false
+        event_queue_length = 0
+    }
+    when {
+        ok = init_terminal()
+    }
+    then {
+        mode == InterfaceMode::Terminal
+        and raw_mode_enabled
+        and alternate_screen_active
+        and mouse_capture_enabled
+    }
+}
+
+scenario "Dimensions preserved across operations" {
+    given {
+        mode = InterfaceMode::Virtual
+        width = 120
+        height = 40
+        event_queue_length = 0
+        should_quit = false
+    }
+    when {
+        r1 = send(Event::Key)
+        r2 = step()
+        r3 = dispatch()
+    }
+    then {
+        width == 120 and height == 40
+    }
+}
+
+// =============================================================================
+// Quality Requirements
+// =============================================================================
+
+@id("PERF-001")
+quality performance "Event processing latency" {
+    metric: latency,
+    target: < 1ms,
+}
+
+@id("PERF-002")
+quality performance "Render performance" {
+    metric: latency,
+    target: < 16ms,
+}
+
+@id("REL-001")
+quality reliability "Terminal cleanup" {
+    metric: success_rate,
+    target: >= 100%,
+}
+
+@id("REL-002")
+quality reliability "Event ordering" {
+    metric: correctness,
+    target: >= 100%,
+}
