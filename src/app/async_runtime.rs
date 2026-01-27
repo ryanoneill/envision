@@ -993,21 +993,21 @@ mod tests {
 
     #[test]
     fn test_async_runtime_events() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
         use crossterm::event::KeyCode;
 
         let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
         let events = runtime.events();
 
         // Add some events to the queue
-        events.push(SimulatedEvent::key(KeyCode::Enter));
+        events.push(Event::key(KeyCode::Enter));
 
         assert!(!events.is_empty());
     }
 
     #[test]
     fn test_async_runtime_process_event() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
         use crossterm::event::KeyCode;
 
         // App that handles key events
@@ -1040,8 +1040,8 @@ mod tests {
 
             fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
 
-            fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
-                if let SimulatedEvent::Key(_) = event {
+            fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+                if let Event::Key(_) = event {
                     Some(KeyMsg::KeyPress)
                 } else {
                     None
@@ -1055,7 +1055,7 @@ mod tests {
         assert!(!runtime.process_event());
 
         // Add an event
-        runtime.events().push(SimulatedEvent::key(KeyCode::Enter));
+        runtime.events().push(Event::key(KeyCode::Enter));
 
         // Process the event
         assert!(runtime.process_event());
@@ -1067,7 +1067,7 @@ mod tests {
 
     #[test]
     fn test_async_runtime_process_all_events() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
         use crossterm::event::KeyCode;
 
         // App that counts key presses
@@ -1100,8 +1100,8 @@ mod tests {
 
             fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
 
-            fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
-                if let SimulatedEvent::Key(_) = event {
+            fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+                if let Event::Key(_) = event {
                     Some(CountKeyMsg::KeyPress)
                 } else {
                     None
@@ -1113,7 +1113,7 @@ mod tests {
 
         // Add multiple events
         for _ in 0..5 {
-            runtime.events().push(SimulatedEvent::key(KeyCode::Enter));
+            runtime.events().push(Event::key(KeyCode::Enter));
         }
 
         // Process all events
@@ -1237,7 +1237,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_run_with_events() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
         use crossterm::event::{KeyCode, KeyEvent};
 
         // App that increments on any key and quits on 'q'
@@ -1280,8 +1280,8 @@ mod tests {
                 state.quit
             }
 
-            fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
-                if let SimulatedEvent::Key(KeyEvent { code, .. }) = event {
+            fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+                if let Event::Key(KeyEvent { code, .. }) = event {
                     if *code == KeyCode::Char('q') {
                         Some(EventDrivenMsg::Quit)
                     } else {
@@ -1296,8 +1296,8 @@ mod tests {
         let mut runtime: AsyncRuntime<EventDrivenApp, _> = AsyncRuntime::headless(80, 24).unwrap();
 
         // Add some key events
-        runtime.events().push(SimulatedEvent::char('a'));
-        runtime.events().push(SimulatedEvent::char('b'));
+        runtime.events().push(Event::char('a'));
+        runtime.events().push(Event::char('b'));
 
         // Spawn task to quit after processing events
         let tx = runtime.message_sender();

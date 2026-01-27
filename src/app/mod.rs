@@ -35,7 +35,7 @@
 //!
 //! ```rust,no_run
 //! use envision::app::{App, Command, Update};
-//! use envision::input::SimulatedEvent;
+//! use envision::input::Event;
 //! use ratatui::Frame;
 //!
 //! // Define your state

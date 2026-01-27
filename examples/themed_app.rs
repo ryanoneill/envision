@@ -241,7 +241,7 @@ impl App for ThemedApp {
         frame.render_widget(controls, chunks[5]);
     }
 
-    fn handle_event(_state: &State, event: &SimulatedEvent) -> Option<Msg> {
+    fn handle_event(_state: &State, event: &Event) -> Option<Msg> {
         use crossterm::event::KeyCode;
 
         if let Some(key) = event.as_key() {

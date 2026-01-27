@@ -3,7 +3,7 @@
 use ratatui::Frame;
 
 use super::command::Command;
-use crate::input::SimulatedEvent;
+use crate::input::Event;
 
 /// The core trait for TEA-style applications.
 ///
@@ -96,7 +96,7 @@ pub trait App: Sized {
     ///
     /// Override this to handle keyboard/mouse input.
     /// Return `None` to ignore the event.
-    fn handle_event(_state: &Self::State, _event: &SimulatedEvent) -> Option<Self::Message> {
+    fn handle_event(_state: &Self::State, _event: &Event) -> Option<Self::Message> {
         None
     }
 
@@ -199,7 +199,7 @@ mod tests {
     #[test]
     fn test_default_handle_event() {
         let (state, _) = TestApp::init();
-        let event = SimulatedEvent::char('a');
+        let event = Event::char('a');
 
         // Default implementation returns None
         let result = TestApp::handle_event(&state, &event);
@@ -285,7 +285,7 @@ mod tests {
 
         fn view(_state: &Self::State, _frame: &mut Frame) {}
 
-        fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
+        fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
             use crossterm::event::KeyCode;
             if let Some(key) = event.as_key() {
                 if let KeyCode::Char(c) = key.code {
@@ -316,12 +316,12 @@ mod tests {
         let (state, _) = CustomApp::init();
 
         // Test quit key
-        let quit_event = SimulatedEvent::char('q');
+        let quit_event = Event::char('q');
         let result = CustomApp::handle_event(&state, &quit_event);
         assert!(matches!(result, Some(CustomMsg::Quit)));
 
         // Test other key
-        let other_event = SimulatedEvent::char('a');
+        let other_event = Event::char('a');
         let result = CustomApp::handle_event(&state, &other_event);
         assert!(matches!(result, Some(CustomMsg::KeyPressed('a'))));
     }

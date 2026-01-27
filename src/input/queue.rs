@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use crossterm::event::KeyCode;
 
-use super::events::SimulatedEvent;
+use super::events::Event;
 
 /// A queue of simulated input events.
 ///
@@ -28,7 +28,7 @@ use super::events::SimulatedEvent;
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct EventQueue {
-    events: VecDeque<SimulatedEvent>,
+    events: VecDeque<Event>,
 }
 
 impl EventQueue {
@@ -38,7 +38,7 @@ impl EventQueue {
     }
 
     /// Creates a queue with pre-loaded events.
-    pub fn with_events(events: impl IntoIterator<Item = SimulatedEvent>) -> Self {
+    pub fn with_events(events: impl IntoIterator<Item = Event>) -> Self {
         Self {
             events: events.into_iter().collect(),
         }
@@ -60,50 +60,50 @@ impl EventQueue {
     }
 
     /// Adds an event to the end of the queue.
-    pub fn push(&mut self, event: SimulatedEvent) {
+    pub fn push(&mut self, event: Event) {
         self.events.push_back(event);
     }
 
     /// Adds an event to the front of the queue (next to be consumed).
-    pub fn push_front(&mut self, event: SimulatedEvent) {
+    pub fn push_front(&mut self, event: Event) {
         self.events.push_front(event);
     }
 
     /// Removes and returns the next event, or None if empty.
-    pub fn pop(&mut self) -> Option<SimulatedEvent> {
+    pub fn pop(&mut self) -> Option<Event> {
         self.events.pop_front()
     }
 
     /// Returns a reference to the next event without removing it.
-    pub fn peek(&self) -> Option<&SimulatedEvent> {
+    pub fn peek(&self) -> Option<&Event> {
         self.events.front()
     }
 
     /// Adds a key event for a special key.
     pub fn key(&mut self, code: KeyCode) {
-        self.push(SimulatedEvent::key(code));
+        self.push(Event::key(code));
     }
 
     /// Adds a character key event.
     pub fn char(&mut self, c: char) {
-        self.push(SimulatedEvent::char(c));
+        self.push(Event::char(c));
     }
 
     /// Adds key events for each character in a string.
     pub fn type_str(&mut self, s: &str) {
         for c in s.chars() {
-            self.push(SimulatedEvent::char(c));
+            self.push(Event::char(c));
         }
     }
 
     /// Adds a Ctrl+key event.
     pub fn ctrl(&mut self, c: char) {
-        self.push(SimulatedEvent::ctrl(c));
+        self.push(Event::ctrl(c));
     }
 
     /// Adds an Alt+key event.
     pub fn alt(&mut self, c: char) {
-        self.push(SimulatedEvent::alt(c));
+        self.push(Event::alt(c));
     }
 
     /// Adds an Enter key event.
@@ -178,55 +178,55 @@ impl EventQueue {
 
     /// Adds a mouse click event.
     pub fn click(&mut self, x: u16, y: u16) {
-        self.push(SimulatedEvent::click(x, y));
+        self.push(Event::click(x, y));
     }
 
     /// Adds a mouse double-click (two clicks at same position).
     pub fn double_click(&mut self, x: u16, y: u16) {
-        self.push(SimulatedEvent::click(x, y));
-        self.push(SimulatedEvent::mouse_up(x, y));
-        self.push(SimulatedEvent::click(x, y));
-        self.push(SimulatedEvent::mouse_up(x, y));
+        self.push(Event::click(x, y));
+        self.push(Event::mouse_up(x, y));
+        self.push(Event::click(x, y));
+        self.push(Event::mouse_up(x, y));
     }
 
     /// Adds mouse events to simulate a drag from one position to another.
     pub fn drag(&mut self, from: (u16, u16), to: (u16, u16)) {
-        self.push(SimulatedEvent::click(from.0, from.1));
-        self.push(SimulatedEvent::mouse_drag(
+        self.push(Event::click(from.0, from.1));
+        self.push(Event::mouse_drag(
             to.0,
             to.1,
             crossterm::event::MouseButton::Left,
         ));
-        self.push(SimulatedEvent::mouse_up(to.0, to.1));
+        self.push(Event::mouse_up(to.0, to.1));
     }
 
     /// Adds a scroll up event.
     pub fn scroll_up(&mut self, x: u16, y: u16) {
-        self.push(SimulatedEvent::scroll_up(x, y));
+        self.push(Event::scroll_up(x, y));
     }
 
     /// Adds a scroll down event.
     pub fn scroll_down(&mut self, x: u16, y: u16) {
-        self.push(SimulatedEvent::scroll_down(x, y));
+        self.push(Event::scroll_down(x, y));
     }
 
     /// Adds a resize event.
     pub fn resize(&mut self, width: u16, height: u16) {
-        self.push(SimulatedEvent::Resize(width, height));
+        self.push(Event::Resize(width, height));
     }
 
     /// Adds a paste event.
     pub fn paste(&mut self, content: impl Into<String>) {
-        self.push(SimulatedEvent::Paste(content.into()));
+        self.push(Event::Paste(content.into()));
     }
 
     /// Returns an iterator over all events (without consuming them).
-    pub fn iter(&self) -> impl Iterator<Item = &SimulatedEvent> {
+    pub fn iter(&self) -> impl Iterator<Item = &Event> {
         self.events.iter()
     }
 
     /// Drains all events from the queue.
-    pub fn drain(&mut self) -> impl Iterator<Item = SimulatedEvent> + '_ {
+    pub fn drain(&mut self) -> impl Iterator<Item = Event> + '_ {
         self.events.drain(..)
     }
 
@@ -234,26 +234,26 @@ impl EventQueue {
     ///
     /// In simulation mode, this ignores the timeout and immediately
     /// returns the next event if available.
-    pub fn poll(&mut self, _timeout: Duration) -> Option<SimulatedEvent> {
+    pub fn poll(&mut self, _timeout: Duration) -> Option<Event> {
         self.pop()
     }
 
     /// Extends the queue with events from an iterator.
-    pub fn extend(&mut self, events: impl IntoIterator<Item = SimulatedEvent>) {
+    pub fn extend(&mut self, events: impl IntoIterator<Item = Event>) {
         self.events.extend(events);
     }
 }
 
-impl FromIterator<SimulatedEvent> for EventQueue {
-    fn from_iter<T: IntoIterator<Item = SimulatedEvent>>(iter: T) -> Self {
+impl FromIterator<Event> for EventQueue {
+    fn from_iter<T: IntoIterator<Item = Event>>(iter: T) -> Self {
         Self {
             events: iter.into_iter().collect(),
         }
     }
 }
 
-impl Extend<SimulatedEvent> for EventQueue {
-    fn extend<T: IntoIterator<Item = SimulatedEvent>>(&mut self, iter: T) {
+impl Extend<Event> for EventQueue {
+    fn extend<T: IntoIterator<Item = Event>>(&mut self, iter: T) {
         self.events.extend(iter);
     }
 }
@@ -272,16 +272,16 @@ mod tests {
     #[test]
     fn test_push_pop() {
         let mut queue = EventQueue::new();
-        queue.push(SimulatedEvent::char('a'));
-        queue.push(SimulatedEvent::char('b'));
+        queue.push(Event::char('a'));
+        queue.push(Event::char('b'));
 
         assert_eq!(queue.len(), 2);
 
         let e1 = queue.pop().unwrap();
-        assert_eq!(e1, SimulatedEvent::char('a'));
+        assert_eq!(e1, Event::char('a'));
 
         let e2 = queue.pop().unwrap();
-        assert_eq!(e2, SimulatedEvent::char('b'));
+        assert_eq!(e2, Event::char('b'));
 
         assert!(queue.is_empty());
     }
@@ -292,8 +292,8 @@ mod tests {
         queue.type_str("hi");
 
         assert_eq!(queue.len(), 2);
-        assert_eq!(queue.pop(), Some(SimulatedEvent::char('h')));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::char('i')));
+        assert_eq!(queue.pop(), Some(Event::char('h')));
+        assert_eq!(queue.pop(), Some(Event::char('i')));
     }
 
     #[test]
@@ -305,10 +305,10 @@ mod tests {
         queue.backspace();
 
         assert_eq!(queue.len(), 4);
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Enter)));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Esc)));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Tab)));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Backspace)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Enter)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Esc)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Tab)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Backspace)));
     }
 
     #[test]
@@ -320,10 +320,10 @@ mod tests {
         queue.right();
 
         assert_eq!(queue.len(), 4);
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Up)));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Down)));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Left)));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Right)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Up)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Down)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Left)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Right)));
     }
 
     #[test]
@@ -333,10 +333,10 @@ mod tests {
         queue.alt('x');
 
         let e1 = queue.pop().unwrap();
-        assert_eq!(e1, SimulatedEvent::ctrl('c'));
+        assert_eq!(e1, Event::ctrl('c'));
 
         let e2 = queue.pop().unwrap();
-        assert_eq!(e2, SimulatedEvent::alt('x'));
+        assert_eq!(e2, Event::alt('x'));
     }
 
     #[test]
@@ -359,7 +359,7 @@ mod tests {
         let mut queue = EventQueue::new();
         queue.char('x');
 
-        assert_eq!(queue.peek(), Some(&SimulatedEvent::char('x')));
+        assert_eq!(queue.peek(), Some(&Event::char('x')));
         assert_eq!(queue.len(), 1); // Not consumed
 
         queue.pop();
@@ -369,8 +369,8 @@ mod tests {
     #[test]
     fn test_with_events() {
         let events = vec![
-            SimulatedEvent::char('a'),
-            SimulatedEvent::key(KeyCode::Enter),
+            Event::char('a'),
+            Event::key(KeyCode::Enter),
         ];
 
         let queue = EventQueue::with_events(events);
@@ -379,7 +379,7 @@ mod tests {
 
     #[test]
     fn test_from_iterator() {
-        let queue: EventQueue = vec![SimulatedEvent::char('a'), SimulatedEvent::char('b')]
+        let queue: EventQueue = vec![Event::char('a'), Event::char('b')]
             .into_iter()
             .collect();
 
@@ -400,10 +400,10 @@ mod tests {
     fn test_push_front() {
         let mut queue = EventQueue::new();
         queue.char('b');
-        queue.push_front(SimulatedEvent::char('a'));
+        queue.push_front(Event::char('a'));
 
-        assert_eq!(queue.pop(), Some(SimulatedEvent::char('a')));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::char('b')));
+        assert_eq!(queue.pop(), Some(Event::char('a')));
+        assert_eq!(queue.pop(), Some(Event::char('b')));
     }
 
     #[test]
@@ -428,7 +428,7 @@ mod tests {
         queue.delete();
 
         assert_eq!(queue.len(), 1);
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Delete)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Delete)));
     }
 
     #[test]
@@ -438,8 +438,8 @@ mod tests {
         queue.end();
 
         assert_eq!(queue.len(), 2);
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Home)));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::End)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Home)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::End)));
     }
 
     #[test]
@@ -449,8 +449,8 @@ mod tests {
         queue.page_down();
 
         assert_eq!(queue.len(), 2);
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::PageUp)));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::PageDown)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::PageUp)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::PageDown)));
     }
 
     #[test]
@@ -460,8 +460,8 @@ mod tests {
         queue.function(12);
 
         assert_eq!(queue.len(), 2);
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::F(1))));
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::F(12))));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::F(1))));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::F(12))));
     }
 
     #[test]
@@ -480,7 +480,7 @@ mod tests {
         queue.resize(120, 40);
 
         assert_eq!(queue.len(), 1);
-        if let Some(SimulatedEvent::Resize(w, h)) = queue.pop() {
+        if let Some(Event::Resize(w, h)) = queue.pop() {
             assert_eq!(w, 120);
             assert_eq!(h, 40);
         } else {
@@ -494,7 +494,7 @@ mod tests {
         queue.paste("pasted text");
 
         assert_eq!(queue.len(), 1);
-        if let Some(SimulatedEvent::Paste(content)) = queue.pop() {
+        if let Some(Event::Paste(content)) = queue.pop() {
             assert_eq!(content, "pasted text");
         } else {
             panic!("Expected Paste event");
@@ -534,7 +534,7 @@ mod tests {
         queue.char('p');
 
         let event = queue.poll(Duration::from_millis(100));
-        assert_eq!(event, Some(SimulatedEvent::char('p')));
+        assert_eq!(event, Some(Event::char('p')));
 
         // Empty queue returns None
         let event = queue.poll(Duration::from_millis(100));
@@ -546,7 +546,7 @@ mod tests {
         let mut queue = EventQueue::new();
         queue.char('a');
 
-        let more_events = vec![SimulatedEvent::char('b'), SimulatedEvent::char('c')];
+        let more_events = vec![Event::char('b'), Event::char('c')];
         queue.extend(more_events);
 
         assert_eq!(queue.len(), 3);
@@ -556,10 +556,10 @@ mod tests {
     fn test_extend_trait() {
         let mut queue = EventQueue::new();
 
-        let events = vec![SimulatedEvent::char('x'), SimulatedEvent::char('y')];
+        let events = vec![Event::char('x'), Event::char('y')];
 
         // Using Extend trait
-        <EventQueue as Extend<SimulatedEvent>>::extend(&mut queue, events);
+        <EventQueue as Extend<Event>>::extend(&mut queue, events);
 
         assert_eq!(queue.len(), 2);
     }
@@ -592,6 +592,6 @@ mod tests {
         let mut queue = EventQueue::new();
         queue.key(KeyCode::Insert);
 
-        assert_eq!(queue.pop(), Some(SimulatedEvent::key(KeyCode::Insert)));
+        assert_eq!(queue.pop(), Some(Event::key(KeyCode::Insert)));
     }
 }

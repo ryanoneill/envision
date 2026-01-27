@@ -6,7 +6,7 @@ use ratatui::Terminal;
 
 use crate::annotation::{with_annotations, AnnotationRegistry, RegionInfo, WidgetType};
 use crate::backend::CaptureBackend;
-use crate::input::{EventQueue, SimulatedEvent};
+use crate::input::{EventQueue, Event};
 
 use super::assertions::{Assertion, AssertionError, AssertionResult};
 use super::snapshot::Snapshot;
@@ -127,12 +127,12 @@ impl TestHarness {
     }
 
     /// Queues a single event.
-    pub fn push_event(&mut self, event: SimulatedEvent) {
+    pub fn push_event(&mut self, event: Event) {
         self.events.push(event);
     }
 
     /// Pops the next event from the queue.
-    pub fn pop_event(&mut self) -> Option<SimulatedEvent> {
+    pub fn pop_event(&mut self) -> Option<Event> {
         self.events.pop()
     }
 
@@ -587,7 +587,7 @@ mod tests {
     fn test_harness_events_mut() {
         let mut harness = TestHarness::new(80, 24);
 
-        harness.events_mut().push(SimulatedEvent::char('a'));
+        harness.events_mut().push(Event::char('a'));
         assert_eq!(harness.events().len(), 1);
     }
 
@@ -595,8 +595,8 @@ mod tests {
     fn test_harness_push_pop_event() {
         let mut harness = TestHarness::new(80, 24);
 
-        harness.push_event(SimulatedEvent::char('x'));
-        harness.push_event(SimulatedEvent::char('y'));
+        harness.push_event(Event::char('x'));
+        harness.push_event(Event::char('y'));
 
         let event1 = harness.pop_event().unwrap();
         assert!(event1.is_key());

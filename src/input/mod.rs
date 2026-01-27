@@ -1,20 +1,19 @@
-//! Input simulation module for programmatic event injection.
+//! Input module for terminal events.
 //!
-//! This module provides types and utilities for simulating user input
-//! in headless mode, enabling automated testing of TUI applications.
+//! This module provides types and utilities for working with terminal input
+//! events. The same types are used whether events come from a real terminal
+//! or are injected programmatically (for virtual terminals or testing).
 //!
 //! # Example
 //!
 //! ```rust
-//! use envision::input::{EventQueue, SimulatedEvent};
+//! use envision::input::{EventQueue, Event};
 //! use crossterm::event::{KeyCode, KeyModifiers};
 //!
 //! let mut queue = EventQueue::new();
 //!
-//! // Simulate typing "hello"
+//! // Type "hello" then press Enter
 //! queue.type_str("hello");
-//!
-//! // Simulate pressing Enter
 //! queue.key(KeyCode::Enter);
 //!
 //! // Process events
@@ -26,7 +25,7 @@
 mod events;
 mod queue;
 
-pub use events::{KeyEventBuilder, MouseEventBuilder, SimulatedEvent};
+pub use events::{Event, KeyEventBuilder, MouseEventBuilder};
 pub use queue::EventQueue;
 
 // Re-export crossterm event types for convenience

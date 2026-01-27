@@ -639,7 +639,7 @@ mod tests {
 
         fn handle_event(
             _state: &Self::State,
-            event: &crate::input::SimulatedEvent,
+            event: &crate::input::Event,
         ) -> Option<Self::Message> {
             use crossterm::event::KeyCode;
             if let Some(key) = event.as_key() {
@@ -664,11 +664,11 @@ mod tests {
 
     #[test]
     fn test_runtime_process_event() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
 
         let mut runtime: Runtime<EventApp, _> = Runtime::headless(80, 24).unwrap();
 
-        runtime.events().push(SimulatedEvent::char('a'));
+        runtime.events().push(Event::char('a'));
         assert!(runtime.process_event());
         assert_eq!(runtime.state().events_received, 1);
 
@@ -678,13 +678,13 @@ mod tests {
 
     #[test]
     fn test_runtime_process_all_events() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
 
         let mut runtime: Runtime<EventApp, _> = Runtime::headless(80, 24).unwrap();
 
-        runtime.events().push(SimulatedEvent::char('a'));
-        runtime.events().push(SimulatedEvent::char('b'));
-        runtime.events().push(SimulatedEvent::char('c'));
+        runtime.events().push(Event::char('a'));
+        runtime.events().push(Event::char('b'));
+        runtime.events().push(Event::char('c'));
 
         runtime.process_all_events();
         assert_eq!(runtime.state().events_received, 3);
@@ -703,10 +703,10 @@ mod tests {
 
     #[test]
     fn test_runtime_event_causes_quit() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
 
         let mut runtime: Runtime<EventApp, _> = Runtime::headless(80, 24).unwrap();
-        runtime.events().push(SimulatedEvent::char('q'));
+        runtime.events().push(Event::char('q'));
 
         runtime.tick().unwrap();
         assert!(runtime.should_quit());
@@ -714,12 +714,12 @@ mod tests {
 
     #[test]
     fn test_runtime_run_with_events() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
 
         let mut runtime: Runtime<EventApp, _> = Runtime::headless(40, 10).unwrap();
-        runtime.events().push(SimulatedEvent::char('a'));
-        runtime.events().push(SimulatedEvent::char('b'));
-        runtime.events().push(SimulatedEvent::char('q'));
+        runtime.events().push(Event::char('a'));
+        runtime.events().push(Event::char('b'));
+        runtime.events().push(Event::char('q'));
 
         runtime.run().unwrap();
 
@@ -789,7 +789,7 @@ mod tests {
 
     #[test]
     fn test_runtime_max_messages_per_tick() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
 
         let config = RuntimeConfig::new().max_messages(2);
         let mut runtime: Runtime<EventApp, _> =
@@ -797,7 +797,7 @@ mod tests {
 
         // Queue more events than max_messages_per_tick
         for _ in 0..5 {
-            runtime.events().push(SimulatedEvent::char('x'));
+            runtime.events().push(Event::char('x'));
         }
 
         runtime.tick().unwrap();
