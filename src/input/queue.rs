@@ -368,10 +368,7 @@ mod tests {
 
     #[test]
     fn test_with_events() {
-        let events = vec![
-            Event::char('a'),
-            Event::key(KeyCode::Enter),
-        ];
+        let events = vec![Event::char('a'), Event::key(KeyCode::Enter)];
 
         let queue = EventQueue::with_events(events);
         assert_eq!(queue.len(), 2);
