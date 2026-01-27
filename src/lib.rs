@@ -2,52 +2,68 @@
 
 //! # Envision
 //!
-//! A ratatui framework for collaborative TUI development with headless testing support.
+//! A ratatui framework for building TUI applications with first-class support for
+//! both interactive terminal use and programmatic control (AI agents, automation, testing).
 //!
-//! Envision provides a custom `CaptureBackend` that implements ratatui's `Backend` trait,
-//! enabling you to:
+//! ## Two Runtime Modes
 //!
-//! - Capture rendered frames as inspectable text or structured data
-//! - Track frame history and compute diffs between renders
-//! - Annotate widgets with semantic information
-//! - Simulate user input for testing
-//! - Run applications in headless mode for CI/testing
+//! Envision provides two distinct ways to run your application:
 //!
-//! ## Quick Start
+//! ### Terminal Mode - For Interactive Use
 //!
-//! ```rust,no_run
-//! use envision::backend::CaptureBackend;
-//! use ratatui::Terminal;
-//! use ratatui::widgets::Paragraph;
-//!
-//! // Create a headless terminal
-//! let backend = CaptureBackend::new(80, 24);
-//! let mut terminal = Terminal::new(backend).unwrap();
-//!
-//! // Render something
-//! terminal.draw(|frame| {
-//!     frame.render_widget(Paragraph::new("Hello, Envision!"), frame.area());
-//! }).unwrap();
-//!
-//! // Capture the output
-//! let output = terminal.backend().to_string();
-//! println!("{}", output);
+//! ```rust,ignore
+//! // Run in a real terminal with keyboard/mouse input
+//! Runtime::<MyApp>::terminal()?.run()
 //! ```
 //!
-//! ## Input Simulation
+//! ### Virtual Terminal Mode - For Programmatic Control
 //!
-//! ```rust
-//! use envision::input::{EventQueue, KeyCode};
+//! ```rust,ignore
+//! // Create a virtual terminal
+//! let mut vt = Runtime::<MyApp>::virtual_terminal(80, 24)?;
 //!
-//! let mut queue = EventQueue::new();
-//! queue.type_str("hello");
-//! queue.enter();
+//! // Inject events programmatically
+//! vt.send(Event::key(KeyCode::Char('j')));
+//! vt.step()?;
 //!
-//! // Events can be consumed by your app's event loop
-//! while let Some(event) = queue.pop() {
-//!     // handle event...
+//! // Inspect the display
+//! println!("{}", vt.display());
+//! ```
+//!
+//! The same application code works in both modes - your `App` implementation
+//! doesn't need to know which mode it's running in.
+//!
+//! ## The Elm Architecture (TEA)
+//!
+//! Envision uses The Elm Architecture pattern:
+//!
+//! - **State**: Your application's data model
+//! - **Message**: Events that can update state
+//! - **Update**: Pure function that produces new state from old state + message
+//! - **View**: Pure function that renders state to the UI
+//!
+//! ```rust,ignore
+//! struct MyApp;
+//!
+//! impl App for MyApp {
+//!     type State = MyState;
+//!     type Message = MyMsg;
+//!
+//!     fn init() -> (Self::State, Command<Self::Message>) { /* ... */ }
+//!     fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> { /* ... */ }
+//!     fn view(state: &Self::State, frame: &mut Frame) { /* ... */ }
 //! }
 //! ```
+//!
+//! ## Features
+//!
+//! - **Capture rendered frames** as inspectable text or structured data
+//! - **Track frame history** and compute diffs between renders
+//! - **Annotate widgets** with semantic information for accessibility and testing
+//! - **Inject events programmatically** for automation and AI agents
+//! - **Async support** with tokio integration for subscriptions and commands
+//! - **Component library** with common UI elements (buttons, inputs, lists, etc.)
+//! - **Theming** support for consistent styling
 
 pub mod adapter;
 pub mod annotation;
