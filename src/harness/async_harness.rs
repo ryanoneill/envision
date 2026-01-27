@@ -60,13 +60,13 @@ where
     ///
     /// Note: For time control, use `#[tokio::test(start_paused = true)]`.
     pub fn new(width: u16, height: u16) -> io::Result<Self> {
-        let runtime = AsyncRuntime::headless(width, height)?;
+        let runtime = AsyncRuntime::virtual_terminal(width, height)?;
         Ok(Self { runtime })
     }
 
     /// Creates a new async test harness with custom configuration.
     pub fn with_config(width: u16, height: u16, config: AsyncRuntimeConfig) -> io::Result<Self> {
-        let runtime = AsyncRuntime::headless_with_config(width, height, config)?;
+        let runtime = AsyncRuntime::virtual_terminal_with_config(width, height, config)?;
         Ok(Self { runtime })
     }
 
