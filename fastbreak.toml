@@ -1,0 +1,11 @@
+[project]
+name = "envision"
+version = "0.3.0"
+description = "A ratatui framework for building TUI applications with terminal and virtual terminal modes"
+
+[specs]
+entry = "specs/main.fbrk"
+
+[output]
+docs = "docs/specs"
+diagrams = true
