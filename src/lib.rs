@@ -102,7 +102,7 @@ pub use component::{
     TreeNode, TreeOutput, TreeState,
 };
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
-pub use input::{EventQueue, Event};
+pub use input::{Event, EventQueue};
 pub use theme::Theme;
 
 /// Prelude module for convenient imports
@@ -135,7 +135,7 @@ pub mod prelude {
     pub use crate::harness::{
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
     };
-    pub use crate::input::{EventQueue, KeyCode, KeyModifiers, Event};
+    pub use crate::input::{Event, EventQueue, KeyCode, KeyModifiers};
     pub use crate::theme::Theme;
     pub use ratatui::prelude::*;
 }

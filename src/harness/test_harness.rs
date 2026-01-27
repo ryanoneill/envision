@@ -6,7 +6,7 @@ use ratatui::Terminal;
 
 use crate::annotation::{with_annotations, AnnotationRegistry, RegionInfo, WidgetType};
 use crate::backend::CaptureBackend;
-use crate::input::{EventQueue, Event};
+use crate::input::{Event, EventQueue};
 
 use super::assertions::{Assertion, AssertionError, AssertionResult};
 use super::snapshot::Snapshot;

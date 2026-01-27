@@ -652,13 +652,14 @@ mod tests {
 
     #[test]
     fn test_async_runtime_headless() {
-        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::virtual_terminal(80, 24).unwrap();
         assert_eq!(runtime.state().count, 0);
     }
 
     #[test]
     fn test_async_runtime_dispatch() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         runtime.dispatch(CounterMsg::Increment);
         assert_eq!(runtime.state().count, 1);
@@ -673,7 +674,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_render() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(40, 10).unwrap();
         runtime.dispatch(CounterMsg::Increment);
         runtime.dispatch(CounterMsg::Increment);
         runtime.render().unwrap();
@@ -683,7 +685,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_quit() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         assert!(!runtime.should_quit());
 
         runtime.dispatch(CounterMsg::Quit);
@@ -720,21 +723,22 @@ mod tests {
 
     #[test]
     fn test_async_runtime_cancellation_token() {
-        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let token = runtime.cancellation_token();
         assert!(!token.is_cancelled());
     }
 
     #[test]
     fn test_async_runtime_message_sender() {
-        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let _sender = runtime.message_sender();
         // Just verify we can get a sender
     }
 
     #[tokio::test]
     async fn test_async_runtime_async_command() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Create an async command
         let cmd = Command::perform_async(async { Some(CounterMsg::IncrementBy(5)) });
@@ -752,7 +756,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_message_channel() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let sender = runtime.message_sender();
 
         // Send a message via the channel
@@ -766,7 +771,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_dispatch_all() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         runtime.dispatch_all(vec![
             CounterMsg::Increment,
@@ -779,7 +785,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_tick() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(40, 10).unwrap();
         runtime.dispatch(CounterMsg::Increment);
         runtime.tick().unwrap();
 
@@ -788,7 +795,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_run_ticks() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(40, 10).unwrap();
         runtime.dispatch(CounterMsg::Increment);
         runtime.run_ticks(3).unwrap();
 
@@ -797,7 +805,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_manual_quit() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         assert!(!runtime.should_quit());
         assert!(!runtime.cancellation_token().is_cancelled());
 
@@ -808,14 +817,15 @@ mod tests {
 
     #[test]
     fn test_async_runtime_error_sender() {
-        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let _error_tx = runtime.error_sender();
         // Just verify we can get an error sender
     }
 
     #[tokio::test]
     async fn test_async_runtime_take_errors() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let error_tx = runtime.error_sender();
 
         // No errors initially
@@ -838,7 +848,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_multiple_errors() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let error_tx = runtime.error_sender();
 
         // Send multiple errors
@@ -854,7 +865,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_has_errors() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let error_tx = runtime.error_sender();
 
         // No errors initially
@@ -879,7 +891,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_error_from_spawned_task() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let error_tx = runtime.error_sender();
 
         // Spawn a task that reports an error
@@ -951,7 +964,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_try_perform_async_success() {
-        let mut runtime: AsyncRuntime<FallibleApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<FallibleApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Dispatch a message that triggers a successful async operation
         runtime.dispatch(FallibleMsg::FetchSuccess);
@@ -971,7 +985,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_try_perform_async_failure() {
-        let mut runtime: AsyncRuntime<FallibleApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<FallibleApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Dispatch a message that triggers a failing async operation
         runtime.dispatch(FallibleMsg::FetchFailure);
@@ -995,7 +1010,7 @@ mod tests {
     fn test_async_runtime_headless_with_config() {
         let config = AsyncRuntimeConfig::new().with_history(5);
         let runtime: AsyncRuntime<CounterApp, _> =
-            AsyncRuntime::headless_with_config(80, 24, config).unwrap();
+            AsyncRuntime::virtual_terminal_with_config(80, 24, config).unwrap();
         assert_eq!(runtime.state().count, 0);
     }
 
@@ -1003,41 +1018,44 @@ mod tests {
     fn test_async_runtime_headless_with_config_no_history() {
         let config = AsyncRuntimeConfig::new(); // capture_history is false by default
         let runtime: AsyncRuntime<CounterApp, _> =
-            AsyncRuntime::headless_with_config(80, 24, config).unwrap();
+            AsyncRuntime::virtual_terminal_with_config(80, 24, config).unwrap();
         assert_eq!(runtime.state().count, 0);
     }
 
     #[test]
     fn test_async_runtime_state_mut() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         runtime.state_mut().count = 42;
         assert_eq!(runtime.state().count, 42);
     }
 
     #[test]
     fn test_async_runtime_terminal() {
-        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let terminal = runtime.terminal();
         assert_eq!(terminal.size().unwrap().width, 80);
     }
 
     #[test]
     fn test_async_runtime_terminal_mut() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let _terminal = runtime.terminal_mut();
         // Just verify we can get a mutable reference
     }
 
     #[test]
     fn test_async_runtime_backend() {
-        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let backend = runtime.backend();
         assert_eq!(backend.size().unwrap().width, 80);
     }
 
     #[test]
     fn test_async_runtime_backend_mut() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let _backend = runtime.backend_mut();
         // Just verify we can get a mutable reference
     }
@@ -1047,7 +1065,8 @@ mod tests {
         use crate::input::Event;
         use crossterm::event::KeyCode;
 
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let events = runtime.events();
 
         // Add some events to the queue
@@ -1100,7 +1119,7 @@ mod tests {
             }
         }
 
-        let mut runtime: AsyncRuntime<KeyApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<KeyApp, _> = AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // No events to process
         assert!(!runtime.process_event());
@@ -1160,7 +1179,8 @@ mod tests {
             }
         }
 
-        let mut runtime: AsyncRuntime<CountKeyApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CountKeyApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Add multiple events
         for _ in 0..5 {
@@ -1174,7 +1194,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_captured_output() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(40, 10).unwrap();
         runtime.dispatch(CounterMsg::IncrementBy(42));
         runtime.render().unwrap();
 
@@ -1184,7 +1205,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_captured_ansi() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(40, 10).unwrap();
         runtime.dispatch(CounterMsg::Increment);
         runtime.render().unwrap();
 
@@ -1194,7 +1216,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_find_text() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(40, 10).unwrap();
         runtime.dispatch(CounterMsg::Increment);
         runtime.render().unwrap();
 
@@ -1204,7 +1227,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_run_ticks_with_quit() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Dispatch quit message so it quits before all ticks
         runtime.dispatch(CounterMsg::Quit);
@@ -1217,7 +1241,8 @@ mod tests {
     async fn test_async_runtime_subscribe() {
         use crate::app::subscription::TickSubscription;
 
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Subscribe to a tick that fires every 10ms
         let sub = TickSubscription::new(Duration::from_millis(10), || CounterMsg::Increment);
@@ -1243,7 +1268,8 @@ mod tests {
     async fn test_async_runtime_subscribe_all() {
         use crate::app::subscription::{BoxedSubscription, TickSubscription};
 
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Create multiple subscriptions
         let sub1: BoxedSubscription<CounterMsg> =
@@ -1266,7 +1292,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_run() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(40, 10).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(40, 10).unwrap();
 
         // Increment counter
         runtime.dispatch(CounterMsg::Increment);
@@ -1344,7 +1371,8 @@ mod tests {
             }
         }
 
-        let mut runtime: AsyncRuntime<EventDrivenApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<EventDrivenApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Add some key events
         runtime.events().push(Event::char('a'));
@@ -1366,7 +1394,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_run_cancelled() {
-        let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         let token = runtime.cancellation_token();
 
@@ -1430,7 +1459,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_tick_with_on_tick() {
-        let mut runtime: AsyncRuntime<TickingApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<TickingApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Each tick should increment
         runtime.tick().unwrap();
@@ -1447,7 +1477,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_run_with_on_tick() {
-        let mut runtime: AsyncRuntime<TickingApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<TickingApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Run the event loop - should quit after 3 ticks
         runtime.run().await.unwrap();
@@ -1493,7 +1524,8 @@ mod tests {
 
     #[test]
     fn test_async_runtime_init_command() {
-        let mut runtime: AsyncRuntime<InitCommandApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<InitCommandApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
 
         // Process sync commands from init
         runtime.process_pending();

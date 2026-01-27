@@ -37,7 +37,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::app::{App, AsyncRuntime, AsyncRuntimeConfig, BoxedSubscription, Subscription};
 use crate::backend::CaptureBackend;
-use crate::input::{EventQueue, Event};
+use crate::input::{Event, EventQueue};
 
 /// Async test harness for TEA applications.
 ///

@@ -70,7 +70,7 @@ fn bench_async_runtime_creation(c: &mut Criterion) {
             |b, &(w, h)| {
                 b.iter(|| {
                     let runtime: AsyncRuntime<BenchApp, _> =
-                        AsyncRuntime::headless(black_box(w), black_box(h)).unwrap();
+                        AsyncRuntime::virtual_terminal(black_box(w), black_box(h)).unwrap();
                     runtime
                 });
             },
@@ -82,12 +82,13 @@ fn bench_async_runtime_creation(c: &mut Criterion) {
             |b, &(w, h)| {
                 let config = AsyncRuntimeConfig::new().with_history(10);
                 b.iter(|| {
-                    let runtime: AsyncRuntime<BenchApp, _> = AsyncRuntime::headless_with_config(
-                        black_box(w),
-                        black_box(h),
-                        config.clone(),
-                    )
-                    .unwrap();
+                    let runtime: AsyncRuntime<BenchApp, _> =
+                        AsyncRuntime::virtual_terminal_with_config(
+                            black_box(w),
+                            black_box(h),
+                            config.clone(),
+                        )
+                        .unwrap();
                     runtime
                 });
             },
@@ -102,14 +103,16 @@ fn bench_async_runtime_dispatch(c: &mut Criterion) {
     let mut group = c.benchmark_group("async_runtime_dispatch");
 
     group.bench_function("single_message", |b| {
-        let mut runtime: AsyncRuntime<BenchApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<BenchApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         b.iter(|| {
             runtime.dispatch(black_box(BenchMsg::Increment));
         });
     });
 
     group.bench_function("batch_10", |b| {
-        let mut runtime: AsyncRuntime<BenchApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<BenchApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let messages: Vec<_> = (0..10).map(|_| BenchMsg::Increment).collect();
         b.iter(|| {
             runtime.dispatch_all(black_box(messages.clone()));
@@ -117,7 +120,8 @@ fn bench_async_runtime_dispatch(c: &mut Criterion) {
     });
 
     group.bench_function("batch_100", |b| {
-        let mut runtime: AsyncRuntime<BenchApp, _> = AsyncRuntime::headless(80, 24).unwrap();
+        let mut runtime: AsyncRuntime<BenchApp, _> =
+            AsyncRuntime::virtual_terminal(80, 24).unwrap();
         let messages: Vec<_> = (0..100).map(|_| BenchMsg::Increment).collect();
         b.iter(|| {
             runtime.dispatch_all(black_box(messages.clone()));
@@ -136,7 +140,8 @@ fn bench_async_runtime_tick(c: &mut Criterion) {
             BenchmarkId::new("tick", format!("{}x{}", width, height)),
             &(width, height),
             |b, &(w, h)| {
-                let mut runtime: AsyncRuntime<BenchApp, _> = AsyncRuntime::headless(w, h).unwrap();
+                let mut runtime: AsyncRuntime<BenchApp, _> =
+                    AsyncRuntime::virtual_terminal(w, h).unwrap();
                 b.iter(|| {
                     runtime.tick().unwrap();
                 });
@@ -147,7 +152,8 @@ fn bench_async_runtime_tick(c: &mut Criterion) {
             BenchmarkId::new("render_only", format!("{}x{}", width, height)),
             &(width, height),
             |b, &(w, h)| {
-                let mut runtime: AsyncRuntime<BenchApp, _> = AsyncRuntime::headless(w, h).unwrap();
+                let mut runtime: AsyncRuntime<BenchApp, _> =
+                    AsyncRuntime::virtual_terminal(w, h).unwrap();
                 b.iter(|| {
                     runtime.render().unwrap();
                 });
