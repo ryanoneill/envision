@@ -493,9 +493,9 @@ dependencies = [
 
 [[package]]
 name = "fastbreak"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a032438b894a9dc36fa081870cf88996983c119fbc6c31383a5551b9927e3f1c"
+checksum = "464d61b29414b26fe503f820dbfac379432ec9d285b574756503e8bca66cf733"
 dependencies = [
  "clap",
  "indexmap",
