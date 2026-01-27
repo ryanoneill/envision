@@ -1,16 +1,17 @@
-//! Event types for input simulation.
+//! Event types for terminal input.
 
 use crossterm::event::{
     KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseButton, MouseEvent,
     MouseEventKind,
 };
 
-/// A simulated input event.
+/// A terminal input event.
 ///
 /// This wraps crossterm's event types to provide a unified interface
-/// for simulating input in tests.
+/// for handling input events. The same type is used whether events come
+/// from a real terminal or are injected programmatically.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum SimulatedEvent {
+pub enum Event {
     /// A keyboard event
     Key(KeyEvent),
 
@@ -30,7 +31,7 @@ pub enum SimulatedEvent {
     Paste(String),
 }
 
-impl SimulatedEvent {
+impl Event {
     /// Creates a key press event for a character.
     pub fn char(c: char) -> Self {
         Self::Key(KeyEvent::new(KeyCode::Char(c), KeyModifiers::NONE))
@@ -133,18 +134,18 @@ impl SimulatedEvent {
 
     /// Returns true if this is a key event.
     pub fn is_key(&self) -> bool {
-        matches!(self, SimulatedEvent::Key(_))
+        matches!(self, Event::Key(_))
     }
 
     /// Returns true if this is a mouse event.
     pub fn is_mouse(&self) -> bool {
-        matches!(self, SimulatedEvent::Mouse(_))
+        matches!(self, Event::Mouse(_))
     }
 
     /// Returns the key event if this is one.
     pub fn as_key(&self) -> Option<&KeyEvent> {
         match self {
-            SimulatedEvent::Key(e) => Some(e),
+            Event::Key(e) => Some(e),
             _ => None,
         }
     }
@@ -152,46 +153,46 @@ impl SimulatedEvent {
     /// Returns the mouse event if this is one.
     pub fn as_mouse(&self) -> Option<&MouseEvent> {
         match self {
-            SimulatedEvent::Mouse(e) => Some(e),
+            Event::Mouse(e) => Some(e),
             _ => None,
         }
     }
 }
 
-impl From<KeyEvent> for SimulatedEvent {
+impl From<KeyEvent> for Event {
     fn from(event: KeyEvent) -> Self {
-        SimulatedEvent::Key(event)
+        Event::Key(event)
     }
 }
 
-impl From<MouseEvent> for SimulatedEvent {
+impl From<MouseEvent> for Event {
     fn from(event: MouseEvent) -> Self {
-        SimulatedEvent::Mouse(event)
+        Event::Mouse(event)
     }
 }
 
-impl From<crossterm::event::Event> for SimulatedEvent {
+impl From<crossterm::event::Event> for Event {
     fn from(event: crossterm::event::Event) -> Self {
         match event {
-            crossterm::event::Event::Key(e) => SimulatedEvent::Key(e),
-            crossterm::event::Event::Mouse(e) => SimulatedEvent::Mouse(e),
-            crossterm::event::Event::Resize(w, h) => SimulatedEvent::Resize(w, h),
-            crossterm::event::Event::FocusGained => SimulatedEvent::FocusGained,
-            crossterm::event::Event::FocusLost => SimulatedEvent::FocusLost,
-            crossterm::event::Event::Paste(s) => SimulatedEvent::Paste(s),
+            crossterm::event::Event::Key(e) => Event::Key(e),
+            crossterm::event::Event::Mouse(e) => Event::Mouse(e),
+            crossterm::event::Event::Resize(w, h) => Event::Resize(w, h),
+            crossterm::event::Event::FocusGained => Event::FocusGained,
+            crossterm::event::Event::FocusLost => Event::FocusLost,
+            crossterm::event::Event::Paste(s) => Event::Paste(s),
         }
     }
 }
 
-impl From<SimulatedEvent> for crossterm::event::Event {
-    fn from(event: SimulatedEvent) -> Self {
+impl From<Event> for crossterm::event::Event {
+    fn from(event: Event) -> Self {
         match event {
-            SimulatedEvent::Key(e) => crossterm::event::Event::Key(e),
-            SimulatedEvent::Mouse(e) => crossterm::event::Event::Mouse(e),
-            SimulatedEvent::Resize(w, h) => crossterm::event::Event::Resize(w, h),
-            SimulatedEvent::FocusGained => crossterm::event::Event::FocusGained,
-            SimulatedEvent::FocusLost => crossterm::event::Event::FocusLost,
-            SimulatedEvent::Paste(s) => crossterm::event::Event::Paste(s),
+            Event::Key(e) => crossterm::event::Event::Key(e),
+            Event::Mouse(e) => crossterm::event::Event::Mouse(e),
+            Event::Resize(w, h) => crossterm::event::Event::Resize(w, h),
+            Event::FocusGained => crossterm::event::Event::FocusGained,
+            Event::FocusLost => crossterm::event::Event::FocusLost,
+            Event::Paste(s) => crossterm::event::Event::Paste(s),
         }
     }
 }
@@ -274,9 +275,9 @@ impl KeyEventBuilder {
         }
     }
 
-    /// Builds and wraps in a SimulatedEvent.
-    pub fn into_event(self) -> SimulatedEvent {
-        SimulatedEvent::Key(self.build())
+    /// Builds and wraps in a Event.
+    pub fn into_event(self) -> Event {
+        Event::Key(self.build())
     }
 }
 
@@ -377,9 +378,9 @@ impl MouseEventBuilder {
         }
     }
 
-    /// Builds and wraps in a SimulatedEvent.
-    pub fn into_event(self) -> SimulatedEvent {
-        SimulatedEvent::Mouse(self.build())
+    /// Builds and wraps in a Event.
+    pub fn into_event(self) -> Event {
+        Event::Mouse(self.build())
     }
 }
 
@@ -394,12 +395,12 @@ mod tests {
     use super::*;
 
     // -------------------------------------------------------------------------
-    // SimulatedEvent constructors
+    // Event constructors
     // -------------------------------------------------------------------------
 
     #[test]
     fn test_simulated_event_char() {
-        let event = SimulatedEvent::char('a');
+        let event = Event::char('a');
         assert!(event.is_key());
         let key = event.as_key().unwrap();
         assert_eq!(key.code, KeyCode::Char('a'));
@@ -408,7 +409,7 @@ mod tests {
 
     #[test]
     fn test_simulated_event_char_with() {
-        let event = SimulatedEvent::char_with('A', KeyModifiers::SHIFT);
+        let event = Event::char_with('A', KeyModifiers::SHIFT);
         let key = event.as_key().unwrap();
         assert_eq!(key.code, KeyCode::Char('A'));
         assert!(key.modifiers.contains(KeyModifiers::SHIFT));
@@ -416,7 +417,7 @@ mod tests {
 
     #[test]
     fn test_simulated_event_key() {
-        let event = SimulatedEvent::key(KeyCode::Enter);
+        let event = Event::key(KeyCode::Enter);
         let key = event.as_key().unwrap();
         assert_eq!(key.code, KeyCode::Enter);
         assert_eq!(key.modifiers, KeyModifiers::NONE);
@@ -424,7 +425,7 @@ mod tests {
 
     #[test]
     fn test_simulated_event_key_with() {
-        let event = SimulatedEvent::key_with(KeyCode::Tab, KeyModifiers::SHIFT);
+        let event = Event::key_with(KeyCode::Tab, KeyModifiers::SHIFT);
         let key = event.as_key().unwrap();
         assert_eq!(key.code, KeyCode::Tab);
         assert!(key.modifiers.contains(KeyModifiers::SHIFT));
@@ -432,7 +433,7 @@ mod tests {
 
     #[test]
     fn test_simulated_event_ctrl() {
-        let event = SimulatedEvent::ctrl('c');
+        let event = Event::ctrl('c');
         let key = event.as_key().unwrap();
         assert_eq!(key.code, KeyCode::Char('c'));
         assert!(key.modifiers.contains(KeyModifiers::CONTROL));
@@ -440,7 +441,7 @@ mod tests {
 
     #[test]
     fn test_simulated_event_alt() {
-        let event = SimulatedEvent::alt('x');
+        let event = Event::alt('x');
         let key = event.as_key().unwrap();
         assert_eq!(key.code, KeyCode::Char('x'));
         assert!(key.modifiers.contains(KeyModifiers::ALT));
@@ -448,7 +449,7 @@ mod tests {
 
     #[test]
     fn test_simulated_event_click() {
-        let event = SimulatedEvent::click(10, 20);
+        let event = Event::click(10, 20);
         assert!(event.is_mouse());
         let mouse = event.as_mouse().unwrap();
         assert_eq!(mouse.column, 10);
@@ -461,7 +462,7 @@ mod tests {
 
     #[test]
     fn test_simulated_event_click_button() {
-        let event = SimulatedEvent::click_button(5, 15, MouseButton::Right);
+        let event = Event::click_button(5, 15, MouseButton::Right);
         let mouse = event.as_mouse().unwrap();
         assert_eq!(mouse.column, 5);
         assert_eq!(mouse.row, 15);
@@ -473,14 +474,14 @@ mod tests {
 
     #[test]
     fn test_simulated_event_mouse_up() {
-        let event = SimulatedEvent::mouse_up(10, 20);
+        let event = Event::mouse_up(10, 20);
         let mouse = event.as_mouse().unwrap();
         assert!(matches!(mouse.kind, MouseEventKind::Up(MouseButton::Left)));
     }
 
     #[test]
     fn test_simulated_event_mouse_move() {
-        let event = SimulatedEvent::mouse_move(30, 40);
+        let event = Event::mouse_move(30, 40);
         let mouse = event.as_mouse().unwrap();
         assert_eq!(mouse.column, 30);
         assert_eq!(mouse.row, 40);
@@ -489,7 +490,7 @@ mod tests {
 
     #[test]
     fn test_simulated_event_mouse_drag() {
-        let event = SimulatedEvent::mouse_drag(10, 20, MouseButton::Left);
+        let event = Event::mouse_drag(10, 20, MouseButton::Left);
         let mouse = event.as_mouse().unwrap();
         assert!(matches!(
             mouse.kind,
@@ -499,39 +500,39 @@ mod tests {
 
     #[test]
     fn test_simulated_event_scroll_up() {
-        let event = SimulatedEvent::scroll_up(5, 10);
+        let event = Event::scroll_up(5, 10);
         let mouse = event.as_mouse().unwrap();
         assert!(matches!(mouse.kind, MouseEventKind::ScrollUp));
     }
 
     #[test]
     fn test_simulated_event_scroll_down() {
-        let event = SimulatedEvent::scroll_down(5, 10);
+        let event = Event::scroll_down(5, 10);
         let mouse = event.as_mouse().unwrap();
         assert!(matches!(mouse.kind, MouseEventKind::ScrollDown));
     }
 
     #[test]
     fn test_simulated_event_is_key_false() {
-        let event = SimulatedEvent::click(0, 0);
+        let event = Event::click(0, 0);
         assert!(!event.is_key());
     }
 
     #[test]
     fn test_simulated_event_is_mouse_false() {
-        let event = SimulatedEvent::char('a');
+        let event = Event::char('a');
         assert!(!event.is_mouse());
     }
 
     #[test]
     fn test_simulated_event_as_key_none() {
-        let event = SimulatedEvent::click(0, 0);
+        let event = Event::click(0, 0);
         assert!(event.as_key().is_none());
     }
 
     #[test]
     fn test_simulated_event_as_mouse_none() {
-        let event = SimulatedEvent::char('a');
+        let event = Event::char('a');
         assert!(event.as_mouse().is_none());
     }
 
@@ -542,7 +543,7 @@ mod tests {
     #[test]
     fn test_from_key_event() {
         let key = KeyEvent::new(KeyCode::Char('z'), KeyModifiers::NONE);
-        let event: SimulatedEvent = key.into();
+        let event: Event = key.into();
         assert!(event.is_key());
     }
 
@@ -554,23 +555,23 @@ mod tests {
             row: 0,
             modifiers: KeyModifiers::NONE,
         };
-        let event: SimulatedEvent = mouse.into();
+        let event: Event = mouse.into();
         assert!(event.is_mouse());
     }
 
     #[test]
     fn test_crossterm_conversion() {
-        let simulated = SimulatedEvent::key(KeyCode::Enter);
+        let simulated = Event::key(KeyCode::Enter);
         let crossterm: crossterm::event::Event = simulated.clone().into();
-        let back: SimulatedEvent = crossterm.into();
+        let back: Event = crossterm.into();
         assert_eq!(simulated, back);
     }
 
     #[test]
     fn test_crossterm_conversion_resize() {
         let event = crossterm::event::Event::Resize(80, 24);
-        let simulated: SimulatedEvent = event.into();
-        assert!(matches!(simulated, SimulatedEvent::Resize(80, 24)));
+        let simulated: Event = event.into();
+        assert!(matches!(simulated, Event::Resize(80, 24)));
 
         let back: crossterm::event::Event = simulated.into();
         assert!(matches!(back, crossterm::event::Event::Resize(80, 24)));
@@ -579,15 +580,15 @@ mod tests {
     #[test]
     fn test_crossterm_conversion_focus() {
         let gained = crossterm::event::Event::FocusGained;
-        let simulated: SimulatedEvent = gained.into();
-        assert!(matches!(simulated, SimulatedEvent::FocusGained));
+        let simulated: Event = gained.into();
+        assert!(matches!(simulated, Event::FocusGained));
 
         let back: crossterm::event::Event = simulated.into();
         assert!(matches!(back, crossterm::event::Event::FocusGained));
 
         let lost = crossterm::event::Event::FocusLost;
-        let simulated: SimulatedEvent = lost.into();
-        assert!(matches!(simulated, SimulatedEvent::FocusLost));
+        let simulated: Event = lost.into();
+        assert!(matches!(simulated, Event::FocusLost));
 
         let back: crossterm::event::Event = simulated.into();
         assert!(matches!(back, crossterm::event::Event::FocusLost));
@@ -596,8 +597,8 @@ mod tests {
     #[test]
     fn test_crossterm_conversion_paste() {
         let event = crossterm::event::Event::Paste("hello".to_string());
-        let simulated: SimulatedEvent = event.into();
-        assert!(matches!(simulated, SimulatedEvent::Paste(ref s) if s == "hello"));
+        let simulated: Event = event.into();
+        assert!(matches!(simulated, Event::Paste(ref s) if s == "hello"));
 
         let back: crossterm::event::Event = simulated.into();
         assert!(matches!(back, crossterm::event::Event::Paste(ref s) if s == "hello"));

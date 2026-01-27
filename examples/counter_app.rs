@@ -148,7 +148,7 @@ impl App for CounterApp {
     }
 
     /// Handle terminal events
-    fn handle_event(_state: &State, event: &SimulatedEvent) -> Option<Msg> {
+    fn handle_event(_state: &State, event: &Event) -> Option<Msg> {
         use crossterm::event::KeyCode;
 
         if let Some(key) = event.as_key() {
@@ -166,40 +166,40 @@ impl App for CounterApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create a headless runtime for demonstration
-    let mut runtime = Runtime::<CounterApp, _>::headless(60, 20)?;
+    // Create a virtual terminal for demonstration
+    let mut vt = Runtime::<CounterApp, _>::virtual_terminal(60, 20)?;
 
     // Simulate some user interactions
     println!("=== Counter App Demo ===\n");
 
     // Initial render
-    runtime.render()?;
+    vt.step()?;
     println!("Initial state:");
-    println!("{}\n", runtime.backend());
+    println!("{}\n", vt.display());
 
     // Simulate incrementing
-    runtime.dispatch(Msg::Increment);
-    runtime.dispatch(Msg::Increment);
-    runtime.dispatch(Msg::Increment);
-    runtime.render()?;
+    vt.dispatch(Msg::Increment);
+    vt.dispatch(Msg::Increment);
+    vt.dispatch(Msg::Increment);
+    vt.step()?;
     println!("After 3 increments:");
-    println!("{}\n", runtime.backend());
+    println!("{}\n", vt.display());
 
     // Simulate decrementing
-    runtime.dispatch(Msg::Decrement);
-    runtime.render()?;
+    vt.dispatch(Msg::Decrement);
+    vt.step()?;
     println!("After 1 decrement:");
-    println!("{}\n", runtime.backend());
+    println!("{}\n", vt.display());
 
     // Reset
-    runtime.dispatch(Msg::Reset);
-    runtime.render()?;
+    vt.dispatch(Msg::Reset);
+    vt.step()?;
     println!("After reset:");
-    println!("{}\n", runtime.backend());
+    println!("{}\n", vt.display());
 
     // Show final state
-    println!("Final count: {}", runtime.state().count);
-    println!("History entries: {}", runtime.state().history.len());
+    println!("Final count: {}", vt.state().count);
+    println!("History entries: {}", vt.state().history.len());
 
     Ok(())
 }

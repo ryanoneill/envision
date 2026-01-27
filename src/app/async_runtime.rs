@@ -143,18 +143,32 @@ where
     subscriptions: Vec<std::pin::Pin<Box<dyn tokio_stream::Stream<Item = A::Message> + Send>>>,
 }
 
+// =============================================================================
+// Virtual Terminal Mode - for programmatic control (agents, testing)
+// =============================================================================
+
 impl<A: App> AsyncRuntime<A, CaptureBackend>
 where
     A::Message: Send + 'static,
 {
-    /// Creates a new async runtime with a capture backend for headless operation.
-    pub fn headless(width: u16, height: u16) -> io::Result<Self> {
+    /// Creates a virtual terminal for programmatic async control.
+    ///
+    /// A virtual terminal is not connected to a physical terminal. Instead:
+    /// - Events are injected via `send()`
+    /// - The application is stepped forward via `step()` or run async with `run()`
+    /// - The display can be inspected via `display()`
+    ///
+    /// This is useful for:
+    /// - AI agents driving the application
+    /// - Automation and scripting
+    /// - Testing async applications
+    pub fn virtual_terminal(width: u16, height: u16) -> io::Result<Self> {
         let backend = CaptureBackend::new(width, height);
         Self::with_backend(backend)
     }
 
-    /// Creates a new async runtime with history tracking.
-    pub fn headless_with_config(
+    /// Creates a virtual terminal with custom configuration.
+    pub fn virtual_terminal_with_config(
         width: u16,
         height: u16,
         config: AsyncRuntimeConfig,
@@ -165,6 +179,43 @@ where
             CaptureBackend::new(width, height)
         };
         Self::with_backend_and_config(backend, config)
+    }
+
+    /// Sends an event to the virtual terminal.
+    ///
+    /// The event is queued and will be processed on the next `tick()` or `run()` cycle.
+    pub fn send(&mut self, event: crate::input::Event) {
+        self.events.push(event);
+    }
+
+    /// Returns the current display content as plain text.
+    pub fn display(&self) -> String {
+        self.terminal.backend().to_string()
+    }
+
+    /// Returns the display content with ANSI color codes.
+    pub fn display_ansi(&self) -> String {
+        self.terminal.backend().to_ansi()
+    }
+
+    // -------------------------------------------------------------------------
+    // Legacy aliases (deprecated, for backwards compatibility)
+    // -------------------------------------------------------------------------
+
+    /// Creates a new async runtime with a capture backend for headless operation.
+    #[deprecated(since = "0.4.0", note = "Use `virtual_terminal` instead")]
+    pub fn headless(width: u16, height: u16) -> io::Result<Self> {
+        Self::virtual_terminal(width, height)
+    }
+
+    /// Creates a new async runtime with history tracking.
+    #[deprecated(since = "0.4.0", note = "Use `virtual_terminal_with_config` instead")]
+    pub fn headless_with_config(
+        width: u16,
+        height: u16,
+        config: AsyncRuntimeConfig,
+    ) -> io::Result<Self> {
+        Self::virtual_terminal_with_config(width, height, config)
     }
 }
 
@@ -993,21 +1044,21 @@ mod tests {
 
     #[test]
     fn test_async_runtime_events() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
         use crossterm::event::KeyCode;
 
         let mut runtime: AsyncRuntime<CounterApp, _> = AsyncRuntime::headless(80, 24).unwrap();
         let events = runtime.events();
 
         // Add some events to the queue
-        events.push(SimulatedEvent::key(KeyCode::Enter));
+        events.push(Event::key(KeyCode::Enter));
 
         assert!(!events.is_empty());
     }
 
     #[test]
     fn test_async_runtime_process_event() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
         use crossterm::event::KeyCode;
 
         // App that handles key events
@@ -1040,8 +1091,8 @@ mod tests {
 
             fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
 
-            fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
-                if let SimulatedEvent::Key(_) = event {
+            fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+                if let Event::Key(_) = event {
                     Some(KeyMsg::KeyPress)
                 } else {
                     None
@@ -1055,7 +1106,7 @@ mod tests {
         assert!(!runtime.process_event());
 
         // Add an event
-        runtime.events().push(SimulatedEvent::key(KeyCode::Enter));
+        runtime.events().push(Event::key(KeyCode::Enter));
 
         // Process the event
         assert!(runtime.process_event());
@@ -1067,7 +1118,7 @@ mod tests {
 
     #[test]
     fn test_async_runtime_process_all_events() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
         use crossterm::event::KeyCode;
 
         // App that counts key presses
@@ -1100,8 +1151,8 @@ mod tests {
 
             fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
 
-            fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
-                if let SimulatedEvent::Key(_) = event {
+            fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+                if let Event::Key(_) = event {
                     Some(CountKeyMsg::KeyPress)
                 } else {
                     None
@@ -1113,7 +1164,7 @@ mod tests {
 
         // Add multiple events
         for _ in 0..5 {
-            runtime.events().push(SimulatedEvent::key(KeyCode::Enter));
+            runtime.events().push(Event::key(KeyCode::Enter));
         }
 
         // Process all events
@@ -1237,7 +1288,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_runtime_run_with_events() {
-        use crate::input::SimulatedEvent;
+        use crate::input::Event;
         use crossterm::event::{KeyCode, KeyEvent};
 
         // App that increments on any key and quits on 'q'
@@ -1280,8 +1331,8 @@ mod tests {
                 state.quit
             }
 
-            fn handle_event(_state: &Self::State, event: &SimulatedEvent) -> Option<Self::Message> {
-                if let SimulatedEvent::Key(KeyEvent { code, .. }) = event {
+            fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+                if let Event::Key(KeyEvent { code, .. }) = event {
                     if *code == KeyCode::Char('q') {
                         Some(EventDrivenMsg::Quit)
                     } else {
@@ -1296,8 +1347,8 @@ mod tests {
         let mut runtime: AsyncRuntime<EventDrivenApp, _> = AsyncRuntime::headless(80, 24).unwrap();
 
         // Add some key events
-        runtime.events().push(SimulatedEvent::char('a'));
-        runtime.events().push(SimulatedEvent::char('b'));
+        runtime.events().push(Event::char('a'));
+        runtime.events().push(Event::char('b'));
 
         // Spawn task to quit after processing events
         let tx = runtime.message_sender();

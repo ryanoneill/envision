@@ -37,7 +37,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::app::{App, AsyncRuntime, AsyncRuntimeConfig, BoxedSubscription, Subscription};
 use crate::backend::CaptureBackend;
-use crate::input::{EventQueue, SimulatedEvent};
+use crate::input::{EventQueue, Event};
 
 /// Async test harness for TEA applications.
 ///
@@ -60,13 +60,13 @@ where
     ///
     /// Note: For time control, use `#[tokio::test(start_paused = true)]`.
     pub fn new(width: u16, height: u16) -> io::Result<Self> {
-        let runtime = AsyncRuntime::headless(width, height)?;
+        let runtime = AsyncRuntime::virtual_terminal(width, height)?;
         Ok(Self { runtime })
     }
 
     /// Creates a new async test harness with custom configuration.
     pub fn with_config(width: u16, height: u16, config: AsyncRuntimeConfig) -> io::Result<Self> {
-        let runtime = AsyncRuntime::headless_with_config(width, height, config)?;
+        let runtime = AsyncRuntime::virtual_terminal_with_config(width, height, config)?;
         Ok(Self { runtime })
     }
 
@@ -153,7 +153,7 @@ where
     }
 
     /// Queues a single event.
-    pub fn push_event(&mut self, event: SimulatedEvent) {
+    pub fn push_event(&mut self, event: Event) {
         self.runtime.events().push(event);
     }
 
@@ -612,7 +612,7 @@ mod tests {
         harness.tab();
         harness.ctrl('c');
         harness.click(10, 20);
-        harness.push_event(SimulatedEvent::char('x'));
+        harness.push_event(Event::char('x'));
 
         assert_eq!(harness.events().len(), 5);
     }
@@ -772,7 +772,7 @@ mod tests {
         let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
 
         let events = harness.events();
-        events.push(SimulatedEvent::char('a'));
+        events.push(Event::char('a'));
 
         assert!(!harness.events().is_empty());
     }

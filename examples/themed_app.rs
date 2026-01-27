@@ -241,7 +241,7 @@ impl App for ThemedApp {
         frame.render_widget(controls, chunks[5]);
     }
 
-    fn handle_event(_state: &State, event: &SimulatedEvent) -> Option<Msg> {
+    fn handle_event(_state: &State, event: &Event) -> Option<Msg> {
         use crossterm::event::KeyCode;
 
         if let Some(key) = event.as_key() {
@@ -263,30 +263,30 @@ impl App for ThemedApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create a headless runtime for demonstration
-    let mut runtime = Runtime::<ThemedApp, _>::headless(60, 24)?;
+    // Create a virtual terminal for demonstration
+    let mut vt = Runtime::<ThemedApp, _>::virtual_terminal(60, 24)?;
 
     println!("=== Themed App Demo ===\n");
     println!("This example demonstrates Envision's theming system.\n");
 
     // Render with default theme
-    runtime.render()?;
+    vt.step()?;
     println!("Default Theme:");
-    println!("{}\n", runtime.backend().to_ansi());
+    println!("{}\n", vt.display_ansi());
 
     // Toggle to Nord theme
-    runtime.dispatch(Msg::ToggleTheme);
-    runtime.render()?;
+    vt.dispatch(Msg::ToggleTheme);
+    vt.step()?;
     println!("Nord Theme:");
-    println!("{}\n", runtime.backend().to_ansi());
+    println!("{}\n", vt.display_ansi());
 
     // Demonstrate some interactions
-    runtime.dispatch(Msg::CheckboxToggled);
-    runtime.dispatch(Msg::IncreaseProgress);
-    runtime.dispatch(Msg::NextItem);
-    runtime.render()?;
+    vt.dispatch(Msg::CheckboxToggled);
+    vt.dispatch(Msg::IncreaseProgress);
+    vt.dispatch(Msg::NextItem);
+    vt.step()?;
     println!("Nord Theme (after interactions):");
-    println!("{}\n", runtime.backend().to_ansi());
+    println!("{}\n", vt.display_ansi());
 
     // Show theme comparison
     println!("=== Theme Comparison ===");
