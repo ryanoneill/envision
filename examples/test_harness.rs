@@ -136,50 +136,50 @@ fn demo_basic_harness() {
 }
 
 fn demo_runtime_testing() {
-    println!("=== Demo 2: Runtime::headless for App Testing ===\n");
+    println!("=== Demo 2: Virtual Terminal for App Testing ===\n");
 
-    // Use Runtime::headless to test App implementations
-    let mut runtime = Runtime::<TodoApp, _>::headless(60, 12).unwrap();
+    // Use Runtime::virtual_terminal to test App implementations
+    let mut vt = Runtime::<TodoApp, _>::virtual_terminal(60, 12).unwrap();
 
     // Check initial state
-    runtime.render().unwrap();
+    vt.step().unwrap();
     println!("Initial state:");
-    println!("{}", runtime.backend());
+    println!("{}", vt.display());
 
-    assert_eq!(runtime.state().items.len(), 2);
-    assert!(runtime.contains_text("2 items"));
-    assert!(runtime.contains_text("Buy groceries"));
-    assert!(runtime.contains_text("Walk the dog"));
+    assert_eq!(vt.state().items.len(), 2);
+    assert!(vt.contains_text("2 items"));
+    assert!(vt.contains_text("Buy groceries"));
+    assert!(vt.contains_text("Walk the dog"));
 
     // Add a new item
-    runtime.dispatch(TodoMsg::Add("Learn Rust".to_string()));
-    runtime.render().unwrap();
+    vt.dispatch(TodoMsg::Add("Learn Rust".to_string()));
+    vt.step().unwrap();
     println!("After adding item:");
-    println!("{}", runtime.backend());
+    println!("{}", vt.display());
 
-    assert_eq!(runtime.state().items.len(), 3);
-    assert!(runtime.contains_text("3 items"));
-    assert!(runtime.contains_text("Learn Rust"));
+    assert_eq!(vt.state().items.len(), 3);
+    assert!(vt.contains_text("3 items"));
+    assert!(vt.contains_text("Learn Rust"));
 
     // Select an item
-    runtime.dispatch(TodoMsg::Select(1));
-    runtime.render().unwrap();
+    vt.dispatch(TodoMsg::Select(1));
+    vt.step().unwrap();
     println!("After selecting item 1:");
-    println!("{}", runtime.backend());
+    println!("{}", vt.display());
 
-    assert_eq!(runtime.state().selected, Some(1));
-    assert!(runtime.contains_text("> 2. Walk the dog"));
+    assert_eq!(vt.state().selected, Some(1));
+    assert!(vt.contains_text("> 2. Walk the dog"));
 
     // Remove the selected item
-    runtime.dispatch(TodoMsg::Remove(1));
-    runtime.render().unwrap();
+    vt.dispatch(TodoMsg::Remove(1));
+    vt.step().unwrap();
     println!("After removing item:");
-    println!("{}", runtime.backend());
+    println!("{}", vt.display());
 
-    assert_eq!(runtime.state().items.len(), 2);
-    assert!(!runtime.contains_text("Walk the dog"));
+    assert_eq!(vt.state().items.len(), 2);
+    assert!(!vt.contains_text("Walk the dog"));
 
-    println!("All runtime tests passed!\n");
+    println!("All virtual terminal tests passed!\n");
 }
 
 fn demo_assertions() {
