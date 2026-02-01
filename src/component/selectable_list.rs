@@ -235,8 +235,8 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             .highlight_style(highlight_style)
             .highlight_symbol("> ");
 
-        // We need to clone the state for rendering since StatefulWidget needs &mut
-        let mut list_state = state.list_state.clone();
+        // We need a copy of the state for rendering since StatefulWidget needs &mut
+        let mut list_state = state.list_state;
         frame.render_stateful_widget(list, area, &mut list_state);
     }
 }

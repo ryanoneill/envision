@@ -377,7 +377,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     }
 }
 
-impl<A: App, B: Backend> Runtime<A, B> {
+impl<A: App, B: Backend<Error = io::Error>> Runtime<A, B> {
     /// Creates a new runtime with the specified backend.
     pub fn with_backend(backend: B) -> io::Result<Self> {
         Self::with_backend_and_config(backend, RuntimeConfig::default())

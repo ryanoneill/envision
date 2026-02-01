@@ -219,7 +219,7 @@ where
     }
 }
 
-impl<A: App, B: Backend> AsyncRuntime<A, B>
+impl<A: App, B: Backend<Error = io::Error>> AsyncRuntime<A, B>
 where
     A::Message: Send + 'static,
 {

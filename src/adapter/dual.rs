@@ -37,7 +37,7 @@ use crate::backend::CaptureBackend;
 ///
 /// let mut terminal = Terminal::new(dual).unwrap();
 /// ```
-pub struct DualBackend<P: Backend> {
+pub struct DualBackend<P: Backend<Error = io::Error>> {
     /// The primary backend (real terminal)
     primary: P,
 
@@ -48,7 +48,7 @@ pub struct DualBackend<P: Backend> {
     sync_sizes: bool,
 }
 
-impl<P: Backend> DualBackend<P> {
+impl<P: Backend<Error = io::Error>> DualBackend<P> {
     /// Creates a new dual backend.
     ///
     /// The primary backend is used for actual terminal output,
@@ -139,7 +139,9 @@ impl<P: Backend> DualBackend<P> {
     }
 }
 
-impl<P: Backend> Backend for DualBackend<P> {
+impl<P: Backend<Error = io::Error>> Backend for DualBackend<P> {
+    type Error = io::Error;
+
     fn draw<'a, I>(&mut self, content: I) -> io::Result<()>
     where
         I: Iterator<Item = (u16, u16, &'a Cell)>,
@@ -212,7 +214,7 @@ impl<P: Backend> Backend for DualBackend<P> {
 
 /// A builder for creating dual backends with various configurations.
 #[allow(dead_code)]
-pub struct DualBackendBuilder<P: Backend> {
+pub struct DualBackendBuilder<P: Backend<Error = io::Error>> {
     primary: P,
     width: Option<u16>,
     height: Option<u16>,
@@ -221,7 +223,7 @@ pub struct DualBackendBuilder<P: Backend> {
 }
 
 #[allow(dead_code)]
-impl<P: Backend> DualBackendBuilder<P> {
+impl<P: Backend<Error = io::Error>> DualBackendBuilder<P> {
     /// Creates a new builder with the given primary backend.
     pub fn new(primary: P) -> Self {
         Self {

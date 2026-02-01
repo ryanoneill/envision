@@ -422,6 +422,8 @@ impl CaptureBackend {
 }
 
 impl Backend for CaptureBackend {
+    type Error = io::Error;
+
     fn draw<'a, I>(&mut self, content: I) -> io::Result<()>
     where
         I: Iterator<Item = (u16, u16, &'a Cell)>,
