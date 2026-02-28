@@ -1,7 +1,7 @@
-//! Async Counter example demonstrating the async runtime with subscriptions.
+//! Async Counter example demonstrating the runtime with subscriptions.
 //!
 //! This example shows async features:
-//! - AsyncRuntime for running TEA apps with tokio
+//! - Runtime for running TEA apps with tokio
 //! - TickSubscription for periodic updates
 //! - Command::perform_async for async side effects
 //! - Subscriptions that produce messages over time
@@ -183,8 +183,8 @@ impl App for AsyncCounterApp {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create an async runtime
-    let mut runtime = AsyncRuntime::<AsyncCounterApp, _>::virtual_terminal(60, 20)?;
+    // Create the runtime
+    let mut runtime = Runtime::<AsyncCounterApp, _>::virtual_terminal(60, 20)?;
 
     // Add tick subscription manually (since subscriptions aren't part of App trait)
     runtime.subscribe(tick(Duration::from_millis(500)).with_message(|| Msg::Tick));

@@ -124,9 +124,7 @@ impl<M> Command<M> {
 
     /// Creates a command from an async future.
     ///
-    /// Alias for [`perform_async`](Command::perform_async). Requires
-    /// [`AsyncRuntime`](crate::AsyncRuntime) — the sync `Runtime` will
-    /// drop async commands with a debug warning.
+    /// Alias for [`perform_async`](Command::perform_async).
     pub fn future<Fut>(future: Fut) -> Self
     where
         Fut: Future<Output = Option<M>> + Send + 'static,
@@ -168,7 +166,7 @@ impl<M> Command<M> {
     ///
     /// On success, the callback is called to optionally produce a message.
     /// On failure, the error is sent to the runtime's error channel via
-    /// [`AsyncRuntime::take_errors`](crate::AsyncRuntime::take_errors).
+    /// [`Runtime::take_errors`](crate::Runtime::take_errors).
     ///
     /// This is useful when you want errors to be collected rather than
     /// converted to messages.

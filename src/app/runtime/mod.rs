@@ -1,6 +1,8 @@
 //! Runtime for executing TEA applications.
 //!
 //! The runtime manages the main loop, event handling, and rendering.
+//! It provides full async support via tokio including async commands,
+//! subscriptions, and graceful shutdown via cancellation tokens.
 //!
 //! # Two Runtime Modes
 //!
@@ -11,12 +13,15 @@
 //! For running applications in a real terminal:
 //!
 //! ```ignore
-//! // Simple usage
-//! Runtime::<MyApp>::new_terminal()?.run()?;
+//! #[tokio::main]
+//! async fn main() -> std::io::Result<()> {
+//!     Runtime::<MyApp>::new_terminal()?.run_terminal().await
+//! }
 //! ```
 //!
 //! This sets up raw mode, alternate screen, and mouse capture, then runs
-//! a blocking event loop that polls for real terminal events.
+//! an async event loop that handles terminal events, async messages,
+//! subscriptions, and rendering.
 //!
 //! ## Virtual Terminal Mode
 //!
@@ -43,10 +48,13 @@ use crossterm::terminal::{
 use crossterm::ExecutableCommand;
 use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::Terminal;
+use tokio::sync::mpsc;
+use tokio_util::sync::CancellationToken;
 
-use super::command::CommandHandler;
+use super::command::{BoxedError, CommandHandler};
 use super::model::App;
 use super::runtime_core::{ProcessEventResult, RuntimeCore};
+use super::subscription::{BoxedSubscription, Subscription};
 use crate::backend::CaptureBackend;
 use crate::input::{Event, EventQueue};
 use crate::overlay::{Overlay, OverlayAction, OverlayStack};
@@ -58,6 +66,9 @@ pub struct RuntimeConfig {
     /// How often to poll for events (default: 50ms)
     pub tick_rate: Duration,
 
+    /// How often to render (default: 16ms for ~60fps)
+    pub frame_rate: Duration,
+
     /// Maximum number of messages to process per tick (prevents infinite loops)
     pub max_messages_per_tick: usize,
 
@@ -66,15 +77,20 @@ pub struct RuntimeConfig {
 
     /// Number of frames to keep in history
     pub history_capacity: usize,
+
+    /// Capacity of the async message channel
+    pub message_channel_capacity: usize,
 }
 
 impl Default for RuntimeConfig {
     fn default() -> Self {
         Self {
             tick_rate: Duration::from_millis(50),
+            frame_rate: Duration::from_millis(16),
             max_messages_per_tick: 100,
             capture_history: false,
             history_capacity: 10,
+            message_channel_capacity: 256,
         }
     }
 }
@@ -91,6 +107,12 @@ impl RuntimeConfig {
         self
     }
 
+    /// Sets the frame rate.
+    pub fn frame_rate(mut self, rate: Duration) -> Self {
+        self.frame_rate = rate;
+        self
+    }
+
     /// Enables frame history capture.
     pub fn with_history(mut self, capacity: usize) -> Self {
         self.capture_history = true;
@@ -103,11 +125,18 @@ impl RuntimeConfig {
         self.max_messages_per_tick = max;
         self
     }
+
+    /// Sets the message channel capacity.
+    pub fn channel_capacity(mut self, capacity: usize) -> Self {
+        self.message_channel_capacity = capacity;
+        self
+    }
 }
 
 /// The runtime that executes a TEA application.
 ///
-/// This manages the main loop, event handling, state updates, and rendering.
+/// This manages the event loop, state updates, and rendering using tokio.
+/// It supports both real terminal mode and virtual terminal mode for testing.
 pub struct Runtime<A: App, B: Backend> {
     /// Shared runtime state (state, terminal, events, overlays, theme)
     core: RuntimeCore<A, B>,
@@ -117,6 +146,24 @@ pub struct Runtime<A: App, B: Backend> {
 
     /// Configuration
     config: RuntimeConfig,
+
+    /// Sender for async messages
+    message_tx: mpsc::Sender<A::Message>,
+
+    /// Receiver for async messages
+    message_rx: mpsc::Receiver<A::Message>,
+
+    /// Sender for errors from async operations
+    error_tx: mpsc::Sender<BoxedError>,
+
+    /// Receiver for errors from async operations
+    error_rx: mpsc::Receiver<BoxedError>,
+
+    /// Cancellation token for graceful shutdown
+    cancel_token: CancellationToken,
+
+    /// Active subscriptions as streams
+    subscriptions: Vec<std::pin::Pin<Box<dyn tokio_stream::Stream<Item = A::Message> + Send>>>,
 }
 
 // =============================================================================
@@ -131,13 +178,14 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// - Enters alternate screen (preserves the original terminal content)
     /// - Enables mouse capture
     ///
-    /// Call `run()` to start the interactive event loop.
+    /// Call `run_terminal()` to start the interactive event loop.
     ///
     /// # Example
     ///
     /// ```ignore
-    /// fn main() -> std::io::Result<()> {
-    ///     Runtime::<MyApp>::new_terminal()?.run()
+    /// #[tokio::main]
+    /// async fn main() -> std::io::Result<()> {
+    ///     Runtime::<MyApp>::new_terminal()?.run_terminal().await
     /// }
     /// ```
     pub fn new_terminal() -> io::Result<Self> {
@@ -158,25 +206,110 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
 
     /// Runs the interactive event loop until the application quits.
     ///
-    /// This is the main entry point for terminal applications. It:
-    /// - Polls for terminal events (keyboard, mouse, resize)
-    /// - Dispatches events through the App's `handle_event`
-    /// - Calls `on_tick` at the configured interval
-    /// - Renders the UI
-    /// - Cleans up the terminal on exit
+    /// This is the main entry point for terminal applications. It uses
+    /// `crossterm::event::EventStream` for non-blocking event reading,
+    /// and `tokio::select!` to multiplex between terminal events,
+    /// async messages, tick intervals, and render intervals.
     ///
     /// # Example
     ///
     /// ```ignore
-    /// fn main() -> std::io::Result<()> {
-    ///     Runtime::<MyApp>::new_terminal()?.run()
+    /// #[tokio::main]
+    /// async fn main() -> std::io::Result<()> {
+    ///     Runtime::<MyApp>::new_terminal()?.run_terminal().await
     /// }
     /// ```
-    pub fn run(mut self) -> io::Result<()> {
+    pub async fn run_terminal(mut self) -> io::Result<()> {
+        use futures_util::StreamExt;
+
+        let mut tick_interval = tokio::time::interval(self.config.tick_rate);
+        let mut render_interval = tokio::time::interval(self.config.frame_rate);
+        let mut event_stream = crossterm::event::EventStream::new();
+
         // Initial render
         self.render()?;
 
-        let result = self.run_event_loop();
+        let result = loop {
+            tokio::select! {
+                // Handle terminal events from crossterm
+                maybe_event = event_stream.next() => {
+                    match maybe_event {
+                        Some(Ok(event)) => {
+                            if let Some(envision_event) = Self::convert_crossterm_event(&event) {
+                                match self.core.overlay_stack.handle_event(&envision_event) {
+                                    OverlayAction::Consumed => {}
+                                    OverlayAction::Message(msg) => self.dispatch(msg),
+                                    OverlayAction::Dismiss => {
+                                        self.core.overlay_stack.pop();
+                                    }
+                                    OverlayAction::DismissWithMessage(msg) => {
+                                        self.core.overlay_stack.pop();
+                                        self.dispatch(msg);
+                                    }
+                                    OverlayAction::Propagate => {
+                                        if let Some(msg) =
+                                            A::handle_event_with_state(&self.core.state, &envision_event)
+                                        {
+                                            self.dispatch(msg);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Some(Err(e)) => {
+                            break Err(e);
+                        }
+                        None => {
+                            // Event stream ended
+                            break Ok(());
+                        }
+                    }
+                }
+
+                // Handle async messages from spawned tasks
+                Some(msg) = self.message_rx.recv() => {
+                    self.dispatch(msg);
+                }
+
+                // Handle tick interval
+                _ = tick_interval.tick() => {
+                    // Process sync commands
+                    self.process_commands();
+
+                    // Process events from the queue
+                    let mut messages_processed = 0;
+                    while self.process_event() && messages_processed < self.core.max_messages_per_tick {
+                        messages_processed += 1;
+                    }
+
+                    // Handle tick
+                    if let Some(msg) = A::on_tick(&self.core.state) {
+                        self.dispatch(msg);
+                    }
+
+                    // Check if we should quit
+                    if A::should_quit(&self.core.state) {
+                        self.core.should_quit = true;
+                    }
+                }
+
+                // Handle render interval
+                _ = render_interval.tick() => {
+                    if let Err(e) = self.render() {
+                        break Err(e);
+                    }
+                }
+
+                // Handle cancellation
+                _ = self.cancel_token.cancelled() => {
+                    self.core.should_quit = true;
+                }
+            }
+
+            if self.core.should_quit {
+                break Ok(());
+            }
+        };
 
         // Cleanup terminal - always attempt cleanup even on error
         let cleanup_result = self.cleanup_terminal();
@@ -186,61 +319,6 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
 
         // Return the first error if any
         result.and(cleanup_result)
-    }
-
-    /// The internal event loop.
-    fn run_event_loop(&mut self) -> io::Result<()> {
-        loop {
-            // Check if we should quit
-            if self.core.should_quit || A::should_quit(&self.core.state) {
-                break;
-            }
-
-            // Poll for events with timeout
-            if crossterm::event::poll(self.config.tick_rate)? {
-                let event = crossterm::event::read()?;
-
-                // Convert crossterm event to our Event type and dispatch
-                if let Some(envision_event) = Self::convert_crossterm_event(&event) {
-                    match self.core.overlay_stack.handle_event(&envision_event) {
-                        OverlayAction::Consumed => {}
-                        OverlayAction::Message(msg) => self.dispatch(msg),
-                        OverlayAction::Dismiss => {
-                            self.core.overlay_stack.pop();
-                        }
-                        OverlayAction::DismissWithMessage(msg) => {
-                            self.core.overlay_stack.pop();
-                            self.dispatch(msg);
-                        }
-                        OverlayAction::Propagate => {
-                            if let Some(msg) =
-                                A::handle_event_with_state(&self.core.state, &envision_event)
-                            {
-                                self.dispatch(msg);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Process any pending commands
-            self.process_commands();
-
-            // Handle tick
-            if let Some(msg) = A::on_tick(&self.core.state) {
-                self.dispatch(msg);
-            }
-
-            // Check quit flag again after processing
-            if self.core.should_quit || A::should_quit(&self.core.state) {
-                break;
-            }
-
-            // Render
-            self.render()?;
-        }
-
-        Ok(())
     }
 
     /// Converts a crossterm event to our Event type.
@@ -342,6 +420,10 @@ impl<A: App> Runtime<A, CaptureBackend> {
     }
 }
 
+// =============================================================================
+// Common methods for all backends
+// =============================================================================
+
 impl<A: App, B: Backend> Runtime<A, B> {
     /// Creates a new runtime with the specified backend.
     pub fn with_backend(backend: B) -> io::Result<Self> {
@@ -353,10 +435,14 @@ impl<A: App, B: Backend> Runtime<A, B> {
         let terminal = Terminal::new(backend)?;
         let (state, init_cmd) = A::init();
 
+        let (message_tx, message_rx) = mpsc::channel(config.message_channel_capacity);
+        let (error_tx, error_rx) = mpsc::channel(config.message_channel_capacity);
+        let cancel_token = CancellationToken::new();
+
         let mut commands = CommandHandler::new();
         commands.execute(init_cmd);
 
-        Ok(Self {
+        let mut runtime = Self {
             core: RuntimeCore {
                 state,
                 terminal,
@@ -368,7 +454,18 @@ impl<A: App, B: Backend> Runtime<A, B> {
             },
             commands,
             config,
-        })
+            message_tx,
+            message_rx,
+            error_tx,
+            error_rx,
+            cancel_token,
+            subscriptions: Vec::new(),
+        };
+
+        // Spawn any async commands from init
+        runtime.spawn_pending_commands();
+
+        Ok(runtime)
     }
 
     /// Returns a reference to the current state.
@@ -406,6 +503,82 @@ impl<A: App, B: Backend> Runtime<A, B> {
         &mut self.core.events
     }
 
+    /// Returns a clone of the cancellation token.
+    ///
+    /// Tasks can use this token to detect shutdown and cancel gracefully.
+    pub fn cancellation_token(&self) -> CancellationToken {
+        self.cancel_token.clone()
+    }
+
+    /// Returns a sender that can be used to send messages to the runtime.
+    ///
+    /// This is useful for sending messages from external async tasks.
+    pub fn message_sender(&self) -> mpsc::Sender<A::Message> {
+        self.message_tx.clone()
+    }
+
+    /// Returns a sender that can be used to report errors from async operations.
+    ///
+    /// This is useful for sending errors from external async tasks.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let error_tx = runtime.error_sender();
+    /// tokio::spawn(async move {
+    ///     if let Err(e) = some_fallible_operation().await {
+    ///         let _ = error_tx.send(Box::new(e)).await;
+    ///     }
+    /// });
+    /// ```
+    pub fn error_sender(&self) -> mpsc::Sender<BoxedError> {
+        self.error_tx.clone()
+    }
+
+    /// Takes all collected errors from async operations.
+    ///
+    /// Returns all errors that have been received since the last call.
+    /// After calling this method, the error queue is emptied.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// for error in runtime.take_errors() {
+    ///     eprintln!("Async error: {}", error);
+    /// }
+    /// ```
+    pub fn take_errors(&mut self) -> Vec<BoxedError> {
+        let mut errors = Vec::new();
+        while let Ok(err) = self.error_rx.try_recv() {
+            errors.push(err);
+        }
+        errors
+    }
+
+    /// Returns true if there are pending errors.
+    ///
+    /// This is a quick check to see if any errors have been reported
+    /// without consuming them.
+    pub fn has_errors(&self) -> bool {
+        !self.error_rx.is_empty()
+    }
+
+    /// Adds a subscription to the runtime.
+    ///
+    /// The subscription will produce messages until it ends or the runtime shuts down.
+    pub fn subscribe(&mut self, subscription: impl Subscription<A::Message>) {
+        let stream = Box::new(subscription).into_stream(self.cancel_token.clone());
+        self.subscriptions.push(stream);
+    }
+
+    /// Adds multiple subscriptions to the runtime.
+    pub fn subscribe_all(&mut self, subscriptions: Vec<BoxedSubscription<A::Message>>) {
+        for sub in subscriptions {
+            let stream = sub.into_stream(self.cancel_token.clone());
+            self.subscriptions.push(stream);
+        }
+    }
+
     /// Dispatches a message to update the state.
     pub fn dispatch(&mut self, msg: A::Message) {
         let cmd = A::update(&mut self.core.state, msg);
@@ -414,6 +587,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
         if self.commands.should_quit() {
             self.core.should_quit = true;
         }
+
+        self.spawn_pending_commands();
     }
 
     /// Dispatches multiple messages.
@@ -423,7 +598,16 @@ impl<A: App, B: Backend> Runtime<A, B> {
         }
     }
 
-    /// Processes any pending commands and returns resulting messages.
+    /// Spawns any pending async commands.
+    fn spawn_pending_commands(&mut self) {
+        self.commands.spawn_pending(
+            self.message_tx.clone(),
+            self.error_tx.clone(),
+            self.cancel_token.clone(),
+        );
+    }
+
+    /// Processes any pending commands.
     pub fn process_commands(&mut self) {
         let messages = self.commands.take_messages();
         for msg in messages {
@@ -436,6 +620,13 @@ impl<A: App, B: Backend> Runtime<A, B> {
         }
         for _ in 0..self.commands.take_overlay_pops() {
             self.core.overlay_stack.pop();
+        }
+    }
+
+    /// Processes messages received from async tasks.
+    fn process_async_messages(&mut self) {
+        while let Ok(msg) = self.message_rx.try_recv() {
+            self.dispatch(msg);
         }
     }
 
@@ -480,8 +671,11 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// - [`process_event`](Runtime::process_event) — Process exactly one event
     /// - [`run_ticks`](Runtime::run_ticks) — Convenience: run N full tick cycles
     pub fn tick(&mut self) -> io::Result<()> {
-        // Process pending commands first
+        // Process pending commands
         self.process_commands();
+
+        // Process async messages
+        self.process_async_messages();
 
         // Process events
         let mut messages_processed = 0;
@@ -510,9 +704,73 @@ impl<A: App, B: Backend> Runtime<A, B> {
         self.core.should_quit
     }
 
-    /// Sets the quit flag.
+    /// Sets the quit flag and cancels all async operations.
     pub fn quit(&mut self) {
         self.core.should_quit = true;
+        self.cancel_token.cancel();
+    }
+
+    /// Runs the async event loop until the application quits.
+    ///
+    /// This is the main entry point for running a virtual terminal async loop.
+    /// For terminal applications, use [`run_terminal`](Runtime::run_terminal) instead.
+    pub async fn run(&mut self) -> io::Result<()> {
+        let mut tick_interval = tokio::time::interval(self.config.tick_rate);
+        let mut render_interval = tokio::time::interval(self.config.frame_rate);
+
+        // Initial render
+        self.render()?;
+
+        loop {
+            tokio::select! {
+                // Handle async messages from spawned tasks
+                Some(msg) = self.message_rx.recv() => {
+                    self.dispatch(msg);
+                }
+
+                // Handle tick interval
+                _ = tick_interval.tick() => {
+                    // Process sync commands
+                    self.process_commands();
+
+                    // Process events
+                    let mut messages_processed = 0;
+                    while self.process_event() && messages_processed < self.core.max_messages_per_tick {
+                        messages_processed += 1;
+                    }
+
+                    // Handle tick
+                    if let Some(msg) = A::on_tick(&self.core.state) {
+                        self.dispatch(msg);
+                    }
+
+                    // Check if we should quit
+                    if A::should_quit(&self.core.state) {
+                        self.core.should_quit = true;
+                    }
+                }
+
+                // Handle render interval
+                _ = render_interval.tick() => {
+                    self.render()?;
+                }
+
+                // Handle cancellation
+                _ = self.cancel_token.cancelled() => {
+                    self.core.should_quit = true;
+                }
+            }
+
+            if self.core.should_quit {
+                break;
+            }
+        }
+
+        // Final render
+        self.render()?;
+
+        A::on_exit(&self.core.state);
+        Ok(())
     }
 
     /// Runs for a specified number of ticks.
@@ -524,6 +782,18 @@ impl<A: App, B: Backend> Runtime<A, B> {
             self.tick()?;
         }
         Ok(())
+    }
+
+    /// Processes all pending async work (for testing with paused time).
+    ///
+    /// This is useful in tests with `tokio::time::pause()` to process
+    /// all pending messages without running the full event loop.
+    pub fn process_pending(&mut self) {
+        // Process commands
+        self.process_commands();
+
+        // Process async messages
+        self.process_async_messages();
     }
 
     /// Pushes an overlay onto the stack.

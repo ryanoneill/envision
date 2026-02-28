@@ -79,10 +79,9 @@ pub mod theme;
 pub use adapter::{DualBackend, DualBackendBuilder};
 pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
 pub use app::{
-    App, AsyncRuntime, AsyncRuntimeConfig, Command, DebounceSubscription,
-    FilterSubscription, IntervalImmediateSubscription, Runtime, RuntimeConfig, Subscription,
-    SubscriptionExt, TakeSubscription, TerminalEventSubscription, ThrottleSubscription,
-    TickSubscription, TimerSubscription,
+    App, Command, DebounceSubscription, FilterSubscription, IntervalImmediateSubscription, Runtime,
+    RuntimeConfig, Subscription, SubscriptionExt, TakeSubscription, TerminalEventSubscription,
+    ThrottleSubscription, TickSubscription, TimerSubscription,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 pub use component::{
@@ -119,7 +118,7 @@ pub use theme::Theme;
 /// ```
 pub mod prelude {
     // Core framework
-    pub use crate::app::{App, AsyncRuntime, AsyncRuntimeConfig, Command, Runtime, RuntimeConfig};
+    pub use crate::app::{App, Command, Runtime, RuntimeConfig};
 
     // Subscriptions
     pub use crate::app::{Subscription, SubscriptionExt, Update};

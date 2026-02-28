@@ -78,7 +78,6 @@
 //! }
 //! ```
 
-mod async_runtime;
 mod command;
 mod command_core;
 mod model;
@@ -87,7 +86,6 @@ mod runtime_core;
 mod subscription;
 mod update;
 
-pub use async_runtime::{AsyncRuntime, AsyncRuntimeConfig};
 pub use command::{BoxedError, Command, CommandHandler};
 pub use model::App;
 pub use runtime::{Runtime, RuntimeConfig};

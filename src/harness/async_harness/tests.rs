@@ -267,7 +267,7 @@ fn test_async_harness_manual_quit() {
 
 #[test]
 fn test_async_harness_with_config() {
-    let config = AsyncRuntimeConfig::new()
+    let config = RuntimeConfig::new()
         .tick_rate(Duration::from_millis(100))
         .with_history(5);
 
