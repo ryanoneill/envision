@@ -15,7 +15,7 @@
 //!
 //! // Navigate down - immediately selects next option
 //! let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-//! assert_eq!(output, Some(RadioOutput::Selected("Medium")));
+//! assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
 //! assert_eq!(state.selected_index(), Some(1));
 //!
 //! // Confirm selection (e.g., for form submission)
@@ -54,6 +54,8 @@ pub enum RadioOutput<T: Clone> {
     Selected(T),
     /// The current selection was confirmed (Enter pressed).
     Confirmed(T),
+    /// The selection changed during navigation (contains the new index).
+    SelectionChanged(usize),
 }
 
 /// State for a RadioGroup component.
@@ -216,7 +218,7 @@ impl<T: Clone> RadioGroupState<T> {
 ///
 /// // Navigate to select "Medium"
 /// let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-/// assert_eq!(output, Some(RadioOutput::Selected("Medium")));
+/// assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
 ///
 /// // Focus the component for visual feedback
 /// RadioGroup::<&str>::set_focused(&mut state, true);
@@ -246,24 +248,18 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
         match msg {
             RadioMessage::Up => {
                 if selected > 0 {
-                    state.selected = Some(selected - 1);
-                    state
-                        .options
-                        .get(selected - 1)
-                        .cloned()
-                        .map(RadioOutput::Selected)
+                    let new_index = selected - 1;
+                    state.selected = Some(new_index);
+                    Some(RadioOutput::SelectionChanged(new_index))
                 } else {
                     None
                 }
             }
             RadioMessage::Down => {
                 if selected < state.options.len() - 1 {
-                    state.selected = Some(selected + 1);
-                    state
-                        .options
-                        .get(selected + 1)
-                        .cloned()
-                        .map(RadioOutput::Selected)
+                    let new_index = selected + 1;
+                    state.selected = Some(new_index);
+                    Some(RadioOutput::SelectionChanged(new_index))
                 } else {
                     None
                 }

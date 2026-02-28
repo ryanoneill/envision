@@ -17,7 +17,7 @@
 //!
 //! // Navigate right
 //! let output = Tabs::<&str>::update(&mut state, TabMessage::Right);
-//! assert_eq!(output, Some(TabOutput::Selected("Settings")));
+//! assert_eq!(output, Some(TabOutput::SelectionChanged(1)));
 //! assert_eq!(state.selected_index(), Some(1));
 //! ```
 
@@ -54,6 +54,8 @@ pub enum TabOutput<T: Clone> {
     Selected(T),
     /// The current selection was confirmed.
     Confirmed(T),
+    /// The selection changed during navigation (contains the new index).
+    SelectionChanged(usize),
 }
 
 /// State for a Tabs component.
@@ -233,7 +235,7 @@ impl<T: Clone> TabsState<T> {
 ///
 /// # Output
 ///
-/// - `Selected(T)` - Emitted when the selection changes
+/// - `SelectionChanged(usize)` - Emitted when navigation changes the selection (contains the new index)
 /// - `Confirmed(T)` - Emitted when the user confirms their selection
 ///
 /// # Example
@@ -260,7 +262,7 @@ impl<T: Clone> TabsState<T> {
 ///
 /// let mut state = TabsState::new(vec![Page::Home, Page::Settings, Page::Help]);
 /// let output = Tabs::<Page>::update(&mut state, TabMessage::Right);
-/// assert_eq!(output, Some(TabOutput::Selected(Page::Settings)));
+/// assert_eq!(output, Some(TabOutput::SelectionChanged(1)));
 /// ```
 pub struct Tabs<T: Clone>(PhantomData<T>);
 
@@ -283,14 +285,14 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
         match msg {
             TabMessage::Left => {
                 if state.move_left() {
-                    state.selected().cloned().map(TabOutput::Selected)
+                    state.selected.map(TabOutput::SelectionChanged)
                 } else {
                     None
                 }
             }
             TabMessage::Right => {
                 if state.move_right() {
-                    state.selected().cloned().map(TabOutput::Selected)
+                    state.selected.map(TabOutput::SelectionChanged)
                 } else {
                     None
                 }
@@ -299,7 +301,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
                 let clamped = index.min(state.tabs.len().saturating_sub(1));
                 if clamped != selected {
                     state.selected = Some(clamped);
-                    state.selected().cloned().map(TabOutput::Selected)
+                    Some(TabOutput::SelectionChanged(clamped))
                 } else {
                     None
                 }
@@ -307,7 +309,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             TabMessage::First => {
                 if selected != 0 {
                     state.selected = Some(0);
-                    state.selected().cloned().map(TabOutput::Selected)
+                    Some(TabOutput::SelectionChanged(0))
                 } else {
                     None
                 }
@@ -316,7 +318,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
                 let last = state.tabs.len().saturating_sub(1);
                 if selected != last {
                     state.selected = Some(last);
-                    state.selected().cloned().map(TabOutput::Selected)
+                    Some(TabOutput::SelectionChanged(last))
                 } else {
                     None
                 }

@@ -86,11 +86,11 @@ fn test_navigate_down() {
     let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-    assert_eq!(output, Some(RadioOutput::Selected("B")));
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-    assert_eq!(output, Some(RadioOutput::Selected("C")));
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(2)));
     assert_eq!(state.selected_index(), Some(2));
 }
 
@@ -99,11 +99,11 @@ fn test_navigate_up() {
     let mut state = RadioGroupState::with_selected(vec!["A", "B", "C"], 2);
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Up);
-    assert_eq!(output, Some(RadioOutput::Selected("B")));
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Up);
-    assert_eq!(output, Some(RadioOutput::Selected("A")));
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(0)));
     assert_eq!(state.selected_index(), Some(0));
 }
 
@@ -340,23 +340,19 @@ fn test_radio_output_debug() {
 }
 
 #[test]
-fn test_navigate_down_outputs_selected_value() {
+fn test_navigate_down_outputs_selection_changed() {
     let mut state = RadioGroupState::new(vec!["Red", "Green", "Blue"]);
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-    match output {
-        Some(RadioOutput::Selected(value)) => assert_eq!(value, "Green"),
-        _ => panic!("Expected Selected output"),
-    }
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
+    assert_eq!(state.selected(), Some(&"Green"));
 }
 
 #[test]
-fn test_navigate_up_outputs_selected_value() {
+fn test_navigate_up_outputs_selection_changed() {
     let mut state = RadioGroupState::with_selected(vec!["Red", "Green", "Blue"], 2);
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Up);
-    match output {
-        Some(RadioOutput::Selected(value)) => assert_eq!(value, "Green"),
-        _ => panic!("Expected Selected output"),
-    }
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
+    assert_eq!(state.selected(), Some(&"Green"));
 }

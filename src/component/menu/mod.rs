@@ -109,6 +109,8 @@ pub enum MenuMessage {
 pub enum MenuOutput {
     /// A menu item was activated (contains the item index).
     ItemActivated(usize),
+    /// The selection changed during navigation (contains the new item index).
+    SelectionChanged(usize),
 }
 
 /// State for a Menu component.
@@ -257,17 +259,19 @@ impl Component for Menu {
         match msg {
             MenuMessage::SelectNext => {
                 // Move to next item, wrapping around
-                state.selected_index = Some((selected + 1) % state.items.len());
-                None
+                let new_index = (selected + 1) % state.items.len();
+                state.selected_index = Some(new_index);
+                Some(MenuOutput::SelectionChanged(new_index))
             }
             MenuMessage::SelectPrevious => {
                 // Move to previous item, wrapping around
-                if selected == 0 {
-                    state.selected_index = Some(state.items.len() - 1);
+                let new_index = if selected == 0 {
+                    state.items.len() - 1
                 } else {
-                    state.selected_index = Some(selected - 1);
-                }
-                None
+                    selected - 1
+                };
+                state.selected_index = Some(new_index);
+                Some(MenuOutput::SelectionChanged(new_index))
             }
             MenuMessage::Activate => {
                 // Activate only if item is enabled
@@ -282,10 +286,12 @@ impl Component for Menu {
                 }
             }
             MenuMessage::SelectItem(index) => {
-                if index < state.items.len() {
+                if index < state.items.len() && state.selected_index != Some(index) {
                     state.selected_index = Some(index);
+                    Some(MenuOutput::SelectionChanged(index))
+                } else {
+                    None
                 }
-                None
             }
         }
     }
