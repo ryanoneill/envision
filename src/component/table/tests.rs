@@ -830,10 +830,7 @@ fn test_sort_after_row_mutation() {
     assert!(state.sort().is_some());
 
     // Now mutate rows - set_rows resets sort
-    let new_rows = vec![
-        TestRow::new("Zebra", "1"),
-        TestRow::new("Alpha", "2"),
-    ];
+    let new_rows = vec![TestRow::new("Zebra", "1"), TestRow::new("Alpha", "2")];
     state.set_rows(new_rows);
 
     // Sort is cleared by set_rows

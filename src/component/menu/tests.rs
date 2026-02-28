@@ -379,7 +379,9 @@ fn test_view_empty() {
 
 #[test]
 fn test_large_menu_navigation() {
-    let items: Vec<MenuItem> = (0..100).map(|i| MenuItem::new(format!("Item {}", i))).collect();
+    let items: Vec<MenuItem> = (0..100)
+        .map(|i| MenuItem::new(format!("Item {}", i)))
+        .collect();
     let mut state = MenuState::new(items);
 
     // Navigate to middle using SelectNext
@@ -404,7 +406,7 @@ fn test_unicode_labels() {
     let items = vec![
         MenuItem::new("日本語メニュー"), // Japanese
         MenuItem::new("Кириллица"),      // Cyrillic
-        MenuItem::new("العربية"),         // Arabic
+        MenuItem::new("العربية"),        // Arabic
     ];
     let mut state = MenuState::new(items);
 
