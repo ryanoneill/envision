@@ -13,7 +13,7 @@
 //!
 //! ```rust,ignore
 //! // Run in a real terminal with keyboard/mouse input
-//! Runtime::<MyApp>::terminal()?.run()
+//! Runtime::<MyApp>::new_terminal()?.run()
 //! ```
 //!
 //! ### Virtual Terminal Mode - For Programmatic Control

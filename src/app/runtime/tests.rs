@@ -156,17 +156,17 @@ fn test_runtime_state_mut() {
 }
 
 #[test]
-fn test_runtime_inner_terminal_access() {
+fn test_runtime_terminal_access() {
     let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
-    let terminal = runtime.inner_terminal();
+    let terminal = runtime.terminal();
     assert_eq!(terminal.backend().width(), 80);
     assert_eq!(terminal.backend().height(), 24);
 }
 
 #[test]
-fn test_runtime_inner_terminal_mut() {
+fn test_runtime_terminal_mut() {
     let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
-    let _terminal = runtime.inner_terminal_mut();
+    let _terminal = runtime.terminal_mut();
     // Just verify we can get mutable access
 }
 
