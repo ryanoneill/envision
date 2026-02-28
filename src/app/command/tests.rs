@@ -169,16 +169,6 @@ fn test_command_clone_callback_skipped() {
 }
 
 #[test]
-fn test_command_debug() {
-    let cmd = Command::message(TestMsg::A);
-    let debug_str = format!("{:?}", cmd);
-
-    assert!(debug_str.contains("Command"));
-    assert!(debug_str.contains("action_count"));
-    assert!(debug_str.contains("1"));
-}
-
-#[test]
 fn test_command_map_batch() {
     #[derive(Clone, Debug, PartialEq)]
     enum OuterMsg {

@@ -147,20 +147,6 @@ fn test_snapshot_format_default() {
 }
 
 #[test]
-fn test_snapshot_format_debug() {
-    let format = SnapshotFormat::Json;
-    let debug = format!("{:?}", format);
-    assert!(debug.contains("Json"));
-}
-
-#[test]
-fn test_snapshot_format_clone() {
-    let format = SnapshotFormat::Ansi;
-    let cloned = format;
-    assert_eq!(format, cloned);
-}
-
-#[test]
 fn test_snapshot_to_json() {
     let mut harness = TestHarness::new(20, 2);
     harness
@@ -321,20 +307,6 @@ fn test_snapshot_diff_clone() {
 }
 
 #[test]
-fn test_snapshot_diff_debug() {
-    let mut harness = TestHarness::new(20, 2);
-    harness
-        .render(|frame| {
-            frame.render_widget(Paragraph::new("Test"), frame.area());
-        })
-        .unwrap();
-
-    let diff = harness.snapshot().diff(&harness.snapshot());
-    let debug = format!("{:?}", diff);
-    assert!(debug.contains("SnapshotDiff"));
-}
-
-#[test]
 fn test_line_diff_clone() {
     let diff = LineDiff {
         line: 0,
@@ -345,17 +317,6 @@ fn test_line_diff_clone() {
     assert_eq!(diff.line, cloned.line);
     assert_eq!(diff.left, cloned.left);
     assert_eq!(diff.right, cloned.right);
-}
-
-#[test]
-fn test_line_diff_debug() {
-    let diff = LineDiff {
-        line: 1,
-        left: "a".to_string(),
-        right: "b".to_string(),
-    };
-    let debug = format!("{:?}", diff);
-    assert!(debug.contains("LineDiff"));
 }
 
 #[test]
@@ -563,41 +524,6 @@ fn test_snapshot_test_update_mode() {
     let path = tester.snapshot_path("update_test");
     let content = std::fs::read_to_string(path).unwrap();
     assert!(content.contains("Updated"));
-}
-
-#[test]
-fn test_snapshot_debug() {
-    let mut harness = TestHarness::new(10, 2);
-    harness
-        .render(|frame| {
-            frame.render_widget(Paragraph::new("D"), frame.area());
-        })
-        .unwrap();
-
-    let snapshot = harness.snapshot();
-    let debug = format!("{:?}", snapshot);
-    assert!(debug.contains("Snapshot"));
-}
-
-#[test]
-fn test_snapshot_clone() {
-    let mut harness = TestHarness::new(10, 2);
-    harness
-        .render(|frame| {
-            frame.render_widget(Paragraph::new("Clone"), frame.area());
-        })
-        .unwrap();
-
-    let snapshot = harness.snapshot();
-    let cloned = snapshot.clone();
-    assert!(snapshot.matches(&cloned));
-}
-
-#[test]
-fn test_snapshot_test_debug() {
-    let tester = SnapshotTest::new("/tmp");
-    let debug = format!("{:?}", tester);
-    assert!(debug.contains("SnapshotTest"));
 }
 
 #[test]

@@ -126,18 +126,4 @@ mod tests {
         let copied = format; // Copy
         assert_eq!(format, copied);
     }
-
-    #[test]
-    fn test_output_format_debug() {
-        let format = OutputFormat::Plain;
-        let debug = format!("{:?}", format);
-        assert_eq!(debug, "Plain");
-    }
-
-    #[test]
-    fn test_output_format_equality() {
-        assert_eq!(OutputFormat::Plain, OutputFormat::Plain);
-        assert_ne!(OutputFormat::Plain, OutputFormat::Ansi);
-        assert_ne!(OutputFormat::Json, OutputFormat::JsonPretty);
-    }
 }

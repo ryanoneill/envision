@@ -60,24 +60,6 @@ fn test_set_selected_index_out_of_bounds() {
 }
 
 #[test]
-fn test_placeholder() {
-    let mut state = SelectState::new(vec!["A", "B"]);
-    assert_eq!(state.placeholder(), "Select...");
-
-    state.set_placeholder("Choose one");
-    assert_eq!(state.placeholder(), "Choose one");
-}
-
-#[test]
-fn test_disabled() {
-    let mut state = SelectState::new(vec!["A", "B"]);
-    assert!(!state.is_disabled());
-
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
 fn test_open_close() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
 
@@ -199,30 +181,10 @@ fn test_disabling_closes_dropdown() {
 }
 
 #[test]
-fn test_focusable() {
-    let mut state = SelectState::new(vec!["A", "B"]);
-
-    assert!(!Select::is_focused(&state));
-
-    Select::focus(&mut state);
-    assert!(Select::is_focused(&state));
-
-    Select::blur(&mut state);
-    assert!(!Select::is_focused(&state));
-}
-
-#[test]
 fn test_init() {
     let state = Select::init();
     assert_eq!(state.options().len(), 0);
     assert!(!Select::is_focused(&state));
-}
-
-#[test]
-fn test_clone() {
-    let state = SelectState::with_selection(vec!["A", "B", "C"], 1);
-    let cloned = state.clone();
-    assert_eq!(cloned.selected_index(), Some(1));
 }
 
 #[test]

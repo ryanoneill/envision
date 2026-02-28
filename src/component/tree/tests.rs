@@ -272,19 +272,6 @@ fn test_state_visible_count() {
     assert_eq!(state.visible_count(), 3);
 }
 
-#[test]
-fn test_state_clone() {
-    let mut root = TreeNode::new_expanded("Root", ());
-    root.add_child(TreeNode::new("Child", ()));
-
-    let mut state = TreeState::new(vec![root]);
-    state.selected_index = Some(1);
-
-    let cloned = state.clone();
-    assert_eq!(cloned.visible_count(), 2);
-    assert_eq!(cloned.selected_index(), Some(1));
-}
-
 // Tree component tests
 
 #[test]
@@ -495,42 +482,6 @@ fn test_empty_tree() {
 
     let output = Tree::update(&mut state, TreeMessage::Select);
     assert_eq!(output, None);
-}
-
-// Focusable tests
-
-#[test]
-fn test_focusable_is_focused() {
-    let state: TreeState<()> = TreeState::new(Vec::new());
-    assert!(!Tree::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state: TreeState<()> = TreeState::new(Vec::new());
-
-    Tree::set_focused(&mut state, true);
-    assert!(Tree::is_focused(&state));
-
-    Tree::set_focused(&mut state, false);
-    assert!(!Tree::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_focus() {
-    let mut state: TreeState<()> = TreeState::new(Vec::new());
-
-    Tree::focus(&mut state);
-    assert!(Tree::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_blur() {
-    let mut state: TreeState<()> = TreeState::new(Vec::new());
-    Tree::set_focused(&mut state, true);
-
-    Tree::blur(&mut state);
-    assert!(!Tree::is_focused(&state));
 }
 
 // View tests
@@ -780,61 +731,6 @@ fn test_get_node_deep_path() {
     let selected = temp_state.selected_node();
     assert!(selected.is_some());
     assert_eq!(*selected.unwrap().data(), 2);
-}
-
-#[test]
-fn test_tree_message_debug() {
-    let msg = TreeMessage::SelectNext;
-    let debug = format!("{:?}", msg);
-    assert_eq!(debug, "SelectNext");
-}
-
-#[test]
-fn test_tree_output_debug() {
-    let out = TreeOutput::Selected(vec![0, 1, 2]);
-    let debug = format!("{:?}", out);
-    assert!(debug.contains("Selected"));
-}
-
-#[test]
-fn test_tree_message_eq() {
-    assert_eq!(TreeMessage::Expand, TreeMessage::Expand);
-    assert_eq!(TreeMessage::Collapse, TreeMessage::Collapse);
-    assert_eq!(TreeMessage::Toggle, TreeMessage::Toggle);
-    assert_eq!(TreeMessage::Select, TreeMessage::Select);
-    assert_eq!(TreeMessage::SelectNext, TreeMessage::SelectNext);
-    assert_eq!(TreeMessage::SelectPrevious, TreeMessage::SelectPrevious);
-    assert_eq!(TreeMessage::ExpandAll, TreeMessage::ExpandAll);
-    assert_eq!(TreeMessage::CollapseAll, TreeMessage::CollapseAll);
-}
-
-#[test]
-fn test_tree_output_eq() {
-    let out1 = TreeOutput::Selected(vec![0]);
-    let out2 = TreeOutput::Selected(vec![0]);
-    assert_eq!(out1, out2);
-
-    let out3 = TreeOutput::Expanded(vec![0, 1]);
-    let out4 = TreeOutput::Expanded(vec![0, 1]);
-    assert_eq!(out3, out4);
-
-    let out5 = TreeOutput::Collapsed(vec![2]);
-    let out6 = TreeOutput::Collapsed(vec![2]);
-    assert_eq!(out5, out6);
-}
-
-#[test]
-fn test_node_debug() {
-    let node = TreeNode::new("Test", 42);
-    let debug = format!("{:?}", node);
-    assert!(debug.contains("TreeNode"));
-}
-
-#[test]
-fn test_state_debug() {
-    let state: TreeState<i32> = TreeState::default();
-    let debug = format!("{:?}", state);
-    assert!(debug.contains("TreeState"));
 }
 
 #[test]

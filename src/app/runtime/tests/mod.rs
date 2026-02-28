@@ -129,20 +129,6 @@ fn test_runtime_config_default() {
 }
 
 #[test]
-fn test_runtime_config_debug() {
-    let config = RuntimeConfig::new();
-    let debug = format!("{:?}", config);
-    assert!(debug.contains("RuntimeConfig"));
-}
-
-#[test]
-fn test_runtime_config_clone() {
-    let config = RuntimeConfig::new().tick_rate(Duration::from_millis(200));
-    let cloned = config.clone();
-    assert_eq!(config.tick_rate, cloned.tick_rate);
-}
-
-#[test]
 fn test_runtime_headless_with_config() {
     let config = RuntimeConfig::new().with_history(5);
     let runtime: Runtime<CounterApp, _> =

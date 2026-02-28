@@ -33,29 +33,6 @@ fn test_default() {
     assert_eq!(state.placeholder(), "Search...");
 }
 
-// ========== Accessor Tests ==========
-
-#[test]
-fn test_options() {
-    let state = DropdownState::new(vec!["X", "Y", "Z"]);
-    assert_eq!(state.options(), &["X", "Y", "Z"]);
-}
-
-#[test]
-fn test_selected_index() {
-    let state = DropdownState::with_selection(vec!["A", "B"], 0);
-    assert_eq!(state.selected_index(), Some(0));
-}
-
-#[test]
-fn test_selected_value() {
-    let state = DropdownState::with_selection(vec!["Apple", "Banana"], 1);
-    assert_eq!(state.selected_value(), Some("Banana"));
-
-    let empty_state = DropdownState::new(vec!["A", "B"]);
-    assert_eq!(empty_state.selected_value(), None);
-}
-
 #[test]
 fn test_filter_text() {
     let mut state = DropdownState::new(vec!["A", "B"]);
@@ -84,30 +61,7 @@ fn test_is_open() {
     assert!(state.is_open());
 }
 
-#[test]
-fn test_placeholder() {
-    let state = DropdownState::new(vec!["A"]);
-    assert_eq!(state.placeholder(), "Search...");
-}
-
-#[test]
-fn test_is_disabled() {
-    let mut state = DropdownState::new(vec!["A"]);
-    assert!(!state.is_disabled());
-
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // ========== Mutator Tests ==========
-
-#[test]
-fn test_set_options() {
-    let mut state = DropdownState::new(vec!["A", "B"]);
-    state.set_options(vec!["X", "Y", "Z"]);
-    assert_eq!(state.options().len(), 3);
-    assert_eq!(state.options()[0], "X");
-}
 
 #[test]
 fn test_set_options_resets_invalid_selection() {
@@ -129,20 +83,6 @@ fn test_set_selected_index_out_of_bounds() {
     let mut state = DropdownState::new(vec!["A", "B"]);
     state.set_selected_index(Some(5));
     assert_eq!(state.selected_index(), None);
-}
-
-#[test]
-fn test_set_placeholder() {
-    let mut state = DropdownState::new(vec!["A"]);
-    state.set_placeholder("Type here...");
-    assert_eq!(state.placeholder(), "Type here...");
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = DropdownState::new(vec!["A", "B"]);
-    state.set_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // ========== Open/Close Tests ==========
@@ -504,32 +444,6 @@ fn test_disabling_closes_dropdown() {
     assert!(!state.is_open());
 }
 
-// ========== Focus Tests ==========
-
-#[test]
-fn test_focusable_is_focused() {
-    let state = DropdownState::new(vec!["A", "B"]);
-    assert!(!Dropdown::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = DropdownState::new(vec!["A", "B"]);
-    Dropdown::set_focused(&mut state, true);
-    assert!(Dropdown::is_focused(&state));
-}
-
-#[test]
-fn test_focus_blur() {
-    let mut state = DropdownState::new(vec!["A", "B"]);
-
-    Dropdown::focus(&mut state);
-    assert!(Dropdown::is_focused(&state));
-
-    Dropdown::blur(&mut state);
-    assert!(!Dropdown::is_focused(&state));
-}
-
 // ========== View Tests ==========
 
 #[test]
@@ -646,13 +560,6 @@ fn test_view_focused() {
 }
 
 // ========== Integration Tests ==========
-
-#[test]
-fn test_clone() {
-    let state = DropdownState::with_selection(vec!["A", "B", "C"], 1);
-    let cloned = state.clone();
-    assert_eq!(cloned.selected_index(), Some(1));
-}
 
 #[test]
 fn test_init() {

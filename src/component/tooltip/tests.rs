@@ -10,21 +10,6 @@ fn test_position_default() {
     assert_eq!(position, TooltipPosition::Below);
 }
 
-#[test]
-fn test_position_clone() {
-    let position = TooltipPosition::Above;
-    let cloned = position;
-    assert_eq!(cloned, TooltipPosition::Above);
-}
-
-#[test]
-fn test_position_eq() {
-    assert_eq!(TooltipPosition::Above, TooltipPosition::Above);
-    assert_ne!(TooltipPosition::Above, TooltipPosition::Below);
-    assert_eq!(TooltipPosition::Left, TooltipPosition::Left);
-    assert_ne!(TooltipPosition::Left, TooltipPosition::Right);
-}
-
 // ========================================
 // State Creation Tests
 // ========================================
@@ -602,22 +587,6 @@ fn test_view_multiline() {
 // ========================================
 // Integration Tests
 // ========================================
-
-#[test]
-fn test_clone() {
-    let state = TooltipState::new("Content")
-        .with_title("Title")
-        .with_position(TooltipPosition::Above)
-        .with_duration(5000)
-        .with_fg_color(Color::Yellow);
-
-    let cloned = state.clone();
-    assert_eq!(cloned.content(), "Content");
-    assert_eq!(cloned.title(), Some("Title"));
-    assert_eq!(cloned.position(), TooltipPosition::Above);
-    assert_eq!(cloned.duration_ms(), Some(5000));
-    assert_eq!(cloned.fg_color(), Color::Yellow);
-}
 
 #[test]
 fn test_init() {

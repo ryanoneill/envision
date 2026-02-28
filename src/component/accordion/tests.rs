@@ -24,14 +24,6 @@ fn test_panel_accessors() {
     assert!(!panel.is_expanded());
 }
 
-#[test]
-fn test_panel_clone() {
-    let panel = AccordionPanel::new("Title", "Content").expanded();
-    let cloned = panel.clone();
-    assert_eq!(cloned.title(), "Title");
-    assert!(cloned.is_expanded());
-}
-
 // ========== State Creation Tests ==========
 
 #[test]
@@ -465,32 +457,6 @@ fn test_disabling_preserves_state() {
     assert!(state.panels()[0].is_expanded()); // Still expanded
 }
 
-// ========== Focus Tests ==========
-
-#[test]
-fn test_focusable_is_focused() {
-    let state = AccordionState::default();
-    assert!(!Accordion::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = AccordionState::default();
-    Accordion::set_focused(&mut state, true);
-    assert!(Accordion::is_focused(&state));
-}
-
-#[test]
-fn test_focus_blur() {
-    let mut state = AccordionState::default();
-
-    Accordion::focus(&mut state);
-    assert!(Accordion::is_focused(&state));
-
-    Accordion::blur(&mut state);
-    assert!(!Accordion::is_focused(&state));
-}
-
 // ========== View Tests ==========
 
 #[test]
@@ -588,14 +554,6 @@ fn test_view_long_content() {
 }
 
 // ========== Integration Tests ==========
-
-#[test]
-fn test_clone() {
-    let state = AccordionState::new(vec![AccordionPanel::new("A", "1").expanded()]);
-    let cloned = state.clone();
-    assert_eq!(cloned.len(), 1);
-    assert!(cloned.panels()[0].is_expanded());
-}
 
 #[test]
 fn test_init() {

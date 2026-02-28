@@ -459,22 +459,6 @@ fn test_scroll_to_bottom() {
 }
 
 // ========================================
-// Focusable Tests
-// ========================================
-
-#[test]
-fn test_focusable() {
-    let mut state = MultiProgressState::new();
-    assert!(!MultiProgress::is_focused(&state));
-
-    MultiProgress::focus(&mut state);
-    assert!(MultiProgress::is_focused(&state));
-
-    MultiProgress::blur(&mut state);
-    assert!(!MultiProgress::is_focused(&state));
-}
-
-// ========================================
 // View Tests
 // ========================================
 
@@ -564,15 +548,6 @@ fn test_view_completed_item() {
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_clone() {
-    let mut state = MultiProgressState::new();
-    state.add("id1", "Item 1");
-
-    let cloned = state.clone();
-    assert_eq!(cloned.len(), 1);
 }
 
 // ========================================

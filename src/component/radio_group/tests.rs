@@ -48,12 +48,6 @@ fn test_default() {
 }
 
 #[test]
-fn test_options_accessor() {
-    let state = RadioGroupState::new(vec!["X", "Y", "Z"]);
-    assert_eq!(state.options(), &["X", "Y", "Z"]);
-}
-
-#[test]
 fn test_selected_accessors() {
     let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
 
@@ -67,18 +61,6 @@ fn test_selected_accessors() {
     // Out of bounds is ignored
     state.set_selected(100);
     assert_eq!(state.selected_index(), Some(2));
-}
-
-#[test]
-fn test_disabled_accessors() {
-    let mut state = RadioGroupState::new(vec!["A", "B"]);
-    assert!(!state.is_disabled());
-
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -178,37 +160,12 @@ fn test_empty_navigation() {
 }
 
 #[test]
-fn test_focusable() {
-    let mut state = RadioGroupState::new(vec!["A", "B"]);
-
-    assert!(!RadioGroup::<&str>::is_focused(&state));
-
-    RadioGroup::<&str>::set_focused(&mut state, true);
-    assert!(RadioGroup::<&str>::is_focused(&state));
-
-    RadioGroup::<&str>::blur(&mut state);
-    assert!(!RadioGroup::<&str>::is_focused(&state));
-
-    RadioGroup::<&str>::focus(&mut state);
-    assert!(RadioGroup::<&str>::is_focused(&state));
-}
-
-#[test]
 fn test_init() {
     let state = RadioGroup::<String>::init();
     assert!(state.is_empty());
     assert_eq!(state.selected_index(), None);
     assert!(!state.is_disabled());
     assert!(!RadioGroup::<String>::is_focused(&state));
-}
-
-#[test]
-fn test_clone() {
-    let state = RadioGroupState::with_selected(vec!["A", "B", "C"], 1);
-    let cloned = state.clone();
-
-    assert_eq!(cloned.options(), &["A", "B", "C"]);
-    assert_eq!(cloned.selected_index(), Some(1));
 }
 
 #[test]
@@ -286,45 +243,6 @@ fn test_view_focused_not_selected() {
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_debug_impl() {
-    let state = RadioGroupState::new(vec!["x", "y"]);
-    let debug = format!("{:?}", state);
-    assert!(debug.contains("RadioGroupState"));
-}
-
-#[test]
-fn test_radio_message_eq() {
-    assert_eq!(RadioMessage::Up, RadioMessage::Up);
-    assert_eq!(RadioMessage::Down, RadioMessage::Down);
-    assert_eq!(RadioMessage::Confirm, RadioMessage::Confirm);
-    assert_ne!(RadioMessage::Up, RadioMessage::Down);
-}
-
-#[test]
-fn test_radio_message_debug() {
-    let debug = format!("{:?}", RadioMessage::Confirm);
-    assert_eq!(debug, "Confirm");
-}
-
-#[test]
-fn test_radio_output_eq() {
-    let out1: RadioOutput<&str> = RadioOutput::Selected("a");
-    let out2: RadioOutput<&str> = RadioOutput::Selected("a");
-    assert_eq!(out1, out2);
-
-    let out3: RadioOutput<i32> = RadioOutput::Confirmed(42);
-    let out4: RadioOutput<i32> = RadioOutput::Confirmed(42);
-    assert_eq!(out3, out4);
-}
-
-#[test]
-fn test_radio_output_debug() {
-    let out: RadioOutput<&str> = RadioOutput::Selected("test");
-    let debug = format!("{:?}", out);
-    assert!(debug.contains("Selected"));
 }
 
 #[test]

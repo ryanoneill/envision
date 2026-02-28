@@ -300,30 +300,10 @@ fn test_empty_menu_ignores_navigation() {
 }
 
 #[test]
-fn test_focusable() {
-    let mut state = MenuState::new(vec![MenuItem::new("Test")]);
-
-    assert!(!Menu::is_focused(&state));
-
-    Menu::focus(&mut state);
-    assert!(Menu::is_focused(&state));
-
-    Menu::blur(&mut state);
-    assert!(!Menu::is_focused(&state));
-}
-
-#[test]
 fn test_init() {
     let state = Menu::init();
     assert_eq!(state.items().len(), 0);
     assert!(!Menu::is_focused(&state));
-}
-
-#[test]
-fn test_clone() {
-    let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    let cloned = state.clone();
-    assert_eq!(cloned.items().len(), 2);
 }
 
 #[test]

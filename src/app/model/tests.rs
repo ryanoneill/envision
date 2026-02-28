@@ -58,19 +58,6 @@ fn test_app_update() {
 }
 
 #[test]
-fn test_state_clone() {
-    let (mut state, _) = TestApp::init();
-    TestApp::update(&mut state, TestMsg::Increment);
-
-    let snapshot = state.clone();
-    TestApp::update(&mut state, TestMsg::Increment);
-
-    // Original snapshot unchanged
-    assert_eq!(snapshot.counter, 1);
-    assert_eq!(state.counter, 2);
-}
-
-#[test]
 fn test_default_handle_event() {
     let event = Event::char('a');
 

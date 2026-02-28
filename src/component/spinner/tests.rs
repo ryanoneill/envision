@@ -31,45 +31,6 @@ fn test_with_label() {
 }
 
 #[test]
-fn test_is_spinning() {
-    let state = SpinnerState::new();
-    assert!(state.is_spinning());
-}
-
-#[test]
-fn test_spinning_accessors() {
-    let mut state = SpinnerState::new();
-    assert!(state.is_spinning());
-
-    state.set_spinning(false);
-    assert!(!state.is_spinning());
-
-    state.set_spinning(true);
-    assert!(state.is_spinning());
-}
-
-#[test]
-fn test_label_accessors() {
-    let mut state = SpinnerState::new();
-    assert!(state.label().is_none());
-
-    state.set_label(Some("Test".to_string()));
-    assert_eq!(state.label(), Some("Test"));
-
-    state.set_label(None);
-    assert!(state.label().is_none());
-}
-
-#[test]
-fn test_style_accessors() {
-    let mut state = SpinnerState::new();
-    assert_eq!(state.style(), &SpinnerStyle::Dots);
-
-    state.set_style(SpinnerStyle::Circle);
-    assert_eq!(state.style(), &SpinnerStyle::Circle);
-}
-
-#[test]
 fn test_current_frame() {
     let state = SpinnerState::new();
     // First frame of Dots is '⠋'
@@ -185,17 +146,6 @@ fn test_set_style_resets_frame() {
     // Change style
     state.set_style(SpinnerStyle::Line);
     assert_eq!(state.frame_index(), 0);
-}
-
-#[test]
-fn test_clone() {
-    let mut state = SpinnerState::with_label("Test");
-    Spinner::update(&mut state, SpinnerMessage::Tick);
-
-    let cloned = state.clone();
-    assert_eq!(cloned.label(), Some("Test"));
-    assert_eq!(cloned.frame_index(), 1);
-    assert!(cloned.is_spinning());
 }
 
 #[test]

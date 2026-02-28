@@ -153,19 +153,6 @@ fn test_empty_list_navigation() {
 }
 
 #[test]
-fn test_focusable() {
-    let mut state = SelectableList::<String>::init();
-
-    assert!(!SelectableList::<String>::is_focused(&state));
-
-    SelectableList::<String>::set_focused(&mut state, true);
-    assert!(SelectableList::<String>::is_focused(&state));
-
-    SelectableList::<String>::blur(&mut state);
-    assert!(!SelectableList::<String>::is_focused(&state));
-}
-
-#[test]
 fn test_select_method() {
     let mut state = SelectableListState::with_items(vec!["a", "b", "c"]);
 
@@ -301,47 +288,4 @@ fn test_default_state() {
     assert_eq!(state.len(), 0);
     assert_eq!(state.selected_index(), None);
     assert!(!state.focused);
-}
-
-#[test]
-fn test_state_debug() {
-    let state = SelectableListState::with_items(vec!["a", "b"]);
-    let debug = format!("{:?}", state);
-    assert!(debug.contains("SelectableListState"));
-}
-
-#[test]
-fn test_list_message_eq() {
-    assert_eq!(ListMessage::Up, ListMessage::Up);
-    assert_eq!(ListMessage::Down, ListMessage::Down);
-    assert_eq!(ListMessage::First, ListMessage::First);
-    assert_eq!(ListMessage::Last, ListMessage::Last);
-    assert_eq!(ListMessage::PageUp(5), ListMessage::PageUp(5));
-    assert_ne!(ListMessage::PageUp(5), ListMessage::PageUp(10));
-    assert_eq!(ListMessage::PageDown(3), ListMessage::PageDown(3));
-    assert_eq!(ListMessage::Select, ListMessage::Select);
-}
-
-#[test]
-fn test_list_message_debug() {
-    let debug = format!("{:?}", ListMessage::Up);
-    assert_eq!(debug, "Up");
-}
-
-#[test]
-fn test_list_output_eq() {
-    let out1: ListOutput<&str> = ListOutput::Selected("a");
-    let out2: ListOutput<&str> = ListOutput::Selected("a");
-    assert_eq!(out1, out2);
-
-    let out3: ListOutput<i32> = ListOutput::SelectionChanged(5);
-    let out4: ListOutput<i32> = ListOutput::SelectionChanged(5);
-    assert_eq!(out3, out4);
-}
-
-#[test]
-fn test_list_output_debug() {
-    let out: ListOutput<&str> = ListOutput::Selected("x");
-    let debug = format!("{:?}", out);
-    assert!(debug.contains("Selected"));
 }

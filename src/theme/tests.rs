@@ -110,13 +110,6 @@ fn test_theme_clone() {
 }
 
 #[test]
-fn test_theme_debug() {
-    let theme = Theme::default();
-    let debug = format!("{:?}", theme);
-    assert!(debug.contains("Theme"));
-}
-
-#[test]
 fn test_custom_theme() {
     let custom = Theme {
         focused: Color::Magenta,

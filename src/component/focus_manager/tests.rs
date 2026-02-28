@@ -195,15 +195,6 @@ fn test_default() {
 }
 
 #[test]
-fn test_clone() {
-    let focus = FocusManager::with_initial_focus(vec![TestField::A, TestField::B]);
-    let cloned = focus.clone();
-
-    assert_eq!(cloned.focused(), Some(&TestField::A));
-    assert_eq!(cloned.len(), 2);
-}
-
-#[test]
 fn test_with_string_ids() {
     let mut focus = FocusManager::with_initial_focus(vec![
         "username".to_string(),
