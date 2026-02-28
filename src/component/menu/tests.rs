@@ -342,10 +342,7 @@ fn test_view() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("File"));
-    assert!(output.contains("Edit"));
-    assert!(output.contains("View"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -361,9 +358,7 @@ fn test_view_focused() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // Should have brackets around selected item when focused
-    assert!(output.contains("[File]"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -384,8 +379,7 @@ fn test_view_selected() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("[Edit]"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -400,7 +394,5 @@ fn test_view_empty() {
         })
         .unwrap();
 
-    // Should not panic with empty menu
-    let output = terminal.backend().to_string();
-    assert!(!output.is_empty());
+    insta::assert_snapshot!(terminal.backend().to_string());
 }

@@ -96,8 +96,7 @@ fn test_view() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Click"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -112,8 +111,7 @@ fn test_view_focused() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Focused"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -128,6 +126,5 @@ fn test_view_disabled() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Disabled"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }

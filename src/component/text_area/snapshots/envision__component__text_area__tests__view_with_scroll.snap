@@ -1,0 +1,9 @@
+---
+source: src/component/text_area/tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│Line 8                                │
+│Line 9                                │
+│Line 10                               │
+└──────────────────────────────────────┘

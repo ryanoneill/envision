@@ -547,7 +547,7 @@ fn test_view_empty() {
         })
         .unwrap();
 
-    // Should not panic
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -563,8 +563,7 @@ fn test_view_single_node() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Root"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -582,9 +581,7 @@ fn test_view_with_children() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Parent"));
-    assert!(output.contains("Child"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -602,8 +599,7 @@ fn test_view_collapsed_indicator() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("▶")); // Collapsed indicator
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -621,8 +617,7 @@ fn test_view_expanded_indicator() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("▼")); // Expanded indicator
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // Integration tests
@@ -709,8 +704,7 @@ fn test_view_focused_selection() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Root"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -727,8 +721,7 @@ fn test_view_unfocused_selection() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Root"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -858,12 +851,7 @@ fn test_view_leaf_node_no_indicator() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // Should contain the label
-    assert!(output.contains("Leaf"));
-    // Should not contain expand/collapse indicators
-    assert!(!output.contains("▶"));
-    assert!(!output.contains("▼"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]

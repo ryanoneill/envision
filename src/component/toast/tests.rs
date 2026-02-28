@@ -471,9 +471,7 @@ fn test_view_empty() {
         })
         .unwrap();
 
-    // Should render nothing
-    let output = terminal.backend().to_string();
-    assert!(output.trim().is_empty());
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -489,8 +487,7 @@ fn test_view_single() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Hello, world!"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -508,10 +505,7 @@ fn test_view_multiple() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Message 1"));
-    assert!(output.contains("Message 2"));
-    assert!(output.contains("Message 3"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -529,11 +523,7 @@ fn test_view_max_visible() {
         })
         .unwrap();
 
-    // Only newest 2 should be visible (Message 2 and Message 3)
-    let output = terminal.backend().to_string();
-    // Note: reversed order for rendering - newest at bottom
-    assert!(output.contains("Message 3"));
-    assert!(output.contains("Message 2"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -549,8 +539,7 @@ fn test_view_info_style() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("[i]"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -566,8 +555,7 @@ fn test_view_success_style() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("[+]"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -583,8 +571,7 @@ fn test_view_warning_style() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("[!]"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -600,8 +587,7 @@ fn test_view_error_style() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("[x]"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // ========================================

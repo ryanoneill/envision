@@ -482,9 +482,7 @@ fn test_view_empty() {
         .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    // Should render border only
-    let output = terminal.backend().to_string();
-    assert!(output.contains("─") || output.contains("│"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -499,10 +497,7 @@ fn test_view_with_messages() {
         .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // Newest first, so success should appear before info
-    assert!(output.contains("Success message"));
-    assert!(output.contains("Info message"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -516,8 +511,7 @@ fn test_view_with_title() {
         .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Status"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -531,9 +525,7 @@ fn test_view_with_timestamps() {
         .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("12:34"));
-    assert!(output.contains("Message"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -550,11 +542,7 @@ fn test_view_all_levels() {
         .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Info"));
-    assert!(output.contains("Success"));
-    assert!(output.contains("Warning"));
-    assert!(output.contains("Error"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]

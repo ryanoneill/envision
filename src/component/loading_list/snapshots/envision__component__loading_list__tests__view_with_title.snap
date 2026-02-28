@@ -1,0 +1,14 @@
+---
+source: src/component/loading_list/tests.rs
+expression: terminal.backend().to_string()
+---
+┌My Items──────────────────────────────────────────────────┐
+│    Item One                                              │
+│    Item Two                                              │
+│    Item Three                                            │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘

@@ -227,9 +227,7 @@ fn test_view_spinning() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // First frame of Dots is '⠋'
-    assert!(output.contains('⠋'));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -245,9 +243,7 @@ fn test_view_stopped() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // Should not contain spinner character when stopped
-    assert!(!output.contains('⠋'));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -262,9 +258,7 @@ fn test_view_with_label() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Loading"));
-    assert!(output.contains('⠋'));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]

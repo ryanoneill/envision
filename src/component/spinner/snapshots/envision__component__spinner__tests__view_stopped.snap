@@ -1,0 +1,5 @@
+---
+source: src/component/spinner/tests.rs
+expression: terminal.backend().to_string()
+---
+

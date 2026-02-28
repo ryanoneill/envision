@@ -261,8 +261,7 @@ fn test_view() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Hello"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -277,6 +276,5 @@ fn test_view_placeholder() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Enter text..."));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }

@@ -487,9 +487,7 @@ fn test_view_empty() {
         .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    // Should render border only
-    let output = terminal.backend().to_string();
-    assert!(output.contains("─") || output.contains("│"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -512,10 +510,7 @@ fn test_view_with_items() {
         .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Item 1"));
-    assert!(output.contains("Item 2"));
-    assert!(output.contains("50%"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -527,8 +522,7 @@ fn test_view_with_title() {
         .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Downloads"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -550,9 +544,7 @@ fn test_view_failed_item() {
         .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Error"));
-    assert!(output.contains("Connection lost"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -571,9 +563,7 @@ fn test_view_completed_item() {
         .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("100%"));
-    assert!(output.contains("✓"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -621,9 +611,7 @@ fn test_view_without_percentages() {
         .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Item 1"));
-    assert!(!output.contains("%")); // No percentage shown
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -645,8 +633,7 @@ fn test_view_failed_without_message() {
         .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Error"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]

@@ -269,10 +269,7 @@ fn test_view() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Item 1"));
-    assert!(output.contains("Item 2"));
-    assert!(output.contains("Item 3"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -287,10 +284,7 @@ fn test_view_unfocused() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("A"));
-    assert!(output.contains("B"));
-    assert!(output.contains("C"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]

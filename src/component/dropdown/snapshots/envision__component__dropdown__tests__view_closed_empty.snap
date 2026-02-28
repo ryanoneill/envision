@@ -1,0 +1,14 @@
+---
+source: src/component/dropdown/tests.rs
+expression: terminal.backend().to_string()
+---
+┌────────────────────────────┐
+│Search... ▼                 │
+│                            │
+│                            │
+│                            │
+│                            │
+│                            │
+│                            │
+│                            │
+└────────────────────────────┘

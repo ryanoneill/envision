@@ -504,8 +504,7 @@ fn test_view_empty() {
         })
         .unwrap();
 
-    // Should render without error
-    let _ = terminal.backend().to_string();
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -519,9 +518,7 @@ fn test_view_collapsed() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("▶")); // Collapsed indicator
-    assert!(output.contains("Section 1"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -537,10 +534,7 @@ fn test_view_expanded() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("▼")); // Expanded indicator
-    assert!(output.contains("Section 1"));
-    assert!(output.contains("Content 1"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -557,10 +551,7 @@ fn test_view_mixed() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Expanded"));
-    assert!(output.contains("Collapsed"));
-    assert!(output.contains("Expanded content"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -575,9 +566,7 @@ fn test_view_focused_highlight() {
         })
         .unwrap();
 
-    // Should render without error (we can't easily check color in text)
-    let output = terminal.backend().to_string();
-    assert!(output.contains("A"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -595,9 +584,7 @@ fn test_view_long_content() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Multi-line"));
-    assert!(output.contains("Line 1"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // ========== Integration Tests ==========

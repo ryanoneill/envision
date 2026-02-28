@@ -495,9 +495,7 @@ fn test_view_empty() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // Empty state renders nothing
-    assert!(output.trim().is_empty());
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -512,8 +510,7 @@ fn test_view_single() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Home"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -528,11 +525,7 @@ fn test_view_multiple() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Home"));
-    assert!(output.contains(">"));
-    assert!(output.contains("Products"));
-    assert!(output.contains("Item"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -549,9 +542,7 @@ fn test_view_focused_highlight() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // Just verify it renders - style testing would need ANSI output
-    assert!(output.contains("Products"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -568,11 +559,7 @@ fn test_view_truncated() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("…")); // Ellipsis for truncation
-    assert!(output.contains("Level2"));
-    assert!(output.contains("Current"));
-    assert!(!output.contains("Root")); // Truncated
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -588,8 +575,7 @@ fn test_view_custom_separator() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains(" / "));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -605,9 +591,7 @@ fn test_view_disabled() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // Just verify it renders - disabled style would need ANSI output
-    assert!(output.contains("Home"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // ==================== Integration Tests ====================

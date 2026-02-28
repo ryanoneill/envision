@@ -1,0 +1,17 @@
+---
+source: src/component/tooltip/tests.rs
+expression: terminal.backend().to_string()
+---
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+          ┌──────┐                                                              
+          │Line 1│                                                              
+          │Line 2│                                                              
+          │Line 3│                                                              
+          └──────┘

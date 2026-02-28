@@ -223,10 +223,7 @@ fn test_view_renders_indicators() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("( ) Option A"));
-    assert!(output.contains("(•) Option B")); // Selected
-    assert!(output.contains("( ) Option C"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -241,8 +238,7 @@ fn test_view_disabled() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("(•) Test"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -273,10 +269,7 @@ fn test_view_unfocused() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("( ) A"));
-    assert!(output.contains("(•) B")); // Selected
-    assert!(output.contains("( ) C"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -292,12 +285,7 @@ fn test_view_focused_not_selected() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // First is selected + focused (yellow)
-    assert!(output.contains("(•) First"));
-    // Others are unselected (default style)
-    assert!(output.contains("( ) Second"));
-    assert!(output.contains("( ) Third"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]

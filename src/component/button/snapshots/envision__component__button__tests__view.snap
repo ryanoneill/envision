@@ -1,0 +1,9 @@
+---
+source: src/component/button/tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────┐
+│       Click      │
+│                  │
+│                  │
+└──────────────────┘

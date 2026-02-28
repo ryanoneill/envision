@@ -210,9 +210,7 @@ fn test_view_renders() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("50%"));
-    assert!(output.contains("Loading"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -226,8 +224,7 @@ fn test_view_without_label() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("75%"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]

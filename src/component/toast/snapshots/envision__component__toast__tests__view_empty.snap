@@ -1,0 +1,5 @@
+---
+source: src/component/toast/tests.rs
+expression: terminal.backend().to_string()
+---
+

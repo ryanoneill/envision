@@ -1,0 +1,14 @@
+---
+source: src/component/selectable_list/tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│> Item 1                              │
+│  Item 2                              │
+│  Item 3                              │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘

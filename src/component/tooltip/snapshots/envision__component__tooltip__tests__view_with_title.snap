@@ -1,0 +1,15 @@
+---
+source: src/component/tooltip/tests.rs
+expression: terminal.backend().to_string()
+---
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+          ┌ Info ─┐                                                             
+          │Content│                                                             
+          └───────┘
