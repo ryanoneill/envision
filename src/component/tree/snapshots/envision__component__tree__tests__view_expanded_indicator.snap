@@ -1,0 +1,6 @@
+---
+source: src/component/tree/tests.rs
+expression: terminal.backend().to_string()
+---
+▼ Root                                  
+    Child

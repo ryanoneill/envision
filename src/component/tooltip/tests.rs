@@ -528,8 +528,7 @@ fn test_view_hidden() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(!output.contains("Content"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -546,9 +545,7 @@ fn test_view_empty_content() {
         })
         .unwrap();
 
-    // Should render nothing for empty content
-    let output = terminal.backend().to_string();
-    assert!(output.trim().is_empty());
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -565,8 +562,7 @@ fn test_view_visible() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Helpful tooltip"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -583,9 +579,7 @@ fn test_view_with_title() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Info"));
-    assert!(output.contains("Content"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -602,10 +596,7 @@ fn test_view_multiline() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Line 1"));
-    assert!(output.contains("Line 2"));
-    assert!(output.contains("Line 3"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // ========================================

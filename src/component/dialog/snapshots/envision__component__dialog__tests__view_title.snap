@@ -1,0 +1,19 @@
+---
+source: src/component/dialog/tests.rs
+expression: terminal.backend().to_string()
+---
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                ┌ My Dialog Title ─────────────────────────────┐                
+                │Message                                       │                
+                │                    ┌────┐                    │                
+                │                    │ OK │                    │                
+                │                    └────┘                    │                
+                └──────────────────────────────────────────────┘

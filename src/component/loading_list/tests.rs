@@ -463,9 +463,7 @@ fn test_view_empty() {
         .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    // Should render border only
-    let output = terminal.backend().to_string();
-    assert!(output.contains("─") || output.contains("│"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -480,11 +478,7 @@ fn test_view_with_items() {
         .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Item One"));
-    assert!(output.contains("Item Two"));
-    assert!(output.contains("Item Three"));
-    assert!(output.contains("▸")); // Selection marker
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -498,8 +492,7 @@ fn test_view_with_title() {
         .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("My Items"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -514,9 +507,7 @@ fn test_view_with_error() {
         .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Error"));
-    assert!(output.contains("Connection failed"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -567,8 +558,7 @@ fn test_view_without_indicators() {
         .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Item One"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -583,9 +573,7 @@ fn test_view_without_indicators_with_error() {
         .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Error"));
-    assert!(output.contains("Failed"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]

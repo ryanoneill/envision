@@ -237,8 +237,7 @@ fn test_view_closed() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Select...") || output.contains("▼"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -254,8 +253,7 @@ fn test_view_open() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Red") || output.contains("Green") || output.contains("Blue"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -270,8 +268,7 @@ fn test_view_with_selection() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Medium"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -287,7 +284,5 @@ fn test_view_focused() {
         })
         .unwrap();
 
-    // Should render without error
-    let output = terminal.backend().to_string();
-    assert!(!output.is_empty());
+    insta::assert_snapshot!(terminal.backend().to_string());
 }

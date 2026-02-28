@@ -1,0 +1,14 @@
+---
+source: src/component/loading_list/tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────────────────────────┐
+│  ✗ Item One - Error: Connection failed                   │
+│    Item Two                                              │
+│    Item Three                                            │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘

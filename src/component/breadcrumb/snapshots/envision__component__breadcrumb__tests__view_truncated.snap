@@ -1,0 +1,5 @@
+---
+source: src/component/breadcrumb/tests.rs
+expression: terminal.backend().to_string()
+---
+… > Level2 > Level3 > Current

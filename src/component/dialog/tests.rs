@@ -456,10 +456,7 @@ fn test_view_when_hidden() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // Should not contain dialog content when hidden
-    assert!(!output.contains("Title"));
-    assert!(!output.contains("Message"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // ========================================
@@ -478,8 +475,7 @@ fn test_view_renders() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Test Title"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -494,8 +490,7 @@ fn test_view_title() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("My Dialog Title"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -510,8 +505,7 @@ fn test_view_message() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("This is the message content."));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -526,9 +520,7 @@ fn test_view_buttons() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Cancel"));
-    assert!(output.contains("OK"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -544,9 +536,7 @@ fn test_view_focused_button() {
         })
         .unwrap();
 
-    // Just verify it renders without panicking
-    let output = terminal.backend().to_string();
-    assert!(output.contains("OK"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -561,9 +551,7 @@ fn test_view_primary_button() {
         })
         .unwrap();
 
-    // Just verify it renders without panicking
-    let output = terminal.backend().to_string();
-    assert!(output.contains("OK"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -578,8 +566,7 @@ fn test_view_multiline_message() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Line 1"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // ========================================

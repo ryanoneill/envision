@@ -1,0 +1,9 @@
+---
+source: src/component/tabs/tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│  Tab1  │  Tab2                       │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘

@@ -1,0 +1,8 @@
+---
+source: src/component/accordion/tests.rs
+expression: terminal.backend().to_string()
+---
+▼ Multi-line                            
+  Line 1                                
+  Line 2                                
+  Line 3

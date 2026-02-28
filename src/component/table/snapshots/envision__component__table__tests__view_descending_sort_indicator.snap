@@ -1,0 +1,14 @@
+---
+source: src/component/table/tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│  Name ↓     Value                    │
+│                                      │
+│> Charlie    30                       │
+│  Bob        20                       │
+│  Alice      10                       │
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘

@@ -318,9 +318,7 @@ fn test_view_empty() {
         })
         .unwrap();
 
-    // Should render without panic
-    let output = terminal.backend().to_string();
-    assert!(!output.is_empty());
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -336,8 +334,7 @@ fn test_view_left_only() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("LEFT"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -353,8 +350,7 @@ fn test_view_right_only() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("RIGHT"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -370,8 +366,7 @@ fn test_view_center_only() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("CENTER"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -389,10 +384,7 @@ fn test_view_all_sections() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("LEFT"));
-    assert!(output.contains("CENTER"));
-    assert!(output.contains("RIGHT"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -409,10 +401,7 @@ fn test_view_with_separator() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("A"));
-    assert!(output.contains("|"));
-    assert!(output.contains("B"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -429,8 +418,7 @@ fn test_view_custom_separator() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("::"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -447,8 +435,7 @@ fn test_view_no_separator_on_last_item() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("AB")); // No separator between A and B
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -465,9 +452,7 @@ fn test_view_styled_items() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("INFO"));
-    assert!(output.contains("ERROR"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // Integration tests
@@ -1038,8 +1023,7 @@ fn test_view_elapsed_time() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("00:00"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -1064,8 +1048,7 @@ fn test_view_counter_with_label() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Files: 15"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -1081,8 +1064,7 @@ fn test_view_heartbeat() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("♡"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // Integration tests for dynamic content

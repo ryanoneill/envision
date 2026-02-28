@@ -1,0 +1,5 @@
+---
+source: src/component/accordion/tests.rs
+expression: terminal.backend().to_string()
+---
+

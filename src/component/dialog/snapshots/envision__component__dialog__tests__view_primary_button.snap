@@ -1,0 +1,19 @@
+---
+source: src/component/dialog/tests.rs
+expression: terminal.backend().to_string()
+---
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                ┌ Title ───────────────────────────────────────┐                
+                │Message                                       │                
+                │              ┌────────┐  ┌────┐              │                
+                │              │ Cancel │  │ OK │              │                
+                │              └────────┘  └────┘              │                
+                └──────────────────────────────────────────────┘

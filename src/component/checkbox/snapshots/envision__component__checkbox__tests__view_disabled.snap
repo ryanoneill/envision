@@ -1,0 +1,5 @@
+---
+source: src/component/checkbox/tests.rs
+expression: terminal.backend().to_string()
+---
+[ ] Disabled

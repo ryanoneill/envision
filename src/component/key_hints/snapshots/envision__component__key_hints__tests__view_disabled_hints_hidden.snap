@@ -1,0 +1,5 @@
+---
+source: src/component/key_hints/tests.rs
+expression: terminal.backend().to_string()
+---
+                                    a Visible

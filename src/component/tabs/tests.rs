@@ -287,10 +287,7 @@ fn test_view_renders() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Home"));
-    assert!(output.contains("Settings"));
-    assert!(output.contains("Help"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -306,9 +303,7 @@ fn test_view_focused() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Tab1"));
-    assert!(output.contains("Tab2"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -324,8 +319,7 @@ fn test_view_disabled() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Tab1"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -340,8 +334,7 @@ fn test_view_empty() {
         })
         .unwrap();
 
-    // Should render without panicking
-    let _output = terminal.backend().to_string();
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // Integration

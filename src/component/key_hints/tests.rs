@@ -296,9 +296,7 @@ fn test_view_empty() {
         .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    // Empty state should render nothing
-    let output = terminal.backend().to_string();
-    assert!(output.trim().is_empty());
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -310,9 +308,7 @@ fn test_view_single_hint() {
         .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Enter"));
-    assert!(output.contains("Select"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -328,10 +324,7 @@ fn test_view_multiple_hints() {
         .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Enter"));
-    assert!(output.contains("Esc"));
-    assert!(output.contains("q"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -347,9 +340,7 @@ fn test_view_disabled_hints_hidden() {
         .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Visible"));
-    assert!(!output.contains("Hidden"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -365,9 +356,7 @@ fn test_view_inline_layout() {
         .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("a"));
-    assert!(output.contains("b"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // ========================================

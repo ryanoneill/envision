@@ -99,6 +99,14 @@ impl<A: App> AppHarness<A> {
         self.runtime.backend().cell(x, y)
     }
 
+    /// Returns a snapshot of the current frame.
+    ///
+    /// The snapshot captures the current rendered state and can be used
+    /// with `insta::assert_snapshot!` or the built-in snapshot comparison.
+    pub fn snapshot(&self) -> super::Snapshot {
+        super::Snapshot::new(self.runtime.backend().snapshot(), Default::default())
+    }
+
     /// Returns a reference to the backend.
     pub fn backend(&self) -> &CaptureBackend {
         self.runtime.backend()

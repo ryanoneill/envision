@@ -498,8 +498,7 @@ fn test_view_focused() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Hello"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -513,8 +512,7 @@ fn test_view_unfocused() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Hello"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -528,8 +526,7 @@ fn test_view_placeholder() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Enter text..."));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // Integration
@@ -545,10 +542,7 @@ fn test_view_renders() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Line 1"));
-    assert!(output.contains("Line 2"));
-    assert!(output.contains("Line 3"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -719,7 +713,7 @@ fn test_view_with_scroll() {
         })
         .unwrap();
 
-    // Should render without panic
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -736,7 +730,7 @@ fn test_view_cursor_above_scroll() {
         })
         .unwrap();
 
-    // Should adjust scroll to show cursor
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]

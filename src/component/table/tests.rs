@@ -530,12 +530,7 @@ fn test_view_renders() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Name"));
-    assert!(output.contains("Value"));
-    assert!(output.contains("Charlie"));
-    assert!(output.contains("Alice"));
-    assert!(output.contains("Bob"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -550,9 +545,7 @@ fn test_view_with_header() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Name"));
-    assert!(output.contains("Value"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -568,8 +561,7 @@ fn test_view_with_sort_indicator() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("↑")); // Ascending indicator
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -585,8 +577,7 @@ fn test_view_focused() {
         })
         .unwrap();
 
-    // Should render without panicking
-    let _output = terminal.backend().to_string();
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -602,8 +593,7 @@ fn test_view_disabled() {
         })
         .unwrap();
 
-    // Should render without panicking
-    let _output = terminal.backend().to_string();
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -618,9 +608,7 @@ fn test_view_empty() {
         })
         .unwrap();
 
-    // Should render without panicking
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Name")); // Headers still shown
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // Integration Tests
@@ -768,8 +756,7 @@ fn test_view_descending_sort_indicator() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("↓")); // Descending indicator
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -802,8 +789,7 @@ fn test_view_unfocused() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Charlie"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]

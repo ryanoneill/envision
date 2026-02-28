@@ -544,8 +544,7 @@ fn test_view_closed_empty() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Search...") || output.contains("▼"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -560,8 +559,7 @@ fn test_view_closed_with_selection() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Apple"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -577,10 +575,7 @@ fn test_view_open_no_filter() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Apple"));
-    assert!(output.contains("Banana"));
-    assert!(output.contains("Cherry"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -597,10 +592,7 @@ fn test_view_open_with_filter() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("Apple"));
-    assert!(output.contains("Banana"));
-    // Cherry should not be shown (doesn't contain 'a')
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -617,9 +609,7 @@ fn test_view_highlight() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    // Should show highlight indicator on Banana
-    assert!(output.contains("> Banana") || output.contains("Banana"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -636,8 +626,7 @@ fn test_view_no_matches() {
         })
         .unwrap();
 
-    let output = terminal.backend().to_string();
-    assert!(output.contains("No matches"));
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -653,9 +642,7 @@ fn test_view_focused() {
         })
         .unwrap();
 
-    // Should render without error
-    let output = terminal.backend().to_string();
-    assert!(!output.is_empty());
+    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 // ========== Integration Tests ==========
