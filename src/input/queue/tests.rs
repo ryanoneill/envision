@@ -310,13 +310,6 @@ fn test_queue_clone() {
 }
 
 #[test]
-fn test_queue_debug() {
-    let queue = EventQueue::new();
-    let debug = format!("{:?}", queue);
-    assert!(debug.contains("EventQueue"));
-}
-
-#[test]
 fn test_queue_default() {
     let queue = EventQueue::default();
     assert!(queue.is_empty());

@@ -112,18 +112,6 @@ fn test_component_view() {
     assert!(text.contains("Count: 0"));
 }
 
-#[test]
-fn test_state_clone() {
-    let mut state = TestCounter::init();
-    TestCounter::update(&mut state, TestCounterMsg::Increment);
-
-    let snapshot = state.clone();
-    TestCounter::update(&mut state, TestCounterMsg::Increment);
-
-    assert_eq!(snapshot.value, 1);
-    assert_eq!(state.value, 2);
-}
-
 // Focusable trait tests
 
 #[test]

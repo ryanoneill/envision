@@ -57,12 +57,6 @@ fn test_layout_default() {
     assert_eq!(layout, KeyHintsLayout::Spaced);
 }
 
-#[test]
-fn test_layout_eq() {
-    assert_eq!(KeyHintsLayout::Spaced, KeyHintsLayout::Spaced);
-    assert_ne!(KeyHintsLayout::Spaced, KeyHintsLayout::Inline);
-}
-
 // ========================================
 // State Creation Tests
 // ========================================

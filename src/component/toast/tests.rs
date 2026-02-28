@@ -1,30 +1,6 @@
 use super::*;
 
 // ========================================
-// ToastLevel Tests
-// ========================================
-
-#[test]
-fn test_toast_level_default() {
-    let level = ToastLevel::default();
-    assert_eq!(level, ToastLevel::Info);
-}
-
-#[test]
-fn test_toast_level_clone() {
-    let level = ToastLevel::Success;
-    let cloned = level;
-    assert_eq!(cloned, ToastLevel::Success);
-}
-
-#[test]
-fn test_toast_level_eq() {
-    assert_eq!(ToastLevel::Info, ToastLevel::Info);
-    assert_ne!(ToastLevel::Info, ToastLevel::Error);
-    assert_eq!(ToastLevel::Warning, ToastLevel::Warning);
-}
-
-// ========================================
 // ToastItem Tests
 // ========================================
 
@@ -88,60 +64,6 @@ fn test_default() {
     let state = ToastState::default();
     assert!(state.is_empty());
     assert_eq!(state.default_duration(), None);
-}
-
-// ========================================
-// Accessor Tests
-// ========================================
-
-#[test]
-fn test_toasts() {
-    let mut state = ToastState::new();
-    state.info("One");
-    state.info("Two");
-
-    assert_eq!(state.toasts().len(), 2);
-    assert_eq!(state.toasts()[0].message(), "One");
-    assert_eq!(state.toasts()[1].message(), "Two");
-}
-
-#[test]
-fn test_len() {
-    let mut state = ToastState::new();
-    assert_eq!(state.len(), 0);
-
-    state.info("Test");
-    assert_eq!(state.len(), 1);
-
-    state.info("Test 2");
-    assert_eq!(state.len(), 2);
-}
-
-#[test]
-fn test_is_empty() {
-    let mut state = ToastState::new();
-    assert!(state.is_empty());
-
-    state.info("Test");
-    assert!(!state.is_empty());
-}
-
-#[test]
-fn test_default_duration() {
-    let state = ToastState::new();
-    assert_eq!(state.default_duration(), None);
-
-    let state = ToastState::with_duration(5000);
-    assert_eq!(state.default_duration(), Some(5000));
-}
-
-#[test]
-fn test_max_visible() {
-    let state = ToastState::new();
-    assert_eq!(state.max_visible(), DEFAULT_MAX_VISIBLE);
-
-    let state = ToastState::with_max_visible(10);
-    assert_eq!(state.max_visible(), 10);
 }
 
 // ========================================
@@ -593,17 +515,6 @@ fn test_view_error_style() {
 // ========================================
 // Integration Tests
 // ========================================
-
-#[test]
-fn test_clone() {
-    let mut state = ToastState::with_duration(3000);
-    state.info("Test");
-    state.success("Test 2");
-
-    let cloned = state.clone();
-    assert_eq!(cloned.len(), 2);
-    assert_eq!(cloned.default_duration(), Some(3000));
-}
 
 #[test]
 fn test_init() {

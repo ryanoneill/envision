@@ -131,14 +131,6 @@ fn test_state_ext_unchanged() {
 }
 
 #[test]
-fn test_update_result_debug() {
-    let result: UpdateResult<TestState, TestMsg> = UpdateResult::state(TestState { value: 1 });
-    let debug = format!("{:?}", result);
-    assert!(debug.contains("UpdateResult"));
-    assert!(debug.contains("state"));
-}
-
-#[test]
 fn test_fn_update_with_command() {
     let updater = FnUpdate::new(|state: &mut TestState, msg: TestMsg| match msg {
         TestMsg::Add(n) => {

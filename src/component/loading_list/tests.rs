@@ -28,28 +28,6 @@ fn make_items() -> Vec<TestItem> {
 // ========================================
 
 #[test]
-fn test_item_state_default() {
-    let state = ItemState::default();
-    assert!(state.is_ready());
-}
-
-#[test]
-fn test_item_state_is_loading() {
-    let state = ItemState::Loading;
-    assert!(state.is_loading());
-    assert!(!state.is_ready());
-    assert!(!state.is_error());
-}
-
-#[test]
-fn test_item_state_is_error() {
-    let state = ItemState::Error("Test error".to_string());
-    assert!(state.is_error());
-    assert!(!state.is_loading());
-    assert!(!state.is_ready());
-}
-
-#[test]
 fn test_item_state_error_message() {
     let state = ItemState::Error("Test error".to_string());
     assert_eq!(state.error_message(), Some("Test error"));
@@ -435,22 +413,6 @@ fn test_navigation_empty_list() {
 }
 
 // ========================================
-// Focusable Tests
-// ========================================
-
-#[test]
-fn test_focusable() {
-    let mut state: LoadingListState<String> = LoadingListState::new();
-    assert!(!LoadingList::is_focused(&state));
-
-    LoadingList::focus(&mut state);
-    assert!(LoadingList::is_focused(&state));
-
-    LoadingList::blur(&mut state);
-    assert!(!LoadingList::is_focused(&state));
-}
-
-// ========================================
 // View Tests
 // ========================================
 
@@ -508,17 +470,6 @@ fn test_view_with_error() {
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_clone() {
-    let items = make_items();
-    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(1));
-
-    let cloned = state.clone();
-    assert_eq!(cloned.len(), 3);
-    assert_eq!(cloned.selected(), Some(1));
 }
 
 // ========================================

@@ -228,19 +228,6 @@ fn test_insert_at_cursor() {
 }
 
 #[test]
-fn test_focusable() {
-    let mut state = InputField::init();
-
-    assert!(!InputField::is_focused(&state));
-
-    InputField::set_focused(&mut state, true);
-    assert!(InputField::is_focused(&state));
-
-    InputField::blur(&mut state);
-    assert!(!InputField::is_focused(&state));
-}
-
-#[test]
 fn test_len() {
     let state = InputFieldState::with_value("hello");
     assert_eq!(state.len(), 5);

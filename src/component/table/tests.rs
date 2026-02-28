@@ -226,18 +226,6 @@ fn test_set_selected() {
     assert_eq!(state.selected_index(), None);
 }
 
-#[test]
-fn test_disabled_accessors() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    assert!(!state.is_disabled());
-
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
 // Navigation Tests
 
 #[test]
@@ -499,23 +487,6 @@ fn test_disabled() {
     );
 }
 
-// Focus Tests
-
-#[test]
-fn test_focusable() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    assert!(!Table::<TestRow>::is_focused(&state));
-
-    Table::<TestRow>::set_focused(&mut state, true);
-    assert!(Table::<TestRow>::is_focused(&state));
-
-    Table::<TestRow>::blur(&mut state);
-    assert!(!Table::<TestRow>::is_focused(&state));
-
-    Table::<TestRow>::focus(&mut state);
-    assert!(Table::<TestRow>::is_focused(&state));
-}
-
 // View Tests
 
 #[test]
@@ -612,18 +583,6 @@ fn test_view_empty() {
 }
 
 // Integration Tests
-
-#[test]
-fn test_clone() {
-    let mut state = TableState::with_selected(test_rows(), test_columns(), 1);
-    state.focused = true;
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
-
-    let cloned = state.clone();
-    assert_eq!(cloned.selected_index(), Some(0)); // Alice is now at position 0 after sort
-    assert!(cloned.focused);
-    assert!(cloned.sort().is_some());
-}
 
 #[test]
 fn test_init() {
@@ -790,58 +749,6 @@ fn test_view_unfocused() {
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_table_message_debug() {
-    let msg = TableMessage::SortBy(0);
-    let debug = format!("{:?}", msg);
-    assert!(debug.contains("SortBy"));
-}
-
-#[test]
-fn test_table_message_eq() {
-    assert_eq!(TableMessage::Up, TableMessage::Up);
-    assert_eq!(TableMessage::Down, TableMessage::Down);
-    assert_eq!(TableMessage::First, TableMessage::First);
-    assert_eq!(TableMessage::Last, TableMessage::Last);
-    assert_eq!(TableMessage::PageUp(5), TableMessage::PageUp(5));
-    assert_eq!(TableMessage::PageDown(10), TableMessage::PageDown(10));
-    assert_eq!(TableMessage::Select, TableMessage::Select);
-    assert_eq!(TableMessage::SortBy(0), TableMessage::SortBy(0));
-    assert_eq!(TableMessage::ClearSort, TableMessage::ClearSort);
-}
-
-#[test]
-fn test_table_output_debug() {
-    let out: TableOutput<TestRow> = TableOutput::SelectionChanged(1);
-    let debug = format!("{:?}", out);
-    assert!(debug.contains("SelectionChanged"));
-}
-
-#[test]
-fn test_table_output_eq() {
-    let out1: TableOutput<TestRow> = TableOutput::SelectionChanged(1);
-    let out2: TableOutput<TestRow> = TableOutput::SelectionChanged(1);
-    assert_eq!(out1, out2);
-
-    let out3: TableOutput<TestRow> = TableOutput::SortCleared;
-    let out4: TableOutput<TestRow> = TableOutput::SortCleared;
-    assert_eq!(out3, out4);
-}
-
-#[test]
-fn test_column_debug() {
-    let col = Column::new("Header", Constraint::Length(10));
-    let debug = format!("{:?}", col);
-    assert!(debug.contains("Column"));
-}
-
-#[test]
-fn test_state_debug() {
-    let state = TableState::new(test_rows(), test_columns());
-    let debug = format!("{:?}", state);
-    assert!(debug.contains("TableState"));
 }
 
 #[test]

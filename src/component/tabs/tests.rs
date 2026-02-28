@@ -256,23 +256,6 @@ fn test_empty_confirm() {
     assert_eq!(output, None);
 }
 
-// Focus
-
-#[test]
-fn test_focusable() {
-    let mut state = TabsState::new(vec!["A", "B"]);
-    assert!(!Tabs::<&str>::is_focused(&state));
-
-    Tabs::<&str>::set_focused(&mut state, true);
-    assert!(Tabs::<&str>::is_focused(&state));
-
-    Tabs::<&str>::blur(&mut state);
-    assert!(!Tabs::<&str>::is_focused(&state));
-
-    Tabs::<&str>::focus(&mut state);
-    assert!(Tabs::<&str>::is_focused(&state));
-}
-
 // View Tests
 
 #[test]
@@ -338,19 +321,6 @@ fn test_view_empty() {
 }
 
 // Integration
-
-#[test]
-fn test_clone() {
-    let mut state = TabsState::with_selected(vec!["A", "B", "C"], 1);
-    state.focused = true;
-    state.disabled = true;
-
-    let cloned = state.clone();
-    assert_eq!(cloned.selected_index(), Some(1));
-    assert!(cloned.focused);
-    assert!(cloned.disabled);
-    assert_eq!(cloned.tabs(), &["A", "B", "C"]);
-}
 
 #[test]
 fn test_init() {

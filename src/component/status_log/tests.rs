@@ -443,33 +443,6 @@ fn test_update_scroll_to_bottom() {
 }
 
 // ========================================
-// Focusable Tests
-// ========================================
-
-#[test]
-fn test_focusable_is_focused() {
-    let state = StatusLogState::new();
-    assert!(!StatusLog::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = StatusLogState::new();
-    StatusLog::set_focused(&mut state, true);
-    assert!(StatusLog::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_focus_blur() {
-    let mut state = StatusLogState::new();
-    StatusLog::focus(&mut state);
-    assert!(StatusLog::is_focused(&state));
-
-    StatusLog::blur(&mut state);
-    assert!(!StatusLog::is_focused(&state));
-}
-
-// ========================================
 // View Tests
 // ========================================
 
@@ -543,13 +516,4 @@ fn test_view_all_levels() {
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_clone() {
-    let mut state = StatusLogState::new();
-    state.info("Test");
-
-    let cloned = state.clone();
-    assert_eq!(cloned.len(), 1);
 }

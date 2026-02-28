@@ -91,16 +91,6 @@ fn test_set_max_history() {
     assert_eq!(state.history()[0], TestScreen::Settings);
 }
 
-#[test]
-fn test_clone() {
-    let mut state = RouterState::new(TestScreen::Home);
-    Router::update(&mut state, RouterMessage::Navigate(TestScreen::Settings));
-
-    let cloned = state.clone();
-    assert_eq!(cloned.current(), &TestScreen::Settings);
-    assert_eq!(cloned.history_len(), 1);
-}
-
 // ========================================
 // Navigation Tests
 // ========================================

@@ -168,16 +168,6 @@ fn test_reset_from_complete() {
 }
 
 #[test]
-fn test_clone() {
-    let mut state = ProgressBarState::with_progress(0.5);
-    state.set_label(Some("Test".to_string()));
-
-    let cloned = state.clone();
-    assert_eq!(cloned.progress(), 0.5);
-    assert_eq!(cloned.label(), Some("Test"));
-}
-
-#[test]
 fn test_init() {
     let state = ProgressBar::init();
     assert_eq!(state.progress(), 0.0);

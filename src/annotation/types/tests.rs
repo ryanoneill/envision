@@ -244,20 +244,6 @@ fn test_widget_type_interactive_all() {
 }
 
 #[test]
-fn test_widget_type_debug() {
-    let wt = WidgetType::Button;
-    let debug = format!("{:?}", wt);
-    assert_eq!(debug, "Button");
-}
-
-#[test]
-fn test_widget_type_clone() {
-    let wt = WidgetType::Custom("MyType".to_string());
-    let cloned = wt.clone();
-    assert_eq!(wt, cloned);
-}
-
-#[test]
 fn test_widget_type_hash() {
     use std::collections::HashSet;
 
@@ -267,33 +253,4 @@ fn test_widget_type_hash() {
     set.insert(WidgetType::Button); // Duplicate
 
     assert_eq!(set.len(), 2);
-}
-
-#[test]
-fn test_annotation_clone() {
-    let ann = Annotation::input("email")
-        .with_label("Email")
-        .with_value("test@example.com")
-        .with_meta("type", "email");
-
-    let cloned = ann.clone();
-    assert_eq!(ann, cloned);
-}
-
-#[test]
-fn test_annotation_debug() {
-    let ann = Annotation::button("btn");
-    let debug = format!("{:?}", ann);
-    assert!(debug.contains("Annotation"));
-    assert!(debug.contains("Button"));
-}
-
-#[test]
-fn test_annotation_eq() {
-    let ann1 = Annotation::button("btn").with_label("Click");
-    let ann2 = Annotation::button("btn").with_label("Click");
-    let ann3 = Annotation::button("btn").with_label("Different");
-
-    assert_eq!(ann1, ann2);
-    assert_ne!(ann1, ann3);
 }

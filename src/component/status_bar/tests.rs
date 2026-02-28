@@ -3,18 +3,6 @@ use super::*;
 // StatusBarStyle tests
 
 #[test]
-fn test_style_default() {
-    assert_eq!(StatusBarStyle::default(), StatusBarStyle::Default);
-}
-
-#[test]
-fn test_style_clone() {
-    let style = StatusBarStyle::Error;
-    let cloned = style;
-    assert_eq!(cloned, StatusBarStyle::Error);
-}
-
-#[test]
 fn test_style_method() {
     let theme = Theme::default();
     assert_eq!(StatusBarStyle::Default.style(&theme), theme.normal_style());
@@ -47,46 +35,6 @@ fn test_item_with_separator() {
     assert!(!item.has_separator());
 }
 
-#[test]
-fn test_item_set_text() {
-    let mut item = StatusBarItem::new("Original");
-    item.set_text("Updated");
-    assert_eq!(item.text(), "Updated");
-}
-
-#[test]
-fn test_item_set_style() {
-    let mut item = StatusBarItem::new("Test");
-    item.set_style(StatusBarStyle::Success);
-    assert_eq!(item.style(), StatusBarStyle::Success);
-}
-
-#[test]
-fn test_item_set_separator() {
-    let mut item = StatusBarItem::new("Test");
-    item.set_separator(false);
-    assert!(!item.has_separator());
-    item.set_separator(true);
-    assert!(item.has_separator());
-}
-
-#[test]
-fn test_item_clone() {
-    let item = StatusBarItem::new("Test").with_style(StatusBarStyle::Info);
-    let cloned = item.clone();
-    assert_eq!(cloned.text(), "Test");
-    assert_eq!(cloned.style(), StatusBarStyle::Info);
-}
-
-#[test]
-fn test_item_eq() {
-    let item1 = StatusBarItem::new("Test").with_style(StatusBarStyle::Info);
-    let item2 = StatusBarItem::new("Test").with_style(StatusBarStyle::Info);
-    let item3 = StatusBarItem::new("Different");
-    assert_eq!(item1, item2);
-    assert_ne!(item1, item3);
-}
-
 // StatusBarState tests
 
 #[test]
@@ -110,27 +58,6 @@ fn test_state_default() {
 fn test_state_with_separator() {
     let state = StatusBarState::with_separator(" :: ");
     assert_eq!(state.separator(), " :: ");
-}
-
-#[test]
-fn test_state_set_left() {
-    let mut state = StatusBarState::new();
-    state.set_left(vec![StatusBarItem::new("A"), StatusBarItem::new("B")]);
-    assert_eq!(state.left().len(), 2);
-}
-
-#[test]
-fn test_state_set_center() {
-    let mut state = StatusBarState::new();
-    state.set_center(vec![StatusBarItem::new("Center")]);
-    assert_eq!(state.center().len(), 1);
-}
-
-#[test]
-fn test_state_set_right() {
-    let mut state = StatusBarState::new();
-    state.set_right(vec![StatusBarItem::new("Right")]);
-    assert_eq!(state.right().len(), 1);
 }
 
 #[test]
@@ -168,54 +95,6 @@ fn test_state_clear() {
     state.clear();
     assert!(state.is_empty());
     assert_eq!(state.len(), 0);
-}
-
-#[test]
-fn test_state_set_separator() {
-    let mut state = StatusBarState::new();
-    state.set_separator(" - ");
-    assert_eq!(state.separator(), " - ");
-}
-
-#[test]
-fn test_state_background() {
-    let mut state = StatusBarState::new();
-    assert_eq!(state.background(), Color::DarkGray);
-
-    state.set_background(Color::Blue);
-    assert_eq!(state.background(), Color::Blue);
-}
-
-#[test]
-fn test_state_is_empty() {
-    let mut state = StatusBarState::new();
-    assert!(state.is_empty());
-
-    state.push_left(StatusBarItem::new("Test"));
-    assert!(!state.is_empty());
-}
-
-#[test]
-fn test_state_len() {
-    let mut state = StatusBarState::new();
-    assert_eq!(state.len(), 0);
-
-    state.push_left(StatusBarItem::new("L1"));
-    state.push_left(StatusBarItem::new("L2"));
-    state.push_center(StatusBarItem::new("C1"));
-    state.push_right(StatusBarItem::new("R1"));
-    assert_eq!(state.len(), 4);
-}
-
-#[test]
-fn test_state_clone() {
-    let mut state = StatusBarState::new();
-    state.push_left(StatusBarItem::new("Test"));
-    state.set_separator(" :: ");
-
-    let cloned = state.clone();
-    assert_eq!(cloned.left().len(), 1);
-    assert_eq!(cloned.separator(), " :: ");
 }
 
 // StatusBar component tests

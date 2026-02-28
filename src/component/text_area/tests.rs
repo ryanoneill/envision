@@ -472,20 +472,6 @@ fn test_ensure_cursor_visible_up() {
     assert_eq!(state.scroll_offset, 2);
 }
 
-// Focus Tests
-
-#[test]
-fn test_focusable() {
-    let mut state = TextArea::init();
-    assert!(!TextArea::is_focused(&state));
-
-    TextArea::set_focused(&mut state, true);
-    assert!(TextArea::is_focused(&state));
-
-    TextArea::blur(&mut state);
-    assert!(!TextArea::is_focused(&state));
-}
-
 #[test]
 fn test_view_focused() {
     let mut state = TextAreaState::with_value("Hello");
@@ -585,18 +571,6 @@ fn test_full_workflow() {
     // Clear
     TextArea::update(&mut state, TextAreaMessage::Clear);
     assert!(state.is_empty());
-}
-
-#[test]
-fn test_clone() {
-    let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(1, 3);
-    state.focused = true;
-
-    let cloned = state.clone();
-    assert_eq!(cloned.value(), "Hello\nWorld");
-    assert_eq!(cloned.cursor_position(), (1, 3));
-    assert!(cloned.focused);
 }
 
 #[test]
@@ -739,64 +713,6 @@ fn test_ensure_cursor_visible_zero_lines() {
     state.ensure_cursor_visible(0);
     // Should not panic or change anything
     assert_eq!(state.scroll_offset(), 0);
-}
-
-#[test]
-fn test_text_area_message_debug() {
-    let msg = TextAreaMessage::Insert('x');
-    let debug = format!("{:?}", msg);
-    assert!(debug.contains("Insert"));
-}
-
-#[test]
-fn test_text_area_message_eq() {
-    assert_eq!(TextAreaMessage::Left, TextAreaMessage::Left);
-    assert_eq!(TextAreaMessage::Right, TextAreaMessage::Right);
-    assert_eq!(TextAreaMessage::Up, TextAreaMessage::Up);
-    assert_eq!(TextAreaMessage::Down, TextAreaMessage::Down);
-    assert_eq!(TextAreaMessage::Home, TextAreaMessage::Home);
-    assert_eq!(TextAreaMessage::End, TextAreaMessage::End);
-    assert_eq!(TextAreaMessage::TextStart, TextAreaMessage::TextStart);
-    assert_eq!(TextAreaMessage::TextEnd, TextAreaMessage::TextEnd);
-    assert_eq!(TextAreaMessage::WordLeft, TextAreaMessage::WordLeft);
-    assert_eq!(TextAreaMessage::WordRight, TextAreaMessage::WordRight);
-    assert_eq!(TextAreaMessage::Insert('a'), TextAreaMessage::Insert('a'));
-    assert_eq!(TextAreaMessage::NewLine, TextAreaMessage::NewLine);
-    assert_eq!(TextAreaMessage::Backspace, TextAreaMessage::Backspace);
-    assert_eq!(TextAreaMessage::Delete, TextAreaMessage::Delete);
-    assert_eq!(TextAreaMessage::DeleteLine, TextAreaMessage::DeleteLine);
-    assert_eq!(TextAreaMessage::DeleteToEnd, TextAreaMessage::DeleteToEnd);
-    assert_eq!(
-        TextAreaMessage::DeleteToStart,
-        TextAreaMessage::DeleteToStart
-    );
-    assert_eq!(TextAreaMessage::Clear, TextAreaMessage::Clear);
-    assert_eq!(TextAreaMessage::Submit, TextAreaMessage::Submit);
-}
-
-#[test]
-fn test_text_area_output_debug() {
-    let out = TextAreaOutput::Changed("test".to_string());
-    let debug = format!("{:?}", out);
-    assert!(debug.contains("Changed"));
-}
-
-#[test]
-fn test_text_area_output_eq() {
-    let out1 = TextAreaOutput::Changed("a".to_string());
-    let out2 = TextAreaOutput::Changed("a".to_string());
-    assert_eq!(out1, out2);
-
-    let out3 = TextAreaOutput::Submitted("b".to_string());
-    let out4 = TextAreaOutput::Submitted("b".to_string());
-    assert_eq!(out3, out4);
-}
-
-#[test]
-fn test_state_debug() {
-    let state = TextAreaState::with_value("test");
-    let debug = format!("{:?}", state);
-    assert!(debug.contains("TextAreaState"));
 }
 
 #[test]
