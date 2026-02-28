@@ -94,6 +94,17 @@ where
         self.runtime.display_ansi()
     }
 
+    /// Returns the cell at the given position, or `None` if out of bounds.
+    ///
+    /// Use this to assert on cell styling:
+    /// ```ignore
+    /// let cell = harness.cell_at(5, 3).unwrap();
+    /// assert_eq!(cell.fg, SerializableColor::Green);
+    /// ```
+    pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
+        self.runtime.backend().cell(x, y)
+    }
+
     /// Returns a reference to the backend.
     pub fn backend(&self) -> &CaptureBackend {
         self.runtime.backend()
@@ -674,6 +685,19 @@ mod tests {
 
         let screen_ansi = harness.screen_ansi();
         assert!(screen_ansi.contains("Count: 0"));
+    }
+
+    #[test]
+    fn test_async_harness_cell_at() {
+        let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+        harness.render().unwrap();
+
+        // Cell at (0,0) should have the 'C' from "Count: 0"
+        let cell = harness.cell_at(0, 0).unwrap();
+        assert_eq!(cell.symbol(), "C");
+
+        // Out of bounds should return None
+        assert!(harness.cell_at(100, 100).is_none());
     }
 
     #[test]

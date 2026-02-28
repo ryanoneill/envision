@@ -499,6 +499,17 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
 // Additional convenience methods for CaptureBackend (virtual terminal)
 impl<A: App> Runtime<A, CaptureBackend> {
+    /// Returns the cell at the given position, or `None` if out of bounds.
+    ///
+    /// Use this to assert on cell styling:
+    /// ```ignore
+    /// let cell = vt.cell_at(5, 3).unwrap();
+    /// assert_eq!(cell.fg, SerializableColor::Green);
+    /// ```
+    pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
+        self.terminal.backend().cell(x, y)
+    }
+
     /// Returns true if the display contains the given text.
     pub fn contains_text(&self, needle: &str) -> bool {
         self.terminal.backend().contains_text(needle)
@@ -1055,6 +1066,19 @@ mod tests {
         vt.send(Event::char('c'));
         vt.tick().unwrap();
         assert_eq!(vt.state().events_received, 3);
+    }
+
+    #[test]
+    fn test_virtual_terminal_cell_at() {
+        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+        vt.tick().unwrap();
+
+        // Cell at (0,0) should have the 'C' from "Count: 0"
+        let cell = vt.cell_at(0, 0).unwrap();
+        assert_eq!(cell.symbol(), "C");
+
+        // Out of bounds should return None
+        assert!(vt.cell_at(100, 100).is_none());
     }
 
     #[test]

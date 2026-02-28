@@ -559,6 +559,17 @@ impl<A: App> AsyncRuntime<A, CaptureBackend>
 where
     A::Message: Send + 'static,
 {
+    /// Returns the cell at the given position, or `None` if out of bounds.
+    ///
+    /// Use this to assert on cell styling:
+    /// ```ignore
+    /// let cell = runtime.cell_at(5, 3).unwrap();
+    /// assert_eq!(cell.fg, SerializableColor::Green);
+    /// ```
+    pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
+        self.terminal.backend().cell(x, y)
+    }
+
     /// Returns true if the captured output contains the given text.
     pub fn contains_text(&self, needle: &str) -> bool {
         self.terminal.backend().contains_text(needle)
@@ -1161,6 +1172,20 @@ mod tests {
         // Process all events
         runtime.process_all_events();
         assert_eq!(runtime.state().count, 5);
+    }
+
+    #[test]
+    fn test_async_runtime_cell_at() {
+        let mut runtime: AsyncRuntime<CounterApp, _> =
+            AsyncRuntime::virtual_terminal(40, 10).unwrap();
+        runtime.render().unwrap();
+
+        // Cell at (0,0) should have the 'C' from "Count: 0"
+        let cell = runtime.cell_at(0, 0).unwrap();
+        assert_eq!(cell.symbol(), "C");
+
+        // Out of bounds should return None
+        assert!(runtime.cell_at(100, 100).is_none());
     }
 
     #[test]

@@ -102,6 +102,17 @@ impl TestHarness {
         Snapshot::new(self.terminal.backend().snapshot(), self.annotations.clone())
     }
 
+    /// Returns the cell at the given position, or `None` if out of bounds.
+    ///
+    /// Use this to assert on cell styling:
+    /// ```ignore
+    /// let cell = harness.cell_at(5, 3).unwrap();
+    /// assert_eq!(cell.fg, SerializableColor::Green);
+    /// ```
+    pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
+        self.terminal.backend().cell(x, y)
+    }
+
     /// Returns a reference to the backend.
     pub fn backend(&self) -> &CaptureBackend {
         self.terminal.backend()
@@ -557,6 +568,27 @@ mod tests {
         // Verify we can get content from the snapshot
         let text = snapshot.to_plain();
         assert!(text.contains("Test"));
+    }
+
+    #[test]
+    fn test_harness_cell_at() {
+        let mut harness = TestHarness::new(40, 5);
+
+        harness
+            .render(|frame| {
+                frame.render_widget(
+                    Paragraph::new("Hello"),
+                    ratatui::layout::Rect::new(0, 0, 10, 1),
+                );
+            })
+            .unwrap();
+
+        // Cell at (0,0) should have the 'H' from "Hello"
+        let cell = harness.cell_at(0, 0).unwrap();
+        assert_eq!(cell.symbol(), "H");
+
+        // Out of bounds should return None
+        assert!(harness.cell_at(100, 100).is_none());
     }
 
     #[test]
