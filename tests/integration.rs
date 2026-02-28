@@ -17,11 +17,8 @@ fn test_focus_manager_tab_navigation() {
         Submit,
     }
 
-    let mut focus = FocusManager::with_initial_focus(vec![
-        Field::Username,
-        Field::Password,
-        Field::Submit,
-    ]);
+    let mut focus =
+        FocusManager::with_initial_focus(vec![Field::Username, Field::Password, Field::Submit]);
 
     // Initially focused on first item
     assert_eq!(focus.focused(), Some(&Field::Username));
@@ -151,16 +148,17 @@ fn test_selectable_list_navigation_200_items() {
 
     // Select at last position
     let output = SelectableList::<String>::update(&mut state, ListMessage::Select);
-    assert_eq!(
-        output,
-        Some(ListOutput::Selected("Item 199".to_string()))
-    );
+    assert_eq!(output, Some(ListOutput::Selected("Item 199".to_string())));
 }
 
 #[test]
 fn test_tabs_and_radio_group_independent_selection() {
-    let mut tabs =
-        TabsState::new(vec!["Home".to_string(), "Settings".to_string(), "Help".to_string(), "About".to_string()]);
+    let mut tabs = TabsState::new(vec![
+        "Home".to_string(),
+        "Settings".to_string(),
+        "Help".to_string(),
+        "About".to_string(),
+    ]);
     let mut radio = RadioGroupState::new(vec![
         "Option A".to_string(),
         "Option B".to_string(),
@@ -191,10 +189,7 @@ fn test_tabs_and_radio_group_independent_selection() {
 
     // Confirm each
     let tab_output = Tabs::<String>::update(&mut tabs, TabMessage::Confirm);
-    assert_eq!(
-        tab_output,
-        Some(TabOutput::Confirmed("Help".to_string()))
-    );
+    assert_eq!(tab_output, Some(TabOutput::Confirmed("Help".to_string())));
 
     let radio_output = RadioGroup::<String>::update(&mut radio, RadioMessage::Confirm);
     assert_eq!(
