@@ -94,10 +94,21 @@ pub trait App: Sized {
 
     /// Convert an input event to a message.
     ///
-    /// Override this to handle keyboard/mouse input.
+    /// Override this for simple stateless event mapping (most apps).
     /// Return `None` to ignore the event.
-    fn handle_event(_state: &Self::State, _event: &Event) -> Option<Self::Message> {
+    fn handle_event(_event: &Event) -> Option<Self::Message> {
         None
+    }
+
+    /// Convert an input event to a message, with access to the current state.
+    ///
+    /// Override this instead of [`handle_event`](App::handle_event) when you
+    /// need state for overlay-precedence checks or mode-dependent key bindings.
+    ///
+    /// The default implementation delegates to `handle_event`, ignoring state.
+    fn handle_event_with_state(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        let _ = state;
+        Self::handle_event(event)
     }
 
     /// Called when the application is about to exit.
@@ -198,11 +209,10 @@ mod tests {
 
     #[test]
     fn test_default_handle_event() {
-        let (state, _) = TestApp::init();
         let event = Event::char('a');
 
         // Default implementation returns None
-        let result = TestApp::handle_event(&state, &event);
+        let result = TestApp::handle_event(&event);
         assert!(result.is_none());
     }
 
@@ -285,7 +295,7 @@ mod tests {
 
         fn view(_state: &Self::State, _frame: &mut Frame) {}
 
-        fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+        fn handle_event(event: &Event) -> Option<Self::Message> {
             use crossterm::event::KeyCode;
             if let Some(key) = event.as_key() {
                 if let KeyCode::Char(c) = key.code {
@@ -313,16 +323,14 @@ mod tests {
 
     #[test]
     fn test_custom_handle_event() {
-        let (state, _) = CustomApp::init();
-
         // Test quit key
         let quit_event = Event::char('q');
-        let result = CustomApp::handle_event(&state, &quit_event);
+        let result = CustomApp::handle_event(&quit_event);
         assert!(matches!(result, Some(CustomMsg::Quit)));
 
         // Test other key
         let other_event = Event::char('a');
-        let result = CustomApp::handle_event(&state, &other_event);
+        let result = CustomApp::handle_event(&other_event);
         assert!(matches!(result, Some(CustomMsg::KeyPressed('a'))));
     }
 

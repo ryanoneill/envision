@@ -430,7 +430,7 @@ where
     /// Returns true if an event was processed.
     pub fn process_event(&mut self) -> bool {
         if let Some(event) = self.events.pop() {
-            if let Some(msg) = A::handle_event(&self.state, &event) {
+            if let Some(msg) = A::handle_event_with_state(&self.state, &event) {
                 self.dispatch(msg);
             }
             true
@@ -1110,7 +1110,7 @@ mod tests {
 
             fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
 
-            fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+            fn handle_event(event: &Event) -> Option<Self::Message> {
                 if let Event::Key(_) = event {
                     Some(KeyMsg::KeyPress)
                 } else {
@@ -1170,7 +1170,7 @@ mod tests {
 
             fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
 
-            fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+            fn handle_event(event: &Event) -> Option<Self::Message> {
                 if let Event::Key(_) = event {
                     Some(CountKeyMsg::KeyPress)
                 } else {
@@ -1358,7 +1358,7 @@ mod tests {
                 state.quit
             }
 
-            fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+            fn handle_event(event: &Event) -> Option<Self::Message> {
                 if let Event::Key(KeyEvent { code, .. }) = event {
                     if *code == KeyCode::Char('q') {
                         Some(EventDrivenMsg::Quit)

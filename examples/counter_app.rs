@@ -148,7 +148,7 @@ impl App for CounterApp {
     }
 
     /// Handle terminal events
-    fn handle_event(_state: &State, event: &Event) -> Option<Msg> {
+    fn handle_event(event: &Event) -> Option<Msg> {
         use crossterm::event::KeyCode;
 
         if let Some(key) = event.as_key() {

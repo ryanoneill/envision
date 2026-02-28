@@ -208,7 +208,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
 
                 // Convert crossterm event to our Event type and dispatch
                 if let Some(envision_event) = Self::convert_crossterm_event(&event) {
-                    if let Some(msg) = A::handle_event(&self.state, &envision_event) {
+                    if let Some(msg) = A::handle_event_with_state(&self.state, &envision_event) {
                         self.dispatch(msg);
                     }
                 }
@@ -474,7 +474,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// Returns true if an event was processed.
     pub fn process_event(&mut self) -> bool {
         if let Some(event) = self.events.pop() {
-            if let Some(msg) = A::handle_event(&self.state, &event) {
+            if let Some(msg) = A::handle_event_with_state(&self.state, &event) {
                 self.dispatch(msg);
             }
             true
@@ -914,10 +914,7 @@ mod tests {
             frame.render_widget(Paragraph::new(text), frame.area());
         }
 
-        fn handle_event(
-            _state: &Self::State,
-            event: &crate::input::Event,
-        ) -> Option<Self::Message> {
+        fn handle_event(event: &crate::input::Event) -> Option<Self::Message> {
             use crossterm::event::KeyCode;
             if let Some(key) = event.as_key() {
                 if let KeyCode::Char(c) = key.code {
