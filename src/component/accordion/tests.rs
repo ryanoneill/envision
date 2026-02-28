@@ -459,14 +459,8 @@ fn test_focus_blur() {
 
 #[test]
 fn test_view_empty() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = AccordionState::default();
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -480,14 +474,8 @@ fn test_view_empty() {
 
 #[test]
 fn test_view_collapsed() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = AccordionState::from_pairs(vec![("Section 1", "Content 1")]);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -502,16 +490,10 @@ fn test_view_collapsed() {
 
 #[test]
 fn test_view_expanded() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = AccordionState::new(vec![
         AccordionPanel::new("Section 1", "Content 1").expanded()
     ]);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -527,17 +509,11 @@ fn test_view_expanded() {
 
 #[test]
 fn test_view_mixed() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = AccordionState::new(vec![
         AccordionPanel::new("Expanded", "Expanded content").expanded(),
         AccordionPanel::new("Collapsed", "Collapsed content"),
     ]);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -553,15 +529,9 @@ fn test_view_mixed() {
 
 #[test]
 fn test_view_focused_highlight() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
     Accordion::focus(&mut state);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -576,18 +546,12 @@ fn test_view_focused_highlight() {
 
 #[test]
 fn test_view_long_content() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = AccordionState::new(vec![AccordionPanel::new(
         "Multi-line",
         "Line 1\nLine 2\nLine 3",
     )
     .expanded()]);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {

@@ -1,6 +1,4 @@
 use super::*;
-use crate::backend::CaptureBackend;
-use ratatui::Terminal;
 
 // ========================================
 // ProgressItemStatus Tests
@@ -483,11 +481,10 @@ fn test_focusable() {
 #[test]
 fn test_view_empty() {
     let state = MultiProgressState::new();
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     // Should render border only
@@ -509,11 +506,10 @@ fn test_view_with_items() {
         },
     );
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -525,11 +521,10 @@ fn test_view_with_items() {
 #[test]
 fn test_view_with_title() {
     let state = MultiProgressState::new().with_title("Downloads");
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -549,11 +544,10 @@ fn test_view_failed_item() {
         },
     );
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -571,11 +565,10 @@ fn test_view_completed_item() {
         MultiProgressMessage::Complete("id1".to_string()),
     );
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -600,13 +593,12 @@ fn test_clone() {
 fn test_view_zero_size_area() {
     let mut state = MultiProgressState::new();
     state.add("id1", "Item 1");
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     // Test with zero width
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, Rect::new(0, 0, 0, 10), &Theme::default());
+            MultiProgress::view(&state, frame, Rect::new(0, 0, 0, 10), &theme);
         })
         .unwrap();
 
@@ -623,11 +615,10 @@ fn test_view_without_percentages() {
     let mut state = MultiProgressState::new().with_percentages(false);
     state.add("id1", "Item 1");
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -648,11 +639,10 @@ fn test_view_failed_without_message() {
         },
     );
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();

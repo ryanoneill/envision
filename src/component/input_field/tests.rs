@@ -242,15 +242,9 @@ fn test_len() {
 
 #[test]
 fn test_view() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = InputFieldState::with_value("Hello");
     state.focused = true;
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -264,15 +258,9 @@ fn test_view() {
 
 #[test]
 fn test_view_placeholder() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = InputField::init();
     state.set_placeholder("Enter text...");
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {

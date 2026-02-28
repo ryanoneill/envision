@@ -1,6 +1,4 @@
 use super::*;
-use crate::backend::CaptureBackend;
-use ratatui::Terminal;
 
 #[derive(Clone, Debug, PartialEq)]
 struct TestItem {
@@ -459,11 +457,10 @@ fn test_focusable() {
 #[test]
 fn test_view_empty() {
     let state: LoadingListState<String> = LoadingListState::new();
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     // Should render border only
@@ -477,11 +474,10 @@ fn test_view_with_items() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
     state.set_selected(Some(1));
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -496,11 +492,10 @@ fn test_view_with_title() {
     let items = make_items();
     let state = LoadingListState::with_items(items, |i| i.name.clone()).with_title("My Items");
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -513,11 +508,10 @@ fn test_view_with_error() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
     state.set_error(0, "Connection failed");
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -544,13 +538,12 @@ fn test_clone() {
 fn test_view_zero_size_area() {
     let items = make_items();
     let state = LoadingListState::with_items(items, |i| i.name.clone());
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     // Test with zero width
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, Rect::new(0, 0, 0, 10), &Theme::default());
+            LoadingList::view(&state, frame, Rect::new(0, 0, 0, 10), &theme);
         })
         .unwrap();
 
@@ -568,11 +561,10 @@ fn test_view_without_indicators() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone()).with_indicators(false);
     state.set_selected(Some(0));
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -585,11 +577,10 @@ fn test_view_without_indicators_with_error() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone()).with_indicators(false);
     state.set_error(0, "Failed");
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();

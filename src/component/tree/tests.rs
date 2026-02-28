@@ -501,18 +501,13 @@ fn test_focusable_blur() {
 
 #[test]
 fn test_view_empty() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let state: TreeState<()> = TreeState::new(Vec::new());
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &Theme::default());
+            Tree::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -521,19 +516,14 @@ fn test_view_empty() {
 
 #[test]
 fn test_view_single_node() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let root = TreeNode::new("Root", ());
     let state = TreeState::new(vec![root]);
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &Theme::default());
+            Tree::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -543,21 +533,16 @@ fn test_view_single_node() {
 
 #[test]
 fn test_view_with_children() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut root = TreeNode::new_expanded("Parent", ());
     root.add_child(TreeNode::new("Child", ()));
 
     let state = TreeState::new(vec![root]);
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &Theme::default());
+            Tree::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -568,21 +553,16 @@ fn test_view_with_children() {
 
 #[test]
 fn test_view_collapsed_indicator() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut root = TreeNode::new("Root", ()); // Collapsed
     root.add_child(TreeNode::new("Child", ()));
 
     let state = TreeState::new(vec![root]);
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &Theme::default());
+            Tree::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -592,21 +572,16 @@ fn test_view_collapsed_indicator() {
 
 #[test]
 fn test_view_expanded_indicator() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut root = TreeNode::new_expanded("Root", ());
     root.add_child(TreeNode::new("Child", ()));
 
     let state = TreeState::new(vec![root]);
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &Theme::default());
+            Tree::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -686,20 +661,15 @@ fn test_multiple_roots() {
 
 #[test]
 fn test_view_focused_selection() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let root = TreeNode::new("Root", ());
     let mut state = TreeState::new(vec![root]);
     state.focused = true; // Set focused for different highlight style
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &Theme::default());
+            Tree::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -709,20 +679,15 @@ fn test_view_focused_selection() {
 
 #[test]
 fn test_view_unfocused_selection() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let root = TreeNode::new("Root", ());
     let mut state = TreeState::new(vec![root]);
     state.focused = false; // Unfocused state
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &Theme::default());
+            Tree::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -845,20 +810,15 @@ fn test_state_debug() {
 
 #[test]
 fn test_view_leaf_node_no_indicator() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     // A leaf node (no children) should show no expand/collapse indicator
     let leaf = TreeNode::new("Leaf", ());
     let state = TreeState::new(vec![leaf]);
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &Theme::default());
+            Tree::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 

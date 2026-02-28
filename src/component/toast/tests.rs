@@ -1,6 +1,4 @@
 use super::*;
-use crate::backend::CaptureBackend;
-use ratatui::Terminal;
 
 // ========================================
 // ToastLevel Tests
@@ -465,12 +463,11 @@ fn test_tick_no_expire() {
 fn test_view_empty() {
     let state = ToastState::new();
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &Theme::default());
+            Toast::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -484,12 +481,11 @@ fn test_view_single() {
     let mut state = ToastState::new();
     state.info("Hello, world!");
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &Theme::default());
+            Toast::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -504,12 +500,11 @@ fn test_view_multiple() {
     state.success("Message 2");
     state.error("Message 3");
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &Theme::default());
+            Toast::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -526,12 +521,11 @@ fn test_view_max_visible() {
     state.info("Message 2");
     state.info("Message 3");
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &Theme::default());
+            Toast::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -547,12 +541,11 @@ fn test_view_info_style() {
     let mut state = ToastState::new();
     state.info("Info message");
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &Theme::default());
+            Toast::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -565,12 +558,11 @@ fn test_view_success_style() {
     let mut state = ToastState::new();
     state.success("Success message");
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &Theme::default());
+            Toast::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -583,12 +575,11 @@ fn test_view_warning_style() {
     let mut state = ToastState::new();
     state.warning("Warning message");
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &Theme::default());
+            Toast::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -601,12 +592,11 @@ fn test_view_error_style() {
     let mut state = ToastState::new();
     state.error("Error message");
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &Theme::default());
+            Toast::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 

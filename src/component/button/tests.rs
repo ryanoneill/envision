@@ -87,14 +87,8 @@ fn test_clone() {
 
 #[test]
 fn test_view() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = ButtonState::new("Click");
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(20, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
 
     terminal
         .draw(|frame| {
@@ -108,15 +102,9 @@ fn test_view() {
 
 #[test]
 fn test_view_focused() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = ButtonState::new("Focused");
     Button::set_focused(&mut state, true);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(20, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
 
     terminal
         .draw(|frame| {
@@ -130,15 +118,9 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_disabled() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = ButtonState::new("Disabled");
     state.set_disabled(true);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(20, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
 
     terminal
         .draw(|frame| {

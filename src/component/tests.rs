@@ -99,13 +99,8 @@ fn test_component_update() {
 
 #[test]
 fn test_component_view() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = TestCounter::init();
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
-    let theme = Theme::default();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {

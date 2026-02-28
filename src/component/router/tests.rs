@@ -296,15 +296,11 @@ fn test_max_history_zero() {
 
 #[test]
 fn test_view_is_noop() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = RouterState::new(TestScreen::Home);
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
-        .draw(|frame| Router::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| Router::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     // View should do nothing - output should be empty

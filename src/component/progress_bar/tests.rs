@@ -200,15 +200,9 @@ fn test_percentage_rounding() {
 
 #[test]
 fn test_view_renders() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = ProgressBarState::with_progress(0.5);
     state.set_label(Some("Loading".to_string()));
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {
@@ -223,14 +217,8 @@ fn test_view_renders() {
 
 #[test]
 fn test_view_without_label() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = ProgressBarState::with_progress(0.75);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {

@@ -217,17 +217,13 @@ fn test_update_returns_none() {
 
 #[test]
 fn test_view_spinning() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = SpinnerState::new();
 
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {
-            Spinner::view(&state, frame, frame.area(), &Theme::default());
+            Spinner::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -238,18 +234,14 @@ fn test_view_spinning() {
 
 #[test]
 fn test_view_stopped() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = SpinnerState::new();
     state.set_spinning(false);
 
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {
-            Spinner::view(&state, frame, frame.area(), &Theme::default());
+            Spinner::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -260,17 +252,13 @@ fn test_view_stopped() {
 
 #[test]
 fn test_view_with_label() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = SpinnerState::with_label("Loading");
 
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {
-            Spinner::view(&state, frame, frame.area(), &Theme::default());
+            Spinner::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 

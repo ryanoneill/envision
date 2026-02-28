@@ -1,6 +1,4 @@
 use super::*;
-use crate::backend::CaptureBackend;
-use ratatui::Terminal;
 
 // ========================================
 // StatusLogLevel Tests
@@ -478,11 +476,10 @@ fn test_focusable_focus_blur() {
 #[test]
 fn test_view_empty() {
     let state = StatusLogState::new();
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     // Should render border only
@@ -496,11 +493,10 @@ fn test_view_with_messages() {
     state.info("Info message");
     state.success("Success message");
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -514,11 +510,10 @@ fn test_view_with_title() {
     let mut state = StatusLogState::new().with_title("Status");
     state.info("Test");
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -530,11 +525,10 @@ fn test_view_with_timestamps() {
     let mut state = StatusLogState::new().with_timestamps(true);
     state.info_with_timestamp("Message", "12:34");
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -550,11 +544,10 @@ fn test_view_all_levels() {
     state.warning("Warning");
     state.error("Error");
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();

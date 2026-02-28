@@ -1,6 +1,4 @@
 use super::*;
-use crate::backend::CaptureBackend;
-use ratatui::Terminal;
 
 // ========================================
 // KeyHint Tests
@@ -292,11 +290,10 @@ fn test_update_returns_none() {
 #[test]
 fn test_view_empty() {
     let state = KeyHintsState::new();
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
-        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     // Empty state should render nothing
@@ -307,11 +304,10 @@ fn test_view_empty() {
 #[test]
 fn test_view_single_hint() {
     let state = KeyHintsState::new().hint("Enter", "Select");
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
-        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -326,11 +322,10 @@ fn test_view_multiple_hints() {
         .hint("Esc", "Cancel")
         .hint("q", "Quit");
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
-        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -346,11 +341,10 @@ fn test_view_disabled_hints_hidden() {
         KeyHint::new("b", "Hidden").with_enabled(false),
     ]);
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
-        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();
@@ -365,11 +359,10 @@ fn test_view_inline_layout() {
         .hint("a", "A")
         .hint("b", "B");
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
-        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &Theme::default()))
+        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme))
         .unwrap();
 
     let output = terminal.backend().to_string();

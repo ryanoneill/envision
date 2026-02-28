@@ -244,15 +244,9 @@ fn test_page_down_when_at_last() {
 
 #[test]
 fn test_view() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = SelectableListState::with_items(vec!["Item 1", "Item 2", "Item 3"]);
     state.focused = true;
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -268,15 +262,9 @@ fn test_view() {
 
 #[test]
 fn test_view_unfocused() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = SelectableListState::with_items(vec!["A", "B", "C"]);
     state.focused = false; // Explicitly unfocused
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
