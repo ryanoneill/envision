@@ -74,6 +74,13 @@ impl<T: Clone> Default for SelectableListState<T> {
 
 impl<T: Clone> SelectableListState<T> {
     /// Creates a new state with the given items.
+    ///
+    /// If the items list is non-empty, the first item is selected.
+    pub fn new(items: Vec<T>) -> Self {
+        Self::with_items(items)
+    }
+
+    /// Creates a new state with the given items.
     pub fn with_items(items: Vec<T>) -> Self {
         let mut state = Self {
             items,
