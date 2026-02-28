@@ -23,7 +23,7 @@
 //! // Navigate to second filtered option and confirm
 //! let _ = Dropdown::update(&mut state, DropdownMessage::SelectNext);
 //! let output = Dropdown::update(&mut state, DropdownMessage::Confirm);
-//! assert_eq!(output, Some(DropdownOutput::Changed(Some(1)))); // Banana selected
+//! assert_eq!(output, Some(DropdownOutput::Selected("Banana".to_string()))); // Banana selected
 //! ```
 
 use ratatui::prelude::*;
@@ -60,9 +60,11 @@ pub enum DropdownMessage {
 /// Output messages from a Dropdown.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DropdownOutput {
-    /// Selection changed (index in original options list).
-    Changed(Option<usize>),
-    /// User confirmed selection (index in original options list).
+    /// A new item was selected (contains the selected value).
+    Selected(String),
+    /// The highlight changed during navigation (contains the highlighted option's original index).
+    SelectionChanged(usize),
+    /// User re-confirmed an already-selected item (contains the index).
     Submitted(usize),
     /// Filter text changed.
     FilterChanged(String),
@@ -336,7 +338,7 @@ impl DropdownState {
 /// // Navigate and select
 /// Dropdown::update(&mut state, DropdownMessage::SelectNext);
 /// let output = Dropdown::update(&mut state, DropdownMessage::Confirm);
-/// assert_eq!(output, Some(DropdownOutput::Changed(Some(1)))); // Banana
+/// assert_eq!(output, Some(DropdownOutput::Selected("Banana".to_string()))); // Banana
 /// ```
 pub struct Dropdown;
 
@@ -440,8 +442,11 @@ impl Component for Dropdown {
                 if state.is_open && !state.filtered_indices.is_empty() {
                     state.highlighted_index =
                         (state.highlighted_index + 1) % state.filtered_indices.len();
+                    let original_index = state.filtered_indices[state.highlighted_index];
+                    Some(DropdownOutput::SelectionChanged(original_index))
+                } else {
+                    None
                 }
-                None
             }
             DropdownMessage::SelectPrevious => {
                 if state.is_open && !state.filtered_indices.is_empty() {
@@ -450,8 +455,11 @@ impl Component for Dropdown {
                     } else {
                         state.highlighted_index -= 1;
                     }
+                    let original_index = state.filtered_indices[state.highlighted_index];
+                    Some(DropdownOutput::SelectionChanged(original_index))
+                } else {
+                    None
                 }
-                None
             }
             DropdownMessage::Confirm => {
                 if state.is_open && !state.filtered_indices.is_empty() {
@@ -463,7 +471,9 @@ impl Component for Dropdown {
                     state.update_filter();
 
                     if old_selection != state.selected_index {
-                        Some(DropdownOutput::Changed(state.selected_index))
+                        Some(DropdownOutput::Selected(
+                            state.options[original_index].clone(),
+                        ))
                     } else {
                         Some(DropdownOutput::Submitted(original_index))
                     }

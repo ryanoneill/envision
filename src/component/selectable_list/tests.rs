@@ -9,6 +9,21 @@ fn test_init_empty() {
 }
 
 #[test]
+fn test_new() {
+    let state = SelectableListState::new(vec!["a", "b", "c"]);
+    assert_eq!(state.len(), 3);
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(state.selected_item(), Some(&"a"));
+}
+
+#[test]
+fn test_new_empty() {
+    let state = SelectableListState::<String>::new(vec![]);
+    assert!(state.is_empty());
+    assert_eq!(state.selected_index(), None);
+}
+
+#[test]
 fn test_with_items() {
     let state = SelectableListState::with_items(vec!["a", "b", "c"]);
     assert_eq!(state.len(), 3);

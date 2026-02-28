@@ -4,30 +4,38 @@ use super::*;
 fn test_new() {
     let state = RadioGroupState::new(vec!["A", "B", "C"]);
     assert_eq!(state.len(), 3);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.selected(), Some(&"A"));
     assert!(!state.is_disabled());
     assert!(!RadioGroup::<&str>::is_focused(&state));
 }
 
 #[test]
+fn test_new_empty() {
+    let state = RadioGroupState::<String>::new(vec![]);
+    assert!(state.is_empty());
+    assert_eq!(state.selected_index(), None);
+    assert_eq!(state.selected(), None);
+}
+
+#[test]
 fn test_with_selected() {
     let state = RadioGroupState::with_selected(vec!["A", "B", "C"], 1);
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected(), Some(&"B"));
 }
 
 #[test]
 fn test_with_selected_clamps() {
     let state = RadioGroupState::with_selected(vec!["A", "B", "C"], 10);
-    assert_eq!(state.selected_index(), 2); // Clamped to last
+    assert_eq!(state.selected_index(), Some(2)); // Clamped to last
 }
 
 #[test]
-fn test_empty() {
-    let state = RadioGroupState::<String>::new(vec![]);
+fn test_with_selected_empty_options() {
+    let state = RadioGroupState::<String>::with_selected(vec![], 5);
     assert!(state.is_empty());
-    assert_eq!(state.len(), 0);
+    assert_eq!(state.selected_index(), None);
     assert_eq!(state.selected(), None);
 }
 
@@ -35,7 +43,7 @@ fn test_empty() {
 fn test_default() {
     let state = RadioGroupState::<String>::default();
     assert!(state.is_empty());
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), None);
     assert_eq!(state.selected(), None);
 }
 
@@ -49,16 +57,16 @@ fn test_options_accessor() {
 fn test_selected_accessors() {
     let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
 
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.selected(), Some(&"A"));
 
     state.set_selected(2);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
     assert_eq!(state.selected(), Some(&"C"));
 
     // Out of bounds is ignored
     state.set_selected(100);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -78,12 +86,12 @@ fn test_navigate_down() {
     let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-    assert_eq!(output, Some(RadioOutput::Selected("B")));
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
+    assert_eq!(state.selected_index(), Some(1));
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-    assert_eq!(output, Some(RadioOutput::Selected("C")));
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(2)));
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -91,12 +99,12 @@ fn test_navigate_up() {
     let mut state = RadioGroupState::with_selected(vec!["A", "B", "C"], 2);
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Up);
-    assert_eq!(output, Some(RadioOutput::Selected("B")));
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
+    assert_eq!(state.selected_index(), Some(1));
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Up);
-    assert_eq!(output, Some(RadioOutput::Selected("A")));
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(0)));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -106,7 +114,7 @@ fn test_navigate_at_bounds() {
     // At first, Up returns None
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Up);
     assert_eq!(output, None);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 
     // Go to last
     state.set_selected(2);
@@ -114,7 +122,7 @@ fn test_navigate_at_bounds() {
     // At last, Down returns None
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
     assert_eq!(output, None);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -124,7 +132,7 @@ fn test_confirm() {
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Confirm);
     assert_eq!(output, Some(RadioOutput::Confirmed("B")));
     // Selection unchanged
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
 }
 
 #[test]
@@ -142,7 +150,7 @@ fn test_disabled() {
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
     assert_eq!(output, None);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Up);
     assert_eq!(output, None);
@@ -189,7 +197,7 @@ fn test_focusable() {
 fn test_init() {
     let state = RadioGroup::<String>::init();
     assert!(state.is_empty());
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), None);
     assert!(!state.is_disabled());
     assert!(!RadioGroup::<String>::is_focused(&state));
 }
@@ -200,7 +208,7 @@ fn test_clone() {
     let cloned = state.clone();
 
     assert_eq!(cloned.options(), &["A", "B", "C"]);
-    assert_eq!(cloned.selected_index(), 1);
+    assert_eq!(cloned.selected_index(), Some(1));
 }
 
 #[test]
@@ -244,22 +252,13 @@ fn test_multiple_navigations() {
     // Navigate down multiple times
     RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
     RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
     assert_eq!(state.selected(), Some(&"3"));
 
     // Navigate up
     RadioGroup::<&str>::update(&mut state, RadioMessage::Up);
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected(), Some(&"2"));
-}
-
-#[test]
-fn test_with_selected_empty_options() {
-    let state = RadioGroupState::<String>::with_selected(vec![], 5);
-    assert!(state.is_empty());
-    // selected should be 0 even though we passed 5, because empty vec case
-    assert_eq!(state.selected_index(), 0);
-    assert_eq!(state.selected(), None);
 }
 
 #[test]
@@ -341,23 +340,19 @@ fn test_radio_output_debug() {
 }
 
 #[test]
-fn test_navigate_down_outputs_selected_value() {
+fn test_navigate_down_outputs_selection_changed() {
     let mut state = RadioGroupState::new(vec!["Red", "Green", "Blue"]);
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-    match output {
-        Some(RadioOutput::Selected(value)) => assert_eq!(value, "Green"),
-        _ => panic!("Expected Selected output"),
-    }
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
+    assert_eq!(state.selected(), Some(&"Green"));
 }
 
 #[test]
-fn test_navigate_up_outputs_selected_value() {
+fn test_navigate_up_outputs_selection_changed() {
     let mut state = RadioGroupState::with_selected(vec!["Red", "Green", "Blue"], 2);
 
     let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Up);
-    match output {
-        Some(RadioOutput::Selected(value)) => assert_eq!(value, "Green"),
-        _ => panic!("Expected Selected output"),
-    }
+    assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
+    assert_eq!(state.selected(), Some(&"Green"));
 }

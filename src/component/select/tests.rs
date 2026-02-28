@@ -112,14 +112,17 @@ fn test_select_next() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
     Select::update(&mut state, SelectMessage::Open);
 
-    Select::update(&mut state, SelectMessage::SelectNext);
+    let output = Select::update(&mut state, SelectMessage::SelectNext);
+    assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
     assert_eq!(state.highlighted_index, 1);
 
-    Select::update(&mut state, SelectMessage::SelectNext);
+    let output = Select::update(&mut state, SelectMessage::SelectNext);
+    assert_eq!(output, Some(SelectOutput::SelectionChanged(2)));
     assert_eq!(state.highlighted_index, 2);
 
     // Wrap around
-    Select::update(&mut state, SelectMessage::SelectNext);
+    let output = Select::update(&mut state, SelectMessage::SelectNext);
+    assert_eq!(output, Some(SelectOutput::SelectionChanged(0)));
     assert_eq!(state.highlighted_index, 0);
 }
 
@@ -129,13 +132,16 @@ fn test_select_previous() {
     Select::update(&mut state, SelectMessage::Open);
 
     // Wrap around from start
-    Select::update(&mut state, SelectMessage::SelectPrevious);
+    let output = Select::update(&mut state, SelectMessage::SelectPrevious);
+    assert_eq!(output, Some(SelectOutput::SelectionChanged(2)));
     assert_eq!(state.highlighted_index, 2);
 
-    Select::update(&mut state, SelectMessage::SelectPrevious);
+    let output = Select::update(&mut state, SelectMessage::SelectPrevious);
+    assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
     assert_eq!(state.highlighted_index, 1);
 
-    Select::update(&mut state, SelectMessage::SelectPrevious);
+    let output = Select::update(&mut state, SelectMessage::SelectPrevious);
+    assert_eq!(output, Some(SelectOutput::SelectionChanged(0)));
     assert_eq!(state.highlighted_index, 0);
 }
 
@@ -146,7 +152,7 @@ fn test_confirm_selection() {
     Select::update(&mut state, SelectMessage::SelectNext);
 
     let output = Select::update(&mut state, SelectMessage::Confirm);
-    assert_eq!(output, Some(SelectOutput::Changed(Some(1))));
+    assert_eq!(output, Some(SelectOutput::Selected("B".to_string())));
     assert_eq!(state.selected_index(), Some(1));
     assert!(!state.is_open());
 }

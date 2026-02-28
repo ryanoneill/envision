@@ -208,8 +208,8 @@ pub enum TreeOutput {
 pub struct TreeState<T> {
     /// The root nodes of the tree.
     roots: Vec<TreeNode<T>>,
-    /// Index of the currently selected node in the flattened view.
-    selected_index: usize,
+    /// Index of the currently selected node in the flattened view, or `None` if empty.
+    selected_index: Option<usize>,
     /// Whether the tree has focus.
     focused: bool,
 }
@@ -222,6 +222,8 @@ impl<T: Clone> Default for TreeState<T> {
 
 impl<T: Clone> TreeState<T> {
     /// Creates a new tree state with the given root nodes.
+    ///
+    /// If roots are non-empty, the first node is selected.
     ///
     /// # Example
     ///
@@ -236,9 +238,10 @@ impl<T: Clone> TreeState<T> {
     /// assert_eq!(state.roots().len(), 2);
     /// ```
     pub fn new(roots: Vec<TreeNode<T>>) -> Self {
+        let selected_index = if roots.is_empty() { None } else { Some(0) };
         Self {
             roots,
-            selected_index: 0,
+            selected_index,
             focused: false,
         }
     }
@@ -254,13 +257,17 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Sets the root nodes.
+    ///
+    /// Resets selection to the first node, or `None` if the new roots are empty.
     pub fn set_roots(&mut self, roots: Vec<TreeNode<T>>) {
         self.roots = roots;
-        self.selected_index = 0;
+        self.selected_index = if self.roots.is_empty() { None } else { Some(0) };
     }
 
     /// Returns the currently selected index in the flattened view.
-    pub fn selected_index(&self) -> usize {
+    ///
+    /// Returns `None` if the tree is empty.
+    pub fn selected_index(&self) -> Option<usize> {
         self.selected_index
     }
 
@@ -331,7 +338,7 @@ impl<T: Clone> TreeState<T> {
     /// Returns the path of the currently selected node.
     pub fn selected_path(&self) -> Option<Vec<usize>> {
         let flat = self.flatten();
-        flat.get(self.selected_index).map(|n| n.path.clone())
+        flat.get(self.selected_index?).map(|n| n.path.clone())
     }
 
     /// Returns a reference to the currently selected node.
@@ -363,7 +370,7 @@ impl<T: Clone> TreeState<T> {
             Self::collapse_all_recursive(root);
         }
         // Reset selection to ensure it's still valid
-        self.selected_index = 0;
+        self.selected_index = if self.roots.is_empty() { None } else { Some(0) };
     }
 
     /// Recursively collapses a node and all its descendants.
@@ -431,7 +438,7 @@ impl<T: Clone + 'static> Tree<T> {
         let mut lines = Vec::new();
 
         for (idx, node) in flat.iter().enumerate() {
-            let is_selected = idx == state.selected_index;
+            let is_selected = state.selected_index == Some(idx);
 
             // Build the prefix with tree lines
             let indent = "  ".repeat(node.depth);
@@ -480,21 +487,23 @@ impl<T: Clone + 'static> Component for Tree<T> {
             return None;
         }
 
+        let selected = state.selected_index?;
+
         match msg {
             TreeMessage::SelectNext => {
-                if state.selected_index < flat.len() - 1 {
-                    state.selected_index += 1;
+                if selected < flat.len() - 1 {
+                    state.selected_index = Some(selected + 1);
                 }
                 None
             }
             TreeMessage::SelectPrevious => {
-                if state.selected_index > 0 {
-                    state.selected_index -= 1;
+                if selected > 0 {
+                    state.selected_index = Some(selected - 1);
                 }
                 None
             }
             TreeMessage::Expand => {
-                if let Some(node_info) = flat.get(state.selected_index) {
+                if let Some(node_info) = flat.get(selected) {
                     if node_info.has_children && !node_info.is_expanded {
                         let path = node_info.path.clone();
                         if let Some(node) = state.get_node_mut(&path) {
@@ -506,15 +515,15 @@ impl<T: Clone + 'static> Component for Tree<T> {
                 None
             }
             TreeMessage::Collapse => {
-                if let Some(node_info) = flat.get(state.selected_index) {
+                if let Some(node_info) = flat.get(selected) {
                     if node_info.has_children && node_info.is_expanded {
                         let path = node_info.path.clone();
                         if let Some(node) = state.get_node_mut(&path) {
                             node.collapse();
                             // Adjust selected index if needed
                             let new_flat = state.flatten();
-                            if state.selected_index >= new_flat.len() {
-                                state.selected_index = new_flat.len().saturating_sub(1);
+                            if selected >= new_flat.len() {
+                                state.selected_index = Some(new_flat.len().saturating_sub(1));
                             }
                             return Some(TreeOutput::Collapsed(path));
                         }
@@ -523,7 +532,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
                 None
             }
             TreeMessage::Toggle => {
-                if let Some(node_info) = flat.get(state.selected_index) {
+                if let Some(node_info) = flat.get(selected) {
                     if node_info.has_children {
                         let path = node_info.path.clone();
                         let was_expanded = node_info.is_expanded;
@@ -532,8 +541,8 @@ impl<T: Clone + 'static> Component for Tree<T> {
                             if was_expanded {
                                 // Adjust selected index if needed after collapse
                                 let new_flat = state.flatten();
-                                if state.selected_index >= new_flat.len() {
-                                    state.selected_index = new_flat.len().saturating_sub(1);
+                                if selected >= new_flat.len() {
+                                    state.selected_index = Some(new_flat.len().saturating_sub(1));
                                 }
                                 return Some(TreeOutput::Collapsed(path));
                             } else {
@@ -545,7 +554,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
                 None
             }
             TreeMessage::Select => flat
-                .get(state.selected_index)
+                .get(selected)
                 .map(|node_info| TreeOutput::Selected(node_info.path.clone())),
             TreeMessage::ExpandAll => {
                 state.expand_all();

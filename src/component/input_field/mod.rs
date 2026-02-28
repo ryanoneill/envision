@@ -81,6 +81,11 @@ pub struct InputFieldState {
 }
 
 impl InputFieldState {
+    /// Creates a new empty input field state.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Creates a new state with the given initial value.
     pub fn with_value(value: impl Into<String>) -> Self {
         let value = value.into();

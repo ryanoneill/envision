@@ -20,7 +20,7 @@
 //! // Select an option (navigating to index 1, then confirming)
 //! let _ = Select::update(&mut state, SelectMessage::SelectNext);
 //! let output = Select::update(&mut state, SelectMessage::Confirm);
-//! assert_eq!(output, Some(SelectOutput::Changed(Some(1))));
+//! assert_eq!(output, Some(SelectOutput::Selected("Green".to_string())));
 //! ```
 
 use ratatui::prelude::*;
@@ -49,9 +49,11 @@ pub enum SelectMessage {
 /// Output messages from a Select.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SelectOutput {
-    /// Selection changed (index in options list).
-    Changed(Option<usize>),
-    /// User confirmed selection (index in options list).
+    /// A new item was selected (contains the selected value).
+    Selected(String),
+    /// The highlight changed during navigation (contains the highlighted option index).
+    SelectionChanged(usize),
+    /// User re-confirmed an already-selected item (contains the index).
     Submitted(usize),
 }
 
@@ -253,7 +255,7 @@ impl SelectState {
 /// // Navigate to index 1 and confirm (selection changes from None to Some(1))
 /// Select::update(&mut state, SelectMessage::SelectNext);
 /// let output = Select::update(&mut state, SelectMessage::Confirm);
-/// assert_eq!(output, Some(SelectOutput::Changed(Some(1))));
+/// assert_eq!(output, Some(SelectOutput::Selected("Medium".to_string())));
 /// ```
 pub struct Select;
 
@@ -296,8 +298,10 @@ impl Component for Select {
             SelectMessage::SelectNext => {
                 if state.is_open && !state.options.is_empty() {
                     state.highlighted_index = (state.highlighted_index + 1) % state.options.len();
+                    Some(SelectOutput::SelectionChanged(state.highlighted_index))
+                } else {
+                    None
                 }
-                None
             }
             SelectMessage::SelectPrevious => {
                 if state.is_open && !state.options.is_empty() {
@@ -306,20 +310,22 @@ impl Component for Select {
                     } else {
                         state.highlighted_index -= 1;
                     }
+                    Some(SelectOutput::SelectionChanged(state.highlighted_index))
+                } else {
+                    None
                 }
-                None
             }
             SelectMessage::Confirm => {
                 if state.is_open && !state.options.is_empty() {
                     let old_selection = state.selected_index;
-                    state.selected_index = Some(state.highlighted_index);
+                    let highlighted = state.highlighted_index;
+                    state.selected_index = Some(highlighted);
                     state.is_open = false;
 
-                    // Emit output only if selection changed or confirmed
                     if old_selection != state.selected_index {
-                        Some(SelectOutput::Changed(state.selected_index))
+                        Some(SelectOutput::Selected(state.options[highlighted].clone()))
                     } else {
-                        Some(SelectOutput::Submitted(state.highlighted_index))
+                        Some(SelectOutput::Submitted(highlighted))
                     }
                 } else {
                     None

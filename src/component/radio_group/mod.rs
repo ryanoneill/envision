@@ -11,12 +11,12 @@
 //!
 //! // Create a radio group with options
 //! let mut state = RadioGroupState::new(vec!["Small", "Medium", "Large"]);
-//! assert_eq!(state.selected_index(), 0);
+//! assert_eq!(state.selected_index(), Some(0));
 //!
 //! // Navigate down - immediately selects next option
 //! let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-//! assert_eq!(output, Some(RadioOutput::Selected("Medium")));
-//! assert_eq!(state.selected_index(), 1);
+//! assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
+//! assert_eq!(state.selected_index(), Some(1));
 //!
 //! // Confirm selection (e.g., for form submission)
 //! let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Confirm);
@@ -54,6 +54,8 @@ pub enum RadioOutput<T: Clone> {
     Selected(T),
     /// The current selection was confirmed (Enter pressed).
     Confirmed(T),
+    /// The selection changed during navigation (contains the new index).
+    SelectionChanged(usize),
 }
 
 /// State for a RadioGroup component.
@@ -61,8 +63,8 @@ pub enum RadioOutput<T: Clone> {
 pub struct RadioGroupState<T: Clone> {
     /// The available options.
     options: Vec<T>,
-    /// The currently selected index.
-    selected: usize,
+    /// The currently selected index, or `None` if empty.
+    selected: Option<usize>,
     /// Whether the radio group is focused.
     focused: bool,
     /// Whether the radio group is disabled.
@@ -73,7 +75,7 @@ impl<T: Clone> Default for RadioGroupState<T> {
     fn default() -> Self {
         Self {
             options: Vec::new(),
-            selected: 0,
+            selected: None,
             focused: false,
             disabled: false,
         }
@@ -84,7 +86,7 @@ impl<T: Clone> RadioGroupState<T> {
     /// Creates a new radio group with the given options.
     ///
     /// The first option is selected by default. If the options are empty,
-    /// no selection is possible.
+    /// the selection is `None`.
     ///
     /// # Example
     ///
@@ -92,13 +94,14 @@ impl<T: Clone> RadioGroupState<T> {
     /// use envision::component::RadioGroupState;
     ///
     /// let state = RadioGroupState::new(vec!["Option A", "Option B", "Option C"]);
-    /// assert_eq!(state.selected_index(), 0);
+    /// assert_eq!(state.selected_index(), Some(0));
     /// assert_eq!(state.selected(), Some(&"Option A"));
     /// ```
     pub fn new(options: Vec<T>) -> Self {
+        let selected = if options.is_empty() { None } else { Some(0) };
         Self {
             options,
-            selected: 0,
+            selected,
             focused: false,
             disabled: false,
         }
@@ -107,7 +110,7 @@ impl<T: Clone> RadioGroupState<T> {
     /// Creates a radio group with a specific initial selection.
     ///
     /// If the selected index is out of bounds, it will be clamped to the
-    /// last valid index.
+    /// last valid index. Returns `None` selection for empty options.
     ///
     /// # Example
     ///
@@ -115,14 +118,14 @@ impl<T: Clone> RadioGroupState<T> {
     /// use envision::component::RadioGroupState;
     ///
     /// let state = RadioGroupState::with_selected(vec!["A", "B", "C"], 1);
-    /// assert_eq!(state.selected_index(), 1);
+    /// assert_eq!(state.selected_index(), Some(1));
     /// assert_eq!(state.selected(), Some(&"B"));
     /// ```
     pub fn with_selected(options: Vec<T>, selected: usize) -> Self {
         let selected = if options.is_empty() {
-            0
+            None
         } else {
-            selected.min(options.len() - 1)
+            Some(selected.min(options.len() - 1))
         };
         Self {
             options,
@@ -138,15 +141,17 @@ impl<T: Clone> RadioGroupState<T> {
     }
 
     /// Returns the currently selected index.
-    pub fn selected_index(&self) -> usize {
+    ///
+    /// Returns `None` if the options are empty.
+    pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
 
     /// Returns a reference to the currently selected option.
     ///
-    /// Returns `None` if the options are empty.
+    /// Returns `None` if the options are empty or no selection exists.
     pub fn selected(&self) -> Option<&T> {
-        self.options.get(self.selected)
+        self.options.get(self.selected?)
     }
 
     /// Sets the selected index.
@@ -154,7 +159,7 @@ impl<T: Clone> RadioGroupState<T> {
     /// If the index is out of bounds, it will be ignored.
     pub fn set_selected(&mut self, index: usize) {
         if index < self.options.len() {
-            self.selected = index;
+            self.selected = Some(index);
         }
     }
 
@@ -213,7 +218,7 @@ impl<T: Clone> RadioGroupState<T> {
 ///
 /// // Navigate to select "Medium"
 /// let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-/// assert_eq!(output, Some(RadioOutput::Selected("Medium")));
+/// assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
 ///
 /// // Focus the component for visual feedback
 /// RadioGroup::<&str>::set_focused(&mut state, true);
@@ -238,34 +243,30 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
             return None;
         }
 
+        let selected = state.selected?;
+
         match msg {
             RadioMessage::Up => {
-                if state.selected > 0 {
-                    state.selected -= 1;
-                    state
-                        .options
-                        .get(state.selected)
-                        .cloned()
-                        .map(RadioOutput::Selected)
+                if selected > 0 {
+                    let new_index = selected - 1;
+                    state.selected = Some(new_index);
+                    Some(RadioOutput::SelectionChanged(new_index))
                 } else {
                     None
                 }
             }
             RadioMessage::Down => {
-                if state.selected < state.options.len() - 1 {
-                    state.selected += 1;
-                    state
-                        .options
-                        .get(state.selected)
-                        .cloned()
-                        .map(RadioOutput::Selected)
+                if selected < state.options.len() - 1 {
+                    let new_index = selected + 1;
+                    state.selected = Some(new_index);
+                    Some(RadioOutput::SelectionChanged(new_index))
                 } else {
                     None
                 }
             }
             RadioMessage::Confirm => state
                 .options
-                .get(state.selected)
+                .get(selected)
                 .cloned()
                 .map(RadioOutput::Confirmed),
         }
@@ -277,12 +278,13 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
             .iter()
             .enumerate()
             .map(|(i, option)| {
-                let indicator = if i == state.selected { "(•)" } else { "( )" };
+                let is_selected = state.selected == Some(i);
+                let indicator = if is_selected { "(•)" } else { "( )" };
                 let text = format!("{} {}", indicator, option);
 
                 let style = if state.disabled {
                     theme.disabled_style()
-                } else if i == state.selected && state.focused {
+                } else if is_selected && state.focused {
                     theme.focused_style()
                 } else {
                     theme.normal_style()

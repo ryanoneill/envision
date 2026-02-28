@@ -9,6 +9,15 @@ fn test_init() {
 }
 
 #[test]
+fn test_new() {
+    let state = InputFieldState::new();
+    assert!(state.is_empty());
+    assert_eq!(state.value(), "");
+    assert_eq!(state.cursor_position(), 0);
+    assert_eq!(state.placeholder(), "");
+}
+
+#[test]
 fn test_with_value() {
     let state = InputFieldState::with_value("hello");
     assert_eq!(state.value(), "hello");

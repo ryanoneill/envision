@@ -255,6 +255,23 @@ impl AccordionState {
         self.panels.push(panel);
     }
 
+    /// Removes a panel by index.
+    ///
+    /// If the index is out of bounds, this is a no-op.
+    /// Adjusts the focused index after removal so it remains valid.
+    /// If the accordion becomes empty, the focused index is reset to 0.
+    pub fn remove_panel(&mut self, index: usize) {
+        if index >= self.panels.len() {
+            return;
+        }
+        self.panels.remove(index);
+        if self.panels.is_empty() {
+            self.focused_index = 0;
+        } else if self.focused_index >= self.panels.len() {
+            self.focused_index = self.panels.len() - 1;
+        }
+    }
+
     /// Sets the disabled state.
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;

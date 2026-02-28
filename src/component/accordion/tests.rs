@@ -137,6 +137,42 @@ fn test_add_panel() {
 }
 
 #[test]
+fn test_remove_panel() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")]);
+    state.remove_panel(1);
+    assert_eq!(state.len(), 2);
+    assert_eq!(state.panels()[0].title(), "A");
+    assert_eq!(state.panels()[1].title(), "C");
+}
+
+#[test]
+fn test_remove_panel_adjusts_focused_index() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")]);
+    // Focus is on index 0 by default, move to last
+    Accordion::update(&mut state, AccordionMessage::Last);
+    assert_eq!(state.focused_index(), 2);
+
+    // Remove last panel, focused index should clamp
+    state.remove_panel(2);
+    assert_eq!(state.focused_index(), 1);
+}
+
+#[test]
+fn test_remove_panel_to_empty() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1")]);
+    state.remove_panel(0);
+    assert!(state.is_empty());
+    assert_eq!(state.focused_index(), 0);
+}
+
+#[test]
+fn test_remove_panel_out_of_bounds() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1")]);
+    state.remove_panel(5);
+    assert_eq!(state.len(), 1); // Unchanged
+}
+
+#[test]
 fn test_set_disabled() {
     let mut state = AccordionState::default();
     state.set_disabled(true);
