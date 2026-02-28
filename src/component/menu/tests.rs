@@ -3,25 +3,25 @@ use super::*;
 #[test]
 fn test_menu_item_new() {
     let item = MenuItem::new("File");
-    assert_eq!(item.label, "File");
-    assert!(item.enabled);
+    assert_eq!(item.label(), "File");
+    assert!(item.is_enabled());
 }
 
 #[test]
 fn test_menu_item_disabled() {
     let item = MenuItem::disabled("Save");
-    assert_eq!(item.label, "Save");
-    assert!(!item.enabled);
+    assert_eq!(item.label(), "Save");
+    assert!(!item.is_enabled());
 }
 
 #[test]
 fn test_menu_item_set_enabled() {
     let mut item = MenuItem::new("Edit");
     item.set_enabled(false);
-    assert!(!item.enabled);
+    assert!(!item.is_enabled());
 
     item.set_enabled(true);
-    assert!(item.enabled);
+    assert!(item.is_enabled());
 }
 
 #[test]
@@ -44,7 +44,7 @@ fn test_set_items() {
     let mut state = MenuState::new(vec![MenuItem::new("A")]);
     state.set_items(vec![MenuItem::new("X"), MenuItem::new("Y")]);
     assert_eq!(state.items().len(), 2);
-    assert_eq!(state.items()[0].label, "X");
+    assert_eq!(state.items()[0].label(), "X");
 }
 
 #[test]
@@ -95,7 +95,7 @@ fn test_selected_item() {
     let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
 
     let item = state.selected_item().unwrap();
-    assert_eq!(item.label, "File");
+    assert_eq!(item.label(), "File");
 }
 
 #[test]

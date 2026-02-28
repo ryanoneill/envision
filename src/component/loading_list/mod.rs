@@ -78,8 +78,10 @@ impl ItemState {
         match self {
             Self::Ready => " ",
             Self::Loading => {
-                const FRAMES: [&str; 4] = ["⠋", "⠙", "⠹", "⠸"];
-                FRAMES[spinner_frame % FRAMES.len()]
+                // Braille dots animation matching SpinnerStyle::Dots
+                const LOADING_FRAMES: [&str; 10] =
+                    ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+                LOADING_FRAMES[spinner_frame % LOADING_FRAMES.len()]
             }
             Self::Error(_) => "✗",
         }

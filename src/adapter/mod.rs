@@ -29,4 +29,4 @@
 
 mod dual;
 
-pub use dual::DualBackend;
+pub use dual::{DualBackend, DualBackendBuilder};

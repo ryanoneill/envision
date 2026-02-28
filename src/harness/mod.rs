@@ -32,5 +32,7 @@ mod test_harness;
 
 pub use assertions::{Assertion, AssertionError, AssertionResult};
 pub use async_harness::AsyncTestHarness;
-pub use snapshot::{Snapshot, SnapshotFormat};
+pub use snapshot::{
+    assert_snapshot_eq, assert_snapshot_text, Snapshot, SnapshotFormat, SnapshotTest,
+};
 pub use test_harness::TestHarness;

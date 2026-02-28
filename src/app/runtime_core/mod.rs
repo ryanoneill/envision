@@ -115,3 +115,6 @@ pub(crate) enum ProcessEventResult<M> {
     /// An event was processed and produced a message to dispatch.
     Dispatch(M),
 }
+
+#[cfg(test)]
+mod tests;
