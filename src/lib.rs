@@ -107,38 +107,39 @@ pub use input::{Event, EventQueue};
 pub use overlay::{Overlay, OverlayAction, OverlayStack};
 pub use theme::Theme;
 
-/// Prelude module for convenient imports
+/// Prelude module for convenient imports.
+///
+/// Provides the essential framework types needed by most applications.
+/// Individual component types (e.g., `ButtonState`, `CheckboxMessage`) should
+/// be imported directly from their modules:
+///
+/// ```rust,ignore
+/// use envision::prelude::*;
+/// use envision::component::{Button, ButtonState, ButtonMessage};
+/// ```
 pub mod prelude {
-    pub use crate::adapter::DualBackend;
-    pub use crate::annotation::{Annotate, Annotation, AnnotationRegistry, RegionInfo, WidgetType};
-    pub use crate::app::{
-        App, AsyncCommandHandler, AsyncRuntime, AsyncRuntimeConfig, Command, Runtime,
-        RuntimeConfig, Subscription, SubscriptionExt, TickSubscription, TimerSubscription, Update,
-    };
-    pub use crate::backend::{CaptureBackend, EnhancedCell, FrameSnapshot, OutputFormat};
-    pub use crate::component::{
-        Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Breadcrumb,
-        BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Button,
-        ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
-        CheckboxState, Column, Component, Dialog, DialogButton, DialogMessage, DialogOutput,
-        DialogState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, FocusManager,
-        Focusable, InputField, InputFieldState, InputMessage, InputOutput, ListMessage, ListOutput,
-        Menu, MenuItem, MenuMessage, MenuOutput, MenuState, ProgressBar, ProgressBarState,
-        ProgressMessage, ProgressOutput, RadioGroup, RadioGroupState, RadioMessage, RadioOutput,
-        Select, SelectMessage, SelectOutput, SelectState, SelectableList, SelectableListState,
-        SortDirection, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar,
-        StatusBarItem, StatusBarMessage, StatusBarOutput, StatusBarState, StatusBarStyle,
-        TabMessage, TabOutput, Table, TableMessage, TableOutput, TableRow, TableState, Tabs,
-        TabsState, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState, Toast, ToastItem,
-        ToastLevel, ToastMessage, ToastOutput, ToastState, Toggleable, Tooltip, TooltipMessage,
-        TooltipOutput, TooltipPosition, TooltipState, Tree, TreeMessage, TreeNode, TreeOutput,
-        TreeState,
-    };
-    pub use crate::harness::{
-        Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
-    };
+    // Core framework
+    pub use crate::app::{App, AsyncRuntime, AsyncRuntimeConfig, Command, Runtime, RuntimeConfig};
+
+    // Subscriptions
+    pub use crate::app::{Subscription, SubscriptionExt, Update};
+
+    // Input
     pub use crate::input::{Event, EventQueue, KeyCode, KeyModifiers};
+
+    // Overlay
     pub use crate::overlay::{Overlay, OverlayAction, OverlayStack};
+
+    // Theme
     pub use crate::theme::Theme;
+
+    // Component traits (not individual components)
+    pub use crate::component::{Component, Focusable, Toggleable};
+
+    // Testing essentials
+    pub use crate::backend::{CaptureBackend, EnhancedCell};
+    pub use crate::harness::{AsyncTestHarness, TestHarness};
+
+    // Ratatui re-export
     pub use ratatui::prelude::*;
 }
