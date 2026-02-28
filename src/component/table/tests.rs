@@ -766,3 +766,133 @@ fn test_page_down_at_last() {
     let output = Table::<TestRow>::update(&mut state, TableMessage::PageDown(2));
     assert_eq!(output, None);
 }
+
+// Row Mutation Edge Case Tests
+
+#[test]
+fn test_set_rows_preserves_valid_selection_after_navigation() {
+    let mut state = TableState::new(test_rows(), test_columns());
+
+    // Navigate to index 1
+    Table::<TestRow>::update(&mut state, TableMessage::Down);
+    assert_eq!(state.selected_index(), Some(1));
+
+    // Replace with 5 rows - selection at 1 should be preserved
+    let new_rows = vec![
+        TestRow::new("X", "1"),
+        TestRow::new("Y", "2"),
+        TestRow::new("Z", "3"),
+        TestRow::new("W", "4"),
+        TestRow::new("V", "5"),
+    ];
+    state.set_rows(new_rows);
+    assert_eq!(state.selected_index(), Some(1));
+}
+
+#[test]
+fn test_set_rows_clamps_selection_after_navigation() {
+    let rows: Vec<TestRow> = (0..10)
+        .map(|i| TestRow::new(&format!("Row {}", i), &format!("{}", i)))
+        .collect();
+    let mut state = TableState::new(rows, test_columns());
+
+    // Navigate to index 8
+    for _ in 0..8 {
+        Table::<TestRow>::update(&mut state, TableMessage::Down);
+    }
+    assert_eq!(state.selected_index(), Some(8));
+
+    // Replace with only 3 rows - selection should clamp to last valid index
+    let new_rows = vec![
+        TestRow::new("A", "1"),
+        TestRow::new("B", "2"),
+        TestRow::new("C", "3"),
+    ];
+    state.set_rows(new_rows);
+    assert_eq!(state.selected_index(), Some(2));
+}
+
+#[test]
+fn test_set_rows_to_empty_clears_selection() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    assert_eq!(state.selected_index(), Some(0));
+
+    state.set_rows(vec![]);
+    assert_eq!(state.selected_index(), None);
+}
+
+#[test]
+fn test_sort_after_row_mutation() {
+    let mut state = TableState::new(test_rows(), test_columns());
+
+    // Sort by first column (ascending)
+    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    assert!(state.sort().is_some());
+
+    // Now mutate rows - set_rows resets sort
+    let new_rows = vec![
+        TestRow::new("Zebra", "1"),
+        TestRow::new("Alpha", "2"),
+    ];
+    state.set_rows(new_rows);
+
+    // Sort is cleared by set_rows
+    assert!(state.sort().is_none());
+
+    // Selection was at display index 2 (after sort), clamped to last valid (1)
+    assert_eq!(state.selected_index(), Some(1));
+
+    // Table should still work after mutation - navigate back to first
+    Table::<TestRow>::update(&mut state, TableMessage::First);
+    assert_eq!(state.selected_index(), Some(0));
+    Table::<TestRow>::update(&mut state, TableMessage::Down);
+    assert_eq!(state.selected_index(), Some(1));
+}
+
+#[test]
+fn test_large_table_navigation() {
+    let columns = vec![
+        Column::new("ID", Constraint::Length(10)).sortable(),
+        Column::new("Name", Constraint::Length(10)).sortable(),
+    ];
+    let rows: Vec<TestRow> = (0..1000)
+        .map(|i| TestRow::new(&format!("{}", i), &format!("Row {}", i)))
+        .collect();
+    let mut state = TableState::new(rows, columns);
+
+    // Navigate to middle
+    for _ in 0..500 {
+        Table::<TestRow>::update(&mut state, TableMessage::Down);
+    }
+    assert_eq!(state.selected_index(), Some(500));
+
+    // First/Last
+    Table::<TestRow>::update(&mut state, TableMessage::First);
+    assert_eq!(state.selected_index(), Some(0));
+
+    Table::<TestRow>::update(&mut state, TableMessage::Last);
+    assert_eq!(state.selected_index(), Some(999));
+
+    // PageUp/PageDown
+    Table::<TestRow>::update(&mut state, TableMessage::PageUp(100));
+    assert_eq!(state.selected_index(), Some(899));
+
+    Table::<TestRow>::update(&mut state, TableMessage::PageDown(100));
+    assert_eq!(state.selected_index(), Some(999));
+}
+
+#[test]
+fn test_unicode_cell_content() {
+    let columns = vec![
+        Column::new("名前", Constraint::Length(15)),
+        Column::new("説明", Constraint::Length(15)),
+    ];
+    let rows = vec![
+        TestRow::new("田中太郎", "エンジニア"),
+        TestRow::new("Москва", "город"),
+    ];
+    let mut state = TableState::new(rows, columns);
+
+    Table::<TestRow>::update(&mut state, TableMessage::Down);
+    assert_eq!(state.selected_index(), Some(1));
+}
