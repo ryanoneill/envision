@@ -29,7 +29,9 @@ pub fn render(backend: &CaptureBackend) -> String {
         let mut last_modifiers = crate::backend::cell::SerializableModifier::empty();
 
         for x in 0..width {
-            let cell = backend.cell(x, y).unwrap();
+            let Some(cell) = backend.cell(x, y) else {
+                continue;
+            };
 
             // Check if we need to change styling
             let need_fg_change = cell.fg != last_fg;
@@ -87,7 +89,9 @@ pub fn render_with_legend(backend: &CaptureBackend) -> String {
 
     for y in 0..height {
         for x in 0..width {
-            let cell = backend.cell(x, y).unwrap();
+            let Some(cell) = backend.cell(x, y) else {
+                continue;
+            };
             if cell.fg != SerializableColor::Reset {
                 colors_used.insert(format!("FG: {:?}", cell.fg));
             }
