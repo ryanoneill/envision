@@ -96,3 +96,6 @@ impl<M> CommandHandlerCore<M> {
         self.should_quit = false;
     }
 }
+
+#[cfg(test)]
+mod tests;
