@@ -1,17 +1,16 @@
-//! Shared command handler logic between sync and async command handlers.
+//! Core command handler logic.
 //!
 //! This module provides `CommandHandlerCore`, a struct containing the fields
-//! and methods that are identical between `CommandHandler` and `AsyncCommandHandler`.
+//! and methods for managing sync command results used by `CommandHandler`.
 
 use crate::overlay::Overlay;
 
 use super::command::CommandAction;
 
-/// Core command handler state shared between sync and async handlers.
+/// Core command handler state.
 ///
 /// Contains the fields and methods for managing sync command results
-/// (messages, overlay operations, quit flag) that are identical across
-/// both handler implementations.
+/// (messages, overlay operations, quit flag).
 pub(crate) struct CommandHandlerCore<M> {
     pub(crate) pending_messages: Vec<M>,
     pub(crate) pending_overlay_pushes: Vec<Box<dyn Overlay<M> + Send>>,
@@ -30,11 +29,11 @@ impl<M> CommandHandlerCore<M> {
         }
     }
 
-    /// Processes a sync command action, collecting messages and overlay operations.
+    /// Processes a command action, collecting messages and overlay operations.
     ///
     /// Returns `None` if the action was handled (sync action), or `Some(action)` if
     /// the action is async and needs to be handled by the caller.
-    pub(crate) fn execute_sync_action(
+    pub(crate) fn execute_action(
         &mut self,
         action: CommandAction<M>,
     ) -> Option<CommandAction<M>> {

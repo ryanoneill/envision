@@ -79,7 +79,7 @@ pub mod theme;
 pub use adapter::{DualBackend, DualBackendBuilder};
 pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
 pub use app::{
-    App, AsyncCommandHandler, AsyncRuntime, AsyncRuntimeConfig, Command, DebounceSubscription,
+    App, AsyncRuntime, AsyncRuntimeConfig, Command, DebounceSubscription,
     FilterSubscription, IntervalImmediateSubscription, Runtime, RuntimeConfig, Subscription,
     SubscriptionExt, TakeSubscription, TerminalEventSubscription, ThrottleSubscription,
     TickSubscription, TimerSubscription,

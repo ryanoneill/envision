@@ -14,13 +14,7 @@ use ratatui::Terminal;
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 
-/// A boxed error that is Send + Sync.
-///
-/// This type is used for collecting errors from async operations that can
-/// fail. It allows any error type that implements the standard error traits.
-pub type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
-
-use super::async_command::AsyncCommandHandler;
+use super::command::{BoxedError, CommandHandler};
 use super::model::App;
 use super::runtime_core::{ProcessEventResult, RuntimeCore};
 use super::subscription::{BoxedSubscription, Subscription};
@@ -109,8 +103,8 @@ pub struct AsyncRuntime<A: App, B: Backend> {
     /// Shared runtime state (state, terminal, events, overlays, theme)
     core: RuntimeCore<A, B>,
 
-    /// Async command handler
-    commands: AsyncCommandHandler<A::Message>,
+    /// Command handler
+    commands: CommandHandler<A::Message>,
 
     /// Configuration
     config: AsyncRuntimeConfig,
@@ -202,7 +196,7 @@ impl<A: App, B: Backend> AsyncRuntime<A, B> {
         let (error_tx, error_rx) = mpsc::channel(config.message_channel_capacity);
         let cancel_token = CancellationToken::new();
 
-        let mut commands = AsyncCommandHandler::new();
+        let mut commands = CommandHandler::new();
         commands.execute(init_cmd);
 
         let mut runtime = Self {

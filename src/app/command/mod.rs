@@ -303,35 +303,113 @@ impl<M> std::fmt::Debug for Command<M> {
     }
 }
 
+/// A boxed future that produces an optional message.
+pub type BoxedFuture<M> = Pin<Box<dyn Future<Output = Option<M>> + Send + 'static>>;
+
+/// A boxed future that can fail - errors are sent to the error channel.
+pub type BoxedFallibleFuture<M> =
+    Pin<Box<dyn Future<Output = AsyncFallibleResult<M>> + Send + 'static>>;
+
 /// Handles execution of commands.
 ///
-/// This is used by the runtime to process commands returned from updates.
+/// This handler processes sync actions immediately and collects async futures
+/// for later spawning as tokio tasks.
 pub struct CommandHandler<M> {
     core: super::command_core::CommandHandlerCore<M>,
+    pending_futures: Vec<BoxedFuture<M>>,
+    pending_fallible_futures: Vec<BoxedFallibleFuture<M>>,
 }
 
-impl<M> CommandHandler<M> {
+impl<M: Send + 'static> CommandHandler<M> {
     /// Creates a new command handler.
     pub fn new() -> Self {
         Self {
             core: super::command_core::CommandHandlerCore::new(),
+            pending_futures: Vec::new(),
+            pending_fallible_futures: Vec::new(),
         }
     }
 
-    /// Executes a command and collects any resulting messages.
+    /// Executes a command, collecting sync messages and async futures.
     ///
-    /// Note: Async actions are skipped by this sync handler. Use `AsyncCommandHandler`
-    /// for full async support.
+    /// Sync actions (Message, Batch, Quit, Callback) are processed immediately.
+    /// Async actions are collected for later spawning via [`spawn_pending`](CommandHandler::spawn_pending).
     pub fn execute(&mut self, command: Command<M>) {
-        for action in command.actions {
-            if self.core.execute_sync_action(action).is_some() {
-                // Async actions are handled by the async runtime
-                #[cfg(debug_assertions)]
-                eprintln!(
-                    "[envision] Warning: Async command ignored by sync Runtime. \
-                     Use AsyncRuntime for async commands."
-                );
+        for action in command.into_actions() {
+            if let Some(async_action) = self.core.execute_action(action) {
+                match async_action {
+                    CommandAction::Async(fut) => {
+                        self.pending_futures.push(fut);
+                    }
+                    CommandAction::AsyncFallible(fut) => {
+                        self.pending_fallible_futures.push(fut);
+                    }
+                    _ => unreachable!("execute_action only returns async actions"),
+                }
             }
+        }
+    }
+
+    /// Spawns all pending async futures as tokio tasks.
+    ///
+    /// Each future is spawned with access to the message sender and cancellation token.
+    /// When a future completes with `Some(message)`, the message is sent to the runtime.
+    ///
+    /// For fallible futures, errors are sent to the error channel instead.
+    pub fn spawn_pending(
+        &mut self,
+        msg_tx: tokio::sync::mpsc::Sender<M>,
+        err_tx: tokio::sync::mpsc::Sender<BoxedError>,
+        cancel: tokio_util::sync::CancellationToken,
+    ) {
+        // Spawn regular async futures
+        for fut in self.pending_futures.drain(..) {
+            let tx = msg_tx.clone();
+            let cancel = cancel.clone();
+
+            tokio::spawn(async move {
+                tokio::select! {
+                    result = fut => {
+                        if let Some(msg) = result {
+                            // Ignore send errors - the runtime may have shut down
+                            let _ = tx.send(msg).await;
+                        }
+                    }
+                    _ = cancel.cancelled() => {
+                        // Task was cancelled, exit gracefully
+                    }
+                }
+            });
+        }
+
+        // Spawn fallible async futures
+        for fut in self.pending_fallible_futures.drain(..) {
+            let msg_tx = msg_tx.clone();
+            let err_tx = err_tx.clone();
+            let cancel = cancel.clone();
+
+            tokio::spawn(async move {
+                tokio::select! {
+                    result = fut => {
+                        match result {
+                            Ok(Some(msg)) => {
+                                // Send message on success
+                                let _ = msg_tx.send(msg).await;
+                            }
+                            Ok(None) => {
+                                // No message to send
+                            }
+                            Err(e) => {
+                                // Send error to error channel
+                                let _ = err_tx.send(e).await;
+                            }
+                        }
+                    }
+                    _ = cancel.cancelled() => {
+                        // Task was cancelled, exit gracefully
+                    }
+                }
+            });
         }
     }
 
@@ -350,6 +428,16 @@ impl<M> CommandHandler<M> {
         self.core.take_overlay_pops()
     }
 
+    /// Returns true if any async futures are pending.
+    pub fn has_pending_futures(&self) -> bool {
+        !self.pending_futures.is_empty()
+    }
+
+    /// Returns the number of pending async futures.
+    pub fn pending_future_count(&self) -> usize {
+        self.pending_futures.len()
+    }
+
     /// Returns true if a quit command was executed.
     pub fn should_quit(&self) -> bool {
         self.core.should_quit()
@@ -361,7 +449,7 @@ impl<M> CommandHandler<M> {
     }
 }
 
-impl<M> Default for CommandHandler<M> {
+impl<M: Send + 'static> Default for CommandHandler<M> {
     fn default() -> Self {
         Self::new()
     }
