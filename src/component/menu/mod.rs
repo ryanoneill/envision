@@ -116,8 +116,8 @@ pub enum MenuOutput {
 pub struct MenuState {
     /// Menu items.
     items: Vec<MenuItem>,
-    /// Currently selected item index.
-    selected_index: usize,
+    /// Currently selected item index, or `None` if no items.
+    selected_index: Option<usize>,
     /// Whether the menu is focused.
     focused: bool,
 }
@@ -137,9 +137,10 @@ impl MenuState {
     /// assert_eq!(state.items().len(), 2);
     /// ```
     pub fn new(items: Vec<MenuItem>) -> Self {
+        let selected_index = if items.is_empty() { None } else { Some(0) };
         Self {
             items,
-            selected_index: 0,
+            selected_index,
             focused: false,
         }
     }
@@ -151,36 +152,47 @@ impl MenuState {
 
     /// Sets the menu items.
     ///
-    /// Resets selection to 0 if the current selection is out of bounds.
+    /// Resets selection to the first item if the current selection is out of bounds.
+    /// Sets selection to `None` if the new items list is empty.
     pub fn set_items(&mut self, items: Vec<MenuItem>) {
         self.items = items;
-        if self.selected_index >= self.items.len() && !self.items.is_empty() {
-            self.selected_index = 0;
+        if self.items.is_empty() {
+            self.selected_index = None;
+        } else if self.selected_index.map_or(true, |i| i >= self.items.len()) {
+            self.selected_index = Some(0);
         }
     }
 
     /// Adds a menu item.
+    ///
+    /// If this is the first item, it becomes selected.
     pub fn add_item(&mut self, item: MenuItem) {
         self.items.push(item);
+        if self.selected_index.is_none() {
+            self.selected_index = Some(0);
+        }
     }
 
     /// Returns the currently selected item index.
-    pub fn selected_index(&self) -> usize {
+    ///
+    /// Returns `None` if the menu is empty.
+    pub fn selected_index(&self) -> Option<usize> {
         self.selected_index
     }
 
     /// Sets the selected item index.
     ///
     /// If the index is out of bounds, it will be clamped to the valid range.
+    /// Has no effect on an empty menu.
     pub fn set_selected_index(&mut self, index: usize) {
         if !self.items.is_empty() {
-            self.selected_index = index.min(self.items.len() - 1);
+            self.selected_index = Some(index.min(self.items.len() - 1));
         }
     }
 
     /// Returns the currently selected item.
     pub fn selected_item(&self) -> Option<&MenuItem> {
-        self.items.get(self.selected_index)
+        self.items.get(self.selected_index?)
     }
 }
 
@@ -240,26 +252,28 @@ impl Component for Menu {
             return None;
         }
 
+        let selected = state.selected_index?;
+
         match msg {
             MenuMessage::SelectNext => {
                 // Move to next item, wrapping around
-                state.selected_index = (state.selected_index + 1) % state.items.len();
+                state.selected_index = Some((selected + 1) % state.items.len());
                 None
             }
             MenuMessage::SelectPrevious => {
                 // Move to previous item, wrapping around
-                if state.selected_index == 0 {
-                    state.selected_index = state.items.len() - 1;
+                if selected == 0 {
+                    state.selected_index = Some(state.items.len() - 1);
                 } else {
-                    state.selected_index -= 1;
+                    state.selected_index = Some(selected - 1);
                 }
                 None
             }
             MenuMessage::Activate => {
                 // Activate only if item is enabled
-                if let Some(item) = state.items.get(state.selected_index) {
+                if let Some(item) = state.items.get(selected) {
                     if item.is_enabled() {
-                        Some(MenuOutput::ItemActivated(state.selected_index))
+                        Some(MenuOutput::ItemActivated(selected))
                     } else {
                         None
                     }
@@ -269,7 +283,7 @@ impl Component for Menu {
             }
             MenuMessage::SelectItem(index) => {
                 if index < state.items.len() {
-                    state.selected_index = index;
+                    state.selected_index = Some(index);
                 }
                 None
             }
@@ -284,7 +298,7 @@ impl Component for Menu {
                 menu_text.push_str("  ");
             }
 
-            let item_text = if idx == state.selected_index && state.focused {
+            let item_text = if Some(idx) == state.selected_index && state.focused {
                 format!("[{}]", item.label())
             } else {
                 item.label().to_string()

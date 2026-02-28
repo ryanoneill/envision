@@ -5,7 +5,7 @@ use super::*;
 #[test]
 fn test_new() {
     let state = TabsState::new(vec!["Tab1", "Tab2", "Tab3"]);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.len(), 3);
     assert!(!state.is_empty());
 }
@@ -13,7 +13,7 @@ fn test_new() {
 #[test]
 fn test_new_empty() {
     let state: TabsState<&str> = TabsState::new(vec![]);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), None);
     assert_eq!(state.len(), 0);
     assert!(state.is_empty());
 }
@@ -22,26 +22,26 @@ fn test_new_empty() {
 fn test_default() {
     let state: TabsState<String> = TabsState::default();
     assert!(state.is_empty());
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
 fn test_with_selected() {
     let state = TabsState::with_selected(vec!["A", "B", "C"], 1);
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected(), Some(&"B"));
 }
 
 #[test]
 fn test_with_selected_clamps() {
     let state = TabsState::with_selected(vec!["A", "B", "C"], 10);
-    assert_eq!(state.selected_index(), 2); // Clamped to last valid index
+    assert_eq!(state.selected_index(), Some(2)); // Clamped to last valid index
 }
 
 #[test]
 fn test_with_selected_empty() {
     let state: TabsState<&str> = TabsState::with_selected(vec![], 5);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), None);
 }
 
 // Accessors
@@ -49,7 +49,7 @@ fn test_with_selected_empty() {
 #[test]
 fn test_selected_index() {
     let state = TabsState::with_selected(vec!["A", "B", "C"], 2);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -68,11 +68,11 @@ fn test_selected_empty() {
 fn test_set_selected() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     state.set_selected(2);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 
     // Test clamping
     state.set_selected(100);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -103,7 +103,7 @@ fn test_left() {
     let mut state = TabsState::with_selected(vec!["A", "B", "C"], 1);
     let output = Tabs::<&str>::update(&mut state, TabMessage::Left);
     assert_eq!(output, Some(TabOutput::Selected("A")));
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -111,7 +111,7 @@ fn test_left_at_first() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     let output = Tabs::<&str>::update(&mut state, TabMessage::Left);
     assert_eq!(output, None);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -119,7 +119,7 @@ fn test_right() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     let output = Tabs::<&str>::update(&mut state, TabMessage::Right);
     assert_eq!(output, Some(TabOutput::Selected("B")));
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
 }
 
 #[test]
@@ -127,7 +127,7 @@ fn test_right_at_last() {
     let mut state = TabsState::with_selected(vec!["A", "B", "C"], 2);
     let output = Tabs::<&str>::update(&mut state, TabMessage::Right);
     assert_eq!(output, None);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -135,7 +135,7 @@ fn test_select() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     let output = Tabs::<&str>::update(&mut state, TabMessage::Select(2));
     assert_eq!(output, Some(TabOutput::Selected("C")));
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -150,7 +150,7 @@ fn test_select_clamps() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     let output = Tabs::<&str>::update(&mut state, TabMessage::Select(100));
     assert_eq!(output, Some(TabOutput::Selected("C"))); // Clamped to last
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -158,7 +158,7 @@ fn test_first() {
     let mut state = TabsState::with_selected(vec!["A", "B", "C"], 2);
     let output = Tabs::<&str>::update(&mut state, TabMessage::First);
     assert_eq!(output, Some(TabOutput::Selected("A")));
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -173,7 +173,7 @@ fn test_last() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     let output = Tabs::<&str>::update(&mut state, TabMessage::Last);
     assert_eq!(output, Some(TabOutput::Selected("C")));
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -218,7 +218,7 @@ fn test_disabled() {
     assert_eq!(Tabs::<&str>::update(&mut state, TabMessage::Confirm), None);
 
     // State should not have changed
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -353,7 +353,7 @@ fn test_clone() {
     state.disabled = true;
 
     let cloned = state.clone();
-    assert_eq!(cloned.selected_index(), 1);
+    assert_eq!(cloned.selected_index(), Some(1));
     assert!(cloned.focused);
     assert!(cloned.disabled);
     assert_eq!(cloned.tabs(), &["A", "B", "C"]);
@@ -373,28 +373,28 @@ fn test_full_workflow() {
     Tabs::<&str>::set_focused(&mut state, true);
 
     // Start at first tab
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.selected(), Some(&"Home"));
 
     // Navigate right twice
     Tabs::<&str>::update(&mut state, TabMessage::Right);
     Tabs::<&str>::update(&mut state, TabMessage::Right);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
     assert_eq!(state.selected(), Some(&"Profile"));
 
     // Navigate left once
     Tabs::<&str>::update(&mut state, TabMessage::Left);
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected(), Some(&"Settings"));
 
     // Jump to last
     Tabs::<&str>::update(&mut state, TabMessage::Last);
-    assert_eq!(state.selected_index(), 3);
+    assert_eq!(state.selected_index(), Some(3));
     assert_eq!(state.selected(), Some(&"Help"));
 
     // Jump to first
     Tabs::<&str>::update(&mut state, TabMessage::First);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.selected(), Some(&"Home"));
 
     // Confirm selection

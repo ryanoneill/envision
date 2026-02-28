@@ -104,14 +104,22 @@ fn test_state_new() {
     let state = TreeState::new(roots);
 
     assert_eq!(state.roots().len(), 1);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert!(!state.is_empty());
+}
+
+#[test]
+fn test_state_new_empty() {
+    let state: TreeState<()> = TreeState::new(Vec::new());
+    assert!(state.is_empty());
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
 fn test_state_default() {
     let state: TreeState<()> = TreeState::default();
     assert!(state.is_empty());
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
@@ -120,6 +128,14 @@ fn test_state_set_roots() {
     state.set_roots(vec![TreeNode::new("Root", 1)]);
 
     assert_eq!(state.roots().len(), 1);
+    assert_eq!(state.selected_index(), Some(0));
+}
+
+#[test]
+fn test_state_set_roots_to_empty() {
+    let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
+    state.set_roots(Vec::new());
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
@@ -178,8 +194,14 @@ fn test_state_selected_path() {
     let mut state = TreeState::new(vec![root]);
     assert_eq!(state.selected_path(), Some(vec![0]));
 
-    state.selected_index = 1;
+    state.selected_index = Some(1);
     assert_eq!(state.selected_path(), Some(vec![0, 0]));
+}
+
+#[test]
+fn test_state_selected_path_empty() {
+    let state: TreeState<()> = TreeState::new(Vec::new());
+    assert_eq!(state.selected_path(), None);
 }
 
 #[test]
@@ -193,9 +215,15 @@ fn test_state_selected_node() {
     assert!(selected.is_some());
     assert_eq!(selected.unwrap().data(), &"root_data");
 
-    state.selected_index = 1;
+    state.selected_index = Some(1);
     let selected = state.selected_node();
     assert_eq!(selected.unwrap().data(), &"child_data");
+}
+
+#[test]
+fn test_state_selected_node_empty() {
+    let state: TreeState<()> = TreeState::new(Vec::new());
+    assert!(state.selected_node().is_none());
 }
 
 #[test]
@@ -224,7 +252,14 @@ fn test_state_collapse_all() {
 
     state.collapse_all();
     assert_eq!(state.visible_count(), 1);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
+}
+
+#[test]
+fn test_state_collapse_all_empty() {
+    let mut state: TreeState<()> = TreeState::new(Vec::new());
+    state.collapse_all();
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
@@ -243,11 +278,11 @@ fn test_state_clone() {
     root.add_child(TreeNode::new("Child", ()));
 
     let mut state = TreeState::new(vec![root]);
-    state.selected_index = 1;
+    state.selected_index = Some(1);
 
     let cloned = state.clone();
     assert_eq!(cloned.visible_count(), 2);
-    assert_eq!(cloned.selected_index(), 1);
+    assert_eq!(cloned.selected_index(), Some(1));
 }
 
 // Tree component tests
@@ -256,6 +291,7 @@ fn test_state_clone() {
 fn test_init() {
     let state: TreeState<()> = Tree::init();
     assert!(state.is_empty());
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
@@ -264,10 +300,10 @@ fn test_select_next() {
     root.add_child(TreeNode::new("Child", ()));
 
     let mut state = TreeState::new(vec![root]);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 
     Tree::update(&mut state, TreeMessage::SelectNext);
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
 }
 
 #[test]
@@ -276,7 +312,7 @@ fn test_select_next_at_end() {
     let mut state = TreeState::new(state_roots);
 
     Tree::<()>::update(&mut state, TreeMessage::SelectNext);
-    assert_eq!(state.selected_index(), 0); // Stays at 0
+    assert_eq!(state.selected_index(), Some(0)); // Stays at 0
 }
 
 #[test]
@@ -285,10 +321,10 @@ fn test_select_previous() {
     root.add_child(TreeNode::new("Child", ()));
 
     let mut state = TreeState::new(vec![root]);
-    state.selected_index = 1;
+    state.selected_index = Some(1);
 
     Tree::update(&mut state, TreeMessage::SelectPrevious);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -297,7 +333,7 @@ fn test_select_previous_at_start() {
     let mut state = TreeState::new(state_roots);
 
     Tree::<()>::update(&mut state, TreeMessage::SelectPrevious);
-    assert_eq!(state.selected_index(), 0); // Stays at 0
+    assert_eq!(state.selected_index(), Some(0)); // Stays at 0
 }
 
 #[test]
@@ -363,13 +399,13 @@ fn test_collapse_adjusts_selection() {
     root.add_child(TreeNode::new("Child", ()));
 
     let mut state = TreeState::new(vec![root]);
-    state.selected_index = 1; // Select child
+    state.selected_index = Some(1); // Select child
 
     Tree::update(&mut state, TreeMessage::SelectPrevious); // Go to root
     Tree::update(&mut state, TreeMessage::Collapse);
 
     // Selection should still be valid
-    assert!(state.selected_index() < state.visible_count());
+    assert!(state.selected_index().unwrap() < state.visible_count());
 }
 
 #[test]
@@ -420,7 +456,7 @@ fn test_select_child() {
     root.add_child(TreeNode::new("Child", ()));
 
     let mut state = TreeState::new(vec![root]);
-    state.selected_index = 1;
+    state.selected_index = Some(1);
 
     let output = Tree::update(&mut state, TreeMessage::Select);
     assert_eq!(output, Some(TreeOutput::Selected(vec![0, 0])));
@@ -704,15 +740,15 @@ fn test_collapse_with_child_selected() {
 
     let mut state = TreeState::new(vec![root]);
     // Select the last child
-    state.selected_index = 2;
+    state.selected_index = Some(2);
 
     // Navigate back to root and collapse
-    state.selected_index = 0;
+    state.selected_index = Some(0);
     let output = Tree::update(&mut state, TreeMessage::Collapse);
 
     assert_eq!(output, Some(TreeOutput::Collapsed(vec![0])));
     // Selection should still be valid
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -725,15 +761,15 @@ fn test_toggle_collapse_adjusts_selection() {
 
     let mut state = TreeState::new(vec![root]);
     // Select the last child (index 3)
-    state.selected_index = 3;
+    state.selected_index = Some(3);
 
     // Navigate to root and toggle (collapse)
-    state.selected_index = 0;
+    state.selected_index = Some(0);
     let output = Tree::update(&mut state, TreeMessage::Toggle);
 
     assert_eq!(output, Some(TreeOutput::Collapsed(vec![0])));
     // Selection should be clamped to valid range
-    assert!(state.selected_index() < state.visible_count());
+    assert!(state.selected_index().unwrap() < state.visible_count());
 }
 
 #[test]
@@ -747,7 +783,7 @@ fn test_get_node_deep_path() {
 
     // Select grandchild
     let mut temp_state = state.clone();
-    temp_state.selected_index = 2;
+    temp_state.selected_index = Some(2);
     let selected = temp_state.selected_node();
     assert!(selected.is_some());
     assert_eq!(*selected.unwrap().data(), 2);

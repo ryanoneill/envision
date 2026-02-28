@@ -12,13 +12,13 @@
 //! let mut state = TabsState::new(vec!["Home", "Settings", "Help"]);
 //! Tabs::set_focused(&mut state, true);
 //!
-//! assert_eq!(state.selected_index(), 0);
+//! assert_eq!(state.selected_index(), Some(0));
 //! assert_eq!(state.selected(), Some(&"Home"));
 //!
 //! // Navigate right
 //! let output = Tabs::<&str>::update(&mut state, TabMessage::Right);
 //! assert_eq!(output, Some(TabOutput::Selected("Settings")));
-//! assert_eq!(state.selected_index(), 1);
+//! assert_eq!(state.selected_index(), Some(1));
 //! ```
 
 use std::fmt::Display;
@@ -64,8 +64,8 @@ pub enum TabOutput<T: Clone> {
 pub struct TabsState<T: Clone> {
     /// The available tabs.
     tabs: Vec<T>,
-    /// Currently selected tab index.
-    selected: usize,
+    /// Currently selected tab index, or `None` if empty.
+    selected: Option<usize>,
     /// Whether the component is focused.
     focused: bool,
     /// Whether the component is disabled.
@@ -76,7 +76,7 @@ impl<T: Clone> Default for TabsState<T> {
     fn default() -> Self {
         Self {
             tabs: Vec::new(),
-            selected: 0,
+            selected: None,
             focused: false,
             disabled: false,
         }
@@ -86,19 +86,22 @@ impl<T: Clone> Default for TabsState<T> {
 impl<T: Clone> TabsState<T> {
     /// Creates a new tabs state with the first tab selected.
     ///
+    /// If tabs are empty, the selection is `None`.
+    ///
     /// # Example
     ///
     /// ```rust
     /// use envision::component::TabsState;
     ///
     /// let state = TabsState::new(vec!["Tab1", "Tab2", "Tab3"]);
-    /// assert_eq!(state.selected_index(), 0);
+    /// assert_eq!(state.selected_index(), Some(0));
     /// assert_eq!(state.len(), 3);
     /// ```
     pub fn new(tabs: Vec<T>) -> Self {
+        let selected = if tabs.is_empty() { None } else { Some(0) };
         Self {
             tabs,
-            selected: 0,
+            selected,
             focused: false,
             disabled: false,
         }
@@ -106,7 +109,8 @@ impl<T: Clone> TabsState<T> {
 
     /// Creates a tabs state with a specific tab selected.
     ///
-    /// The index is clamped to the valid range.
+    /// The index is clamped to the valid range. Returns `None` selection
+    /// for empty tabs.
     ///
     /// # Example
     ///
@@ -114,43 +118,45 @@ impl<T: Clone> TabsState<T> {
     /// use envision::component::TabsState;
     ///
     /// let state = TabsState::with_selected(vec!["A", "B", "C"], 1);
-    /// assert_eq!(state.selected_index(), 1);
+    /// assert_eq!(state.selected_index(), Some(1));
     /// assert_eq!(state.selected(), Some(&"B"));
     /// ```
     pub fn with_selected(tabs: Vec<T>, selected: usize) -> Self {
-        let clamped = if tabs.is_empty() {
-            0
+        let selected = if tabs.is_empty() {
+            None
         } else {
-            selected.min(tabs.len() - 1)
+            Some(selected.min(tabs.len() - 1))
         };
         Self {
             tabs,
-            selected: clamped,
+            selected,
             focused: false,
             disabled: false,
         }
     }
 
     /// Returns the currently selected index.
-    pub fn selected_index(&self) -> usize {
+    ///
+    /// Returns `None` if there are no tabs.
+    pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
 
     /// Returns the currently selected tab.
     ///
-    /// Returns `None` if there are no tabs.
+    /// Returns `None` if there are no tabs or no selection.
     pub fn selected(&self) -> Option<&T> {
-        self.tabs.get(self.selected)
+        self.tabs.get(self.selected?)
     }
 
     /// Sets the selected tab by index.
     ///
-    /// The index is clamped to the valid range.
+    /// The index is clamped to the valid range. Has no effect on empty tabs.
     pub fn set_selected(&mut self, index: usize) {
         if self.tabs.is_empty() {
-            self.selected = 0;
+            self.selected = None;
         } else {
-            self.selected = index.min(self.tabs.len() - 1);
+            self.selected = Some(index.min(self.tabs.len() - 1));
         }
     }
 
@@ -183,11 +189,12 @@ impl<T: Clone> TabsState<T> {
     ///
     /// Returns true if the selection changed.
     fn move_left(&mut self) -> bool {
-        if self.selected > 0 {
-            self.selected -= 1;
-            true
-        } else {
-            false
+        match self.selected {
+            Some(idx) if idx > 0 => {
+                self.selected = Some(idx - 1);
+                true
+            }
+            _ => false,
         }
     }
 
@@ -195,11 +202,12 @@ impl<T: Clone> TabsState<T> {
     ///
     /// Returns true if the selection changed.
     fn move_right(&mut self) -> bool {
-        if self.selected < self.tabs.len().saturating_sub(1) {
-            self.selected += 1;
-            true
-        } else {
-            false
+        match self.selected {
+            Some(idx) if idx < self.tabs.len().saturating_sub(1) => {
+                self.selected = Some(idx + 1);
+                true
+            }
+            _ => false,
         }
     }
 }
@@ -270,6 +278,8 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             return None;
         }
 
+        let selected = state.selected?;
+
         match msg {
             TabMessage::Left => {
                 if state.move_left() {
@@ -287,16 +297,16 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             }
             TabMessage::Select(index) => {
                 let clamped = index.min(state.tabs.len().saturating_sub(1));
-                if clamped != state.selected {
-                    state.selected = clamped;
+                if clamped != selected {
+                    state.selected = Some(clamped);
                     state.selected().cloned().map(TabOutput::Selected)
                 } else {
                     None
                 }
             }
             TabMessage::First => {
-                if state.selected != 0 {
-                    state.selected = 0;
+                if selected != 0 {
+                    state.selected = Some(0);
                     state.selected().cloned().map(TabOutput::Selected)
                 } else {
                     None
@@ -304,8 +314,8 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             }
             TabMessage::Last => {
                 let last = state.tabs.len().saturating_sub(1);
-                if state.selected != last {
-                    state.selected = last;
+                if selected != last {
+                    state.selected = Some(last);
                     state.selected().cloned().map(TabOutput::Selected)
                 } else {
                     None
@@ -316,6 +326,8 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        let selected_idx = state.selected.unwrap_or(0);
+
         let titles: Vec<Line> = state
             .tabs
             .iter()
@@ -323,7 +335,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             .map(|(i, tab)| {
                 let style = if state.disabled {
                     theme.disabled_style()
-                } else if i == state.selected {
+                } else if i == selected_idx {
                     theme.selected_style(state.focused)
                 } else {
                     theme.normal_style()
@@ -350,7 +362,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
                     .borders(Borders::ALL)
                     .border_style(border_style),
             )
-            .select(state.selected)
+            .select(selected_idx)
             .highlight_style(highlight_style);
 
         frame.render_widget(tabs_widget, area);

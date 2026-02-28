@@ -28,15 +28,22 @@ fn test_menu_item_set_enabled() {
 fn test_new() {
     let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
     assert_eq!(state.items().len(), 2);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert!(!Menu::is_focused(&state));
+}
+
+#[test]
+fn test_new_empty() {
+    let state = MenuState::new(vec![]);
+    assert_eq!(state.items().len(), 0);
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
 fn test_default() {
     let state = MenuState::default();
     assert_eq!(state.items().len(), 0);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
@@ -57,7 +64,30 @@ fn test_set_items_resets_invalid_selection() {
     state.set_selected_index(2);
 
     state.set_items(vec![MenuItem::new("X")]);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
+}
+
+#[test]
+fn test_set_items_to_empty() {
+    let mut state = MenuState::new(vec![MenuItem::new("A")]);
+    state.set_items(vec![]);
+    assert_eq!(state.selected_index(), None);
+}
+
+#[test]
+fn test_set_items_preserves_valid_selection() {
+    let mut state = MenuState::new(vec![
+        MenuItem::new("A"),
+        MenuItem::new("B"),
+        MenuItem::new("C"),
+    ]);
+    state.set_selected_index(1);
+    state.set_items(vec![
+        MenuItem::new("X"),
+        MenuItem::new("Y"),
+        MenuItem::new("Z"),
+    ]);
+    assert_eq!(state.selected_index(), Some(1));
 }
 
 #[test]
@@ -65,6 +95,15 @@ fn test_add_item() {
     let mut state = MenuState::new(vec![MenuItem::new("File")]);
     state.add_item(MenuItem::new("Edit"));
     assert_eq!(state.items().len(), 2);
+}
+
+#[test]
+fn test_add_item_to_empty() {
+    let mut state = MenuState::new(vec![]);
+    assert_eq!(state.selected_index(), None);
+
+    state.add_item(MenuItem::new("File"));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -76,10 +115,10 @@ fn test_selected_index() {
     ]);
 
     state.set_selected_index(1);
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
 
     state.set_selected_index(2);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -87,7 +126,7 @@ fn test_selected_index_clamps() {
     let mut state = MenuState::new(vec![MenuItem::new("A"), MenuItem::new("B")]);
 
     state.set_selected_index(10);
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
 }
 
 #[test]
@@ -99,6 +138,12 @@ fn test_selected_item() {
 }
 
 #[test]
+fn test_selected_item_empty() {
+    let state = MenuState::new(vec![]);
+    assert_eq!(state.selected_item(), None);
+}
+
+#[test]
 fn test_select_next() {
     let mut state = MenuState::new(vec![
         MenuItem::new("A"),
@@ -107,14 +152,14 @@ fn test_select_next() {
     ]);
 
     Menu::update(&mut state, MenuMessage::SelectNext);
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
 
     Menu::update(&mut state, MenuMessage::SelectNext);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 
     // Wrap around
     Menu::update(&mut state, MenuMessage::SelectNext);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -127,13 +172,13 @@ fn test_select_previous() {
 
     // Wrap around from start
     Menu::update(&mut state, MenuMessage::SelectPrevious);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 
     Menu::update(&mut state, MenuMessage::SelectPrevious);
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
 
     Menu::update(&mut state, MenuMessage::SelectPrevious);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -145,10 +190,10 @@ fn test_select_item() {
     ]);
 
     Menu::update(&mut state, MenuMessage::SelectItem(2));
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
 
     Menu::update(&mut state, MenuMessage::SelectItem(0));
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -157,7 +202,7 @@ fn test_select_item_out_of_bounds() {
 
     Menu::update(&mut state, MenuMessage::SelectItem(10));
     // Should remain at 0
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
