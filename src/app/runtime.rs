@@ -25,7 +25,7 @@
 //! ```ignore
 //! let mut vt = Runtime::<MyApp>::virtual_terminal(80, 24)?;
 //! vt.send(Event::key('j'));
-//! vt.step()?;
+//! vt.tick()?;
 //! println!("{}", vt.display());
 //! ```
 //!
@@ -272,7 +272,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     ///
     /// A virtual terminal is not connected to a physical terminal. Instead:
     /// - Events are injected via `send()`
-    /// - The application is stepped forward via `step()`
+    /// - The application is advanced via `tick()`
     /// - The display can be inspected via `display()`
     ///
     /// This is useful for:
@@ -285,7 +285,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// ```ignore
     /// let mut vt = Runtime::<MyApp>::virtual_terminal(80, 24)?;
     /// vt.send(Event::key(KeyCode::Char('j')));
-    /// vt.step()?;
+    /// vt.tick()?;
     /// assert!(vt.display().contains("expected text"));
     /// ```
     pub fn virtual_terminal(width: u16, height: u16) -> io::Result<Self> {
@@ -309,39 +309,9 @@ impl<A: App> Runtime<A, CaptureBackend> {
 
     /// Sends an event to the virtual terminal.
     ///
-    /// The event is queued and will be processed on the next `step()`.
+    /// The event is queued and will be processed on the next `tick()`.
     pub fn send(&mut self, event: Event) {
         self.events.push(event);
-    }
-
-    /// Steps the application forward.
-    ///
-    /// This processes all pending events, runs any commands, calls `on_tick`,
-    /// and renders the UI.
-    pub fn step(&mut self) -> io::Result<()> {
-        // Process pending commands
-        self.process_commands();
-
-        // Process all pending events
-        let mut messages_processed = 0;
-        while self.process_event() && messages_processed < self.config.max_messages_per_tick {
-            messages_processed += 1;
-        }
-
-        // Handle tick
-        if let Some(msg) = A::on_tick(&self.state) {
-            self.dispatch(msg);
-        }
-
-        // Check if we should quit
-        if A::should_quit(&self.state) {
-            self.should_quit = true;
-        }
-
-        // Render
-        self.render()?;
-
-        Ok(())
     }
 
     /// Returns the current display content as plain text.
@@ -356,25 +326,6 @@ impl<A: App> Runtime<A, CaptureBackend> {
         self.terminal.backend().to_ansi()
     }
 
-    // -------------------------------------------------------------------------
-    // Legacy aliases (deprecated, for backwards compatibility)
-    // -------------------------------------------------------------------------
-
-    /// Creates a new runtime with a capture backend for headless operation.
-    #[deprecated(since = "0.4.0", note = "Use `virtual_terminal` instead")]
-    pub fn headless(width: u16, height: u16) -> io::Result<Self> {
-        Self::virtual_terminal(width, height)
-    }
-
-    /// Creates a new runtime with history tracking.
-    #[deprecated(since = "0.4.0", note = "Use `virtual_terminal_with_config` instead")]
-    pub fn headless_with_config(
-        width: u16,
-        height: u16,
-        config: RuntimeConfig,
-    ) -> io::Result<Self> {
-        Self::virtual_terminal_with_config(width, height, config)
-    }
 }
 
 impl<A: App, B: Backend> Runtime<A, B> {
@@ -490,7 +441,14 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
     /// Runs a single tick of the application.
     ///
-    /// This processes events, updates state, and renders.
+    /// This is the primary method for advancing the application. It performs
+    /// a full cycle: process commands, drain events, call on_tick, check quit,
+    /// and render.
+    ///
+    /// For more granular control:
+    /// - [`process_all_events`](Runtime::process_all_events) — Drain the event queue only
+    /// - [`process_event`](Runtime::process_event) — Process exactly one event
+    /// - [`run_ticks`](Runtime::run_ticks) — Convenience: run N full tick cycles
     pub fn tick(&mut self) -> io::Result<()> {
         // Process pending commands first
         self.process_commands();
@@ -541,18 +499,6 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
 // Additional convenience methods for CaptureBackend (virtual terminal)
 impl<A: App> Runtime<A, CaptureBackend> {
-    /// Returns the captured output as a string.
-    #[deprecated(since = "0.4.0", note = "Use `display()` instead")]
-    pub fn captured_output(&self) -> String {
-        self.display()
-    }
-
-    /// Returns the captured output with ANSI colors.
-    #[deprecated(since = "0.4.0", note = "Use `display_ansi()` instead")]
-    pub fn captured_ansi(&self) -> String {
-        self.display_ansi()
-    }
-
     /// Returns true if the display contains the given text.
     pub fn contains_text(&self, needle: &str) -> bool {
         self.terminal.backend().contains_text(needle)
@@ -561,30 +507,6 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// Finds all positions of the given text in the display.
     pub fn find_text(&self, needle: &str) -> Vec<ratatui::layout::Position> {
         self.terminal.backend().find_text(needle)
-    }
-
-    /// Runs the virtual terminal by processing all queued events.
-    ///
-    /// This processes all events in the queue and renders, then returns.
-    /// Unlike the terminal mode `run()`, this does not block.
-    ///
-    /// For finer control, use `step()` instead.
-    #[deprecated(
-        since = "0.4.0",
-        note = "Use `step()` for fine-grained control of virtual terminals"
-    )]
-    pub fn run(&mut self) -> io::Result<()> {
-        while !self.should_quit && !self.events.is_empty() {
-            self.tick()?;
-        }
-
-        // Final render if there are no events
-        if !self.should_quit {
-            self.tick()?;
-        }
-
-        A::on_exit(&self.state);
-        Ok(())
     }
 }
 
@@ -752,7 +674,6 @@ mod tests {
 
     #[test]
     fn test_runtime_inner_terminal_access() {
-        #[allow(deprecated)]
         let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
         let terminal = runtime.inner_terminal();
         assert_eq!(terminal.backend().width(), 80);
@@ -761,7 +682,6 @@ mod tests {
 
     #[test]
     fn test_runtime_inner_terminal_mut() {
-        #[allow(deprecated)]
         let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
         let _terminal = runtime.inner_terminal_mut();
         // Just verify we can get mutable access
@@ -828,17 +748,6 @@ mod tests {
         // Should stop early due to quit
         runtime.run_ticks(10).unwrap();
         assert!(runtime.should_quit());
-    }
-
-    #[test]
-    #[allow(deprecated)]
-    fn test_runtime_run() {
-        let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
-        runtime.dispatch(CounterMsg::Increment);
-        runtime.dispatch(CounterMsg::Increment);
-
-        runtime.run().unwrap();
-        assert!(runtime.contains_text("Count: 2"));
     }
 
     #[test]
@@ -987,23 +896,6 @@ mod tests {
     }
 
     #[test]
-    #[allow(deprecated)]
-    fn test_runtime_run_with_events() {
-        use crate::input::Event;
-
-        let mut runtime: Runtime<EventApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
-        runtime.events().push(Event::char('a'));
-        runtime.events().push(Event::char('b'));
-        runtime.events().push(Event::char('q'));
-
-        runtime.run().unwrap();
-
-        // Should have processed events before quitting
-        assert!(runtime.state().events_received >= 2);
-        assert!(runtime.should_quit());
-    }
-
-    #[test]
     fn test_runtime_process_commands() {
         // Test with an app that issues commands
         struct CmdApp;
@@ -1100,7 +992,7 @@ mod tests {
     }
 
     #[test]
-    fn test_virtual_terminal_send_and_step() {
+    fn test_virtual_terminal_send_and_tick() {
         use crate::input::Event;
 
         let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
@@ -1110,7 +1002,7 @@ mod tests {
         vt.send(Event::char('b'));
 
         // Step processes the events
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         assert_eq!(vt.state().events_received, 2);
     }
@@ -1119,7 +1011,7 @@ mod tests {
     fn test_virtual_terminal_display() {
         let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
         vt.dispatch(CounterMsg::Increment);
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         let display = vt.display();
         assert!(display.contains("Count: 1"));
@@ -1129,7 +1021,7 @@ mod tests {
     fn test_virtual_terminal_display_ansi() {
         let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
         vt.dispatch(CounterMsg::Increment);
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         let display = vt.display_ansi();
         assert!(display.contains("Count: 1"));
@@ -1142,33 +1034,33 @@ mod tests {
         let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
 
         vt.send(Event::char('q'));
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         assert!(vt.should_quit());
     }
 
     #[test]
-    fn test_virtual_terminal_multiple_steps() {
+    fn test_virtual_terminal_multiple_ticks() {
         use crate::input::Event;
 
         let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
 
-        // First step with one event
+        // First tick with one event
         vt.send(Event::char('a'));
-        vt.step().unwrap();
+        vt.tick().unwrap();
         assert_eq!(vt.state().events_received, 1);
 
-        // Second step with two events
+        // Second tick with two events
         vt.send(Event::char('b'));
         vt.send(Event::char('c'));
-        vt.step().unwrap();
+        vt.tick().unwrap();
         assert_eq!(vt.state().events_received, 3);
     }
 
     #[test]
     fn test_virtual_terminal_contains_text() {
         let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         assert!(vt.contains_text("Count: 0"));
         assert!(!vt.contains_text("Not Here"));
@@ -1177,7 +1069,7 @@ mod tests {
     #[test]
     fn test_virtual_terminal_find_text() {
         let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         let positions = vt.find_text("Count");
         assert!(!positions.is_empty());

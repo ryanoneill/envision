@@ -24,7 +24,7 @@
 //!
 //! // Inject events programmatically
 //! vt.send(Event::key(KeyCode::Char('j')));
-//! vt.step()?;
+//! vt.tick()?;
 //!
 //! // Inspect the display
 //! println!("{}", vt.display());

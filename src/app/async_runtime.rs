@@ -155,7 +155,7 @@ where
     ///
     /// A virtual terminal is not connected to a physical terminal. Instead:
     /// - Events are injected via `send()`
-    /// - The application is stepped forward via `step()` or run async with `run()`
+    /// - The application is advanced via `tick()` or run async with `run()`
     /// - The display can be inspected via `display()`
     ///
     /// This is useful for:
@@ -198,25 +198,6 @@ where
         self.terminal.backend().to_ansi()
     }
 
-    // -------------------------------------------------------------------------
-    // Legacy aliases (deprecated, for backwards compatibility)
-    // -------------------------------------------------------------------------
-
-    /// Creates a new async runtime with a capture backend for headless operation.
-    #[deprecated(since = "0.4.0", note = "Use `virtual_terminal` instead")]
-    pub fn headless(width: u16, height: u16) -> io::Result<Self> {
-        Self::virtual_terminal(width, height)
-    }
-
-    /// Creates a new async runtime with history tracking.
-    #[deprecated(since = "0.4.0", note = "Use `virtual_terminal_with_config` instead")]
-    pub fn headless_with_config(
-        width: u16,
-        height: u16,
-        config: AsyncRuntimeConfig,
-    ) -> io::Result<Self> {
-        Self::virtual_terminal_with_config(width, height, config)
-    }
 }
 
 impl<A: App, B: Backend> AsyncRuntime<A, B>
@@ -578,16 +559,6 @@ impl<A: App> AsyncRuntime<A, CaptureBackend>
 where
     A::Message: Send + 'static,
 {
-    /// Returns the captured output as a string.
-    pub fn captured_output(&self) -> String {
-        self.terminal.backend().to_string()
-    }
-
-    /// Returns the captured output with ANSI colors.
-    pub fn captured_ansi(&self) -> String {
-        self.terminal.backend().to_ansi()
-    }
-
     /// Returns true if the captured output contains the given text.
     pub fn contains_text(&self, needle: &str) -> bool {
         self.terminal.backend().contains_text(needle)
@@ -1193,24 +1164,24 @@ mod tests {
     }
 
     #[test]
-    fn test_async_runtime_captured_output() {
+    fn test_async_runtime_display() {
         let mut runtime: AsyncRuntime<CounterApp, _> =
             AsyncRuntime::virtual_terminal(40, 10).unwrap();
         runtime.dispatch(CounterMsg::IncrementBy(42));
         runtime.render().unwrap();
 
-        let output = runtime.captured_output();
+        let output = runtime.display();
         assert!(output.contains("Count: 42"));
     }
 
     #[test]
-    fn test_async_runtime_captured_ansi() {
+    fn test_async_runtime_display_ansi() {
         let mut runtime: AsyncRuntime<CounterApp, _> =
             AsyncRuntime::virtual_terminal(40, 10).unwrap();
         runtime.dispatch(CounterMsg::Increment);
         runtime.render().unwrap();
 
-        let ansi = runtime.captured_ansi();
+        let ansi = runtime.display_ansi();
         assert!(ansi.contains("Count: 1"));
     }
 

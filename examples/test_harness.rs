@@ -142,7 +142,7 @@ fn demo_runtime_testing() {
     let mut vt = Runtime::<TodoApp, _>::virtual_terminal(60, 12).unwrap();
 
     // Check initial state
-    vt.step().unwrap();
+    vt.tick().unwrap();
     println!("Initial state:");
     println!("{}", vt.display());
 
@@ -153,7 +153,7 @@ fn demo_runtime_testing() {
 
     // Add a new item
     vt.dispatch(TodoMsg::Add("Learn Rust".to_string()));
-    vt.step().unwrap();
+    vt.tick().unwrap();
     println!("After adding item:");
     println!("{}", vt.display());
 
@@ -163,7 +163,7 @@ fn demo_runtime_testing() {
 
     // Select an item
     vt.dispatch(TodoMsg::Select(1));
-    vt.step().unwrap();
+    vt.tick().unwrap();
     println!("After selecting item 1:");
     println!("{}", vt.display());
 
@@ -172,7 +172,7 @@ fn demo_runtime_testing() {
 
     // Remove the selected item
     vt.dispatch(TodoMsg::Remove(1));
-    vt.step().unwrap();
+    vt.tick().unwrap();
     println!("After removing item:");
     println!("{}", vt.display());
 

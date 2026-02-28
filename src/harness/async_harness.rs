@@ -86,12 +86,12 @@ where
 
     /// Returns the captured output as a string.
     pub fn screen(&self) -> String {
-        self.runtime.captured_output()
+        self.runtime.display()
     }
 
     /// Returns the captured output with ANSI colors.
     pub fn screen_ansi(&self) -> String {
-        self.runtime.captured_ansi()
+        self.runtime.display_ansi()
     }
 
     /// Returns a reference to the backend.
