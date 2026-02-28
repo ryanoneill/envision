@@ -114,6 +114,18 @@ impl<M> Command<M> {
         }
     }
 
+    /// Creates a command from an async future.
+    ///
+    /// Alias for [`perform_async`](Command::perform_async). Requires
+    /// [`AsyncRuntime`](crate::AsyncRuntime) — the sync `Runtime` will
+    /// drop async commands with a debug warning.
+    pub fn future<Fut>(future: Fut) -> Self
+    where
+        Fut: Future<Output = Option<M>> + Send + 'static,
+    {
+        Self::perform_async(future)
+    }
+
     /// Creates a command from an async operation that can fail.
     ///
     /// On success, the future returns `Ok(Some(message))` or `Ok(None)`.
@@ -304,6 +316,11 @@ impl<M> CommandHandler<M> {
                 }
                 CommandAction::Async(_) | CommandAction::AsyncFallible(_) => {
                     // Async actions are handled by the async runtime
+                    #[cfg(debug_assertions)]
+                    eprintln!(
+                        "[envision] Warning: Async command ignored by sync Runtime. \
+                         Use AsyncRuntime for async commands."
+                    );
                 }
             }
         }
@@ -601,6 +618,19 @@ mod tests {
         let cmd: Command<TestMsg> = Command::perform_async(async { Some(TestMsg::A) });
 
         // Async commands are not empty
+        assert!(!cmd.is_none());
+
+        // Sync handler skips async actions
+        let mut handler = CommandHandler::new();
+        handler.execute(cmd);
+        assert!(handler.take_messages().is_empty());
+    }
+
+    #[test]
+    fn test_command_future_alias() {
+        let cmd: Command<TestMsg> = Command::future(async { Some(TestMsg::A) });
+
+        // Should behave identically to perform_async
         assert!(!cmd.is_none());
 
         // Sync handler skips async actions
