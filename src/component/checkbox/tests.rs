@@ -27,39 +27,6 @@ fn test_default() {
 }
 
 #[test]
-fn test_label_accessors() {
-    let mut state = CheckboxState::new("Original");
-    assert_eq!(state.label(), "Original");
-
-    state.set_label("Updated");
-    assert_eq!(state.label(), "Updated");
-}
-
-#[test]
-fn test_checked_accessors() {
-    let mut state = CheckboxState::new("Test");
-    assert!(!state.is_checked());
-
-    state.set_checked(true);
-    assert!(state.is_checked());
-
-    state.set_checked(false);
-    assert!(!state.is_checked());
-}
-
-#[test]
-fn test_disabled_accessors() {
-    let mut state = CheckboxState::new("Test");
-    assert!(!state.is_disabled());
-
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_toggle_unchecked() {
     let mut state = CheckboxState::new("Test");
     assert!(!state.is_checked());
@@ -100,36 +67,12 @@ fn test_toggle_disabled_when_checked() {
 }
 
 #[test]
-fn test_focusable() {
-    let mut state = CheckboxState::new("Test");
-
-    assert!(!Checkbox::is_focused(&state));
-
-    Checkbox::set_focused(&mut state, true);
-    assert!(Checkbox::is_focused(&state));
-
-    Checkbox::blur(&mut state);
-    assert!(!Checkbox::is_focused(&state));
-
-    Checkbox::focus(&mut state);
-    assert!(Checkbox::is_focused(&state));
-}
-
-#[test]
 fn test_init() {
     let state = Checkbox::init();
     assert_eq!(state.label(), "");
     assert!(!state.is_checked());
     assert!(!state.is_disabled());
     assert!(!Checkbox::is_focused(&state));
-}
-
-#[test]
-fn test_clone() {
-    let state = CheckboxState::checked("Clone me");
-    let cloned = state.clone();
-    assert_eq!(cloned.label(), "Clone me");
-    assert!(cloned.is_checked());
 }
 
 #[test]

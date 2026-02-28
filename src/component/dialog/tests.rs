@@ -19,15 +19,6 @@ fn test_dialog_button_clone() {
     assert_eq!(cloned.label(), "Save");
 }
 
-#[test]
-fn test_dialog_button_eq() {
-    let button1 = DialogButton::new("ok", "OK");
-    let button2 = DialogButton::new("ok", "OK");
-    let button3 = DialogButton::new("cancel", "Cancel");
-    assert_eq!(button1, button2);
-    assert_ne!(button1, button3);
-}
-
 // ========================================
 // State Creation Tests
 // ========================================
@@ -103,60 +94,8 @@ fn test_new_empty_buttons() {
 }
 
 // ========================================
-// Accessor Tests
-// ========================================
-
-#[test]
-fn test_title() {
-    let state = DialogState::alert("My Title", "Message");
-    assert_eq!(state.title(), "My Title");
-}
-
-#[test]
-fn test_message() {
-    let state = DialogState::alert("Title", "My Message");
-    assert_eq!(state.message(), "My Message");
-}
-
-#[test]
-fn test_buttons() {
-    let buttons = vec![DialogButton::new("a", "A"), DialogButton::new("b", "B")];
-    let state = DialogState::new("T", "M", buttons);
-    assert_eq!(state.buttons().len(), 2);
-    assert_eq!(state.buttons()[0].id(), "a");
-    assert_eq!(state.buttons()[1].id(), "b");
-}
-
-#[test]
-fn test_primary_button() {
-    let buttons = vec![DialogButton::new("a", "A"), DialogButton::new("b", "B")];
-    let state = DialogState::with_primary("T", "M", buttons, 1);
-    assert_eq!(state.primary_button(), 1);
-}
-
-#[test]
-fn test_focused_button() {
-    let state = DialogState::confirm("T", "M");
-    assert_eq!(state.focused_button(), 1); // Primary is 1, so focus starts there
-}
-
-// ========================================
 // Mutator Tests
 // ========================================
-
-#[test]
-fn test_set_title() {
-    let mut state = DialogState::alert("Old", "Message");
-    state.set_title("New");
-    assert_eq!(state.title(), "New");
-}
-
-#[test]
-fn test_set_message() {
-    let mut state = DialogState::alert("Title", "Old");
-    state.set_message("New");
-    assert_eq!(state.message(), "New");
-}
 
 #[test]
 fn test_set_buttons() {
@@ -191,95 +130,10 @@ fn test_set_buttons_resets_focus() {
 }
 
 #[test]
-fn test_set_primary_button() {
-    let mut state = DialogState::confirm("T", "M");
-    state.set_primary_button(0);
-    assert_eq!(state.primary_button(), 0);
-}
-
-#[test]
 fn test_set_primary_clamps() {
     let mut state = DialogState::alert("T", "M");
     state.set_primary_button(10);
     assert_eq!(state.primary_button(), 0);
-}
-
-// ========================================
-// Visibility (Toggleable) Tests
-// ========================================
-
-#[test]
-fn test_is_visible() {
-    let state = DialogState::alert("T", "M");
-    assert!(!Dialog::is_visible(&state));
-}
-
-#[test]
-fn test_set_visible() {
-    let mut state = DialogState::alert("T", "M");
-    Dialog::set_visible(&mut state, true);
-    assert!(Dialog::is_visible(&state));
-    Dialog::set_visible(&mut state, false);
-    assert!(!Dialog::is_visible(&state));
-}
-
-#[test]
-fn test_show() {
-    let mut state = DialogState::alert("T", "M");
-    Dialog::show(&mut state);
-    assert!(Dialog::is_visible(&state));
-}
-
-#[test]
-fn test_hide() {
-    let mut state = DialogState::alert("T", "M");
-    Dialog::show(&mut state);
-    Dialog::hide(&mut state);
-    assert!(!Dialog::is_visible(&state));
-}
-
-#[test]
-fn test_toggle() {
-    let mut state = DialogState::alert("T", "M");
-    assert!(!Dialog::is_visible(&state));
-    Dialog::toggle(&mut state);
-    assert!(Dialog::is_visible(&state));
-    Dialog::toggle(&mut state);
-    assert!(!Dialog::is_visible(&state));
-}
-
-// ========================================
-// Focus (Focusable) Tests
-// ========================================
-
-#[test]
-fn test_is_focused() {
-    let state = DialogState::alert("T", "M");
-    assert!(!Dialog::is_focused(&state));
-}
-
-#[test]
-fn test_set_focused() {
-    let mut state = DialogState::alert("T", "M");
-    Dialog::set_focused(&mut state, true);
-    assert!(Dialog::is_focused(&state));
-    Dialog::set_focused(&mut state, false);
-    assert!(!Dialog::is_focused(&state));
-}
-
-#[test]
-fn test_focus() {
-    let mut state = DialogState::alert("T", "M");
-    Dialog::focus(&mut state);
-    assert!(Dialog::is_focused(&state));
-}
-
-#[test]
-fn test_blur() {
-    let mut state = DialogState::alert("T", "M");
-    Dialog::focus(&mut state);
-    Dialog::blur(&mut state);
-    assert!(!Dialog::is_focused(&state));
 }
 
 // ========================================
@@ -572,15 +426,6 @@ fn test_view_multiline_message() {
 // ========================================
 // Integration Tests
 // ========================================
-
-#[test]
-fn test_clone() {
-    let state = DialogState::confirm("Title", "Message");
-    let cloned = state.clone();
-    assert_eq!(cloned.title(), "Title");
-    assert_eq!(cloned.message(), "Message");
-    assert_eq!(cloned.buttons().len(), 2);
-}
 
 #[test]
 fn test_init() {

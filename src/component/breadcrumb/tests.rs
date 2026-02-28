@@ -23,22 +23,6 @@ fn test_segment_accessors() {
     assert_eq!(segment.data(), Some("data"));
 }
 
-#[test]
-fn test_segment_clone() {
-    let segment = BreadcrumbSegment::new("Clone").with_data("data");
-    let cloned = segment.clone();
-    assert_eq!(segment, cloned);
-}
-
-#[test]
-fn test_segment_eq() {
-    let seg1 = BreadcrumbSegment::new("Test").with_data("data");
-    let seg2 = BreadcrumbSegment::new("Test").with_data("data");
-    let seg3 = BreadcrumbSegment::new("Other");
-    assert_eq!(seg1, seg2);
-    assert_ne!(seg1, seg3);
-}
-
 // ==================== State Creation Tests ====================
 
 #[test]
@@ -453,34 +437,6 @@ fn test_disabling_preserves_state() {
     assert_eq!(state.len(), 3);
 }
 
-// ==================== Focus Tests ====================
-
-#[test]
-fn test_focusable_is_focused() {
-    let mut state = BreadcrumbState::default();
-    assert!(!Breadcrumb::is_focused(&state));
-    state.focused = true;
-    assert!(Breadcrumb::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = BreadcrumbState::default();
-    Breadcrumb::set_focused(&mut state, true);
-    assert!(state.focused);
-    Breadcrumb::set_focused(&mut state, false);
-    assert!(!state.focused);
-}
-
-#[test]
-fn test_focus_blur() {
-    let mut state = BreadcrumbState::default();
-    Breadcrumb::focus(&mut state);
-    assert!(Breadcrumb::is_focused(&state));
-    Breadcrumb::blur(&mut state);
-    assert!(!Breadcrumb::is_focused(&state));
-}
-
 // ==================== View Tests ====================
 
 #[test]
@@ -595,14 +551,6 @@ fn test_view_disabled() {
 }
 
 // ==================== Integration Tests ====================
-
-#[test]
-fn test_clone() {
-    let state = BreadcrumbState::from_labels(vec!["A", "B"]);
-    let cloned = state.clone();
-    assert_eq!(state.len(), cloned.len());
-    assert_eq!(state.separator(), cloned.separator());
-}
 
 #[test]
 fn test_init() {

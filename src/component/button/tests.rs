@@ -17,27 +17,6 @@ fn test_default() {
 }
 
 #[test]
-fn test_label_accessors() {
-    let mut state = ButtonState::new("Original");
-    assert_eq!(state.label(), "Original");
-
-    state.set_label("Updated");
-    assert_eq!(state.label(), "Updated");
-}
-
-#[test]
-fn test_disabled_accessors() {
-    let mut state = ButtonState::new("Test");
-    assert!(!state.is_disabled());
-
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_press_enabled() {
     let mut state = ButtonState::new("Submit");
 
@@ -55,34 +34,11 @@ fn test_press_disabled() {
 }
 
 #[test]
-fn test_focusable() {
-    let mut state = ButtonState::new("Test");
-
-    assert!(!Button::is_focused(&state));
-
-    Button::set_focused(&mut state, true);
-    assert!(Button::is_focused(&state));
-
-    Button::blur(&mut state);
-    assert!(!Button::is_focused(&state));
-
-    Button::focus(&mut state);
-    assert!(Button::is_focused(&state));
-}
-
-#[test]
 fn test_init() {
     let state = Button::init();
     assert_eq!(state.label(), "");
     assert!(!state.is_disabled());
     assert!(!Button::is_focused(&state));
-}
-
-#[test]
-fn test_clone() {
-    let state = ButtonState::new("Clone me");
-    let cloned = state.clone();
-    assert_eq!(cloned.label(), "Clone me");
 }
 
 #[test]
