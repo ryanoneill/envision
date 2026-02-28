@@ -22,10 +22,11 @@ pub type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 use super::async_command::AsyncCommandHandler;
 use super::model::App;
+use super::runtime_core::{ProcessEventResult, RuntimeCore};
 use super::subscription::{BoxedSubscription, Subscription};
 use crate::backend::CaptureBackend;
 use crate::input::EventQueue;
-use crate::overlay::{Overlay, OverlayAction, OverlayStack};
+use crate::overlay::{Overlay, OverlayStack};
 use crate::theme::Theme;
 
 /// Configuration for the async runtime.
@@ -108,23 +109,14 @@ pub struct AsyncRuntime<A: App, B: Backend>
 where
     A::Message: Send + 'static,
 {
-    /// The application state
-    state: A::State,
-
-    /// The terminal
-    terminal: Terminal<B>,
-
-    /// Event queue for input
-    events: EventQueue,
+    /// Shared runtime state (state, terminal, events, overlays, theme)
+    core: RuntimeCore<A, B>,
 
     /// Async command handler
     commands: AsyncCommandHandler<A::Message>,
 
     /// Configuration
     config: AsyncRuntimeConfig,
-
-    /// Whether the runtime should quit
-    should_quit: bool,
 
     /// Sender for async messages
     message_tx: mpsc::Sender<A::Message>,
@@ -143,12 +135,6 @@ where
 
     /// Active subscriptions as streams
     subscriptions: Vec<std::pin::Pin<Box<dyn tokio_stream::Stream<Item = A::Message> + Send>>>,
-
-    /// The overlay stack for modal UI layers
-    overlay_stack: OverlayStack<A::Message>,
-
-    /// The current theme
-    theme: Theme,
 }
 
 // =============================================================================
@@ -193,17 +179,17 @@ where
     ///
     /// The event is queued and will be processed on the next `tick()` or `run()` cycle.
     pub fn send(&mut self, event: crate::input::Event) {
-        self.events.push(event);
+        self.core.events.push(event);
     }
 
     /// Returns the current display content as plain text.
     pub fn display(&self) -> String {
-        self.terminal.backend().to_string()
+        self.core.terminal.backend().to_string()
     }
 
     /// Returns the display content with ANSI color codes.
     pub fn display_ansi(&self) -> String {
-        self.terminal.backend().to_ansi()
+        self.core.terminal.backend().to_ansi()
     }
 }
 
@@ -229,20 +215,23 @@ where
         commands.execute(init_cmd);
 
         let mut runtime = Self {
-            state,
-            terminal,
-            events: EventQueue::new(),
+            core: RuntimeCore {
+                state,
+                terminal,
+                events: EventQueue::new(),
+                overlay_stack: OverlayStack::new(),
+                theme: Theme::default(),
+                should_quit: false,
+                max_messages_per_tick: config.max_messages_per_tick,
+            },
             commands,
             config,
-            should_quit: false,
             message_tx,
             message_rx,
             error_tx,
             error_rx,
             cancel_token,
             subscriptions: Vec::new(),
-            overlay_stack: OverlayStack::new(),
-            theme: Theme::default(),
         };
 
         // Spawn any async commands from init
@@ -253,37 +242,37 @@ where
 
     /// Returns a reference to the current state.
     pub fn state(&self) -> &A::State {
-        &self.state
+        &self.core.state
     }
 
     /// Returns a mutable reference to the state.
     pub fn state_mut(&mut self) -> &mut A::State {
-        &mut self.state
+        &mut self.core.state
     }
 
     /// Returns a reference to the terminal.
     pub fn terminal(&self) -> &Terminal<B> {
-        &self.terminal
+        &self.core.terminal
     }
 
     /// Returns a mutable reference to the terminal.
     pub fn terminal_mut(&mut self) -> &mut Terminal<B> {
-        &mut self.terminal
+        &mut self.core.terminal
     }
 
     /// Returns a reference to the backend.
     pub fn backend(&self) -> &B {
-        self.terminal.backend()
+        self.core.terminal.backend()
     }
 
     /// Returns a mutable reference to the backend.
     pub fn backend_mut(&mut self) -> &mut B {
-        self.terminal.backend_mut()
+        self.core.terminal.backend_mut()
     }
 
     /// Returns a mutable reference to the event queue.
     pub fn events(&mut self) -> &mut EventQueue {
-        &mut self.events
+        &mut self.core.events
     }
 
     /// Returns a clone of the cancellation token.
@@ -343,8 +332,6 @@ where
     /// This is a quick check to see if any errors have been reported
     /// without consuming them.
     pub fn has_errors(&self) -> bool {
-        // Note: We can't check is_empty() directly, but we can check the sender count
-        // We use a workaround by checking if the receiver is closed
         !self.error_rx.is_empty()
     }
 
@@ -366,11 +353,11 @@ where
 
     /// Dispatches a message to update the state.
     pub fn dispatch(&mut self, msg: A::Message) {
-        let cmd = A::update(&mut self.state, msg);
+        let cmd = A::update(&mut self.core.state, msg);
         self.commands.execute(cmd);
 
         if self.commands.should_quit() {
-            self.should_quit = true;
+            self.core.should_quit = true;
         }
 
         self.spawn_pending_commands();
@@ -401,10 +388,10 @@ where
 
         // Process overlay commands
         for overlay in self.commands.take_overlay_pushes() {
-            self.overlay_stack.push(overlay);
+            self.core.overlay_stack.push(overlay);
         }
         for _ in 0..self.commands.take_overlay_pops() {
-            self.overlay_stack.pop();
+            self.core.overlay_stack.pop();
         }
     }
 
@@ -419,13 +406,7 @@ where
     ///
     /// Renders the main app view first, then any active overlays on top.
     pub fn render(&mut self) -> io::Result<()> {
-        let theme = &self.theme;
-        let overlay_stack = &self.overlay_stack;
-        self.terminal.draw(|frame| {
-            A::view(&self.state, frame);
-            overlay_stack.render(frame, frame.area(), theme);
-        })?;
-        Ok(())
+        self.core.render()
     }
 
     /// Processes the next event from the queue.
@@ -436,26 +417,13 @@ where
     ///
     /// Returns true if an event was processed.
     pub fn process_event(&mut self) -> bool {
-        if let Some(event) = self.events.pop() {
-            match self.overlay_stack.handle_event(&event) {
-                OverlayAction::Consumed => {}
-                OverlayAction::Message(msg) => self.dispatch(msg),
-                OverlayAction::Dismiss => {
-                    self.overlay_stack.pop();
-                }
-                OverlayAction::DismissWithMessage(msg) => {
-                    self.overlay_stack.pop();
-                    self.dispatch(msg);
-                }
-                OverlayAction::Propagate => {
-                    if let Some(msg) = A::handle_event_with_state(&self.state, &event) {
-                        self.dispatch(msg);
-                    }
-                }
+        match self.core.process_event() {
+            ProcessEventResult::NoEvent => false,
+            ProcessEventResult::Consumed => true,
+            ProcessEventResult::Dispatch(msg) => {
+                self.dispatch(msg);
+                true
             }
-            true
-        } else {
-            false
         }
     }
 
@@ -476,18 +444,18 @@ where
 
         // Process events
         let mut messages_processed = 0;
-        while self.process_event() && messages_processed < self.config.max_messages_per_tick {
+        while self.process_event() && messages_processed < self.core.max_messages_per_tick {
             messages_processed += 1;
         }
 
         // Handle tick
-        if let Some(msg) = A::on_tick(&self.state) {
+        if let Some(msg) = A::on_tick(&self.core.state) {
             self.dispatch(msg);
         }
 
         // Check if we should quit
-        if A::should_quit(&self.state) {
-            self.should_quit = true;
+        if A::should_quit(&self.core.state) {
+            self.core.should_quit = true;
         }
 
         // Render
@@ -498,12 +466,12 @@ where
 
     /// Returns true if the runtime should quit.
     pub fn should_quit(&self) -> bool {
-        self.should_quit
+        self.core.should_quit
     }
 
     /// Sets the quit flag and cancels all async operations.
     pub fn quit(&mut self) {
-        self.should_quit = true;
+        self.core.should_quit = true;
         self.cancel_token.cancel();
     }
 
@@ -531,18 +499,18 @@ where
 
                     // Process events
                     let mut messages_processed = 0;
-                    while self.process_event() && messages_processed < self.config.max_messages_per_tick {
+                    while self.process_event() && messages_processed < self.core.max_messages_per_tick {
                         messages_processed += 1;
                     }
 
                     // Handle tick
-                    if let Some(msg) = A::on_tick(&self.state) {
+                    if let Some(msg) = A::on_tick(&self.core.state) {
                         self.dispatch(msg);
                     }
 
                     // Check if we should quit
-                    if A::should_quit(&self.state) {
-                        self.should_quit = true;
+                    if A::should_quit(&self.core.state) {
+                        self.core.should_quit = true;
                     }
                 }
 
@@ -553,11 +521,11 @@ where
 
                 // Handle cancellation
                 _ = self.cancel_token.cancelled() => {
-                    self.should_quit = true;
+                    self.core.should_quit = true;
                 }
             }
 
-            if self.should_quit {
+            if self.core.should_quit {
                 break;
             }
         }
@@ -565,14 +533,14 @@ where
         // Final render
         self.render()?;
 
-        A::on_exit(&self.state);
+        A::on_exit(&self.core.state);
         Ok(())
     }
 
     /// Runs for a specified number of ticks (for testing).
     pub fn run_ticks(&mut self, ticks: usize) -> io::Result<()> {
         for _ in 0..ticks {
-            if self.should_quit {
+            if self.core.should_quit {
                 break;
             }
             self.tick()?;
@@ -594,37 +562,37 @@ where
 
     /// Pushes an overlay onto the stack.
     pub fn push_overlay(&mut self, overlay: Box<dyn Overlay<A::Message>>) {
-        self.overlay_stack.push(overlay);
+        self.core.push_overlay(overlay);
     }
 
     /// Pops the topmost overlay from the stack.
     pub fn pop_overlay(&mut self) -> Option<Box<dyn Overlay<A::Message>>> {
-        self.overlay_stack.pop()
+        self.core.pop_overlay()
     }
 
     /// Clears all overlays from the stack.
     pub fn clear_overlays(&mut self) {
-        self.overlay_stack.clear();
+        self.core.clear_overlays();
     }
 
     /// Returns true if there are active overlays.
     pub fn has_overlays(&self) -> bool {
-        self.overlay_stack.is_active()
+        self.core.has_overlays()
     }
 
     /// Returns the number of overlays on the stack.
     pub fn overlay_count(&self) -> usize {
-        self.overlay_stack.len()
+        self.core.overlay_count()
     }
 
     /// Sets the theme.
     pub fn set_theme(&mut self, theme: Theme) {
-        self.theme = theme;
+        self.core.theme = theme;
     }
 
     /// Returns a reference to the current theme.
     pub fn theme(&self) -> &Theme {
-        &self.theme
+        &self.core.theme
     }
 }
 
@@ -641,17 +609,17 @@ where
     /// assert_eq!(cell.fg, SerializableColor::Green);
     /// ```
     pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
-        self.terminal.backend().cell(x, y)
+        self.core.terminal.backend().cell(x, y)
     }
 
     /// Returns true if the captured output contains the given text.
     pub fn contains_text(&self, needle: &str) -> bool {
-        self.terminal.backend().contains_text(needle)
+        self.core.terminal.backend().contains_text(needle)
     }
 
     /// Finds all positions of the given text.
     pub fn find_text(&self, needle: &str) -> Vec<ratatui::layout::Position> {
-        self.terminal.backend().find_text(needle)
+        self.core.terminal.backend().find_text(needle)
     }
 }
 

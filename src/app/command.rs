@@ -307,20 +307,14 @@ impl<M> std::fmt::Debug for Command<M> {
 ///
 /// This is used by the runtime to process commands returned from updates.
 pub struct CommandHandler<M> {
-    pending_messages: Vec<M>,
-    pending_overlay_pushes: Vec<Box<dyn Overlay<M> + Send>>,
-    pending_overlay_pops: usize,
-    should_quit: bool,
+    core: super::command_core::CommandHandlerCore<M>,
 }
 
 impl<M> CommandHandler<M> {
     /// Creates a new command handler.
     pub fn new() -> Self {
         Self {
-            pending_messages: Vec::new(),
-            pending_overlay_pushes: Vec::new(),
-            pending_overlay_pops: 0,
-            should_quit: false,
+            core: super::command_core::CommandHandlerCore::new(),
         }
     }
 
@@ -330,62 +324,40 @@ impl<M> CommandHandler<M> {
     /// for full async support.
     pub fn execute(&mut self, command: Command<M>) {
         for action in command.actions {
-            match action {
-                CommandAction::Message(m) => {
-                    self.pending_messages.push(m);
-                }
-                CommandAction::Batch(msgs) => {
-                    self.pending_messages.extend(msgs);
-                }
-                CommandAction::Quit => {
-                    self.should_quit = true;
-                }
-                CommandAction::Callback(cb) => {
-                    if let Some(m) = cb() {
-                        self.pending_messages.push(m);
-                    }
-                }
-                CommandAction::Async(_) | CommandAction::AsyncFallible(_) => {
-                    // Async actions are handled by the async runtime
-                    #[cfg(debug_assertions)]
-                    eprintln!(
-                        "[envision] Warning: Async command ignored by sync Runtime. \
-                         Use AsyncRuntime for async commands."
-                    );
-                }
-                CommandAction::PushOverlay(overlay) => {
-                    self.pending_overlay_pushes.push(overlay);
-                }
-                CommandAction::PopOverlay => {
-                    self.pending_overlay_pops += 1;
-                }
+            if self.core.execute_sync_action(action).is_some() {
+                // Async actions are handled by the async runtime
+                #[cfg(debug_assertions)]
+                eprintln!(
+                    "[envision] Warning: Async command ignored by sync Runtime. \
+                     Use AsyncRuntime for async commands."
+                );
             }
         }
     }
 
     /// Takes all pending messages.
     pub fn take_messages(&mut self) -> Vec<M> {
-        std::mem::take(&mut self.pending_messages)
+        self.core.take_messages()
     }
 
     /// Takes all pending overlay pushes.
     pub fn take_overlay_pushes(&mut self) -> Vec<Box<dyn Overlay<M> + Send>> {
-        std::mem::take(&mut self.pending_overlay_pushes)
+        self.core.take_overlay_pushes()
     }
 
     /// Takes the count of pending overlay pops and resets the counter.
     pub fn take_overlay_pops(&mut self) -> usize {
-        std::mem::replace(&mut self.pending_overlay_pops, 0)
+        self.core.take_overlay_pops()
     }
 
     /// Returns true if a quit command was executed.
     pub fn should_quit(&self) -> bool {
-        self.should_quit
+        self.core.should_quit()
     }
 
     /// Resets the quit flag.
     pub fn reset_quit(&mut self) {
-        self.should_quit = false;
+        self.core.reset_quit()
     }
 }
 
@@ -655,9 +627,9 @@ mod tests {
 
     #[test]
     fn test_command_handler_default() {
-        let handler: CommandHandler<TestMsg> = CommandHandler::default();
+        let mut handler: CommandHandler<TestMsg> = CommandHandler::default();
         assert!(!handler.should_quit());
-        assert!(handler.pending_messages.is_empty());
+        assert!(handler.take_messages().is_empty());
     }
 
     #[test]
