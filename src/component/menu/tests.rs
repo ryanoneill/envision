@@ -224,22 +224,17 @@ fn test_clone() {
 
 #[test]
 fn test_view() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let state = MenuState::new(vec![
         MenuItem::new("File"),
         MenuItem::new("Edit"),
         MenuItem::new("View"),
     ]);
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Menu::view(&state, frame, frame.area(), &Theme::default());
+            Menu::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -251,19 +246,14 @@ fn test_view() {
 
 #[test]
 fn test_view_focused() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
     Menu::focus(&mut state);
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Menu::view(&state, frame, frame.area(), &Theme::default());
+            Menu::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -274,10 +264,6 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_selected() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state = MenuState::new(vec![
         MenuItem::new("File"),
         MenuItem::new("Edit"),
@@ -286,12 +272,11 @@ fn test_view_selected() {
     Menu::focus(&mut state);
     state.set_selected_index(1);
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Menu::view(&state, frame, frame.area(), &Theme::default());
+            Menu::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -301,18 +286,13 @@ fn test_view_selected() {
 
 #[test]
 fn test_view_empty() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let state = MenuState::new(vec![]);
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
-            Menu::view(&state, frame, frame.area(), &Theme::default());
+            Menu::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 

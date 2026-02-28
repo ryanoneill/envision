@@ -277,17 +277,13 @@ fn test_focusable() {
 
 #[test]
 fn test_view_renders() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = TabsState::new(vec!["Home", "Settings", "Help"]);
 
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &Theme::default());
+            Tabs::<&str>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -299,18 +295,14 @@ fn test_view_renders() {
 
 #[test]
 fn test_view_focused() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = TabsState::new(vec!["Tab1", "Tab2"]);
     state.focused = true;
 
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &Theme::default());
+            Tabs::<&str>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -321,18 +313,14 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_disabled() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = TabsState::new(vec!["Tab1", "Tab2"]);
     state.disabled = true;
 
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &Theme::default());
+            Tabs::<&str>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -342,17 +330,13 @@ fn test_view_disabled() {
 
 #[test]
 fn test_view_empty() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state: TabsState<&str> = TabsState::new(vec![]);
 
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &Theme::default());
+            Tabs::<&str>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 

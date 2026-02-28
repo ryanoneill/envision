@@ -488,15 +488,9 @@ fn test_focusable() {
 
 #[test]
 fn test_view_focused() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = TextAreaState::with_value("Hello");
     state.focused = true;
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -510,14 +504,8 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_unfocused() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = TextAreaState::with_value("Hello");
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -531,14 +519,8 @@ fn test_view_unfocused() {
 
 #[test]
 fn test_view_placeholder() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = TextAreaState::with_placeholder("Enter text...");
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -554,14 +536,8 @@ fn test_view_placeholder() {
 
 #[test]
 fn test_view_renders() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = TextAreaState::with_value("Line 1\nLine 2\nLine 3");
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -729,18 +705,13 @@ fn test_delete_to_start_at_start() {
 
 #[test]
 fn test_view_with_scroll() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     // Create a long content that needs scrolling
     let mut state = TextAreaState::with_value(
         "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10",
     );
     state.focused = true;
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 5); // Small height to trigger scrolling
-    let mut terminal = Terminal::new(backend).unwrap();
+    // Small height to trigger scrolling
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {
@@ -753,17 +724,11 @@ fn test_view_with_scroll() {
 
 #[test]
 fn test_view_cursor_above_scroll() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = TextAreaState::with_value("1\n2\n3\n4\n5\n6\n7\n8\n9\n10");
     state.scroll_offset = 5; // Scroll down
     state.set_cursor(2, 0); // Cursor above scroll
     state.focused = true;
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {

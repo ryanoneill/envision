@@ -221,17 +221,13 @@ fn test_clone() {
 
 #[test]
 fn test_view_closed() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = SelectState::new(vec!["Red", "Green", "Blue"]);
 
-    let backend = CaptureBackend::new(30, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &Theme::default());
+            Select::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -241,18 +237,14 @@ fn test_view_closed() {
 
 #[test]
 fn test_view_open() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = SelectState::new(vec!["Red", "Green", "Blue"]);
     Select::update(&mut state, SelectMessage::Open);
 
-    let backend = CaptureBackend::new(30, 15);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 15);
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &Theme::default());
+            Select::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -262,17 +254,13 @@ fn test_view_open() {
 
 #[test]
 fn test_view_with_selection() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = SelectState::with_selection(vec!["Small", "Medium", "Large"], 1);
 
-    let backend = CaptureBackend::new(30, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &Theme::default());
+            Select::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -282,18 +270,14 @@ fn test_view_with_selection() {
 
 #[test]
 fn test_view_focused() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = SelectState::new(vec!["A", "B"]);
     Select::focus(&mut state);
 
-    let backend = CaptureBackend::new(30, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &Theme::default());
+            Select::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 

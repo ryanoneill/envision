@@ -520,18 +520,13 @@ fn test_focusable() {
 
 #[test]
 fn test_view_renders() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let state = TableState::new(test_rows(), test_columns());
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
+            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -545,18 +540,13 @@ fn test_view_renders() {
 
 #[test]
 fn test_view_with_header() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let state = TableState::new(test_rows(), test_columns());
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
+            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -567,19 +557,14 @@ fn test_view_with_header() {
 
 #[test]
 fn test_view_with_sort_indicator() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state = TableState::new(test_rows(), test_columns());
     Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
+            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -589,19 +574,14 @@ fn test_view_with_sort_indicator() {
 
 #[test]
 fn test_view_focused() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state = TableState::new(test_rows(), test_columns());
     state.focused = true;
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
+            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -611,19 +591,14 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_disabled() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state = TableState::new(test_rows(), test_columns());
     state.disabled = true;
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
+            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -633,18 +608,13 @@ fn test_view_disabled() {
 
 #[test]
 fn test_view_empty() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let state: TableState<TestRow> = TableState::new(vec![], test_columns());
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
+            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -785,21 +755,16 @@ fn test_set_selected_out_of_bounds() {
 
 #[test]
 fn test_view_descending_sort_indicator() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state = TableState::new(test_rows(), test_columns());
     // Sort ascending first, then descending
     Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
     Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
+            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -826,19 +791,14 @@ fn test_clear_sort_preserves_selection() {
 
 #[test]
 fn test_view_unfocused() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state = TableState::new(test_rows(), test_columns());
     state.focused = false;
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &Theme::default());
+            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 

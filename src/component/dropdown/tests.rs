@@ -528,17 +528,13 @@ fn test_focus_blur() {
 
 #[test]
 fn test_view_closed_empty() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = DropdownState::new(vec!["Apple", "Banana"]);
 
-    let backend = CaptureBackend::new(30, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &Theme::default());
+            Dropdown::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -548,17 +544,13 @@ fn test_view_closed_empty() {
 
 #[test]
 fn test_view_closed_with_selection() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = DropdownState::with_selection(vec!["Apple", "Banana"], 0);
 
-    let backend = CaptureBackend::new(30, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &Theme::default());
+            Dropdown::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -568,18 +560,14 @@ fn test_view_closed_with_selection() {
 
 #[test]
 fn test_view_open_no_filter() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = DropdownState::new(vec!["Apple", "Banana", "Cherry"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    let backend = CaptureBackend::new(30, 15);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 15);
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &Theme::default());
+            Dropdown::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -591,19 +579,15 @@ fn test_view_open_no_filter() {
 
 #[test]
 fn test_view_open_with_filter() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = DropdownState::new(vec!["Apple", "Banana", "Cherry"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
     Dropdown::update(&mut state, DropdownMessage::Insert('a'));
 
-    let backend = CaptureBackend::new(30, 15);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 15);
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &Theme::default());
+            Dropdown::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -615,19 +599,15 @@ fn test_view_open_with_filter() {
 
 #[test]
 fn test_view_highlight() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = DropdownState::new(vec!["Apple", "Banana", "Cherry"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
     Dropdown::update(&mut state, DropdownMessage::SelectNext);
 
-    let backend = CaptureBackend::new(30, 15);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 15);
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &Theme::default());
+            Dropdown::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -638,19 +618,15 @@ fn test_view_highlight() {
 
 #[test]
 fn test_view_no_matches() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = DropdownState::new(vec!["Apple", "Banana"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
     Dropdown::update(&mut state, DropdownMessage::SetFilter("xyz".to_string()));
 
-    let backend = CaptureBackend::new(30, 15);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 15);
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &Theme::default());
+            Dropdown::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -660,18 +636,14 @@ fn test_view_no_matches() {
 
 #[test]
 fn test_view_focused() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = DropdownState::new(vec!["A", "B"]);
     Dropdown::focus(&mut state);
 
-    let backend = CaptureBackend::new(30, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &Theme::default());
+            Dropdown::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 

@@ -134,14 +134,8 @@ fn test_clone() {
 
 #[test]
 fn test_view_unchecked() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = CheckboxState::new("Unchecked");
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(30, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
 
     terminal
         .draw(|frame| {
@@ -155,14 +149,8 @@ fn test_view_unchecked() {
 
 #[test]
 fn test_view_checked() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = CheckboxState::checked("Checked");
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(30, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
 
     terminal
         .draw(|frame| {
@@ -176,15 +164,9 @@ fn test_view_checked() {
 
 #[test]
 fn test_view_focused() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = CheckboxState::new("Focused");
     Checkbox::set_focused(&mut state, true);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(30, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
 
     terminal
         .draw(|frame| {
@@ -198,15 +180,9 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_disabled() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = CheckboxState::new("Disabled");
     state.set_disabled(true);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(30, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
 
     terminal
         .draw(|frame| {

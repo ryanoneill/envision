@@ -308,17 +308,13 @@ fn test_update_returns_none() {
 
 #[test]
 fn test_view_empty() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let state = StatusBarState::new();
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -329,18 +325,14 @@ fn test_view_empty() {
 
 #[test]
 fn test_view_left_only() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::new();
     state.push_left(StatusBarItem::new("LEFT"));
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -350,18 +342,14 @@ fn test_view_left_only() {
 
 #[test]
 fn test_view_right_only() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::new();
     state.push_right(StatusBarItem::new("RIGHT"));
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -371,18 +359,14 @@ fn test_view_right_only() {
 
 #[test]
 fn test_view_center_only() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::new();
     state.push_center(StatusBarItem::new("CENTER"));
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -392,20 +376,16 @@ fn test_view_center_only() {
 
 #[test]
 fn test_view_all_sections() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::new();
     state.push_left(StatusBarItem::new("LEFT"));
     state.push_center(StatusBarItem::new("CENTER"));
     state.push_right(StatusBarItem::new("RIGHT"));
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -417,19 +397,15 @@ fn test_view_all_sections() {
 
 #[test]
 fn test_view_with_separator() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::new();
     state.push_left(StatusBarItem::new("A"));
     state.push_left(StatusBarItem::new("B"));
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -441,19 +417,15 @@ fn test_view_with_separator() {
 
 #[test]
 fn test_view_custom_separator() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::with_separator(" :: ");
     state.push_left(StatusBarItem::new("A"));
     state.push_left(StatusBarItem::new("B"));
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -463,19 +435,15 @@ fn test_view_custom_separator() {
 
 #[test]
 fn test_view_no_separator_on_last_item() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::new();
     state.push_left(StatusBarItem::new("A").with_separator(false));
     state.push_left(StatusBarItem::new("B"));
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -485,19 +453,15 @@ fn test_view_no_separator_on_last_item() {
 
 #[test]
 fn test_view_styled_items() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::new();
     state.push_left(StatusBarItem::new("INFO").with_style(StatusBarStyle::Info));
     state.push_left(StatusBarItem::new("ERROR").with_style(StatusBarStyle::Error));
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -1063,18 +1027,14 @@ fn test_heartbeat_tick() {
 
 #[test]
 fn test_view_elapsed_time() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::new();
     state.push_left(StatusBarItem::elapsed_time());
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -1084,9 +1044,6 @@ fn test_view_elapsed_time() {
 
 #[test]
 fn test_view_counter_with_label() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::new();
     state.push_right(StatusBarItem::counter().with_label("Files"));
 
@@ -1099,12 +1056,11 @@ fn test_view_counter_with_label() {
         },
     );
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -1114,18 +1070,14 @@ fn test_view_counter_with_label() {
 
 #[test]
 fn test_view_heartbeat() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = StatusBarState::new();
     state.push_left(StatusBarItem::heartbeat());
 
-    let backend = CaptureBackend::new(80, 1);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &Theme::default());
+            StatusBar::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 

@@ -1,6 +1,4 @@
 use super::*;
-use crate::backend::CaptureBackend;
-use ratatui::Terminal;
 
 // ========================================
 // TooltipPosition Tests
@@ -521,8 +519,7 @@ fn test_position_right_fallback() {
 fn test_view_hidden() {
     let state = TooltipState::new("Content");
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, _theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -540,8 +537,7 @@ fn test_view_empty_content() {
     let mut state = TooltipState::new("");
     Tooltip::show(&mut state);
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, _theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -560,8 +556,7 @@ fn test_view_visible() {
     let mut state = TooltipState::new("Helpful tooltip");
     Tooltip::show(&mut state);
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, _theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -579,8 +574,7 @@ fn test_view_with_title() {
     let mut state = TooltipState::new("Content").with_title("Info");
     Tooltip::show(&mut state);
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, _theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -599,8 +593,7 @@ fn test_view_multiline() {
     let mut state = TooltipState::new("Line 1\nLine 2\nLine 3");
     Tooltip::show(&mut state);
 
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, _theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {

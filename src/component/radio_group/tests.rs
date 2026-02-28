@@ -205,15 +205,9 @@ fn test_clone() {
 
 #[test]
 fn test_view_renders_indicators() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = RadioGroupState::with_selected(vec!["Option A", "Option B", "Option C"], 1);
     state.focused = true;
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -229,15 +223,9 @@ fn test_view_renders_indicators() {
 
 #[test]
 fn test_view_disabled() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = RadioGroupState::new(vec!["Test"]);
     state.set_disabled(true);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 5);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
         .draw(|frame| {
@@ -276,15 +264,9 @@ fn test_with_selected_empty_options() {
 
 #[test]
 fn test_view_unfocused() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     let mut state = RadioGroupState::with_selected(vec!["A", "B", "C"], 1);
     state.focused = false; // Explicitly unfocused
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
@@ -300,16 +282,10 @@ fn test_view_unfocused() {
 
 #[test]
 fn test_view_focused_not_selected() {
-    use crate::backend::CaptureBackend;
-    use ratatui::Terminal;
-
     // Render with focused but rendering non-selected items
     let mut state = RadioGroupState::with_selected(vec!["First", "Second", "Third"], 0);
     state.focused = true;
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(50, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(50, 10);
 
     terminal
         .draw(|frame| {

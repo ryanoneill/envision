@@ -1,6 +1,4 @@
 use super::*;
-use crate::backend::CaptureBackend;
-use ratatui::Terminal;
 
 // ========================================
 // DialogButton Tests
@@ -450,10 +448,7 @@ fn test_update_when_hidden() {
 #[test]
 fn test_view_when_hidden() {
     let state = DialogState::alert("Title", "Message");
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -475,10 +470,7 @@ fn test_view_when_hidden() {
 fn test_view_renders() {
     let mut state = DialogState::alert("Test Title", "Test message content.");
     Dialog::show(&mut state);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -494,10 +486,7 @@ fn test_view_renders() {
 fn test_view_title() {
     let mut state = DialogState::alert("My Dialog Title", "Message");
     Dialog::show(&mut state);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -513,10 +502,7 @@ fn test_view_title() {
 fn test_view_message() {
     let mut state = DialogState::alert("Title", "This is the message content.");
     Dialog::show(&mut state);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -532,10 +518,7 @@ fn test_view_message() {
 fn test_view_buttons() {
     let mut state = DialogState::confirm("Title", "Message");
     Dialog::show(&mut state);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -553,10 +536,7 @@ fn test_view_focused_button() {
     let mut state = DialogState::confirm("Title", "Message");
     Dialog::show(&mut state);
     Dialog::focus(&mut state);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -573,10 +553,7 @@ fn test_view_focused_button() {
 fn test_view_primary_button() {
     let mut state = DialogState::confirm("Title", "Message");
     Dialog::show(&mut state);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {
@@ -593,10 +570,7 @@ fn test_view_primary_button() {
 fn test_view_multiline_message() {
     let mut state = DialogState::alert("Title", "Line 1\nLine 2\nLine 3");
     Dialog::show(&mut state);
-    let theme = Theme::default();
-
-    let backend = CaptureBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
         .draw(|frame| {

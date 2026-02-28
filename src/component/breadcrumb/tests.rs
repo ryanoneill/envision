@@ -485,18 +485,13 @@ fn test_focus_blur() {
 
 #[test]
 fn test_view_empty() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let state = BreadcrumbState::default();
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
+            Breadcrumb::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -507,18 +502,13 @@ fn test_view_empty() {
 
 #[test]
 fn test_view_single() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let state = BreadcrumbState::from_labels(vec!["Home"]);
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
+            Breadcrumb::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -528,18 +518,13 @@ fn test_view_single() {
 
 #[test]
 fn test_view_multiple() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let state = BreadcrumbState::from_labels(vec!["Home", "Products", "Item"]);
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
+            Breadcrumb::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -552,20 +537,15 @@ fn test_view_multiple() {
 
 #[test]
 fn test_view_focused_highlight() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
     state.focused = true;
     state.focused_index = 1;
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
+            Breadcrumb::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -576,20 +556,15 @@ fn test_view_focused_highlight() {
 
 #[test]
 fn test_view_truncated() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state =
         BreadcrumbState::from_labels(vec!["Root", "Level1", "Level2", "Level3", "Current"]);
     state.set_max_visible(Some(3));
 
-    let backend = CaptureBackend::new(60, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
+            Breadcrumb::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -602,19 +577,14 @@ fn test_view_truncated() {
 
 #[test]
 fn test_view_custom_separator() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state = BreadcrumbState::from_labels(vec!["Home", "Docs"]);
     state.set_separator(" / ");
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
+            Breadcrumb::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
@@ -624,19 +594,14 @@ fn test_view_custom_separator() {
 
 #[test]
 fn test_view_disabled() {
-    use crate::backend::CaptureBackend;
-    use crate::theme::Theme;
-    use ratatui::Terminal;
-
     let mut state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
     state.set_disabled(true);
 
-    let backend = CaptureBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &Theme::default());
+            Breadcrumb::view(&state, frame, frame.area(), &theme);
         })
         .unwrap();
 
