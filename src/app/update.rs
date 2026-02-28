@@ -103,7 +103,6 @@ pub trait Update {
 /// A function-based update implementation.
 ///
 /// Wraps a function to implement the `Update` trait.
-#[allow(dead_code)]
 pub struct FnUpdate<S, M, F>
 where
     F: Fn(&mut S, M) -> Command<M>,
@@ -117,7 +116,6 @@ where
     F: Fn(&mut S, M) -> Command<M>,
 {
     /// Creates a new function-based updater.
-    #[allow(dead_code)]
     pub fn new(f: F) -> Self {
         Self {
             f,
@@ -139,7 +137,6 @@ where
 }
 
 /// Extension trait for ergonomic state updates.
-#[allow(dead_code)]
 pub trait StateExt: Sized {
     /// Updates self and returns a command.
     fn updated(self, cmd: Command<impl Clone>) -> UpdateResult<Self, impl Clone> {

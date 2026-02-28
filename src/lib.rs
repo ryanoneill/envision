@@ -76,7 +76,7 @@ pub mod overlay;
 pub mod theme;
 
 // Re-export commonly used types
-pub use adapter::DualBackend;
+pub use adapter::{DualBackend, DualBackendBuilder};
 pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
 pub use app::{
     App, AsyncCommandHandler, AsyncRuntime, AsyncRuntimeConfig, Command, DebounceSubscription,

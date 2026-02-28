@@ -100,4 +100,4 @@ pub use subscription::{
     SubscriptionExt, TakeSubscription, TerminalEventSubscription, ThrottleSubscription,
     TickSubscription, TickSubscriptionBuilder, TimerSubscription,
 };
-pub use update::{Update, UpdateResult};
+pub use update::{FnUpdate, StateExt, Update, UpdateResult};

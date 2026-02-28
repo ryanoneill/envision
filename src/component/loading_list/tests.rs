@@ -746,15 +746,11 @@ fn test_set_loading_invalid_index() {
 #[test]
 fn test_spinner_animation_frames() {
     let state = ItemState::Loading;
-    // Test all 4 spinner frames
-    let frame0 = state.symbol(0);
-    let frame1 = state.symbol(1);
-    let frame2 = state.symbol(2);
-    let frame3 = state.symbol(3);
-    let frame4 = state.symbol(4); // Should wrap to frame 0
-
-    assert_eq!(frame0, frame4);
-    assert_ne!(frame0, frame1);
-    assert_ne!(frame1, frame2);
-    assert_ne!(frame2, frame3);
+    // Test all 10 spinner frames (Braille dots matching SpinnerStyle::Dots)
+    let expected = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    for (i, &expected_frame) in expected.iter().enumerate() {
+        assert_eq!(state.symbol(i), expected_frame);
+    }
+    // Frame 10 should wrap to frame 0
+    assert_eq!(state.symbol(10), state.symbol(0));
 }

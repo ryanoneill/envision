@@ -77,7 +77,6 @@ pub fn render(backend: &CaptureBackend) -> String {
 ///
 /// This is useful for debugging, as it shows what colors and modifiers
 /// are being used in the frame.
-#[allow(dead_code)]
 pub fn render_with_legend(backend: &CaptureBackend) -> String {
     let mut output = render(backend);
 

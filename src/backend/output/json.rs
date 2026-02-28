@@ -121,7 +121,6 @@ pub fn render(backend: &CaptureBackend, pretty: bool) -> String {
 /// Renders only the content lines as a JSON array.
 ///
 /// This is a minimal representation useful for simple text comparisons.
-#[allow(dead_code)]
 pub fn render_lines_only(backend: &CaptureBackend) -> String {
     let height = backend.height();
     let lines: Vec<String> = (0..height).map(|y| backend.row_content(y)).collect();
