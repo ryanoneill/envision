@@ -7,6 +7,8 @@
 use std::future::Future;
 use std::pin::Pin;
 
+use crate::overlay::Overlay;
+
 /// A command that can produce messages or perform side effects.
 ///
 /// Commands are returned from `update` functions to trigger
@@ -40,6 +42,12 @@ pub(crate) enum CommandAction<M> {
 
     /// An async future that can fail - errors are sent to the error channel
     AsyncFallible(Pin<Box<dyn Future<Output = AsyncFallibleResult<M>> + Send + 'static>>),
+
+    /// Push an overlay onto the stack
+    PushOverlay(Box<dyn Overlay<M> + Send>),
+
+    /// Pop the topmost overlay
+    PopOverlay,
 }
 
 impl<M> Command<M> {
@@ -191,6 +199,20 @@ impl<M> Command<M> {
         }
     }
 
+    /// Creates a command that pushes an overlay onto the runtime's overlay stack.
+    pub fn push_overlay(overlay: impl Overlay<M> + 'static) -> Self {
+        Self {
+            actions: vec![CommandAction::PushOverlay(Box::new(overlay))],
+        }
+    }
+
+    /// Creates a command that pops the topmost overlay from the runtime's overlay stack.
+    pub fn pop_overlay() -> Self {
+        Self {
+            actions: vec![CommandAction::PopOverlay],
+        }
+    }
+
     /// Combines multiple commands into one.
     pub fn combine(commands: impl IntoIterator<Item = Command<M>>) -> Self {
         let mut actions = Vec::new();
@@ -223,26 +245,28 @@ impl<M> Command<M> {
         let actions = self
             .actions
             .into_iter()
-            .map(|action| match action {
-                CommandAction::Message(m) => CommandAction::Message(f(m)),
+            .filter_map(|action| match action {
+                CommandAction::Message(m) => Some(CommandAction::Message(f(m))),
                 CommandAction::Batch(msgs) => {
-                    CommandAction::Batch(msgs.into_iter().map(|m| f.clone()(m)).collect())
+                    Some(CommandAction::Batch(msgs.into_iter().map(|m| f.clone()(m)).collect()))
                 }
-                CommandAction::Quit => CommandAction::Quit,
+                CommandAction::Quit => Some(CommandAction::Quit),
                 CommandAction::Callback(cb) => {
                     let f = f.clone();
-                    CommandAction::Callback(Box::new(move || cb().map(&f)))
+                    Some(CommandAction::Callback(Box::new(move || cb().map(&f))))
                 }
                 CommandAction::Async(fut) => {
                     let f = f.clone();
-                    CommandAction::Async(Box::pin(async move { fut.await.map(&f) }))
+                    Some(CommandAction::Async(Box::pin(async move { fut.await.map(&f) })))
                 }
                 CommandAction::AsyncFallible(fut) => {
                     let f = f.clone();
-                    CommandAction::AsyncFallible(Box::pin(async move {
+                    Some(CommandAction::AsyncFallible(Box::pin(async move {
                         fut.await.map(|opt| opt.map(&f))
-                    }))
+                    })))
                 }
+                CommandAction::PushOverlay(_) => None,
+                CommandAction::PopOverlay => Some(CommandAction::PopOverlay),
             })
             .collect();
 
@@ -252,7 +276,7 @@ impl<M> Command<M> {
 
 impl<M: Clone> Clone for Command<M> {
     fn clone(&self) -> Self {
-        // Note: Callbacks and Async can't be cloned, so we only clone Message/Batch/Quit
+        // Note: Callbacks, Async, and PushOverlay can't be cloned, so we only clone Message/Batch/Quit/PopOverlay
         let actions = self
             .actions
             .iter()
@@ -260,6 +284,7 @@ impl<M: Clone> Clone for Command<M> {
                 CommandAction::Message(m) => Some(CommandAction::Message(m.clone())),
                 CommandAction::Batch(msgs) => Some(CommandAction::Batch(msgs.clone())),
                 CommandAction::Quit => Some(CommandAction::Quit),
+                CommandAction::PopOverlay => Some(CommandAction::PopOverlay),
                 _ => None, // Skip non-clonable actions
             })
             .collect();
@@ -281,6 +306,8 @@ impl<M> std::fmt::Debug for Command<M> {
 /// This is used by the runtime to process commands returned from updates.
 pub struct CommandHandler<M> {
     pending_messages: Vec<M>,
+    pending_overlay_pushes: Vec<Box<dyn Overlay<M> + Send>>,
+    pending_overlay_pops: usize,
     should_quit: bool,
 }
 
@@ -289,6 +316,8 @@ impl<M> CommandHandler<M> {
     pub fn new() -> Self {
         Self {
             pending_messages: Vec::new(),
+            pending_overlay_pushes: Vec::new(),
+            pending_overlay_pops: 0,
             should_quit: false,
         }
     }
@@ -322,6 +351,12 @@ impl<M> CommandHandler<M> {
                          Use AsyncRuntime for async commands."
                     );
                 }
+                CommandAction::PushOverlay(overlay) => {
+                    self.pending_overlay_pushes.push(overlay);
+                }
+                CommandAction::PopOverlay => {
+                    self.pending_overlay_pops += 1;
+                }
             }
         }
     }
@@ -329,6 +364,16 @@ impl<M> CommandHandler<M> {
     /// Takes all pending messages.
     pub fn take_messages(&mut self) -> Vec<M> {
         std::mem::take(&mut self.pending_messages)
+    }
+
+    /// Takes all pending overlay pushes.
+    pub fn take_overlay_pushes(&mut self) -> Vec<Box<dyn Overlay<M> + Send>> {
+        std::mem::take(&mut self.pending_overlay_pushes)
+    }
+
+    /// Takes the count of pending overlay pops and resets the counter.
+    pub fn take_overlay_pops(&mut self) -> usize {
+        std::mem::replace(&mut self.pending_overlay_pops, 0)
     }
 
     /// Returns true if a quit command was executed.
@@ -818,5 +863,120 @@ mod tests {
         // Only sync messages are processed
         let messages = handler.take_messages();
         assert_eq!(messages, vec![TestMsg::A, TestMsg::C]);
+    }
+
+    mod overlay_tests {
+        use super::*;
+        use crate::input::Event;
+        use crate::overlay::{Overlay, OverlayAction};
+        use crate::theme::Theme;
+        use ratatui::layout::Rect;
+        use ratatui::Frame;
+
+        struct TestOverlay;
+
+        impl Overlay<TestMsg> for TestOverlay {
+            fn handle_event(&mut self, _event: &Event) -> OverlayAction<TestMsg> {
+                OverlayAction::Consumed
+            }
+
+            fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+        }
+
+        #[test]
+        fn test_command_push_overlay() {
+            let cmd: Command<TestMsg> = Command::push_overlay(TestOverlay);
+            assert!(!cmd.is_none());
+        }
+
+        #[test]
+        fn test_command_pop_overlay() {
+            let cmd: Command<TestMsg> = Command::pop_overlay();
+            assert!(!cmd.is_none());
+        }
+
+        #[test]
+        fn test_command_handler_push_overlay() {
+            let mut handler = CommandHandler::new();
+            handler.execute(Command::push_overlay(TestOverlay));
+
+            // No messages produced
+            assert!(handler.take_messages().is_empty());
+
+            // But there should be a pending overlay push
+            let pushes = handler.take_overlay_pushes();
+            assert_eq!(pushes.len(), 1);
+        }
+
+        #[test]
+        fn test_command_handler_pop_overlay() {
+            let mut handler: CommandHandler<TestMsg> = CommandHandler::new();
+            handler.execute(Command::pop_overlay());
+
+            let pops = handler.take_overlay_pops();
+            assert_eq!(pops, 1);
+        }
+
+        #[test]
+        fn test_command_handler_multiple_overlay_ops() {
+            let mut handler = CommandHandler::new();
+            let cmd = Command::combine([
+                Command::push_overlay(TestOverlay),
+                Command::push_overlay(TestOverlay),
+                Command::pop_overlay(),
+                Command::message(TestMsg::A),
+            ]);
+            handler.execute(cmd);
+
+            assert_eq!(handler.take_messages(), vec![TestMsg::A]);
+            assert_eq!(handler.take_overlay_pushes().len(), 2);
+            assert_eq!(handler.take_overlay_pops(), 1);
+        }
+
+        #[test]
+        fn test_command_clone_push_overlay_skipped() {
+            let cmd: Command<TestMsg> = Command::push_overlay(TestOverlay);
+            let cloned = cmd.clone();
+
+            // PushOverlay can't be cloned, so cloned should be empty
+            assert!(cloned.is_none());
+        }
+
+        #[test]
+        fn test_command_clone_pop_overlay_preserved() {
+            let cmd: Command<TestMsg> = Command::pop_overlay();
+            let cloned = cmd.clone();
+
+            // PopOverlay can be cloned
+            assert!(!cloned.is_none());
+        }
+
+        #[test]
+        fn test_command_map_push_overlay_skipped() {
+            #[derive(Clone, Debug, PartialEq)]
+            enum OuterMsg {
+                Inner(TestMsg),
+            }
+
+            let cmd: Command<TestMsg> = Command::push_overlay(TestOverlay);
+            let mapped: Command<OuterMsg> = cmd.map(OuterMsg::Inner);
+
+            // PushOverlay can't be mapped, so mapped should be empty
+            assert!(mapped.is_none());
+        }
+
+        #[test]
+        fn test_command_map_pop_overlay_preserved() {
+            #[derive(Clone, Debug, PartialEq)]
+            enum OuterMsg {
+                Inner(TestMsg),
+            }
+
+            let cmd: Command<TestMsg> = Command::pop_overlay();
+            let mapped: Command<OuterMsg> = cmd.map(OuterMsg::Inner);
+
+            // PopOverlay passes through map
+            assert!(!mapped.is_none());
+        }
     }
 }

@@ -11,6 +11,7 @@ use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 
 use super::command::{AsyncFallibleResult, BoxedError, Command, CommandAction};
+use crate::overlay::Overlay;
 
 /// A boxed future that produces an optional message.
 pub type BoxedFuture<M> = Pin<Box<dyn Future<Output = Option<M>> + Send + 'static>>;
@@ -28,6 +29,8 @@ pub struct AsyncCommandHandler<M> {
     pending_messages: Vec<M>,
     pending_futures: Vec<BoxedFuture<M>>,
     pending_fallible_futures: Vec<BoxedFallibleFuture<M>>,
+    pending_overlay_pushes: Vec<Box<dyn Overlay<M> + Send>>,
+    pending_overlay_pops: usize,
     should_quit: bool,
 }
 
@@ -38,6 +41,8 @@ impl<M: Send + 'static> AsyncCommandHandler<M> {
             pending_messages: Vec::new(),
             pending_futures: Vec::new(),
             pending_fallible_futures: Vec::new(),
+            pending_overlay_pushes: Vec::new(),
+            pending_overlay_pops: 0,
             should_quit: false,
         }
     }
@@ -68,6 +73,12 @@ impl<M: Send + 'static> AsyncCommandHandler<M> {
                 }
                 CommandAction::AsyncFallible(fut) => {
                     self.pending_fallible_futures.push(fut);
+                }
+                CommandAction::PushOverlay(overlay) => {
+                    self.pending_overlay_pushes.push(overlay);
+                }
+                CommandAction::PopOverlay => {
+                    self.pending_overlay_pops += 1;
                 }
             }
         }
@@ -139,6 +150,16 @@ impl<M: Send + 'static> AsyncCommandHandler<M> {
     /// Takes all pending sync messages.
     pub fn take_messages(&mut self) -> Vec<M> {
         std::mem::take(&mut self.pending_messages)
+    }
+
+    /// Takes all pending overlay pushes.
+    pub fn take_overlay_pushes(&mut self) -> Vec<Box<dyn Overlay<M> + Send>> {
+        std::mem::take(&mut self.pending_overlay_pushes)
+    }
+
+    /// Takes the count of pending overlay pops and resets the counter.
+    pub fn take_overlay_pops(&mut self) -> usize {
+        std::mem::replace(&mut self.pending_overlay_pops, 0)
     }
 
     /// Returns true if any async futures are pending.

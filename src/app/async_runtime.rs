@@ -25,6 +25,8 @@ use super::model::App;
 use super::subscription::{BoxedSubscription, Subscription};
 use crate::backend::CaptureBackend;
 use crate::input::EventQueue;
+use crate::overlay::{Overlay, OverlayAction, OverlayStack};
+use crate::theme::Theme;
 
 /// Configuration for the async runtime.
 #[derive(Clone, Debug)]
@@ -141,6 +143,12 @@ where
 
     /// Active subscriptions as streams
     subscriptions: Vec<std::pin::Pin<Box<dyn tokio_stream::Stream<Item = A::Message> + Send>>>,
+
+    /// The overlay stack for modal UI layers
+    overlay_stack: OverlayStack<A::Message>,
+
+    /// The current theme
+    theme: Theme,
 }
 
 // =============================================================================
@@ -234,6 +242,8 @@ where
             error_rx,
             cancel_token,
             subscriptions: Vec::new(),
+            overlay_stack: OverlayStack::new(),
+            theme: Theme::default(),
         };
 
         // Spawn any async commands from init
@@ -389,6 +399,14 @@ where
         for msg in messages {
             self.dispatch(msg);
         }
+
+        // Process overlay commands
+        for overlay in self.commands.take_overlay_pushes() {
+            self.overlay_stack.push(overlay);
+        }
+        for _ in 0..self.commands.take_overlay_pops() {
+            self.overlay_stack.pop();
+        }
     }
 
     /// Processes messages received from async tasks.
@@ -399,20 +417,42 @@ where
     }
 
     /// Renders the current state to the terminal.
+    ///
+    /// Renders the main app view first, then any active overlays on top.
     pub fn render(&mut self) -> io::Result<()> {
+        let theme = &self.theme;
+        let overlay_stack = &self.overlay_stack;
         self.terminal.draw(|frame| {
             A::view(&self.state, frame);
+            overlay_stack.render(frame, frame.area(), theme);
         })?;
         Ok(())
     }
 
     /// Processes the next event from the queue.
     ///
+    /// If the overlay stack is active, events are routed through it first.
+    /// Only if the overlay propagates the event will it reach the app's
+    /// `handle_event_with_state`.
+    ///
     /// Returns true if an event was processed.
     pub fn process_event(&mut self) -> bool {
         if let Some(event) = self.events.pop() {
-            if let Some(msg) = A::handle_event_with_state(&self.state, &event) {
-                self.dispatch(msg);
+            match self.overlay_stack.handle_event(&event) {
+                OverlayAction::Consumed => {}
+                OverlayAction::Message(msg) => self.dispatch(msg),
+                OverlayAction::Dismiss => {
+                    self.overlay_stack.pop();
+                }
+                OverlayAction::DismissWithMessage(msg) => {
+                    self.overlay_stack.pop();
+                    self.dispatch(msg);
+                }
+                OverlayAction::Propagate => {
+                    if let Some(msg) = A::handle_event_with_state(&self.state, &event) {
+                        self.dispatch(msg);
+                    }
+                }
             }
             true
         } else {
@@ -551,6 +591,41 @@ where
 
         // Process async messages
         self.process_async_messages();
+    }
+
+    /// Pushes an overlay onto the stack.
+    pub fn push_overlay(&mut self, overlay: Box<dyn Overlay<A::Message>>) {
+        self.overlay_stack.push(overlay);
+    }
+
+    /// Pops the topmost overlay from the stack.
+    pub fn pop_overlay(&mut self) -> Option<Box<dyn Overlay<A::Message>>> {
+        self.overlay_stack.pop()
+    }
+
+    /// Clears all overlays from the stack.
+    pub fn clear_overlays(&mut self) {
+        self.overlay_stack.clear();
+    }
+
+    /// Returns true if there are active overlays.
+    pub fn has_overlays(&self) -> bool {
+        self.overlay_stack.is_active()
+    }
+
+    /// Returns the number of overlays on the stack.
+    pub fn overlay_count(&self) -> usize {
+        self.overlay_stack.len()
+    }
+
+    /// Sets the theme.
+    pub fn set_theme(&mut self, theme: Theme) {
+        self.theme = theme;
+    }
+
+    /// Returns a reference to the current theme.
+    pub fn theme(&self) -> &Theme {
+        &self.theme
     }
 }
 
@@ -1527,5 +1602,158 @@ mod tests {
         runtime.process_pending();
 
         assert!(runtime.state().initialized);
+    }
+
+    // =========================================================================
+    // Overlay Tests
+    // =========================================================================
+
+    mod overlay_tests {
+        use super::*;
+        use crate::input::Event;
+        use crate::overlay::{Overlay, OverlayAction};
+        use crate::theme::Theme;
+        use crossterm::event::KeyCode;
+        use ratatui::layout::Rect;
+
+        struct ConsumeOverlay;
+
+        impl Overlay<CounterMsg> for ConsumeOverlay {
+            fn handle_event(&mut self, _event: &Event) -> OverlayAction<CounterMsg> {
+                OverlayAction::Consumed
+            }
+            fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+        }
+
+        #[test]
+        fn test_async_runtime_overlay_push_pop() {
+            let mut runtime: AsyncRuntime<CounterApp, _> =
+                AsyncRuntime::virtual_terminal(80, 24).unwrap();
+
+            assert!(!runtime.has_overlays());
+            assert_eq!(runtime.overlay_count(), 0);
+
+            runtime.push_overlay(Box::new(ConsumeOverlay));
+            assert!(runtime.has_overlays());
+            assert_eq!(runtime.overlay_count(), 1);
+
+            let popped = runtime.pop_overlay();
+            assert!(popped.is_some());
+            assert!(!runtime.has_overlays());
+        }
+
+        #[test]
+        fn test_async_runtime_overlay_clear() {
+            let mut runtime: AsyncRuntime<CounterApp, _> =
+                AsyncRuntime::virtual_terminal(80, 24).unwrap();
+
+            runtime.push_overlay(Box::new(ConsumeOverlay));
+            runtime.push_overlay(Box::new(ConsumeOverlay));
+            assert_eq!(runtime.overlay_count(), 2);
+
+            runtime.clear_overlays();
+            assert!(!runtime.has_overlays());
+        }
+
+        #[test]
+        fn test_async_runtime_overlay_consumes_events() {
+            // App that handles key events
+            struct KeyApp;
+
+            #[derive(Clone, Default)]
+            struct KeyState {
+                key_pressed: bool,
+            }
+
+            #[derive(Clone)]
+            enum KeyMsg {
+                KeyPress,
+            }
+
+            impl App for KeyApp {
+                type State = KeyState;
+                type Message = KeyMsg;
+
+                fn init() -> (Self::State, Command<Self::Message>) {
+                    (KeyState::default(), Command::none())
+                }
+
+                fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+                    match msg {
+                        KeyMsg::KeyPress => state.key_pressed = true,
+                    }
+                    Command::none()
+                }
+
+                fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+
+                fn handle_event(event: &Event) -> Option<Self::Message> {
+                    if let Event::Key(_) = event {
+                        Some(KeyMsg::KeyPress)
+                    } else {
+                        None
+                    }
+                }
+            }
+
+            struct ConsumeAll;
+            impl Overlay<KeyMsg> for ConsumeAll {
+                fn handle_event(&mut self, _event: &Event) -> OverlayAction<KeyMsg> {
+                    OverlayAction::Consumed
+                }
+                fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            let mut runtime: AsyncRuntime<KeyApp, _> =
+                AsyncRuntime::virtual_terminal(80, 24).unwrap();
+
+            runtime.push_overlay(Box::new(ConsumeAll));
+
+            runtime.send(Event::key(KeyCode::Enter));
+            runtime.tick().unwrap();
+
+            // Event should be consumed by overlay, not reaching the app
+            assert!(!runtime.state().key_pressed);
+        }
+
+        #[test]
+        fn test_async_runtime_overlay_dismiss() {
+            struct DismissOverlay;
+            impl Overlay<CounterMsg> for DismissOverlay {
+                fn handle_event(&mut self, event: &Event) -> OverlayAction<CounterMsg> {
+                    if let Some(key) = event.as_key() {
+                        if key.code == KeyCode::Esc {
+                            return OverlayAction::Dismiss;
+                        }
+                    }
+                    OverlayAction::Consumed
+                }
+                fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            let mut runtime: AsyncRuntime<CounterApp, _> =
+                AsyncRuntime::virtual_terminal(80, 24).unwrap();
+
+            runtime.push_overlay(Box::new(DismissOverlay));
+            assert_eq!(runtime.overlay_count(), 1);
+
+            runtime.send(Event::key(KeyCode::Esc));
+            runtime.tick().unwrap();
+
+            assert_eq!(runtime.overlay_count(), 0);
+        }
+
+        #[test]
+        fn test_async_runtime_theme_access() {
+            let mut runtime: AsyncRuntime<CounterApp, _> =
+                AsyncRuntime::virtual_terminal(80, 24).unwrap();
+
+            let _theme = runtime.theme();
+
+            let nord = Theme::nord();
+            let expected_bg = nord.background;
+            runtime.set_theme(nord);
+            assert_eq!(runtime.theme().background, expected_bg);
+        }
     }
 }
