@@ -1406,5 +1406,96 @@ mod tests {
             vt.set_theme(nord);
             assert_eq!(vt.theme().background, expected_bg);
         }
+
+        #[test]
+        fn test_runtime_render_with_overlay() {
+            // Verifies the overlay rendering path in render()
+            let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+
+            vt.push_overlay(Box::new(ConsumeOverlay));
+            vt.render().unwrap();
+
+            // App content should still be rendered underneath
+            assert!(vt.contains_text("Count: 0"));
+        }
+
+        #[test]
+        fn test_runtime_overlay_message_from_event() {
+            // Test the OverlayAction::Message path in process_event
+            struct MsgOverlay;
+            impl Overlay<EventMsg> for MsgOverlay {
+                fn handle_event(&mut self, _event: &Event) -> OverlayAction<EventMsg> {
+                    OverlayAction::Message(EventMsg::KeyPressed('z'))
+                }
+                fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+            vt.push_overlay(Box::new(MsgOverlay));
+
+            vt.send(Event::char('x'));
+            vt.tick().unwrap();
+
+            // The overlay should have produced a message, not the app's handle_event
+            assert_eq!(vt.state().events_received, 1);
+            assert_eq!(vt.state().last_key, Some('z'));
+        }
+
+        #[test]
+        fn test_runtime_process_commands_overlay_push_pop() {
+            // Directly test the overlay processing in process_commands()
+            struct CmdApp;
+
+            #[derive(Clone, Default)]
+            struct CmdState;
+
+            #[derive(Clone)]
+            enum CmdMsg {
+                Push,
+                Pop,
+            }
+
+            struct NoopOverlay;
+            impl Overlay<CmdMsg> for NoopOverlay {
+                fn handle_event(&mut self, _event: &Event) -> OverlayAction<CmdMsg> {
+                    OverlayAction::Consumed
+                }
+                fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            impl App for CmdApp {
+                type State = CmdState;
+                type Message = CmdMsg;
+
+                fn init() -> (Self::State, Command<Self::Message>) {
+                    (CmdState, Command::none())
+                }
+
+                fn update(_state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+                    match msg {
+                        CmdMsg::Push => Command::push_overlay(NoopOverlay),
+                        CmdMsg::Pop => Command::pop_overlay(),
+                    }
+                }
+
+                fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+            }
+
+            let mut vt: Runtime<CmdApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+            // Push two overlays via commands
+            vt.dispatch(CmdMsg::Push);
+            vt.process_commands();
+            assert_eq!(vt.overlay_count(), 1);
+
+            vt.dispatch(CmdMsg::Push);
+            vt.process_commands();
+            assert_eq!(vt.overlay_count(), 2);
+
+            // Pop one via command
+            vt.dispatch(CmdMsg::Pop);
+            vt.process_commands();
+            assert_eq!(vt.overlay_count(), 1);
+        }
     }
 }

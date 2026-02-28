@@ -247,4 +247,62 @@ mod tests {
         let action = stack.handle_event(&event);
         assert!(matches!(action, OverlayAction::Dismiss));
     }
+
+    #[test]
+    fn test_stack_render_empty() {
+        // Rendering an empty stack should be a no-op (no panic)
+        let stack: OverlayStack<i32> = OverlayStack::new();
+        let backend = ratatui::backend::TestBackend::new(40, 10);
+        let mut terminal = ratatui::Terminal::new(backend).unwrap();
+        let theme = Theme::default();
+        terminal
+            .draw(|frame| {
+                stack.render(frame, frame.area(), &theme);
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn test_stack_render_with_overlays() {
+        use std::sync::atomic::{AtomicU32, Ordering};
+        use std::sync::Arc;
+
+        // An overlay that tracks how many times view() is called
+        struct TrackingOverlay {
+            call_count: Arc<AtomicU32>,
+        }
+
+        impl Overlay<i32> for TrackingOverlay {
+            fn handle_event(&mut self, _event: &Event) -> OverlayAction<i32> {
+                OverlayAction::Consumed
+            }
+            fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {
+                self.call_count.fetch_add(1, Ordering::Relaxed);
+            }
+        }
+
+        let count1 = Arc::new(AtomicU32::new(0));
+        let count2 = Arc::new(AtomicU32::new(0));
+
+        let mut stack: OverlayStack<i32> = OverlayStack::new();
+        stack.push(Box::new(TrackingOverlay {
+            call_count: count1.clone(),
+        }));
+        stack.push(Box::new(TrackingOverlay {
+            call_count: count2.clone(),
+        }));
+
+        let backend = ratatui::backend::TestBackend::new(40, 10);
+        let mut terminal = ratatui::Terminal::new(backend).unwrap();
+        let theme = Theme::default();
+        terminal
+            .draw(|frame| {
+                stack.render(frame, frame.area(), &theme);
+            })
+            .unwrap();
+
+        // Both overlays should have been rendered (bottom-up)
+        assert_eq!(count1.load(Ordering::Relaxed), 1);
+        assert_eq!(count2.load(Ordering::Relaxed), 1);
+    }
 }

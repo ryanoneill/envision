@@ -363,4 +363,44 @@ mod tests {
         assert!(!handler.should_quit());
         assert!(!handler.has_pending_futures());
     }
+
+    #[test]
+    fn test_async_handler_push_overlay() {
+        use crate::input::Event;
+        use crate::overlay::{Overlay, OverlayAction};
+        use crate::theme::Theme;
+        use ratatui::layout::Rect;
+
+        struct TestOverlay;
+        impl Overlay<TestMsg> for TestOverlay {
+            fn handle_event(&mut self, _event: &Event) -> OverlayAction<TestMsg> {
+                OverlayAction::Consumed
+            }
+            fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+        }
+
+        let mut handler: AsyncCommandHandler<TestMsg> = AsyncCommandHandler::new();
+        handler.execute(Command::push_overlay(TestOverlay));
+
+        let pushes = handler.take_overlay_pushes();
+        assert_eq!(pushes.len(), 1);
+
+        // Second take should be empty
+        let pushes = handler.take_overlay_pushes();
+        assert!(pushes.is_empty());
+    }
+
+    #[test]
+    fn test_async_handler_pop_overlay() {
+        let mut handler: AsyncCommandHandler<TestMsg> = AsyncCommandHandler::new();
+        handler.execute(Command::pop_overlay());
+        handler.execute(Command::pop_overlay());
+
+        let pops = handler.take_overlay_pops();
+        assert_eq!(pops, 2);
+
+        // Second take should be zero
+        let pops = handler.take_overlay_pops();
+        assert_eq!(pops, 0);
+    }
 }

@@ -415,4 +415,21 @@ mod tests {
 
         assert_eq!(state.counter, 2);
     }
+
+    #[test]
+    fn test_handle_event_with_state_default_delegation() {
+        // CustomApp overrides handle_event but NOT handle_event_with_state.
+        // Calling handle_event_with_state should delegate to handle_event.
+        use crossterm::event::KeyCode;
+
+        let (state, _) = CustomApp::init();
+
+        let event = Event::key(KeyCode::Char('q'));
+        let msg = CustomApp::handle_event_with_state(&state, &event);
+        assert!(matches!(msg, Some(CustomMsg::Quit)));
+
+        let event = Event::key(KeyCode::Char('a'));
+        let msg = CustomApp::handle_event_with_state(&state, &event);
+        assert!(matches!(msg, Some(CustomMsg::KeyPressed('a'))));
+    }
 }

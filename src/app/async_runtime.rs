@@ -1754,5 +1754,112 @@ mod tests {
             runtime.set_theme(nord);
             assert_eq!(runtime.theme().background, expected_bg);
         }
+
+        #[test]
+        fn test_async_runtime_render_with_overlay() {
+            let mut runtime: AsyncRuntime<CounterApp, _> =
+                AsyncRuntime::virtual_terminal(40, 10).unwrap();
+
+            runtime.push_overlay(Box::new(ConsumeOverlay));
+            runtime.render().unwrap();
+
+            // App content should still be rendered underneath
+            assert!(runtime.contains_text("Count: 0"));
+        }
+
+        #[test]
+        fn test_async_runtime_overlay_message_from_event() {
+            struct MsgOverlay;
+            impl Overlay<CounterMsg> for MsgOverlay {
+                fn handle_event(&mut self, _event: &Event) -> OverlayAction<CounterMsg> {
+                    OverlayAction::Message(CounterMsg::IncrementBy(10))
+                }
+                fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            let mut runtime: AsyncRuntime<CounterApp, _> =
+                AsyncRuntime::virtual_terminal(80, 24).unwrap();
+            runtime.push_overlay(Box::new(MsgOverlay));
+
+            runtime.send(Event::char('x'));
+            runtime.tick().unwrap();
+
+            assert_eq!(runtime.state().count, 10);
+        }
+
+        #[test]
+        fn test_async_runtime_overlay_dismiss_with_message() {
+            struct DismissWithMsgOverlay;
+            impl Overlay<CounterMsg> for DismissWithMsgOverlay {
+                fn handle_event(&mut self, _event: &Event) -> OverlayAction<CounterMsg> {
+                    OverlayAction::DismissWithMessage(CounterMsg::IncrementBy(5))
+                }
+                fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            let mut runtime: AsyncRuntime<CounterApp, _> =
+                AsyncRuntime::virtual_terminal(80, 24).unwrap();
+
+            runtime.push_overlay(Box::new(DismissWithMsgOverlay));
+            assert_eq!(runtime.overlay_count(), 1);
+
+            runtime.send(Event::char('x'));
+            runtime.tick().unwrap();
+
+            // Overlay should be dismissed and message dispatched
+            assert_eq!(runtime.overlay_count(), 0);
+            assert_eq!(runtime.state().count, 5);
+        }
+
+        #[test]
+        fn test_async_runtime_process_sync_commands_overlay() {
+            struct CmdApp;
+
+            #[derive(Clone, Default)]
+            struct CmdState;
+
+            #[derive(Clone)]
+            enum CmdMsg {
+                Push,
+                Pop,
+            }
+
+            struct NoopOverlay;
+            impl Overlay<CmdMsg> for NoopOverlay {
+                fn handle_event(&mut self, _event: &Event) -> OverlayAction<CmdMsg> {
+                    OverlayAction::Consumed
+                }
+                fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            impl App for CmdApp {
+                type State = CmdState;
+                type Message = CmdMsg;
+
+                fn init() -> (Self::State, Command<Self::Message>) {
+                    (CmdState, Command::none())
+                }
+
+                fn update(_state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+                    match msg {
+                        CmdMsg::Push => Command::push_overlay(NoopOverlay),
+                        CmdMsg::Pop => Command::pop_overlay(),
+                    }
+                }
+
+                fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+            }
+
+            let mut runtime: AsyncRuntime<CmdApp, _> =
+                AsyncRuntime::virtual_terminal(80, 24).unwrap();
+
+            runtime.dispatch(CmdMsg::Push);
+            runtime.process_pending();
+            assert_eq!(runtime.overlay_count(), 1);
+
+            runtime.dispatch(CmdMsg::Pop);
+            runtime.process_pending();
+            assert_eq!(runtime.overlay_count(), 0);
+        }
     }
 }
