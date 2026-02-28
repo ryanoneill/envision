@@ -45,17 +45,11 @@ use crate::input::{Event, EventQueue};
 /// - Time control for deterministic async testing
 /// - Convenient dispatch and assertion methods
 /// - Access to the underlying runtime and state
-pub struct AsyncTestHarness<A: App>
-where
-    A::Message: Send + Clone + 'static,
-{
+pub struct AsyncTestHarness<A: App> {
     runtime: AsyncRuntime<A, CaptureBackend>,
 }
 
-impl<A: App> AsyncTestHarness<A>
-where
-    A::Message: Send + Clone + 'static,
-{
+impl<A: App> AsyncTestHarness<A> {
     /// Creates a new async test harness with the given dimensions.
     ///
     /// Note: For time control, use `#[tokio::test(start_paused = true)]`.
@@ -296,10 +290,7 @@ where
 use std::time::Duration;
 
 #[cfg(test)]
-impl<A: App> AsyncTestHarness<A>
-where
-    A::Message: Send + Clone + 'static,
-{
+impl<A: App> AsyncTestHarness<A> {
     /// Advances time by the specified duration.
     ///
     /// This only works when time is paused (e.g., with `#[tokio::test(start_paused = true)]`).

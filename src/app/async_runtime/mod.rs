@@ -105,10 +105,7 @@ impl AsyncRuntimeConfig {
 /// The async runtime that executes a TEA application.
 ///
 /// This manages the async event loop, state updates, and rendering using tokio.
-pub struct AsyncRuntime<A: App, B: Backend>
-where
-    A::Message: Send + 'static,
-{
+pub struct AsyncRuntime<A: App, B: Backend> {
     /// Shared runtime state (state, terminal, events, overlays, theme)
     core: RuntimeCore<A, B>,
 
@@ -141,10 +138,7 @@ where
 // Virtual Terminal Mode - for programmatic control (agents, testing)
 // =============================================================================
 
-impl<A: App> AsyncRuntime<A, CaptureBackend>
-where
-    A::Message: Send + 'static,
-{
+impl<A: App> AsyncRuntime<A, CaptureBackend> {
     /// Creates a virtual terminal for programmatic async control.
     ///
     /// A virtual terminal is not connected to a physical terminal. Instead:
@@ -193,10 +187,7 @@ where
     }
 }
 
-impl<A: App, B: Backend> AsyncRuntime<A, B>
-where
-    A::Message: Send + 'static,
-{
+impl<A: App, B: Backend> AsyncRuntime<A, B> {
     /// Creates a new async runtime with the specified backend.
     pub fn with_backend(backend: B) -> io::Result<Self> {
         Self::with_backend_and_config(backend, AsyncRuntimeConfig::default())
@@ -597,10 +588,7 @@ where
 }
 
 // Convenience methods for CaptureBackend
-impl<A: App> AsyncRuntime<A, CaptureBackend>
-where
-    A::Message: Send + 'static,
-{
+impl<A: App> AsyncRuntime<A, CaptureBackend> {
     /// Returns the cell at the given position, or `None` if out of bounds.
     ///
     /// Use this to assert on cell styling:

@@ -71,7 +71,7 @@ pub trait App: Sized {
     /// The message type representing all possible events.
     ///
     /// This should be an enum covering all ways the state can change.
-    type Message: Clone;
+    type Message: Clone + Send + 'static;
 
     /// Initialize the application.
     ///
