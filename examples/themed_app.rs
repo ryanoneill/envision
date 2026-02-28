@@ -241,7 +241,7 @@ impl App for ThemedApp {
         frame.render_widget(controls, chunks[5]);
     }
 
-    fn handle_event(_state: &State, event: &Event) -> Option<Msg> {
+    fn handle_event(event: &Event) -> Option<Msg> {
         use crossterm::event::KeyCode;
 
         if let Some(key) = event.as_key() {
@@ -270,13 +270,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("This example demonstrates Envision's theming system.\n");
 
     // Render with default theme
-    vt.step()?;
+    vt.tick()?;
     println!("Default Theme:");
     println!("{}\n", vt.display_ansi());
 
     // Toggle to Nord theme
     vt.dispatch(Msg::ToggleTheme);
-    vt.step()?;
+    vt.tick()?;
     println!("Nord Theme:");
     println!("{}\n", vt.display_ansi());
 
@@ -284,7 +284,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     vt.dispatch(Msg::CheckboxToggled);
     vt.dispatch(Msg::IncreaseProgress);
     vt.dispatch(Msg::NextItem);
-    vt.step()?;
+    vt.tick()?;
     println!("Nord Theme (after interactions):");
     println!("{}\n", vt.display_ansi());
 

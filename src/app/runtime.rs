@@ -25,7 +25,7 @@
 //! ```ignore
 //! let mut vt = Runtime::<MyApp>::virtual_terminal(80, 24)?;
 //! vt.send(Event::key('j'));
-//! vt.step()?;
+//! vt.tick()?;
 //! println!("{}", vt.display());
 //! ```
 //!
@@ -48,6 +48,8 @@ use super::command::CommandHandler;
 use super::model::App;
 use crate::backend::CaptureBackend;
 use crate::input::{Event, EventQueue};
+use crate::overlay::{Overlay, OverlayAction, OverlayStack};
+use crate::theme::Theme;
 
 /// Configuration for the runtime.
 #[derive(Clone, Debug)]
@@ -120,6 +122,12 @@ pub struct Runtime<A: App, B: Backend> {
 
     /// Configuration
     config: RuntimeConfig,
+
+    /// The overlay stack for modal UI layers
+    overlay_stack: OverlayStack<A::Message>,
+
+    /// The current theme
+    theme: Theme,
 
     /// Whether the runtime should quit
     should_quit: bool,
@@ -208,8 +216,23 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
 
                 // Convert crossterm event to our Event type and dispatch
                 if let Some(envision_event) = Self::convert_crossterm_event(&event) {
-                    if let Some(msg) = A::handle_event(&self.state, &envision_event) {
-                        self.dispatch(msg);
+                    match self.overlay_stack.handle_event(&envision_event) {
+                        OverlayAction::Consumed => {}
+                        OverlayAction::Message(msg) => self.dispatch(msg),
+                        OverlayAction::Dismiss => {
+                            self.overlay_stack.pop();
+                        }
+                        OverlayAction::DismissWithMessage(msg) => {
+                            self.overlay_stack.pop();
+                            self.dispatch(msg);
+                        }
+                        OverlayAction::Propagate => {
+                            if let Some(msg) =
+                                A::handle_event_with_state(&self.state, &envision_event)
+                            {
+                                self.dispatch(msg);
+                            }
+                        }
                     }
                 }
             }
@@ -272,7 +295,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     ///
     /// A virtual terminal is not connected to a physical terminal. Instead:
     /// - Events are injected via `send()`
-    /// - The application is stepped forward via `step()`
+    /// - The application is advanced via `tick()`
     /// - The display can be inspected via `display()`
     ///
     /// This is useful for:
@@ -285,7 +308,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// ```ignore
     /// let mut vt = Runtime::<MyApp>::virtual_terminal(80, 24)?;
     /// vt.send(Event::key(KeyCode::Char('j')));
-    /// vt.step()?;
+    /// vt.tick()?;
     /// assert!(vt.display().contains("expected text"));
     /// ```
     pub fn virtual_terminal(width: u16, height: u16) -> io::Result<Self> {
@@ -309,39 +332,9 @@ impl<A: App> Runtime<A, CaptureBackend> {
 
     /// Sends an event to the virtual terminal.
     ///
-    /// The event is queued and will be processed on the next `step()`.
+    /// The event is queued and will be processed on the next `tick()`.
     pub fn send(&mut self, event: Event) {
         self.events.push(event);
-    }
-
-    /// Steps the application forward.
-    ///
-    /// This processes all pending events, runs any commands, calls `on_tick`,
-    /// and renders the UI.
-    pub fn step(&mut self) -> io::Result<()> {
-        // Process pending commands
-        self.process_commands();
-
-        // Process all pending events
-        let mut messages_processed = 0;
-        while self.process_event() && messages_processed < self.config.max_messages_per_tick {
-            messages_processed += 1;
-        }
-
-        // Handle tick
-        if let Some(msg) = A::on_tick(&self.state) {
-            self.dispatch(msg);
-        }
-
-        // Check if we should quit
-        if A::should_quit(&self.state) {
-            self.should_quit = true;
-        }
-
-        // Render
-        self.render()?;
-
-        Ok(())
     }
 
     /// Returns the current display content as plain text.
@@ -354,26 +347,6 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// Returns the display content with ANSI color codes.
     pub fn display_ansi(&self) -> String {
         self.terminal.backend().to_ansi()
-    }
-
-    // -------------------------------------------------------------------------
-    // Legacy aliases (deprecated, for backwards compatibility)
-    // -------------------------------------------------------------------------
-
-    /// Creates a new runtime with a capture backend for headless operation.
-    #[deprecated(since = "0.4.0", note = "Use `virtual_terminal` instead")]
-    pub fn headless(width: u16, height: u16) -> io::Result<Self> {
-        Self::virtual_terminal(width, height)
-    }
-
-    /// Creates a new runtime with history tracking.
-    #[deprecated(since = "0.4.0", note = "Use `virtual_terminal_with_config` instead")]
-    pub fn headless_with_config(
-        width: u16,
-        height: u16,
-        config: RuntimeConfig,
-    ) -> io::Result<Self> {
-        Self::virtual_terminal_with_config(width, height, config)
     }
 }
 
@@ -397,6 +370,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
             events: EventQueue::new(),
             commands,
             config,
+            overlay_stack: OverlayStack::new(),
+            theme: Theme::default(),
             should_quit: false,
         })
     }
@@ -459,23 +434,53 @@ impl<A: App, B: Backend> Runtime<A, B> {
         for msg in messages {
             self.dispatch(msg);
         }
+
+        // Process overlay commands
+        for overlay in self.commands.take_overlay_pushes() {
+            self.overlay_stack.push(overlay);
+        }
+        for _ in 0..self.commands.take_overlay_pops() {
+            self.overlay_stack.pop();
+        }
     }
 
     /// Renders the current state to the terminal.
+    ///
+    /// Renders the main app view first, then any active overlays on top.
     pub fn render(&mut self) -> io::Result<()> {
+        let theme = &self.theme;
+        let overlay_stack = &self.overlay_stack;
         self.terminal.draw(|frame| {
             A::view(&self.state, frame);
+            overlay_stack.render(frame, frame.area(), theme);
         })?;
         Ok(())
     }
 
     /// Processes the next event from the queue.
     ///
+    /// If the overlay stack is active, events are routed through it first.
+    /// Only if the overlay propagates the event will it reach the app's
+    /// `handle_event_with_state`.
+    ///
     /// Returns true if an event was processed.
     pub fn process_event(&mut self) -> bool {
         if let Some(event) = self.events.pop() {
-            if let Some(msg) = A::handle_event(&self.state, &event) {
-                self.dispatch(msg);
+            match self.overlay_stack.handle_event(&event) {
+                OverlayAction::Consumed => {}
+                OverlayAction::Message(msg) => self.dispatch(msg),
+                OverlayAction::Dismiss => {
+                    self.overlay_stack.pop();
+                }
+                OverlayAction::DismissWithMessage(msg) => {
+                    self.overlay_stack.pop();
+                    self.dispatch(msg);
+                }
+                OverlayAction::Propagate => {
+                    if let Some(msg) = A::handle_event_with_state(&self.state, &event) {
+                        self.dispatch(msg);
+                    }
+                }
             }
             true
         } else {
@@ -490,7 +495,14 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
     /// Runs a single tick of the application.
     ///
-    /// This processes events, updates state, and renders.
+    /// This is the primary method for advancing the application. It performs
+    /// a full cycle: process commands, drain events, call on_tick, check quit,
+    /// and render.
+    ///
+    /// For more granular control:
+    /// - [`process_all_events`](Runtime::process_all_events) — Drain the event queue only
+    /// - [`process_event`](Runtime::process_event) — Process exactly one event
+    /// - [`run_ticks`](Runtime::run_ticks) — Convenience: run N full tick cycles
     pub fn tick(&mut self) -> io::Result<()> {
         // Process pending commands first
         self.process_commands();
@@ -537,20 +549,54 @@ impl<A: App, B: Backend> Runtime<A, B> {
         }
         Ok(())
     }
+
+    /// Pushes an overlay onto the stack.
+    pub fn push_overlay(&mut self, overlay: Box<dyn Overlay<A::Message>>) {
+        self.overlay_stack.push(overlay);
+    }
+
+    /// Pops the topmost overlay from the stack.
+    pub fn pop_overlay(&mut self) -> Option<Box<dyn Overlay<A::Message>>> {
+        self.overlay_stack.pop()
+    }
+
+    /// Clears all overlays from the stack.
+    pub fn clear_overlays(&mut self) {
+        self.overlay_stack.clear();
+    }
+
+    /// Returns true if there are active overlays.
+    pub fn has_overlays(&self) -> bool {
+        self.overlay_stack.is_active()
+    }
+
+    /// Returns the number of overlays on the stack.
+    pub fn overlay_count(&self) -> usize {
+        self.overlay_stack.len()
+    }
+
+    /// Sets the theme.
+    pub fn set_theme(&mut self, theme: Theme) {
+        self.theme = theme;
+    }
+
+    /// Returns a reference to the current theme.
+    pub fn theme(&self) -> &Theme {
+        &self.theme
+    }
 }
 
 // Additional convenience methods for CaptureBackend (virtual terminal)
 impl<A: App> Runtime<A, CaptureBackend> {
-    /// Returns the captured output as a string.
-    #[deprecated(since = "0.4.0", note = "Use `display()` instead")]
-    pub fn captured_output(&self) -> String {
-        self.display()
-    }
-
-    /// Returns the captured output with ANSI colors.
-    #[deprecated(since = "0.4.0", note = "Use `display_ansi()` instead")]
-    pub fn captured_ansi(&self) -> String {
-        self.display_ansi()
+    /// Returns the cell at the given position, or `None` if out of bounds.
+    ///
+    /// Use this to assert on cell styling:
+    /// ```ignore
+    /// let cell = vt.cell_at(5, 3).unwrap();
+    /// assert_eq!(cell.fg, SerializableColor::Green);
+    /// ```
+    pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
+        self.terminal.backend().cell(x, y)
     }
 
     /// Returns true if the display contains the given text.
@@ -561,30 +607,6 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// Finds all positions of the given text in the display.
     pub fn find_text(&self, needle: &str) -> Vec<ratatui::layout::Position> {
         self.terminal.backend().find_text(needle)
-    }
-
-    /// Runs the virtual terminal by processing all queued events.
-    ///
-    /// This processes all events in the queue and renders, then returns.
-    /// Unlike the terminal mode `run()`, this does not block.
-    ///
-    /// For finer control, use `step()` instead.
-    #[deprecated(
-        since = "0.4.0",
-        note = "Use `step()` for fine-grained control of virtual terminals"
-    )]
-    pub fn run(&mut self) -> io::Result<()> {
-        while !self.should_quit && !self.events.is_empty() {
-            self.tick()?;
-        }
-
-        // Final render if there are no events
-        if !self.should_quit {
-            self.tick()?;
-        }
-
-        A::on_exit(&self.state);
-        Ok(())
     }
 }
 
@@ -752,7 +774,6 @@ mod tests {
 
     #[test]
     fn test_runtime_inner_terminal_access() {
-        #[allow(deprecated)]
         let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
         let terminal = runtime.inner_terminal();
         assert_eq!(terminal.backend().width(), 80);
@@ -761,7 +782,6 @@ mod tests {
 
     #[test]
     fn test_runtime_inner_terminal_mut() {
-        #[allow(deprecated)]
         let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
         let _terminal = runtime.inner_terminal_mut();
         // Just verify we can get mutable access
@@ -828,17 +848,6 @@ mod tests {
         // Should stop early due to quit
         runtime.run_ticks(10).unwrap();
         assert!(runtime.should_quit());
-    }
-
-    #[test]
-    #[allow(deprecated)]
-    fn test_runtime_run() {
-        let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
-        runtime.dispatch(CounterMsg::Increment);
-        runtime.dispatch(CounterMsg::Increment);
-
-        runtime.run().unwrap();
-        assert!(runtime.contains_text("Count: 2"));
     }
 
     #[test]
@@ -914,10 +923,7 @@ mod tests {
             frame.render_widget(Paragraph::new(text), frame.area());
         }
 
-        fn handle_event(
-            _state: &Self::State,
-            event: &crate::input::Event,
-        ) -> Option<Self::Message> {
+        fn handle_event(event: &crate::input::Event) -> Option<Self::Message> {
             use crossterm::event::KeyCode;
             if let Some(key) = event.as_key() {
                 if let KeyCode::Char(c) = key.code {
@@ -986,23 +992,6 @@ mod tests {
         runtime.events().push(Event::char('q'));
 
         runtime.tick().unwrap();
-        assert!(runtime.should_quit());
-    }
-
-    #[test]
-    #[allow(deprecated)]
-    fn test_runtime_run_with_events() {
-        use crate::input::Event;
-
-        let mut runtime: Runtime<EventApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
-        runtime.events().push(Event::char('a'));
-        runtime.events().push(Event::char('b'));
-        runtime.events().push(Event::char('q'));
-
-        runtime.run().unwrap();
-
-        // Should have processed events before quitting
-        assert!(runtime.state().events_received >= 2);
         assert!(runtime.should_quit());
     }
 
@@ -1103,7 +1092,7 @@ mod tests {
     }
 
     #[test]
-    fn test_virtual_terminal_send_and_step() {
+    fn test_virtual_terminal_send_and_tick() {
         use crate::input::Event;
 
         let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
@@ -1113,7 +1102,7 @@ mod tests {
         vt.send(Event::char('b'));
 
         // Step processes the events
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         assert_eq!(vt.state().events_received, 2);
     }
@@ -1122,7 +1111,7 @@ mod tests {
     fn test_virtual_terminal_display() {
         let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
         vt.dispatch(CounterMsg::Increment);
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         let display = vt.display();
         assert!(display.contains("Count: 1"));
@@ -1132,7 +1121,7 @@ mod tests {
     fn test_virtual_terminal_display_ansi() {
         let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
         vt.dispatch(CounterMsg::Increment);
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         let display = vt.display_ansi();
         assert!(display.contains("Count: 1"));
@@ -1145,33 +1134,46 @@ mod tests {
         let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
 
         vt.send(Event::char('q'));
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         assert!(vt.should_quit());
     }
 
     #[test]
-    fn test_virtual_terminal_multiple_steps() {
+    fn test_virtual_terminal_multiple_ticks() {
         use crate::input::Event;
 
         let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
 
-        // First step with one event
+        // First tick with one event
         vt.send(Event::char('a'));
-        vt.step().unwrap();
+        vt.tick().unwrap();
         assert_eq!(vt.state().events_received, 1);
 
-        // Second step with two events
+        // Second tick with two events
         vt.send(Event::char('b'));
         vt.send(Event::char('c'));
-        vt.step().unwrap();
+        vt.tick().unwrap();
         assert_eq!(vt.state().events_received, 3);
+    }
+
+    #[test]
+    fn test_virtual_terminal_cell_at() {
+        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+        vt.tick().unwrap();
+
+        // Cell at (0,0) should have the 'C' from "Count: 0"
+        let cell = vt.cell_at(0, 0).unwrap();
+        assert_eq!(cell.symbol(), "C");
+
+        // Out of bounds should return None
+        assert!(vt.cell_at(100, 100).is_none());
     }
 
     #[test]
     fn test_virtual_terminal_contains_text() {
         let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         assert!(vt.contains_text("Count: 0"));
         assert!(!vt.contains_text("Not Here"));
@@ -1180,12 +1182,320 @@ mod tests {
     #[test]
     fn test_virtual_terminal_find_text() {
         let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
-        vt.step().unwrap();
+        vt.tick().unwrap();
 
         let positions = vt.find_text("Count");
         assert!(!positions.is_empty());
 
         let positions = vt.find_text("Not Here");
         assert!(positions.is_empty());
+    }
+
+    // =========================================================================
+    // Overlay Tests
+    // =========================================================================
+
+    mod overlay_tests {
+        use super::*;
+        use crate::app::Command;
+        use crate::input::Event;
+        use crate::overlay::{Overlay, OverlayAction};
+        use crate::theme::Theme;
+        use crossterm::event::KeyCode;
+        use ratatui::layout::Rect;
+        use ratatui::Frame;
+
+        /// An overlay that consumes all events.
+        struct ConsumeOverlay;
+
+        impl Overlay<CounterMsg> for ConsumeOverlay {
+            fn handle_event(&mut self, _event: &Event) -> OverlayAction<CounterMsg> {
+                OverlayAction::Consumed
+            }
+            fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+        }
+
+        /// An overlay that propagates all events.
+        struct PropagateOverlay;
+
+        impl Overlay<EventMsg> for PropagateOverlay {
+            fn handle_event(&mut self, _event: &Event) -> OverlayAction<EventMsg> {
+                OverlayAction::Propagate
+            }
+            fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+        }
+
+        /// An overlay that dismisses on Esc and sends a message on Enter.
+        struct DialogOverlay;
+
+        impl Overlay<EventMsg> for DialogOverlay {
+            fn handle_event(&mut self, event: &Event) -> OverlayAction<EventMsg> {
+                if let Some(key) = event.as_key() {
+                    match key.code {
+                        KeyCode::Esc => OverlayAction::Dismiss,
+                        KeyCode::Enter => {
+                            OverlayAction::DismissWithMessage(EventMsg::KeyPressed('!'))
+                        }
+                        _ => OverlayAction::Consumed,
+                    }
+                } else {
+                    OverlayAction::Propagate
+                }
+            }
+            fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+        }
+
+        #[test]
+        fn test_runtime_overlay_push_pop() {
+            let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+            assert!(!vt.has_overlays());
+            assert_eq!(vt.overlay_count(), 0);
+
+            vt.push_overlay(Box::new(ConsumeOverlay));
+            assert!(vt.has_overlays());
+            assert_eq!(vt.overlay_count(), 1);
+
+            vt.push_overlay(Box::new(ConsumeOverlay));
+            assert_eq!(vt.overlay_count(), 2);
+
+            let popped = vt.pop_overlay();
+            assert!(popped.is_some());
+            assert_eq!(vt.overlay_count(), 1);
+
+            vt.clear_overlays();
+            assert!(!vt.has_overlays());
+        }
+
+        #[test]
+        fn test_runtime_overlay_consumes_events() {
+            let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+            // Push an overlay that consumes all events
+            struct ConsumeAll;
+            impl Overlay<EventMsg> for ConsumeAll {
+                fn handle_event(&mut self, _event: &Event) -> OverlayAction<EventMsg> {
+                    OverlayAction::Consumed
+                }
+                fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            vt.push_overlay(Box::new(ConsumeAll));
+
+            // Send events — they should be consumed by the overlay, not reaching the app
+            vt.send(Event::char('a'));
+            vt.send(Event::char('b'));
+            vt.tick().unwrap();
+
+            assert_eq!(vt.state().events_received, 0);
+        }
+
+        #[test]
+        fn test_runtime_overlay_propagates_events() {
+            let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+            // Push an overlay that propagates all events
+            vt.push_overlay(Box::new(PropagateOverlay));
+
+            // Send events — they should reach the app
+            vt.send(Event::char('a'));
+            vt.tick().unwrap();
+
+            assert_eq!(vt.state().events_received, 1);
+        }
+
+        #[test]
+        fn test_runtime_overlay_dismiss() {
+            let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+            vt.push_overlay(Box::new(DialogOverlay));
+            assert_eq!(vt.overlay_count(), 1);
+
+            // Esc dismisses the overlay
+            vt.send(Event::key(KeyCode::Esc));
+            vt.tick().unwrap();
+
+            assert_eq!(vt.overlay_count(), 0);
+        }
+
+        #[test]
+        fn test_runtime_overlay_dismiss_with_message() {
+            let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+            vt.push_overlay(Box::new(DialogOverlay));
+
+            // Enter dismisses with a message
+            vt.send(Event::key(KeyCode::Enter));
+            vt.tick().unwrap();
+
+            assert_eq!(vt.overlay_count(), 0);
+            // The message should have been dispatched
+            assert_eq!(vt.state().events_received, 1);
+            assert_eq!(vt.state().last_key, Some('!'));
+        }
+
+        #[test]
+        fn test_runtime_overlay_via_command() {
+            // Test that Command::push_overlay and Command::pop_overlay work through the runtime
+            struct CmdOverlayApp;
+
+            #[derive(Clone, Default)]
+            struct CmdOverlayState {
+                overlay_pushed: bool,
+            }
+
+            #[derive(Clone)]
+            enum CmdOverlayMsg {
+                PushOverlay,
+                PopOverlay,
+            }
+
+            struct NoopOverlay;
+            impl Overlay<CmdOverlayMsg> for NoopOverlay {
+                fn handle_event(&mut self, _event: &Event) -> OverlayAction<CmdOverlayMsg> {
+                    OverlayAction::Consumed
+                }
+                fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            impl App for CmdOverlayApp {
+                type State = CmdOverlayState;
+                type Message = CmdOverlayMsg;
+
+                fn init() -> (Self::State, Command<Self::Message>) {
+                    (CmdOverlayState::default(), Command::none())
+                }
+
+                fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+                    match msg {
+                        CmdOverlayMsg::PushOverlay => {
+                            state.overlay_pushed = true;
+                            Command::push_overlay(NoopOverlay)
+                        }
+                        CmdOverlayMsg::PopOverlay => Command::pop_overlay(),
+                    }
+                }
+
+                fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+            }
+
+            let mut vt: Runtime<CmdOverlayApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+            // Dispatch push overlay message
+            vt.dispatch(CmdOverlayMsg::PushOverlay);
+            vt.process_commands();
+            assert!(vt.has_overlays());
+            assert_eq!(vt.overlay_count(), 1);
+
+            // Dispatch pop overlay message
+            vt.dispatch(CmdOverlayMsg::PopOverlay);
+            vt.process_commands();
+            assert!(!vt.has_overlays());
+        }
+
+        #[test]
+        fn test_runtime_theme_access() {
+            let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+            // Default theme should be set
+            let _theme = vt.theme();
+
+            // Set a custom theme
+            let nord = Theme::nord();
+            let expected_bg = nord.background;
+            vt.set_theme(nord);
+            assert_eq!(vt.theme().background, expected_bg);
+        }
+
+        #[test]
+        fn test_runtime_render_with_overlay() {
+            // Verifies the overlay rendering path in render()
+            let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+
+            vt.push_overlay(Box::new(ConsumeOverlay));
+            vt.render().unwrap();
+
+            // App content should still be rendered underneath
+            assert!(vt.contains_text("Count: 0"));
+        }
+
+        #[test]
+        fn test_runtime_overlay_message_from_event() {
+            // Test the OverlayAction::Message path in process_event
+            struct MsgOverlay;
+            impl Overlay<EventMsg> for MsgOverlay {
+                fn handle_event(&mut self, _event: &Event) -> OverlayAction<EventMsg> {
+                    OverlayAction::Message(EventMsg::KeyPressed('z'))
+                }
+                fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+            vt.push_overlay(Box::new(MsgOverlay));
+
+            vt.send(Event::char('x'));
+            vt.tick().unwrap();
+
+            // The overlay should have produced a message, not the app's handle_event
+            assert_eq!(vt.state().events_received, 1);
+            assert_eq!(vt.state().last_key, Some('z'));
+        }
+
+        #[test]
+        fn test_runtime_process_commands_overlay_push_pop() {
+            // Directly test the overlay processing in process_commands()
+            struct CmdApp;
+
+            #[derive(Clone, Default)]
+            struct CmdState;
+
+            #[derive(Clone)]
+            enum CmdMsg {
+                Push,
+                Pop,
+            }
+
+            struct NoopOverlay;
+            impl Overlay<CmdMsg> for NoopOverlay {
+                fn handle_event(&mut self, _event: &Event) -> OverlayAction<CmdMsg> {
+                    OverlayAction::Consumed
+                }
+                fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+            }
+
+            impl App for CmdApp {
+                type State = CmdState;
+                type Message = CmdMsg;
+
+                fn init() -> (Self::State, Command<Self::Message>) {
+                    (CmdState, Command::none())
+                }
+
+                fn update(_state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+                    match msg {
+                        CmdMsg::Push => Command::push_overlay(NoopOverlay),
+                        CmdMsg::Pop => Command::pop_overlay(),
+                    }
+                }
+
+                fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
+            }
+
+            let mut vt: Runtime<CmdApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+
+            // Push two overlays via commands
+            vt.dispatch(CmdMsg::Push);
+            vt.process_commands();
+            assert_eq!(vt.overlay_count(), 1);
+
+            vt.dispatch(CmdMsg::Push);
+            vt.process_commands();
+            assert_eq!(vt.overlay_count(), 2);
+
+            // Pop one via command
+            vt.dispatch(CmdMsg::Pop);
+            vt.process_commands();
+            assert_eq!(vt.overlay_count(), 1);
+        }
     }
 }

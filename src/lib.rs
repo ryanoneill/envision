@@ -24,7 +24,7 @@
 //!
 //! // Inject events programmatically
 //! vt.send(Event::key(KeyCode::Char('j')));
-//! vt.step()?;
+//! vt.tick()?;
 //!
 //! // Inspect the display
 //! println!("{}", vt.display());
@@ -72,6 +72,7 @@ pub mod backend;
 pub mod component;
 pub mod harness;
 pub mod input;
+pub mod overlay;
 pub mod theme;
 
 // Re-export commonly used types
@@ -103,6 +104,7 @@ pub use component::{
 };
 pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
 pub use input::{Event, EventQueue};
+pub use overlay::{Overlay, OverlayAction, OverlayStack};
 pub use theme::Theme;
 
 /// Prelude module for convenient imports
@@ -136,6 +138,7 @@ pub mod prelude {
         Assertion, AssertionError, AsyncTestHarness, Snapshot, SnapshotFormat, TestHarness,
     };
     pub use crate::input::{Event, EventQueue, KeyCode, KeyModifiers};
+    pub use crate::overlay::{Overlay, OverlayAction, OverlayStack};
     pub use crate::theme::Theme;
     pub use ratatui::prelude::*;
 }

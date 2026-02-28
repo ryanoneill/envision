@@ -18,7 +18,7 @@ use crate::input::Event;
 ///
 /// # Type Parameters
 ///
-/// - `State`: Your application's state type. Should be `Clone` for snapshots.
+/// - `State`: Your application's state type. Derive `Clone` if you need snapshots.
 /// - `Message`: The type representing all possible events/actions.
 ///
 /// # Example
@@ -65,8 +65,8 @@ pub trait App: Sized {
     /// The application state type.
     ///
     /// This should contain all data needed to render the UI.
-    /// It's recommended to derive `Clone` for testing and snapshots.
-    type State: Clone;
+    /// Deriving `Clone` is recommended but not required.
+    type State;
 
     /// The message type representing all possible events.
     ///
@@ -94,10 +94,21 @@ pub trait App: Sized {
 
     /// Convert an input event to a message.
     ///
-    /// Override this to handle keyboard/mouse input.
+    /// Override this for simple stateless event mapping (most apps).
     /// Return `None` to ignore the event.
-    fn handle_event(_state: &Self::State, _event: &Event) -> Option<Self::Message> {
+    fn handle_event(_event: &Event) -> Option<Self::Message> {
         None
+    }
+
+    /// Convert an input event to a message, with access to the current state.
+    ///
+    /// Override this instead of [`handle_event`](App::handle_event) when you
+    /// need state for overlay-precedence checks or mode-dependent key bindings.
+    ///
+    /// The default implementation delegates to `handle_event`, ignoring state.
+    fn handle_event_with_state(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        let _ = state;
+        Self::handle_event(event)
     }
 
     /// Called when the application is about to exit.
@@ -198,11 +209,10 @@ mod tests {
 
     #[test]
     fn test_default_handle_event() {
-        let (state, _) = TestApp::init();
         let event = Event::char('a');
 
         // Default implementation returns None
-        let result = TestApp::handle_event(&state, &event);
+        let result = TestApp::handle_event(&event);
         assert!(result.is_none());
     }
 
@@ -285,7 +295,7 @@ mod tests {
 
         fn view(_state: &Self::State, _frame: &mut Frame) {}
 
-        fn handle_event(_state: &Self::State, event: &Event) -> Option<Self::Message> {
+        fn handle_event(event: &Event) -> Option<Self::Message> {
             use crossterm::event::KeyCode;
             if let Some(key) = event.as_key() {
                 if let KeyCode::Char(c) = key.code {
@@ -313,16 +323,14 @@ mod tests {
 
     #[test]
     fn test_custom_handle_event() {
-        let (state, _) = CustomApp::init();
-
         // Test quit key
         let quit_event = Event::char('q');
-        let result = CustomApp::handle_event(&state, &quit_event);
+        let result = CustomApp::handle_event(&quit_event);
         assert!(matches!(result, Some(CustomMsg::Quit)));
 
         // Test other key
         let other_event = Event::char('a');
-        let result = CustomApp::handle_event(&state, &other_event);
+        let result = CustomApp::handle_event(&other_event);
         assert!(matches!(result, Some(CustomMsg::KeyPressed('a'))));
     }
 
@@ -353,6 +361,50 @@ mod tests {
     }
 
     #[test]
+    fn test_app_non_clone_state() {
+        // Verify that App::State does not require Clone
+        struct NonCloneApp;
+
+        // Intentionally does NOT derive Clone
+        struct NonCloneState {
+            value: i32,
+        }
+
+        #[derive(Clone)]
+        enum NonCloneMsg {
+            Set(i32),
+        }
+
+        impl App for NonCloneApp {
+            type State = NonCloneState;
+            type Message = NonCloneMsg;
+
+            fn init() -> (Self::State, Command<Self::Message>) {
+                (NonCloneState { value: 0 }, Command::none())
+            }
+
+            fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+                match msg {
+                    NonCloneMsg::Set(v) => state.value = v,
+                }
+                Command::none()
+            }
+
+            fn view(state: &Self::State, frame: &mut Frame) {
+                let text = format!("Value: {}", state.value);
+                frame.render_widget(Paragraph::new(text), frame.area());
+            }
+        }
+
+        let (mut state, cmd) = NonCloneApp::init();
+        assert!(cmd.is_none());
+        assert_eq!(state.value, 0);
+
+        NonCloneApp::update(&mut state, NonCloneMsg::Set(42));
+        assert_eq!(state.value, 42);
+    }
+
+    #[test]
     fn test_message_clone() {
         let msg = TestMsg::Increment;
         let cloned = msg.clone();
@@ -362,5 +414,22 @@ mod tests {
         TestApp::update(&mut state, cloned);
 
         assert_eq!(state.counter, 2);
+    }
+
+    #[test]
+    fn test_handle_event_with_state_default_delegation() {
+        // CustomApp overrides handle_event but NOT handle_event_with_state.
+        // Calling handle_event_with_state should delegate to handle_event.
+        use crossterm::event::KeyCode;
+
+        let (state, _) = CustomApp::init();
+
+        let event = Event::key(KeyCode::Char('q'));
+        let msg = CustomApp::handle_event_with_state(&state, &event);
+        assert!(matches!(msg, Some(CustomMsg::Quit)));
+
+        let event = Event::key(KeyCode::Char('a'));
+        let msg = CustomApp::handle_event_with_state(&state, &event);
+        assert!(matches!(msg, Some(CustomMsg::KeyPressed('a'))));
     }
 }

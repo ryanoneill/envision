@@ -148,7 +148,7 @@ impl App for CounterApp {
     }
 
     /// Handle terminal events
-    fn handle_event(_state: &State, event: &Event) -> Option<Msg> {
+    fn handle_event(event: &Event) -> Option<Msg> {
         use crossterm::event::KeyCode;
 
         if let Some(key) = event.as_key() {
@@ -173,7 +173,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=== Counter App Demo ===\n");
 
     // Initial render
-    vt.step()?;
+    vt.tick()?;
     println!("Initial state:");
     println!("{}\n", vt.display());
 
@@ -181,19 +181,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     vt.dispatch(Msg::Increment);
     vt.dispatch(Msg::Increment);
     vt.dispatch(Msg::Increment);
-    vt.step()?;
+    vt.tick()?;
     println!("After 3 increments:");
     println!("{}\n", vt.display());
 
     // Simulate decrementing
     vt.dispatch(Msg::Decrement);
-    vt.step()?;
+    vt.tick()?;
     println!("After 1 decrement:");
     println!("{}\n", vt.display());
 
     // Reset
     vt.dispatch(Msg::Reset);
-    vt.step()?;
+    vt.tick()?;
     println!("After reset:");
     println!("{}\n", vt.display());
 
