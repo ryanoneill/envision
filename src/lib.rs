@@ -101,7 +101,7 @@ pub use component::{
     Tooltip, TooltipMessage, TooltipOutput, TooltipPosition, TooltipState, Tree, TreeMessage,
     TreeNode, TreeOutput, TreeState,
 };
-pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
+pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
 pub use input::{Event, EventQueue};
 pub use overlay::{Overlay, OverlayAction, OverlayStack};
 pub use theme::Theme;
@@ -137,7 +137,7 @@ pub mod prelude {
 
     // Testing essentials
     pub use crate::backend::{CaptureBackend, EnhancedCell};
-    pub use crate::harness::{AsyncTestHarness, TestHarness};
+    pub use crate::harness::{AppHarness, TestHarness};
 
     // Ratatui re-export
     pub use ratatui::prelude::*;

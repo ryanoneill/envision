@@ -1,4 +1,4 @@
-//! Async test harness for TEA applications with time control.
+//! Application test harness for TEA applications with time control.
 //!
 //! This harness wraps `Runtime` and provides deterministic testing
 //! capabilities using tokio's time control features.
@@ -14,7 +14,7 @@
 //! ```ignore
 //! #[tokio::test(start_paused = true)]
 //! async fn test_delayed_operation() {
-//!     let mut harness = AsyncTestHarness::<MyApp>::new(80, 24);
+//!     let mut harness = AppHarness::<MyApp>::new(80, 24);
 //!
 //!     // Dispatch an async command with a delay
 //!     harness.dispatch(Msg::StartDelayedOp).await;
@@ -39,17 +39,17 @@ use crate::app::{App, BoxedSubscription, Runtime, RuntimeConfig, Subscription};
 use crate::backend::CaptureBackend;
 use crate::input::{Event, EventQueue};
 
-/// Async test harness for TEA applications.
+/// Application test harness for TEA applications.
 ///
 /// This harness provides:
 /// - Time control for deterministic async testing
 /// - Convenient dispatch and assertion methods
 /// - Access to the underlying runtime and state
-pub struct AsyncTestHarness<A: App> {
+pub struct AppHarness<A: App> {
     runtime: Runtime<A, CaptureBackend>,
 }
 
-impl<A: App> AsyncTestHarness<A> {
+impl<A: App> AppHarness<A> {
     /// Creates a new async test harness with the given dimensions.
     ///
     /// Note: For time control, use `#[tokio::test(start_paused = true)]`.
@@ -290,7 +290,7 @@ impl<A: App> AsyncTestHarness<A> {
 use std::time::Duration;
 
 #[cfg(test)]
-impl<A: App> AsyncTestHarness<A> {
+impl<A: App> AppHarness<A> {
     /// Advances time by the specified duration.
     ///
     /// This only works when time is paused (e.g., with `#[tokio::test(start_paused = true)]`).

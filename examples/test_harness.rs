@@ -3,7 +3,7 @@
 //! This example shows different ways to test TUI applications:
 //! - TestHarness for basic render testing with closures
 //! - Runtime::headless for testing App implementations
-//! - AsyncTestHarness for async App testing
+//! - AppHarness for App testing
 //! - Assertions and content queries
 //!
 //! Run with: cargo run --example test_harness

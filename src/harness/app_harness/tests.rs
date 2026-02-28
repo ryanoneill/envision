@@ -60,13 +60,13 @@ impl App for TestApp {
 
 #[test]
 fn test_async_harness_new() {
-    let harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     assert_eq!(harness.state().count, 0);
 }
 
 #[test]
 fn test_async_harness_dispatch() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
 
     harness.dispatch(TestMsg::Increment);
     assert_eq!(harness.state().count, 1);
@@ -77,7 +77,7 @@ fn test_async_harness_dispatch() {
 
 #[test]
 fn test_async_harness_dispatch_all() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
 
     harness.dispatch_all(vec![
         TestMsg::Increment,
@@ -90,7 +90,7 @@ fn test_async_harness_dispatch_all() {
 
 #[test]
 fn test_async_harness_render() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.dispatch(TestMsg::Increment);
     harness.render().unwrap();
 
@@ -99,7 +99,7 @@ fn test_async_harness_render() {
 
 #[test]
 fn test_async_harness_events() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
 
     harness.type_str("hello");
     harness.enter();
@@ -109,7 +109,7 @@ fn test_async_harness_events() {
 
 #[test]
 fn test_async_harness_tick() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.dispatch(TestMsg::Increment);
     harness.tick().unwrap();
 
@@ -118,7 +118,7 @@ fn test_async_harness_tick() {
 
 #[test]
 fn test_async_harness_quit() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     assert!(!harness.should_quit());
 
     harness.dispatch(TestMsg::Quit);
@@ -129,7 +129,7 @@ fn test_async_harness_quit() {
 
 #[test]
 fn test_async_harness_assert_contains() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.render().unwrap();
 
     harness.assert_contains("Count: 0");
@@ -138,7 +138,7 @@ fn test_async_harness_assert_contains() {
 
 #[tokio::test(start_paused = true)]
 async fn test_async_harness_async_command() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
 
     // Start async operation
     harness.dispatch(TestMsg::StartAsyncOp);
@@ -155,7 +155,7 @@ async fn test_async_harness_async_command() {
 
 #[tokio::test(start_paused = true)]
 async fn test_async_harness_wait_for() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
 
     harness.dispatch(TestMsg::StartAsyncOp);
 
@@ -172,7 +172,7 @@ async fn test_async_harness_wait_for() {
 
 #[tokio::test(start_paused = true)]
 async fn test_async_harness_wait_for_timeout() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
 
     // Don't start any async op, so condition will never be true
     let success = harness
@@ -187,7 +187,7 @@ async fn test_async_harness_wait_for_timeout() {
 
 #[tokio::test(start_paused = true)]
 async fn test_async_harness_wait_for_text() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
 
     // Increment count
     harness.dispatch(TestMsg::Increment);
@@ -201,7 +201,7 @@ async fn test_async_harness_wait_for_text() {
 
 #[tokio::test(start_paused = true)]
 async fn test_async_harness_sleep() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
 
     harness.dispatch(TestMsg::StartAsyncOp);
     harness.sleep(Duration::from_secs(5)).await;
@@ -211,7 +211,7 @@ async fn test_async_harness_sleep() {
 
 #[test]
 fn test_async_harness_screen() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.render().unwrap();
 
     let screen = harness.screen();
@@ -220,7 +220,7 @@ fn test_async_harness_screen() {
 
 #[test]
 fn test_async_harness_row() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.render().unwrap();
 
     let row = harness.row(0);
@@ -229,7 +229,7 @@ fn test_async_harness_row() {
 
 #[test]
 fn test_async_harness_find_text() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.render().unwrap();
 
     let positions = harness.find_text("Count");
@@ -238,7 +238,7 @@ fn test_async_harness_find_text() {
 
 #[test]
 fn test_async_harness_input_methods() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
 
     harness.escape();
     harness.tab();
@@ -251,14 +251,14 @@ fn test_async_harness_input_methods() {
 
 #[test]
 fn test_async_harness_cancellation_token() {
-    let harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     let token = harness.cancellation_token();
     assert!(!token.is_cancelled());
 }
 
 #[test]
 fn test_async_harness_manual_quit() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     assert!(!harness.should_quit());
 
     harness.quit();
@@ -271,13 +271,13 @@ fn test_async_harness_with_config() {
         .tick_rate(Duration::from_millis(100))
         .with_history(5);
 
-    let harness = AsyncTestHarness::<TestApp>::with_config(80, 24, config).unwrap();
+    let harness = AppHarness::<TestApp>::with_config(80, 24, config).unwrap();
     assert_eq!(harness.state().count, 0);
 }
 
 #[test]
 fn test_async_harness_process_events() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     harness.type_str("abc");
     harness.process_events();
     // Events processed (but TestApp doesn't handle key events)
@@ -285,7 +285,7 @@ fn test_async_harness_process_events() {
 
 #[test]
 fn test_async_harness_run_ticks() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.dispatch(TestMsg::Increment);
     harness.run_ticks(3).unwrap();
 
@@ -294,14 +294,14 @@ fn test_async_harness_run_ticks() {
 
 #[test]
 fn test_async_harness_state_mut() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     harness.state_mut().count = 42;
     assert_eq!(harness.state().count, 42);
 }
 
 #[test]
 fn test_async_harness_screen_ansi() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.render().unwrap();
 
     let screen_ansi = harness.screen_ansi();
@@ -310,7 +310,7 @@ fn test_async_harness_screen_ansi() {
 
 #[test]
 fn test_async_harness_cell_at() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.render().unwrap();
 
     // Cell at (0,0) should have the 'C' from "Count: 0"
@@ -324,21 +324,21 @@ fn test_async_harness_cell_at() {
 #[test]
 fn test_async_harness_backend() {
     use ratatui::backend::Backend;
-    let harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     let backend = harness.backend();
     assert_eq!(backend.size().unwrap().width, 80);
 }
 
 #[test]
 fn test_async_harness_backend_mut() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     let _backend = harness.backend_mut();
     // Just verify we can get a mutable reference
 }
 
 #[tokio::test]
 async fn test_async_harness_message_sender() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     let sender = harness.message_sender();
 
     // Send a message via the channel
@@ -355,7 +355,7 @@ async fn test_async_harness_message_sender() {
 fn test_async_harness_subscribe() {
     use crate::app::TickSubscription;
 
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     let sub = TickSubscription::new(Duration::from_millis(10), || TestMsg::Increment);
     harness.subscribe(sub);
     // Just verify we can add a subscription
@@ -365,7 +365,7 @@ fn test_async_harness_subscribe() {
 fn test_async_harness_subscribe_all() {
     use crate::app::{BoxedSubscription, TickSubscription};
 
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
 
     let sub1: BoxedSubscription<TestMsg> =
         Box::new(TickSubscription::new(Duration::from_millis(10), || {
@@ -382,7 +382,7 @@ fn test_async_harness_subscribe_all() {
 
 #[tokio::test(start_paused = true)]
 async fn test_async_harness_wait_for_text_timeout() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
 
     // Don't dispatch anything that changes text to "Count: 5"
     let success = harness
@@ -395,7 +395,7 @@ async fn test_async_harness_wait_for_text_timeout() {
 #[test]
 #[should_panic(expected = "Expected screen to contain 'MISSING'")]
 fn test_async_harness_assert_contains_panic() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.render().unwrap();
 
     // This should panic because 'MISSING' is not on screen
@@ -405,7 +405,7 @@ fn test_async_harness_assert_contains_panic() {
 #[test]
 #[should_panic(expected = "Expected screen to NOT contain 'Count'")]
 fn test_async_harness_assert_not_contains_panic() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(40, 10).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(40, 10).unwrap();
     harness.render().unwrap();
 
     // This should panic because 'Count' is on screen
@@ -414,7 +414,7 @@ fn test_async_harness_assert_not_contains_panic() {
 
 #[test]
 fn test_async_harness_events_direct() {
-    let mut harness = AsyncTestHarness::<TestApp>::new(80, 24).unwrap();
+    let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
 
     let events = harness.events();
     events.push(Event::char('a'));
