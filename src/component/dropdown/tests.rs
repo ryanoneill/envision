@@ -618,3 +618,26 @@ fn test_filtered_count() {
     Dropdown::update(&mut state, DropdownMessage::Insert('p'));
     assert_eq!(state.filtered_count(), 2);
 }
+
+#[test]
+fn test_large_dropdown_navigation() {
+    let options: Vec<String> = (0..100).map(|i| format!("Option {}", i)).collect();
+    let mut state = DropdownState::new(options);
+    Dropdown::update(&mut state, DropdownMessage::Open);
+
+    // Navigate down through 50 options
+    for _ in 0..50 {
+        Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    }
+    assert_eq!(state.highlighted_index, 50);
+
+    // Navigate 50 more to wrap back to 0
+    for _ in 0..50 {
+        Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    }
+    assert_eq!(state.highlighted_index, 0);
+
+    // SelectPrevious from 0 wraps to last
+    Dropdown::update(&mut state, DropdownMessage::SelectPrevious);
+    assert_eq!(state.highlighted_index, 99);
+}

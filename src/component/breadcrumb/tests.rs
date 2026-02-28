@@ -585,3 +585,12 @@ fn test_full_workflow() {
     state.pop();
     assert_eq!(state.len(), 3);
 }
+
+#[test]
+fn test_unicode_segments() {
+    let state = BreadcrumbState::from_labels(vec!["ホーム", "製品", "電子機器"]);
+    assert_eq!(state.len(), 3);
+    assert_eq!(state.segments()[0].label(), "ホーム");
+    assert_eq!(state.segments()[2].label(), "電子機器");
+    assert_eq!(state.current().unwrap().label(), "電子機器");
+}

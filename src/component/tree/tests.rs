@@ -769,3 +769,76 @@ fn test_collapse_on_leaf_node() {
     let output = Tree::update(&mut state, TreeMessage::Collapse);
     assert_eq!(output, None);
 }
+
+#[test]
+fn test_large_tree_navigation() {
+    // 100 flat nodes (siblings)
+    let nodes: Vec<TreeNode<()>> = (0..100)
+        .map(|i| TreeNode::new(format!("Node {}", i), ()))
+        .collect();
+    let mut state = TreeState::new(nodes);
+
+    assert_eq!(state.visible_count(), 100);
+    assert_eq!(state.selected_index(), Some(0));
+
+    // Navigate down to middle
+    for _ in 0..50 {
+        Tree::<()>::update(&mut state, TreeMessage::SelectNext);
+    }
+    assert_eq!(state.selected_index(), Some(50));
+    assert_eq!(state.selected_node().unwrap().label(), "Node 50");
+
+    // SelectPrevious back to start
+    for _ in 0..50 {
+        Tree::<()>::update(&mut state, TreeMessage::SelectPrevious);
+    }
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(state.selected_node().unwrap().label(), "Node 0");
+
+    // Navigate to last
+    for _ in 0..99 {
+        Tree::<()>::update(&mut state, TreeMessage::SelectNext);
+    }
+    assert_eq!(state.selected_index(), Some(99));
+    assert_eq!(state.selected_node().unwrap().label(), "Node 99");
+}
+
+#[test]
+fn test_deep_tree_navigation() {
+    // Build a tree 50 levels deep, starting with innermost leaf
+    let mut node = TreeNode::new("Leaf", 49);
+    for i in (0..49).rev() {
+        let mut parent = TreeNode::new(format!("Level {}", i), i);
+        parent.add_child(node);
+        node = parent;
+    }
+
+    let mut state = TreeState::new(vec![node]);
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(state.visible_count(), 1); // Only root visible initially
+
+    // Expand all levels and navigate down
+    for _ in 0..49 {
+        Tree::<i32>::update(&mut state, TreeMessage::Expand);
+        Tree::<i32>::update(&mut state, TreeMessage::SelectNext);
+    }
+
+    // Should be at the leaf node
+    assert_eq!(state.selected_node().unwrap().label(), "Leaf");
+    assert_eq!(*state.selected_node().unwrap().data(), 49);
+    assert_eq!(state.visible_count(), 50);
+}
+
+#[test]
+fn test_unicode_node_labels() {
+    let mut folder = TreeNode::new("文件夹", ());
+    folder.add_child(TreeNode::new("文档.txt", ()));
+    folder.add_child(TreeNode::new("图片.png", ()));
+
+    let mut state = TreeState::new(vec![folder, TreeNode::new("설정", ())]);
+
+    Tree::<()>::update(&mut state, TreeMessage::SelectNext);
+    // Should navigate through unicode-labeled nodes without issue
+    assert_eq!(state.selected_index(), Some(1));
+    assert_eq!(state.selected_node().unwrap().label(), "설정");
+}

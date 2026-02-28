@@ -729,3 +729,50 @@ fn test_delete_unicode() {
     TextArea::update(&mut state, TextAreaMessage::Delete);
     assert_eq!(state.value(), "本");
 }
+
+#[test]
+fn test_insert_emoji() {
+    let mut state = TextAreaState::new();
+    TextArea::update(&mut state, TextAreaMessage::Insert('\u{1F600}'));
+    assert!(state.value().contains('\u{1F600}'));
+}
+
+#[test]
+fn test_backspace_emoji() {
+    let mut state = TextAreaState::new();
+    TextArea::update(&mut state, TextAreaMessage::Insert('A'));
+    TextArea::update(&mut state, TextAreaMessage::Insert('\u{1F600}'));
+    assert!(state.value().contains('\u{1F600}'));
+
+    TextArea::update(&mut state, TextAreaMessage::Backspace);
+    assert!(!state.value().contains('\u{1F600}'));
+    assert_eq!(state.value(), "A");
+}
+
+#[test]
+fn test_combining_diacritics() {
+    let mut state = TextAreaState::new();
+    TextArea::update(&mut state, TextAreaMessage::Insert('e'));
+    TextArea::update(&mut state, TextAreaMessage::Insert('\u{0301}'));
+    assert!(state.value().contains('e'));
+    assert!(state.value().contains('\u{0301}'));
+}
+
+#[test]
+fn test_multiline_mixed_unicode() {
+    let mut state = TextAreaState::new();
+    // Type CJK on first line
+    for c in "日本語".chars() {
+        TextArea::update(&mut state, TextAreaMessage::Insert(c));
+    }
+    // New line
+    TextArea::update(&mut state, TextAreaMessage::NewLine);
+    // Emoji on second line
+    TextArea::update(&mut state, TextAreaMessage::Insert('\u{1F600}'));
+    TextArea::update(&mut state, TextAreaMessage::Insert('\u{1F389}'));
+
+    let value = state.value();
+    assert!(value.contains("日本語"));
+    assert!(value.contains('\u{1F600}'));
+    assert!(value.contains('\u{1F389}'));
+}
