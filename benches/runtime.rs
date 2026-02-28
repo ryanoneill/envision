@@ -1,9 +1,8 @@
-//! Benchmarks for async runtime performance.
+//! Benchmarks for runtime performance.
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use envision::app::{
-    App, AsyncCommandHandler, AsyncRuntime, AsyncRuntimeConfig, Command, TickSubscription,
-    TimerSubscription,
+    App, Command, CommandHandler, Runtime, RuntimeConfig, TickSubscription, TimerSubscription,
 };
 use ratatui::widgets::Paragraph;
 use std::time::Duration;
@@ -59,9 +58,9 @@ impl App for BenchApp {
     }
 }
 
-/// Benchmark AsyncRuntime creation.
-fn bench_async_runtime_creation(c: &mut Criterion) {
-    let mut group = c.benchmark_group("async_runtime_creation");
+/// Benchmark Runtime creation.
+fn bench_runtime_creation(c: &mut Criterion) {
+    let mut group = c.benchmark_group("runtime_creation");
 
     for (width, height) in [(80, 24), (120, 40), (200, 60)] {
         group.bench_with_input(
@@ -69,8 +68,8 @@ fn bench_async_runtime_creation(c: &mut Criterion) {
             &(width, height),
             |b, &(w, h)| {
                 b.iter(|| {
-                    let runtime: AsyncRuntime<BenchApp, _> =
-                        AsyncRuntime::virtual_terminal(black_box(w), black_box(h)).unwrap();
+                    let runtime: Runtime<BenchApp, _> =
+                        Runtime::virtual_terminal(black_box(w), black_box(h)).unwrap();
                     runtime
                 });
             },
@@ -80,15 +79,14 @@ fn bench_async_runtime_creation(c: &mut Criterion) {
             BenchmarkId::new("with_history", format!("{}x{}", width, height)),
             &(width, height),
             |b, &(w, h)| {
-                let config = AsyncRuntimeConfig::new().with_history(10);
+                let config = RuntimeConfig::new().with_history(10);
                 b.iter(|| {
-                    let runtime: AsyncRuntime<BenchApp, _> =
-                        AsyncRuntime::virtual_terminal_with_config(
-                            black_box(w),
-                            black_box(h),
-                            config.clone(),
-                        )
-                        .unwrap();
+                    let runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal_with_config(
+                        black_box(w),
+                        black_box(h),
+                        config.clone(),
+                    )
+                    .unwrap();
                     runtime
                 });
             },
@@ -98,21 +96,19 @@ fn bench_async_runtime_creation(c: &mut Criterion) {
     group.finish();
 }
 
-/// Benchmark AsyncRuntime dispatch operations.
-fn bench_async_runtime_dispatch(c: &mut Criterion) {
-    let mut group = c.benchmark_group("async_runtime_dispatch");
+/// Benchmark Runtime dispatch operations.
+fn bench_runtime_dispatch(c: &mut Criterion) {
+    let mut group = c.benchmark_group("runtime_dispatch");
 
     group.bench_function("single_message", |b| {
-        let mut runtime: AsyncRuntime<BenchApp, _> =
-            AsyncRuntime::virtual_terminal(80, 24).unwrap();
+        let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
         b.iter(|| {
             runtime.dispatch(black_box(BenchMsg::Increment));
         });
     });
 
     group.bench_function("batch_10", |b| {
-        let mut runtime: AsyncRuntime<BenchApp, _> =
-            AsyncRuntime::virtual_terminal(80, 24).unwrap();
+        let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
         let messages: Vec<_> = (0..10).map(|_| BenchMsg::Increment).collect();
         b.iter(|| {
             runtime.dispatch_all(black_box(messages.clone()));
@@ -120,8 +116,7 @@ fn bench_async_runtime_dispatch(c: &mut Criterion) {
     });
 
     group.bench_function("batch_100", |b| {
-        let mut runtime: AsyncRuntime<BenchApp, _> =
-            AsyncRuntime::virtual_terminal(80, 24).unwrap();
+        let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
         let messages: Vec<_> = (0..100).map(|_| BenchMsg::Increment).collect();
         b.iter(|| {
             runtime.dispatch_all(black_box(messages.clone()));
@@ -131,17 +126,16 @@ fn bench_async_runtime_dispatch(c: &mut Criterion) {
     group.finish();
 }
 
-/// Benchmark AsyncRuntime tick and render.
-fn bench_async_runtime_tick(c: &mut Criterion) {
-    let mut group = c.benchmark_group("async_runtime_tick");
+/// Benchmark Runtime tick and render.
+fn bench_runtime_tick(c: &mut Criterion) {
+    let mut group = c.benchmark_group("runtime_tick");
 
     for (width, height) in [(80, 24), (200, 60)] {
         group.bench_with_input(
             BenchmarkId::new("tick", format!("{}x{}", width, height)),
             &(width, height),
             |b, &(w, h)| {
-                let mut runtime: AsyncRuntime<BenchApp, _> =
-                    AsyncRuntime::virtual_terminal(w, h).unwrap();
+                let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal(w, h).unwrap();
                 b.iter(|| {
                     runtime.tick().unwrap();
                 });
@@ -152,8 +146,7 @@ fn bench_async_runtime_tick(c: &mut Criterion) {
             BenchmarkId::new("render_only", format!("{}x{}", width, height)),
             &(width, height),
             |b, &(w, h)| {
-                let mut runtime: AsyncRuntime<BenchApp, _> =
-                    AsyncRuntime::virtual_terminal(w, h).unwrap();
+                let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal(w, h).unwrap();
                 b.iter(|| {
                     runtime.render().unwrap();
                 });
@@ -164,19 +157,19 @@ fn bench_async_runtime_tick(c: &mut Criterion) {
     group.finish();
 }
 
-/// Benchmark AsyncCommandHandler operations.
-fn bench_async_command_handler(c: &mut Criterion) {
-    let mut group = c.benchmark_group("async_command_handler");
+/// Benchmark CommandHandler operations.
+fn bench_command_handler(c: &mut Criterion) {
+    let mut group = c.benchmark_group("command_handler");
 
     group.bench_function("creation", |b| {
         b.iter(|| {
-            let handler: AsyncCommandHandler<BenchMsg> = AsyncCommandHandler::new();
+            let handler: CommandHandler<BenchMsg> = CommandHandler::new();
             black_box(handler)
         });
     });
 
     group.bench_function("execute_sync", |b| {
-        let mut handler: AsyncCommandHandler<BenchMsg> = AsyncCommandHandler::new();
+        let mut handler: CommandHandler<BenchMsg> = CommandHandler::new();
         b.iter(|| {
             handler.execute(black_box(Command::message(BenchMsg::Increment)));
             let _ = handler.take_messages();
@@ -184,7 +177,7 @@ fn bench_async_command_handler(c: &mut Criterion) {
     });
 
     group.bench_function("execute_batch", |b| {
-        let mut handler: AsyncCommandHandler<BenchMsg> = AsyncCommandHandler::new();
+        let mut handler: CommandHandler<BenchMsg> = CommandHandler::new();
         b.iter(|| {
             handler.execute(black_box(Command::batch(
                 (0..10).map(|_| BenchMsg::Increment),
@@ -194,7 +187,7 @@ fn bench_async_command_handler(c: &mut Criterion) {
     });
 
     group.bench_function("execute_callback", |b| {
-        let mut handler: AsyncCommandHandler<BenchMsg> = AsyncCommandHandler::new();
+        let mut handler: CommandHandler<BenchMsg> = CommandHandler::new();
         b.iter(|| {
             handler.execute(black_box(Command::perform(|| Some(BenchMsg::Increment))));
             let _ = handler.take_messages();
@@ -202,7 +195,7 @@ fn bench_async_command_handler(c: &mut Criterion) {
     });
 
     group.bench_function("execute_async_collect", |b| {
-        let mut handler: AsyncCommandHandler<BenchMsg> = AsyncCommandHandler::new();
+        let mut handler: CommandHandler<BenchMsg> = CommandHandler::new();
         b.iter(|| {
             handler.execute(black_box(Command::perform_async(async {
                 Some(BenchMsg::AsyncResult(42))
@@ -317,20 +310,20 @@ fn bench_cancellation_token(c: &mut Criterion) {
     group.finish();
 }
 
-/// Benchmark AsyncRuntimeConfig creation and builders.
+/// Benchmark RuntimeConfig creation and builders.
 fn bench_config(c: &mut Criterion) {
     let mut group = c.benchmark_group("config");
 
     group.bench_function("default", |b| {
         b.iter(|| {
-            let config = AsyncRuntimeConfig::default();
+            let config = RuntimeConfig::default();
             black_box(config)
         });
     });
 
     group.bench_function("builder_full", |b| {
         b.iter(|| {
-            let config = AsyncRuntimeConfig::new()
+            let config = RuntimeConfig::new()
                 .tick_rate(Duration::from_millis(50))
                 .frame_rate(Duration::from_millis(16))
                 .with_history(10)
@@ -345,10 +338,10 @@ fn bench_config(c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    bench_async_runtime_creation,
-    bench_async_runtime_dispatch,
-    bench_async_runtime_tick,
-    bench_async_command_handler,
+    bench_runtime_creation,
+    bench_runtime_dispatch,
+    bench_runtime_tick,
+    bench_command_handler,
     bench_subscription_creation,
     bench_command_creation,
     bench_cancellation_token,

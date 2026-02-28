@@ -1,3 +1,5 @@
+mod async_tests;
+
 use super::*;
 use ratatui::widgets::Paragraph;
 
@@ -9,10 +11,11 @@ struct CounterState {
     quit: bool,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum CounterMsg {
     Increment,
     Decrement,
+    IncrementBy(i32),
     Quit,
 }
 
@@ -28,6 +31,7 @@ impl App for CounterApp {
         match msg {
             CounterMsg::Increment => state.count += 1,
             CounterMsg::Decrement => state.count -= 1,
+            CounterMsg::IncrementBy(n) => state.count += n,
             CounterMsg::Quit => state.quit = true,
         }
         super::super::Command::none()
@@ -100,22 +104,28 @@ fn test_runtime_tick() {
 fn test_runtime_config() {
     let config = RuntimeConfig::new()
         .tick_rate(Duration::from_millis(100))
+        .frame_rate(Duration::from_millis(32))
         .with_history(5)
-        .max_messages(50);
+        .max_messages(50)
+        .channel_capacity(512);
 
     assert_eq!(config.tick_rate, Duration::from_millis(100));
+    assert_eq!(config.frame_rate, Duration::from_millis(32));
     assert!(config.capture_history);
     assert_eq!(config.history_capacity, 5);
     assert_eq!(config.max_messages_per_tick, 50);
+    assert_eq!(config.message_channel_capacity, 512);
 }
 
 #[test]
 fn test_runtime_config_default() {
     let config = RuntimeConfig::default();
     assert_eq!(config.tick_rate, Duration::from_millis(50));
+    assert_eq!(config.frame_rate, Duration::from_millis(16));
     assert_eq!(config.max_messages_per_tick, 100);
     assert!(!config.capture_history);
     assert_eq!(config.history_capacity, 10);
+    assert_eq!(config.message_channel_capacity, 256);
 }
 
 #[test]
@@ -192,6 +202,25 @@ fn test_runtime_events_access() {
 }
 
 #[test]
+fn test_runtime_cancellation_token() {
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let token = runtime.cancellation_token();
+    assert!(!token.is_cancelled());
+}
+
+#[test]
+fn test_runtime_message_sender() {
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let _sender = runtime.message_sender();
+}
+
+#[test]
+fn test_runtime_error_sender() {
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let _error_tx = runtime.error_sender();
+}
+
+#[test]
 fn test_runtime_dispatch_all() {
     let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
 
@@ -208,9 +237,11 @@ fn test_runtime_dispatch_all() {
 fn test_runtime_manual_quit() {
     let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
     assert!(!runtime.should_quit());
+    assert!(!runtime.cancellation_token().is_cancelled());
 
     runtime.quit();
     assert!(runtime.should_quit());
+    assert!(runtime.cancellation_token().is_cancelled());
 }
 
 #[test]
@@ -454,21 +485,8 @@ fn test_runtime_max_messages_per_tick() {
 }
 
 // =========================================================================
-// New Virtual Terminal API Tests
+// Virtual Terminal API Tests
 // =========================================================================
-
-#[test]
-fn test_virtual_terminal_new() {
-    let vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
-    assert_eq!(vt.state().count, 0);
-}
-
-#[test]
-fn test_virtual_terminal_with_config() {
-    let config = RuntimeConfig::new().with_history(5);
-    let vt: Runtime<CounterApp, _> = Runtime::virtual_terminal_with_config(80, 24, config).unwrap();
-    assert_eq!(vt.state().count, 0);
-}
 
 #[test]
 fn test_virtual_terminal_send_and_tick() {

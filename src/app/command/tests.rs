@@ -1,4 +1,7 @@
 use super::*;
+use std::time::Duration;
+use tokio::sync::mpsc;
+use tokio_util::sync::CancellationToken;
 
 #[derive(Clone, Debug, PartialEq)]
 enum TestMsg {
@@ -6,6 +9,7 @@ enum TestMsg {
     B,
     C,
     Value(i32),
+    AsyncResult(i32),
 }
 
 #[test]
@@ -261,6 +265,10 @@ fn test_command_handler_default() {
     assert!(handler.take_messages().is_empty());
 }
 
+// =========================================================================
+// Async command tests
+// =========================================================================
+
 #[test]
 fn test_command_perform_async() {
     let cmd: Command<TestMsg> = Command::perform_async(async { Some(TestMsg::A) });
@@ -268,10 +276,12 @@ fn test_command_perform_async() {
     // Async commands are not empty
     assert!(!cmd.is_none());
 
-    // Sync handler skips async actions
+    // Handler collects async futures
     let mut handler = CommandHandler::new();
     handler.execute(cmd);
     assert!(handler.take_messages().is_empty());
+    assert!(handler.has_pending_futures());
+    assert_eq!(handler.pending_future_count(), 1);
 }
 
 #[test]
@@ -281,10 +291,11 @@ fn test_command_future_alias() {
     // Should behave identically to perform_async
     assert!(!cmd.is_none());
 
-    // Sync handler skips async actions
+    // Handler collects async futures
     let mut handler = CommandHandler::new();
     handler.execute(cmd);
     assert!(handler.take_messages().is_empty());
+    assert!(handler.has_pending_futures());
 }
 
 #[test]
@@ -344,15 +355,16 @@ fn test_command_map_async() {
 }
 
 #[test]
-fn test_command_handler_skips_async() {
-    let cmd: Command<TestMsg> = Command::perform_async(async { Some(TestMsg::A) });
-
+fn test_command_handler_collects_async_futures() {
     let mut handler = CommandHandler::new();
-    handler.execute(cmd);
+    handler.execute(Command::perform_async(async {
+        Some(TestMsg::AsyncResult(42))
+    }));
 
-    // Sync handler ignores async actions
+    // Async futures are collected, not sync messages
     assert!(handler.take_messages().is_empty());
-    assert!(!handler.should_quit());
+    assert!(handler.has_pending_futures());
+    assert_eq!(handler.pending_future_count(), 1);
 }
 
 #[test]
@@ -366,9 +378,13 @@ fn test_command_combine_with_async() {
     let mut handler = CommandHandler::new();
     handler.execute(cmd);
 
-    // Only sync messages are processed
+    // Sync messages are processed immediately
     let messages = handler.take_messages();
     assert_eq!(messages, vec![TestMsg::A, TestMsg::C]);
+
+    // Async future is collected
+    assert!(handler.has_pending_futures());
+    assert_eq!(handler.pending_future_count(), 1);
 }
 
 #[test]
@@ -383,6 +399,7 @@ fn test_command_and_with_async() {
     let messages = handler.take_messages();
     assert_eq!(messages, vec![TestMsg::A]);
     assert!(handler.should_quit());
+    assert!(handler.has_pending_futures());
 }
 
 #[test]
@@ -394,11 +411,6 @@ fn test_command_try_perform_async_ok() {
 
     // Command should not be empty
     assert!(!cmd.is_none());
-
-    // Sync handler skips async actions
-    let mut handler = CommandHandler::new();
-    handler.execute(cmd);
-    assert!(handler.take_messages().is_empty());
 }
 
 #[test]
@@ -463,10 +475,114 @@ fn test_command_combine_with_async_fallible() {
     let mut handler = CommandHandler::new();
     handler.execute(cmd);
 
-    // Only sync messages are processed
+    // Sync messages are processed immediately
     let messages = handler.take_messages();
     assert_eq!(messages, vec![TestMsg::A, TestMsg::C]);
 }
+
+// =========================================================================
+// Async spawn and receive tests
+// =========================================================================
+
+#[tokio::test]
+async fn test_handler_spawn_and_receive() {
+    let mut handler: CommandHandler<TestMsg> = CommandHandler::new();
+    let (msg_tx, mut msg_rx) = mpsc::channel(10);
+    let (err_tx, _err_rx) = mpsc::channel(10);
+    let cancel = CancellationToken::new();
+
+    handler.execute(Command::perform_async(async {
+        Some(TestMsg::AsyncResult(42))
+    }));
+
+    handler.spawn_pending(msg_tx, err_tx, cancel);
+    assert!(!handler.has_pending_futures());
+
+    // Receive the message from the spawned task
+    let msg = msg_rx.recv().await.expect("Should receive message");
+    assert_eq!(msg, TestMsg::AsyncResult(42));
+}
+
+#[tokio::test]
+async fn test_handler_spawn_none_result() {
+    let mut handler: CommandHandler<TestMsg> = CommandHandler::new();
+    let (msg_tx, mut msg_rx) = mpsc::channel(10);
+    let (err_tx, _err_rx) = mpsc::channel(10);
+    let cancel = CancellationToken::new();
+
+    handler.execute(Command::perform_async(async { None }));
+
+    handler.spawn_pending(msg_tx, err_tx, cancel);
+
+    // Give the task time to complete
+    tokio::time::sleep(Duration::from_millis(10)).await;
+
+    // Should not receive any message
+    assert!(msg_rx.try_recv().is_err());
+}
+
+#[tokio::test]
+async fn test_handler_cancellation() {
+    let mut handler: CommandHandler<TestMsg> = CommandHandler::new();
+    let (msg_tx, mut msg_rx) = mpsc::channel(10);
+    let (err_tx, _err_rx) = mpsc::channel(10);
+    let cancel = CancellationToken::new();
+
+    // Create a slow async command
+    handler.execute(Command::perform_async(async {
+        tokio::time::sleep(Duration::from_secs(10)).await;
+        Some(TestMsg::AsyncResult(42))
+    }));
+
+    handler.spawn_pending(msg_tx, err_tx, cancel.clone());
+
+    // Cancel immediately
+    cancel.cancel();
+
+    // Give the task time to notice cancellation
+    tokio::time::sleep(Duration::from_millis(10)).await;
+
+    // Should not receive any message
+    assert!(msg_rx.try_recv().is_err());
+}
+
+#[tokio::test]
+async fn test_handler_multiple_async() {
+    let mut handler: CommandHandler<TestMsg> = CommandHandler::new();
+    let (msg_tx, mut msg_rx) = mpsc::channel(10);
+    let (err_tx, _err_rx) = mpsc::channel(10);
+    let cancel = CancellationToken::new();
+
+    handler.execute(Command::perform_async(async {
+        Some(TestMsg::AsyncResult(1))
+    }));
+    handler.execute(Command::perform_async(async {
+        Some(TestMsg::AsyncResult(2))
+    }));
+    handler.execute(Command::perform_async(async {
+        Some(TestMsg::AsyncResult(3))
+    }));
+
+    assert_eq!(handler.pending_future_count(), 3);
+
+    handler.spawn_pending(msg_tx, err_tx, cancel);
+
+    // Collect all messages
+    let mut messages = Vec::new();
+    for _ in 0..3 {
+        let msg = msg_rx.recv().await.expect("Should receive message");
+        messages.push(msg);
+    }
+
+    // Order is not guaranteed, so just check we got all values
+    assert!(messages.contains(&TestMsg::AsyncResult(1)));
+    assert!(messages.contains(&TestMsg::AsyncResult(2)));
+    assert!(messages.contains(&TestMsg::AsyncResult(3)));
+}
+
+// =========================================================================
+// Overlay tests
+// =========================================================================
 
 mod overlay_tests {
     use super::*;

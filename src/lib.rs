@@ -12,8 +12,10 @@
 //! ### Terminal Mode - For Interactive Use
 //!
 //! ```rust,ignore
-//! // Run in a real terminal with keyboard/mouse input
-//! Runtime::<MyApp>::new_terminal()?.run()
+//! #[tokio::main]
+//! async fn main() -> std::io::Result<()> {
+//!     Runtime::<MyApp>::new_terminal()?.run_terminal().await
+//! }
 //! ```
 //!
 //! ### Virtual Terminal Mode - For Programmatic Control
@@ -79,10 +81,9 @@ pub mod theme;
 pub use adapter::{DualBackend, DualBackendBuilder};
 pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
 pub use app::{
-    App, AsyncCommandHandler, AsyncRuntime, AsyncRuntimeConfig, Command, DebounceSubscription,
-    FilterSubscription, IntervalImmediateSubscription, Runtime, RuntimeConfig, Subscription,
-    SubscriptionExt, TakeSubscription, TerminalEventSubscription, ThrottleSubscription,
-    TickSubscription, TimerSubscription,
+    App, Command, DebounceSubscription, FilterSubscription, IntervalImmediateSubscription, Runtime,
+    RuntimeConfig, Subscription, SubscriptionExt, TakeSubscription, TerminalEventSubscription,
+    ThrottleSubscription, TickSubscription, TimerSubscription,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 pub use component::{
@@ -102,7 +103,7 @@ pub use component::{
     Tooltip, TooltipMessage, TooltipOutput, TooltipPosition, TooltipState, Tree, TreeMessage,
     TreeNode, TreeOutput, TreeState,
 };
-pub use harness::{Assertion, AsyncTestHarness, Snapshot, TestHarness};
+pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
 pub use input::{Event, EventQueue};
 pub use overlay::{Overlay, OverlayAction, OverlayStack};
 pub use theme::Theme;
@@ -119,7 +120,7 @@ pub use theme::Theme;
 /// ```
 pub mod prelude {
     // Core framework
-    pub use crate::app::{App, AsyncRuntime, AsyncRuntimeConfig, Command, Runtime, RuntimeConfig};
+    pub use crate::app::{App, Command, Runtime, RuntimeConfig};
 
     // Subscriptions
     pub use crate::app::{Subscription, SubscriptionExt, Update};
@@ -138,7 +139,7 @@ pub mod prelude {
 
     // Testing essentials
     pub use crate::backend::{CaptureBackend, EnhancedCell};
-    pub use crate::harness::{AsyncTestHarness, TestHarness};
+    pub use crate::harness::{AppHarness, TestHarness};
 
     // Ratatui re-export
     pub use ratatui::prelude::*;

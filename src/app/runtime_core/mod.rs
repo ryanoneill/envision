@@ -1,8 +1,8 @@
-//! Shared runtime logic between sync and async runtimes.
+//! Core runtime state and logic.
 //!
-//! This module provides `RuntimeCore`, a struct containing the fields and methods
-//! that are identical between `Runtime` and `AsyncRuntime`. Both runtimes embed
-//! this struct and delegate shared operations to it.
+//! This module provides `RuntimeCore`, a struct containing the shared fields
+//! and methods used by `Runtime`. It manages terminal, state, event queue,
+//! overlays, theme, and rendering.
 
 use std::io;
 

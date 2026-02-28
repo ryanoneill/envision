@@ -1,6 +1,6 @@
-//! Async test harness for TEA applications with time control.
+//! Application test harness for TEA applications with time control.
 //!
-//! This harness wraps `AsyncRuntime` and provides deterministic testing
+//! This harness wraps `Runtime` and provides deterministic testing
 //! capabilities using tokio's time control features.
 //!
 //! # Time Control
@@ -14,7 +14,7 @@
 //! ```ignore
 //! #[tokio::test(start_paused = true)]
 //! async fn test_delayed_operation() {
-//!     let mut harness = AsyncTestHarness::<MyApp>::new(80, 24);
+//!     let mut harness = AppHarness::<MyApp>::new(80, 24);
 //!
 //!     // Dispatch an async command with a delay
 //!     harness.dispatch(Msg::StartDelayedOp).await;
@@ -35,38 +35,32 @@ use std::io;
 use ratatui::layout::Position;
 use tokio_util::sync::CancellationToken;
 
-use crate::app::{App, AsyncRuntime, AsyncRuntimeConfig, BoxedSubscription, Subscription};
+use crate::app::{App, BoxedSubscription, Runtime, RuntimeConfig, Subscription};
 use crate::backend::CaptureBackend;
 use crate::input::{Event, EventQueue};
 
-/// Async test harness for TEA applications.
+/// Application test harness for TEA applications.
 ///
 /// This harness provides:
 /// - Time control for deterministic async testing
 /// - Convenient dispatch and assertion methods
 /// - Access to the underlying runtime and state
-pub struct AsyncTestHarness<A: App>
-where
-    A::Message: Send + Clone + 'static,
-{
-    runtime: AsyncRuntime<A, CaptureBackend>,
+pub struct AppHarness<A: App> {
+    runtime: Runtime<A, CaptureBackend>,
 }
 
-impl<A: App> AsyncTestHarness<A>
-where
-    A::Message: Send + Clone + 'static,
-{
+impl<A: App> AppHarness<A> {
     /// Creates a new async test harness with the given dimensions.
     ///
     /// Note: For time control, use `#[tokio::test(start_paused = true)]`.
     pub fn new(width: u16, height: u16) -> io::Result<Self> {
-        let runtime = AsyncRuntime::virtual_terminal(width, height)?;
+        let runtime = Runtime::virtual_terminal(width, height)?;
         Ok(Self { runtime })
     }
 
     /// Creates a new async test harness with custom configuration.
-    pub fn with_config(width: u16, height: u16, config: AsyncRuntimeConfig) -> io::Result<Self> {
-        let runtime = AsyncRuntime::virtual_terminal_with_config(width, height, config)?;
+    pub fn with_config(width: u16, height: u16, config: RuntimeConfig) -> io::Result<Self> {
+        let runtime = Runtime::virtual_terminal_with_config(width, height, config)?;
         Ok(Self { runtime })
     }
 
@@ -296,10 +290,7 @@ where
 use std::time::Duration;
 
 #[cfg(test)]
-impl<A: App> AsyncTestHarness<A>
-where
-    A::Message: Send + Clone + 'static,
-{
+impl<A: App> AppHarness<A> {
     /// Advances time by the specified duration.
     ///
     /// This only works when time is paused (e.g., with `#[tokio::test(start_paused = true)]`).

@@ -25,13 +25,13 @@
 //! harness.assert_contains("Hello, World!");
 //! ```
 
+mod app_harness;
 mod assertions;
-mod async_harness;
 mod snapshot;
 mod test_harness;
 
+pub use app_harness::AppHarness;
 pub use assertions::{Assertion, AssertionError, AssertionResult};
-pub use async_harness::AsyncTestHarness;
 pub use snapshot::{
     assert_snapshot_eq, assert_snapshot_text, Snapshot, SnapshotFormat, SnapshotTest,
 };
