@@ -38,5 +38,5 @@ name = "capture_backend"
 harness = false
 
 [[bench]]
-name = "async_runtime"
+name = "runtime"
 harness = false

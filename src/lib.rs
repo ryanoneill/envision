@@ -12,8 +12,10 @@
 //! ### Terminal Mode - For Interactive Use
 //!
 //! ```rust,ignore
-//! // Run in a real terminal with keyboard/mouse input
-//! Runtime::<MyApp>::new_terminal()?.run()
+//! #[tokio::main]
+//! async fn main() -> std::io::Result<()> {
+//!     Runtime::<MyApp>::new_terminal()?.run_terminal().await
+//! }
 //! ```
 //!
 //! ### Virtual Terminal Mode - For Programmatic Control
