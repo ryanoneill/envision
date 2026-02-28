@@ -180,7 +180,7 @@ pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 ///
 /// # Associated Types
 ///
-/// - `State`: The component's internal state. Should be `Clone` for testing.
+/// - `State`: The component's internal state. Derive `Clone` if you need snapshots.
 /// - `Message`: Messages the component can receive from its parent or from
 ///   user interaction.
 /// - `Output`: Messages the component emits to communicate with its parent.
@@ -199,8 +199,8 @@ pub trait Component: Sized {
     /// The component's internal state type.
     ///
     /// This should contain all data needed to render the component.
-    /// Derive `Clone` for testing and state snapshots.
-    type State: Clone;
+    /// Deriving `Clone` is recommended but not required.
+    type State;
 
     /// Messages this component can receive.
     ///
@@ -640,6 +640,58 @@ mod tests {
         }
 
         fn view(_state: &Self::State, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+    }
+
+    #[test]
+    fn test_component_non_clone_state() {
+        // Verify that Component::State does not require Clone
+        struct NonCloneComponent;
+
+        // Intentionally does NOT derive Clone
+        struct NonCloneState {
+            value: i32,
+        }
+
+        #[derive(Clone)]
+        enum NonCloneMsg {
+            Set(i32),
+        }
+
+        #[derive(Clone)]
+        enum NonCloneOutput {
+            Changed(i32),
+        }
+
+        impl Component for NonCloneComponent {
+            type State = NonCloneState;
+            type Message = NonCloneMsg;
+            type Output = NonCloneOutput;
+
+            fn init() -> Self::State {
+                NonCloneState { value: 0 }
+            }
+
+            fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+                match msg {
+                    NonCloneMsg::Set(v) => {
+                        state.value = v;
+                        Some(NonCloneOutput::Changed(v))
+                    }
+                }
+            }
+
+            fn view(state: &Self::State, frame: &mut Frame, area: Rect, _theme: &Theme) {
+                let text = format!("Value: {}", state.value);
+                frame.render_widget(Paragraph::new(text), area);
+            }
+        }
+
+        let mut state = NonCloneComponent::init();
+        assert_eq!(state.value, 0);
+
+        let output = NonCloneComponent::update(&mut state, NonCloneMsg::Set(42));
+        assert_eq!(state.value, 42);
+        assert!(matches!(output, Some(NonCloneOutput::Changed(42))));
     }
 
     #[test]

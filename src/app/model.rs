@@ -18,7 +18,7 @@ use crate::input::Event;
 ///
 /// # Type Parameters
 ///
-/// - `State`: Your application's state type. Should be `Clone` for snapshots.
+/// - `State`: Your application's state type. Derive `Clone` if you need snapshots.
 /// - `Message`: The type representing all possible events/actions.
 ///
 /// # Example
@@ -65,8 +65,8 @@ pub trait App: Sized {
     /// The application state type.
     ///
     /// This should contain all data needed to render the UI.
-    /// It's recommended to derive `Clone` for testing and snapshots.
-    type State: Clone;
+    /// Deriving `Clone` is recommended but not required.
+    type State;
 
     /// The message type representing all possible events.
     ///
@@ -350,6 +350,50 @@ mod tests {
 
         // Should not panic
         CustomApp::on_exit(&state);
+    }
+
+    #[test]
+    fn test_app_non_clone_state() {
+        // Verify that App::State does not require Clone
+        struct NonCloneApp;
+
+        // Intentionally does NOT derive Clone
+        struct NonCloneState {
+            value: i32,
+        }
+
+        #[derive(Clone)]
+        enum NonCloneMsg {
+            Set(i32),
+        }
+
+        impl App for NonCloneApp {
+            type State = NonCloneState;
+            type Message = NonCloneMsg;
+
+            fn init() -> (Self::State, Command<Self::Message>) {
+                (NonCloneState { value: 0 }, Command::none())
+            }
+
+            fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+                match msg {
+                    NonCloneMsg::Set(v) => state.value = v,
+                }
+                Command::none()
+            }
+
+            fn view(state: &Self::State, frame: &mut Frame) {
+                let text = format!("Value: {}", state.value);
+                frame.render_widget(Paragraph::new(text), frame.area());
+            }
+        }
+
+        let (mut state, cmd) = NonCloneApp::init();
+        assert!(cmd.is_none());
+        assert_eq!(state.value, 0);
+
+        NonCloneApp::update(&mut state, NonCloneMsg::Set(42));
+        assert_eq!(state.value, 42);
     }
 
     #[test]
