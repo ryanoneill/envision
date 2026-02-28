@@ -202,7 +202,6 @@ impl SnapshotDiff {
 /// # Panics
 ///
 /// Panics with a diff if the snapshots differ.
-#[allow(dead_code)]
 pub fn assert_snapshot_eq(left: &Snapshot, right: &Snapshot) {
     let diff = left.diff(right);
     if !diff.is_empty() {
@@ -215,7 +214,6 @@ pub fn assert_snapshot_eq(left: &Snapshot, right: &Snapshot) {
 /// # Panics
 ///
 /// Panics if the snapshot's plain text doesn't match.
-#[allow(dead_code)]
 pub fn assert_snapshot_text(snapshot: &Snapshot, expected: &str) {
     let actual = snapshot.to_plain();
     if actual != expected {
@@ -228,7 +226,6 @@ pub fn assert_snapshot_text(snapshot: &Snapshot, expected: &str) {
 
 /// Helper for snapshot testing with file storage.
 #[derive(Debug)]
-#[allow(dead_code)]
 pub struct SnapshotTest {
     /// Directory for snapshot files
     pub snapshot_dir: std::path::PathBuf,
@@ -240,7 +237,6 @@ pub struct SnapshotTest {
     pub update: bool,
 }
 
-#[allow(dead_code)]
 impl SnapshotTest {
     /// Creates a new snapshot test helper.
     pub fn new(snapshot_dir: impl AsRef<Path>) -> Self {

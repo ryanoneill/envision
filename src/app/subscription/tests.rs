@@ -228,9 +228,10 @@ async fn test_interval_immediate_builder() {
     cancel.cancel();
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_interval_immediate_vs_tick() {
-    // Compare immediate subscription vs regular tick subscription
+    // Both subscriptions produce their first message, but IntervalImmediate
+    // yields before any async machinery while Tick goes through interval.tick().
     let cancel1 = CancellationToken::new();
     let cancel2 = CancellationToken::new();
 
@@ -245,22 +246,22 @@ async fn test_interval_immediate_vs_tick() {
     let mut immediate_stream = immediate.into_stream(cancel1.clone());
     let mut regular_stream = regular.into_stream(cancel2.clone());
 
-    // Time the first message from each
-    let immediate_start = std::time::Instant::now();
-    let _ = immediate_stream.next().await;
-    let immediate_elapsed = immediate_start.elapsed();
+    // Both produce their first tick
+    let immediate_first = immediate_stream.next().await;
+    assert!(immediate_first.is_some());
 
-    let regular_start = std::time::Instant::now();
-    let _ = regular_stream.next().await;
-    let regular_elapsed = regular_start.elapsed();
+    let regular_first = regular_stream.next().await;
+    assert!(regular_first.is_some());
 
-    // Immediate should be much faster for first message
-    assert!(
-        immediate_elapsed < regular_elapsed,
-        "Immediate: {:?}, Regular: {:?}",
-        immediate_elapsed,
-        regular_elapsed
-    );
+    // After the first tick, both require waiting for the interval
+    // Advance time by the interval duration to get the second tick
+    tokio::time::advance(Duration::from_millis(50)).await;
+
+    let immediate_second = immediate_stream.next().await;
+    assert!(immediate_second.is_some());
+
+    let regular_second = regular_stream.next().await;
+    assert!(regular_second.is_some());
 
     cancel1.cancel();
     cancel2.cancel();

@@ -24,7 +24,6 @@ pub fn render(backend: &CaptureBackend) -> String {
 ///
 /// This is useful when you want a cleaner output for display,
 /// but note that it may not exactly match the buffer contents.
-#[allow(dead_code)]
 pub fn render_trimmed(backend: &CaptureBackend) -> String {
     let height = backend.height();
     let mut lines = Vec::with_capacity(height as usize);

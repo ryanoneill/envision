@@ -30,13 +30,26 @@ use crate::theme::Theme;
 /// A menu item.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MenuItem {
-    /// The item label.
-    pub label: String,
-    /// Whether the item is enabled.
-    pub enabled: bool,
+    label: String,
+    enabled: bool,
 }
 
 impl MenuItem {
+    /// Returns the item label.
+    pub fn label(&self) -> &str {
+        &self.label
+    }
+
+    /// Returns whether the item is enabled.
+    pub fn is_enabled(&self) -> bool {
+        self.enabled
+    }
+
+    /// Sets the item label.
+    pub fn set_label(&mut self, label: impl Into<String>) {
+        self.label = label.into();
+    }
+
     /// Creates a new enabled menu item.
     ///
     /// # Example
@@ -45,8 +58,8 @@ impl MenuItem {
     /// use envision::component::MenuItem;
     ///
     /// let item = MenuItem::new("File");
-    /// assert_eq!(item.label, "File");
-    /// assert!(item.enabled);
+    /// assert_eq!(item.label(), "File");
+    /// assert!(item.is_enabled());
     /// ```
     pub fn new(label: impl Into<String>) -> Self {
         Self {
@@ -63,7 +76,7 @@ impl MenuItem {
     /// use envision::component::MenuItem;
     ///
     /// let item = MenuItem::disabled("Save");
-    /// assert!(!item.enabled);
+    /// assert!(!item.is_enabled());
     /// ```
     pub fn disabled(label: impl Into<String>) -> Self {
         Self {
@@ -245,7 +258,7 @@ impl Component for Menu {
             MenuMessage::Activate => {
                 // Activate only if item is enabled
                 if let Some(item) = state.items.get(state.selected_index) {
-                    if item.enabled {
+                    if item.is_enabled() {
                         Some(MenuOutput::ItemActivated(state.selected_index))
                     } else {
                         None
@@ -272,9 +285,9 @@ impl Component for Menu {
             }
 
             let item_text = if idx == state.selected_index && state.focused {
-                format!("[{}]", item.label)
+                format!("[{}]", item.label())
             } else {
-                item.label.clone()
+                item.label().to_string()
             };
 
             menu_text.push_str(&item_text);

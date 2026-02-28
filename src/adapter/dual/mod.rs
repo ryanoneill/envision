@@ -211,7 +211,6 @@ impl<P: Backend> Backend for DualBackend<P> {
 }
 
 /// A builder for creating dual backends with various configurations.
-#[allow(dead_code)]
 pub struct DualBackendBuilder<P: Backend> {
     primary: P,
     width: Option<u16>,
@@ -220,7 +219,6 @@ pub struct DualBackendBuilder<P: Backend> {
     sync_sizes: bool,
 }
 
-#[allow(dead_code)]
 impl<P: Backend> DualBackendBuilder<P> {
     /// Creates a new builder with the given primary backend.
     pub fn new(primary: P) -> Self {

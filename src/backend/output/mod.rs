@@ -13,6 +13,10 @@ mod plain;
 
 use crate::backend::CaptureBackend;
 
+pub use ansi::render_with_legend;
+pub use json::render_lines_only;
+pub use plain::render_trimmed;
+
 /// Available output formats for rendering captured frames.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum OutputFormat {
