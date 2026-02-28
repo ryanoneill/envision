@@ -44,8 +44,7 @@ fn test_execute_action_message() {
 #[test]
 fn test_execute_action_batch() {
     let mut core: CommandHandlerCore<TestMsg> = CommandHandlerCore::new();
-    let result =
-        core.execute_action(CommandAction::Batch(vec![TestMsg::Hello, TestMsg::World]));
+    let result = core.execute_action(CommandAction::Batch(vec![TestMsg::Hello, TestMsg::World]));
     assert!(result.is_none());
     assert_eq!(core.pending_messages, vec![TestMsg::Hello, TestMsg::World]);
 }

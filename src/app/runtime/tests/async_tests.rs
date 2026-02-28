@@ -362,8 +362,7 @@ impl App for InitCommandApp {
 
 #[test]
 fn test_runtime_init_command() {
-    let mut runtime: Runtime<InitCommandApp, _> =
-        Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<InitCommandApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
 
     // Process sync commands from init
     runtime.process_pending();

@@ -33,10 +33,7 @@ impl<M> CommandHandlerCore<M> {
     ///
     /// Returns `None` if the action was handled (sync action), or `Some(action)` if
     /// the action is async and needs to be handled by the caller.
-    pub(crate) fn execute_action(
-        &mut self,
-        action: CommandAction<M>,
-    ) -> Option<CommandAction<M>> {
+    pub(crate) fn execute_action(&mut self, action: CommandAction<M>) -> Option<CommandAction<M>> {
         match action {
             CommandAction::Message(m) => {
                 self.pending_messages.push(m);
