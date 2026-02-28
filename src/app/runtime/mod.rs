@@ -12,7 +12,7 @@
 //!
 //! ```ignore
 //! // Simple usage
-//! Runtime::<MyApp>::terminal()?.run()?;
+//! Runtime::<MyApp>::new_terminal()?.run()?;
 //! ```
 //!
 //! This sets up raw mode, alternate screen, and mouse capture, then runs
@@ -151,10 +151,10 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// ```ignore
     /// fn main() -> std::io::Result<()> {
-    ///     Runtime::<MyApp>::terminal()?.run()
+    ///     Runtime::<MyApp>::new_terminal()?.run()
     /// }
     /// ```
-    pub fn terminal() -> io::Result<Self> {
+    pub fn new_terminal() -> io::Result<Self> {
         Self::terminal_with_config(RuntimeConfig::default())
     }
 
@@ -183,7 +183,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// ```ignore
     /// fn main() -> std::io::Result<()> {
-    ///     Runtime::<MyApp>::terminal()?.run()
+    ///     Runtime::<MyApp>::new_terminal()?.run()
     /// }
     /// ```
     pub fn run(mut self) -> io::Result<()> {
@@ -387,12 +387,12 @@ impl<A: App, B: Backend> Runtime<A, B> {
     }
 
     /// Returns a reference to the inner ratatui Terminal.
-    pub fn inner_terminal(&self) -> &Terminal<B> {
+    pub fn terminal(&self) -> &Terminal<B> {
         &self.terminal
     }
 
     /// Returns a mutable reference to the inner ratatui Terminal.
-    pub fn inner_terminal_mut(&mut self) -> &mut Terminal<B> {
+    pub fn terminal_mut(&mut self) -> &mut Terminal<B> {
         &mut self.terminal
     }
 
