@@ -63,9 +63,7 @@ mod tests {
             if let Some(key) = event.as_key() {
                 match key.code {
                     KeyCode::Esc => OverlayAction::Dismiss,
-                    KeyCode::Enter => {
-                        OverlayAction::DismissWithMessage("confirmed".to_string())
-                    }
+                    KeyCode::Enter => OverlayAction::DismissWithMessage("confirmed".to_string()),
                     _ => {
                         self.consumed_count += 1;
                         OverlayAction::Consumed

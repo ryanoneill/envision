@@ -247,9 +247,9 @@ impl<M> Command<M> {
             .into_iter()
             .filter_map(|action| match action {
                 CommandAction::Message(m) => Some(CommandAction::Message(f(m))),
-                CommandAction::Batch(msgs) => {
-                    Some(CommandAction::Batch(msgs.into_iter().map(|m| f.clone()(m)).collect()))
-                }
+                CommandAction::Batch(msgs) => Some(CommandAction::Batch(
+                    msgs.into_iter().map(|m| f.clone()(m)).collect(),
+                )),
                 CommandAction::Quit => Some(CommandAction::Quit),
                 CommandAction::Callback(cb) => {
                     let f = f.clone();
@@ -257,7 +257,9 @@ impl<M> Command<M> {
                 }
                 CommandAction::Async(fut) => {
                     let f = f.clone();
-                    Some(CommandAction::Async(Box::pin(async move { fut.await.map(&f) })))
+                    Some(CommandAction::Async(Box::pin(
+                        async move { fut.await.map(&f) },
+                    )))
                 }
                 CommandAction::AsyncFallible(fut) => {
                     let f = f.clone();

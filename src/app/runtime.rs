@@ -348,7 +348,6 @@ impl<A: App> Runtime<A, CaptureBackend> {
     pub fn display_ansi(&self) -> String {
         self.terminal.backend().to_ansi()
     }
-
 }
 
 impl<A: App, B: Backend> Runtime<A, B> {
@@ -1367,10 +1366,7 @@ mod tests {
                     (CmdOverlayState::default(), Command::none())
                 }
 
-                fn update(
-                    state: &mut Self::State,
-                    msg: Self::Message,
-                ) -> Command<Self::Message> {
+                fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
                     match msg {
                         CmdOverlayMsg::PushOverlay => {
                             state.overlay_pushed = true;

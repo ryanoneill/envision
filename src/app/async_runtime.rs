@@ -205,7 +205,6 @@ where
     pub fn display_ansi(&self) -> String {
         self.terminal.backend().to_ansi()
     }
-
 }
 
 impl<A: App, B: Backend> AsyncRuntime<A, B>
