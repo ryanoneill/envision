@@ -26,24 +26,18 @@ pub type BoxedFallibleFuture<M> =
 /// back to the runtime via a message channel. It also handles synchronous
 /// command actions directly.
 pub struct AsyncCommandHandler<M> {
-    pending_messages: Vec<M>,
+    core: super::command_core::CommandHandlerCore<M>,
     pending_futures: Vec<BoxedFuture<M>>,
     pending_fallible_futures: Vec<BoxedFallibleFuture<M>>,
-    pending_overlay_pushes: Vec<Box<dyn Overlay<M> + Send>>,
-    pending_overlay_pops: usize,
-    should_quit: bool,
 }
 
 impl<M: Send + 'static> AsyncCommandHandler<M> {
     /// Creates a new async command handler.
     pub fn new() -> Self {
         Self {
-            pending_messages: Vec::new(),
+            core: super::command_core::CommandHandlerCore::new(),
             pending_futures: Vec::new(),
             pending_fallible_futures: Vec::new(),
-            pending_overlay_pushes: Vec::new(),
-            pending_overlay_pops: 0,
-            should_quit: false,
         }
     }
 
@@ -53,32 +47,15 @@ impl<M: Send + 'static> AsyncCommandHandler<M> {
     /// Async actions are collected for later spawning.
     pub fn execute(&mut self, command: Command<M>) {
         for action in command.into_actions() {
-            match action {
-                CommandAction::Message(m) => {
-                    self.pending_messages.push(m);
-                }
-                CommandAction::Batch(msgs) => {
-                    self.pending_messages.extend(msgs);
-                }
-                CommandAction::Quit => {
-                    self.should_quit = true;
-                }
-                CommandAction::Callback(cb) => {
-                    if let Some(m) = cb() {
-                        self.pending_messages.push(m);
+            if let Some(async_action) = self.core.execute_sync_action(action) {
+                match async_action {
+                    CommandAction::Async(fut) => {
+                        self.pending_futures.push(fut);
                     }
-                }
-                CommandAction::Async(fut) => {
-                    self.pending_futures.push(fut);
-                }
-                CommandAction::AsyncFallible(fut) => {
-                    self.pending_fallible_futures.push(fut);
-                }
-                CommandAction::PushOverlay(overlay) => {
-                    self.pending_overlay_pushes.push(overlay);
-                }
-                CommandAction::PopOverlay => {
-                    self.pending_overlay_pops += 1;
+                    CommandAction::AsyncFallible(fut) => {
+                        self.pending_fallible_futures.push(fut);
+                    }
+                    _ => unreachable!("execute_sync_action only returns async actions"),
                 }
             }
         }
@@ -149,17 +126,17 @@ impl<M: Send + 'static> AsyncCommandHandler<M> {
 
     /// Takes all pending sync messages.
     pub fn take_messages(&mut self) -> Vec<M> {
-        std::mem::take(&mut self.pending_messages)
+        self.core.take_messages()
     }
 
     /// Takes all pending overlay pushes.
     pub fn take_overlay_pushes(&mut self) -> Vec<Box<dyn Overlay<M> + Send>> {
-        std::mem::take(&mut self.pending_overlay_pushes)
+        self.core.take_overlay_pushes()
     }
 
     /// Takes the count of pending overlay pops and resets the counter.
     pub fn take_overlay_pops(&mut self) -> usize {
-        std::mem::replace(&mut self.pending_overlay_pops, 0)
+        self.core.take_overlay_pops()
     }
 
     /// Returns true if any async futures are pending.
@@ -174,12 +151,12 @@ impl<M: Send + 'static> AsyncCommandHandler<M> {
 
     /// Returns true if a quit command was executed.
     pub fn should_quit(&self) -> bool {
-        self.should_quit
+        self.core.should_quit()
     }
 
     /// Resets the quit flag.
     pub fn reset_quit(&mut self) {
-        self.should_quit = false;
+        self.core.reset_quit()
     }
 }
 

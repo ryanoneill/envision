@@ -46,6 +46,7 @@ use ratatui::Terminal;
 
 use super::command::CommandHandler;
 use super::model::App;
+use super::runtime_core::{ProcessEventResult, RuntimeCore};
 use crate::backend::CaptureBackend;
 use crate::input::{Event, EventQueue};
 use crate::overlay::{Overlay, OverlayAction, OverlayStack};
@@ -108,29 +109,14 @@ impl RuntimeConfig {
 ///
 /// This manages the main loop, event handling, state updates, and rendering.
 pub struct Runtime<A: App, B: Backend> {
-    /// The application state
-    state: A::State,
-
-    /// The terminal
-    terminal: Terminal<B>,
-
-    /// Event queue for input
-    events: EventQueue,
+    /// Shared runtime state (state, terminal, events, overlays, theme)
+    core: RuntimeCore<A, B>,
 
     /// Command handler
     commands: CommandHandler<A::Message>,
 
     /// Configuration
     config: RuntimeConfig,
-
-    /// The overlay stack for modal UI layers
-    overlay_stack: OverlayStack<A::Message>,
-
-    /// The current theme
-    theme: Theme,
-
-    /// Whether the runtime should quit
-    should_quit: bool,
 }
 
 // =============================================================================
@@ -196,7 +182,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
         let cleanup_result = self.cleanup_terminal();
 
         // Call on_exit
-        A::on_exit(&self.state);
+        A::on_exit(&self.core.state);
 
         // Return the first error if any
         result.and(cleanup_result)
@@ -206,7 +192,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     fn run_event_loop(&mut self) -> io::Result<()> {
         loop {
             // Check if we should quit
-            if self.should_quit || A::should_quit(&self.state) {
+            if self.core.should_quit || A::should_quit(&self.core.state) {
                 break;
             }
 
@@ -216,19 +202,19 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
 
                 // Convert crossterm event to our Event type and dispatch
                 if let Some(envision_event) = Self::convert_crossterm_event(&event) {
-                    match self.overlay_stack.handle_event(&envision_event) {
+                    match self.core.overlay_stack.handle_event(&envision_event) {
                         OverlayAction::Consumed => {}
                         OverlayAction::Message(msg) => self.dispatch(msg),
                         OverlayAction::Dismiss => {
-                            self.overlay_stack.pop();
+                            self.core.overlay_stack.pop();
                         }
                         OverlayAction::DismissWithMessage(msg) => {
-                            self.overlay_stack.pop();
+                            self.core.overlay_stack.pop();
                             self.dispatch(msg);
                         }
                         OverlayAction::Propagate => {
                             if let Some(msg) =
-                                A::handle_event_with_state(&self.state, &envision_event)
+                                A::handle_event_with_state(&self.core.state, &envision_event)
                             {
                                 self.dispatch(msg);
                             }
@@ -241,12 +227,12 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
             self.process_commands();
 
             // Handle tick
-            if let Some(msg) = A::on_tick(&self.state) {
+            if let Some(msg) = A::on_tick(&self.core.state) {
                 self.dispatch(msg);
             }
 
             // Check quit flag again after processing
-            if self.should_quit || A::should_quit(&self.state) {
+            if self.core.should_quit || A::should_quit(&self.core.state) {
                 break;
             }
 
@@ -279,9 +265,15 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// Cleans up terminal state.
     fn cleanup_terminal(&mut self) -> io::Result<()> {
         disable_raw_mode()?;
-        self.terminal.backend_mut().execute(LeaveAlternateScreen)?;
-        self.terminal.backend_mut().execute(DisableMouseCapture)?;
-        self.terminal.show_cursor()?;
+        self.core
+            .terminal
+            .backend_mut()
+            .execute(LeaveAlternateScreen)?;
+        self.core
+            .terminal
+            .backend_mut()
+            .execute(DisableMouseCapture)?;
+        self.core.terminal.show_cursor()?;
         Ok(())
     }
 }
@@ -334,19 +326,19 @@ impl<A: App> Runtime<A, CaptureBackend> {
     ///
     /// The event is queued and will be processed on the next `tick()`.
     pub fn send(&mut self, event: Event) {
-        self.events.push(event);
+        self.core.events.push(event);
     }
 
     /// Returns the current display content as plain text.
     ///
     /// This is what would be shown on a terminal screen.
     pub fn display(&self) -> String {
-        self.terminal.backend().to_string()
+        self.core.terminal.backend().to_string()
     }
 
     /// Returns the display content with ANSI color codes.
     pub fn display_ansi(&self) -> String {
-        self.terminal.backend().to_ansi()
+        self.core.terminal.backend().to_ansi()
     }
 }
 
@@ -365,59 +357,62 @@ impl<A: App, B: Backend> Runtime<A, B> {
         commands.execute(init_cmd);
 
         Ok(Self {
-            state,
-            terminal,
-            events: EventQueue::new(),
+            core: RuntimeCore {
+                state,
+                terminal,
+                events: EventQueue::new(),
+                overlay_stack: OverlayStack::new(),
+                theme: Theme::default(),
+                should_quit: false,
+                max_messages_per_tick: config.max_messages_per_tick,
+            },
             commands,
             config,
-            overlay_stack: OverlayStack::new(),
-            theme: Theme::default(),
-            should_quit: false,
         })
     }
 
     /// Returns a reference to the current state.
     pub fn state(&self) -> &A::State {
-        &self.state
+        &self.core.state
     }
 
     /// Returns a mutable reference to the state.
     pub fn state_mut(&mut self) -> &mut A::State {
-        &mut self.state
+        &mut self.core.state
     }
 
     /// Returns a reference to the inner ratatui Terminal.
     pub fn terminal(&self) -> &Terminal<B> {
-        &self.terminal
+        &self.core.terminal
     }
 
     /// Returns a mutable reference to the inner ratatui Terminal.
     pub fn terminal_mut(&mut self) -> &mut Terminal<B> {
-        &mut self.terminal
+        &mut self.core.terminal
     }
 
     /// Returns a reference to the backend.
     pub fn backend(&self) -> &B {
-        self.terminal.backend()
+        self.core.terminal.backend()
     }
 
     /// Returns a mutable reference to the backend.
     pub fn backend_mut(&mut self) -> &mut B {
-        self.terminal.backend_mut()
+        self.core.terminal.backend_mut()
     }
 
     /// Returns a mutable reference to the event queue.
     pub fn events(&mut self) -> &mut EventQueue {
-        &mut self.events
+        &mut self.core.events
     }
 
     /// Dispatches a message to update the state.
     pub fn dispatch(&mut self, msg: A::Message) {
-        let cmd = A::update(&mut self.state, msg);
+        let cmd = A::update(&mut self.core.state, msg);
         self.commands.execute(cmd);
 
         if self.commands.should_quit() {
-            self.should_quit = true;
+            self.core.should_quit = true;
         }
     }
 
@@ -437,10 +432,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
         // Process overlay commands
         for overlay in self.commands.take_overlay_pushes() {
-            self.overlay_stack.push(overlay);
+            self.core.overlay_stack.push(overlay);
         }
         for _ in 0..self.commands.take_overlay_pops() {
-            self.overlay_stack.pop();
+            self.core.overlay_stack.pop();
         }
     }
 
@@ -448,13 +443,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     ///
     /// Renders the main app view first, then any active overlays on top.
     pub fn render(&mut self) -> io::Result<()> {
-        let theme = &self.theme;
-        let overlay_stack = &self.overlay_stack;
-        self.terminal.draw(|frame| {
-            A::view(&self.state, frame);
-            overlay_stack.render(frame, frame.area(), theme);
-        })?;
-        Ok(())
+        self.core.render()
     }
 
     /// Processes the next event from the queue.
@@ -465,26 +454,13 @@ impl<A: App, B: Backend> Runtime<A, B> {
     ///
     /// Returns true if an event was processed.
     pub fn process_event(&mut self) -> bool {
-        if let Some(event) = self.events.pop() {
-            match self.overlay_stack.handle_event(&event) {
-                OverlayAction::Consumed => {}
-                OverlayAction::Message(msg) => self.dispatch(msg),
-                OverlayAction::Dismiss => {
-                    self.overlay_stack.pop();
-                }
-                OverlayAction::DismissWithMessage(msg) => {
-                    self.overlay_stack.pop();
-                    self.dispatch(msg);
-                }
-                OverlayAction::Propagate => {
-                    if let Some(msg) = A::handle_event_with_state(&self.state, &event) {
-                        self.dispatch(msg);
-                    }
-                }
+        match self.core.process_event() {
+            ProcessEventResult::NoEvent => false,
+            ProcessEventResult::Consumed => true,
+            ProcessEventResult::Dispatch(msg) => {
+                self.dispatch(msg);
+                true
             }
-            true
-        } else {
-            false
         }
     }
 
@@ -509,18 +485,18 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
         // Process events
         let mut messages_processed = 0;
-        while self.process_event() && messages_processed < self.config.max_messages_per_tick {
+        while self.process_event() && messages_processed < self.core.max_messages_per_tick {
             messages_processed += 1;
         }
 
         // Handle tick
-        if let Some(msg) = A::on_tick(&self.state) {
+        if let Some(msg) = A::on_tick(&self.core.state) {
             self.dispatch(msg);
         }
 
         // Check if we should quit
-        if A::should_quit(&self.state) {
-            self.should_quit = true;
+        if A::should_quit(&self.core.state) {
+            self.core.should_quit = true;
         }
 
         // Render
@@ -531,18 +507,18 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
     /// Returns true if the runtime should quit.
     pub fn should_quit(&self) -> bool {
-        self.should_quit
+        self.core.should_quit
     }
 
     /// Sets the quit flag.
     pub fn quit(&mut self) {
-        self.should_quit = true;
+        self.core.should_quit = true;
     }
 
     /// Runs for a specified number of ticks.
     pub fn run_ticks(&mut self, ticks: usize) -> io::Result<()> {
         for _ in 0..ticks {
-            if self.should_quit {
+            if self.core.should_quit {
                 break;
             }
             self.tick()?;
@@ -552,37 +528,37 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
     /// Pushes an overlay onto the stack.
     pub fn push_overlay(&mut self, overlay: Box<dyn Overlay<A::Message>>) {
-        self.overlay_stack.push(overlay);
+        self.core.push_overlay(overlay);
     }
 
     /// Pops the topmost overlay from the stack.
     pub fn pop_overlay(&mut self) -> Option<Box<dyn Overlay<A::Message>>> {
-        self.overlay_stack.pop()
+        self.core.pop_overlay()
     }
 
     /// Clears all overlays from the stack.
     pub fn clear_overlays(&mut self) {
-        self.overlay_stack.clear();
+        self.core.clear_overlays();
     }
 
     /// Returns true if there are active overlays.
     pub fn has_overlays(&self) -> bool {
-        self.overlay_stack.is_active()
+        self.core.has_overlays()
     }
 
     /// Returns the number of overlays on the stack.
     pub fn overlay_count(&self) -> usize {
-        self.overlay_stack.len()
+        self.core.overlay_count()
     }
 
     /// Sets the theme.
     pub fn set_theme(&mut self, theme: Theme) {
-        self.theme = theme;
+        self.core.theme = theme;
     }
 
     /// Returns a reference to the current theme.
     pub fn theme(&self) -> &Theme {
-        &self.theme
+        &self.core.theme
     }
 }
 
@@ -596,17 +572,17 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// assert_eq!(cell.fg, SerializableColor::Green);
     /// ```
     pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
-        self.terminal.backend().cell(x, y)
+        self.core.terminal.backend().cell(x, y)
     }
 
     /// Returns true if the display contains the given text.
     pub fn contains_text(&self, needle: &str) -> bool {
-        self.terminal.backend().contains_text(needle)
+        self.core.terminal.backend().contains_text(needle)
     }
 
     /// Finds all positions of the given text in the display.
     pub fn find_text(&self, needle: &str) -> Vec<ratatui::layout::Position> {
-        self.terminal.backend().find_text(needle)
+        self.core.terminal.backend().find_text(needle)
     }
 }
 
