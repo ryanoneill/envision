@@ -119,9 +119,7 @@ pub use theme::Theme;
 /// ```
 pub mod prelude {
     // Core framework
-    pub use crate::app::{
-        App, AsyncRuntime, AsyncRuntimeConfig, Command, Runtime, RuntimeConfig,
-    };
+    pub use crate::app::{App, AsyncRuntime, AsyncRuntimeConfig, Command, Runtime, RuntimeConfig};
 
     // Subscriptions
     pub use crate::app::{Subscription, SubscriptionExt, Update};
