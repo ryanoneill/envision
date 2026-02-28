@@ -417,3 +417,32 @@ fn test_single_tab() {
     let output = Tabs::<&str>::update(&mut state, TabMessage::Confirm);
     assert_eq!(output, Some(TabOutput::Confirmed("Only")));
 }
+
+#[test]
+fn test_large_tabs_navigation() {
+    let labels: Vec<String> = (0..50).map(|i| format!("Tab {}", i)).collect();
+    let mut state = TabsState::new(labels);
+
+    // Navigate to middle using Right
+    for _ in 0..25 {
+        Tabs::<String>::update(&mut state, TabMessage::Right);
+    }
+    assert_eq!(state.selected_index(), Some(25));
+
+    // First/Last
+    Tabs::<String>::update(&mut state, TabMessage::First);
+    assert_eq!(state.selected_index(), Some(0));
+
+    Tabs::<String>::update(&mut state, TabMessage::Last);
+    assert_eq!(state.selected_index(), Some(49));
+}
+
+#[test]
+fn test_unicode_tab_labels() {
+    let tabs = vec!["首页", "设置", "帮助"];
+    let mut state = TabsState::new(tabs);
+
+    Tabs::<&str>::update(&mut state, TabMessage::Right);
+    assert_eq!(state.selected_index(), Some(1));
+    assert_eq!(state.selected(), Some(&"设置"));
+}

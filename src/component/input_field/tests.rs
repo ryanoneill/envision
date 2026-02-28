@@ -265,3 +265,72 @@ fn test_view_placeholder() {
 
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn test_insert_emoji() {
+    let mut state = InputFieldState::new();
+    InputField::update(&mut state, InputMessage::Insert('\u{1F600}')); // grinning face
+    assert_eq!(state.value(), "\u{1F600}");
+    assert_eq!(state.cursor_position(), 1);
+}
+
+#[test]
+fn test_cursor_with_multi_byte() {
+    let mut state = InputFieldState::new();
+    // Insert CJK character followed by emoji
+    InputField::update(&mut state, InputMessage::Insert('日'));
+    InputField::update(&mut state, InputMessage::Insert('\u{1F600}'));
+    InputField::update(&mut state, InputMessage::Insert('本'));
+    assert_eq!(state.value(), "日\u{1F600}本");
+    assert_eq!(state.cursor_position(), 3);
+}
+
+#[test]
+fn test_backspace_emoji() {
+    let mut state = InputFieldState::new();
+    InputField::update(&mut state, InputMessage::Insert('A'));
+    InputField::update(&mut state, InputMessage::Insert('\u{1F600}'));
+    InputField::update(&mut state, InputMessage::Insert('B'));
+    assert_eq!(state.value(), "A\u{1F600}B");
+
+    // Backspace should delete 'B'
+    InputField::update(&mut state, InputMessage::Backspace);
+    assert_eq!(state.value(), "A\u{1F600}");
+
+    // Backspace should delete the emoji
+    InputField::update(&mut state, InputMessage::Backspace);
+    assert_eq!(state.value(), "A");
+}
+
+#[test]
+fn test_combining_diacritics() {
+    let mut state = InputFieldState::new();
+    // Insert 'e' followed by combining acute accent (U+0301)
+    InputField::update(&mut state, InputMessage::Insert('e'));
+    InputField::update(&mut state, InputMessage::Insert('\u{0301}'));
+    // The value should contain both characters
+    assert!(state.value().contains('e'));
+    assert!(state.value().contains('\u{0301}'));
+}
+
+#[test]
+fn test_word_nav_with_emoji() {
+    let mut state = InputFieldState::new();
+    // Type "hello 😀 world"
+    for c in "hello ".chars() {
+        InputField::update(&mut state, InputMessage::Insert(c));
+    }
+    InputField::update(&mut state, InputMessage::Insert('\u{1F600}'));
+    for c in " world".chars() {
+        InputField::update(&mut state, InputMessage::Insert(c));
+    }
+    assert_eq!(state.value(), "hello \u{1F600} world");
+
+    // Move to beginning
+    InputField::update(&mut state, InputMessage::Home);
+    assert_eq!(state.cursor_position(), 0);
+
+    // WordRight should move through words
+    InputField::update(&mut state, InputMessage::WordRight);
+    assert!(state.cursor_position() > 0);
+}

@@ -248,3 +248,38 @@ fn test_view_focused() {
 
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn test_large_select_navigation() {
+    let options: Vec<String> = (0..100).map(|i| format!("Option {}", i)).collect();
+    let mut state = SelectState::new(options);
+
+    // Open the select
+    Select::update(&mut state, SelectMessage::Open);
+    assert!(state.is_open());
+
+    // Navigate to middle
+    for _ in 0..50 {
+        Select::update(&mut state, SelectMessage::SelectNext);
+    }
+    assert_eq!(state.highlighted_index, 50);
+
+    // Navigate 50 more to wrap back to 0
+    for _ in 0..50 {
+        Select::update(&mut state, SelectMessage::SelectNext);
+    }
+    assert_eq!(state.highlighted_index, 0);
+
+    // SelectPrevious from 0 wraps to last
+    Select::update(&mut state, SelectMessage::SelectPrevious);
+    assert_eq!(state.highlighted_index, 99);
+
+    // Confirm selection at index 99
+    let output = Select::update(&mut state, SelectMessage::Confirm);
+    assert_eq!(
+        output,
+        Some(SelectOutput::Selected("Option 99".to_string()))
+    );
+    assert_eq!(state.selected_index(), Some(99));
+    assert!(!state.is_open());
+}

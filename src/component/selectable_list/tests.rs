@@ -289,3 +289,34 @@ fn test_default_state() {
     assert_eq!(state.selected_index(), None);
     assert!(!state.focused);
 }
+
+#[test]
+fn test_large_list_navigation() {
+    let items: Vec<String> = (0..1000).map(|i| format!("Item {}", i)).collect();
+    let mut state = SelectableListState::new(items);
+
+    // Start at 0
+    assert_eq!(state.selected_index(), Some(0));
+
+    // Navigate to middle
+    for _ in 0..500 {
+        SelectableList::<String>::update(&mut state, ListMessage::Down);
+    }
+    assert_eq!(state.selected_index(), Some(500));
+
+    // First jumps to beginning
+    SelectableList::<String>::update(&mut state, ListMessage::First);
+    assert_eq!(state.selected_index(), Some(0));
+
+    // Last jumps to end
+    SelectableList::<String>::update(&mut state, ListMessage::Last);
+    assert_eq!(state.selected_index(), Some(999));
+
+    // PageUp from end
+    SelectableList::<String>::update(&mut state, ListMessage::PageUp(100));
+    assert_eq!(state.selected_index(), Some(899));
+
+    // PageDown back
+    SelectableList::<String>::update(&mut state, ListMessage::PageDown(100));
+    assert_eq!(state.selected_index(), Some(999));
+}
