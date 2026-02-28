@@ -107,6 +107,48 @@ fn test_add_item_to_empty() {
 }
 
 #[test]
+fn test_remove_item() {
+    let mut state = MenuState::new(vec![
+        MenuItem::new("File"),
+        MenuItem::new("Edit"),
+        MenuItem::new("View"),
+    ]);
+    state.remove_item(1);
+    assert_eq!(state.items().len(), 2);
+    assert_eq!(state.items()[0].label(), "File");
+    assert_eq!(state.items()[1].label(), "View");
+}
+
+#[test]
+fn test_remove_item_adjusts_selection() {
+    let mut state = MenuState::new(vec![
+        MenuItem::new("File"),
+        MenuItem::new("Edit"),
+        MenuItem::new("View"),
+    ]);
+    state.set_selected_index(2);
+
+    // Remove last item, selection should clamp
+    state.remove_item(2);
+    assert_eq!(state.selected_index(), Some(1));
+}
+
+#[test]
+fn test_remove_item_to_empty() {
+    let mut state = MenuState::new(vec![MenuItem::new("File")]);
+    state.remove_item(0);
+    assert!(state.items().is_empty());
+    assert_eq!(state.selected_index(), None);
+}
+
+#[test]
+fn test_remove_item_out_of_bounds() {
+    let mut state = MenuState::new(vec![MenuItem::new("File")]);
+    state.remove_item(5);
+    assert_eq!(state.items().len(), 1); // Unchanged
+}
+
+#[test]
 fn test_selected_index() {
     let mut state = MenuState::new(vec![
         MenuItem::new("A"),

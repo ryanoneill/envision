@@ -175,6 +175,27 @@ impl MenuState {
         }
     }
 
+    /// Removes a menu item by index.
+    ///
+    /// If the index is out of bounds, this is a no-op.
+    /// Adjusts the selection after removal:
+    /// - If the removed item was the selected item, selects the previous item
+    ///   (or the first if at the beginning).
+    /// - If the menu becomes empty, selection becomes `None`.
+    pub fn remove_item(&mut self, index: usize) {
+        if index >= self.items.len() {
+            return;
+        }
+        self.items.remove(index);
+        if self.items.is_empty() {
+            self.selected_index = None;
+        } else if let Some(selected) = self.selected_index {
+            if selected >= self.items.len() {
+                self.selected_index = Some(self.items.len() - 1);
+            }
+        }
+    }
+
     /// Returns the currently selected item index.
     ///
     /// Returns `None` if the menu is empty.
