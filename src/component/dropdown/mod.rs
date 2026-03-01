@@ -30,6 +30,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a Dropdown.
@@ -249,6 +250,31 @@ impl DropdownState {
         if disabled {
             self.is_open = false;
         }
+    }
+
+    /// Returns true if the dropdown is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a dropdown message.
+    pub fn handle_event(&self, event: &Event) -> Option<DropdownMessage> {
+        Dropdown::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<DropdownOutput> {
+        Dropdown::dispatch_event(self, event)
+    }
+
+    /// Updates the dropdown state with a message, returning any output.
+    pub fn update(&mut self, msg: DropdownMessage) -> Option<DropdownOutput> {
+        Dropdown::update(self, msg)
     }
 
     /// Updates the filtered indices based on current filter text.
@@ -481,6 +507,34 @@ impl Component for Dropdown {
                     None
                 }
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused || state.disabled {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            if state.is_open {
+                match key.code {
+                    KeyCode::Enter => Some(DropdownMessage::Confirm),
+                    KeyCode::Esc => Some(DropdownMessage::Close),
+                    KeyCode::Up => Some(DropdownMessage::Up),
+                    KeyCode::Down => Some(DropdownMessage::Down),
+                    KeyCode::Char(c) if key.modifiers == KeyModifiers::NONE => {
+                        Some(DropdownMessage::Insert(c))
+                    }
+                    KeyCode::Backspace => Some(DropdownMessage::Backspace),
+                    _ => None,
+                }
+            } else {
+                match key.code {
+                    KeyCode::Enter => Some(DropdownMessage::Toggle),
+                    _ => None,
+                }
+            }
+        } else {
+            None
         }
     }
 
