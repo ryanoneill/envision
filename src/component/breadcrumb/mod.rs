@@ -348,6 +348,57 @@ impl BreadcrumbState {
         self.disabled = disabled;
     }
 
+    /// Sets the separator between segments (builder method).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let state = BreadcrumbState::from_labels(vec!["Home", "Docs"])
+    ///     .with_separator(" / ");
+    /// assert_eq!(state.separator(), " / ");
+    /// ```
+    pub fn with_separator(mut self, separator: impl Into<String>) -> Self {
+        self.separator = separator.into();
+        self
+    }
+
+    /// Sets the maximum number of visible segments (builder method).
+    ///
+    /// When set, only the last `max` segments are shown, with an ellipsis
+    /// indicating truncation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let state = BreadcrumbState::from_labels(vec!["A", "B", "C", "D", "E"])
+    ///     .with_max_visible(Some(3));
+    /// assert!(state.is_truncated());
+    /// ```
+    pub fn with_max_visible(mut self, max: Option<usize>) -> Self {
+        self.max_visible = max;
+        self
+    }
+
+    /// Sets the disabled state (builder method).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let state = BreadcrumbState::from_labels(vec!["Home"])
+    ///     .with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Returns whether the breadcrumb is truncated.
     pub fn is_truncated(&self) -> bool {
         match self.max_visible {

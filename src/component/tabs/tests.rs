@@ -580,3 +580,25 @@ fn test_instance_methods() {
     let msg = state.handle_event(&Event::key(KeyCode::Left));
     assert_eq!(msg, Some(TabsMessage::Left));
 }
+
+// ========== Builder Tests ==========
+
+#[test]
+fn test_with_disabled_builder() {
+    let state = TabsState::new(vec!["A", "B", "C"]).with_disabled(true);
+    assert!(state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_false_builder() {
+    let state = TabsState::new(vec!["A", "B", "C"]).with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_prevents_navigation() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]).with_disabled(true);
+    let output = Tabs::<&str>::update(&mut state, TabsMessage::Right);
+    assert_eq!(output, None);
+    assert_eq!(state.selected_index(), Some(0));
+}

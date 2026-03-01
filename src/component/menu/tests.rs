@@ -508,3 +508,29 @@ fn test_instance_methods() {
     let msg = state.handle_event(&Event::key(KeyCode::Enter));
     assert_eq!(msg, Some(MenuMessage::Select));
 }
+
+// ========== Builder Tests ==========
+
+#[test]
+fn test_with_selected() {
+    let state = MenuState::new(vec![
+        MenuItem::new("File"),
+        MenuItem::new("Edit"),
+        MenuItem::new("View"),
+    ])
+    .with_selected(1);
+    assert_eq!(state.selected_index(), Some(1));
+}
+
+#[test]
+fn test_with_selected_clamps() {
+    let state =
+        MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]).with_selected(10);
+    assert_eq!(state.selected_index(), Some(1));
+}
+
+#[test]
+fn test_with_selected_empty() {
+    let state = MenuState::new(vec![]).with_selected(5);
+    assert_eq!(state.selected_index(), None);
+}
