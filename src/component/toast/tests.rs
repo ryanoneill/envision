@@ -614,3 +614,17 @@ fn test_set_max_visible() {
     state.set_max_visible(3);
     assert_eq!(state.max_visible(), 3);
 }
+
+#[test]
+fn test_default_matches_init() {
+    let default_state = ToastState::default();
+    let init_state = Toast::init();
+
+    assert_eq!(default_state.is_empty(), init_state.is_empty());
+    assert_eq!(default_state.len(), init_state.len());
+    assert_eq!(
+        default_state.default_duration(),
+        init_state.default_duration()
+    );
+    assert_eq!(default_state.max_visible(), init_state.max_visible());
+}

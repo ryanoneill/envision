@@ -358,3 +358,14 @@ fn test_mixed_navigate_and_replace() {
     Router::update(&mut state, RouterMessage::Back);
     assert_eq!(state.current(), &TestScreen::Home);
 }
+
+#[test]
+fn test_default_matches_init() {
+    let default_state = RouterState::<TestScreen>::default();
+    let init_state: RouterState<TestScreen> = Router::init();
+
+    assert_eq!(default_state.current(), init_state.current());
+    assert_eq!(default_state.can_go_back(), init_state.can_go_back());
+    assert_eq!(default_state.history_len(), init_state.history_len());
+    assert_eq!(default_state.max_history(), init_state.max_history());
+}

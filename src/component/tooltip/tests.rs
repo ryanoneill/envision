@@ -620,3 +620,19 @@ fn test_full_workflow() {
     assert!(!state.is_visible());
     assert_eq!(state.remaining_ms(), None);
 }
+
+#[test]
+fn test_default_matches_init() {
+    let default_state = TooltipState::default();
+    let init_state = Tooltip::init();
+
+    assert_eq!(default_state.content(), init_state.content());
+    assert_eq!(default_state.title(), init_state.title());
+    assert_eq!(default_state.position(), init_state.position());
+    assert_eq!(default_state.is_visible(), init_state.is_visible());
+    assert_eq!(default_state.duration_ms(), init_state.duration_ms());
+    assert_eq!(default_state.remaining_ms(), init_state.remaining_ms());
+    assert_eq!(default_state.fg_color(), init_state.fg_color());
+    assert_eq!(default_state.bg_color(), init_state.bg_color());
+    assert_eq!(default_state.border_color(), init_state.border_color());
+}

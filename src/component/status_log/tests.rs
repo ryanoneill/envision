@@ -793,3 +793,21 @@ fn test_instance_update_disabled() {
     assert_eq!(output, None);
     assert_eq!(state.len(), 1);
 }
+
+#[test]
+fn test_default_matches_init() {
+    let default_state = StatusLogState::default();
+    let init_state = StatusLog::init();
+
+    assert_eq!(default_state.is_empty(), init_state.is_empty());
+    assert_eq!(default_state.len(), init_state.len());
+    assert_eq!(default_state.max_entries(), init_state.max_entries());
+    assert_eq!(
+        default_state.show_timestamps(),
+        init_state.show_timestamps()
+    );
+    assert_eq!(default_state.scroll_offset(), init_state.scroll_offset());
+    assert_eq!(default_state.is_focused(), init_state.is_focused());
+    assert_eq!(default_state.is_disabled(), init_state.is_disabled());
+    assert_eq!(default_state.title(), init_state.title());
+}

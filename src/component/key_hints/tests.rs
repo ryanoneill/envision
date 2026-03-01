@@ -378,3 +378,15 @@ fn test_custom_separators() {
     // Just verify it doesn't panic and state is set correctly
     assert!(!state.is_empty() || state.is_empty()); // Always true, just exercising the code
 }
+
+#[test]
+fn test_default_matches_init() {
+    let default_state = KeyHintsState::default();
+    let init_state = KeyHints::init();
+
+    assert_eq!(default_state.is_empty(), init_state.is_empty());
+    assert_eq!(default_state.len(), init_state.len());
+    assert_eq!(default_state.layout(), init_state.layout());
+    assert_eq!(default_state.key_style(), init_state.key_style());
+    assert_eq!(default_state.action_style(), init_state.action_style());
+}
