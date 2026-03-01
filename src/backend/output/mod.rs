@@ -8,12 +8,14 @@
 //! - **JsonPretty**: Human-readable pretty-printed JSON
 
 mod ansi;
+#[cfg(feature = "serialization")]
 mod json;
 mod plain;
 
 use crate::backend::CaptureBackend;
 
 pub use ansi::render_with_legend;
+#[cfg(feature = "serialization")]
 pub use json::render_lines_only;
 pub use plain::render_trimmed;
 
@@ -30,9 +32,11 @@ pub enum OutputFormat {
     Ansi,
 
     /// Compact JSON format for machine consumption.
+    #[cfg(feature = "serialization")]
     Json,
 
     /// Pretty-printed JSON format for human readability.
+    #[cfg(feature = "serialization")]
     JsonPretty,
 }
 
@@ -42,7 +46,9 @@ impl OutputFormat {
         match self {
             OutputFormat::Plain => plain::render(backend),
             OutputFormat::Ansi => ansi::render(backend),
+            #[cfg(feature = "serialization")]
             OutputFormat::Json => json::render(backend, false),
+            #[cfg(feature = "serialization")]
             OutputFormat::JsonPretty => json::render(backend, true),
         }
     }
@@ -85,6 +91,7 @@ mod tests {
         assert!(output.contains("R"));
     }
 
+    #[cfg(feature = "serialization")]
     #[test]
     fn test_output_format_render_json() {
         let mut backend = CaptureBackend::new(3, 1);
@@ -99,6 +106,7 @@ mod tests {
         assert!(output.contains("\"height\":1"));
     }
 
+    #[cfg(feature = "serialization")]
     #[test]
     fn test_output_format_render_json_pretty() {
         let mut backend = CaptureBackend::new(3, 1);
@@ -120,6 +128,7 @@ mod tests {
         assert_eq!(format, cloned);
     }
 
+    #[cfg(feature = "serialization")]
     #[test]
     fn test_output_format_copy() {
         let format = OutputFormat::Json;

@@ -150,6 +150,7 @@ fn test_diff() {
     assert_eq!(diff.changed_cells[0].new.symbol(), "A");
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_serialization() {
     let backend = CaptureBackend::new(10, 5);
@@ -308,6 +309,7 @@ fn test_content_lines() {
     assert!(lines[0].starts_with("AAA"));
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_to_json() {
     let mut backend = CaptureBackend::new(3, 2);
@@ -320,6 +322,7 @@ fn test_to_json() {
     assert!(json.contains("\"width\":3"));
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_to_json_pretty() {
     let backend = CaptureBackend::new(3, 2);
@@ -593,6 +596,7 @@ fn test_frame_diff_has_changes() {
     assert!(diff_with_size.has_changes());
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_with_truncated_cells() {
     // Test edge case where cells might be truncated (via deserialization)

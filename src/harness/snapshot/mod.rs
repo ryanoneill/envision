@@ -3,8 +3,6 @@
 use std::io;
 use std::path::Path;
 
-use serde::{Deserialize, Serialize};
-
 use crate::annotation::AnnotationRegistry;
 use crate::backend::FrameSnapshot;
 
@@ -19,16 +17,19 @@ pub enum SnapshotFormat {
     Ansi,
 
     /// JSON with full metadata
+    #[cfg(feature = "serialization")]
     Json,
 
     /// JSON (pretty-printed)
+    #[cfg(feature = "serialization")]
     JsonPretty,
 }
 
 /// A complete snapshot of UI state.
 ///
 /// Includes both the rendered frame and annotation data.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct Snapshot {
     /// The captured frame data
     pub frame: FrameSnapshot,
@@ -54,11 +55,13 @@ impl Snapshot {
     }
 
     /// Returns the JSON representation.
+    #[cfg(feature = "serialization")]
     pub fn to_json(&self) -> serde_json::Result<String> {
         serde_json::to_string(self)
     }
 
     /// Returns the pretty-printed JSON representation.
+    #[cfg(feature = "serialization")]
     pub fn to_json_pretty(&self) -> serde_json::Result<String> {
         serde_json::to_string_pretty(self)
     }
@@ -68,7 +71,9 @@ impl Snapshot {
         match format {
             SnapshotFormat::Plain => self.to_plain(),
             SnapshotFormat::Ansi => self.to_ansi(),
+            #[cfg(feature = "serialization")]
             SnapshotFormat::Json => self.to_json().unwrap_or_default(),
+            #[cfg(feature = "serialization")]
             SnapshotFormat::JsonPretty => self.to_json_pretty().unwrap_or_default(),
         }
     }
@@ -80,6 +85,7 @@ impl Snapshot {
     }
 
     /// Loads a snapshot from a JSON file.
+    #[cfg(feature = "serialization")]
     pub fn load_from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let content = std::fs::read_to_string(path)?;
         serde_json::from_str(&content).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
@@ -264,6 +270,7 @@ impl SnapshotTest {
         let ext = match self.format {
             SnapshotFormat::Plain => "txt",
             SnapshotFormat::Ansi => "ansi",
+            #[cfg(feature = "serialization")]
             SnapshotFormat::Json | SnapshotFormat::JsonPretty => "json",
         };
         self.snapshot_dir.join(format!("{}.{}", name, ext))
