@@ -274,25 +274,6 @@ impl<M> Command<M> {
     }
 }
 
-impl<M: Clone> Clone for Command<M> {
-    fn clone(&self) -> Self {
-        // Note: Callbacks, Async, and PushOverlay can't be cloned, so we only clone Message/Batch/Quit/PopOverlay
-        let actions = self
-            .actions
-            .iter()
-            .filter_map(|action| match action {
-                CommandAction::Message(m) => Some(CommandAction::Message(m.clone())),
-                CommandAction::Batch(msgs) => Some(CommandAction::Batch(msgs.clone())),
-                CommandAction::Quit => Some(CommandAction::Quit),
-                CommandAction::PopOverlay => Some(CommandAction::PopOverlay),
-                _ => None, // Skip non-clonable actions
-            })
-            .collect();
-
-        Self { actions }
-    }
-}
-
 impl<M> std::fmt::Debug for Command<M> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Command")

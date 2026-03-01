@@ -125,50 +125,6 @@ fn test_command_batch_empty() {
 }
 
 #[test]
-fn test_command_clone_message() {
-    let cmd = Command::message(TestMsg::A);
-    let cloned = cmd.clone();
-
-    let mut handler = CommandHandler::new();
-    handler.execute(cloned);
-
-    let messages = handler.take_messages();
-    assert_eq!(messages, vec![TestMsg::A]);
-}
-
-#[test]
-fn test_command_clone_batch() {
-    let cmd = Command::batch([TestMsg::A, TestMsg::B]);
-    let cloned = cmd.clone();
-
-    let mut handler = CommandHandler::new();
-    handler.execute(cloned);
-
-    let messages = handler.take_messages();
-    assert_eq!(messages, vec![TestMsg::A, TestMsg::B]);
-}
-
-#[test]
-fn test_command_clone_quit() {
-    let cmd: Command<TestMsg> = Command::quit();
-    let cloned = cmd.clone();
-
-    let mut handler = CommandHandler::new();
-    handler.execute(cloned);
-
-    assert!(handler.should_quit());
-}
-
-#[test]
-fn test_command_clone_callback_skipped() {
-    let cmd = Command::perform(|| Some(TestMsg::A));
-    let cloned = cmd.clone();
-
-    // Callbacks can't be cloned, so cloned should have no actions
-    assert!(cloned.is_none());
-}
-
-#[test]
 fn test_command_map_batch() {
     #[derive(Clone, Debug, PartialEq)]
     enum OuterMsg {
@@ -322,15 +278,6 @@ fn test_command_perform_async_fallible_err() {
 }
 
 #[test]
-fn test_command_clone_async_skipped() {
-    let cmd: Command<TestMsg> = Command::perform_async(async { Some(TestMsg::A) });
-    let cloned = cmd.clone();
-
-    // Async actions can't be cloned, so cloned should be empty
-    assert!(cloned.is_none());
-}
-
-#[test]
 fn test_command_map_async() {
     #[derive(Clone, Debug, PartialEq)]
     enum OuterMsg {
@@ -437,19 +384,6 @@ fn test_command_map_async_fallible() {
 
     // Mapped command should still exist
     assert!(!mapped.is_none());
-}
-
-#[test]
-fn test_command_clone_async_fallible_skipped() {
-    let cmd: Command<TestMsg> =
-        Command::try_perform_async(async { Ok::<_, std::io::Error>(42) }, |n| {
-            Some(TestMsg::Value(n))
-        });
-
-    let cloned = cmd.clone();
-
-    // AsyncFallible can't be cloned, so cloned should be empty
-    assert!(cloned.is_none());
 }
 
 #[test]
@@ -640,24 +574,6 @@ mod overlay_tests {
         assert_eq!(handler.take_messages(), vec![TestMsg::A]);
         assert_eq!(handler.take_overlay_pushes().len(), 2);
         assert_eq!(handler.take_overlay_pops(), 1);
-    }
-
-    #[test]
-    fn test_command_clone_push_overlay_skipped() {
-        let cmd: Command<TestMsg> = Command::push_overlay(TestOverlay);
-        let cloned = cmd.clone();
-
-        // PushOverlay can't be cloned, so cloned should be empty
-        assert!(cloned.is_none());
-    }
-
-    #[test]
-    fn test_command_clone_pop_overlay_preserved() {
-        let cmd: Command<TestMsg> = Command::pop_overlay();
-        let cloned = cmd.clone();
-
-        // PopOverlay can be cloned
-        assert!(!cloned.is_none());
     }
 
     #[test]
