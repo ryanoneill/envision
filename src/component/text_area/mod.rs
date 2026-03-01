@@ -102,6 +102,8 @@ pub struct TextAreaState {
     scroll_offset: usize,
     /// Whether the textarea is focused.
     focused: bool,
+    /// Whether the textarea is disabled.
+    disabled: bool,
     /// Placeholder text shown when empty.
     placeholder: String,
 }
@@ -114,6 +116,7 @@ impl Default for TextAreaState {
             cursor_col: 0,
             scroll_offset: 0,
             focused: false,
+            disabled: false,
             placeholder: String::new(),
         }
     }
@@ -168,6 +171,7 @@ impl TextAreaState {
             cursor_col,
             scroll_offset: 0,
             focused: false,
+            disabled: false,
             placeholder: String::new(),
         }
     }
@@ -562,6 +566,22 @@ impl TextAreaState {
         self.focused = focused;
     }
 
+    /// Returns true if the textarea is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Maps an input event to a textarea message.
     pub fn handle_event(&self, event: &Event) -> Option<TextAreaMessage> {
         TextArea::handle_event(self, event)
@@ -613,7 +633,7 @@ impl Component for TextArea {
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused {
+        if !state.focused || state.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -644,6 +664,10 @@ impl Component for TextArea {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+        if state.disabled {
+            return None;
+        }
+
         match msg {
             TextAreaMessage::Insert(c) => {
                 state.insert(c);
@@ -782,7 +806,9 @@ impl Component for TextArea {
                 .join("\n")
         };
 
-        let style = if state.focused {
+        let style = if state.disabled {
+            theme.disabled_style()
+        } else if state.focused {
             theme.focused_style()
         } else if state.is_empty() && !state.placeholder.is_empty() {
             theme.placeholder_style()
@@ -790,7 +816,7 @@ impl Component for TextArea {
             theme.normal_style()
         };
 
-        let border_style = if state.focused {
+        let border_style = if state.focused && !state.disabled {
             theme.focused_border_style()
         } else {
             theme.border_style()

@@ -124,6 +124,8 @@ pub struct DialogState {
     visible: bool,
     /// Whether the dialog itself is focused (receives input).
     focused: bool,
+    /// Whether the dialog is disabled.
+    disabled: bool,
 }
 
 impl DialogState {
@@ -157,6 +159,7 @@ impl DialogState {
             focused_button: 0,
             visible: false,
             focused: false,
+            disabled: false,
         }
     }
 
@@ -195,6 +198,7 @@ impl DialogState {
             focused_button: primary,
             visible: false,
             focused: false,
+            disabled: false,
         }
     }
 
@@ -380,6 +384,22 @@ impl DialogState {
         self.focused = focused;
     }
 
+    /// Returns true if the dialog is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Returns true if the dialog is visible.
     pub fn is_visible(&self) -> bool {
         self.visible
@@ -476,6 +496,10 @@ impl Component for Dialog {
             return None;
         }
 
+        if state.disabled {
+            return None;
+        }
+
         match msg {
             DialogMessage::FocusNext => {
                 if !state.buttons.is_empty() {
@@ -505,7 +529,7 @@ impl Component for Dialog {
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.visible {
+        if !state.visible || state.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -620,7 +644,9 @@ fn render_buttons(state: &DialogState, frame: &mut Frame, area: Rect, theme: &Th
         let is_focused = i == state.focused_button && state.focused;
         let is_primary = i == state.primary_button;
 
-        let style = if is_focused {
+        let style = if state.disabled {
+            theme.disabled_style()
+        } else if is_focused {
             theme.focused_bold_style()
         } else if is_primary {
             Style::default().add_modifier(Modifier::BOLD)
@@ -628,7 +654,7 @@ fn render_buttons(state: &DialogState, frame: &mut Frame, area: Rect, theme: &Th
             theme.normal_style()
         };
 
-        let border_style = if is_focused {
+        let border_style = if is_focused && !state.disabled {
             theme.focused_border_style()
         } else {
             theme.border_style()
