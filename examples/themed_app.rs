@@ -8,8 +8,8 @@
 //! Run with: cargo run --example themed_app
 
 use envision::component::{
-    Button, ButtonState, Checkbox, CheckboxMessage, CheckboxState, SelectableListMessage, ProgressBar,
-    ProgressBarState, SelectableList, SelectableListState,
+    Button, ButtonState, Checkbox, CheckboxMessage, CheckboxState, ProgressBar, ProgressBarState,
+    SelectableList, SelectableListMessage, SelectableListState,
 };
 use envision::prelude::*;
 use ratatui::layout::{Alignment, Constraint, Layout};
@@ -120,7 +120,10 @@ impl App for ThemedApp {
                 state.progress_state.set_progress((current - 0.1).max(0.0));
             }
             Msg::NextItem => {
-                SelectableList::<String>::update(&mut state.list_state, SelectableListMessage::Down);
+                SelectableList::<String>::update(
+                    &mut state.list_state,
+                    SelectableListMessage::Down,
+                );
             }
             Msg::PrevItem => {
                 SelectableList::<String>::update(&mut state.list_state, SelectableListMessage::Up);

@@ -151,7 +151,10 @@ fn test_delete_word_back() {
 
     let output = InputField::update(&mut state, InputFieldMessage::DeleteWordBack);
     assert_eq!(state.value(), "hello ");
-    assert_eq!(output, Some(InputFieldOutput::Changed("hello ".to_string())));
+    assert_eq!(
+        output,
+        Some(InputFieldOutput::Changed("hello ".to_string()))
+    );
 
     InputField::update(&mut state, InputFieldMessage::DeleteWordBack);
     assert_eq!(state.value(), "");
@@ -194,13 +197,22 @@ fn test_clear() {
 fn test_set_value() {
     let mut state = InputField::init();
 
-    let output = InputField::update(&mut state, InputFieldMessage::SetValue("new value".to_string()));
+    let output = InputField::update(
+        &mut state,
+        InputFieldMessage::SetValue("new value".to_string()),
+    );
     assert_eq!(state.value(), "new value");
     assert_eq!(state.cursor_position(), 9);
-    assert_eq!(output, Some(InputFieldOutput::Changed("new value".to_string())));
+    assert_eq!(
+        output,
+        Some(InputFieldOutput::Changed("new value".to_string()))
+    );
 
     // Setting same value returns None
-    let output = InputField::update(&mut state, InputFieldMessage::SetValue("new value".to_string()));
+    let output = InputField::update(
+        &mut state,
+        InputFieldMessage::SetValue("new value".to_string()),
+    );
     assert_eq!(output, None);
 }
 

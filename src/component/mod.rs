@@ -156,7 +156,9 @@ pub use progress_bar::{ProgressBar, ProgressBarMessage, ProgressBarOutput, Progr
 pub use radio_group::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState};
 pub use router::{NavigationMode, Router, RouterMessage, RouterOutput, RouterState};
 pub use select::{Select, SelectMessage, SelectOutput, SelectState};
-pub use selectable_list::{SelectableList, SelectableListMessage, SelectableListOutput, SelectableListState};
+pub use selectable_list::{
+    SelectableList, SelectableListMessage, SelectableListOutput, SelectableListState,
+};
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 pub use status_bar::{
     Section, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarOutput,

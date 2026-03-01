@@ -99,10 +99,9 @@ pub use component::{
     SortDirection, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem,
     StatusBarMessage, StatusBarOutput, StatusBarState, StatusBarStyle, Table, TableMessage,
     TableOutput, TableRow, TableState, Tabs, TabsMessage, TabsOutput, TabsState, TextArea,
-    TextAreaMessage, TextAreaOutput,
-    TextAreaState, Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, Toggleable,
-    Tooltip, TooltipMessage, TooltipOutput, TooltipPosition, TooltipState, Tree, TreeMessage,
-    TreeNode, TreeOutput, TreeState,
+    TextAreaMessage, TextAreaOutput, TextAreaState, Toast, ToastItem, ToastLevel, ToastMessage,
+    ToastOutput, ToastState, Toggleable, Tooltip, TooltipMessage, TooltipOutput, TooltipPosition,
+    TooltipState, Tree, TreeMessage, TreeNode, TreeOutput, TreeState,
 };
 pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
 pub use input::{Event, EventQueue};

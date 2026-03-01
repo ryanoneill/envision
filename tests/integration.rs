@@ -4,8 +4,8 @@ use envision::{
     Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState, Component, Dialog, DialogButton,
     DialogMessage, DialogOutput, DialogState, FocusManager, Focusable, InputField,
     InputFieldMessage, InputFieldOutput, InputFieldState, RadioGroup, RadioGroupMessage,
-    RadioGroupOutput, RadioGroupState, SelectableList, SelectableListMessage,
-    SelectableListOutput, SelectableListState, Tabs, TabsMessage, TabsOutput, TabsState, Toggleable,
+    RadioGroupOutput, RadioGroupState, SelectableList, SelectableListMessage, SelectableListOutput,
+    SelectableListState, Tabs, TabsMessage, TabsOutput, TabsState, Toggleable,
 };
 
 #[test]
@@ -148,7 +148,10 @@ fn test_selectable_list_navigation_200_items() {
 
     // Select at last position
     let output = SelectableList::<String>::update(&mut state, SelectableListMessage::Select);
-    assert_eq!(output, Some(SelectableListOutput::Selected("Item 199".to_string())));
+    assert_eq!(
+        output,
+        Some(SelectableListOutput::Selected("Item 199".to_string()))
+    );
 }
 
 #[test]

@@ -388,22 +388,13 @@ impl App for ShowcaseApp {
 
             // Data
             Msg::ListDown => {
-                SelectableList::<String>::update(
-                    &mut state.list,
-                    SelectableListMessage::Down,
-                );
+                SelectableList::<String>::update(&mut state.list, SelectableListMessage::Down);
             }
             Msg::ListUp => {
-                SelectableList::<String>::update(
-                    &mut state.list,
-                    SelectableListMessage::Up,
-                );
+                SelectableList::<String>::update(&mut state.list, SelectableListMessage::Up);
             }
             Msg::ListSelect => {
-                SelectableList::<String>::update(
-                    &mut state.list,
-                    SelectableListMessage::Select,
-                );
+                SelectableList::<String>::update(&mut state.list, SelectableListMessage::Select);
             }
             Msg::TableDown => {
                 Table::<UserRow>::update(&mut state.table, TableMessage::Down);
@@ -625,7 +616,10 @@ fn sync_focus(state: &mut State) {
     InputField::set_focused(&mut state.input, focused == Some(FocusId::Input));
     Checkbox::set_focused(&mut state.checkbox, focused == Some(FocusId::Checkbox));
     RadioGroup::set_focused(&mut state.radio, focused == Some(FocusId::Radio));
-    Button::set_focused(&mut state.submit_button, focused == Some(FocusId::SubmitButton));
+    Button::set_focused(
+        &mut state.submit_button,
+        focused == Some(FocusId::SubmitButton),
+    );
     SelectableList::<String>::set_focused(&mut state.list, focused == Some(FocusId::List));
     Table::<UserRow>::set_focused(&mut state.table, focused == Some(FocusId::Table));
 }
