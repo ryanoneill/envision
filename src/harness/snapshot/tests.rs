@@ -15,6 +15,7 @@ fn test_snapshot_creation() {
     assert!(snapshot.to_plain().contains("Test"));
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_formats() {
     let mut harness = TestHarness::new(20, 2);
@@ -124,6 +125,7 @@ fn test_empty_diff() {
     assert_eq!(diff.format(), "No differences\n");
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_serialization() {
     let mut harness = TestHarness::new(20, 2);
@@ -146,6 +148,7 @@ fn test_snapshot_format_default() {
     assert_eq!(format, SnapshotFormat::Plain);
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_to_json() {
     let mut harness = TestHarness::new(20, 2);
@@ -164,6 +167,7 @@ fn test_snapshot_to_json() {
     assert!(content.starts_with('{'));
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_to_json_pretty() {
     let mut harness = TestHarness::new(20, 2);
@@ -240,6 +244,7 @@ fn test_snapshot_annotation_count() {
     assert_eq!(snapshot.annotation_count(), 2);
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_write_and_load() {
     use std::fs;
@@ -266,6 +271,7 @@ fn test_snapshot_write_and_load() {
     fs::remove_file(&path).ok();
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_load_invalid_file() {
     use tempfile::TempDir;
@@ -278,6 +284,7 @@ fn test_snapshot_load_invalid_file() {
     assert!(result.is_err());
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_load_nonexistent_file() {
     let result = Snapshot::load_from_file("/nonexistent/path/file.json");
@@ -383,6 +390,7 @@ fn test_snapshot_test_new() {
     assert!(!tester.update);
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_test_with_format() {
     let tester = SnapshotTest::new("/tmp/snapshots").with_format(SnapshotFormat::Json);
@@ -395,6 +403,7 @@ fn test_snapshot_test_with_update() {
     assert!(tester.update);
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_test_path() {
     let tester = SnapshotTest::new("/tmp/snapshots");
@@ -533,6 +542,7 @@ fn test_snapshot_format_ansi_path() {
     assert!(path.to_string_lossy().ends_with(".ansi"));
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_snapshot_format_json_pretty_path() {
     let tester = SnapshotTest::new("/tmp").with_format(SnapshotFormat::JsonPretty);

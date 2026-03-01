@@ -602,3 +602,16 @@ fn test_with_disabled_prevents_navigation() {
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(0));
 }
+
+#[test]
+fn test_selected_item() {
+    let state = TabsState::with_selected(vec!["A", "B", "C"], 1);
+    assert_eq!(state.selected_item(), Some(&"B"));
+    assert_eq!(state.selected_item(), state.selected());
+}
+
+#[test]
+fn test_selected_item_empty() {
+    let state: TabsState<&str> = TabsState::new(vec![]);
+    assert_eq!(state.selected_item(), None);
+}

@@ -152,6 +152,14 @@ impl<T: Clone> TabsState<T> {
         self.tabs.get(self.selected?)
     }
 
+    /// Returns a reference to the currently selected item.
+    ///
+    /// This is an alias for [`selected()`](Self::selected) that provides a
+    /// consistent accessor name across all selection-based components.
+    pub fn selected_item(&self) -> Option<&T> {
+        self.selected()
+    }
+
     /// Sets the selected tab by index.
     ///
     /// The index is clamped to the valid range. Has no effect on empty tabs.

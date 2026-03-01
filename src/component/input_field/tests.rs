@@ -474,3 +474,127 @@ fn test_instance_dispatch_event() {
     let output = state.dispatch_event(&Event::char('a'));
     assert_eq!(output, Some(InputFieldOutput::Changed("a".to_string())));
 }
+
+// ========== Disabled State Tests ==========
+
+#[test]
+fn test_is_disabled_default() {
+    let state = InputField::init();
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_set_disabled() {
+    let mut state = InputField::init();
+    state.set_disabled(true);
+    assert!(state.is_disabled());
+    state.set_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled() {
+    let state = InputFieldState::new().with_disabled(true);
+    assert!(state.is_disabled());
+
+    let state = InputFieldState::new().with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_with_value_not_disabled() {
+    let state = InputFieldState::with_value("hello");
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_with_placeholder_not_disabled() {
+    let state = InputFieldState::with_placeholder("Enter text...");
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_handle_event_ignored_when_disabled() {
+    let mut state = InputField::init();
+    state.set_focused(true);
+    state.set_disabled(true);
+
+    let msg = InputField::handle_event(&state, &Event::char('a'));
+    assert_eq!(msg, None);
+
+    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Backspace));
+    assert_eq!(msg, None);
+
+    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+
+    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Left));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_update_ignored_when_disabled() {
+    let mut state = InputFieldState::with_value("hello");
+    state.set_disabled(true);
+
+    let output = InputField::update(&mut state, InputFieldMessage::Insert('x'));
+    assert_eq!(output, None);
+    assert_eq!(state.value(), "hello");
+
+    let output = InputField::update(&mut state, InputFieldMessage::Backspace);
+    assert_eq!(output, None);
+    assert_eq!(state.value(), "hello");
+
+    let output = InputField::update(&mut state, InputFieldMessage::Clear);
+    assert_eq!(output, None);
+    assert_eq!(state.value(), "hello");
+
+    let output = InputField::update(&mut state, InputFieldMessage::Submit);
+    assert_eq!(output, None);
+}
+
+#[test]
+fn test_dispatch_event_ignored_when_disabled() {
+    let mut state = InputField::init();
+    state.set_focused(true);
+    state.set_disabled(true);
+
+    let output = InputField::dispatch_event(&mut state, &Event::char('a'));
+    assert_eq!(output, None);
+    assert!(state.is_empty());
+}
+
+#[test]
+fn test_instance_is_disabled() {
+    let mut state = InputField::init();
+    assert!(!state.is_disabled());
+    state.set_disabled(true);
+    assert!(state.is_disabled());
+}
+
+#[test]
+fn test_instance_handle_event_disabled() {
+    let mut state = InputField::init();
+    state.set_focused(true);
+    state.set_disabled(true);
+    let msg = state.handle_event(&Event::char('a'));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_instance_dispatch_event_disabled() {
+    let mut state = InputField::init();
+    state.set_focused(true);
+    state.set_disabled(true);
+    let output = state.dispatch_event(&Event::char('a'));
+    assert_eq!(output, None);
+}
+
+#[test]
+fn test_instance_update_disabled() {
+    let mut state = InputFieldState::with_value("hello");
+    state.set_disabled(true);
+    let output = state.update(InputFieldMessage::Insert('x'));
+    assert_eq!(output, None);
+    assert_eq!(state.value(), "hello");
+}

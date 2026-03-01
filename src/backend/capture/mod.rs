@@ -11,7 +11,6 @@ use std::sync::Arc;
 use ratatui::backend::{Backend, ClearType, WindowSize};
 use ratatui::buffer::Cell;
 use ratatui::layout::{Position, Size};
-use serde::{Deserialize, Serialize};
 
 use super::cell::EnhancedCell;
 use super::output::OutputFormat;
@@ -83,7 +82,8 @@ pub struct CaptureBackend {
 ///
 /// Uses `Arc<[EnhancedCell]>` for copy-on-write semantics - snapshots
 /// share cell data until mutation is needed, avoiding expensive clones.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct FrameSnapshot {
     /// The frame number
     pub frame: u64,
@@ -95,12 +95,19 @@ pub struct FrameSnapshot {
     pub cursor: CursorSnapshot,
 
     /// All cells in the buffer (shared via Arc for efficient cloning)
-    #[serde(serialize_with = "serialize_arc_cells")]
-    #[serde(deserialize_with = "deserialize_arc_cells")]
+    #[cfg_attr(
+        feature = "serialization",
+        serde(serialize_with = "serialize_arc_cells")
+    )]
+    #[cfg_attr(
+        feature = "serialization",
+        serde(deserialize_with = "deserialize_arc_cells")
+    )]
     cells: Arc<[EnhancedCell]>,
 }
 
 /// Serialize Arc<[EnhancedCell]> as a regular slice
+#[cfg(feature = "serialization")]
 fn serialize_arc_cells<S>(cells: &Arc<[EnhancedCell]>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,
@@ -114,16 +121,19 @@ where
 }
 
 /// Deserialize into Arc<[EnhancedCell]>
+#[cfg(feature = "serialization")]
 fn deserialize_arc_cells<'de, D>(deserializer: D) -> Result<Arc<[EnhancedCell]>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
+    use serde::Deserialize;
     let vec = Vec::<EnhancedCell>::deserialize(deserializer)?;
     Ok(Arc::from(vec))
 }
 
 /// Snapshot of cursor state
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct CursorSnapshot {
     pub position: (u16, u16),
     pub visible: bool,
@@ -376,11 +386,13 @@ impl CaptureBackend {
     }
 
     /// Renders the buffer as JSON.
+    #[cfg(feature = "serialization")]
     pub fn to_json(&self) -> String {
         self.render(OutputFormat::Json)
     }
 
     /// Renders the buffer as JSON (pretty-printed).
+    #[cfg(feature = "serialization")]
     pub fn to_json_pretty(&self) -> String {
         self.render(OutputFormat::JsonPretty)
     }
@@ -519,7 +531,8 @@ impl fmt::Display for CaptureBackend {
 }
 
 /// Represents the difference between two frames.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct FrameDiff {
     /// Frame number of the previous state
     pub from_frame: u64,
@@ -576,7 +589,8 @@ impl fmt::Display for FrameDiff {
 }
 
 /// A single cell change in a diff.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct CellChange {
     /// Position of the changed cell
     pub position: (u16, u16),

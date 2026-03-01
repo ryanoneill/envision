@@ -432,6 +432,7 @@ fn test_modifier_is_empty() {
 // Serialization tests
 // -------------------------------------------------------------------------
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_cell_serialization() {
     let cell = EnhancedCell {
@@ -452,6 +453,7 @@ fn test_cell_serialization() {
     assert_eq!(cell, deserialized);
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_cell_serialization_with_underline_color() {
     let cell = EnhancedCell {

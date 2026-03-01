@@ -2,7 +2,6 @@
 
 use compact_str::CompactString;
 use ratatui::style::{Color, Modifier, Style};
-use serde::{Deserialize, Serialize};
 use unicode_width::UnicodeWidthStr;
 
 /// An enhanced cell that captures all styling information plus metadata.
@@ -11,7 +10,8 @@ use unicode_width::UnicodeWidthStr;
 /// - Is fully serializable for snapshots and JSON export
 /// - Tracks when the cell was last modified (frame number)
 /// - Can store optional semantic annotations
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct EnhancedCell {
     /// The symbol (grapheme cluster) displayed in this cell
     symbol: CompactString,
@@ -151,8 +151,9 @@ impl Default for EnhancedCell {
 }
 
 /// A serializable version of ratatui's Color enum
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", serde(rename_all = "snake_case"))]
 pub enum SerializableColor {
     Reset,
     Black,
@@ -280,7 +281,8 @@ impl SerializableColor {
 }
 
 /// A serializable version of ratatui's Modifier flags
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct SerializableModifier {
     pub bold: bool,
     pub dim: bool,

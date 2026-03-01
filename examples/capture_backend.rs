@@ -62,8 +62,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n=== ANSI Colored Output ===\n");
     println!("{}", terminal.backend().to_ansi());
 
-    println!("\n=== JSON Output ===\n");
-    println!("{}", terminal.backend().to_json_pretty());
+    #[cfg(feature = "serialization")]
+    {
+        println!("\n=== JSON Output ===\n");
+        println!("{}", terminal.backend().to_json_pretty());
+    }
 
     // Demonstrate text searching
     println!("\n=== Text Search ===\n");

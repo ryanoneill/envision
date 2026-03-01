@@ -97,6 +97,12 @@ impl ButtonState {
         self.disabled = disabled;
     }
 
+    /// Sets the disabled state using builder pattern.
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Returns true if the button is focused.
     pub fn is_focused(&self) -> bool {
         self.focused

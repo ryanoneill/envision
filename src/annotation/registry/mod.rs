@@ -1,12 +1,12 @@
 //! Registry for storing widget annotations during rendering.
 
 use ratatui::layout::Rect;
-use serde::{Deserialize, Serialize};
 
 use super::types::{Annotation, WidgetType};
 
 /// Information about an annotated region.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct RegionInfo {
     /// The rectangular area of this region
     pub area: SerializableRect,
@@ -25,7 +25,8 @@ pub struct RegionInfo {
 }
 
 /// A serializable version of ratatui's Rect.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct SerializableRect {
     /// The x coordinate of the top-left corner.
     pub x: u16,
@@ -87,17 +88,18 @@ impl SerializableRect {
 /// The registry maintains a tree structure of annotated regions,
 /// enabling queries like "what widget is at position X,Y" or
 /// "find all buttons".
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct AnnotationRegistry {
     /// All registered regions
     regions: Vec<RegionInfo>,
 
     /// Stack of currently open regions (for nesting)
-    #[serde(skip)]
+    #[cfg_attr(feature = "serialization", serde(skip))]
     open_stack: Vec<usize>,
 
     /// Current nesting depth
-    #[serde(skip)]
+    #[cfg_attr(feature = "serialization", serde(skip))]
     current_depth: usize,
 }
 

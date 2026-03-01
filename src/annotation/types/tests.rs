@@ -38,6 +38,7 @@ fn test_annotation_description() {
     assert!(desc.contains("(focused)"));
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn test_annotation_serialization() {
     let ann = Annotation::input("email")

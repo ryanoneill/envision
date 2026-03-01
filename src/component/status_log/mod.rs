@@ -191,6 +191,8 @@ pub struct StatusLogState {
     scroll_offset: usize,
     /// Whether the component is focused.
     focused: bool,
+    /// Whether the component is disabled.
+    disabled: bool,
     /// Title for the block.
     title: Option<String>,
 }
@@ -204,6 +206,7 @@ impl Default for StatusLogState {
             show_timestamps: false,
             scroll_offset: 0,
             focused: false,
+            disabled: false,
             title: None,
         }
     }
@@ -445,6 +448,22 @@ impl StatusLogState {
         self.focused = focused;
     }
 
+    /// Returns true if the status log is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Maps an input event to a status log message.
     pub fn handle_event(&self, event: &Event) -> Option<StatusLogMessage> {
         StatusLog::handle_event(self, event)
@@ -506,6 +525,9 @@ impl Component for StatusLog {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+        if state.disabled {
+            return None;
+        }
         match msg {
             StatusLogMessage::Push {
                 message,
@@ -558,7 +580,7 @@ impl Component for StatusLog {
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused {
+        if !state.focused || state.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -594,11 +616,15 @@ impl Component for StatusLog {
             .take(inner.height as usize)
             .map(|entry| {
                 let prefix = entry.level.prefix();
-                let style = match entry.level {
-                    StatusLogLevel::Info => theme.info_style(),
-                    StatusLogLevel::Success => theme.success_style(),
-                    StatusLogLevel::Warning => theme.warning_style(),
-                    StatusLogLevel::Error => theme.error_style(),
+                let style = if state.disabled {
+                    theme.disabled_style()
+                } else {
+                    match entry.level {
+                        StatusLogLevel::Info => theme.info_style(),
+                        StatusLogLevel::Success => theme.success_style(),
+                        StatusLogLevel::Warning => theme.warning_style(),
+                        StatusLogLevel::Error => theme.error_style(),
+                    }
                 };
 
                 let content = if state.show_timestamps {

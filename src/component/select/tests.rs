@@ -407,3 +407,16 @@ fn test_instance_methods() {
     let output = state.dispatch_event(&Event::key(KeyCode::Down));
     assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
 }
+
+#[test]
+fn test_selected_item() {
+    let state = SelectState::with_selection(vec!["A", "B", "C"], 1);
+    assert_eq!(state.selected_item(), Some("B"));
+    assert_eq!(state.selected_item(), state.selected_value());
+}
+
+#[test]
+fn test_selected_item_none() {
+    let state = SelectState::new(vec!["A", "B"]);
+    assert_eq!(state.selected_item(), None);
+}

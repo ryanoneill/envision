@@ -620,3 +620,143 @@ fn test_instance_methods() {
     state.dispatch_event(&Event::key(KeyCode::Down));
     assert_eq!(state.scroll_offset(), 2);
 }
+
+// ========================================
+// Disabled State Tests
+// ========================================
+
+#[test]
+fn test_is_disabled_default() {
+    let state = StatusLogState::new();
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_default_not_disabled() {
+    let state = StatusLogState::default();
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_set_disabled() {
+    let mut state = StatusLogState::new();
+    state.set_disabled(true);
+    assert!(state.is_disabled());
+    state.set_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled() {
+    let state = StatusLogState::new().with_disabled(true);
+    assert!(state.is_disabled());
+
+    let state = StatusLogState::new().with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_handle_event_ignored_when_disabled() {
+    let mut state = StatusLogState::new();
+    state.set_focused(true);
+    state.set_disabled(true);
+
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up));
+    assert_eq!(msg, None);
+
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Down));
+    assert_eq!(msg, None);
+
+    let msg = StatusLog::handle_event(&state, &Event::char('k'));
+    assert_eq!(msg, None);
+
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Home));
+    assert_eq!(msg, None);
+
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::End));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_update_ignored_when_disabled() {
+    let mut state = StatusLogState::new();
+    state.info("Existing");
+    state.set_disabled(true);
+
+    let output = StatusLog::update(
+        &mut state,
+        StatusLogMessage::Push {
+            message: "New".to_string(),
+            level: StatusLogLevel::Info,
+            timestamp: None,
+        },
+    );
+    assert_eq!(output, None);
+    assert_eq!(state.len(), 1);
+
+    let output = StatusLog::update(&mut state, StatusLogMessage::Clear);
+    assert_eq!(output, None);
+    assert_eq!(state.len(), 1);
+
+    let output = StatusLog::update(&mut state, StatusLogMessage::ScrollDown);
+    assert_eq!(output, None);
+
+    let output = StatusLog::update(&mut state, StatusLogMessage::ScrollUp);
+    assert_eq!(output, None);
+}
+
+#[test]
+fn test_dispatch_event_ignored_when_disabled() {
+    let mut state = StatusLogState::new();
+    state.set_focused(true);
+    state.set_disabled(true);
+    for i in 0..5 {
+        state.info(format!("Msg {}", i));
+    }
+    state.set_scroll_offset(2);
+
+    let output = StatusLog::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+    assert_eq!(output, None);
+    assert_eq!(state.scroll_offset(), 2);
+}
+
+#[test]
+fn test_instance_is_disabled() {
+    let mut state = StatusLogState::new();
+    assert!(!state.is_disabled());
+    state.set_disabled(true);
+    assert!(state.is_disabled());
+}
+
+#[test]
+fn test_instance_handle_event_disabled() {
+    let mut state = StatusLogState::new();
+    state.set_focused(true);
+    state.set_disabled(true);
+    let msg = state.handle_event(&Event::key(KeyCode::Up));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_instance_dispatch_event_disabled() {
+    let mut state = StatusLogState::new();
+    state.set_focused(true);
+    state.set_disabled(true);
+    for i in 0..5 {
+        state.info(format!("Msg {}", i));
+    }
+    state.set_scroll_offset(2);
+    let output = state.dispatch_event(&Event::key(KeyCode::Down));
+    assert_eq!(output, None);
+    assert_eq!(state.scroll_offset(), 2);
+}
+
+#[test]
+fn test_instance_update_disabled() {
+    let mut state = StatusLogState::new();
+    state.info("Existing");
+    state.set_disabled(true);
+    let output = state.update(StatusLogMessage::Clear);
+    assert_eq!(output, None);
+    assert_eq!(state.len(), 1);
+}

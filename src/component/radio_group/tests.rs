@@ -418,3 +418,19 @@ fn test_with_disabled_prevents_navigation() {
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(0));
 }
+
+#[test]
+fn test_selected_item() {
+    let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
+    assert_eq!(state.selected_item(), Some(&"A"));
+
+    state.set_selected(2);
+    assert_eq!(state.selected_item(), Some(&"C"));
+    assert_eq!(state.selected_item(), state.selected());
+}
+
+#[test]
+fn test_selected_item_empty() {
+    let state: RadioGroupState<&str> = RadioGroupState::new(vec![]);
+    assert_eq!(state.selected_item(), None);
+}
