@@ -125,8 +125,44 @@ fn test_custom_theme() {
 fn test_normal_style() {
     let theme = Theme::default();
     let style = theme.normal_style();
-    assert_eq!(style.fg, None);
-    assert_eq!(style.bg, None);
+    // Default theme uses Color::Reset for fg/bg
+    assert_eq!(style.fg, Some(Color::Reset));
+    assert_eq!(style.bg, Some(Color::Reset));
+}
+
+#[test]
+fn test_normal_style_nord() {
+    let theme = Theme::nord();
+    let style = theme.normal_style();
+    assert_eq!(style.fg, Some(NORD6));
+    assert_eq!(style.bg, Some(NORD0));
+}
+
+#[test]
+fn test_focused_border_style_differs_from_focused_style() {
+    let theme = Theme::nord();
+    let border_style = theme.focused_border_style();
+    let focused_style = theme.focused_style();
+    // Both use focused color for fg
+    assert_eq!(border_style.fg, Some(NORD8));
+    assert_eq!(focused_style.fg, Some(NORD8));
+    // Border style includes background, focused style does not
+    assert_eq!(border_style.bg, Some(NORD0));
+    assert_eq!(focused_style.bg, None);
+}
+
+#[test]
+fn test_primary_style() {
+    let theme = Theme::default();
+    let style = theme.primary_style();
+    assert_eq!(style.fg, Some(Color::Cyan));
+}
+
+#[test]
+fn test_primary_style_nord() {
+    let theme = Theme::nord();
+    let style = theme.primary_style();
+    assert_eq!(style.fg, Some(NORD10));
 }
 
 #[test]

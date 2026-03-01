@@ -235,8 +235,11 @@ impl Theme {
     }
 
     /// Returns a style for focused borders.
+    ///
+    /// Unlike [`focused_style`](Theme::focused_style), this includes
+    /// the background color so borders render correctly on themed backgrounds.
     pub fn focused_border_style(&self) -> Style {
-        Style::default().fg(self.focused)
+        Style::default().fg(self.focused).bg(self.background)
     }
 
     /// Returns a style for selected items.
@@ -275,8 +278,16 @@ impl Theme {
     }
 
     /// Returns a style for default/normal elements.
+    ///
+    /// Uses the theme's foreground and background colors so components
+    /// render correctly with non-default themes (e.g., Nord).
     pub fn normal_style(&self) -> Style {
-        Style::default()
+        Style::default().fg(self.foreground).bg(self.background)
+    }
+
+    /// Returns a style for primary accent elements.
+    pub fn primary_style(&self) -> Style {
+        Style::default().fg(self.primary)
     }
 
     /// Returns a style for borders (non-focused).
