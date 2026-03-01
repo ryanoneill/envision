@@ -248,9 +248,15 @@ fn test_default_matches_init() {
     assert_eq!(default_state.len(), init_state.len());
     assert_eq!(default_state.max_visible(), init_state.max_visible());
     assert_eq!(default_state.scroll_offset(), init_state.scroll_offset());
-    assert_eq!(default_state.auto_remove_completed(), init_state.auto_remove_completed());
+    assert_eq!(
+        default_state.auto_remove_completed(),
+        init_state.auto_remove_completed()
+    );
     assert_eq!(default_state.is_focused(), init_state.is_focused());
     assert_eq!(default_state.is_disabled(), init_state.is_disabled());
     assert_eq!(default_state.title(), init_state.title());
-    assert_eq!(default_state.show_percentages(), init_state.show_percentages());
+    assert_eq!(
+        default_state.show_percentages(),
+        init_state.show_percentages()
+    );
 }

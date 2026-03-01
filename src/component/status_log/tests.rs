@@ -802,7 +802,10 @@ fn test_default_matches_init() {
     assert_eq!(default_state.is_empty(), init_state.is_empty());
     assert_eq!(default_state.len(), init_state.len());
     assert_eq!(default_state.max_entries(), init_state.max_entries());
-    assert_eq!(default_state.show_timestamps(), init_state.show_timestamps());
+    assert_eq!(
+        default_state.show_timestamps(),
+        init_state.show_timestamps()
+    );
     assert_eq!(default_state.scroll_offset(), init_state.scroll_offset());
     assert_eq!(default_state.is_focused(), init_state.is_focused());
     assert_eq!(default_state.is_disabled(), init_state.is_disabled());

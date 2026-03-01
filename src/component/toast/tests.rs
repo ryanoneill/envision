@@ -622,6 +622,9 @@ fn test_default_matches_init() {
 
     assert_eq!(default_state.is_empty(), init_state.is_empty());
     assert_eq!(default_state.len(), init_state.len());
-    assert_eq!(default_state.default_duration(), init_state.default_duration());
+    assert_eq!(
+        default_state.default_duration(),
+        init_state.default_duration()
+    );
     assert_eq!(default_state.max_visible(), init_state.max_visible());
 }
