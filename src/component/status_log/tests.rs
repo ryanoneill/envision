@@ -518,6 +518,39 @@ fn test_view_all_levels() {
     insta::assert_snapshot!(terminal.backend().to_string());
 }
 
+#[test]
+fn test_view_focused() {
+    let mut state = StatusLogState::new();
+    state.info("Server started");
+    state.success("Connection established");
+    state.warning("High memory usage");
+    state.set_focused(true);
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+
+    terminal
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_view_unfocused() {
+    let mut state = StatusLogState::new();
+    state.info("Server started");
+    state.success("Connection established");
+    state.warning("High memory usage");
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+
+    terminal
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
 // ========================================
 // handle_event Tests
 // ========================================
