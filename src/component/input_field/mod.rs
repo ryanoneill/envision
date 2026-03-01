@@ -77,6 +77,8 @@ pub struct InputFieldState {
     cursor: usize,
     /// Whether the input is focused.
     focused: bool,
+    /// Whether the input is disabled.
+    disabled: bool,
     /// Placeholder text shown when empty.
     placeholder: String,
 }
@@ -95,6 +97,7 @@ impl InputFieldState {
             value,
             cursor,
             focused: false,
+            disabled: false,
             placeholder: String::new(),
         }
     }
@@ -102,8 +105,11 @@ impl InputFieldState {
     /// Creates a new state with placeholder text.
     pub fn with_placeholder(placeholder: impl Into<String>) -> Self {
         Self {
+            value: String::new(),
+            cursor: 0,
+            focused: false,
+            disabled: false,
             placeholder: placeholder.into(),
-            ..Default::default()
         }
     }
 
@@ -302,6 +308,22 @@ impl InputFieldState {
         self.focused = focused;
     }
 
+    /// Returns true if the input field is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Maps an input event to an input field message.
     pub fn handle_event(&self, event: &Event) -> Option<InputFieldMessage> {
         InputField::handle_event(self, event)
@@ -349,6 +371,9 @@ impl Component for InputField {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+        if state.disabled {
+            return None;
+        }
         match msg {
             InputFieldMessage::Insert(c) => {
                 state.insert(c);
@@ -428,7 +453,7 @@ impl Component for InputField {
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused {
+        if !state.focused || state.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -460,7 +485,9 @@ impl Component for InputField {
             state.value.clone()
         };
 
-        let style = if state.focused {
+        let style = if state.disabled {
+            theme.disabled_style()
+        } else if state.focused {
             theme.focused_style()
         } else if state.value.is_empty() && !state.placeholder.is_empty() {
             theme.placeholder_style()

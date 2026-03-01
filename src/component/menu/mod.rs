@@ -123,6 +123,8 @@ pub struct MenuState {
     selected_index: Option<usize>,
     /// Whether the menu is focused.
     focused: bool,
+    /// Whether the menu is disabled.
+    disabled: bool,
 }
 
 impl MenuState {
@@ -145,6 +147,7 @@ impl MenuState {
             items,
             selected_index,
             focused: false,
+            disabled: false,
         }
     }
 
@@ -251,6 +254,22 @@ impl MenuState {
         self.focused = focused;
     }
 
+    /// Returns true if the menu is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Maps an input event to a menu message.
     pub fn handle_event(&self, event: &Event) -> Option<MenuMessage> {
         Menu::handle_event(self, event)
@@ -319,6 +338,9 @@ impl Component for Menu {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+        if state.disabled {
+            return None;
+        }
         if state.items.is_empty() {
             return None;
         }
@@ -366,7 +388,7 @@ impl Component for Menu {
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused {
+        if !state.focused || state.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -399,7 +421,9 @@ impl Component for Menu {
         }
 
         // Determine style based on state
-        let style = if state.focused {
+        let style = if state.disabled {
+            theme.disabled_style()
+        } else if state.focused {
             theme.focused_style()
         } else {
             theme.normal_style()
