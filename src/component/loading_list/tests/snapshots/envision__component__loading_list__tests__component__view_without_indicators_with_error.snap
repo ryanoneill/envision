@@ -1,5 +1,5 @@
 ---
-source: src/component/loading_list/tests.rs
+source: src/component/loading_list/tests/component.rs
 expression: terminal.backend().to_string()
 ---
 ┌──────────────────────────────────────────────────────────┐
