@@ -25,6 +25,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a TextArea.
@@ -550,6 +551,31 @@ impl TextAreaState {
             false
         }
     }
+
+    /// Returns true if the textarea is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a textarea message.
+    pub fn handle_event(&self, event: &Event) -> Option<TextAreaMessage> {
+        TextArea::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<TextAreaOutput> {
+        TextArea::dispatch_event(self, event)
+    }
+
+    /// Updates the textarea state with a message, returning any output.
+    pub fn update(&mut self, msg: TextAreaMessage) -> Option<TextAreaOutput> {
+        TextArea::update(self, msg)
+    }
 }
 
 /// A multi-line text editing component.
@@ -584,6 +610,37 @@ impl Component for TextArea {
 
     fn init() -> Self::State {
         TextAreaState::default()
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+            match key.code {
+                KeyCode::Char(c) if !ctrl => Some(TextAreaMessage::Insert(c)),
+                KeyCode::Enter => Some(TextAreaMessage::NewLine),
+                KeyCode::Backspace if ctrl => Some(TextAreaMessage::DeleteLine),
+                KeyCode::Backspace => Some(TextAreaMessage::Backspace),
+                KeyCode::Delete => Some(TextAreaMessage::Delete),
+                KeyCode::Left if ctrl => Some(TextAreaMessage::WordLeft),
+                KeyCode::Right if ctrl => Some(TextAreaMessage::WordRight),
+                KeyCode::Left => Some(TextAreaMessage::Left),
+                KeyCode::Right => Some(TextAreaMessage::Right),
+                KeyCode::Up => Some(TextAreaMessage::Up),
+                KeyCode::Down => Some(TextAreaMessage::Down),
+                KeyCode::Home if ctrl => Some(TextAreaMessage::TextStart),
+                KeyCode::End if ctrl => Some(TextAreaMessage::TextEnd),
+                KeyCode::Home => Some(TextAreaMessage::Home),
+                KeyCode::End => Some(TextAreaMessage::End),
+                KeyCode::Char('k') if ctrl => Some(TextAreaMessage::DeleteToEnd),
+                KeyCode::Char('u') if ctrl => Some(TextAreaMessage::DeleteToStart),
+                _ => None,
+            }
+        } else {
+            None
+        }
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {

@@ -34,6 +34,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// A single accordion panel with a title and content.
@@ -291,6 +292,31 @@ impl AccordionState {
     pub fn is_all_expanded(&self) -> bool {
         !self.panels.is_empty() && self.panels.iter().all(|p| p.expanded)
     }
+
+    /// Returns true if the accordion is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to an accordion message.
+    pub fn handle_event(&self, event: &Event) -> Option<AccordionMessage> {
+        Accordion::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<AccordionOutput> {
+        Accordion::dispatch_event(self, event)
+    }
+
+    /// Updates the accordion state with a message, returning any output.
+    pub fn update(&mut self, msg: AccordionMessage) -> Option<AccordionOutput> {
+        Accordion::update(self, msg)
+    }
 }
 
 /// An accordion component with collapsible panels.
@@ -484,6 +510,24 @@ impl Component for Accordion {
                     None
                 }
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused || state.disabled {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Up | KeyCode::Char('k') => Some(AccordionMessage::Up),
+                KeyCode::Down | KeyCode::Char('j') => Some(AccordionMessage::Down),
+                KeyCode::Enter | KeyCode::Char(' ') => Some(AccordionMessage::Toggle),
+                KeyCode::Home => Some(AccordionMessage::First),
+                KeyCode::End => Some(AccordionMessage::Last),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

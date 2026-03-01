@@ -23,6 +23,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
 /// Messages that can be sent to an InputField.
@@ -290,6 +291,31 @@ impl InputFieldState {
         self.value.drain(start..end);
         true
     }
+
+    /// Returns true if the input field is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to an input field message.
+    pub fn handle_event(&self, event: &Event) -> Option<InputFieldMessage> {
+        InputField::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<InputFieldOutput> {
+        InputField::dispatch_event(self, event)
+    }
+
+    /// Updates the input field state with a message, returning any output.
+    pub fn update(&mut self, msg: InputFieldMessage) -> Option<InputFieldOutput> {
+        InputField::update(self, msg)
+    }
 }
 
 /// A text input field component.
@@ -398,6 +424,32 @@ impl Component for InputField {
                 }
             }
             InputFieldMessage::Submit => Some(InputFieldOutput::Submitted(state.value.clone())),
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+            match key.code {
+                KeyCode::Char(c) if !ctrl => Some(InputFieldMessage::Insert(c)),
+                KeyCode::Backspace if ctrl => Some(InputFieldMessage::DeleteWordBack),
+                KeyCode::Delete if ctrl => Some(InputFieldMessage::DeleteWordForward),
+                KeyCode::Backspace => Some(InputFieldMessage::Backspace),
+                KeyCode::Delete => Some(InputFieldMessage::Delete),
+                KeyCode::Left if ctrl => Some(InputFieldMessage::WordLeft),
+                KeyCode::Right if ctrl => Some(InputFieldMessage::WordRight),
+                KeyCode::Left => Some(InputFieldMessage::Left),
+                KeyCode::Right => Some(InputFieldMessage::Right),
+                KeyCode::Home => Some(InputFieldMessage::Home),
+                KeyCode::End => Some(InputFieldMessage::End),
+                KeyCode::Enter => Some(InputFieldMessage::Submit),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

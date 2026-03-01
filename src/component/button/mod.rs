@@ -28,6 +28,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a Button.
@@ -95,6 +96,31 @@ impl ButtonState {
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
+
+    /// Returns true if the button is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a button message.
+    pub fn handle_event(&self, event: &Event) -> Option<ButtonMessage> {
+        Button::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<ButtonOutput> {
+        Button::dispatch_event(self, event)
+    }
+
+    /// Updates the button state with a message, returning any output.
+    pub fn update(&mut self, msg: ButtonMessage) -> Option<ButtonOutput> {
+        Button::update(self, msg)
+    }
 }
 
 /// A clickable button component.
@@ -146,6 +172,20 @@ impl Component for Button {
                     Some(ButtonOutput::Pressed)
                 }
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused || state.disabled {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Enter | KeyCode::Char(' ') => Some(ButtonMessage::Press),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

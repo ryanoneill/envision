@@ -641,3 +641,134 @@ fn test_large_dropdown_navigation() {
     Dropdown::update(&mut state, DropdownMessage::Up);
     assert_eq!(state.highlighted_index, 99);
 }
+
+// ========================================
+// handle_event Tests
+// ========================================
+
+use crate::input::{Event, KeyCode};
+
+#[test]
+fn test_handle_event_toggle_when_closed() {
+    let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    Dropdown::focus(&mut state);
+
+    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(DropdownMessage::Toggle));
+}
+
+#[test]
+fn test_handle_event_confirm_when_open() {
+    let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    Dropdown::focus(&mut state);
+    Dropdown::update(&mut state, DropdownMessage::Open);
+
+    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(DropdownMessage::Confirm));
+}
+
+#[test]
+fn test_handle_event_close_when_open() {
+    let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    Dropdown::focus(&mut state);
+    Dropdown::update(&mut state, DropdownMessage::Open);
+
+    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Esc));
+    assert_eq!(msg, Some(DropdownMessage::Close));
+}
+
+#[test]
+fn test_handle_event_up_when_open() {
+    let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    Dropdown::focus(&mut state);
+    Dropdown::update(&mut state, DropdownMessage::Open);
+
+    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Up));
+    assert_eq!(msg, Some(DropdownMessage::Up));
+}
+
+#[test]
+fn test_handle_event_down_when_open() {
+    let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    Dropdown::focus(&mut state);
+    Dropdown::update(&mut state, DropdownMessage::Open);
+
+    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Down));
+    assert_eq!(msg, Some(DropdownMessage::Down));
+}
+
+#[test]
+fn test_handle_event_char_when_open() {
+    let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    Dropdown::focus(&mut state);
+    Dropdown::update(&mut state, DropdownMessage::Open);
+
+    let msg = Dropdown::handle_event(&state, &Event::char('a'));
+    assert_eq!(msg, Some(DropdownMessage::Insert('a')));
+}
+
+#[test]
+fn test_handle_event_backspace_when_open() {
+    let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    Dropdown::focus(&mut state);
+    Dropdown::update(&mut state, DropdownMessage::Open);
+
+    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Backspace));
+    assert_eq!(msg, Some(DropdownMessage::Backspace));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let state = DropdownState::new(vec!["A", "B", "C"]);
+    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_handle_event_ignored_when_disabled() {
+    let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    Dropdown::focus(&mut state);
+    state.set_disabled(true);
+    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+// ========================================
+// dispatch_event Tests
+// ========================================
+
+#[test]
+fn test_dispatch_event() {
+    let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    Dropdown::focus(&mut state);
+    Dropdown::update(&mut state, DropdownMessage::Open);
+    Dropdown::update(&mut state, DropdownMessage::Down);
+
+    // Enter when open dispatches Confirm, which selects the item
+    let output = Dropdown::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(DropdownOutput::Selected("B".to_string())));
+    assert!(!state.is_open());
+}
+
+// ========================================
+// Instance Method Tests
+// ========================================
+
+#[test]
+fn test_instance_methods() {
+    let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    state.set_focused(true);
+
+    // instance handle_event
+    let msg = state.handle_event(&Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(DropdownMessage::Toggle));
+
+    // instance update
+    let output = state.update(DropdownMessage::Toggle);
+    assert!(output.is_none()); // Toggle just opens, returns None
+    assert!(state.is_open());
+
+    // instance dispatch_event
+    let output = state.dispatch_event(&Event::key(KeyCode::Down));
+    assert_eq!(output, Some(DropdownOutput::SelectionChanged(1)));
+}

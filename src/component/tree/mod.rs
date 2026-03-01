@@ -25,6 +25,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// A node in the tree hierarchy.
@@ -387,6 +388,33 @@ impl<T: Clone> TreeState<T> {
     }
 }
 
+impl<T: Clone + 'static> TreeState<T> {
+    /// Returns true if the tree is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a tree message.
+    pub fn handle_event(&self, event: &Event) -> Option<TreeMessage> {
+        Tree::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<TreeOutput> {
+        Tree::dispatch_event(self, event)
+    }
+
+    /// Updates the tree state with a message, returning any output.
+    pub fn update(&mut self, msg: TreeMessage) -> Option<TreeOutput> {
+        Tree::update(self, msg)
+    }
+}
+
 /// A hierarchical tree view component.
 ///
 /// Displays data in a tree structure with expandable/collapsible nodes.
@@ -564,6 +592,25 @@ impl<T: Clone + 'static> Component for Tree<T> {
                 state.collapse_all();
                 None
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Up | KeyCode::Char('k') => Some(TreeMessage::Up),
+                KeyCode::Down | KeyCode::Char('j') => Some(TreeMessage::Down),
+                KeyCode::Left | KeyCode::Char('h') => Some(TreeMessage::Collapse),
+                KeyCode::Right | KeyCode::Char('l') => Some(TreeMessage::Expand),
+                KeyCode::Char(' ') => Some(TreeMessage::Toggle),
+                KeyCode::Enter => Some(TreeMessage::Select),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

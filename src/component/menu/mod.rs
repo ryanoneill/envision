@@ -25,6 +25,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// A menu item.
@@ -217,6 +218,31 @@ impl MenuState {
     pub fn selected_item(&self) -> Option<&MenuItem> {
         self.items.get(self.selected_index?)
     }
+
+    /// Returns true if the menu is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a menu message.
+    pub fn handle_event(&self, event: &Event) -> Option<MenuMessage> {
+        Menu::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<MenuOutput> {
+        Menu::dispatch_event(self, event)
+    }
+
+    /// Updates the menu state with a message, returning any output.
+    pub fn update(&mut self, msg: MenuMessage) -> Option<MenuOutput> {
+        Menu::update(self, msg)
+    }
 }
 
 /// A horizontal menu bar component.
@@ -314,6 +340,22 @@ impl Component for Menu {
                     None
                 }
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Left => Some(MenuMessage::Left),
+                KeyCode::Right => Some(MenuMessage::Right),
+                KeyCode::Enter => Some(MenuMessage::Select),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

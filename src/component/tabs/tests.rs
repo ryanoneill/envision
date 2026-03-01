@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::{Event, KeyCode};
 
 // State Tests
 
@@ -445,4 +446,137 @@ fn test_unicode_tab_labels() {
     Tabs::<&str>::update(&mut state, TabsMessage::Right);
     assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected(), Some(&"设置"));
+}
+
+// ========== handle_event Tests ==========
+
+#[test]
+fn test_handle_event_left_when_focused() {
+    let mut state = TabsState::with_selected(vec!["A", "B", "C"], 1);
+    state.focused = true;
+
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Left));
+    assert_eq!(msg, Some(TabsMessage::Left));
+}
+
+#[test]
+fn test_handle_event_right_when_focused() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+    state.focused = true;
+
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, Some(TabsMessage::Right));
+}
+
+#[test]
+fn test_handle_event_first_when_focused() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+    state.focused = true;
+
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Home));
+    assert_eq!(msg, Some(TabsMessage::First));
+}
+
+#[test]
+fn test_handle_event_last_when_focused() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+    state.focused = true;
+
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::End));
+    assert_eq!(msg, Some(TabsMessage::Last));
+}
+
+#[test]
+fn test_handle_event_confirm_when_focused() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+    state.focused = true;
+
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(TabsMessage::Confirm));
+}
+
+#[test]
+fn test_handle_event_vim_keys() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+    state.focused = true;
+
+    let msg_h = Tabs::<&str>::handle_event(&state, &Event::char('h'));
+    assert_eq!(msg_h, Some(TabsMessage::Left));
+
+    let msg_l = Tabs::<&str>::handle_event(&state, &Event::char('l'));
+    assert_eq!(msg_l, Some(TabsMessage::Right));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let state = TabsState::new(vec!["A", "B", "C"]);
+    // focused is false by default
+
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, None);
+
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+
+    let msg = Tabs::<&str>::handle_event(&state, &Event::char('l'));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_handle_event_ignored_when_disabled() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+    state.focused = true;
+    state.set_disabled(true);
+
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, None);
+
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+// ========== dispatch_event Tests ==========
+
+#[test]
+fn test_dispatch_event() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+    state.focused = true;
+
+    // Dispatch Right: should move selection from 0 to 1
+    let output = Tabs::<&str>::dispatch_event(&mut state, &Event::key(KeyCode::Right));
+    assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
+    assert_eq!(state.selected_index(), Some(1));
+
+    // Dispatch Enter: should confirm the current selection
+    let output = Tabs::<&str>::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(TabsOutput::Confirmed("B")));
+}
+
+// ========== Instance Method Tests ==========
+
+#[test]
+fn test_instance_methods() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+
+    // is_focused / set_focused
+    assert!(!state.is_focused());
+    state.set_focused(true);
+    assert!(state.is_focused());
+    state.set_focused(false);
+    assert!(!state.is_focused());
+
+    // dispatch_event via instance method
+    state.set_focused(true);
+    let output = state.dispatch_event(&Event::key(KeyCode::Right));
+    assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
+    assert_eq!(state.selected_index(), Some(1));
+
+    // update via instance method
+    let output = state.update(TabsMessage::Right);
+    assert_eq!(output, Some(TabsOutput::SelectionChanged(2)));
+    assert_eq!(state.selected_index(), Some(2));
+
+    // handle_event via instance method
+    let msg = state.handle_event(&Event::key(KeyCode::Left));
+    assert_eq!(msg, Some(TabsMessage::Left));
 }

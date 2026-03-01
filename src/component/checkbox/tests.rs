@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::{Event, KeyCode};
 
 #[test]
 fn test_new() {
@@ -146,4 +147,77 @@ fn test_multiple_toggles() {
 
     Checkbox::update(&mut state, CheckboxMessage::Toggle);
     assert!(state.is_checked());
+}
+
+// handle_event tests
+
+#[test]
+fn test_handle_event_enter_when_focused() {
+    let mut state = CheckboxState::new("Test");
+    Checkbox::set_focused(&mut state, true);
+    let msg = Checkbox::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(CheckboxMessage::Toggle));
+}
+
+#[test]
+fn test_handle_event_space_when_focused() {
+    let mut state = CheckboxState::new("Test");
+    Checkbox::set_focused(&mut state, true);
+    let msg = Checkbox::handle_event(&state, &Event::char(' '));
+    assert_eq!(msg, Some(CheckboxMessage::Toggle));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let state = CheckboxState::new("Test");
+    let msg = Checkbox::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_handle_event_ignored_when_disabled() {
+    let mut state = CheckboxState::new("Test");
+    Checkbox::set_focused(&mut state, true);
+    state.set_disabled(true);
+    let msg = Checkbox::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_dispatch_event() {
+    let mut state = CheckboxState::new("Test");
+    Checkbox::set_focused(&mut state, true);
+    let output = Checkbox::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
+}
+
+#[test]
+fn test_instance_is_focused() {
+    let mut state = CheckboxState::new("Test");
+    assert!(!state.is_focused());
+    state.set_focused(true);
+    assert!(state.is_focused());
+}
+
+#[test]
+fn test_instance_handle_event() {
+    let mut state = CheckboxState::new("Test");
+    state.set_focused(true);
+    let msg = state.handle_event(&Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(CheckboxMessage::Toggle));
+}
+
+#[test]
+fn test_instance_dispatch_event() {
+    let mut state = CheckboxState::new("Test");
+    state.set_focused(true);
+    let output = state.dispatch_event(&Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
+}
+
+#[test]
+fn test_instance_update() {
+    let mut state = CheckboxState::new("Test");
+    let output = state.update(CheckboxMessage::Toggle);
+    assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
 }

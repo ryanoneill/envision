@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::{Event, KeyCode};
 
 #[test]
 fn test_new() {
@@ -83,4 +84,85 @@ fn test_view_disabled() {
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+// handle_event tests
+
+#[test]
+fn test_handle_event_enter_when_focused() {
+    let mut state = ButtonState::new("OK");
+    Button::set_focused(&mut state, true);
+    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(ButtonMessage::Press));
+}
+
+#[test]
+fn test_handle_event_space_when_focused() {
+    let mut state = ButtonState::new("OK");
+    Button::set_focused(&mut state, true);
+    let msg = Button::handle_event(&state, &Event::char(' '));
+    assert_eq!(msg, Some(ButtonMessage::Press));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let state = ButtonState::new("OK");
+    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_handle_event_ignored_when_disabled() {
+    let mut state = ButtonState::new("OK");
+    Button::set_focused(&mut state, true);
+    state.set_disabled(true);
+    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_handle_event_irrelevant_key() {
+    let mut state = ButtonState::new("OK");
+    Button::set_focused(&mut state, true);
+    let msg = Button::handle_event(&state, &Event::char('x'));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_dispatch_event() {
+    let mut state = ButtonState::new("OK");
+    Button::set_focused(&mut state, true);
+    let output = Button::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(ButtonOutput::Pressed));
+}
+
+#[test]
+fn test_instance_is_focused() {
+    let mut state = ButtonState::new("OK");
+    assert!(!state.is_focused());
+    state.set_focused(true);
+    assert!(state.is_focused());
+}
+
+#[test]
+fn test_instance_handle_event() {
+    let mut state = ButtonState::new("OK");
+    state.set_focused(true);
+    let msg = state.handle_event(&Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(ButtonMessage::Press));
+}
+
+#[test]
+fn test_instance_dispatch_event() {
+    let mut state = ButtonState::new("OK");
+    state.set_focused(true);
+    let output = state.dispatch_event(&Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(ButtonOutput::Pressed));
+}
+
+#[test]
+fn test_instance_update() {
+    let mut state = ButtonState::new("OK");
+    let output = state.update(ButtonMessage::Press);
+    assert_eq!(output, Some(ButtonOutput::Pressed));
 }

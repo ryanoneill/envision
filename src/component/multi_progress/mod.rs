@@ -29,6 +29,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// Status of a progress item.
@@ -389,6 +390,31 @@ impl MultiProgressState {
     pub fn set_auto_remove_completed(&mut self, auto_remove: bool) {
         self.auto_remove_completed = auto_remove;
     }
+
+    /// Returns true if the multi-progress is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a multi-progress message.
+    pub fn handle_event(&self, event: &Event) -> Option<MultiProgressMessage> {
+        MultiProgress::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<MultiProgressOutput> {
+        MultiProgress::dispatch_event(self, event)
+    }
+
+    /// Updates the multi-progress state with a message, returning any output.
+    pub fn update(&mut self, msg: MultiProgressMessage) -> Option<MultiProgressOutput> {
+        MultiProgress::update(self, msg)
+    }
 }
 
 /// A component for displaying multiple concurrent progress indicators.
@@ -512,6 +538,21 @@ impl Component for MultiProgress {
                 state.scroll_offset = state.items.len().saturating_sub(1);
                 None
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Up | KeyCode::Char('k') => Some(MultiProgressMessage::ScrollUp),
+                KeyCode::Down | KeyCode::Char('j') => Some(MultiProgressMessage::ScrollDown),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

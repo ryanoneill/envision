@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::{Event, KeyCode};
 
 // ==================== BreadcrumbSegment Tests ====================
 
@@ -593,4 +594,138 @@ fn test_unicode_segments() {
     assert_eq!(state.segments()[0].label(), "ホーム");
     assert_eq!(state.segments()[2].label(), "電子機器");
     assert_eq!(state.current().unwrap().label(), "電子機器");
+}
+
+// ========== handle_event Tests ==========
+
+#[test]
+fn test_handle_event_left_when_focused() {
+    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
+    state.set_focused(true);
+    state.focused_index = 1;
+
+    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Left));
+    assert_eq!(msg, Some(BreadcrumbMessage::Left));
+}
+
+#[test]
+fn test_handle_event_right_when_focused() {
+    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
+    state.set_focused(true);
+
+    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, Some(BreadcrumbMessage::Right));
+}
+
+#[test]
+fn test_handle_event_first_when_focused() {
+    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
+    state.set_focused(true);
+
+    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Home));
+    assert_eq!(msg, Some(BreadcrumbMessage::First));
+}
+
+#[test]
+fn test_handle_event_last_when_focused() {
+    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
+    state.set_focused(true);
+
+    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::End));
+    assert_eq!(msg, Some(BreadcrumbMessage::Last));
+}
+
+#[test]
+fn test_handle_event_select_when_focused() {
+    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
+    state.set_focused(true);
+
+    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(BreadcrumbMessage::Select));
+}
+
+#[test]
+fn test_handle_event_vim_keys() {
+    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
+    state.set_focused(true);
+
+    let msg_h = Breadcrumb::handle_event(&state, &Event::char('h'));
+    assert_eq!(msg_h, Some(BreadcrumbMessage::Left));
+
+    let msg_l = Breadcrumb::handle_event(&state, &Event::char('l'));
+    assert_eq!(msg_l, Some(BreadcrumbMessage::Right));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
+    // Not focused by default
+
+    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, None);
+
+    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+
+    let msg = Breadcrumb::handle_event(&state, &Event::char('l'));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_handle_event_ignored_when_disabled() {
+    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
+    state.set_focused(true);
+    state.set_disabled(true);
+
+    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, None);
+
+    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+// ========== dispatch_event Tests ==========
+
+#[test]
+fn test_dispatch_event() {
+    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
+    state.set_focused(true);
+
+    // Dispatch Right: should move focus from 0 to 1
+    let output = Breadcrumb::dispatch_event(&mut state, &Event::key(KeyCode::Right));
+    assert_eq!(output, Some(BreadcrumbOutput::FocusChanged(1)));
+    assert_eq!(state.focused_index(), 1);
+
+    // Dispatch Enter: should select the focused segment
+    let output = Breadcrumb::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(BreadcrumbOutput::Selected(1)));
+}
+
+// ========== Instance Method Tests ==========
+
+#[test]
+fn test_instance_methods() {
+    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
+
+    // is_focused / set_focused
+    assert!(!state.is_focused());
+    state.set_focused(true);
+    assert!(state.is_focused());
+    state.set_focused(false);
+    assert!(!state.is_focused());
+
+    // dispatch_event via instance method
+    state.set_focused(true);
+    let output = state.dispatch_event(&Event::key(KeyCode::Right));
+    assert_eq!(output, Some(BreadcrumbOutput::FocusChanged(1)));
+    assert_eq!(state.focused_index(), 1);
+
+    // update via instance method
+    let output = state.update(BreadcrumbMessage::Right);
+    assert_eq!(output, Some(BreadcrumbOutput::FocusChanged(2)));
+    assert_eq!(state.focused_index(), 2);
+
+    // handle_event via instance method
+    let msg = state.handle_event(&Event::key(KeyCode::Left));
+    assert_eq!(msg, Some(BreadcrumbMessage::Left));
 }

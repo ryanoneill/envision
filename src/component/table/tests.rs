@@ -893,3 +893,72 @@ fn test_unicode_cell_content() {
     Table::<TestRow>::update(&mut state, TableMessage::Down);
     assert_eq!(state.selected_index(), Some(1));
 }
+
+mod handle_event_tests {
+    use super::*;
+    use crate::input::{Event, KeyCode};
+
+    #[test]
+    fn test_key_bindings_when_focused() {
+        let mut state = TableState::new(test_rows(), test_columns());
+        state.set_focused(true);
+        let he = |e| Table::<TestRow>::handle_event(&state, &e);
+        assert_eq!(he(Event::key(KeyCode::Up)), Some(TableMessage::Up));
+        assert_eq!(he(Event::key(KeyCode::Down)), Some(TableMessage::Down));
+        assert_eq!(he(Event::key(KeyCode::Home)), Some(TableMessage::First));
+        assert_eq!(he(Event::key(KeyCode::End)), Some(TableMessage::Last));
+        assert_eq!(he(Event::key(KeyCode::Enter)), Some(TableMessage::Select));
+        assert_eq!(he(Event::char('k')), Some(TableMessage::Up));
+        assert_eq!(he(Event::char('j')), Some(TableMessage::Down));
+    }
+
+    #[test]
+    fn test_ignored_when_unfocused() {
+        let state = TableState::new(test_rows(), test_columns());
+        assert_eq!(
+            Table::<TestRow>::handle_event(&state, &Event::key(KeyCode::Down)),
+            None
+        );
+        assert_eq!(
+            Table::<TestRow>::handle_event(&state, &Event::key(KeyCode::Enter)),
+            None
+        );
+    }
+
+    #[test]
+    fn test_ignored_when_disabled() {
+        let mut state = TableState::new(test_rows(), test_columns());
+        state.set_focused(true);
+        state.set_disabled(true);
+        assert_eq!(
+            Table::<TestRow>::handle_event(&state, &Event::key(KeyCode::Down)),
+            None
+        );
+    }
+
+    #[test]
+    fn test_dispatch_event() {
+        let mut state = TableState::new(test_rows(), test_columns());
+        state.set_focused(true);
+        let output = Table::<TestRow>::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+        assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
+        assert_eq!(state.selected_index(), Some(1));
+    }
+
+    #[test]
+    fn test_instance_methods() {
+        let mut state = TableState::new(test_rows(), test_columns());
+        assert!(!state.is_focused());
+        state.set_focused(true);
+        assert!(state.is_focused());
+
+        let output = state.dispatch_event(&Event::key(KeyCode::Down));
+        assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
+
+        let output = state.update(TableMessage::Down);
+        assert_eq!(output, Some(TableOutput::SelectionChanged(2)));
+
+        let msg = state.handle_event(&Event::key(KeyCode::Up));
+        assert_eq!(msg, Some(TableMessage::Up));
+    }
+}

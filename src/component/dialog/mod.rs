@@ -22,6 +22,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
 use super::{Component, Focusable, Toggleable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// A button configuration for a dialog.
@@ -298,6 +299,41 @@ impl DialogState {
             self.primary_button = index.min(self.buttons.len() - 1);
         }
     }
+
+    /// Returns true if the dialog is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Returns true if the dialog is visible.
+    pub fn is_visible(&self) -> bool {
+        self.visible
+    }
+
+    /// Sets the visibility state.
+    pub fn set_visible(&mut self, visible: bool) {
+        Dialog::set_visible(self, visible);
+    }
+
+    /// Maps an input event to a dialog message.
+    pub fn handle_event(&self, event: &Event) -> Option<DialogMessage> {
+        Dialog::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<DialogOutput> {
+        Dialog::dispatch_event(self, event)
+    }
+
+    /// Updates the dialog state with a message, returning any output.
+    pub fn update(&mut self, msg: DialogMessage) -> Option<DialogOutput> {
+        Dialog::update(self, msg)
+    }
 }
 
 /// A modal dialog component with configurable buttons.
@@ -395,6 +431,23 @@ impl Component for Dialog {
                 Some(DialogOutput::Closed)
             }
             DialogMessage::Open => None,
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.visible {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Tab => Some(DialogMessage::FocusNext),
+                KeyCode::BackTab => Some(DialogMessage::FocusPrev),
+                KeyCode::Enter => Some(DialogMessage::Press),
+                KeyCode::Esc => Some(DialogMessage::Close),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

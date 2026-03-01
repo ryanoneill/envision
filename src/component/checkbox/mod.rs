@@ -31,6 +31,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a Checkbox.
@@ -131,6 +132,31 @@ impl CheckboxState {
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
+
+    /// Returns true if the checkbox is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a checkbox message.
+    pub fn handle_event(&self, event: &Event) -> Option<CheckboxMessage> {
+        Checkbox::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<CheckboxOutput> {
+        Checkbox::dispatch_event(self, event)
+    }
+
+    /// Updates the checkbox state with a message, returning any output.
+    pub fn update(&mut self, msg: CheckboxMessage) -> Option<CheckboxOutput> {
+        Checkbox::update(self, msg)
+    }
 }
 
 /// A toggleable checkbox component.
@@ -185,6 +211,20 @@ impl Component for Checkbox {
                     Some(CheckboxOutput::Toggled(state.checked))
                 }
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused || state.disabled {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Enter | KeyCode::Char(' ') => Some(CheckboxMessage::Toggle),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

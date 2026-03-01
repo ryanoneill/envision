@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::{Event, KeyCode};
 
 #[test]
 fn test_menu_item_new() {
@@ -416,4 +417,94 @@ fn test_unicode_labels() {
 
     Menu::update(&mut state, MenuMessage::Right);
     assert_eq!(state.selected_index(), Some(2));
+}
+
+// ========== handle_event Tests ==========
+
+#[test]
+fn test_handle_event_left_when_focused() {
+    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
+    Menu::focus(&mut state);
+
+    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Left));
+    assert_eq!(msg, Some(MenuMessage::Left));
+}
+
+#[test]
+fn test_handle_event_right_when_focused() {
+    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
+    Menu::focus(&mut state);
+
+    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, Some(MenuMessage::Right));
+}
+
+#[test]
+fn test_handle_event_select_when_focused() {
+    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
+    Menu::focus(&mut state);
+
+    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(MenuMessage::Select));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
+    // Not focused by default
+
+    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, None);
+
+    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+
+    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Left));
+    assert_eq!(msg, None);
+}
+
+// ========== dispatch_event Tests ==========
+
+#[test]
+fn test_dispatch_event() {
+    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
+    Menu::focus(&mut state);
+
+    // Dispatch Right: should move selection from 0 to 1
+    let output = Menu::dispatch_event(&mut state, &Event::key(KeyCode::Right));
+    assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
+    assert_eq!(state.selected_index(), Some(1));
+
+    // Dispatch Enter: should select the current item
+    let output = Menu::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(MenuOutput::Selected(1)));
+}
+
+// ========== Instance Method Tests ==========
+
+#[test]
+fn test_instance_methods() {
+    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
+
+    // is_focused / set_focused
+    assert!(!state.is_focused());
+    state.set_focused(true);
+    assert!(state.is_focused());
+    state.set_focused(false);
+    assert!(!state.is_focused());
+
+    // dispatch_event via instance method
+    state.set_focused(true);
+    let output = state.dispatch_event(&Event::key(KeyCode::Right));
+    assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
+    assert_eq!(state.selected_index(), Some(1));
+
+    // update via instance method
+    let output = state.update(MenuMessage::Left);
+    assert_eq!(output, Some(MenuOutput::SelectionChanged(0)));
+    assert_eq!(state.selected_index(), Some(0));
+
+    // handle_event via instance method
+    let msg = state.handle_event(&Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(MenuMessage::Select));
 }
