@@ -19,7 +19,9 @@ pub struct Command<M> {
 }
 
 /// A boxed error type for fallible async commands.
-pub type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
+///
+/// Re-exported from [`crate::error::BoxedError`].
+pub use crate::error::BoxedError;
 
 /// Result type for fallible async commands.
 pub type AsyncFallibleResult<M> = Result<Option<M>, BoxedError>;

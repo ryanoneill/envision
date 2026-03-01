@@ -101,6 +101,7 @@ pub mod annotation;
 pub mod app;
 pub mod backend;
 pub mod component;
+pub mod error;
 pub mod harness;
 pub mod input;
 pub mod overlay;
@@ -138,6 +139,7 @@ pub use component::{
     TooltipMessage, TooltipOutput, TooltipPosition, TooltipState, Tree, TreeMessage, TreeNode,
     TreeOutput, TreeState,
 };
+pub use error::{BoxedError, EnvisionError};
 pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
 pub use input::{Event, EventQueue};
 pub use overlay::{Overlay, OverlayAction, OverlayStack};
