@@ -238,6 +238,28 @@ impl AccordionState {
         self.panels.get(self.focused_index)
     }
 
+    /// Returns the currently focused panel.
+    ///
+    /// This is an alias for [`focused_panel()`](Self::focused_panel) that provides a
+    /// consistent accessor name across all selection-based components.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{AccordionPanel, AccordionState};
+    ///
+    /// let panels = vec![
+    ///     AccordionPanel::new("Section 1", "Content 1"),
+    ///     AccordionPanel::new("Section 2", "Content 2"),
+    /// ];
+    /// let state = AccordionState::new(panels);
+    /// let item = state.selected_item().unwrap();
+    /// assert_eq!(item.title(), "Section 1");
+    /// ```
+    pub fn selected_item(&self) -> Option<&AccordionPanel> {
+        self.focused_panel()
+    }
+
     /// Returns whether the accordion is disabled.
     pub fn is_disabled(&self) -> bool {
         self.disabled
