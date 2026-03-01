@@ -25,7 +25,7 @@
 //! assert!(state.panels()[0].is_expanded());
 //!
 //! // Navigate to next panel and toggle
-//! Accordion::update(&mut state, AccordionMessage::Next);
+//! Accordion::update(&mut state, AccordionMessage::Down);
 //! Accordion::update(&mut state, AccordionMessage::Toggle);
 //! // Now panels 0 and 1 are both expanded
 //! ```
@@ -118,10 +118,10 @@ impl AccordionPanel {
 /// Messages that can be sent to an Accordion.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum AccordionMessage {
-    /// Move focus to the next panel.
-    Next,
-    /// Move focus to the previous panel.
-    Previous,
+    /// Move focus down to the next panel.
+    Down,
+    /// Move focus up to the previous panel.
+    Up,
     /// Jump to the first panel.
     First,
     /// Jump to the last panel.
@@ -303,8 +303,8 @@ impl AccordionState {
 ///
 /// The accordion itself doesn't handle keyboard events directly. Your application
 /// should map:
-/// - Up arrow to [`AccordionMessage::Previous`]
-/// - Down arrow to [`AccordionMessage::Next`]
+/// - Down arrow to [`AccordionMessage::Down`]
+/// - Up arrow to [`AccordionMessage::Up`]
 /// - Enter/Space to [`AccordionMessage::Toggle`]
 /// - Home to [`AccordionMessage::First`]
 /// - End to [`AccordionMessage::Last`]
@@ -337,7 +337,7 @@ impl AccordionState {
 /// assert!(state.panels()[0].is_expanded());
 ///
 /// // Navigate and toggle second
-/// Accordion::update(&mut state, AccordionMessage::Next);
+/// Accordion::update(&mut state, AccordionMessage::Down);
 /// Accordion::update(&mut state, AccordionMessage::Toggle);
 /// // Both panels are now expanded
 /// assert_eq!(state.expanded_count(), 2);
@@ -359,7 +359,7 @@ impl Component for Accordion {
         }
 
         match msg {
-            AccordionMessage::Next => {
+            AccordionMessage::Down => {
                 if !state.panels.is_empty() {
                     state.focused_index = (state.focused_index + 1) % state.panels.len();
                     Some(AccordionOutput::FocusChanged(state.focused_index))
@@ -367,7 +367,7 @@ impl Component for Accordion {
                     None
                 }
             }
-            AccordionMessage::Previous => {
+            AccordionMessage::Up => {
                 if !state.panels.is_empty() {
                     if state.focused_index == 0 {
                         state.focused_index = state.panels.len() - 1;

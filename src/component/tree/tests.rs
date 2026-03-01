@@ -289,7 +289,7 @@ fn test_select_next() {
     let mut state = TreeState::new(vec![root]);
     assert_eq!(state.selected_index(), Some(0));
 
-    Tree::update(&mut state, TreeMessage::SelectNext);
+    Tree::update(&mut state, TreeMessage::Down);
     assert_eq!(state.selected_index(), Some(1));
 }
 
@@ -298,7 +298,7 @@ fn test_select_next_at_end() {
     let state_roots = vec![TreeNode::new("Root", ())];
     let mut state = TreeState::new(state_roots);
 
-    Tree::<()>::update(&mut state, TreeMessage::SelectNext);
+    Tree::<()>::update(&mut state, TreeMessage::Down);
     assert_eq!(state.selected_index(), Some(0)); // Stays at 0
 }
 
@@ -310,7 +310,7 @@ fn test_select_previous() {
     let mut state = TreeState::new(vec![root]);
     state.selected_index = Some(1);
 
-    Tree::update(&mut state, TreeMessage::SelectPrevious);
+    Tree::update(&mut state, TreeMessage::Up);
     assert_eq!(state.selected_index(), Some(0));
 }
 
@@ -319,7 +319,7 @@ fn test_select_previous_at_start() {
     let state_roots = vec![TreeNode::new("Root", ())];
     let mut state = TreeState::new(state_roots);
 
-    Tree::<()>::update(&mut state, TreeMessage::SelectPrevious);
+    Tree::<()>::update(&mut state, TreeMessage::Up);
     assert_eq!(state.selected_index(), Some(0)); // Stays at 0
 }
 
@@ -388,7 +388,7 @@ fn test_collapse_adjusts_selection() {
     let mut state = TreeState::new(vec![root]);
     state.selected_index = Some(1); // Select child
 
-    Tree::update(&mut state, TreeMessage::SelectPrevious); // Go to root
+    Tree::update(&mut state, TreeMessage::Up); // Go to root
     Tree::update(&mut state, TreeMessage::Collapse);
 
     // Selection should still be valid
@@ -477,7 +477,7 @@ fn test_empty_tree() {
     let mut state: TreeState<()> = TreeState::new(Vec::new());
 
     // Should not panic
-    let output = Tree::update(&mut state, TreeMessage::SelectNext);
+    let output = Tree::update(&mut state, TreeMessage::Down);
     assert_eq!(output, None);
 
     let output = Tree::update(&mut state, TreeMessage::Select);
@@ -592,7 +592,7 @@ fn test_file_tree_workflow() {
     Tree::focus(&mut state);
 
     // Navigate to src
-    Tree::update(&mut state, TreeMessage::SelectNext);
+    Tree::update(&mut state, TreeMessage::Down);
     assert_eq!(state.selected_node().unwrap().label(), "src");
 
     // Expand src
@@ -600,7 +600,7 @@ fn test_file_tree_workflow() {
     assert_eq!(state.visible_count(), 6); // project, src, main.rs, lib.rs, tests, Cargo.toml
 
     // Navigate to main.rs and select
-    Tree::update(&mut state, TreeMessage::SelectNext);
+    Tree::update(&mut state, TreeMessage::Down);
     let output = Tree::update(&mut state, TreeMessage::Select);
     assert_eq!(output, Some(TreeOutput::Selected(vec![0, 0, 0])));
     assert_eq!(state.selected_node().unwrap().data(), &"/src/main.rs");
@@ -783,21 +783,21 @@ fn test_large_tree_navigation() {
 
     // Navigate down to middle
     for _ in 0..50 {
-        Tree::<()>::update(&mut state, TreeMessage::SelectNext);
+        Tree::<()>::update(&mut state, TreeMessage::Down);
     }
     assert_eq!(state.selected_index(), Some(50));
     assert_eq!(state.selected_node().unwrap().label(), "Node 50");
 
-    // SelectPrevious back to start
+    // Up back to start
     for _ in 0..50 {
-        Tree::<()>::update(&mut state, TreeMessage::SelectPrevious);
+        Tree::<()>::update(&mut state, TreeMessage::Up);
     }
     assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.selected_node().unwrap().label(), "Node 0");
 
     // Navigate to last
     for _ in 0..99 {
-        Tree::<()>::update(&mut state, TreeMessage::SelectNext);
+        Tree::<()>::update(&mut state, TreeMessage::Down);
     }
     assert_eq!(state.selected_index(), Some(99));
     assert_eq!(state.selected_node().unwrap().label(), "Node 99");
@@ -820,7 +820,7 @@ fn test_deep_tree_navigation() {
     // Expand all levels and navigate down
     for _ in 0..49 {
         Tree::<i32>::update(&mut state, TreeMessage::Expand);
-        Tree::<i32>::update(&mut state, TreeMessage::SelectNext);
+        Tree::<i32>::update(&mut state, TreeMessage::Down);
     }
 
     // Should be at the leaf node
@@ -837,7 +837,7 @@ fn test_unicode_node_labels() {
 
     let mut state = TreeState::new(vec![folder, TreeNode::new("설정", ())]);
 
-    Tree::<()>::update(&mut state, TreeMessage::SelectNext);
+    Tree::<()>::update(&mut state, TreeMessage::Down);
     // Should navigate through unicode-labeled nodes without issue
     assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected_node().unwrap().label(), "설정");

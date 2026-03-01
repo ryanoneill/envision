@@ -94,16 +94,16 @@ fn test_select_next() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
     Select::update(&mut state, SelectMessage::Open);
 
-    let output = Select::update(&mut state, SelectMessage::SelectNext);
+    let output = Select::update(&mut state, SelectMessage::Down);
     assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
     assert_eq!(state.highlighted_index, 1);
 
-    let output = Select::update(&mut state, SelectMessage::SelectNext);
+    let output = Select::update(&mut state, SelectMessage::Down);
     assert_eq!(output, Some(SelectOutput::SelectionChanged(2)));
     assert_eq!(state.highlighted_index, 2);
 
     // Wrap around
-    let output = Select::update(&mut state, SelectMessage::SelectNext);
+    let output = Select::update(&mut state, SelectMessage::Down);
     assert_eq!(output, Some(SelectOutput::SelectionChanged(0)));
     assert_eq!(state.highlighted_index, 0);
 }
@@ -114,15 +114,15 @@ fn test_select_previous() {
     Select::update(&mut state, SelectMessage::Open);
 
     // Wrap around from start
-    let output = Select::update(&mut state, SelectMessage::SelectPrevious);
+    let output = Select::update(&mut state, SelectMessage::Up);
     assert_eq!(output, Some(SelectOutput::SelectionChanged(2)));
     assert_eq!(state.highlighted_index, 2);
 
-    let output = Select::update(&mut state, SelectMessage::SelectPrevious);
+    let output = Select::update(&mut state, SelectMessage::Up);
     assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
     assert_eq!(state.highlighted_index, 1);
 
-    let output = Select::update(&mut state, SelectMessage::SelectPrevious);
+    let output = Select::update(&mut state, SelectMessage::Up);
     assert_eq!(output, Some(SelectOutput::SelectionChanged(0)));
     assert_eq!(state.highlighted_index, 0);
 }
@@ -131,7 +131,7 @@ fn test_select_previous() {
 fn test_confirm_selection() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
     Select::update(&mut state, SelectMessage::Open);
-    Select::update(&mut state, SelectMessage::SelectNext);
+    Select::update(&mut state, SelectMessage::Down);
 
     let output = Select::update(&mut state, SelectMessage::Confirm);
     assert_eq!(output, Some(SelectOutput::Selected("B".to_string())));
@@ -166,7 +166,7 @@ fn test_disabled_ignores_messages() {
     assert_eq!(output, None);
     assert!(!state.is_open());
 
-    let output = Select::update(&mut state, SelectMessage::SelectNext);
+    let output = Select::update(&mut state, SelectMessage::Down);
     assert_eq!(output, None);
 }
 
@@ -260,18 +260,18 @@ fn test_large_select_navigation() {
 
     // Navigate to middle
     for _ in 0..50 {
-        Select::update(&mut state, SelectMessage::SelectNext);
+        Select::update(&mut state, SelectMessage::Down);
     }
     assert_eq!(state.highlighted_index, 50);
 
     // Navigate 50 more to wrap back to 0
     for _ in 0..50 {
-        Select::update(&mut state, SelectMessage::SelectNext);
+        Select::update(&mut state, SelectMessage::Down);
     }
     assert_eq!(state.highlighted_index, 0);
 
-    // SelectPrevious from 0 wraps to last
-    Select::update(&mut state, SelectMessage::SelectPrevious);
+    // Up from 0 wraps to last
+    Select::update(&mut state, SelectMessage::Up);
     assert_eq!(state.highlighted_index, 99);
 
     // Confirm selection at index 99

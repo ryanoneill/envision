@@ -261,7 +261,7 @@ fn test_filter_resets_highlight() {
     Dropdown::update(&mut state, DropdownMessage::Open);
 
     // Navigate to second item
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    Dropdown::update(&mut state, DropdownMessage::Down);
     assert_eq!(state.highlighted_index, 1);
 
     // Filter - should reset highlight to 0
@@ -276,11 +276,11 @@ fn test_select_next() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    let output = Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    let output = Dropdown::update(&mut state, DropdownMessage::Down);
     assert_eq!(output, Some(DropdownOutput::SelectionChanged(1)));
     assert_eq!(state.highlighted_index, 1);
 
-    let output = Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    let output = Dropdown::update(&mut state, DropdownMessage::Down);
     assert_eq!(output, Some(DropdownOutput::SelectionChanged(2)));
     assert_eq!(state.highlighted_index, 2);
 }
@@ -289,15 +289,15 @@ fn test_select_next() {
 fn test_select_previous() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    Dropdown::update(&mut state, DropdownMessage::Down);
+    Dropdown::update(&mut state, DropdownMessage::Down);
     assert_eq!(state.highlighted_index, 2);
 
-    let output = Dropdown::update(&mut state, DropdownMessage::SelectPrevious);
+    let output = Dropdown::update(&mut state, DropdownMessage::Up);
     assert_eq!(output, Some(DropdownOutput::SelectionChanged(1)));
     assert_eq!(state.highlighted_index, 1);
 
-    let output = Dropdown::update(&mut state, DropdownMessage::SelectPrevious);
+    let output = Dropdown::update(&mut state, DropdownMessage::Up);
     assert_eq!(output, Some(DropdownOutput::SelectionChanged(0)));
     assert_eq!(state.highlighted_index, 0);
 }
@@ -307,9 +307,9 @@ fn test_select_next_wraps() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
-    let output = Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    Dropdown::update(&mut state, DropdownMessage::Down);
+    Dropdown::update(&mut state, DropdownMessage::Down);
+    let output = Dropdown::update(&mut state, DropdownMessage::Down);
     assert_eq!(output, Some(DropdownOutput::SelectionChanged(0)));
     assert_eq!(state.highlighted_index, 0); // Wrapped
 }
@@ -319,7 +319,7 @@ fn test_select_previous_wraps() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    let output = Dropdown::update(&mut state, DropdownMessage::SelectPrevious);
+    let output = Dropdown::update(&mut state, DropdownMessage::Up);
     assert_eq!(output, Some(DropdownOutput::SelectionChanged(2)));
     assert_eq!(state.highlighted_index, 2); // Wrapped to end
 }
@@ -331,7 +331,7 @@ fn test_navigation_empty_filter() {
     Dropdown::update(&mut state, DropdownMessage::SetFilter("xyz".to_string()));
 
     // No matches - navigation should be no-op
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    Dropdown::update(&mut state, DropdownMessage::Down);
     assert_eq!(state.highlighted_index, 0);
 }
 
@@ -339,7 +339,7 @@ fn test_navigation_empty_filter() {
 fn test_navigation_when_closed() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
     // Closed - navigation should be no-op
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    Dropdown::update(&mut state, DropdownMessage::Down);
     assert_eq!(state.highlighted_index, 0);
 }
 
@@ -349,7 +349,7 @@ fn test_navigation_when_closed() {
 fn test_confirm() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    Dropdown::update(&mut state, DropdownMessage::Down);
 
     Dropdown::update(&mut state, DropdownMessage::Confirm);
     assert_eq!(state.selected_index(), Some(1));
@@ -360,7 +360,7 @@ fn test_confirm() {
 fn test_confirm_returns_selected() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    Dropdown::update(&mut state, DropdownMessage::Down);
 
     let output = Dropdown::update(&mut state, DropdownMessage::Confirm);
     assert_eq!(output, Some(DropdownOutput::Selected("B".to_string())));
@@ -410,7 +410,7 @@ fn test_confirm_with_filter() {
     Dropdown::update(&mut state, DropdownMessage::Open);
     Dropdown::update(&mut state, DropdownMessage::Insert('a'));
     // Filtered: Apple (0), Banana (1)
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    Dropdown::update(&mut state, DropdownMessage::Down);
     // Highlight on Banana (index 1 in filtered = original index 1)
 
     let output = Dropdown::update(&mut state, DropdownMessage::Confirm);
@@ -513,7 +513,7 @@ fn test_view_open_with_filter() {
 fn test_view_highlight() {
     let mut state = DropdownState::new(vec!["Apple", "Banana", "Cherry"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    Dropdown::update(&mut state, DropdownMessage::Down);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 15);
 
@@ -585,7 +585,7 @@ fn test_full_workflow() {
     assert_eq!(state.filtered_count(), 2); // Apple, Apricot
 
     // Navigate
-    Dropdown::update(&mut state, DropdownMessage::SelectNext);
+    Dropdown::update(&mut state, DropdownMessage::Down);
     assert_eq!(state.highlighted_index, 1); // Apricot
 
     // Confirm
@@ -627,17 +627,17 @@ fn test_large_dropdown_navigation() {
 
     // Navigate down through 50 options
     for _ in 0..50 {
-        Dropdown::update(&mut state, DropdownMessage::SelectNext);
+        Dropdown::update(&mut state, DropdownMessage::Down);
     }
     assert_eq!(state.highlighted_index, 50);
 
     // Navigate 50 more to wrap back to 0
     for _ in 0..50 {
-        Dropdown::update(&mut state, DropdownMessage::SelectNext);
+        Dropdown::update(&mut state, DropdownMessage::Down);
     }
     assert_eq!(state.highlighted_index, 0);
 
-    // SelectPrevious from 0 wraps to last
-    Dropdown::update(&mut state, DropdownMessage::SelectPrevious);
+    // Up from 0 wraps to last
+    Dropdown::update(&mut state, DropdownMessage::Up);
     assert_eq!(state.highlighted_index, 99);
 }

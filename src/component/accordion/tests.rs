@@ -223,34 +223,34 @@ fn test_next() {
     let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")]);
     assert_eq!(state.focused_index(), 0);
 
-    Accordion::update(&mut state, AccordionMessage::Next);
+    Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(state.focused_index(), 1);
 
-    Accordion::update(&mut state, AccordionMessage::Next);
+    Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(state.focused_index(), 2);
 }
 
 #[test]
 fn test_previous() {
     let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")]);
-    Accordion::update(&mut state, AccordionMessage::Next);
-    Accordion::update(&mut state, AccordionMessage::Next);
+    Accordion::update(&mut state, AccordionMessage::Down);
+    Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(state.focused_index(), 2);
 
-    Accordion::update(&mut state, AccordionMessage::Previous);
+    Accordion::update(&mut state, AccordionMessage::Up);
     assert_eq!(state.focused_index(), 1);
 
-    Accordion::update(&mut state, AccordionMessage::Previous);
+    Accordion::update(&mut state, AccordionMessage::Up);
     assert_eq!(state.focused_index(), 0);
 }
 
 #[test]
 fn test_next_wraps() {
     let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::update(&mut state, AccordionMessage::Next);
+    Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(state.focused_index(), 1);
 
-    Accordion::update(&mut state, AccordionMessage::Next);
+    Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(state.focused_index(), 0); // Wrapped
 }
 
@@ -259,15 +259,15 @@ fn test_previous_wraps() {
     let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
     assert_eq!(state.focused_index(), 0);
 
-    Accordion::update(&mut state, AccordionMessage::Previous);
+    Accordion::update(&mut state, AccordionMessage::Up);
     assert_eq!(state.focused_index(), 1); // Wrapped to end
 }
 
 #[test]
 fn test_first() {
     let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")]);
-    Accordion::update(&mut state, AccordionMessage::Next);
-    Accordion::update(&mut state, AccordionMessage::Next);
+    Accordion::update(&mut state, AccordionMessage::Down);
+    Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(state.focused_index(), 2);
 
     let output = Accordion::update(&mut state, AccordionMessage::First);
@@ -289,10 +289,10 @@ fn test_last() {
 fn test_navigation_empty() {
     let mut state = AccordionState::default();
 
-    let output = Accordion::update(&mut state, AccordionMessage::Next);
+    let output = Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(output, None);
 
-    let output = Accordion::update(&mut state, AccordionMessage::Previous);
+    let output = Accordion::update(&mut state, AccordionMessage::Up);
     assert_eq!(output, None);
 
     let output = Accordion::update(&mut state, AccordionMessage::First);
@@ -306,7 +306,7 @@ fn test_navigation_empty() {
 fn test_navigation_returns_focus_changed() {
     let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
-    let output = Accordion::update(&mut state, AccordionMessage::Next);
+    let output = Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(output, Some(AccordionOutput::FocusChanged(1)));
 }
 
@@ -443,7 +443,7 @@ fn test_disabled_ignores_messages() {
     assert_eq!(output, None);
     assert!(!state.panels()[0].is_expanded());
 
-    let output = Accordion::update(&mut state, AccordionMessage::Next);
+    let output = Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(output, None);
     assert_eq!(state.focused_index(), 0);
 }
@@ -580,7 +580,7 @@ fn test_full_workflow() {
     assert_eq!(state.expanded_count(), 1);
 
     // Navigate to next and toggle
-    Accordion::update(&mut state, AccordionMessage::Next);
+    Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(state.focused_index(), 1);
     Accordion::update(&mut state, AccordionMessage::Toggle);
     assert_eq!(state.expanded_count(), 2);

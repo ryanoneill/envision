@@ -21,7 +21,7 @@
 //! let _ = Dropdown::update(&mut state, DropdownMessage::Insert('a'));
 //!
 //! // Navigate to second filtered option and confirm
-//! let _ = Dropdown::update(&mut state, DropdownMessage::SelectNext);
+//! let _ = Dropdown::update(&mut state, DropdownMessage::Down);
 //! let output = Dropdown::update(&mut state, DropdownMessage::Confirm);
 //! assert_eq!(output, Some(DropdownOutput::Selected("Banana".to_string()))); // Banana selected
 //! ```
@@ -47,10 +47,10 @@ pub enum DropdownMessage {
     Backspace,
     /// Clear the filter text.
     ClearFilter,
-    /// Move highlight to next filtered option.
-    SelectNext,
-    /// Move highlight to previous filtered option.
-    SelectPrevious,
+    /// Move highlight down to the next filtered option.
+    Down,
+    /// Move highlight up to the previous filtered option.
+    Up,
     /// Confirm current highlighted selection.
     Confirm,
     /// Set the filter text directly.
@@ -293,8 +293,8 @@ impl DropdownState {
 /// should map:
 /// - Characters to [`DropdownMessage::Insert`]
 /// - Backspace to [`DropdownMessage::Backspace`]
-/// - Up arrow to [`DropdownMessage::SelectPrevious`]
-/// - Down arrow to [`DropdownMessage::SelectNext`]
+/// - Down arrow to [`DropdownMessage::Down`]
+/// - Up arrow to [`DropdownMessage::Up`]
 /// - Enter to [`DropdownMessage::Confirm`]
 /// - Escape to [`DropdownMessage::Close`]
 ///
@@ -336,7 +336,7 @@ impl DropdownState {
 /// Dropdown::update(&mut state, DropdownMessage::Insert('a'));
 ///
 /// // Navigate and select
-/// Dropdown::update(&mut state, DropdownMessage::SelectNext);
+/// Dropdown::update(&mut state, DropdownMessage::Down);
 /// let output = Dropdown::update(&mut state, DropdownMessage::Confirm);
 /// assert_eq!(output, Some(DropdownOutput::Selected("Banana".to_string()))); // Banana
 /// ```
@@ -438,7 +438,7 @@ impl Component for Dropdown {
                     None
                 }
             }
-            DropdownMessage::SelectNext => {
+            DropdownMessage::Down => {
                 if state.is_open && !state.filtered_indices.is_empty() {
                     state.highlighted_index =
                         (state.highlighted_index + 1) % state.filtered_indices.len();
@@ -448,7 +448,7 @@ impl Component for Dropdown {
                     None
                 }
             }
-            DropdownMessage::SelectPrevious => {
+            DropdownMessage::Up => {
                 if state.is_open && !state.filtered_indices.is_empty() {
                     if state.highlighted_index == 0 {
                         state.highlighted_index = state.filtered_indices.len() - 1;
