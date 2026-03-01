@@ -103,7 +103,9 @@ pub mod backend;
 pub mod component;
 pub mod harness;
 pub mod input;
+pub mod layout;
 pub mod overlay;
+pub mod style;
 pub mod theme;
 
 // Re-export commonly used types
@@ -177,6 +179,15 @@ pub mod prelude {
     pub use crate::backend::{CaptureBackend, EnhancedCell};
     pub use crate::harness::{AppHarness, TestHarness};
 
-    // Ratatui re-export
-    pub use ratatui::prelude::*;
+    // Layout and style re-exports (replacing `pub use ratatui::prelude::*`)
+    pub use crate::layout::{
+        Alignment, Constraint, Direction, Frame, Layout, Margin, Position, Rect, Size, Terminal,
+    };
+    pub use crate::style::{Color, Modifier, Style, Stylize};
+
+    // Text types
+    pub use ratatui::text::{Line, Span, Text};
+
+    // Widget traits
+    pub use ratatui::widgets::{StatefulWidget, Widget};
 }
