@@ -222,10 +222,10 @@ pub struct LoadingListState<T: Clone> {
     selected: Option<usize>,
     /// Whether the component is focused.
     focused: bool,
+    /// Whether the component is disabled.
+    disabled: bool,
     /// Current spinner animation frame.
     spinner_frame: usize,
-    /// Label extractor function (stored as a result of initial extraction).
-    /// Note: We can't store the function, so labels are extracted at construction time.
     /// Optional title.
     title: Option<String>,
     /// Whether to show loading indicators.
@@ -238,6 +238,7 @@ impl<T: Clone> Default for LoadingListState<T> {
             items: Vec::new(),
             selected: None,
             focused: false,
+            disabled: false,
             spinner_frame: 0,
             title: None,
             show_indicators: true,
@@ -285,6 +286,7 @@ impl<T: Clone> LoadingListState<T> {
             items: list_items,
             selected: None,
             focused: false,
+            disabled: false,
             spinner_frame: 0,
             title: None,
             show_indicators: true,
@@ -300,6 +302,12 @@ impl<T: Clone> LoadingListState<T> {
     /// Sets whether to show loading indicators.
     pub fn with_indicators(mut self, show: bool) -> Self {
         self.show_indicators = show;
+        self
+    }
+
+    /// Sets the disabled state using builder pattern.
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
         self
     }
 
@@ -437,6 +445,18 @@ impl<T: Clone + 'static> LoadingListState<T> {
         self.focused = focused;
     }
 
+    /// Returns true if the loading list is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    ///
+    /// Disabled loading lists do not respond to input events.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
     /// Maps an input event to a loading list message.
     pub fn handle_event(&self, event: &Event) -> Option<LoadingListMessage<T>> {
         LoadingList::handle_event(self, event)
@@ -477,6 +497,19 @@ impl<T: Clone> Component for LoadingList<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+        // Block user-initiated navigation/selection when disabled.
+        // Programmatic state changes (SetItems, SetLoading, etc.) still work.
+        if state.disabled {
+            match msg {
+                LoadingListMessage::Up
+                | LoadingListMessage::Down
+                | LoadingListMessage::First
+                | LoadingListMessage::Last
+                | LoadingListMessage::Select => return None,
+                _ => {}
+            }
+        }
+
         match msg {
             LoadingListMessage::SetItems(items) => {
                 // Convert items without a label function - uses Debug if available
@@ -606,7 +639,7 @@ impl<T: Clone> Component for LoadingList<T> {
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused {
+        if !state.focused || state.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
