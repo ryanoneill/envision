@@ -49,3 +49,7 @@ harness = false
 [[bench]]
 name = "component_view"
 harness = false
+
+[[bench]]
+name = "component_events"
+harness = false
