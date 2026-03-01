@@ -431,6 +431,24 @@ fn test_view_multiple() {
 }
 
 #[test]
+fn test_view_multiple_toasts() {
+    let mut state = ToastState::new();
+    state.info("Information message");
+    state.warning("Warning message");
+    state.error("Error message");
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
+
+    terminal
+        .draw(|frame| {
+            Toast::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
 fn test_view_max_visible() {
     let mut state = ToastState::with_max_visible(2);
     state.info("Message 1");

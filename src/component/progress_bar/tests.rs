@@ -189,6 +189,48 @@ fn test_percentage_rounding() {
 }
 
 #[test]
+fn test_view_zero_progress() {
+    let state = ProgressBarState::new();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
+
+    terminal
+        .draw(|frame| {
+            ProgressBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_view_half_progress() {
+    let state = ProgressBarState::with_progress(0.5);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
+
+    terminal
+        .draw(|frame| {
+            ProgressBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_view_full_progress() {
+    let state = ProgressBarState::with_progress(1.0);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
+
+    terminal
+        .draw(|frame| {
+            ProgressBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
 fn test_view_renders() {
     let mut state = ProgressBarState::with_progress(0.5);
     state.set_label(Some("Loading".to_string()));

@@ -265,6 +265,35 @@ fn test_view() {
 }
 
 #[test]
+fn test_view_unfocused() {
+    let state = InputFieldState::with_value("Hello");
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+
+    terminal
+        .draw(|frame| {
+            InputField::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_view_disabled() {
+    let mut state = InputFieldState::with_value("Hello");
+    state.set_disabled(true);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+
+    terminal
+        .draw(|frame| {
+            InputField::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
 fn test_view_placeholder() {
     let mut state = InputField::init();
     state.set_placeholder("Enter text...");
