@@ -64,6 +64,15 @@ pub struct SelectableListState<T: Clone> {
     disabled: bool,
 }
 
+impl<T: Clone + PartialEq> PartialEq for SelectableListState<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.items == other.items
+            && self.list_state.selected() == other.list_state.selected()
+            && self.focused == other.focused
+            && self.disabled == other.disabled
+    }
+}
+
 impl<T: Clone> Default for SelectableListState<T> {
     fn default() -> Self {
         Self {

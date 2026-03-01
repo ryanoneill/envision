@@ -64,7 +64,7 @@ impl StatusLogLevel {
 }
 
 /// A single status log entry.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct StatusLogEntry {
     /// Unique identifier.
     id: u64,
@@ -177,7 +177,7 @@ pub enum StatusLogOutput {
 ///
 /// state.info("Application started");
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct StatusLogState {
     /// All log entries (stored in insertion order, displayed newest first).
     entries: Vec<StatusLogEntry>,

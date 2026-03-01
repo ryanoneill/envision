@@ -194,7 +194,7 @@ pub enum KeyHintsMessage {
 ///     .hint("Enter", "Select")
 ///     .hint("Esc", "Cancel");
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct KeyHintsState {
     /// All key hints.
     hints: Vec<KeyHint>,

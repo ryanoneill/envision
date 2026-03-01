@@ -55,7 +55,7 @@ pub enum ProgressBarOutput {
 }
 
 /// State for a ProgressBar component.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct ProgressBarState {
     /// The current progress value (0.0 to 1.0).
     progress: f32,

@@ -90,7 +90,7 @@ pub enum TextAreaOutput {
 }
 
 /// State for a TextArea component.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct TextAreaState {
     /// Lines of text.
     lines: Vec<String>,

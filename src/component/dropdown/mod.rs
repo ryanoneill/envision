@@ -72,7 +72,7 @@ pub enum DropdownOutput {
 }
 
 /// State for a Dropdown component.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct DropdownState {
     /// All available options.
     options: Vec<String>,

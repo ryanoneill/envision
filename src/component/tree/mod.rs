@@ -41,6 +41,15 @@ pub struct TreeNode<T> {
     expanded: bool,
 }
 
+impl<T: PartialEq> PartialEq for TreeNode<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.label == other.label
+            && self.data == other.data
+            && self.children == other.children
+            && self.expanded == other.expanded
+    }
+}
+
 impl<T: Clone> TreeNode<T> {
     /// Creates a new tree node with a label and data.
     ///
@@ -215,6 +224,15 @@ pub struct TreeState<T> {
     focused: bool,
     /// Whether the tree is disabled.
     disabled: bool,
+}
+
+impl<T: Clone + PartialEq> PartialEq for TreeState<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.roots == other.roots
+            && self.selected_index == other.selected_index
+            && self.focused == other.focused
+            && self.disabled == other.disabled
+    }
 }
 
 impl<T: Clone> Default for TreeState<T> {

@@ -99,7 +99,7 @@ pub enum TooltipOutput {
 ///     .with_fg_color(Color::White)
 ///     .with_bg_color(Color::DarkGray);
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct TooltipState {
     /// The tooltip content/text.
     content: String,

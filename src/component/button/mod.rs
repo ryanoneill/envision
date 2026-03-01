@@ -46,7 +46,7 @@ pub enum ButtonOutput {
 }
 
 /// State for a Button component.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct ButtonState {
     /// The button label.
     label: String,

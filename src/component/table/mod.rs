@@ -110,7 +110,7 @@ pub trait TableRow: Clone {
 /// assert_eq!(col.header(), "Name");
 /// assert!(col.is_sortable());
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Column {
     header: String,
     width: Constraint,
@@ -231,6 +231,18 @@ pub struct TableState<T: TableRow> {
     display_order: Vec<usize>,
     focused: bool,
     disabled: bool,
+}
+
+impl<T: TableRow + PartialEq> PartialEq for TableState<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.rows == other.rows
+            && self.columns == other.columns
+            && self.selected == other.selected
+            && self.sort == other.sort
+            && self.display_order == other.display_order
+            && self.focused == other.focused
+            && self.disabled == other.disabled
+    }
 }
 
 impl<T: TableRow> Default for TableState<T> {
