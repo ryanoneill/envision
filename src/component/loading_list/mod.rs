@@ -34,6 +34,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// Loading state of an individual item.
@@ -425,6 +426,33 @@ impl<T: Clone> LoadingListState<T> {
     }
 }
 
+impl<T: Clone + 'static> LoadingListState<T> {
+    /// Returns true if the loading list is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a loading list message.
+    pub fn handle_event(&self, event: &Event) -> Option<LoadingListMessage<T>> {
+        LoadingList::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<LoadingListOutput<T>> {
+        LoadingList::dispatch_event(self, event)
+    }
+
+    /// Updates the loading list state with a message, returning any output.
+    pub fn update(&mut self, msg: LoadingListMessage<T>) -> Option<LoadingListOutput<T>> {
+        LoadingList::update(self, msg)
+    }
+}
+
 /// A list component with per-item loading and error states.
 ///
 /// # Visual Format
@@ -574,6 +602,22 @@ impl<T: Clone> Component for LoadingList<T> {
                 state.spinner_frame = (state.spinner_frame + 1) % 4;
                 None
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Up | KeyCode::Char('k') => Some(LoadingListMessage::Up),
+                KeyCode::Down | KeyCode::Char('j') => Some(LoadingListMessage::Down),
+                KeyCode::Enter => Some(LoadingListMessage::Select),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

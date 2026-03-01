@@ -24,6 +24,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, ListState};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a SelectableList.
@@ -145,6 +146,33 @@ impl<T: Clone> SelectableListState<T> {
     }
 }
 
+impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
+    /// Returns true if the selectable list is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a selectable list message.
+    pub fn handle_event(&self, event: &Event) -> Option<SelectableListMessage> {
+        SelectableList::<T>::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<SelectableListOutput<T>> {
+        SelectableList::<T>::dispatch_event(self, event)
+    }
+
+    /// Updates the selectable list state with a message, returning any output.
+    pub fn update(&mut self, msg: SelectableListMessage) -> Option<SelectableListOutput<T>> {
+        SelectableList::<T>::update(self, msg)
+    }
+}
+
 /// A generic selectable list component.
 ///
 /// This component provides a scrollable list with keyboard navigation.
@@ -165,6 +193,26 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
 
     fn init() -> Self::State {
         SelectableListState::default()
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Up | KeyCode::Char('k') => Some(SelectableListMessage::Up),
+                KeyCode::Down | KeyCode::Char('j') => Some(SelectableListMessage::Down),
+                KeyCode::Home | KeyCode::Char('g') => Some(SelectableListMessage::First),
+                KeyCode::End | KeyCode::Char('G') => Some(SelectableListMessage::Last),
+                KeyCode::Enter => Some(SelectableListMessage::Select),
+                KeyCode::PageUp => Some(SelectableListMessage::PageUp(10)),
+                KeyCode::PageDown => Some(SelectableListMessage::PageDown(10)),
+                _ => None,
+            }
+        } else {
+            None
+        }
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {

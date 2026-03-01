@@ -35,6 +35,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// A single breadcrumb segment.
@@ -374,6 +375,31 @@ impl BreadcrumbState {
         let (start, end) = self.visible_range();
         &self.segments[start..end]
     }
+
+    /// Returns true if the breadcrumb is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a breadcrumb message.
+    pub fn handle_event(&self, event: &Event) -> Option<BreadcrumbMessage> {
+        Breadcrumb::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<BreadcrumbOutput> {
+        Breadcrumb::dispatch_event(self, event)
+    }
+
+    /// Updates the breadcrumb state with a message, returning any output.
+    pub fn update(&mut self, msg: BreadcrumbMessage) -> Option<BreadcrumbOutput> {
+        Breadcrumb::update(self, msg)
+    }
 }
 
 /// A breadcrumb navigation component.
@@ -472,6 +498,24 @@ impl Component for Breadcrumb {
                     None
                 }
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused || state.disabled {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Left | KeyCode::Char('h') => Some(BreadcrumbMessage::Left),
+                KeyCode::Right | KeyCode::Char('l') => Some(BreadcrumbMessage::Right),
+                KeyCode::Home => Some(BreadcrumbMessage::First),
+                KeyCode::End => Some(BreadcrumbMessage::Last),
+                KeyCode::Enter => Some(BreadcrumbMessage::Select),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

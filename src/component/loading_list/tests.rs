@@ -875,3 +875,113 @@ fn test_large_loading_list_navigation() {
     LoadingList::update(&mut state, LoadingListMessage::Up);
     assert_eq!(state.selected(), Some(99));
 }
+
+// ========================================
+// handle_event Tests
+// ========================================
+
+use crate::input::{Event, KeyCode};
+
+#[test]
+fn test_handle_event_up() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_focused(true);
+
+    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Up));
+    assert_eq!(msg, Some(LoadingListMessage::Up));
+}
+
+#[test]
+fn test_handle_event_down() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_focused(true);
+
+    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Down));
+    assert_eq!(msg, Some(LoadingListMessage::Down));
+}
+
+#[test]
+fn test_handle_event_select() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_focused(true);
+
+    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(LoadingListMessage::Select));
+}
+
+#[test]
+fn test_handle_event_vim_keys() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_focused(true);
+
+    // 'k' -> Up
+    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::char('k'));
+    assert_eq!(msg, Some(LoadingListMessage::Up));
+
+    // 'j' -> Down
+    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::char('j'));
+    assert_eq!(msg, Some(LoadingListMessage::Down));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let items = make_items();
+    let state = LoadingListState::with_items(items, |i| i.name.clone());
+    // Not focused by default
+    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Up));
+    assert_eq!(msg, None);
+}
+
+// ========================================
+// dispatch_event Tests
+// ========================================
+
+#[test]
+fn test_dispatch_event() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_focused(true);
+
+    // Down dispatches Down message, which selects the first item
+    let output = LoadingList::<TestItem>::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+    assert!(matches!(
+        output,
+        Some(LoadingListOutput::SelectionChanged(0))
+    ));
+    assert_eq!(state.selected(), Some(0));
+}
+
+// ========================================
+// Instance Method Tests
+// ========================================
+
+#[test]
+fn test_instance_methods() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_focused(true);
+
+    // instance handle_event
+    let msg = state.handle_event(&Event::key(KeyCode::Down));
+    assert_eq!(msg, Some(LoadingListMessage::Down));
+
+    // instance update
+    let output = state.update(LoadingListMessage::Down);
+    assert!(matches!(
+        output,
+        Some(LoadingListOutput::SelectionChanged(0))
+    ));
+    assert_eq!(state.selected(), Some(0));
+
+    // instance dispatch_event
+    let output = state.dispatch_event(&Event::key(KeyCode::Down));
+    assert!(matches!(
+        output,
+        Some(LoadingListOutput::SelectionChanged(1))
+    ));
+    assert_eq!(state.selected(), Some(1));
+}

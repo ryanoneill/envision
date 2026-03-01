@@ -101,6 +101,7 @@
 
 use ratatui::prelude::*;
 
+use crate::input::Event;
 use crate::theme::Theme;
 
 mod accordion;
@@ -236,6 +237,35 @@ pub trait Component: Sized {
     /// Use [`Theme::default()`] for the standard color scheme, or
     /// [`Theme::nord()`] for the Nord color palette.
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme);
+
+    /// Maps an input event to a component message.
+    ///
+    /// This is the read-only half of event handling. It inspects the
+    /// component's state and the incoming event, and returns an appropriate
+    /// message if the event is relevant to this component.
+    ///
+    /// The default implementation returns `None` (ignores all events).
+    /// Components should override this to handle keyboard input when focused.
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        let _ = (state, event);
+        None
+    }
+
+    /// Dispatches an event by mapping it to a message and updating state.
+    ///
+    /// This combines [`handle_event`](Component::handle_event) and
+    /// [`update`](Component::update) into a single call. If the event
+    /// produces a message, the message is passed to `update` and the
+    /// output is returned.
+    ///
+    /// This is the primary method users should call for event routing.
+    fn dispatch_event(state: &mut Self::State, event: &Event) -> Option<Self::Output> {
+        if let Some(msg) = Self::handle_event(state, event) {
+            Self::update(state, msg)
+        } else {
+            None
+        }
+    }
 }
 
 /// A component that can receive keyboard focus.

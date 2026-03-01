@@ -502,3 +502,132 @@ fn test_show_resets_focus_to_primary() {
     // Focus should be back at primary
     assert_eq!(state.focused_button(), 1);
 }
+
+// ========================================
+// handle_event Tests
+// ========================================
+
+use crate::input::{Event, KeyCode};
+
+#[test]
+fn test_handle_event_tab() {
+    let mut state = DialogState::confirm("T", "M");
+    Dialog::show(&mut state);
+
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Tab));
+    assert_eq!(msg, Some(DialogMessage::FocusNext));
+}
+
+#[test]
+fn test_handle_event_backtab() {
+    let mut state = DialogState::confirm("T", "M");
+    Dialog::show(&mut state);
+
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::BackTab));
+    assert_eq!(msg, Some(DialogMessage::FocusPrev));
+}
+
+#[test]
+fn test_handle_event_enter() {
+    let mut state = DialogState::confirm("T", "M");
+    Dialog::show(&mut state);
+
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(DialogMessage::Press));
+}
+
+#[test]
+fn test_handle_event_escape() {
+    let mut state = DialogState::confirm("T", "M");
+    Dialog::show(&mut state);
+
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Esc));
+    assert_eq!(msg, Some(DialogMessage::Close));
+}
+
+#[test]
+fn test_handle_event_ignored_when_not_visible() {
+    let state = DialogState::confirm("T", "M");
+    // Not visible by default
+    assert!(!Dialog::is_visible(&state));
+
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+// ========================================
+// dispatch_event Tests
+// ========================================
+
+#[test]
+fn test_dispatch_event() {
+    let mut state = DialogState::alert("T", "M");
+    Dialog::show(&mut state);
+
+    // Enter dispatches Press, which presses the OK button
+    let output = Dialog::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(DialogOutput::ButtonPressed("ok".into())));
+    assert!(!Dialog::is_visible(&state));
+}
+
+// ========================================
+// Instance Method Tests
+// ========================================
+
+#[test]
+fn test_instance_is_visible() {
+    let mut state = DialogState::alert("T", "M");
+    assert!(!state.is_visible());
+    state.set_visible(true);
+    assert!(state.is_visible());
+}
+
+#[test]
+fn test_instance_set_visible() {
+    let mut state = DialogState::confirm("T", "M");
+    state.set_visible(true);
+    assert!(state.is_visible());
+    // set_visible(true) resets focus to primary
+    assert_eq!(state.focused_button(), 1);
+
+    state.set_visible(false);
+    assert!(!state.is_visible());
+}
+
+#[test]
+fn test_instance_is_focused() {
+    let mut state = DialogState::alert("T", "M");
+    assert!(!state.is_focused());
+    state.set_focused(true);
+    assert!(state.is_focused());
+}
+
+#[test]
+fn test_instance_set_focused() {
+    let mut state = DialogState::alert("T", "M");
+    state.set_focused(true);
+    assert!(state.is_focused());
+    state.set_focused(false);
+    assert!(!state.is_focused());
+}
+
+#[test]
+fn test_instance_dispatch_event() {
+    let mut state = DialogState::alert("T", "M");
+    state.set_visible(true);
+
+    // instance handle_event
+    let msg = state.handle_event(&Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(DialogMessage::Press));
+
+    // instance update
+    let output = state.update(DialogMessage::Press);
+    assert_eq!(output, Some(DialogOutput::ButtonPressed("ok".into())));
+
+    // Re-show for dispatch_event test
+    state.set_visible(true);
+
+    // instance dispatch_event
+    let output = state.dispatch_event(&Event::key(KeyCode::Esc));
+    assert_eq!(output, Some(DialogOutput::Closed));
+}

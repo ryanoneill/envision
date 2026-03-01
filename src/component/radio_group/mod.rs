@@ -34,6 +34,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{List, ListItem};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a RadioGroup.
@@ -186,6 +187,33 @@ impl<T: Clone> RadioGroupState<T> {
     }
 }
 
+impl<T: Clone + std::fmt::Display + 'static> RadioGroupState<T> {
+    /// Returns true if the radio group is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a radio group message.
+    pub fn handle_event(&self, event: &Event) -> Option<RadioGroupMessage> {
+        RadioGroup::<T>::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<RadioGroupOutput<T>> {
+        RadioGroup::<T>::dispatch_event(self, event)
+    }
+
+    /// Updates the radio group state with a message, returning any output.
+    pub fn update(&mut self, msg: RadioGroupMessage) -> Option<RadioGroupOutput<T>> {
+        RadioGroup::<T>::update(self, msg)
+    }
+}
+
 /// A mutually exclusive option selection component.
 ///
 /// `RadioGroup` provides a group of radio buttons where exactly one option
@@ -236,6 +264,22 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
 
     fn init() -> Self::State {
         RadioGroupState::default()
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused || state.disabled {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Up | KeyCode::Char('k') => Some(RadioGroupMessage::Up),
+                KeyCode::Down | KeyCode::Char('j') => Some(RadioGroupMessage::Down),
+                KeyCode::Enter => Some(RadioGroupMessage::Confirm),
+                _ => None,
+            }
+        } else {
+            None
+        }
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
