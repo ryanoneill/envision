@@ -238,3 +238,19 @@ fn test_set_max_visible() {
     state.set_max_visible(5);
     assert_eq!(state.max_visible(), 5);
 }
+
+#[test]
+fn test_default_matches_init() {
+    let default_state = MultiProgressState::default();
+    let init_state = MultiProgress::init();
+
+    assert_eq!(default_state.is_empty(), init_state.is_empty());
+    assert_eq!(default_state.len(), init_state.len());
+    assert_eq!(default_state.max_visible(), init_state.max_visible());
+    assert_eq!(default_state.scroll_offset(), init_state.scroll_offset());
+    assert_eq!(default_state.auto_remove_completed(), init_state.auto_remove_completed());
+    assert_eq!(default_state.is_focused(), init_state.is_focused());
+    assert_eq!(default_state.is_disabled(), init_state.is_disabled());
+    assert_eq!(default_state.title(), init_state.title());
+    assert_eq!(default_state.show_percentages(), init_state.show_percentages());
+}

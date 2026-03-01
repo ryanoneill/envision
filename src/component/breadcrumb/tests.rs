@@ -776,3 +776,17 @@ fn test_builder_chaining_breadcrumb() {
     assert!(state.is_disabled());
     assert!(state.is_truncated());
 }
+
+#[test]
+fn test_default_matches_init() {
+    let default_state = BreadcrumbState::default();
+    let init_state = Breadcrumb::init();
+
+    assert_eq!(default_state.is_empty(), init_state.is_empty());
+    assert_eq!(default_state.len(), init_state.len());
+    assert_eq!(default_state.focused_index(), init_state.focused_index());
+    assert_eq!(default_state.is_focused(), init_state.is_focused());
+    assert_eq!(default_state.is_disabled(), init_state.is_disabled());
+    assert_eq!(default_state.separator(), init_state.separator());
+    assert_eq!(default_state.max_visible(), init_state.max_visible());
+}

@@ -231,3 +231,14 @@ fn test_full_animation_cycle() {
     // Should cycle through |, /, -, \ twice
     assert_eq!(frames_seen, vec!['|', '/', '-', '\\', '|', '/', '-', '\\']);
 }
+
+#[test]
+fn test_default_matches_init() {
+    let default_state = SpinnerState::default();
+    let init_state = Spinner::init();
+
+    assert_eq!(default_state.style(), init_state.style());
+    assert_eq!(default_state.frame_index(), init_state.frame_index());
+    assert_eq!(default_state.is_spinning(), init_state.is_spinning());
+    assert_eq!(default_state.label(), init_state.label());
+}

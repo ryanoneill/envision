@@ -126,6 +126,12 @@ pub struct RouterState<S: Clone + PartialEq> {
     max_history: usize,
 }
 
+impl<S: Default + Clone + PartialEq> Default for RouterState<S> {
+    fn default() -> Self {
+        Self::new(S::default())
+    }
+}
+
 impl<S: Clone + PartialEq> RouterState<S> {
     /// Creates a new router state starting at the given screen.
     pub fn new(initial: S) -> Self {
