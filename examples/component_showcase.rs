@@ -3,8 +3,9 @@
 //! This example shows how to compose multiple components together into a cohesive
 //! application using The Elm Architecture (TEA) pattern. It demonstrates:
 //!
-//! - **State composition**: Embedding multiple component states in one App state
-//! - **Message routing**: Mapping keyboard events to the right component
+//! - **Event dispatch**: Using `dispatch_event` to route events to the focused component
+//! - **Instance methods**: Using `state.set_focused()` instead of `Component::set_focused()`
+//! - **Simplified messages**: Global hotkeys only; component events dispatched directly
 //! - **Focus management**: Using `FocusManager` to coordinate keyboard focus
 //! - **Output handling**: Reacting to component outputs (selections, confirmations)
 //! - **Theming**: Consistent styling across all components via `Theme`
@@ -27,13 +28,10 @@
 //! Run with: `cargo run --example component_showcase`
 
 use envision::component::{
-    Button, ButtonState, Checkbox, CheckboxMessage, CheckboxState, Column, Dialog, DialogMessage,
-    DialogOutput, DialogState, FocusManager, Focusable, InputField, InputFieldMessage,
-    InputFieldState, Menu, MenuItem, MenuMessage, MenuOutput, MenuState, ProgressBar,
-    ProgressBarState, RadioGroup, RadioGroupMessage, RadioGroupState, SelectableList,
-    SelectableListMessage, SelectableListState, Spinner, SpinnerMessage, SpinnerState, Table,
-    TableMessage, TableOutput, TableRow, TableState, Tabs, TabsMessage, TabsState, Toast,
-    ToastMessage, ToastState, Toggleable,
+    ButtonState, CheckboxState, Column, Component, Dialog, DialogMessage, DialogOutput,
+    DialogState, FocusManager, InputFieldState, MenuItem, MenuOutput, MenuState, ProgressBarState,
+    RadioGroupState, SelectableListState, Spinner, SpinnerMessage, SpinnerState, Table,
+    TableOutput, TableRow, TableState, Tabs, TabsState, Toast, ToastMessage, ToastState,
 };
 use envision::prelude::*;
 use ratatui::layout::{Alignment, Constraint, Layout};
@@ -139,7 +137,6 @@ impl Default for State {
             FocusId::Table,
             FocusId::Progress,
         ]);
-        // Start with tabs focused
         focus.focus(&FocusId::Tabs);
 
         let tabs = TabsState::new(vec![Panel::Form, Panel::Data, Panel::Status]);
@@ -229,53 +226,23 @@ impl Default for State {
 }
 
 // ---------------------------------------------------------------------------
-// Messages
+// Messages — simplified with ComponentEvent routing
 // ---------------------------------------------------------------------------
 
 #[derive(Clone, Debug)]
 enum Msg {
-    // Navigation
+    // Global navigation
     FocusNext,
     FocusPrev,
-    TabLeft,
-    TabRight,
 
-    // Menu
-    MenuRight,
-    MenuLeft,
-    MenuSelect,
+    // Component events — routed to the focused component via dispatch_event
+    ComponentEvent(Event),
 
-    // Form
-    InputChar(char),
-    InputBackspace,
-    CheckboxToggle,
-    RadioDown,
-    RadioUp,
-    Submit,
-
-    // Data
-    ListDown,
-    ListUp,
-    ListSelect,
-    TableDown,
-    TableUp,
-    TableSelect,
-
-    // Status
-    ProgressIncrease,
-    ProgressDecrease,
+    // Timer-driven (not from keyboard)
     SpinnerTick,
-
-    // Dialog
-    DialogConfirm,
-    DialogClose,
-    DialogFocusNext,
-
-    // Toast
-    ToastDismiss,
     ToastTick,
 
-    // App
+    // App control
     Quit,
 }
 
@@ -292,42 +259,9 @@ impl App for ShowcaseApp {
     }
 
     fn update(state: &mut State, msg: Msg) -> Command<Msg> {
-        // If dialog is visible, only handle dialog messages
-        if Dialog::is_visible(&state.dialog) {
-            match msg {
-                Msg::DialogConfirm => {
-                    if let Some(output) = Dialog::update(&mut state.dialog, DialogMessage::Press) {
-                        match output {
-                            DialogOutput::ButtonPressed(id) if id == "ok" => {
-                                state.submission_count += 1;
-                                let count = state.submission_count;
-                                Toast::update(
-                                    &mut state.toast,
-                                    ToastMessage::Push {
-                                        message: format!("Form submitted! (#{count})"),
-                                        level: envision::component::ToastLevel::Success,
-                                        duration_ms: Some(3000),
-                                    },
-                                );
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-                Msg::DialogClose => {
-                    Dialog::update(&mut state.dialog, DialogMessage::Close);
-                }
-                Msg::DialogFocusNext => {
-                    Dialog::update(&mut state.dialog, DialogMessage::FocusNext);
-                }
-                Msg::Quit => return Command::quit(),
-                _ => {}
-            }
-            return Command::none();
-        }
-
         match msg {
-            // Navigation
+            Msg::Quit => return Command::quit(),
+
             Msg::FocusNext => {
                 state.focus.focus_next();
                 sync_focus(state);
@@ -336,115 +270,73 @@ impl App for ShowcaseApp {
                 state.focus.focus_prev();
                 sync_focus(state);
             }
-            Msg::TabLeft => {
-                Tabs::update(&mut state.tabs, TabsMessage::Left);
-            }
-            Msg::TabRight => {
-                Tabs::update(&mut state.tabs, TabsMessage::Right);
-            }
 
-            // Menu
-            Msg::MenuRight => {
-                Menu::update(&mut state.menu, MenuMessage::Right);
-            }
-            Msg::MenuLeft => {
-                Menu::update(&mut state.menu, MenuMessage::Left);
-            }
-            Msg::MenuSelect => {
-                if let Some(MenuOutput::Selected(idx)) =
-                    Menu::update(&mut state.menu, MenuMessage::Select)
-                {
-                    let label = state.menu.items()[idx].label();
-                    Toast::update(
-                        &mut state.toast,
-                        ToastMessage::Push {
-                            message: format!("Menu: {label} clicked"),
-                            level: envision::component::ToastLevel::Info,
-                            duration_ms: Some(2000),
-                        },
-                    );
+            Msg::ComponentEvent(event) => {
+                // If dialog is visible, route events to it
+                if state.dialog.is_visible() {
+                    if let Some(output) = state.dialog.dispatch_event(&event) {
+                        handle_dialog_output(state, output);
+                    }
+                    return Command::none();
+                }
+
+                // Route to focused component
+                let focused = state.focus.focused().cloned();
+                match focused {
+                    Some(FocusId::Menu) => {
+                        if let Some(MenuOutput::Selected(idx)) = state.menu.dispatch_event(&event) {
+                            let label = state.menu.items()[idx].label();
+                            push_toast(
+                                &mut state.toast,
+                                format!("Menu: {label} clicked"),
+                                envision::component::ToastLevel::Info,
+                            );
+                        }
+                    }
+                    Some(FocusId::Tabs) => {
+                        state.tabs.dispatch_event(&event);
+                    }
+                    Some(FocusId::Input) => {
+                        state.input.dispatch_event(&event);
+                    }
+                    Some(FocusId::Checkbox) => {
+                        state.checkbox.dispatch_event(&event);
+                    }
+                    Some(FocusId::Radio) => {
+                        state.radio.dispatch_event(&event);
+                    }
+                    Some(FocusId::SubmitButton) => {
+                        if state.submit_button.dispatch_event(&event).is_some() {
+                            Dialog::update(&mut state.dialog, DialogMessage::Open);
+                        }
+                    }
+                    Some(FocusId::List) => {
+                        state.list.dispatch_event(&event);
+                    }
+                    Some(FocusId::Table) => {
+                        if let Some(TableOutput::Selected(row)) = state.table.dispatch_event(&event)
+                        {
+                            push_toast(
+                                &mut state.toast,
+                                format!("Selected user: {}", row.name),
+                                envision::component::ToastLevel::Info,
+                            );
+                        }
+                    }
+                    Some(FocusId::Progress) => {
+                        // Progress bar isn't interactive via keyboard;
+                        // could extend to handle +/- keys here.
+                    }
+                    None => {}
                 }
             }
 
-            // Form
-            Msg::InputChar(c) => {
-                InputField::update(&mut state.input, InputFieldMessage::Insert(c));
-            }
-            Msg::InputBackspace => {
-                InputField::update(&mut state.input, InputFieldMessage::Backspace);
-            }
-            Msg::CheckboxToggle => {
-                Checkbox::update(&mut state.checkbox, CheckboxMessage::Toggle);
-            }
-            Msg::RadioDown => {
-                RadioGroup::update(&mut state.radio, RadioGroupMessage::Down);
-            }
-            Msg::RadioUp => {
-                RadioGroup::update(&mut state.radio, RadioGroupMessage::Up);
-            }
-            Msg::Submit => {
-                Dialog::update(&mut state.dialog, DialogMessage::Open);
-            }
-
-            // Data
-            Msg::ListDown => {
-                SelectableList::<String>::update(&mut state.list, SelectableListMessage::Down);
-            }
-            Msg::ListUp => {
-                SelectableList::<String>::update(&mut state.list, SelectableListMessage::Up);
-            }
-            Msg::ListSelect => {
-                SelectableList::<String>::update(&mut state.list, SelectableListMessage::Select);
-            }
-            Msg::TableDown => {
-                Table::<UserRow>::update(&mut state.table, TableMessage::Down);
-            }
-            Msg::TableUp => {
-                Table::<UserRow>::update(&mut state.table, TableMessage::Up);
-            }
-            Msg::TableSelect => {
-                if let Some(TableOutput::Selected(row)) =
-                    Table::<UserRow>::update(&mut state.table, TableMessage::Select)
-                {
-                    Toast::update(
-                        &mut state.toast,
-                        ToastMessage::Push {
-                            message: format!("Selected user: {}", row.name),
-                            level: envision::component::ToastLevel::Info,
-                            duration_ms: Some(2000),
-                        },
-                    );
-                }
-            }
-
-            // Status
-            Msg::ProgressIncrease => {
-                let current = state.progress.progress();
-                state.progress.set_progress((current + 0.1).min(1.0));
-            }
-            Msg::ProgressDecrease => {
-                let current = state.progress.progress();
-                state.progress.set_progress((current - 0.1).max(0.0));
-            }
             Msg::SpinnerTick => {
                 Spinner::update(&mut state.spinner, SpinnerMessage::Tick);
-            }
-
-            // Toast
-            Msg::ToastDismiss => {
-                if let Some(item) = state.toast.toasts().first() {
-                    let id = item.id();
-                    Toast::update(&mut state.toast, ToastMessage::Dismiss(id));
-                }
             }
             Msg::ToastTick => {
                 Toast::update(&mut state.toast, ToastMessage::Tick(100));
             }
-
-            // Dialog (handled above when visible)
-            Msg::DialogConfirm | Msg::DialogClose | Msg::DialogFocusNext => {}
-
-            Msg::Quit => return Command::quit(),
         }
         Command::none()
     }
@@ -463,7 +355,7 @@ impl App for ShowcaseApp {
         .split(area);
 
         // Menu bar
-        Menu::view(&state.menu, frame, main_chunks[0], &theme);
+        envision::component::Menu::view(&state.menu, frame, main_chunks[0], &theme);
 
         // Tabs
         Tabs::view(&state.tabs, frame, main_chunks[1], &theme);
@@ -498,7 +390,7 @@ impl App for ShowcaseApp {
         frame.render_widget(controls, main_chunks[3]);
 
         // Dialog overlay (rendered last, on top)
-        if Dialog::is_visible(&state.dialog) {
+        if state.dialog.is_visible() {
             let dialog_area = centered_rect(40, 8, area);
             Dialog::view(&state.dialog, frame, dialog_area, &theme);
         }
@@ -512,25 +404,44 @@ impl App for ShowcaseApp {
                 KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => Some(Msg::Quit),
                 KeyCode::Tab => Some(Msg::FocusNext),
                 KeyCode::BackTab => Some(Msg::FocusPrev),
-
-                // Tab navigation
-                KeyCode::Left => Some(Msg::TabLeft),
-                KeyCode::Right => Some(Msg::TabRight),
-
-                // Component-specific
-                KeyCode::Up => Some(Msg::RadioUp),
-                KeyCode::Down => Some(Msg::RadioDown),
-                KeyCode::Enter => Some(Msg::Submit),
-                KeyCode::Char(' ') => Some(Msg::CheckboxToggle),
-                KeyCode::Char(c) => Some(Msg::InputChar(c)),
-                KeyCode::Backspace => Some(Msg::InputBackspace),
-
-                _ => None,
+                // All other keys are forwarded as ComponentEvent
+                _ => Some(Msg::ComponentEvent(event.clone())),
             }
         } else {
             None
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// Event Output Handlers
+// ---------------------------------------------------------------------------
+
+fn handle_dialog_output(state: &mut State, output: DialogOutput) {
+    match output {
+        DialogOutput::ButtonPressed(id) if id == "ok" => {
+            state.submission_count += 1;
+            let count = state.submission_count;
+            push_toast(
+                &mut state.toast,
+                format!("Form submitted! (#{count})"),
+                envision::component::ToastLevel::Success,
+            );
+        }
+        DialogOutput::Closed => {}
+        _ => {}
+    }
+}
+
+fn push_toast(toast: &mut ToastState, message: String, level: envision::component::ToastLevel) {
+    Toast::update(
+        toast,
+        ToastMessage::Push {
+            message,
+            level,
+            duration_ms: Some(3000),
+        },
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -553,10 +464,10 @@ fn render_form_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme
     ])
     .split(inner);
 
-    InputField::view(&state.input, frame, chunks[0], theme);
-    Checkbox::view(&state.checkbox, frame, chunks[1], theme);
-    RadioGroup::view(&state.radio, frame, chunks[2], theme);
-    Button::view(&state.submit_button, frame, chunks[3], theme);
+    envision::component::InputField::view(&state.input, frame, chunks[0], theme);
+    envision::component::Checkbox::view(&state.checkbox, frame, chunks[1], theme);
+    envision::component::RadioGroup::view(&state.radio, frame, chunks[2], theme);
+    envision::component::Button::view(&state.submit_button, frame, chunks[3], theme);
 }
 
 fn render_data_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
@@ -577,7 +488,7 @@ fn render_data_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme
         .title("Users");
     let list_inner = list_block.inner(chunks[0]);
     frame.render_widget(list_block, chunks[0]);
-    SelectableList::view(&state.list, frame, list_inner, theme);
+    envision::component::SelectableList::view(&state.list, frame, list_inner, theme);
 
     // Table
     Table::view(&state.table, frame, chunks[1], theme);
@@ -598,7 +509,7 @@ fn render_status_panel(state: &State, frame: &mut Frame, area: Rect, theme: &The
     ])
     .split(inner);
 
-    ProgressBar::view(&state.progress, frame, chunks[0], theme);
+    envision::component::ProgressBar::view(&state.progress, frame, chunks[0], theme);
     Spinner::view(&state.spinner, frame, chunks[1], theme);
     Toast::view(&state.toast, frame, chunks[2], theme);
 }
@@ -607,21 +518,23 @@ fn render_status_panel(state: &State, frame: &mut Frame, area: Rect, theme: &The
 // Helpers
 // ---------------------------------------------------------------------------
 
-/// Synchronizes focus state across all components based on the FocusManager.
+/// Synchronizes focus state across all components using instance methods.
+/// No turbofish needed — the type is inferred from the receiver.
 fn sync_focus(state: &mut State) {
     let focused = state.focus.focused().cloned();
 
-    Menu::set_focused(&mut state.menu, focused == Some(FocusId::Menu));
-    Tabs::set_focused(&mut state.tabs, focused == Some(FocusId::Tabs));
-    InputField::set_focused(&mut state.input, focused == Some(FocusId::Input));
-    Checkbox::set_focused(&mut state.checkbox, focused == Some(FocusId::Checkbox));
-    RadioGroup::set_focused(&mut state.radio, focused == Some(FocusId::Radio));
-    Button::set_focused(
-        &mut state.submit_button,
-        focused == Some(FocusId::SubmitButton),
-    );
-    SelectableList::<String>::set_focused(&mut state.list, focused == Some(FocusId::List));
-    Table::<UserRow>::set_focused(&mut state.table, focused == Some(FocusId::Table));
+    state.menu.set_focused(focused == Some(FocusId::Menu));
+    state.tabs.set_focused(focused == Some(FocusId::Tabs));
+    state.input.set_focused(focused == Some(FocusId::Input));
+    state
+        .checkbox
+        .set_focused(focused == Some(FocusId::Checkbox));
+    state.radio.set_focused(focused == Some(FocusId::Radio));
+    state
+        .submit_button
+        .set_focused(focused == Some(FocusId::SubmitButton));
+    state.list.set_focused(focused == Some(FocusId::List));
+    state.table.set_focused(focused == Some(FocusId::Table));
 }
 
 /// Creates a centered rectangle for dialog overlays.
@@ -639,74 +552,107 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut vt = Runtime::<ShowcaseApp, _>::virtual_terminal(80, 30)?;
 
     println!("=== Component Showcase ===\n");
-    println!("Demonstrating 12 Envision components in a single application.\n");
+    println!("Demonstrating 12 Envision components with simplified event routing.\n");
 
     // Initial render (Form panel)
     vt.tick()?;
     println!("--- Initial State (Form Panel) ---");
     println!("{}\n", vt.display_ansi());
 
-    // Navigate menu
-    vt.dispatch(Msg::MenuRight);
-    vt.dispatch(Msg::MenuSelect);
+    // Navigate menu via ComponentEvent
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Right,
+    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Enter,
+    )));
 
-    // Switch to Data panel
-    vt.dispatch(Msg::TabRight);
+    // Switch focus to Tabs, then navigate
+    vt.dispatch(Msg::FocusNext);
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Right,
+    )));
     vt.tick()?;
     println!("--- Data Panel ---");
     println!("{}\n", vt.display_ansi());
 
-    // Navigate list and table
-    vt.dispatch(Msg::ListDown);
-    vt.dispatch(Msg::ListDown);
-    vt.dispatch(Msg::ListUp);
-    vt.dispatch(Msg::ListSelect);
-    vt.dispatch(Msg::TableDown);
-    vt.dispatch(Msg::TableDown);
-    vt.dispatch(Msg::TableUp);
-    vt.dispatch(Msg::TableSelect);
+    // Focus the list, navigate it
+    vt.dispatch(Msg::FocusNext); // -> Input
+    vt.dispatch(Msg::FocusNext); // -> Checkbox
+    vt.dispatch(Msg::FocusNext); // -> Radio
+    vt.dispatch(Msg::FocusNext); // -> SubmitButton
+    vt.dispatch(Msg::FocusNext); // -> List
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Down,
+    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Down,
+    )));
+
+    // Focus the table, select a row
+    vt.dispatch(Msg::FocusNext); // -> Table
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Down,
+    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Enter,
+    )));
     vt.tick()?;
     println!("--- Data Panel (after navigation) ---");
     println!("{}\n", vt.display_ansi());
 
     // Switch to Status panel
-    vt.dispatch(Msg::TabRight);
+    vt.dispatch(Msg::FocusNext); // -> Progress
+    vt.dispatch(Msg::FocusNext); // -> Menu (wraps)
+    vt.dispatch(Msg::FocusNext); // -> Tabs
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Right,
+    )));
     vt.dispatch(Msg::SpinnerTick);
-    vt.dispatch(Msg::ProgressIncrease);
-    vt.dispatch(Msg::ProgressIncrease);
-    vt.dispatch(Msg::ProgressDecrease);
     vt.dispatch(Msg::ToastTick);
     vt.tick()?;
     println!("--- Status Panel ---");
     println!("{}\n", vt.display_ansi());
 
-    // Go back to Form panel and submit
-    vt.dispatch(Msg::TabLeft);
-    vt.dispatch(Msg::TabLeft);
-    vt.dispatch(Msg::MenuLeft);
-    vt.dispatch(Msg::Submit);
+    // Go back to Form and submit
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Left,
+    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Left,
+    )));
+
+    // Focus the submit button and press it
+    vt.dispatch(Msg::FocusNext); // -> Input
+    vt.dispatch(Msg::FocusNext); // -> Checkbox
+    vt.dispatch(Msg::FocusNext); // -> Radio
+    vt.dispatch(Msg::FocusNext); // -> SubmitButton
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Enter,
+    )));
     vt.tick()?;
     println!("--- Form Panel with Dialog Overlay ---");
     println!("{}\n", vt.display_ansi());
 
-    // Confirm dialog
-    vt.dispatch(Msg::DialogFocusNext); // Focus OK button
-    vt.dispatch(Msg::DialogConfirm);
+    // Confirm dialog via dispatch_event (Tab to OK, Enter to confirm)
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Tab,
+    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Enter,
+    )));
     vt.tick()?;
     println!("--- After Submission (toast notification) ---");
     println!("{}\n", vt.display_ansi());
-
-    // Dismiss toast
-    vt.dispatch(Msg::ToastDismiss);
-
-    // Close dialog if open
-    vt.dispatch(Msg::DialogClose);
-    vt.tick()?;
 
     println!("=== Showcase Complete ===");
     println!("This example demonstrated Menu, Tabs, InputField, Checkbox,");
     println!("RadioGroup, Button, SelectableList, Table, ProgressBar,");
     println!("Spinner, Toast, and Dialog components working together.");
+    println!("\nKey improvements shown:");
+    println!("  - Msg enum: 6 variants (was 30+)");
+    println!("  - sync_focus: no turbofish needed");
+    println!("  - dispatch_event: routes events to focused component directly");
 
     Ok(())
 }
