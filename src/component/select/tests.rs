@@ -420,3 +420,25 @@ fn test_selected_item_none() {
     let state = SelectState::new(vec!["A", "B"]);
     assert_eq!(state.selected_item(), None);
 }
+
+// ========================================
+// Builder Tests
+// ========================================
+
+#[test]
+fn test_with_disabled() {
+    let state = SelectState::new(vec!["A", "B", "C"]).with_disabled(true);
+    assert!(state.is_disabled());
+
+    let state = SelectState::new(vec!["A", "B", "C"]).with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_prevents_open() {
+    let mut state = SelectState::new(vec!["A", "B", "C"]).with_disabled(true);
+    state.set_focused(true);
+    let output = Select::update(&mut state, SelectMessage::Open);
+    assert_eq!(output, None);
+    assert!(!state.is_open());
+}

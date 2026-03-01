@@ -221,3 +221,35 @@ fn test_instance_update() {
     let output = state.update(CheckboxMessage::Toggle);
     assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
 }
+
+// ========================================
+// Builder Tests
+// ========================================
+
+#[test]
+fn test_with_disabled() {
+    let state = CheckboxState::new("Test").with_disabled(true);
+    assert!(state.is_disabled());
+
+    let state = CheckboxState::new("Test").with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_prevents_toggle() {
+    let mut state = CheckboxState::new("Test").with_disabled(true);
+    state.set_focused(true);
+    let output = Checkbox::update(&mut state, CheckboxMessage::Toggle);
+    assert_eq!(output, None);
+    assert!(!state.is_checked());
+}
+
+#[test]
+fn test_with_disabled_prevents_handle_event() {
+    let state = CheckboxState::new("Test").with_disabled(true);
+    // Even if we manually set focused, disabled should prevent events
+    let mut state = state;
+    state.set_focused(true);
+    let msg = Checkbox::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
