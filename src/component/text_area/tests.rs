@@ -832,8 +832,10 @@ fn test_handle_event_arrow_right() {
 fn test_handle_event_ctrl_home() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let msg =
-        TextArea::handle_event(&state, &Event::key_with(KeyCode::Home, KeyModifiers::CONTROL));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key_with(KeyCode::Home, KeyModifiers::CONTROL),
+    );
     assert_eq!(msg, Some(TextAreaMessage::TextStart));
 }
 
@@ -841,8 +843,10 @@ fn test_handle_event_ctrl_home() {
 fn test_handle_event_ctrl_end() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let msg =
-        TextArea::handle_event(&state, &Event::key_with(KeyCode::End, KeyModifiers::CONTROL));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key_with(KeyCode::End, KeyModifiers::CONTROL),
+    );
     assert_eq!(msg, Some(TextAreaMessage::TextEnd));
 }
 

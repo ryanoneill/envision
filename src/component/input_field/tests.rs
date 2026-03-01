@@ -418,8 +418,10 @@ fn test_handle_event_enter() {
 fn test_handle_event_ctrl_left() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let msg =
-        InputField::handle_event(&state, &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+    );
     assert_eq!(msg, Some(InputFieldMessage::WordLeft));
 }
 
@@ -427,8 +429,10 @@ fn test_handle_event_ctrl_left() {
 fn test_handle_event_ctrl_right() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let msg =
-        InputField::handle_event(&state, &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+    );
     assert_eq!(msg, Some(InputFieldMessage::WordRight));
 }
 
