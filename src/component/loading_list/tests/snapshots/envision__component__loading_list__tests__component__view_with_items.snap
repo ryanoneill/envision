@@ -1,10 +1,10 @@
 ---
-source: src/component/loading_list/tests.rs
+source: src/component/loading_list/tests/component.rs
 expression: terminal.backend().to_string()
 ---
 ┌──────────────────────────────────────────────────────────┐
-│  ✗ Item One - Error: Connection failed                   │
-│    Item Two                                              │
+│    Item One                                              │
+│▸   Item Two                                              │
 │    Item Three                                            │
 │                                                          │
 │                                                          │
