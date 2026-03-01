@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::{Event, KeyCode};
 
 // ========== AccordionPanel Tests ==========
 
@@ -597,4 +598,147 @@ fn test_full_workflow() {
     // Expand all
     Accordion::update(&mut state, AccordionMessage::ExpandAll);
     assert!(state.is_all_expanded());
+}
+
+// ========== handle_event Tests ==========
+
+#[test]
+fn test_handle_event_up_when_focused() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    Accordion::focus(&mut state);
+
+    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Up));
+    assert_eq!(msg, Some(AccordionMessage::Up));
+}
+
+#[test]
+fn test_handle_event_down_when_focused() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    Accordion::focus(&mut state);
+
+    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Down));
+    assert_eq!(msg, Some(AccordionMessage::Down));
+}
+
+#[test]
+fn test_handle_event_toggle_when_focused() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    Accordion::focus(&mut state);
+
+    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(AccordionMessage::Toggle));
+}
+
+#[test]
+fn test_handle_event_first_when_focused() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    Accordion::focus(&mut state);
+
+    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Home));
+    assert_eq!(msg, Some(AccordionMessage::First));
+}
+
+#[test]
+fn test_handle_event_last_when_focused() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    Accordion::focus(&mut state);
+
+    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::End));
+    assert_eq!(msg, Some(AccordionMessage::Last));
+}
+
+#[test]
+fn test_handle_event_vim_keys() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    Accordion::focus(&mut state);
+
+    let msg_k = Accordion::handle_event(&state, &Event::char('k'));
+    assert_eq!(msg_k, Some(AccordionMessage::Up));
+
+    let msg_j = Accordion::handle_event(&state, &Event::char('j'));
+    assert_eq!(msg_j, Some(AccordionMessage::Down));
+}
+
+#[test]
+fn test_handle_event_space_toggle() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    Accordion::focus(&mut state);
+
+    let msg = Accordion::handle_event(&state, &Event::char(' '));
+    assert_eq!(msg, Some(AccordionMessage::Toggle));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    // Not focused by default
+
+    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Down));
+    assert_eq!(msg, None);
+
+    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+
+    let msg = Accordion::handle_event(&state, &Event::char('j'));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_handle_event_ignored_when_disabled() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    Accordion::focus(&mut state);
+    state.set_disabled(true);
+
+    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Down));
+    assert_eq!(msg, None);
+
+    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+// ========== dispatch_event Tests ==========
+
+#[test]
+fn test_dispatch_event() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    Accordion::focus(&mut state);
+
+    // Dispatch Down: should move focus from 0 to 1
+    let output = Accordion::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+    assert_eq!(output, Some(AccordionOutput::FocusChanged(1)));
+    assert_eq!(state.focused_index(), 1);
+
+    // Dispatch Enter: should toggle the focused panel
+    let output = Accordion::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(AccordionOutput::Expanded(1)));
+    assert!(state.panels()[1].is_expanded());
+}
+
+// ========== Instance Method Tests ==========
+
+#[test]
+fn test_instance_methods() {
+    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+
+    // is_focused / set_focused
+    assert!(!state.is_focused());
+    state.set_focused(true);
+    assert!(state.is_focused());
+    state.set_focused(false);
+    assert!(!state.is_focused());
+
+    // dispatch_event via instance method
+    state.set_focused(true);
+    let output = state.dispatch_event(&Event::key(KeyCode::Down));
+    assert_eq!(output, Some(AccordionOutput::FocusChanged(1)));
+    assert_eq!(state.focused_index(), 1);
+
+    // update via instance method
+    let output = state.update(AccordionMessage::Toggle);
+    assert_eq!(output, Some(AccordionOutput::Expanded(1)));
+    assert!(state.panels()[1].is_expanded());
+
+    // handle_event via instance method
+    let msg = state.handle_event(&Event::key(KeyCode::Up));
+    assert_eq!(msg, Some(AccordionMessage::Up));
 }
