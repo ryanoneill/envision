@@ -188,14 +188,20 @@ fn test_set_items_to_empty() {
 }
 
 #[test]
-fn test_list_state_mut() {
+fn test_select_by_index() {
     let mut state = SelectableListState::with_items(vec!["a", "b", "c"]);
 
-    // Access and modify the internal list state
-    let list_state = state.list_state_mut();
-    list_state.select(Some(2));
-
+    // Select a specific index
+    state.select(Some(2));
     assert_eq!(state.selected_index(), Some(2));
+
+    // Out-of-bounds index is ignored
+    state.select(Some(10));
+    assert_eq!(state.selected_index(), Some(2));
+
+    // Deselect
+    state.select(None);
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
