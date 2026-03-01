@@ -16,16 +16,23 @@ use super::OverlayAction;
 ///
 /// # Example
 ///
-/// ```ignore
+/// ```rust
+/// use envision::overlay::{Overlay, OverlayAction};
+/// use envision::input::Event;
+/// use envision::theme::Theme;
+/// use crossterm::event::KeyCode;
+/// use ratatui::layout::Rect;
+/// use ratatui::Frame;
+///
 /// struct ConfirmDialog {
 ///     message: String,
 /// }
 ///
-/// impl Overlay<MyMsg> for ConfirmDialog {
-///     fn handle_event(&mut self, event: &Event) -> OverlayAction<MyMsg> {
+/// impl Overlay<String> for ConfirmDialog {
+///     fn handle_event(&mut self, event: &Event) -> OverlayAction<String> {
 ///         if let Some(key) = event.as_key() {
 ///             match key.code {
-///                 KeyCode::Char('y') => OverlayAction::DismissWithMessage(MyMsg::Confirmed),
+///                 KeyCode::Char('y') => OverlayAction::DismissWithMessage("confirmed".into()),
 ///                 KeyCode::Char('n') | KeyCode::Esc => OverlayAction::Dismiss,
 ///                 _ => OverlayAction::Consumed,
 ///             }

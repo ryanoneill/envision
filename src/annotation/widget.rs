@@ -148,7 +148,7 @@ thread_local! {
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust
 /// use envision::annotation::{with_annotations, Annotate, Annotation};
 /// use ratatui::widgets::Paragraph;
 /// use ratatui::Terminal;

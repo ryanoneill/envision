@@ -25,6 +25,7 @@ use crate::backend::CaptureBackend;
 /// # Example
 ///
 /// ```rust,no_run
+/// // requires stdout access for CrosstermBackend
 /// use envision::adapter::DualBackend;
 /// use envision::backend::CaptureBackend;
 /// use ratatui::backend::CrosstermBackend;

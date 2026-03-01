@@ -8,7 +8,7 @@
 //!
 //! # Example
 //!
-//! ```rust,no_run
+//! ```rust
 //! use envision::harness::{TestHarness, Assertion};
 //! use envision::annotation::Annotation;
 //! use ratatui::widgets::Paragraph;
@@ -20,7 +20,7 @@
 //!         Paragraph::new("Hello, World!"),
 //!         frame.area(),
 //!     );
-//! });
+//! }).unwrap();
 //!
 //! harness.assert_contains("Hello, World!");
 //! ```

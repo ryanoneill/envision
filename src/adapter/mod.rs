@@ -6,6 +6,7 @@
 //! # Example
 //!
 //! ```rust,no_run
+//! // requires stdout access
 //! use envision::adapter::DualBackend;
 //! use envision::backend::CaptureBackend;
 //! use ratatui::backend::CrosstermBackend;

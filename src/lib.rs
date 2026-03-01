@@ -12,6 +12,7 @@
 //! ### Terminal Mode - For Interactive Use
 //!
 //! ```rust,ignore
+//! // requires real terminal
 //! #[tokio::main]
 //! async fn main() -> std::io::Result<()> {
 //!     Runtime::<MyApp>::new_terminal()?.run_terminal().await
@@ -20,9 +21,22 @@
 //!
 //! ### Virtual Terminal Mode - For Programmatic Control
 //!
-//! ```rust,ignore
+//! ```rust
+//! # use envision::prelude::*;
+//! # struct MyApp;
+//! # #[derive(Default, Clone)]
+//! # struct MyState;
+//! # #[derive(Clone)]
+//! # enum MyMsg {}
+//! # impl App for MyApp {
+//! #     type State = MyState;
+//! #     type Message = MyMsg;
+//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+//! #     fn view(state: &MyState, frame: &mut Frame) {}
+//! # }
 //! // Create a virtual terminal
-//! let mut vt = Runtime::<MyApp>::virtual_terminal(80, 24)?;
+//! let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
 //!
 //! // Inject events programmatically
 //! vt.send(Event::key(KeyCode::Char('j')));
@@ -30,6 +44,7 @@
 //!
 //! // Inspect the display
 //! println!("{}", vt.display());
+//! # Ok::<(), std::io::Error>(())
 //! ```
 //!
 //! The same application code works in both modes - your `App` implementation
@@ -44,16 +59,30 @@
 //! - **Update**: Pure function that produces new state from old state + message
 //! - **View**: Pure function that renders state to the UI
 //!
-//! ```rust,ignore
+//! ```rust
+//! use envision::prelude::*;
+//!
 //! struct MyApp;
+//!
+//! #[derive(Default, Clone)]
+//! struct MyState;
+//!
+//! #[derive(Clone)]
+//! enum MyMsg {}
 //!
 //! impl App for MyApp {
 //!     type State = MyState;
 //!     type Message = MyMsg;
 //!
-//!     fn init() -> (Self::State, Command<Self::Message>) { /* ... */ }
-//!     fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> { /* ... */ }
-//!     fn view(state: &Self::State, frame: &mut Frame) { /* ... */ }
+//!     fn init() -> (Self::State, Command<Self::Message>) {
+//!         (MyState, Command::none())
+//!     }
+//!     fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+//!         Command::none()
+//!     }
+//!     fn view(state: &Self::State, frame: &mut Frame) {
+//!         // Render UI
+//!     }
 //! }
 //! ```
 //!
@@ -118,7 +147,7 @@ pub use theme::Theme;
 ///
 /// Provides all framework types and component types needed by most applications.
 ///
-/// ```rust,ignore
+/// ```rust
 /// use envision::prelude::*;
 ///
 /// // All component types are now available:
