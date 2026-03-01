@@ -6,14 +6,14 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Component, Focusable, ListMessage, SelectableList, SelectableListState};
+//! use envision::component::{Component, Focusable, SelectableListMessage, SelectableList, SelectableListState};
 //!
 //! // Create a list of items
 //! let mut state = SelectableList::<String>::init();
 //! state.set_items(vec!["Item 1".into(), "Item 2".into(), "Item 3".into()]);
 //!
 //! // Navigate down
-//! SelectableList::<String>::update(&mut state, ListMessage::Down);
+//! SelectableList::<String>::update(&mut state, SelectableListMessage::Down);
 //! assert_eq!(state.selected_index(), Some(1));
 //!
 //! // Get selected item
@@ -28,7 +28,7 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a SelectableList.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ListMessage {
+pub enum SelectableListMessage {
     /// Move selection up by one.
     Up,
     /// Move selection down by one.
@@ -47,7 +47,7 @@ pub enum ListMessage {
 
 /// Output messages from a SelectableList.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ListOutput<T: Clone> {
+pub enum SelectableListOutput<T: Clone> {
     /// An item was selected (e.g., Enter pressed).
     Selected(T),
     /// The selection changed to a new index.
@@ -160,8 +160,8 @@ pub struct SelectableList<T: Clone>(std::marker::PhantomData<T>);
 
 impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
     type State = SelectableListState<T>;
-    type Message = ListMessage;
-    type Output = ListOutput<T>;
+    type Message = SelectableListMessage;
+    type Output = SelectableListOutput<T>;
 
     fn init() -> Self::State {
         SelectableListState::default()
@@ -176,50 +176,50 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
         let current = state.list_state.selected().unwrap_or(0);
 
         match msg {
-            ListMessage::Up => {
+            SelectableListMessage::Up => {
                 let new_index = current.saturating_sub(1);
                 if new_index != current {
                     state.list_state.select(Some(new_index));
-                    return Some(ListOutput::SelectionChanged(new_index));
+                    return Some(SelectableListOutput::SelectionChanged(new_index));
                 }
             }
-            ListMessage::Down => {
+            SelectableListMessage::Down => {
                 let new_index = (current + 1).min(len - 1);
                 if new_index != current {
                     state.list_state.select(Some(new_index));
-                    return Some(ListOutput::SelectionChanged(new_index));
+                    return Some(SelectableListOutput::SelectionChanged(new_index));
                 }
             }
-            ListMessage::First => {
+            SelectableListMessage::First => {
                 if current != 0 {
                     state.list_state.select(Some(0));
-                    return Some(ListOutput::SelectionChanged(0));
+                    return Some(SelectableListOutput::SelectionChanged(0));
                 }
             }
-            ListMessage::Last => {
+            SelectableListMessage::Last => {
                 let last = len - 1;
                 if current != last {
                     state.list_state.select(Some(last));
-                    return Some(ListOutput::SelectionChanged(last));
+                    return Some(SelectableListOutput::SelectionChanged(last));
                 }
             }
-            ListMessage::PageUp(page_size) => {
+            SelectableListMessage::PageUp(page_size) => {
                 let new_index = current.saturating_sub(page_size);
                 if new_index != current {
                     state.list_state.select(Some(new_index));
-                    return Some(ListOutput::SelectionChanged(new_index));
+                    return Some(SelectableListOutput::SelectionChanged(new_index));
                 }
             }
-            ListMessage::PageDown(page_size) => {
+            SelectableListMessage::PageDown(page_size) => {
                 let new_index = (current + page_size).min(len - 1);
                 if new_index != current {
                     state.list_state.select(Some(new_index));
-                    return Some(ListOutput::SelectionChanged(new_index));
+                    return Some(SelectableListOutput::SelectionChanged(new_index));
                 }
             }
-            ListMessage::Select => {
+            SelectableListMessage::Select => {
                 if let Some(item) = state.items.get(current).cloned() {
-                    return Some(ListOutput::Selected(item));
+                    return Some(SelectableListOutput::Selected(item));
                 }
             }
         }

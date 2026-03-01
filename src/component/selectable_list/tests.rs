@@ -61,16 +61,16 @@ fn test_set_items_clamps_selection() {
 fn test_navigate_down() {
     let mut state = SelectableListState::with_items(vec!["a", "b", "c"]);
 
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::Down);
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::Down);
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(output, Some(ListOutput::SelectionChanged(1)));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(1)));
 
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::Down);
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::Down);
     assert_eq!(state.selected_index(), Some(2));
-    assert_eq!(output, Some(ListOutput::SelectionChanged(2)));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(2)));
 
     // At the end, should stay at last item
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::Down);
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::Down);
     assert_eq!(state.selected_index(), Some(2));
     assert_eq!(output, None);
 }
@@ -80,16 +80,16 @@ fn test_navigate_up() {
     let mut state = SelectableListState::with_items(vec!["a", "b", "c"]);
     state.select(Some(2));
 
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::Up);
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::Up);
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(output, Some(ListOutput::SelectionChanged(1)));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(1)));
 
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::Up);
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::Up);
     assert_eq!(state.selected_index(), Some(0));
-    assert_eq!(output, Some(ListOutput::SelectionChanged(0)));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(0)));
 
     // At the beginning, should stay at first item
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::Up);
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::Up);
     assert_eq!(state.selected_index(), Some(0));
     assert_eq!(output, None);
 }
@@ -99,30 +99,30 @@ fn test_navigate_first_last() {
     let mut state = SelectableListState::with_items(vec!["a", "b", "c", "d", "e"]);
     state.select(Some(2));
 
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::Last);
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::Last);
     assert_eq!(state.selected_index(), Some(4));
-    assert_eq!(output, Some(ListOutput::SelectionChanged(4)));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(4)));
 
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::First);
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::First);
     assert_eq!(state.selected_index(), Some(0));
-    assert_eq!(output, Some(ListOutput::SelectionChanged(0)));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(0)));
 }
 
 #[test]
 fn test_page_navigation() {
     let mut state = SelectableListState::with_items(vec!["a", "b", "c", "d", "e", "f", "g"]);
 
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::PageDown(3));
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::PageDown(3));
     assert_eq!(state.selected_index(), Some(3));
-    assert_eq!(output, Some(ListOutput::SelectionChanged(3)));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(3)));
 
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::PageDown(10));
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::PageDown(10));
     assert_eq!(state.selected_index(), Some(6)); // Clamped to last
-    assert_eq!(output, Some(ListOutput::SelectionChanged(6)));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(6)));
 
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::PageUp(4));
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::PageUp(4));
     assert_eq!(state.selected_index(), Some(2));
-    assert_eq!(output, Some(ListOutput::SelectionChanged(2)));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(2)));
 }
 
 #[test]
@@ -130,8 +130,8 @@ fn test_select() {
     let mut state = SelectableListState::with_items(vec!["a", "b", "c"]);
     state.select(Some(1));
 
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::Select);
-    assert_eq!(output, Some(ListOutput::Selected("b")));
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::Select);
+    assert_eq!(output, Some(SelectableListOutput::Selected("b")));
 }
 
 #[test]
@@ -139,15 +139,15 @@ fn test_empty_list_navigation() {
     let mut state = SelectableList::<String>::init();
 
     assert_eq!(
-        SelectableList::<String>::update(&mut state, ListMessage::Down),
+        SelectableList::<String>::update(&mut state, SelectableListMessage::Down),
         None
     );
     assert_eq!(
-        SelectableList::<String>::update(&mut state, ListMessage::Up),
+        SelectableList::<String>::update(&mut state, SelectableListMessage::Up),
         None
     );
     assert_eq!(
-        SelectableList::<String>::update(&mut state, ListMessage::Select),
+        SelectableList::<String>::update(&mut state, SelectableListMessage::Select),
         None
     );
 }
@@ -204,7 +204,7 @@ fn test_first_when_already_at_first() {
     assert_eq!(state.selected_index(), Some(0));
 
     // First should return None when already at first
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::First);
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::First);
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(0));
 }
@@ -216,7 +216,7 @@ fn test_last_when_already_at_last() {
     assert_eq!(state.selected_index(), Some(2));
 
     // Last should return None when already at last
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::Last);
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::Last);
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(2));
 }
@@ -227,7 +227,7 @@ fn test_page_up_when_at_first() {
     assert_eq!(state.selected_index(), Some(0));
 
     // PageUp at first should return None
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::PageUp(3));
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::PageUp(3));
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(0));
 }
@@ -239,7 +239,7 @@ fn test_page_down_when_at_last() {
     assert_eq!(state.selected_index(), Some(4));
 
     // PageDown at last should return None
-    let output = SelectableList::<&str>::update(&mut state, ListMessage::PageDown(3));
+    let output = SelectableList::<&str>::update(&mut state, SelectableListMessage::PageDown(3));
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(4));
 }
@@ -300,23 +300,23 @@ fn test_large_list_navigation() {
 
     // Navigate to middle
     for _ in 0..500 {
-        SelectableList::<String>::update(&mut state, ListMessage::Down);
+        SelectableList::<String>::update(&mut state, SelectableListMessage::Down);
     }
     assert_eq!(state.selected_index(), Some(500));
 
     // First jumps to beginning
-    SelectableList::<String>::update(&mut state, ListMessage::First);
+    SelectableList::<String>::update(&mut state, SelectableListMessage::First);
     assert_eq!(state.selected_index(), Some(0));
 
     // Last jumps to end
-    SelectableList::<String>::update(&mut state, ListMessage::Last);
+    SelectableList::<String>::update(&mut state, SelectableListMessage::Last);
     assert_eq!(state.selected_index(), Some(999));
 
     // PageUp from end
-    SelectableList::<String>::update(&mut state, ListMessage::PageUp(100));
+    SelectableList::<String>::update(&mut state, SelectableListMessage::PageUp(100));
     assert_eq!(state.selected_index(), Some(899));
 
     // PageDown back
-    SelectableList::<String>::update(&mut state, ListMessage::PageDown(100));
+    SelectableList::<String>::update(&mut state, SelectableListMessage::PageDown(100));
     assert_eq!(state.selected_index(), Some(999));
 }

@@ -6,7 +6,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Component, Focusable, Tabs, TabsState, TabMessage, TabOutput};
+//! use envision::component::{Component, Focusable, Tabs, TabsState, TabsMessage, TabsOutput};
 //!
 //! // Create tabs with string labels
 //! let mut state = TabsState::new(vec!["Home", "Settings", "Help"]);
@@ -16,8 +16,8 @@
 //! assert_eq!(state.selected(), Some(&"Home"));
 //!
 //! // Navigate right
-//! let output = Tabs::<&str>::update(&mut state, TabMessage::Right);
-//! assert_eq!(output, Some(TabOutput::SelectionChanged(1)));
+//! let output = Tabs::<&str>::update(&mut state, TabsMessage::Right);
+//! assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
 //! assert_eq!(state.selected_index(), Some(1));
 //! ```
 
@@ -32,7 +32,7 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a Tabs component.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum TabMessage {
+pub enum TabsMessage {
     /// Navigate to the previous (left) tab.
     Left,
     /// Navigate to the next (right) tab.
@@ -49,7 +49,7 @@ pub enum TabMessage {
 
 /// Output messages from a Tabs component.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum TabOutput<T: Clone> {
+pub enum TabsOutput<T: Clone> {
     /// The selected tab changed.
     Selected(T),
     /// The current selection was confirmed.
@@ -241,7 +241,7 @@ impl<T: Clone> TabsState<T> {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{Component, Focusable, Tabs, TabsState, TabMessage, TabOutput};
+/// use envision::component::{Component, Focusable, Tabs, TabsState, TabsMessage, TabsOutput};
 ///
 /// // Using with string slices
 /// let mut state = TabsState::new(vec!["Home", "Settings", "Help"]);
@@ -261,15 +261,15 @@ impl<T: Clone> TabsState<T> {
 /// }
 ///
 /// let mut state = TabsState::new(vec![Page::Home, Page::Settings, Page::Help]);
-/// let output = Tabs::<Page>::update(&mut state, TabMessage::Right);
-/// assert_eq!(output, Some(TabOutput::SelectionChanged(1)));
+/// let output = Tabs::<Page>::update(&mut state, TabsMessage::Right);
+/// assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
 /// ```
 pub struct Tabs<T: Clone>(PhantomData<T>);
 
 impl<T: Clone + Display + 'static> Component for Tabs<T> {
     type State = TabsState<T>;
-    type Message = TabMessage;
-    type Output = TabOutput<T>;
+    type Message = TabsMessage;
+    type Output = TabsOutput<T>;
 
     fn init() -> Self::State {
         TabsState::default()
@@ -283,47 +283,47 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
         let selected = state.selected?;
 
         match msg {
-            TabMessage::Left => {
+            TabsMessage::Left => {
                 if state.move_left() {
-                    state.selected.map(TabOutput::SelectionChanged)
+                    state.selected.map(TabsOutput::SelectionChanged)
                 } else {
                     None
                 }
             }
-            TabMessage::Right => {
+            TabsMessage::Right => {
                 if state.move_right() {
-                    state.selected.map(TabOutput::SelectionChanged)
+                    state.selected.map(TabsOutput::SelectionChanged)
                 } else {
                     None
                 }
             }
-            TabMessage::Select(index) => {
+            TabsMessage::Select(index) => {
                 let clamped = index.min(state.tabs.len().saturating_sub(1));
                 if clamped != selected {
                     state.selected = Some(clamped);
-                    Some(TabOutput::SelectionChanged(clamped))
+                    Some(TabsOutput::SelectionChanged(clamped))
                 } else {
                     None
                 }
             }
-            TabMessage::First => {
+            TabsMessage::First => {
                 if selected != 0 {
                     state.selected = Some(0);
-                    Some(TabOutput::SelectionChanged(0))
+                    Some(TabsOutput::SelectionChanged(0))
                 } else {
                     None
                 }
             }
-            TabMessage::Last => {
+            TabsMessage::Last => {
                 let last = state.tabs.len().saturating_sub(1);
                 if selected != last {
                     state.selected = Some(last);
-                    Some(TabOutput::SelectionChanged(last))
+                    Some(TabsOutput::SelectionChanged(last))
                 } else {
                     None
                 }
             }
-            TabMessage::Confirm => state.selected().cloned().map(TabOutput::Confirmed),
+            TabsMessage::Confirm => state.selected().cloned().map(TabsOutput::Confirmed),
         }
     }
 

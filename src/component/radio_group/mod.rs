@@ -7,24 +7,24 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{RadioGroup, RadioMessage, RadioOutput, RadioGroupState, Component};
+//! use envision::component::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState, Component};
 //!
 //! // Create a radio group with options
 //! let mut state = RadioGroupState::new(vec!["Small", "Medium", "Large"]);
 //! assert_eq!(state.selected_index(), Some(0));
 //!
 //! // Navigate down - immediately selects next option
-//! let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-//! assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
+//! let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Down);
+//! assert_eq!(output, Some(RadioGroupOutput::SelectionChanged(1)));
 //! assert_eq!(state.selected_index(), Some(1));
 //!
 //! // Confirm selection (e.g., for form submission)
-//! let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Confirm);
-//! assert_eq!(output, Some(RadioOutput::Confirmed("Medium")));
+//! let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Confirm);
+//! assert_eq!(output, Some(RadioGroupOutput::Confirmed("Medium")));
 //!
 //! // Disabled radio groups don't respond
 //! state.set_disabled(true);
-//! let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
+//! let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Down);
 //! assert_eq!(output, None);
 //! ```
 
@@ -38,7 +38,7 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a RadioGroup.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum RadioMessage {
+pub enum RadioGroupMessage {
     /// Move selection up.
     Up,
     /// Move selection down.
@@ -49,7 +49,7 @@ pub enum RadioMessage {
 
 /// Output messages from a RadioGroup.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum RadioOutput<T: Clone> {
+pub enum RadioGroupOutput<T: Clone> {
     /// The selection changed to a new value.
     Selected(T),
     /// The current selection was confirmed (Enter pressed).
@@ -212,27 +212,27 @@ impl<T: Clone> RadioGroupState<T> {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{RadioGroup, RadioMessage, RadioOutput, RadioGroupState, Component, Focusable};
+/// use envision::component::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState, Component, Focusable};
 ///
 /// let mut state = RadioGroupState::new(vec!["Small", "Medium", "Large"]);
 ///
 /// // Navigate to select "Medium"
-/// let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Down);
-/// assert_eq!(output, Some(RadioOutput::SelectionChanged(1)));
+/// let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Down);
+/// assert_eq!(output, Some(RadioGroupOutput::SelectionChanged(1)));
 ///
 /// // Focus the component for visual feedback
 /// RadioGroup::<&str>::set_focused(&mut state, true);
 ///
 /// // Confirm the selection
-/// let output = RadioGroup::<&str>::update(&mut state, RadioMessage::Confirm);
-/// assert_eq!(output, Some(RadioOutput::Confirmed("Medium")));
+/// let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Confirm);
+/// assert_eq!(output, Some(RadioGroupOutput::Confirmed("Medium")));
 /// ```
 pub struct RadioGroup<T: Clone>(PhantomData<T>);
 
 impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
     type State = RadioGroupState<T>;
-    type Message = RadioMessage;
-    type Output = RadioOutput<T>;
+    type Message = RadioGroupMessage;
+    type Output = RadioGroupOutput<T>;
 
     fn init() -> Self::State {
         RadioGroupState::default()
@@ -246,29 +246,29 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
         let selected = state.selected?;
 
         match msg {
-            RadioMessage::Up => {
+            RadioGroupMessage::Up => {
                 if selected > 0 {
                     let new_index = selected - 1;
                     state.selected = Some(new_index);
-                    Some(RadioOutput::SelectionChanged(new_index))
+                    Some(RadioGroupOutput::SelectionChanged(new_index))
                 } else {
                     None
                 }
             }
-            RadioMessage::Down => {
+            RadioGroupMessage::Down => {
                 if selected < state.options.len() - 1 {
                     let new_index = selected + 1;
                     state.selected = Some(new_index);
-                    Some(RadioOutput::SelectionChanged(new_index))
+                    Some(RadioGroupOutput::SelectionChanged(new_index))
                 } else {
                     None
                 }
             }
-            RadioMessage::Confirm => state
+            RadioGroupMessage::Confirm => state
                 .options
                 .get(selected)
                 .cloned()
-                .map(RadioOutput::Confirmed),
+                .map(RadioGroupOutput::Confirmed),
         }
     }
 

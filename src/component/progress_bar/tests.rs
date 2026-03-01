@@ -94,15 +94,15 @@ fn test_set_progress_emits_completed() {
     let mut state = ProgressBarState::new();
 
     // Not complete yet
-    let output = ProgressBar::update(&mut state, ProgressMessage::SetProgress(0.5));
+    let output = ProgressBar::update(&mut state, ProgressBarMessage::SetProgress(0.5));
     assert_eq!(output, None);
 
     // Now complete
-    let output = ProgressBar::update(&mut state, ProgressMessage::SetProgress(1.0));
-    assert_eq!(output, Some(ProgressOutput::Completed));
+    let output = ProgressBar::update(&mut state, ProgressBarMessage::SetProgress(1.0));
+    assert_eq!(output, Some(ProgressBarOutput::Completed));
 
     // Already complete, no output
-    let output = ProgressBar::update(&mut state, ProgressMessage::SetProgress(1.0));
+    let output = ProgressBar::update(&mut state, ProgressBarMessage::SetProgress(1.0));
     assert_eq!(output, None);
 }
 
@@ -110,13 +110,13 @@ fn test_set_progress_emits_completed() {
 fn test_increment() {
     let mut state = ProgressBarState::new();
 
-    ProgressBar::update(&mut state, ProgressMessage::Increment(0.25));
+    ProgressBar::update(&mut state, ProgressBarMessage::Increment(0.25));
     assert_eq!(state.progress(), 0.25);
 
-    ProgressBar::update(&mut state, ProgressMessage::Increment(0.25));
+    ProgressBar::update(&mut state, ProgressBarMessage::Increment(0.25));
     assert_eq!(state.progress(), 0.5);
 
-    ProgressBar::update(&mut state, ProgressMessage::Increment(0.25));
+    ProgressBar::update(&mut state, ProgressBarMessage::Increment(0.25));
     assert_eq!(state.progress(), 0.75);
 }
 
@@ -124,19 +124,19 @@ fn test_increment() {
 fn test_increment_clamps() {
     let mut state = ProgressBarState::with_progress(0.9);
 
-    let output = ProgressBar::update(&mut state, ProgressMessage::Increment(0.5));
+    let output = ProgressBar::update(&mut state, ProgressBarMessage::Increment(0.5));
     assert_eq!(state.progress(), 1.0);
-    assert_eq!(output, Some(ProgressOutput::Completed));
+    assert_eq!(output, Some(ProgressBarOutput::Completed));
 }
 
 #[test]
 fn test_complete() {
     let mut state = ProgressBarState::with_progress(0.5);
 
-    let output = ProgressBar::update(&mut state, ProgressMessage::Complete);
+    let output = ProgressBar::update(&mut state, ProgressBarMessage::Complete);
     assert_eq!(state.progress(), 1.0);
     assert!(state.is_complete());
-    assert_eq!(output, Some(ProgressOutput::Completed));
+    assert_eq!(output, Some(ProgressBarOutput::Completed));
 }
 
 #[test]
@@ -144,15 +144,15 @@ fn test_complete_when_already_complete() {
     let mut state = ProgressBarState::with_progress(1.0);
 
     // Even if already complete, Complete message still emits Completed
-    let output = ProgressBar::update(&mut state, ProgressMessage::Complete);
-    assert_eq!(output, Some(ProgressOutput::Completed));
+    let output = ProgressBar::update(&mut state, ProgressBarMessage::Complete);
+    assert_eq!(output, Some(ProgressBarOutput::Completed));
 }
 
 #[test]
 fn test_reset() {
     let mut state = ProgressBarState::with_progress(0.75);
 
-    let output = ProgressBar::update(&mut state, ProgressMessage::Reset);
+    let output = ProgressBar::update(&mut state, ProgressBarMessage::Reset);
     assert_eq!(state.progress(), 0.0);
     assert_eq!(output, None);
 }
@@ -162,7 +162,7 @@ fn test_reset_from_complete() {
     let mut state = ProgressBarState::with_progress(1.0);
     assert!(state.is_complete());
 
-    ProgressBar::update(&mut state, ProgressMessage::Reset);
+    ProgressBar::update(&mut state, ProgressBarMessage::Reset);
     assert_eq!(state.progress(), 0.0);
     assert!(!state.is_complete());
 }
@@ -225,22 +225,22 @@ fn test_full_workflow() {
     assert_eq!(state.percentage(), 0);
 
     // Progress updates
-    ProgressBar::update(&mut state, ProgressMessage::SetProgress(0.25));
+    ProgressBar::update(&mut state, ProgressBarMessage::SetProgress(0.25));
     assert_eq!(state.percentage(), 25);
 
-    ProgressBar::update(&mut state, ProgressMessage::Increment(0.25));
+    ProgressBar::update(&mut state, ProgressBarMessage::Increment(0.25));
     assert_eq!(state.percentage(), 50);
 
-    ProgressBar::update(&mut state, ProgressMessage::Increment(0.25));
+    ProgressBar::update(&mut state, ProgressBarMessage::Increment(0.25));
     assert_eq!(state.percentage(), 75);
 
     // Complete
-    let output = ProgressBar::update(&mut state, ProgressMessage::Complete);
-    assert_eq!(output, Some(ProgressOutput::Completed));
+    let output = ProgressBar::update(&mut state, ProgressBarMessage::Complete);
+    assert_eq!(output, Some(ProgressBarOutput::Completed));
     assert!(state.is_complete());
 
     // Reset for reuse
-    ProgressBar::update(&mut state, ProgressMessage::Reset);
+    ProgressBar::update(&mut state, ProgressBarMessage::Reset);
     assert_eq!(state.percentage(), 0);
     assert!(!state.is_complete());
 }
