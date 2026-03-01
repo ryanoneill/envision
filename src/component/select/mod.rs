@@ -27,6 +27,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a Select.
@@ -203,6 +204,31 @@ impl SelectState {
             self.is_open = false;
         }
     }
+
+    /// Returns true if the select is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a select message.
+    pub fn handle_event(&self, event: &Event) -> Option<SelectMessage> {
+        Select::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<SelectOutput> {
+        Select::dispatch_event(self, event)
+    }
+
+    /// Updates the select state with a message, returning any output.
+    pub fn update(&mut self, msg: SelectMessage) -> Option<SelectOutput> {
+        Select::update(self, msg)
+    }
 }
 
 /// A dropdown selection component.
@@ -331,6 +357,30 @@ impl Component for Select {
                     None
                 }
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused || state.disabled {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            if state.is_open {
+                match key.code {
+                    KeyCode::Enter => Some(SelectMessage::Confirm),
+                    KeyCode::Esc => Some(SelectMessage::Close),
+                    KeyCode::Up | KeyCode::Char('k') => Some(SelectMessage::Up),
+                    KeyCode::Down | KeyCode::Char('j') => Some(SelectMessage::Down),
+                    _ => None,
+                }
+            } else {
+                match key.code {
+                    KeyCode::Enter | KeyCode::Char(' ') => Some(SelectMessage::Toggle),
+                    _ => None,
+                }
+            }
+        } else {
+            None
         }
     }
 

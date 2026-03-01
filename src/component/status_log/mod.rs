@@ -24,6 +24,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// Severity level for status log entries.
@@ -433,6 +434,31 @@ impl StatusLogState {
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
+
+    /// Returns true if the status log is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a status log message.
+    pub fn handle_event(&self, event: &Event) -> Option<StatusLogMessage> {
+        StatusLog::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<StatusLogOutput> {
+        StatusLog::dispatch_event(self, event)
+    }
+
+    /// Updates the status log state with a message, returning any output.
+    pub fn update(&mut self, msg: StatusLogMessage) -> Option<StatusLogOutput> {
+        StatusLog::update(self, msg)
+    }
 }
 
 /// A component for displaying scrolling status messages.
@@ -528,6 +554,23 @@ impl Component for StatusLog {
                 state.scroll_offset = state.entries.len().saturating_sub(1);
                 None
             }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Up | KeyCode::Char('k') => Some(StatusLogMessage::ScrollUp),
+                KeyCode::Down | KeyCode::Char('j') => Some(StatusLogMessage::ScrollDown),
+                KeyCode::Home => Some(StatusLogMessage::ScrollToTop),
+                KeyCode::End => Some(StatusLogMessage::ScrollToBottom),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

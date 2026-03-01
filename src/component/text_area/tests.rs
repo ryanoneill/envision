@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::{Event, KeyCode, KeyModifiers};
 
 // State Tests
 
@@ -775,4 +776,141 @@ fn test_multiline_mixed_unicode() {
     assert!(value.contains("日本語"));
     assert!(value.contains('\u{1F600}'));
     assert!(value.contains('\u{1F389}'));
+}
+
+// handle_event tests
+
+#[test]
+fn test_handle_event_char_insert() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let msg = TextArea::handle_event(&state, &Event::char('a'));
+    assert_eq!(msg, Some(TextAreaMessage::Insert('a')));
+}
+
+#[test]
+fn test_handle_event_enter() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(TextAreaMessage::NewLine));
+}
+
+#[test]
+fn test_handle_event_arrow_up() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Up));
+    assert_eq!(msg, Some(TextAreaMessage::Up));
+}
+
+#[test]
+fn test_handle_event_arrow_down() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Down));
+    assert_eq!(msg, Some(TextAreaMessage::Down));
+}
+
+#[test]
+fn test_handle_event_arrow_left() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Left));
+    assert_eq!(msg, Some(TextAreaMessage::Left));
+}
+
+#[test]
+fn test_handle_event_arrow_right() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, Some(TextAreaMessage::Right));
+}
+
+#[test]
+fn test_handle_event_ctrl_home() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key_with(KeyCode::Home, KeyModifiers::CONTROL),
+    );
+    assert_eq!(msg, Some(TextAreaMessage::TextStart));
+}
+
+#[test]
+fn test_handle_event_ctrl_end() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key_with(KeyCode::End, KeyModifiers::CONTROL),
+    );
+    assert_eq!(msg, Some(TextAreaMessage::TextEnd));
+}
+
+#[test]
+fn test_handle_event_ctrl_k() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let msg = TextArea::handle_event(&state, &Event::ctrl('k'));
+    assert_eq!(msg, Some(TextAreaMessage::DeleteToEnd));
+}
+
+#[test]
+fn test_handle_event_ctrl_u() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let msg = TextArea::handle_event(&state, &Event::ctrl('u'));
+    assert_eq!(msg, Some(TextAreaMessage::DeleteToStart));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let state = TextArea::init();
+    let msg = TextArea::handle_event(&state, &Event::char('a'));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_dispatch_event_insert() {
+    let mut state = TextArea::init();
+    TextArea::set_focused(&mut state, true);
+    let output = TextArea::dispatch_event(&mut state, &Event::char('a'));
+    assert!(matches!(output, Some(TextAreaOutput::Changed(_))));
+    assert_eq!(state.value(), "a");
+}
+
+#[test]
+fn test_instance_is_focused() {
+    let mut state = TextArea::init();
+    assert!(!state.is_focused());
+    state.set_focused(true);
+    assert!(state.is_focused());
+}
+
+#[test]
+fn test_instance_handle_event() {
+    let mut state = TextArea::init();
+    state.set_focused(true);
+    let msg = state.handle_event(&Event::char('a'));
+    assert_eq!(msg, Some(TextAreaMessage::Insert('a')));
+}
+
+#[test]
+fn test_instance_dispatch_event() {
+    let mut state = TextArea::init();
+    state.set_focused(true);
+    let output = state.dispatch_event(&Event::char('a'));
+    assert!(matches!(output, Some(TextAreaOutput::Changed(_))));
+    assert_eq!(state.value(), "a");
+}
+
+#[test]
+fn test_instance_update() {
+    let mut state = TextArea::init();
+    let output = state.update(TextAreaMessage::Insert('a'));
+    assert!(matches!(output, Some(TextAreaOutput::Changed(_))));
+    assert_eq!(state.value(), "a");
 }

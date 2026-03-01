@@ -58,6 +58,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Cell, Row};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// Trait for types that can be displayed as table rows.
@@ -419,6 +420,33 @@ impl<T: TableRow> TableState<T> {
     }
 }
 
+impl<T: TableRow + 'static> TableState<T> {
+    /// Returns true if the table is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a table message.
+    pub fn handle_event(&self, event: &Event) -> Option<TableMessage> {
+        Table::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<TableOutput<T>> {
+        Table::dispatch_event(self, event)
+    }
+
+    /// Updates the table state with a message, returning any output.
+    pub fn update(&mut self, msg: TableMessage) -> Option<TableOutput<T>> {
+        Table::update(self, msg)
+    }
+}
+
 /// A data table component with row selection and column sorting.
 ///
 /// `Table` displays tabular data with support for keyboard navigation,
@@ -604,6 +632,24 @@ impl<T: TableRow + 'static> Component for Table<T> {
         }
 
         None
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused || state.disabled {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Up | KeyCode::Char('k') => Some(TableMessage::Up),
+                KeyCode::Down | KeyCode::Char('j') => Some(TableMessage::Down),
+                KeyCode::Home => Some(TableMessage::First),
+                KeyCode::End => Some(TableMessage::Last),
+                KeyCode::Enter => Some(TableMessage::Select),
+                _ => None,
+            }
+        } else {
+            None
+        }
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {

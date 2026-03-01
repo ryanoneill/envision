@@ -28,6 +28,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a Tabs component.
@@ -214,6 +215,33 @@ impl<T: Clone> TabsState<T> {
     }
 }
 
+impl<T: Clone + std::fmt::Display + 'static> TabsState<T> {
+    /// Returns true if the tabs component is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Maps an input event to a tabs message.
+    pub fn handle_event(&self, event: &Event) -> Option<TabsMessage> {
+        Tabs::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<TabsOutput<T>> {
+        Tabs::dispatch_event(self, event)
+    }
+
+    /// Updates the tabs state with a message, returning any output.
+    pub fn update(&mut self, msg: TabsMessage) -> Option<TabsOutput<T>> {
+        Tabs::update(self, msg)
+    }
+}
+
 /// A horizontal tab navigation component.
 ///
 /// `Tabs` provides a horizontal tab bar for switching between different views
@@ -324,6 +352,24 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
                 }
             }
             TabsMessage::Confirm => state.selected().cloned().map(TabsOutput::Confirmed),
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused || state.disabled {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Left | KeyCode::Char('h') => Some(TabsMessage::Left),
+                KeyCode::Right | KeyCode::Char('l') => Some(TabsMessage::Right),
+                KeyCode::Home => Some(TabsMessage::First),
+                KeyCode::End => Some(TabsMessage::Last),
+                KeyCode::Enter => Some(TabsMessage::Confirm),
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 
