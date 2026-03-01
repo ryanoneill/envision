@@ -213,6 +213,8 @@ pub struct TreeState<T> {
     selected_index: Option<usize>,
     /// Whether the tree has focus.
     focused: bool,
+    /// Whether the tree is disabled.
+    disabled: bool,
 }
 
 impl<T: Clone> Default for TreeState<T> {
@@ -244,6 +246,7 @@ impl<T: Clone> TreeState<T> {
             roots,
             selected_index,
             focused: false,
+            disabled: false,
         }
     }
 
@@ -407,6 +410,22 @@ impl<T: Clone + 'static> TreeState<T> {
         self.focused = focused;
     }
 
+    /// Returns true if the tree is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Maps an input event to a tree message.
     pub fn handle_event(&self, event: &Event) -> Option<TreeMessage> {
         Tree::handle_event(self, event)
@@ -495,7 +514,9 @@ impl<T: Clone + 'static> Tree<T> {
             // Pad to full width for selection highlight
             let padded = format!("{:<width$}", text, width = width as usize);
 
-            let style = if is_selected {
+            let style = if state.disabled {
+                theme.disabled_style()
+            } else if is_selected {
                 theme.selected_highlight_style(state.focused)
             } else {
                 theme.normal_style()
@@ -518,6 +539,10 @@ impl<T: Clone + 'static> Component for Tree<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+        if state.disabled {
+            return None;
+        }
+
         let flat = state.flatten();
         if flat.is_empty() {
             return None;
@@ -604,7 +629,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused {
+        if !state.focused || state.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {

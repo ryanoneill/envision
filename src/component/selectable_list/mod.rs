@@ -61,6 +61,7 @@ pub struct SelectableListState<T: Clone> {
     items: Vec<T>,
     list_state: ListState,
     focused: bool,
+    disabled: bool,
 }
 
 impl<T: Clone> Default for SelectableListState<T> {
@@ -69,6 +70,7 @@ impl<T: Clone> Default for SelectableListState<T> {
             items: Vec::new(),
             list_state: ListState::default(),
             focused: false,
+            disabled: false,
         }
     }
 }
@@ -87,6 +89,7 @@ impl<T: Clone> SelectableListState<T> {
             items,
             list_state: ListState::default(),
             focused: false,
+            disabled: false,
         };
         if !state.items.is_empty() {
             state.list_state.select(Some(0));
@@ -157,6 +160,22 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
         self.focused = focused;
     }
 
+    /// Returns true if the selectable list is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Maps an input event to a selectable list message.
     pub fn handle_event(&self, event: &Event) -> Option<SelectableListMessage> {
         SelectableList::<T>::handle_event(self, event)
@@ -196,7 +215,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused {
+        if !state.focused || state.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -216,7 +235,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.items.is_empty() {
+        if state.disabled || state.items.is_empty() {
             return None;
         }
 
@@ -283,7 +302,11 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             .map(|item| ListItem::new(format!("{}", item)))
             .collect();
 
-        let highlight_style = theme.selected_highlight_style(state.focused);
+        let highlight_style = if state.disabled {
+            theme.disabled_style()
+        } else {
+            theme.selected_highlight_style(state.focused)
+        };
 
         let list = List::new(items)
             .block(Block::default().borders(Borders::ALL))

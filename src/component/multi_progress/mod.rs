@@ -208,6 +208,8 @@ pub struct MultiProgressState {
     auto_remove_completed: bool,
     /// Whether the component is focused.
     focused: bool,
+    /// Whether the component is disabled.
+    disabled: bool,
     /// Optional title.
     title: Option<String>,
     /// Whether to show percentages.
@@ -222,6 +224,7 @@ impl Default for MultiProgressState {
             scroll_offset: 0,
             auto_remove_completed: false,
             focused: false,
+            disabled: false,
             title: None,
             show_percentages: true,
         }
@@ -401,6 +404,22 @@ impl MultiProgressState {
         self.focused = focused;
     }
 
+    /// Returns true if the multi-progress is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Maps an input event to a multi-progress message.
     pub fn handle_event(&self, event: &Event) -> Option<MultiProgressMessage> {
         MultiProgress::handle_event(self, event)
@@ -441,6 +460,10 @@ impl Component for MultiProgress {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+        if state.disabled {
+            return None;
+        }
+
         match msg {
             MultiProgressMessage::Add { id, label } => {
                 if state.add(&id, label) {
@@ -542,7 +565,7 @@ impl Component for MultiProgress {
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused {
+        if !state.focused || state.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -585,7 +608,11 @@ impl Component for MultiProgress {
             .take(visible_count)
             .map(|item| {
                 let symbol = item.status.symbol();
-                let style = item.status.style(theme);
+                let style = if state.disabled {
+                    theme.disabled_style()
+                } else {
+                    item.status.style(theme)
+                };
 
                 // Build the content string
                 let content = if item.status == ProgressItemStatus::Failed {

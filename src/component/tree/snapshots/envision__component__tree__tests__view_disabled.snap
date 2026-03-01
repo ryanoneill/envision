@@ -1,0 +1,6 @@
+---
+source: src/component/tree/tests.rs
+assertion_line: 1151
+expression: terminal.backend().to_string()
+---
+  Root
