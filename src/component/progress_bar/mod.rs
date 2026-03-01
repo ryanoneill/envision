@@ -7,24 +7,24 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{ProgressBar, ProgressMessage, ProgressOutput, ProgressBarState, Component};
+//! use envision::component::{ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState, Component};
 //!
 //! // Create a progress bar
 //! let mut state = ProgressBarState::new();
 //! assert_eq!(state.progress(), 0.0);
 //!
 //! // Update progress
-//! let output = ProgressBar::update(&mut state, ProgressMessage::SetProgress(0.5));
+//! let output = ProgressBar::update(&mut state, ProgressBarMessage::SetProgress(0.5));
 //! assert_eq!(output, None);
 //! assert_eq!(state.percentage(), 50);
 //!
 //! // Increment progress
-//! ProgressBar::update(&mut state, ProgressMessage::Increment(0.25));
+//! ProgressBar::update(&mut state, ProgressBarMessage::Increment(0.25));
 //! assert_eq!(state.percentage(), 75);
 //!
 //! // Complete the progress
-//! let output = ProgressBar::update(&mut state, ProgressMessage::Complete);
-//! assert_eq!(output, Some(ProgressOutput::Completed));
+//! let output = ProgressBar::update(&mut state, ProgressBarMessage::Complete);
+//! assert_eq!(output, Some(ProgressBarOutput::Completed));
 //! assert!(state.is_complete());
 //! ```
 
@@ -36,7 +36,7 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a ProgressBar.
 #[derive(Clone, Debug, PartialEq)]
-pub enum ProgressMessage {
+pub enum ProgressBarMessage {
     /// Set progress value (0.0 to 1.0).
     SetProgress(f32),
     /// Increment progress by the given amount.
@@ -49,7 +49,7 @@ pub enum ProgressMessage {
 
 /// Output messages from a ProgressBar.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ProgressOutput {
+pub enum ProgressBarOutput {
     /// Progress reached 100%.
     Completed,
 }
@@ -172,29 +172,29 @@ impl ProgressBarState {
 ///
 /// # Output
 ///
-/// The component emits `ProgressOutput::Completed` when progress reaches 100%.
+/// The component emits `ProgressBarOutput::Completed` when progress reaches 100%.
 ///
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{ProgressBar, ProgressMessage, ProgressOutput, ProgressBarState, Component};
+/// use envision::component::{ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState, Component};
 ///
 /// let mut state = ProgressBarState::with_label("Loading...");
 ///
 /// // Update progress
-/// ProgressBar::update(&mut state, ProgressMessage::SetProgress(0.5));
+/// ProgressBar::update(&mut state, ProgressBarMessage::SetProgress(0.5));
 /// assert_eq!(state.percentage(), 50);
 ///
 /// // Complete
-/// let output = ProgressBar::update(&mut state, ProgressMessage::Complete);
-/// assert_eq!(output, Some(ProgressOutput::Completed));
+/// let output = ProgressBar::update(&mut state, ProgressBarMessage::Complete);
+/// assert_eq!(output, Some(ProgressBarOutput::Completed));
 /// ```
 pub struct ProgressBar;
 
 impl Component for ProgressBar {
     type State = ProgressBarState;
-    type Message = ProgressMessage;
-    type Output = ProgressOutput;
+    type Message = ProgressBarMessage;
+    type Output = ProgressBarOutput;
 
     fn init() -> Self::State {
         ProgressBarState::default()
@@ -204,24 +204,24 @@ impl Component for ProgressBar {
         let was_complete = state.is_complete();
 
         match msg {
-            ProgressMessage::SetProgress(value) => {
+            ProgressBarMessage::SetProgress(value) => {
                 state.set_progress(value);
             }
-            ProgressMessage::Increment(amount) => {
+            ProgressBarMessage::Increment(amount) => {
                 state.set_progress(state.progress + amount);
             }
-            ProgressMessage::Complete => {
+            ProgressBarMessage::Complete => {
                 state.progress = 1.0;
             }
-            ProgressMessage::Reset => {
+            ProgressBarMessage::Reset => {
                 state.progress = 0.0;
                 return None;
             }
         }
 
         // Emit Completed only when transitioning to complete, or on explicit Complete message
-        if state.is_complete() && (!was_complete || matches!(msg, ProgressMessage::Complete)) {
-            Some(ProgressOutput::Completed)
+        if state.is_complete() && (!was_complete || matches!(msg, ProgressBarMessage::Complete)) {
+            Some(ProgressBarOutput::Completed)
         } else {
             None
         }

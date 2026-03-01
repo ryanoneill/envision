@@ -35,12 +35,12 @@ fn test_with_placeholder() {
 fn test_insert_char() {
     let mut state = InputField::init();
 
-    let output = InputField::update(&mut state, InputMessage::Insert('a'));
+    let output = InputField::update(&mut state, InputFieldMessage::Insert('a'));
     assert_eq!(state.value(), "a");
     assert_eq!(state.cursor_position(), 1);
-    assert_eq!(output, Some(InputOutput::Changed("a".to_string())));
+    assert_eq!(output, Some(InputFieldOutput::Changed("a".to_string())));
 
-    InputField::update(&mut state, InputMessage::Insert('b'));
+    InputField::update(&mut state, InputFieldMessage::Insert('b'));
     assert_eq!(state.value(), "ab");
     assert_eq!(state.cursor_position(), 2);
 }
@@ -49,8 +49,8 @@ fn test_insert_char() {
 fn test_insert_unicode() {
     let mut state = InputField::init();
 
-    InputField::update(&mut state, InputMessage::Insert('日'));
-    InputField::update(&mut state, InputMessage::Insert('本'));
+    InputField::update(&mut state, InputFieldMessage::Insert('日'));
+    InputField::update(&mut state, InputFieldMessage::Insert('本'));
     assert_eq!(state.value(), "日本");
     assert_eq!(state.cursor_position(), 2);
     assert_eq!(state.len(), 2);
@@ -60,16 +60,16 @@ fn test_insert_unicode() {
 fn test_backspace() {
     let mut state = InputFieldState::with_value("abc");
 
-    let output = InputField::update(&mut state, InputMessage::Backspace);
+    let output = InputField::update(&mut state, InputFieldMessage::Backspace);
     assert_eq!(state.value(), "ab");
-    assert_eq!(output, Some(InputOutput::Changed("ab".to_string())));
+    assert_eq!(output, Some(InputFieldOutput::Changed("ab".to_string())));
 
-    InputField::update(&mut state, InputMessage::Backspace);
-    InputField::update(&mut state, InputMessage::Backspace);
+    InputField::update(&mut state, InputFieldMessage::Backspace);
+    InputField::update(&mut state, InputFieldMessage::Backspace);
     assert_eq!(state.value(), "");
 
     // Backspace on empty should return None
-    let output = InputField::update(&mut state, InputMessage::Backspace);
+    let output = InputField::update(&mut state, InputFieldMessage::Backspace);
     assert_eq!(output, None);
 }
 
@@ -78,13 +78,13 @@ fn test_delete() {
     let mut state = InputFieldState::with_value("abc");
     state.set_cursor(0);
 
-    let output = InputField::update(&mut state, InputMessage::Delete);
+    let output = InputField::update(&mut state, InputFieldMessage::Delete);
     assert_eq!(state.value(), "bc");
-    assert_eq!(output, Some(InputOutput::Changed("bc".to_string())));
+    assert_eq!(output, Some(InputFieldOutput::Changed("bc".to_string())));
 
     // Move to end and delete should return None
     state.cursor = state.value.len();
-    let output = InputField::update(&mut state, InputMessage::Delete);
+    let output = InputField::update(&mut state, InputFieldMessage::Delete);
     assert_eq!(output, None);
 }
 
@@ -92,19 +92,19 @@ fn test_delete() {
 fn test_cursor_movement() {
     let mut state = InputFieldState::with_value("hello");
 
-    InputField::update(&mut state, InputMessage::Left);
+    InputField::update(&mut state, InputFieldMessage::Left);
     assert_eq!(state.cursor_position(), 4);
 
-    InputField::update(&mut state, InputMessage::Left);
+    InputField::update(&mut state, InputFieldMessage::Left);
     assert_eq!(state.cursor_position(), 3);
 
-    InputField::update(&mut state, InputMessage::Right);
+    InputField::update(&mut state, InputFieldMessage::Right);
     assert_eq!(state.cursor_position(), 4);
 
-    InputField::update(&mut state, InputMessage::Home);
+    InputField::update(&mut state, InputFieldMessage::Home);
     assert_eq!(state.cursor_position(), 0);
 
-    InputField::update(&mut state, InputMessage::End);
+    InputField::update(&mut state, InputFieldMessage::End);
     assert_eq!(state.cursor_position(), 5);
 }
 
@@ -114,13 +114,13 @@ fn test_cursor_bounds() {
 
     // Can't go left past beginning
     state.set_cursor(0);
-    InputField::update(&mut state, InputMessage::Left);
+    InputField::update(&mut state, InputFieldMessage::Left);
     assert_eq!(state.cursor_position(), 0);
 
     // Can't go right past end
     state.set_cursor(10); // Over the length
     assert_eq!(state.cursor_position(), 2); // Clamped
-    InputField::update(&mut state, InputMessage::Right);
+    InputField::update(&mut state, InputFieldMessage::Right);
     assert_eq!(state.cursor_position(), 2);
 }
 
@@ -129,19 +129,19 @@ fn test_word_navigation() {
     let mut state = InputFieldState::with_value("hello world test");
 
     // Start at end
-    InputField::update(&mut state, InputMessage::WordLeft);
+    InputField::update(&mut state, InputFieldMessage::WordLeft);
     assert_eq!(state.cursor_position(), 12); // Start of "test"
 
-    InputField::update(&mut state, InputMessage::WordLeft);
+    InputField::update(&mut state, InputFieldMessage::WordLeft);
     assert_eq!(state.cursor_position(), 6); // Start of "world"
 
-    InputField::update(&mut state, InputMessage::WordLeft);
+    InputField::update(&mut state, InputFieldMessage::WordLeft);
     assert_eq!(state.cursor_position(), 0); // Start of "hello"
 
-    InputField::update(&mut state, InputMessage::WordRight);
+    InputField::update(&mut state, InputFieldMessage::WordRight);
     assert_eq!(state.cursor_position(), 6); // After "hello "
 
-    InputField::update(&mut state, InputMessage::WordRight);
+    InputField::update(&mut state, InputFieldMessage::WordRight);
     assert_eq!(state.cursor_position(), 12); // After "world "
 }
 
@@ -149,15 +149,15 @@ fn test_word_navigation() {
 fn test_delete_word_back() {
     let mut state = InputFieldState::with_value("hello world");
 
-    let output = InputField::update(&mut state, InputMessage::DeleteWordBack);
+    let output = InputField::update(&mut state, InputFieldMessage::DeleteWordBack);
     assert_eq!(state.value(), "hello ");
-    assert_eq!(output, Some(InputOutput::Changed("hello ".to_string())));
+    assert_eq!(output, Some(InputFieldOutput::Changed("hello ".to_string())));
 
-    InputField::update(&mut state, InputMessage::DeleteWordBack);
+    InputField::update(&mut state, InputFieldMessage::DeleteWordBack);
     assert_eq!(state.value(), "");
 
     // Delete word back on empty
-    let output = InputField::update(&mut state, InputMessage::DeleteWordBack);
+    let output = InputField::update(&mut state, InputFieldMessage::DeleteWordBack);
     assert_eq!(output, None);
 }
 
@@ -166,13 +166,13 @@ fn test_delete_word_forward() {
     let mut state = InputFieldState::with_value("hello world");
     state.set_cursor(0);
 
-    let output = InputField::update(&mut state, InputMessage::DeleteWordForward);
+    let output = InputField::update(&mut state, InputFieldMessage::DeleteWordForward);
     assert_eq!(state.value(), "world");
-    assert_eq!(output, Some(InputOutput::Changed("world".to_string())));
+    assert_eq!(output, Some(InputFieldOutput::Changed("world".to_string())));
 
     // Cursor at end
     state.cursor = state.value.len();
-    let output = InputField::update(&mut state, InputMessage::DeleteWordForward);
+    let output = InputField::update(&mut state, InputFieldMessage::DeleteWordForward);
     assert_eq!(output, None);
 }
 
@@ -180,13 +180,13 @@ fn test_delete_word_forward() {
 fn test_clear() {
     let mut state = InputFieldState::with_value("hello");
 
-    let output = InputField::update(&mut state, InputMessage::Clear);
+    let output = InputField::update(&mut state, InputFieldMessage::Clear);
     assert_eq!(state.value(), "");
     assert_eq!(state.cursor_position(), 0);
-    assert_eq!(output, Some(InputOutput::Changed("".to_string())));
+    assert_eq!(output, Some(InputFieldOutput::Changed("".to_string())));
 
     // Clear empty should return None
-    let output = InputField::update(&mut state, InputMessage::Clear);
+    let output = InputField::update(&mut state, InputFieldMessage::Clear);
     assert_eq!(output, None);
 }
 
@@ -194,13 +194,13 @@ fn test_clear() {
 fn test_set_value() {
     let mut state = InputField::init();
 
-    let output = InputField::update(&mut state, InputMessage::SetValue("new value".to_string()));
+    let output = InputField::update(&mut state, InputFieldMessage::SetValue("new value".to_string()));
     assert_eq!(state.value(), "new value");
     assert_eq!(state.cursor_position(), 9);
-    assert_eq!(output, Some(InputOutput::Changed("new value".to_string())));
+    assert_eq!(output, Some(InputFieldOutput::Changed("new value".to_string())));
 
     // Setting same value returns None
-    let output = InputField::update(&mut state, InputMessage::SetValue("new value".to_string()));
+    let output = InputField::update(&mut state, InputFieldMessage::SetValue("new value".to_string()));
     assert_eq!(output, None);
 }
 
@@ -208,10 +208,10 @@ fn test_set_value() {
 fn test_submit() {
     let mut state = InputFieldState::with_value("submitted text");
 
-    let output = InputField::update(&mut state, InputMessage::Submit);
+    let output = InputField::update(&mut state, InputFieldMessage::Submit);
     assert_eq!(
         output,
-        Some(InputOutput::Submitted("submitted text".to_string()))
+        Some(InputFieldOutput::Submitted("submitted text".to_string()))
     );
     // Value should remain unchanged
     assert_eq!(state.value(), "submitted text");
@@ -222,7 +222,7 @@ fn test_insert_at_cursor() {
     let mut state = InputFieldState::with_value("helo");
     state.set_cursor(3);
 
-    InputField::update(&mut state, InputMessage::Insert('l'));
+    InputField::update(&mut state, InputFieldMessage::Insert('l'));
     assert_eq!(state.value(), "hello");
     assert_eq!(state.cursor_position(), 4);
 }
@@ -269,7 +269,7 @@ fn test_view_placeholder() {
 #[test]
 fn test_insert_emoji() {
     let mut state = InputFieldState::new();
-    InputField::update(&mut state, InputMessage::Insert('\u{1F600}')); // grinning face
+    InputField::update(&mut state, InputFieldMessage::Insert('\u{1F600}')); // grinning face
     assert_eq!(state.value(), "\u{1F600}");
     assert_eq!(state.cursor_position(), 1);
 }
@@ -278,9 +278,9 @@ fn test_insert_emoji() {
 fn test_cursor_with_multi_byte() {
     let mut state = InputFieldState::new();
     // Insert CJK character followed by emoji
-    InputField::update(&mut state, InputMessage::Insert('日'));
-    InputField::update(&mut state, InputMessage::Insert('\u{1F600}'));
-    InputField::update(&mut state, InputMessage::Insert('本'));
+    InputField::update(&mut state, InputFieldMessage::Insert('日'));
+    InputField::update(&mut state, InputFieldMessage::Insert('\u{1F600}'));
+    InputField::update(&mut state, InputFieldMessage::Insert('本'));
     assert_eq!(state.value(), "日\u{1F600}本");
     assert_eq!(state.cursor_position(), 3);
 }
@@ -288,17 +288,17 @@ fn test_cursor_with_multi_byte() {
 #[test]
 fn test_backspace_emoji() {
     let mut state = InputFieldState::new();
-    InputField::update(&mut state, InputMessage::Insert('A'));
-    InputField::update(&mut state, InputMessage::Insert('\u{1F600}'));
-    InputField::update(&mut state, InputMessage::Insert('B'));
+    InputField::update(&mut state, InputFieldMessage::Insert('A'));
+    InputField::update(&mut state, InputFieldMessage::Insert('\u{1F600}'));
+    InputField::update(&mut state, InputFieldMessage::Insert('B'));
     assert_eq!(state.value(), "A\u{1F600}B");
 
     // Backspace should delete 'B'
-    InputField::update(&mut state, InputMessage::Backspace);
+    InputField::update(&mut state, InputFieldMessage::Backspace);
     assert_eq!(state.value(), "A\u{1F600}");
 
     // Backspace should delete the emoji
-    InputField::update(&mut state, InputMessage::Backspace);
+    InputField::update(&mut state, InputFieldMessage::Backspace);
     assert_eq!(state.value(), "A");
 }
 
@@ -306,8 +306,8 @@ fn test_backspace_emoji() {
 fn test_combining_diacritics() {
     let mut state = InputFieldState::new();
     // Insert 'e' followed by combining acute accent (U+0301)
-    InputField::update(&mut state, InputMessage::Insert('e'));
-    InputField::update(&mut state, InputMessage::Insert('\u{0301}'));
+    InputField::update(&mut state, InputFieldMessage::Insert('e'));
+    InputField::update(&mut state, InputFieldMessage::Insert('\u{0301}'));
     // The value should contain both characters
     assert!(state.value().contains('e'));
     assert!(state.value().contains('\u{0301}'));
@@ -318,19 +318,19 @@ fn test_word_nav_with_emoji() {
     let mut state = InputFieldState::new();
     // Type "hello 😀 world"
     for c in "hello ".chars() {
-        InputField::update(&mut state, InputMessage::Insert(c));
+        InputField::update(&mut state, InputFieldMessage::Insert(c));
     }
-    InputField::update(&mut state, InputMessage::Insert('\u{1F600}'));
+    InputField::update(&mut state, InputFieldMessage::Insert('\u{1F600}'));
     for c in " world".chars() {
-        InputField::update(&mut state, InputMessage::Insert(c));
+        InputField::update(&mut state, InputFieldMessage::Insert(c));
     }
     assert_eq!(state.value(), "hello \u{1F600} world");
 
     // Move to beginning
-    InputField::update(&mut state, InputMessage::Home);
+    InputField::update(&mut state, InputFieldMessage::Home);
     assert_eq!(state.cursor_position(), 0);
 
     // WordRight should move through words
-    InputField::update(&mut state, InputMessage::WordRight);
+    InputField::update(&mut state, InputFieldMessage::WordRight);
     assert!(state.cursor_position() > 0);
 }

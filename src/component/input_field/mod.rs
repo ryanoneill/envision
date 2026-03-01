@@ -6,14 +6,14 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Component, Focusable, InputField, InputFieldState, InputMessage};
+//! use envision::component::{Component, Focusable, InputField, InputFieldState, InputFieldMessage};
 //!
 //! // Create an input field
 //! let mut state = InputField::init();
 //!
 //! // Type some text
-//! InputField::update(&mut state, InputMessage::Insert('H'));
-//! InputField::update(&mut state, InputMessage::Insert('i'));
+//! InputField::update(&mut state, InputFieldMessage::Insert('H'));
+//! InputField::update(&mut state, InputFieldMessage::Insert('i'));
 //!
 //! assert_eq!(state.value(), "Hi");
 //! assert_eq!(state.cursor_position(), 2);
@@ -27,7 +27,7 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to an InputField.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum InputMessage {
+pub enum InputFieldMessage {
     /// Insert a character at the cursor position.
     Insert(char),
     /// Delete the character before the cursor (backspace).
@@ -60,7 +60,7 @@ pub enum InputMessage {
 
 /// Output messages from an InputField.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum InputOutput {
+pub enum InputFieldOutput {
     /// The value was submitted (e.g., Enter pressed).
     Submitted(String),
     /// The value changed.
@@ -315,8 +315,8 @@ pub struct InputField;
 
 impl Component for InputField {
     type State = InputFieldState;
-    type Message = InputMessage;
-    type Output = InputOutput;
+    type Message = InputFieldMessage;
+    type Output = InputFieldOutput;
 
     fn init() -> Self::State {
         InputFieldState::default()
@@ -324,80 +324,80 @@ impl Component for InputField {
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
         match msg {
-            InputMessage::Insert(c) => {
+            InputFieldMessage::Insert(c) => {
                 state.insert(c);
-                Some(InputOutput::Changed(state.value.clone()))
+                Some(InputFieldOutput::Changed(state.value.clone()))
             }
-            InputMessage::Backspace => {
+            InputFieldMessage::Backspace => {
                 if state.backspace() {
-                    Some(InputOutput::Changed(state.value.clone()))
+                    Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
-            InputMessage::Delete => {
+            InputFieldMessage::Delete => {
                 if state.delete() {
-                    Some(InputOutput::Changed(state.value.clone()))
+                    Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
-            InputMessage::Left => {
+            InputFieldMessage::Left => {
                 state.move_left();
                 None
             }
-            InputMessage::Right => {
+            InputFieldMessage::Right => {
                 state.move_right();
                 None
             }
-            InputMessage::Home => {
+            InputFieldMessage::Home => {
                 state.cursor = 0;
                 None
             }
-            InputMessage::End => {
+            InputFieldMessage::End => {
                 state.cursor = state.value.len();
                 None
             }
-            InputMessage::WordLeft => {
+            InputFieldMessage::WordLeft => {
                 state.move_word_left();
                 None
             }
-            InputMessage::WordRight => {
+            InputFieldMessage::WordRight => {
                 state.move_word_right();
                 None
             }
-            InputMessage::DeleteWordBack => {
+            InputFieldMessage::DeleteWordBack => {
                 if state.delete_word_back() {
-                    Some(InputOutput::Changed(state.value.clone()))
+                    Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
-            InputMessage::DeleteWordForward => {
+            InputFieldMessage::DeleteWordForward => {
                 if state.delete_word_forward() {
-                    Some(InputOutput::Changed(state.value.clone()))
+                    Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
-            InputMessage::Clear => {
+            InputFieldMessage::Clear => {
                 if !state.value.is_empty() {
                     state.value.clear();
                     state.cursor = 0;
-                    Some(InputOutput::Changed(state.value.clone()))
+                    Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
-            InputMessage::SetValue(value) => {
+            InputFieldMessage::SetValue(value) => {
                 if state.value != value {
                     state.set_value(value);
-                    Some(InputOutput::Changed(state.value.clone()))
+                    Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
-            InputMessage::Submit => Some(InputOutput::Submitted(state.value.clone())),
+            InputFieldMessage::Submit => Some(InputFieldOutput::Submitted(state.value.clone())),
         }
     }
 
