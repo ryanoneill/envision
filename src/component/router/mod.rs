@@ -241,18 +241,16 @@ impl<S: Clone + PartialEq> RouterState<S> {
 /// ```
 pub struct Router<S: Clone + PartialEq>(std::marker::PhantomData<S>);
 
-impl<S: Clone + PartialEq> Component for Router<S> {
-    type State = RouterState<S>;
-    type Message = RouterMessage<S>;
-    type Output = RouterOutput<S>;
-
-    fn init() -> Self::State {
-        // This will panic because we need an initial screen.
-        // Users should create RouterState directly with RouterState::new(initial_screen)
-        panic!("Router requires an initial screen. Use RouterState::new(initial_screen) instead of Router::init()");
-    }
-
-    fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+impl<S: Clone + PartialEq> Router<S> {
+    /// Updates the router state.
+    ///
+    /// This inherent method is available for all screen types that implement
+    /// `Clone + PartialEq`. Screen types that also implement `Default` can
+    /// use the [`Component`] trait methods instead.
+    pub fn update(
+        state: &mut RouterState<S>,
+        msg: RouterMessage<S>,
+    ) -> Option<RouterOutput<S>> {
         match msg {
             RouterMessage::Navigate(screen) => {
                 if state.current == screen {
@@ -309,9 +307,31 @@ impl<S: Clone + PartialEq> Component for Router<S> {
         }
     }
 
-    fn view(_state: &Self::State, _frame: &mut Frame, _area: Rect, _theme: &Theme) {
+    /// Renders the router view.
+    ///
+    /// Router is state-only, so this is a no-op. The parent application
+    /// should render based on `state.current()`.
+    pub fn view(_state: &RouterState<S>, _frame: &mut Frame, _area: Rect, _theme: &Theme) {
         // Router is state-only - no view implementation.
         // The parent application should render based on state.current()
+    }
+}
+
+impl<S: Clone + PartialEq + Default> Component for Router<S> {
+    type State = RouterState<S>;
+    type Message = RouterMessage<S>;
+    type Output = RouterOutput<S>;
+
+    fn init() -> Self::State {
+        RouterState::new(S::default())
+    }
+
+    fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+        Router::update(state, msg)
+    }
+
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        Router::view(state, frame, area, theme)
     }
 }
 

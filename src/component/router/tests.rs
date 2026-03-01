@@ -1,11 +1,24 @@
 use super::*;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 enum TestScreen {
+    #[default]
     Home,
     Settings,
     Profile,
     About,
+}
+
+// ========================================
+// Init Tests
+// ========================================
+
+#[test]
+fn test_init() {
+    let state: RouterState<TestScreen> = Router::init();
+    assert_eq!(state.current(), &TestScreen::Home); // Default variant
+    assert!(!state.can_go_back());
+    assert_eq!(state.history_len(), 0);
 }
 
 // ========================================
