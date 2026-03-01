@@ -1,3 +1,4 @@
+#![cfg(feature = "full")]
 //! Property-based tests for envision components using proptest.
 //!
 //! These tests verify invariants that must hold for arbitrary sequences

@@ -104,74 +104,146 @@ use ratatui::prelude::*;
 use crate::input::Event;
 use crate::theme::Theme;
 
-mod accordion;
-mod breadcrumb;
+// Input components
+#[cfg(feature = "input-components")]
 mod button;
+#[cfg(feature = "input-components")]
 mod checkbox;
-mod dialog;
+#[cfg(feature = "input-components")]
 mod dropdown;
-mod focus_manager;
+#[cfg(feature = "input-components")]
 mod input_field;
-mod key_hints;
-mod loading_list;
-mod menu;
-mod multi_progress;
-mod progress_bar;
+#[cfg(feature = "input-components")]
 mod radio_group;
-mod router;
+#[cfg(feature = "input-components")]
 mod select;
-mod selectable_list;
-mod spinner;
-mod status_bar;
-mod status_log;
-mod table;
-mod tabs;
+#[cfg(feature = "input-components")]
 mod text_area;
-mod toast;
-mod tooltip;
+
+// Data components
+#[cfg(feature = "data-components")]
+mod loading_list;
+#[cfg(feature = "data-components")]
+mod selectable_list;
+#[cfg(feature = "data-components")]
+mod table;
+#[cfg(feature = "data-components")]
 mod tree;
 
-pub use accordion::{Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState};
-pub use breadcrumb::{
-    Breadcrumb, BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState,
-};
+// Display components
+#[cfg(feature = "display-components")]
+mod key_hints;
+#[cfg(feature = "display-components")]
+mod multi_progress;
+#[cfg(feature = "display-components")]
+mod progress_bar;
+#[cfg(feature = "display-components")]
+mod spinner;
+#[cfg(feature = "display-components")]
+mod status_bar;
+#[cfg(feature = "display-components")]
+mod status_log;
+#[cfg(feature = "display-components")]
+mod toast;
+
+// Navigation components
+#[cfg(feature = "navigation-components")]
+mod accordion;
+#[cfg(feature = "navigation-components")]
+mod breadcrumb;
+#[cfg(feature = "navigation-components")]
+mod menu;
+#[cfg(feature = "navigation-components")]
+mod router;
+#[cfg(feature = "navigation-components")]
+mod tabs;
+
+// Overlay components
+#[cfg(feature = "overlay-components")]
+mod dialog;
+#[cfg(feature = "overlay-components")]
+mod tooltip;
+
+// Always available
+mod focus_manager;
+
+// Input components
+#[cfg(feature = "input-components")]
 pub use button::{Button, ButtonMessage, ButtonOutput, ButtonState};
+#[cfg(feature = "input-components")]
 pub use checkbox::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState};
-pub use dialog::{Dialog, DialogButton, DialogMessage, DialogOutput, DialogState};
+#[cfg(feature = "input-components")]
 pub use dropdown::{Dropdown, DropdownMessage, DropdownOutput, DropdownState};
-pub use focus_manager::FocusManager;
+#[cfg(feature = "input-components")]
 pub use input_field::{InputField, InputFieldMessage, InputFieldOutput, InputFieldState};
-pub use key_hints::{KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState};
+#[cfg(feature = "input-components")]
+pub use radio_group::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState};
+#[cfg(feature = "input-components")]
+pub use select::{Select, SelectMessage, SelectOutput, SelectState};
+#[cfg(feature = "input-components")]
+pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
+
+// Data components
+#[cfg(feature = "data-components")]
 pub use loading_list::{
     ItemState, LoadingList, LoadingListItem, LoadingListMessage, LoadingListOutput,
     LoadingListState,
 };
-pub use menu::{Menu, MenuItem, MenuMessage, MenuOutput, MenuState};
+#[cfg(feature = "data-components")]
+pub use selectable_list::{
+    SelectableList, SelectableListMessage, SelectableListOutput, SelectableListState,
+};
+#[cfg(feature = "data-components")]
+pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState};
+#[cfg(feature = "data-components")]
+pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
+
+// Display components
+#[cfg(feature = "display-components")]
+pub use key_hints::{KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState};
+#[cfg(feature = "display-components")]
 pub use multi_progress::{
     MultiProgress, MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressItem,
     ProgressItemStatus,
 };
+#[cfg(feature = "display-components")]
 pub use progress_bar::{ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState};
-pub use radio_group::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState};
-pub use router::{NavigationMode, Router, RouterMessage, RouterOutput, RouterState};
-pub use select::{Select, SelectMessage, SelectOutput, SelectState};
-pub use selectable_list::{
-    SelectableList, SelectableListMessage, SelectableListOutput, SelectableListState,
-};
+#[cfg(feature = "display-components")]
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
+#[cfg(feature = "display-components")]
 pub use status_bar::{
     Section, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarState,
     StatusBarStyle,
 };
+#[cfg(feature = "display-components")]
 pub use status_log::{
     StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState,
 };
-pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState};
-pub use tabs::{Tabs, TabsMessage, TabsOutput, TabsState};
-pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
+#[cfg(feature = "display-components")]
 pub use toast::{Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState};
+
+// Navigation components
+#[cfg(feature = "navigation-components")]
+pub use accordion::{Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState};
+#[cfg(feature = "navigation-components")]
+pub use breadcrumb::{
+    Breadcrumb, BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState,
+};
+#[cfg(feature = "navigation-components")]
+pub use menu::{Menu, MenuItem, MenuMessage, MenuOutput, MenuState};
+#[cfg(feature = "navigation-components")]
+pub use router::{NavigationMode, Router, RouterMessage, RouterOutput, RouterState};
+#[cfg(feature = "navigation-components")]
+pub use tabs::{Tabs, TabsMessage, TabsOutput, TabsState};
+
+// Overlay components
+#[cfg(feature = "overlay-components")]
+pub use dialog::{Dialog, DialogButton, DialogMessage, DialogOutput, DialogState};
+#[cfg(feature = "overlay-components")]
 pub use tooltip::{Tooltip, TooltipMessage, TooltipOutput, TooltipPosition, TooltipState};
-pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
+
+// Always available
+pub use focus_manager::FocusManager;
 
 /// A composable UI component with its own state and message handling.
 ///

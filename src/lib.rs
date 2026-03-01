@@ -115,28 +115,54 @@ pub use app::{
     ThrottleSubscription, TickSubscription, TimerSubscription,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
+// Core component traits and utilities (always available)
+pub use component::{Component, FocusManager, Focusable, Toggleable};
+
+// Input components
+#[cfg(feature = "input-components")]
+pub use component::{
+    Button, ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
+    CheckboxState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, InputField,
+    InputFieldMessage, InputFieldOutput, InputFieldState, RadioGroup, RadioGroupMessage,
+    RadioGroupOutput, RadioGroupState, Select, SelectMessage, SelectOutput, SelectState, TextArea,
+    TextAreaMessage, TextAreaOutput, TextAreaState,
+};
+
+// Data components
+#[cfg(feature = "data-components")]
+pub use component::{
+    Column, ItemState, LoadingList, LoadingListItem, LoadingListMessage, LoadingListOutput,
+    LoadingListState, SelectableList, SelectableListMessage, SelectableListOutput,
+    SelectableListState, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState,
+    Tree, TreeMessage, TreeNode, TreeOutput, TreeState,
+};
+
+// Display components
+#[cfg(feature = "display-components")]
+pub use component::{
+    KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress,
+    MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressBar,
+    ProgressBarMessage, ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus,
+    Section, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem,
+    StatusBarItemContent, StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog,
+    StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState, Toast,
+    ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
+};
+
+// Navigation components
+#[cfg(feature = "navigation-components")]
 pub use component::{
     Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Breadcrumb,
-    BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Button, ButtonMessage,
-    ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState, Column,
-    Component, Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Dropdown,
-    DropdownMessage, DropdownOutput, DropdownState, FocusManager, Focusable, InputField,
-    InputFieldMessage, InputFieldOutput, InputFieldState, ItemState, KeyHint, KeyHints,
-    KeyHintsLayout, KeyHintsMessage, KeyHintsState, LoadingList, LoadingListItem,
-    LoadingListMessage, LoadingListOutput, LoadingListState, Menu, MenuItem, MenuMessage,
-    MenuOutput, MenuState, MultiProgress, MultiProgressMessage, MultiProgressOutput,
-    MultiProgressState, NavigationMode, ProgressBar, ProgressBarMessage, ProgressBarOutput,
-    ProgressBarState, ProgressItem, ProgressItemStatus, RadioGroup, RadioGroupMessage,
-    RadioGroupOutput, RadioGroupState, Router, RouterMessage, RouterOutput, RouterState, Section,
-    Select, SelectMessage, SelectOutput, SelectState, SelectableList, SelectableListMessage,
-    SelectableListOutput, SelectableListState, SortDirection, Spinner, SpinnerMessage,
-    SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage,
-    StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage,
-    StatusLogOutput, StatusLogState, Table, TableMessage, TableOutput, TableRow, TableState, Tabs,
-    TabsMessage, TabsOutput, TabsState, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
-    Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, Toggleable, Tooltip,
-    TooltipMessage, TooltipOutput, TooltipPosition, TooltipState, Tree, TreeMessage, TreeNode,
-    TreeOutput, TreeState,
+    BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Menu, MenuItem,
+    MenuMessage, MenuOutput, MenuState, NavigationMode, Router, RouterMessage, RouterOutput,
+    RouterState, Tabs, TabsMessage, TabsOutput, TabsState,
+};
+
+// Overlay components
+#[cfg(feature = "overlay-components")]
+pub use component::{
+    Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Tooltip, TooltipMessage,
+    TooltipOutput, TooltipPosition, TooltipState,
 };
 pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
 pub use input::{Event, EventQueue};
@@ -150,9 +176,9 @@ pub use theme::Theme;
 /// ```rust
 /// use envision::prelude::*;
 ///
-/// // All component types are now available:
-/// let button = ButtonState::new("Submit");
-/// let checkbox = CheckboxState::new("Accept");
+/// // Core framework types are available:
+/// let focus: FocusManager<&str> = FocusManager::new(vec!["a", "b"]);
+/// assert_eq!(focus.len(), 2);
 /// ```
 pub mod prelude {
     // Core framework
