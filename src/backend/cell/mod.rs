@@ -11,7 +11,10 @@ use unicode_width::UnicodeWidthStr;
 /// - Tracks when the cell was last modified (frame number)
 /// - Can store optional semantic annotations
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct EnhancedCell {
     /// The symbol (grapheme cluster) displayed in this cell
     symbol: CompactString,
@@ -152,7 +155,10 @@ impl Default for EnhancedCell {
 
 /// A serializable version of ratatui's Color enum
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 #[cfg_attr(feature = "serialization", serde(rename_all = "snake_case"))]
 pub enum SerializableColor {
     Reset,
@@ -282,7 +288,10 @@ impl SerializableColor {
 
 /// A serializable version of ratatui's Modifier flags
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct SerializableModifier {
     pub bold: bool,
     pub dim: bool,

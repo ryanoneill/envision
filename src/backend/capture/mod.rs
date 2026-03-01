@@ -83,7 +83,10 @@ pub struct CaptureBackend {
 /// Uses `Arc<[EnhancedCell]>` for copy-on-write semantics - snapshots
 /// share cell data until mutation is needed, avoiding expensive clones.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct FrameSnapshot {
     /// The frame number
     pub frame: u64,
@@ -133,7 +136,10 @@ where
 
 /// Snapshot of cursor state
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct CursorSnapshot {
     pub position: (u16, u16),
     pub visible: bool,
@@ -532,7 +538,10 @@ impl fmt::Display for CaptureBackend {
 
 /// Represents the difference between two frames.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct FrameDiff {
     /// Frame number of the previous state
     pub from_frame: u64,
@@ -590,7 +599,10 @@ impl fmt::Display for FrameDiff {
 
 /// A single cell change in a diff.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct CellChange {
     /// Position of the changed cell
     pub position: (u16, u16),

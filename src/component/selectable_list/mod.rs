@@ -142,7 +142,6 @@ impl<T: Clone> SelectableListState<T> {
     pub fn len(&self) -> usize {
         self.items.len()
     }
-
 }
 
 impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {

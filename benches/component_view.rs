@@ -69,11 +69,7 @@ struct BenchRow {
 
 impl TableRow for BenchRow {
     fn cells(&self) -> Vec<String> {
-        vec![
-            self.id.to_string(),
-            self.name.clone(),
-            self.email.clone(),
-        ]
+        vec![self.id.to_string(), self.name.clone(), self.email.clone()]
     }
 }
 
@@ -137,10 +133,7 @@ fn bench_table_view(c: &mut Criterion) {
 fn make_flat_tree(child_count: usize) -> Vec<TreeNode<String>> {
     let mut root = TreeNode::new_expanded("Root", "root".to_string());
     for i in 0..child_count {
-        root.add_child(TreeNode::new(
-            format!("Item {}", i),
-            format!("item_{}", i),
-        ));
+        root.add_child(TreeNode::new(format!("Item {}", i), format!("item_{}", i)));
     }
     vec![root]
 }
