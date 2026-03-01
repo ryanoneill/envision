@@ -97,7 +97,7 @@ pub use component::{
     RadioGroupMessage, RadioGroupOutput, RadioGroupState, Select, SelectMessage, SelectOutput,
     SelectState, SelectableList, SelectableListMessage, SelectableListOutput, SelectableListState,
     SortDirection, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem,
-    StatusBarMessage, StatusBarOutput, StatusBarState, StatusBarStyle, Table, TableMessage,
+    StatusBarMessage, StatusBarState, StatusBarStyle, Table, TableMessage,
     TableOutput, TableRow, TableState, Tabs, TabsMessage, TabsOutput, TabsState, TextArea,
     TextAreaMessage, TextAreaOutput, TextAreaState, Toast, ToastItem, ToastLevel, ToastMessage,
     ToastOutput, ToastState, Toggleable, Tooltip, TooltipMessage, TooltipOutput, TooltipPosition,

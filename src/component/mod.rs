@@ -141,9 +141,7 @@ pub use dialog::{Dialog, DialogButton, DialogMessage, DialogOutput, DialogState}
 pub use dropdown::{Dropdown, DropdownMessage, DropdownOutput, DropdownState};
 pub use focus_manager::FocusManager;
 pub use input_field::{InputField, InputFieldMessage, InputFieldOutput, InputFieldState};
-pub use key_hints::{
-    KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsOutput, KeyHintsState,
-};
+pub use key_hints::{KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState};
 pub use loading_list::{
     ItemState, LoadingList, LoadingListItem, LoadingListMessage, LoadingListOutput,
     LoadingListState,
@@ -162,8 +160,8 @@ pub use selectable_list::{
 };
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 pub use status_bar::{
-    Section, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarOutput,
-    StatusBarState, StatusBarStyle,
+    Section, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarState,
+    StatusBarStyle,
 };
 pub use status_log::{
     StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState,
