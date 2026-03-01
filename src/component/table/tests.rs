@@ -984,3 +984,10 @@ fn test_with_disabled_prevents_navigation() {
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(0));
 }
+
+#[test]
+fn test_selected_item() {
+    let state = TableState::with_selected(test_rows(), test_columns(), 1);
+    assert_eq!(state.selected_item().unwrap().name, "Alice");
+    assert_eq!(state.selected_item(), state.selected_row());
+}

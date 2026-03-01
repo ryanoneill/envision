@@ -991,3 +991,10 @@ fn test_instance_methods() {
     let msg = state.handle_event(&Event::key(KeyCode::Up));
     assert_eq!(msg, Some(TreeMessage::Up));
 }
+
+#[test]
+fn test_selected_item() {
+    let state = TreeState::new(vec![TreeNode::new("root", "data")]);
+    assert_eq!(state.selected_item().unwrap().data(), &"data");
+    assert_eq!(state.selected_item().unwrap().label(), state.selected_node().unwrap().label());
+}

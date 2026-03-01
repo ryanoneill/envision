@@ -348,6 +348,14 @@ impl<T: Clone> TreeState<T> {
         self.get_node(&path)
     }
 
+    /// Returns a reference to the currently selected node.
+    ///
+    /// This is an alias for [`selected_node()`](Self::selected_node) that provides a
+    /// consistent accessor name across all selection-based components.
+    pub fn selected_item(&self) -> Option<&TreeNode<T>> {
+        self.selected_node()
+    }
+
     /// Expands all nodes in the tree.
     pub fn expand_all(&mut self) {
         for root in &mut self.roots {

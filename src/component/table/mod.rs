@@ -335,6 +335,14 @@ impl<T: TableRow> TableState<T> {
             .and_then(|&idx| self.rows.get(idx))
     }
 
+    /// Returns a reference to the currently selected item.
+    ///
+    /// This is an alias for [`selected_row()`](Self::selected_row) that provides a
+    /// consistent accessor name across all selection-based components.
+    pub fn selected_item(&self) -> Option<&T> {
+        self.selected_row()
+    }
+
     /// Returns the current sort configuration.
     ///
     /// Returns `None` if no sort is applied.

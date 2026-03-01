@@ -195,6 +195,14 @@ impl DropdownState {
             .and_then(|idx| self.options.get(idx).map(|s| s.as_str()))
     }
 
+    /// Returns the selected option value as a string reference.
+    ///
+    /// This is an alias for [`selected_value()`](Self::selected_value) that provides a
+    /// consistent accessor name across all selection-based components.
+    pub fn selected_item(&self) -> Option<&str> {
+        self.selected_value()
+    }
+
     /// Sets the selected option index.
     pub fn set_selected_index(&mut self, index: Option<usize>) {
         if let Some(idx) = index {

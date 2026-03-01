@@ -155,6 +155,14 @@ impl<T: Clone> RadioGroupState<T> {
         self.options.get(self.selected?)
     }
 
+    /// Returns a reference to the currently selected item.
+    ///
+    /// This is an alias for [`selected()`](Self::selected) that provides a
+    /// consistent accessor name across all selection-based components.
+    pub fn selected_item(&self) -> Option<&T> {
+        self.selected()
+    }
+
     /// Sets the selected index.
     ///
     /// If the index is out of bounds, it will be ignored.
