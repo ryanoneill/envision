@@ -145,7 +145,7 @@ pub enum BreadcrumbOutput {
 /// assert_eq!(state.len(), 3);
 /// assert_eq!(state.separator(), " > ");
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct BreadcrumbState {
     /// The breadcrumb segments.
     segments: Vec<BreadcrumbSegment>,

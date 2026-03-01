@@ -132,6 +132,14 @@ impl<S: Default + Clone + PartialEq> Default for RouterState<S> {
     }
 }
 
+impl<S: Clone + PartialEq> PartialEq for RouterState<S> {
+    fn eq(&self, other: &Self) -> bool {
+        self.current == other.current
+            && self.history == other.history
+            && self.max_history == other.max_history
+    }
+}
+
 impl<S: Clone + PartialEq> RouterState<S> {
     /// Creates a new router state starting at the given screen.
     pub fn new(initial: S) -> Self {

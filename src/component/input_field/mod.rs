@@ -69,7 +69,7 @@ pub enum InputFieldOutput {
 }
 
 /// State for an InputField component.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct InputFieldState {
     /// The current text value.
     value: String,

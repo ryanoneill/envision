@@ -54,7 +54,7 @@ use crate::theme::Theme;
 /// let panel = AccordionPanel::new("Title", "Content").expanded();
 /// assert!(panel.is_expanded());
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct AccordionPanel {
     /// The panel header/title.
     title: String,
@@ -153,7 +153,7 @@ pub enum AccordionOutput {
 }
 
 /// State for an Accordion component.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct AccordionState {
     /// The accordion panels.
     panels: Vec<AccordionPanel>,

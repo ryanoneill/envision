@@ -72,6 +72,15 @@ pub struct RadioGroupState<T: Clone> {
     disabled: bool,
 }
 
+impl<T: Clone + PartialEq> PartialEq for RadioGroupState<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.options == other.options
+            && self.selected == other.selected
+            && self.focused == other.focused
+            && self.disabled == other.disabled
+    }
+}
+
 impl<T: Clone> Default for RadioGroupState<T> {
     fn default() -> Self {
         Self {

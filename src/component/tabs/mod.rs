@@ -75,6 +75,15 @@ pub struct TabsState<T: Clone> {
     disabled: bool,
 }
 
+impl<T: Clone + PartialEq> PartialEq for TabsState<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.tabs == other.tabs
+            && self.selected == other.selected
+            && self.focused == other.focused
+            && self.disabled == other.disabled
+    }
+}
+
 impl<T: Clone> Default for TabsState<T> {
     fn default() -> Self {
         Self {

@@ -57,7 +57,7 @@ pub enum ToastLevel {
 ///
 /// Each toast has a unique ID, message, severity level, and optional
 /// remaining duration for auto-dismiss.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ToastItem {
     /// Unique identifier for this toast.
     id: u64,
@@ -133,7 +133,7 @@ pub enum ToastOutput {
 ///
 /// Manages a collection of toast notifications with support for
 /// auto-dismiss, manual dismiss, and configurable limits.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ToastState {
     /// Active toasts.
     toasts: Vec<ToastItem>,

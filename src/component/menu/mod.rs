@@ -115,7 +115,7 @@ pub enum MenuOutput {
 }
 
 /// State for a Menu component.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct MenuState {
     /// Menu items.
     items: Vec<MenuItem>,

@@ -108,7 +108,7 @@ pub enum DialogOutput {
 ///
 /// Contains all the state needed to render and manage a dialog,
 /// including title, message, buttons, and focus state.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct DialogState {
     /// Dialog title.
     title: String,

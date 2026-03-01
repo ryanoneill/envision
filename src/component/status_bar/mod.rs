@@ -173,7 +173,7 @@ pub enum StatusBarMessage {
 }
 
 /// State for a StatusBar component.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct StatusBarState {
     /// Items aligned to the left.
     left: Vec<StatusBarItem>,

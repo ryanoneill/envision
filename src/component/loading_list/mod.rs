@@ -109,6 +109,12 @@ pub struct LoadingListItem<T: Clone> {
     state: ItemState,
 }
 
+impl<T: Clone + PartialEq> PartialEq for LoadingListItem<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.data == other.data && self.label == other.label && self.state == other.state
+    }
+}
+
 impl<T: Clone> LoadingListItem<T> {
     /// Creates a new item.
     pub fn new(data: T, label: impl Into<String>) -> Self {
@@ -230,6 +236,18 @@ pub struct LoadingListState<T: Clone> {
     title: Option<String>,
     /// Whether to show loading indicators.
     show_indicators: bool,
+}
+
+impl<T: Clone + PartialEq> PartialEq for LoadingListState<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.items == other.items
+            && self.selected == other.selected
+            && self.focused == other.focused
+            && self.disabled == other.disabled
+            && self.spinner_frame == other.spinner_frame
+            && self.title == other.title
+            && self.show_indicators == other.show_indicators
+    }
 }
 
 impl<T: Clone> Default for LoadingListState<T> {

@@ -132,7 +132,7 @@ pub enum SpinnerMessage {
 }
 
 /// State for a Spinner component.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct SpinnerState {
     /// The animation style.
     style: SpinnerStyle,

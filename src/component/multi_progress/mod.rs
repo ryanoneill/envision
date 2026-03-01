@@ -69,7 +69,7 @@ impl ProgressItemStatus {
 }
 
 /// A single progress item.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ProgressItem {
     /// Unique identifier.
     id: String,
@@ -196,7 +196,7 @@ pub enum MultiProgressOutput {
 }
 
 /// State for the MultiProgress component.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct MultiProgressState {
     /// All progress items.
     items: Vec<ProgressItem>,

@@ -49,7 +49,7 @@ pub enum CheckboxOutput {
 }
 
 /// State for a Checkbox component.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct CheckboxState {
     /// The checkbox label.
     label: String,

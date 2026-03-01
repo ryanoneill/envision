@@ -59,7 +59,7 @@ pub enum SelectOutput {
 }
 
 /// State for a Select component.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct SelectState {
     /// Available options.
     options: Vec<String>,
