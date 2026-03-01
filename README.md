@@ -10,7 +10,7 @@ A [ratatui](https://github.com/ratatui/ratatui) framework for collaborative TUI 
 
 ## Features
 
-- **Component Library** - 25+ ready-to-use UI components following TEA pattern
+- **Component Library** - 26 ready-to-use UI components following TEA pattern
 - **Headless Testing** - Render your TUI without a terminal using `CaptureBackend`
 - **TEA Architecture** - The Elm Architecture pattern with `App`, `Runtime`, and `Command`
 - **Async Runtime** - Full async support with subscriptions, timers, and async commands
@@ -95,8 +95,8 @@ use envision::prelude::*;
 
 #[test]
 fn test_my_app() {
-    // Use Runtime::headless for testing App implementations
-    let mut runtime = Runtime::<MyApp, _>::headless(80, 24).unwrap();
+    // Use Runtime::virtual_terminal for testing App implementations
+    let mut runtime = Runtime::<MyApp>::virtual_terminal(80, 24).unwrap();
 
     runtime.dispatch(Msg::Increment);
     runtime.dispatch(Msg::Increment);
@@ -140,6 +140,12 @@ cargo run --example test_harness
 
 # Widget annotations
 cargo run --example annotations
+
+# Theme switching with components
+cargo run --example themed_app
+
+# Multi-component showcase with focus management
+cargo run --example component_showcase
 ```
 
 ## Components
@@ -241,12 +247,14 @@ Envision follows The Elm Architecture (TEA) pattern:
 
 | Module | Description |
 |--------|-------------|
-| `component` | 20+ reusable UI components with `Component`, `Focusable`, `Toggleable` traits |
+| `component` | 26 reusable UI components with `Component`, `Focusable`, `Toggleable` traits |
 | `backend` | `CaptureBackend` for headless rendering |
 | `app` | TEA architecture: `App`, `Runtime`, `Command`, subscriptions |
-| `harness` | `TestHarness` and `AsyncTestHarness` for testing |
+| `harness` | `TestHarness` and `AppHarness` for testing |
 | `annotation` | Widget annotations with `Annotate` and `AnnotationRegistry` |
 | `input` | Input simulation with `EventQueue` |
+| `overlay` | Modal overlay system with `Overlay` trait and `OverlayStack` |
+| `theme` | Theming with `Theme` for consistent styling across components |
 | `adapter` | `DualBackend` for simultaneous real + capture rendering |
 
 ## Minimum Supported Rust Version
