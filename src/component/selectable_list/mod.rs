@@ -142,11 +142,6 @@ impl<T: Clone> SelectableListState<T> {
     pub fn len(&self) -> usize {
         self.items.len()
     }
-
-    /// Returns a mutable reference to the internal ListState for rendering.
-    pub fn list_state_mut(&mut self) -> &mut ListState {
-        &mut self.list_state
-    }
 }
 
 impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {

@@ -4,7 +4,10 @@ use std::collections::HashMap;
 
 /// The type of widget being annotated.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 #[cfg_attr(feature = "serialization", serde(rename_all = "snake_case"))]
 pub enum WidgetType {
     /// A container or panel
@@ -122,7 +125,10 @@ impl std::fmt::Display for WidgetType {
 /// Annotations provide semantic information about widgets that
 /// can be used for testing, accessibility, and UI queries.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct Annotation {
     /// The type of widget
     pub widget_type: WidgetType,

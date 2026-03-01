@@ -1025,8 +1025,7 @@ fn test_disabled_prevents_handle_event() {
 #[test]
 fn test_disabled_prevents_navigation() {
     let items = make_items();
-    let mut state =
-        LoadingListState::with_items(items, |i| i.name.clone()).with_disabled(true);
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone()).with_disabled(true);
     state.set_focused(true);
 
     let output = LoadingList::<TestItem>::update(&mut state, LoadingListMessage::Down);
@@ -1049,8 +1048,7 @@ fn test_disabled_prevents_navigation() {
 #[test]
 fn test_disabled_allows_programmatic_state_changes() {
     let items = make_items();
-    let mut state =
-        LoadingListState::with_items(items, |i| i.name.clone()).with_disabled(true);
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone()).with_disabled(true);
 
     // SetLoading should still work when disabled
     let output = LoadingList::<TestItem>::update(&mut state, LoadingListMessage::SetLoading(0));
@@ -1070,8 +1068,7 @@ fn test_disabled_allows_programmatic_state_changes() {
 #[test]
 fn test_disabled_dispatch_event_returns_none() {
     let items = make_items();
-    let mut state =
-        LoadingListState::with_items(items, |i| i.name.clone()).with_disabled(true);
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone()).with_disabled(true);
     state.set_focused(true);
 
     let output = state.dispatch_event(&Event::key(KeyCode::Down));

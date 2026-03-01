@@ -29,7 +29,10 @@ pub enum SnapshotFormat {
 ///
 /// Includes both the rendered frame and annotation data.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct Snapshot {
     /// The captured frame data
     pub frame: FrameSnapshot,
