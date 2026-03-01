@@ -11,23 +11,25 @@
 //!
 //! # Example
 //!
-//! ```ignore
-//! #[tokio::test(start_paused = true)]
-//! async fn test_delayed_operation() {
-//!     let mut harness = AppHarness::<MyApp>::new(80, 24);
+//! ```rust
+//! # use envision::prelude::*;
+//! # struct MyApp;
+//! # #[derive(Default, Clone)]
+//! # struct MyState;
+//! # #[derive(Clone)]
+//! # enum MyMsg {}
+//! # impl App for MyApp {
+//! #     type State = MyState;
+//! #     type Message = MyMsg;
+//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+//! #     fn view(state: &MyState, frame: &mut Frame) {}
+//! # }
+//! use envision::harness::AppHarness;
 //!
-//!     // Dispatch an async command with a delay
-//!     harness.dispatch(Msg::StartDelayedOp).await;
-//!
-//!     // State unchanged immediately
-//!     assert!(!harness.state().operation_complete);
-//!
-//!     // Advance time past the delay
-//!     harness.advance_time(Duration::from_secs(2)).await;
-//!
-//!     // Now the operation completed
-//!     assert!(harness.state().operation_complete);
-//! }
+//! let mut harness = AppHarness::<MyApp>::new(80, 24)?;
+//! harness.tick()?;
+//! # Ok::<(), std::io::Error>(())
 //! ```
 
 use std::io;
@@ -91,9 +93,26 @@ impl<A: App> AppHarness<A> {
     /// Returns the cell at the given position, or `None` if out of bounds.
     ///
     /// Use this to assert on cell styling:
-    /// ```ignore
-    /// let cell = harness.cell_at(5, 3).unwrap();
-    /// assert_eq!(cell.fg, SerializableColor::Green);
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// use envision::harness::AppHarness;
+    ///
+    /// let harness = AppHarness::<MyApp>::new(80, 24)?;
+    /// let cell = harness.cell_at(5, 3);
+    /// assert!(cell.is_some());
+    /// # Ok::<(), std::io::Error>(())
     /// ```
     pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
         self.runtime.backend().cell(x, y)

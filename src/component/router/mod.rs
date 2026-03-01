@@ -31,13 +31,23 @@
 //!
 //! # Usage Pattern
 //!
-//! ```rust,ignore
+//! ```rust
+//! use envision::component::RouterState;
+//! use ratatui::Frame;
+//!
+//! #[derive(Clone, Debug, PartialEq, Eq)]
+//! enum Screen { Home, Settings, Profile }
+//!
+//! struct AppState {
+//!     router: RouterState<Screen>,
+//! }
+//!
 //! // In your app's view function:
 //! fn view(state: &AppState, frame: &mut Frame) {
 //!     match state.router.current() {
-//!         Screen::Home => render_home(state, frame),
-//!         Screen::Settings => render_settings(state, frame),
-//!         Screen::Profile => render_profile(state, frame),
+//!         Screen::Home => { /* render home */ }
+//!         Screen::Settings => { /* render settings */ }
+//!         Screen::Profile => { /* render profile */ }
 //!     }
 //! }
 //! ```

@@ -483,16 +483,13 @@ impl Tooltip {
     ///
     /// # Example
     ///
-    /// ```rust,no_run
+    /// ```rust
     /// use envision::component::{Tooltip, TooltipState, Toggleable};
     /// use ratatui::prelude::*;
     ///
     /// let mut state = TooltipState::new("Button help text");
     /// Tooltip::show(&mut state);
-    ///
-    /// // In your view function:
-    /// // let button_area = Rect::new(10, 5, 20, 3);
-    /// // Tooltip::view_at(&state, frame, button_area, frame.area());
+    /// assert!(Tooltip::is_visible(&state));
     /// ```
     pub fn view_at(state: &TooltipState, frame: &mut Frame, target: Rect, bounds: Rect) {
         if !state.visible || state.content.is_empty() {

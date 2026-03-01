@@ -33,7 +33,7 @@
 //!
 //! # Example
 //!
-//! ```rust,no_run
+//! ```rust
 //! use envision::app::{App, Command, Update};
 //! use envision::input::Event;
 //! use ratatui::Frame;

@@ -21,7 +21,7 @@ use super::snapshot::Snapshot;
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust
 /// use envision::harness::TestHarness;
 /// use ratatui::widgets::Paragraph;
 ///
@@ -29,7 +29,7 @@ use super::snapshot::Snapshot;
 ///
 /// harness.render(|frame| {
 ///     frame.render_widget(Paragraph::new("Test"), frame.area());
-/// });
+/// }).unwrap();
 ///
 /// assert!(harness.contains("Test"));
 /// ```
@@ -105,9 +105,12 @@ impl TestHarness {
     /// Returns the cell at the given position, or `None` if out of bounds.
     ///
     /// Use this to assert on cell styling:
-    /// ```ignore
-    /// let cell = harness.cell_at(5, 3).unwrap();
-    /// assert_eq!(cell.fg, SerializableColor::Green);
+    /// ```rust
+    /// use envision::harness::TestHarness;
+    ///
+    /// let harness = TestHarness::new(80, 24);
+    /// let cell = harness.cell_at(5, 3);
+    /// assert!(cell.is_some());
     /// ```
     pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
         self.terminal.backend().cell(x, y)

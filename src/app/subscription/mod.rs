@@ -5,12 +5,12 @@
 //!
 //! # Example
 //!
-//! ```ignore
+//! ```rust
 //! use envision::app::{Subscription, TickSubscription};
 //! use std::time::Duration;
 //!
 //! // Create a subscription that fires every second
-//! let tick = TickSubscription::every(Duration::from_secs(1));
+//! let tick = TickSubscription::new(Duration::from_secs(1), || "tick");
 //! ```
 
 use std::pin::Pin;
@@ -44,9 +44,11 @@ pub type BoxedSubscription<M> = Box<dyn Subscription<M>>;
 ///
 /// # Example
 ///
-/// ```ignore
-/// TickSubscription::every(Duration::from_secs(1))
-///     .with_message(|| Msg::Tick)
+/// ```rust
+/// use envision::app::TickSubscription;
+/// use std::time::Duration;
+///
+/// let tick = TickSubscription::new(Duration::from_secs(1), || "tick");
 /// ```
 pub struct TickSubscription<M, F>
 where
@@ -117,8 +119,11 @@ impl TickSubscriptionBuilder {
 ///
 /// # Example
 ///
-/// ```ignore
-/// tick(Duration::from_secs(1)).with_message(|| Msg::Tick)
+/// ```rust
+/// use envision::app::tick;
+/// use std::time::Duration;
+///
+/// let sub = tick(Duration::from_secs(1)).with_message(|| "tick");
 /// ```
 pub fn tick(interval: Duration) -> TickSubscriptionBuilder {
     TickSubscriptionBuilder::every(interval)
@@ -128,8 +133,11 @@ pub fn tick(interval: Duration) -> TickSubscriptionBuilder {
 ///
 /// # Example
 ///
-/// ```ignore
-/// TimerSubscription::after(Duration::from_secs(5), Msg::Timeout)
+/// ```rust
+/// use envision::app::TimerSubscription;
+/// use std::time::Duration;
+///
+/// let timer = TimerSubscription::after(Duration::from_secs(5), "timeout");
 /// ```
 pub struct TimerSubscription<M> {
     delay: Duration,
@@ -169,8 +177,10 @@ impl<M: Send + 'static> Subscription<M> for TimerSubscription<M> {
 ///
 /// # Example
 ///
-/// ```ignore
-/// let (tx, rx) = tokio::sync::mpsc::channel(100);
+/// ```rust
+/// use envision::app::ChannelSubscription;
+///
+/// let (tx, rx) = tokio::sync::mpsc::channel::<String>(100);
 /// let subscription = ChannelSubscription::new(rx);
 /// ```
 pub struct ChannelSubscription<M> {
@@ -215,13 +225,10 @@ impl<M: Send + 'static> Subscription<M> for ChannelSubscription<M> {
 ///
 /// # Example
 ///
-/// ```ignore
-/// let stream = async_stream::stream! {
-///     for i in 0..10 {
-///         yield Msg::Count(i);
-///         tokio::time::sleep(Duration::from_secs(1)).await;
-///     }
-/// };
+/// ```rust
+/// use envision::app::StreamSubscription;
+///
+/// let stream = tokio_stream::pending::<String>();
 /// let subscription = StreamSubscription::new(stream);
 /// ```
 pub struct StreamSubscription<S> {
@@ -320,14 +327,14 @@ where
 ///
 /// # Example
 ///
-/// ```ignore
+/// ```rust
 /// use envision::app::{SubscriptionExt, tick};
 /// use std::time::Duration;
 ///
 /// // Create a tick subscription with filtering and limiting
 /// let sub = tick(Duration::from_millis(100))
-///     .with_message(|| Msg::Tick)
-///     .filter(|msg| msg.should_process())
+///     .with_message(|| 42i32)
+///     .filter(|n| *n > 0)
 ///     .take(10)
 ///     .throttle(Duration::from_millis(200));
 /// ```
@@ -336,10 +343,13 @@ pub trait SubscriptionExt<M>: Subscription<M> + Sized {
     ///
     /// # Example
     ///
-    /// ```ignore
+    /// ```rust
+    /// use envision::app::{SubscriptionExt, tick};
+    /// use std::time::Duration;
+    ///
     /// let sub = tick(Duration::from_secs(1))
     ///     .with_message(|| 42)
-    ///     .map(|n| Msg::Value(n));
+    ///     .map(|n| format!("value: {}", n));
     /// ```
     fn map<N, F>(self, f: F) -> MappedSubscription<M, N, F, Self>
     where
@@ -354,9 +364,13 @@ pub trait SubscriptionExt<M>: Subscription<M> + Sized {
     ///
     /// # Example
     ///
-    /// ```ignore
-    /// let sub = some_subscription
-    ///     .filter(|msg| msg.is_important());
+    /// ```rust
+    /// use envision::app::{SubscriptionExt, tick};
+    /// use std::time::Duration;
+    ///
+    /// let sub = tick(Duration::from_secs(1))
+    ///     .with_message(|| 42i32)
+    ///     .filter(|n| *n > 0);
     /// ```
     fn filter<P>(self, predicate: P) -> FilterSubscription<M, Self, P>
     where
@@ -371,8 +385,13 @@ pub trait SubscriptionExt<M>: Subscription<M> + Sized {
     ///
     /// # Example
     ///
-    /// ```ignore
-    /// let sub = some_subscription.take(5);
+    /// ```rust
+    /// use envision::app::{SubscriptionExt, tick};
+    /// use std::time::Duration;
+    ///
+    /// let sub = tick(Duration::from_secs(1))
+    ///     .with_message(|| "tick")
+    ///     .take(5);
     /// ```
     fn take(self, count: usize) -> TakeSubscription<M, Self> {
         TakeSubscription::new(self, count)
@@ -386,9 +405,14 @@ pub trait SubscriptionExt<M>: Subscription<M> + Sized {
     ///
     /// # Example
     ///
-    /// ```ignore
+    /// ```rust
+    /// use envision::app::{SubscriptionExt, tick};
+    /// use std::time::Duration;
+    ///
     /// // Only emit after 300ms of no new messages
-    /// let sub = some_subscription.debounce(Duration::from_millis(300));
+    /// let sub = tick(Duration::from_millis(100))
+    ///     .with_message(|| "tick")
+    ///     .debounce(Duration::from_millis(300));
     /// ```
     fn debounce(self, duration: Duration) -> DebounceSubscription<M, Self> {
         DebounceSubscription::new(self, duration)
@@ -402,9 +426,14 @@ pub trait SubscriptionExt<M>: Subscription<M> + Sized {
     ///
     /// # Example
     ///
-    /// ```ignore
+    /// ```rust
+    /// use envision::app::{SubscriptionExt, tick};
+    /// use std::time::Duration;
+    ///
     /// // Emit at most once every 100ms
-    /// let sub = some_subscription.throttle(Duration::from_millis(100));
+    /// let sub = tick(Duration::from_millis(50))
+    ///     .with_message(|| "tick")
+    ///     .throttle(Duration::from_millis(100));
     /// ```
     fn throttle(self, duration: Duration) -> ThrottleSubscription<M, Self> {
         ThrottleSubscription::new(self, duration)
@@ -458,8 +487,11 @@ pub fn batch<M: Send + 'static>(subscriptions: Vec<BoxedSubscription<M>>) -> Bat
 ///
 /// # Example
 ///
-/// ```ignore
-/// IntervalImmediateSubscription::new(Duration::from_secs(1), || Msg::Tick)
+/// ```rust
+/// use envision::app::IntervalImmediateSubscription;
+/// use std::time::Duration;
+///
+/// let sub = IntervalImmediateSubscription::new(Duration::from_secs(1), || "tick");
 /// ```
 pub struct IntervalImmediateSubscription<M, F>
 where
@@ -538,8 +570,11 @@ impl IntervalImmediateBuilder {
 ///
 /// # Example
 ///
-/// ```ignore
-/// interval_immediate(Duration::from_secs(1)).with_message(|| Msg::Tick)
+/// ```rust
+/// use envision::app::interval_immediate;
+/// use std::time::Duration;
+///
+/// let sub = interval_immediate(Duration::from_secs(1)).with_message(|| "tick");
 /// ```
 pub fn interval_immediate(interval: Duration) -> IntervalImmediateBuilder {
     IntervalImmediateBuilder::every(interval)
@@ -551,8 +586,13 @@ pub fn interval_immediate(interval: Duration) -> IntervalImmediateBuilder {
 ///
 /// # Example
 ///
-/// ```ignore
-/// some_subscription.filter(|msg| msg.is_important())
+/// ```rust
+/// use envision::app::{SubscriptionExt, tick};
+/// use std::time::Duration;
+///
+/// let sub = tick(Duration::from_secs(1))
+///     .with_message(|| 42i32)
+///     .filter(|n| *n > 0);
 /// ```
 pub struct FilterSubscription<M, S, P>
 where
@@ -610,8 +650,13 @@ where
 ///
 /// # Example
 ///
-/// ```ignore
-/// some_subscription.take(5)
+/// ```rust
+/// use envision::app::{SubscriptionExt, tick};
+/// use std::time::Duration;
+///
+/// let sub = tick(Duration::from_secs(1))
+///     .with_message(|| "tick")
+///     .take(5);
 /// ```
 pub struct TakeSubscription<M, S>
 where
@@ -676,9 +721,14 @@ where
 ///
 /// # Example
 ///
-/// ```ignore
+/// ```rust
+/// use envision::app::{SubscriptionExt, tick};
+/// use std::time::Duration;
+///
 /// // Only emit after 300ms of no new messages
-/// some_subscription.debounce(Duration::from_millis(300))
+/// let sub = tick(Duration::from_millis(100))
+///     .with_message(|| "tick")
+///     .debounce(Duration::from_millis(300));
 /// ```
 pub struct DebounceSubscription<M, S>
 where
@@ -775,9 +825,14 @@ where
 ///
 /// # Example
 ///
-/// ```ignore
+/// ```rust
+/// use envision::app::{SubscriptionExt, tick};
+/// use std::time::Duration;
+///
 /// // Emit at most once every 100ms
-/// some_subscription.throttle(Duration::from_millis(100))
+/// let sub = tick(Duration::from_millis(50))
+///     .with_message(|| "tick")
+///     .throttle(Duration::from_millis(100));
 /// ```
 pub struct ThrottleSubscription<M, S>
 where
@@ -843,19 +898,17 @@ where
 ///
 /// # Example
 ///
-/// ```ignore
-/// use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+/// ```rust
+/// use envision::app::TerminalEventSubscription;
+/// use crossterm::event::{Event, KeyCode, KeyEvent};
 ///
 /// let sub = TerminalEventSubscription::new(|event| {
 ///     match event {
 ///         Event::Key(KeyEvent { code: KeyCode::Char('q'), .. }) => {
-///             Some(Msg::Quit)
+///             Some("quit".to_string())
 ///         }
 ///         Event::Key(KeyEvent { code: KeyCode::Up, .. }) => {
-///             Some(Msg::MoveUp)
-///         }
-///         Event::Resize(width, height) => {
-///             Some(Msg::Resize(width, height))
+///             Some("up".to_string())
 ///         }
 ///         _ => None,
 ///     }
@@ -924,12 +977,13 @@ where
 ///
 /// # Example
 ///
-/// ```ignore
+/// ```rust
+/// use envision::app::terminal_events;
 /// use crossterm::event::{Event, KeyCode, KeyEvent};
 ///
 /// let sub = terminal_events(|event| {
 ///     if let Event::Key(KeyEvent { code: KeyCode::Char('q'), .. }) = event {
-///         Some(Msg::Quit)
+///         Some("quit".to_string())
 ///     } else {
 ///         None
 ///     }

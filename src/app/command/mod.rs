@@ -107,11 +107,12 @@ impl<M> Command<M> {
     ///
     /// # Example
     ///
-    /// ```ignore
-    /// Command::perform_async(async {
-    ///     let result = fetch_data().await;
-    ///     Some(Msg::DataLoaded(result))
-    /// })
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd: Command<String> = Command::perform_async(async {
+    ///     Some("loaded".to_string())
+    /// });
     /// ```
     pub fn perform_async<Fut>(future: Fut) -> Self
     where
@@ -139,14 +140,16 @@ impl<M> Command<M> {
     ///
     /// # Example
     ///
-    /// ```ignore
-    /// Command::perform_async_fallible(
-    ///     async { fetch_data().await },
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd: Command<String> = Command::perform_async_fallible(
+    ///     async { Ok::<_, std::io::Error>("data".to_string()) },
     ///     |result| match result {
-    ///         Ok(data) => Msg::DataLoaded(data),
-    ///         Err(e) => Msg::Error(e.to_string()),
+    ///         Ok(data) => format!("loaded: {}", data),
+    ///         Err(e) => format!("error: {}", e),
     ///     }
-    /// )
+    /// );
     /// ```
     pub fn perform_async_fallible<Fut, T, E, F>(future: Fut, on_result: F) -> Self
     where
@@ -173,12 +176,14 @@ impl<M> Command<M> {
     ///
     /// # Example
     ///
-    /// ```ignore
+    /// ```rust
+    /// use envision::app::Command;
+    ///
     /// // Errors go to runtime.take_errors()
-    /// Command::try_perform_async(
-    ///     async { fetch_data().await },
-    ///     |data| Some(Msg::DataLoaded(data))
-    /// )
+    /// let cmd: Command<String> = Command::try_perform_async(
+    ///     async { Ok::<_, std::io::Error>("data".to_string()) },
+    ///     |data| Some(format!("loaded: {}", data))
+    /// );
     /// ```
     pub fn try_perform_async<Fut, T, E, F>(future: Fut, on_success: F) -> Self
     where

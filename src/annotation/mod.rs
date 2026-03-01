@@ -9,7 +9,7 @@
 //!
 //! # Example
 //!
-//! ```rust,no_run
+//! ```rust
 //! use envision::annotation::{Annotate, Annotation};
 //! use ratatui::widgets::Paragraph;
 //! use ratatui::Frame;

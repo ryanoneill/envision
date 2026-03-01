@@ -12,7 +12,8 @@
 //!
 //! For running applications in a real terminal:
 //!
-//! ```ignore
+//! ```rust,ignore
+//! // requires real terminal
 //! #[tokio::main]
 //! async fn main() -> std::io::Result<()> {
 //!     Runtime::<MyApp>::new_terminal()?.run_terminal().await
@@ -27,11 +28,25 @@
 //!
 //! For programmatic control (AI agents, automation, testing):
 //!
-//! ```ignore
-//! let mut vt = Runtime::<MyApp>::virtual_terminal(80, 24)?;
-//! vt.send(Event::key('j'));
+//! ```rust
+//! # use envision::prelude::*;
+//! # struct MyApp;
+//! # #[derive(Default, Clone)]
+//! # struct MyState;
+//! # #[derive(Clone)]
+//! # enum MyMsg {}
+//! # impl App for MyApp {
+//! #     type State = MyState;
+//! #     type Message = MyMsg;
+//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+//! #     fn view(state: &MyState, frame: &mut Frame) {}
+//! # }
+//! let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+//! vt.send(Event::key(KeyCode::Char('j')));
 //! vt.tick()?;
 //! println!("{}", vt.display());
+//! # Ok::<(), std::io::Error>(())
 //! ```
 //!
 //! Events are injected programmatically and the display can be inspected.
@@ -182,7 +197,8 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// # Example
     ///
-    /// ```ignore
+    /// ```rust,ignore
+    /// // requires real terminal
     /// #[tokio::main]
     /// async fn main() -> std::io::Result<()> {
     ///     Runtime::<MyApp>::new_terminal()?.run_terminal().await
@@ -213,7 +229,8 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// # Example
     ///
-    /// ```ignore
+    /// ```rust,ignore
+    /// // requires real terminal
     /// #[tokio::main]
     /// async fn main() -> std::io::Result<()> {
     ///     Runtime::<MyApp>::new_terminal()?.run_terminal().await
@@ -375,11 +392,24 @@ impl<A: App> Runtime<A, CaptureBackend> {
     ///
     /// # Example
     ///
-    /// ```ignore
-    /// let mut vt = Runtime::<MyApp>::virtual_terminal(80, 24)?;
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// vt.send(Event::key(KeyCode::Char('j')));
     /// vt.tick()?;
-    /// assert!(vt.display().contains("expected text"));
+    /// # Ok::<(), std::io::Error>(())
     /// ```
     pub fn virtual_terminal(width: u16, height: u16) -> io::Result<Self> {
         let backend = CaptureBackend::new(width, height);
@@ -523,13 +553,24 @@ impl<A: App, B: Backend> Runtime<A, B> {
     ///
     /// # Example
     ///
-    /// ```ignore
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// # let runtime = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// let error_tx = runtime.error_sender();
-    /// tokio::spawn(async move {
-    ///     if let Err(e) = some_fallible_operation().await {
-    ///         let _ = error_tx.send(Box::new(e)).await;
-    ///     }
-    /// });
+    /// // error_tx can be sent to async tasks to report errors
+    /// # Ok::<(), std::io::Error>(())
     /// ```
     pub fn error_sender(&self) -> mpsc::Sender<BoxedError> {
         self.error_tx.clone()
@@ -542,10 +583,25 @@ impl<A: App, B: Backend> Runtime<A, B> {
     ///
     /// # Example
     ///
-    /// ```ignore
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// # let mut runtime = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// for error in runtime.take_errors() {
     ///     eprintln!("Async error: {}", error);
     /// }
+    /// # Ok::<(), std::io::Error>(())
     /// ```
     pub fn take_errors(&mut self) -> Vec<BoxedError> {
         let mut errors = Vec::new();
@@ -837,9 +893,23 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// Returns the cell at the given position, or `None` if out of bounds.
     ///
     /// Use this to assert on cell styling:
-    /// ```ignore
-    /// let cell = vt.cell_at(5, 3).unwrap();
-    /// assert_eq!(cell.fg, SerializableColor::Green);
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// # let vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// let cell = vt.cell_at(5, 3);
+    /// # Ok::<(), std::io::Error>(())
     /// ```
     pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
         self.core.terminal.backend().cell(x, y)
