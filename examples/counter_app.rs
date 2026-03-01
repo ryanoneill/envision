@@ -10,9 +10,6 @@
 //! Run with: cargo run --example counter_app
 
 use envision::prelude::*;
-use ratatui::layout::{Alignment, Constraint, Layout};
-use ratatui::style::{Color, Modifier, Style};
-use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 /// The application marker type

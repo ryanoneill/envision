@@ -11,8 +11,8 @@
 //!
 //! ```rust
 //! use envision::annotation::{Annotate, Annotation};
+//! use envision::layout::Frame;
 //! use ratatui::widgets::Paragraph;
-//! use ratatui::Frame;
 //!
 //! fn render(frame: &mut Frame) {
 //!     let area = frame.area();

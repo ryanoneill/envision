@@ -12,9 +12,6 @@ use std::time::Duration;
 
 use envision::app::tick;
 use envision::prelude::*;
-use ratatui::layout::{Alignment, Constraint, Layout};
-use ratatui::style::{Color, Modifier, Style};
-use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 /// The application marker type

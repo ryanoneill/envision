@@ -150,9 +150,9 @@ thread_local! {
 ///
 /// ```rust
 /// use envision::annotation::{with_annotations, Annotate, Annotation};
-/// use ratatui::widgets::Paragraph;
-/// use ratatui::Terminal;
 /// use envision::backend::CaptureBackend;
+/// use envision::layout::Terminal;
+/// use ratatui::widgets::Paragraph;
 ///
 /// let backend = CaptureBackend::new(80, 24);
 /// let mut terminal = Terminal::new(backend).unwrap();

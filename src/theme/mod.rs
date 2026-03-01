@@ -25,7 +25,7 @@
 //!
 //! ```rust
 //! use envision::theme::Theme;
-//! use ratatui::style::Color;
+//! use envision::style::Color;
 //!
 //! let my_theme = Theme {
 //!     focused: Color::Magenta,

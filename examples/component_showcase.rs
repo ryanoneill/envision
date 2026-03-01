@@ -34,8 +34,6 @@ use envision::component::{
     TableOutput, TableRow, TableState, Tabs, TabsState, Toast, ToastMessage, ToastState,
 };
 use envision::prelude::*;
-use ratatui::layout::{Alignment, Constraint, Layout};
-use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 // ---------------------------------------------------------------------------
