@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::{Event, KeyCode, KeyModifiers};
 
 #[test]
 fn test_init() {
@@ -345,4 +346,127 @@ fn test_word_nav_with_emoji() {
     // WordRight should move through words
     InputField::update(&mut state, InputFieldMessage::WordRight);
     assert!(state.cursor_position() > 0);
+}
+
+// handle_event tests
+
+#[test]
+fn test_handle_event_char_insert() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let msg = InputField::handle_event(&state, &Event::char('a'));
+    assert_eq!(msg, Some(InputFieldMessage::Insert('a')));
+}
+
+#[test]
+fn test_handle_event_backspace() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Backspace));
+    assert_eq!(msg, Some(InputFieldMessage::Backspace));
+}
+
+#[test]
+fn test_handle_event_delete() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Delete));
+    assert_eq!(msg, Some(InputFieldMessage::Delete));
+}
+
+#[test]
+fn test_handle_event_left() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Left));
+    assert_eq!(msg, Some(InputFieldMessage::Left));
+}
+
+#[test]
+fn test_handle_event_right() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, Some(InputFieldMessage::Right));
+}
+
+#[test]
+fn test_handle_event_home() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Home));
+    assert_eq!(msg, Some(InputFieldMessage::Home));
+}
+
+#[test]
+fn test_handle_event_end() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let msg = InputField::handle_event(&state, &Event::key(KeyCode::End));
+    assert_eq!(msg, Some(InputFieldMessage::End));
+}
+
+#[test]
+fn test_handle_event_enter() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(InputFieldMessage::Submit));
+}
+
+#[test]
+fn test_handle_event_ctrl_left() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let msg =
+        InputField::handle_event(&state, &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL));
+    assert_eq!(msg, Some(InputFieldMessage::WordLeft));
+}
+
+#[test]
+fn test_handle_event_ctrl_right() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let msg =
+        InputField::handle_event(&state, &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL));
+    assert_eq!(msg, Some(InputFieldMessage::WordRight));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let state = InputField::init();
+    let msg = InputField::handle_event(&state, &Event::char('a'));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_dispatch_event_char() {
+    let mut state = InputField::init();
+    InputField::set_focused(&mut state, true);
+    let output = InputField::dispatch_event(&mut state, &Event::char('a'));
+    assert_eq!(output, Some(InputFieldOutput::Changed("a".to_string())));
+}
+
+#[test]
+fn test_instance_is_focused() {
+    let mut state = InputField::init();
+    assert!(!state.is_focused());
+    state.set_focused(true);
+    assert!(state.is_focused());
+}
+
+#[test]
+fn test_instance_handle_event() {
+    let mut state = InputField::init();
+    state.set_focused(true);
+    let msg = state.handle_event(&Event::char('a'));
+    assert_eq!(msg, Some(InputFieldMessage::Insert('a')));
+}
+
+#[test]
+fn test_instance_dispatch_event() {
+    let mut state = InputField::init();
+    state.set_focused(true);
+    let output = state.dispatch_event(&Event::char('a'));
+    assert_eq!(output, Some(InputFieldOutput::Changed("a".to_string())));
 }
