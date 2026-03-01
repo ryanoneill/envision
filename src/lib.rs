@@ -111,13 +111,14 @@ pub use theme::Theme;
 
 /// Prelude module for convenient imports.
 ///
-/// Provides the essential framework types needed by most applications.
-/// Individual component types (e.g., `ButtonState`, `CheckboxMessage`) should
-/// be imported directly from their modules:
+/// Provides all framework types and component types needed by most applications.
 ///
 /// ```rust,ignore
 /// use envision::prelude::*;
-/// use envision::component::{Button, ButtonState, ButtonMessage};
+///
+/// // All component types are now available:
+/// let button = ButtonState::new("Submit");
+/// let checkbox = CheckboxState::new("Accept");
 /// ```
 pub mod prelude {
     // Core framework
@@ -135,8 +136,8 @@ pub mod prelude {
     // Theme
     pub use crate::theme::Theme;
 
-    // Component traits (not individual components)
-    pub use crate::component::{Component, Focusable, Toggleable};
+    // All component types (the primary user-facing API)
+    pub use crate::component::*;
 
     // Testing essentials
     pub use crate::backend::{CaptureBackend, EnhancedCell};
