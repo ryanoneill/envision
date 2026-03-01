@@ -517,3 +517,106 @@ fn test_view_all_levels() {
 
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+// ========================================
+// handle_event Tests
+// ========================================
+
+use crate::input::{Event, KeyCode};
+
+#[test]
+fn test_handle_event_scroll_up() {
+    let mut state = StatusLogState::new();
+    state.set_focused(true);
+
+    // Up arrow -> ScrollUp
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up));
+    assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
+
+    // Vim 'k' -> ScrollUp
+    let msg = StatusLog::handle_event(&state, &Event::char('k'));
+    assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
+}
+
+#[test]
+fn test_handle_event_scroll_down() {
+    let mut state = StatusLogState::new();
+    state.set_focused(true);
+
+    // Down arrow -> ScrollDown
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Down));
+    assert_eq!(msg, Some(StatusLogMessage::ScrollDown));
+
+    // Vim 'j' -> ScrollDown
+    let msg = StatusLog::handle_event(&state, &Event::char('j'));
+    assert_eq!(msg, Some(StatusLogMessage::ScrollDown));
+}
+
+#[test]
+fn test_handle_event_scroll_to_top() {
+    let mut state = StatusLogState::new();
+    state.set_focused(true);
+
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Home));
+    assert_eq!(msg, Some(StatusLogMessage::ScrollToTop));
+}
+
+#[test]
+fn test_handle_event_scroll_to_bottom() {
+    let mut state = StatusLogState::new();
+    state.set_focused(true);
+
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::End));
+    assert_eq!(msg, Some(StatusLogMessage::ScrollToBottom));
+}
+
+#[test]
+fn test_handle_event_ignored_when_unfocused() {
+    let state = StatusLogState::new();
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up));
+    assert_eq!(msg, None);
+}
+
+// ========================================
+// dispatch_event Tests
+// ========================================
+
+#[test]
+fn test_dispatch_event() {
+    let mut state = StatusLogState::new();
+    state.set_focused(true);
+    for i in 0..5 {
+        state.info(format!("Msg {}", i));
+    }
+    state.set_scroll_offset(3);
+
+    // Down arrow dispatches ScrollDown
+    StatusLog::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+    assert_eq!(state.scroll_offset(), 4);
+}
+
+// ========================================
+// Instance Method Tests
+// ========================================
+
+#[test]
+fn test_instance_methods() {
+    let mut state = StatusLogState::new();
+    state.set_focused(true);
+    for i in 0..5 {
+        state.info(format!("Msg {}", i));
+    }
+    state.set_scroll_offset(2);
+
+    // instance handle_event
+    let msg = state.handle_event(&Event::key(KeyCode::Up));
+    assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
+
+    // instance update
+    state.update(StatusLogMessage::ScrollUp);
+    assert_eq!(state.scroll_offset(), 1);
+
+    // instance dispatch_event
+    state.dispatch_event(&Event::key(KeyCode::Down));
+    assert_eq!(state.scroll_offset(), 2);
+}
