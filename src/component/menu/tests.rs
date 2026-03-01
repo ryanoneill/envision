@@ -193,16 +193,16 @@ fn test_select_next() {
         MenuItem::new("C"),
     ]);
 
-    let output = Menu::update(&mut state, MenuMessage::SelectNext);
+    let output = Menu::update(&mut state, MenuMessage::Right);
     assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
 
-    let output = Menu::update(&mut state, MenuMessage::SelectNext);
+    let output = Menu::update(&mut state, MenuMessage::Right);
     assert_eq!(output, Some(MenuOutput::SelectionChanged(2)));
     assert_eq!(state.selected_index(), Some(2));
 
     // Wrap around
-    let output = Menu::update(&mut state, MenuMessage::SelectNext);
+    let output = Menu::update(&mut state, MenuMessage::Right);
     assert_eq!(output, Some(MenuOutput::SelectionChanged(0)));
     assert_eq!(state.selected_index(), Some(0));
 }
@@ -216,15 +216,15 @@ fn test_select_previous() {
     ]);
 
     // Wrap around from start
-    let output = Menu::update(&mut state, MenuMessage::SelectPrevious);
+    let output = Menu::update(&mut state, MenuMessage::Left);
     assert_eq!(output, Some(MenuOutput::SelectionChanged(2)));
     assert_eq!(state.selected_index(), Some(2));
 
-    let output = Menu::update(&mut state, MenuMessage::SelectPrevious);
+    let output = Menu::update(&mut state, MenuMessage::Left);
     assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
 
-    let output = Menu::update(&mut state, MenuMessage::SelectPrevious);
+    let output = Menu::update(&mut state, MenuMessage::Left);
     assert_eq!(output, Some(MenuOutput::SelectionChanged(0)));
     assert_eq!(state.selected_index(), Some(0));
 }
@@ -237,11 +237,11 @@ fn test_select_item() {
         MenuItem::new("C"),
     ]);
 
-    let output = Menu::update(&mut state, MenuMessage::SelectItem(2));
+    let output = Menu::update(&mut state, MenuMessage::SelectIndex(2));
     assert_eq!(output, Some(MenuOutput::SelectionChanged(2)));
     assert_eq!(state.selected_index(), Some(2));
 
-    let output = Menu::update(&mut state, MenuMessage::SelectItem(0));
+    let output = Menu::update(&mut state, MenuMessage::SelectIndex(0));
     assert_eq!(output, Some(MenuOutput::SelectionChanged(0)));
     assert_eq!(state.selected_index(), Some(0));
 }
@@ -250,7 +250,7 @@ fn test_select_item() {
 fn test_select_item_same() {
     let mut state = MenuState::new(vec![MenuItem::new("A"), MenuItem::new("B")]);
 
-    let output = Menu::update(&mut state, MenuMessage::SelectItem(0));
+    let output = Menu::update(&mut state, MenuMessage::SelectIndex(0));
     assert_eq!(output, None); // Already selected
 }
 
@@ -258,7 +258,7 @@ fn test_select_item_same() {
 fn test_select_item_out_of_bounds() {
     let mut state = MenuState::new(vec![MenuItem::new("A"), MenuItem::new("B")]);
 
-    let output = Menu::update(&mut state, MenuMessage::SelectItem(10));
+    let output = Menu::update(&mut state, MenuMessage::SelectIndex(10));
     assert_eq!(output, None);
     // Should remain at 0
     assert_eq!(state.selected_index(), Some(0));
@@ -268,15 +268,15 @@ fn test_select_item_out_of_bounds() {
 fn test_activate_enabled() {
     let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
 
-    let output = Menu::update(&mut state, MenuMessage::Activate);
-    assert_eq!(output, Some(MenuOutput::ItemActivated(0)));
+    let output = Menu::update(&mut state, MenuMessage::Select);
+    assert_eq!(output, Some(MenuOutput::Selected(0)));
 }
 
 #[test]
 fn test_activate_disabled() {
     let mut state = MenuState::new(vec![MenuItem::disabled("File"), MenuItem::new("Edit")]);
 
-    let output = Menu::update(&mut state, MenuMessage::Activate);
+    let output = Menu::update(&mut state, MenuMessage::Select);
     assert_eq!(output, None);
 }
 
@@ -284,7 +284,7 @@ fn test_activate_disabled() {
 fn test_activate_empty() {
     let mut state = MenuState::new(vec![]);
 
-    let output = Menu::update(&mut state, MenuMessage::Activate);
+    let output = Menu::update(&mut state, MenuMessage::Select);
     assert_eq!(output, None);
 }
 
@@ -292,10 +292,10 @@ fn test_activate_empty() {
 fn test_empty_menu_ignores_navigation() {
     let mut state = MenuState::new(vec![]);
 
-    let output = Menu::update(&mut state, MenuMessage::SelectNext);
+    let output = Menu::update(&mut state, MenuMessage::Right);
     assert_eq!(output, None);
 
-    let output = Menu::update(&mut state, MenuMessage::SelectPrevious);
+    let output = Menu::update(&mut state, MenuMessage::Left);
     assert_eq!(output, None);
 }
 
@@ -384,20 +384,20 @@ fn test_large_menu_navigation() {
         .collect();
     let mut state = MenuState::new(items);
 
-    // Navigate to middle using SelectNext
+    // Navigate to middle using Right
     for _ in 0..50 {
-        Menu::update(&mut state, MenuMessage::SelectNext);
+        Menu::update(&mut state, MenuMessage::Right);
     }
     assert_eq!(state.selected_index(), Some(50));
 
     // Navigate to last by wrapping: 50 more to reach 100, which wraps to 0
     for _ in 0..50 {
-        Menu::update(&mut state, MenuMessage::SelectNext);
+        Menu::update(&mut state, MenuMessage::Right);
     }
     assert_eq!(state.selected_index(), Some(0));
 
-    // SelectPrevious from 0 wraps to last
-    Menu::update(&mut state, MenuMessage::SelectPrevious);
+    // Left from 0 wraps to last
+    Menu::update(&mut state, MenuMessage::Left);
     assert_eq!(state.selected_index(), Some(99));
 }
 
@@ -411,9 +411,9 @@ fn test_unicode_labels() {
     let mut state = MenuState::new(items);
 
     // Navigation works with unicode labels
-    Menu::update(&mut state, MenuMessage::SelectNext);
+    Menu::update(&mut state, MenuMessage::Right);
     assert_eq!(state.selected_index(), Some(1));
 
-    Menu::update(&mut state, MenuMessage::SelectNext);
+    Menu::update(&mut state, MenuMessage::Right);
     assert_eq!(state.selected_index(), Some(2));
 }

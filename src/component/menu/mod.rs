@@ -17,8 +17,8 @@
 //!
 //! // Focus and activate
 //! Menu::focus(&mut state);
-//! let output = Menu::update(&mut state, MenuMessage::Activate);
-//! assert_eq!(output, Some(MenuOutput::ItemActivated(0)));
+//! let output = Menu::update(&mut state, MenuMessage::Select);
+//! assert_eq!(output, Some(MenuOutput::Selected(0)));
 //! ```
 
 use ratatui::prelude::*;
@@ -94,21 +94,21 @@ impl MenuItem {
 /// Messages that can be sent to a Menu.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum MenuMessage {
-    /// Move to the next menu item.
-    SelectNext,
-    /// Move to the previous menu item.
-    SelectPrevious,
-    /// Activate the currently selected item.
-    Activate,
+    /// Move to the next (right) menu item.
+    Right,
+    /// Move to the previous (left) menu item.
+    Left,
+    /// Select the currently highlighted item.
+    Select,
     /// Select a specific item by index.
-    SelectItem(usize),
+    SelectIndex(usize),
 }
 
 /// Output messages from a Menu.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum MenuOutput {
-    /// A menu item was activated (contains the item index).
-    ItemActivated(usize),
+    /// A menu item was selected (contains the item index).
+    Selected(usize),
     /// The selection changed during navigation (contains the new item index).
     SelectionChanged(usize),
 }
@@ -229,9 +229,9 @@ impl MenuState {
 ///
 /// The menu itself doesn't handle keyboard events directly. Your application
 /// should map:
-/// - Left arrow to [`MenuMessage::SelectPrevious`]
-/// - Right arrow to [`MenuMessage::SelectNext`]
-/// - Enter to [`MenuMessage::Activate`]
+/// - Right arrow to [`MenuMessage::Right`]
+/// - Left arrow to [`MenuMessage::Left`]
+/// - Enter to [`MenuMessage::Select`]
 ///
 /// # Visual Layout
 ///
@@ -253,11 +253,11 @@ impl MenuState {
 /// ]);
 ///
 /// // Navigate
-/// Menu::update(&mut state, MenuMessage::SelectNext);
+/// Menu::update(&mut state, MenuMessage::Right);
 ///
-/// // Activate
-/// let output = Menu::update(&mut state, MenuMessage::Activate);
-/// assert_eq!(output, Some(MenuOutput::ItemActivated(1)));
+/// // Select
+/// let output = Menu::update(&mut state, MenuMessage::Select);
+/// assert_eq!(output, Some(MenuOutput::Selected(1)));
 /// ```
 pub struct Menu;
 
@@ -278,13 +278,13 @@ impl Component for Menu {
         let selected = state.selected_index?;
 
         match msg {
-            MenuMessage::SelectNext => {
+            MenuMessage::Right => {
                 // Move to next item, wrapping around
                 let new_index = (selected + 1) % state.items.len();
                 state.selected_index = Some(new_index);
                 Some(MenuOutput::SelectionChanged(new_index))
             }
-            MenuMessage::SelectPrevious => {
+            MenuMessage::Left => {
                 // Move to previous item, wrapping around
                 let new_index = if selected == 0 {
                     state.items.len() - 1
@@ -294,11 +294,11 @@ impl Component for Menu {
                 state.selected_index = Some(new_index);
                 Some(MenuOutput::SelectionChanged(new_index))
             }
-            MenuMessage::Activate => {
+            MenuMessage::Select => {
                 // Activate only if item is enabled
                 if let Some(item) = state.items.get(selected) {
                     if item.is_enabled() {
-                        Some(MenuOutput::ItemActivated(selected))
+                        Some(MenuOutput::Selected(selected))
                     } else {
                         None
                     }
@@ -306,7 +306,7 @@ impl Component for Menu {
                     None
                 }
             }
-            MenuMessage::SelectItem(index) => {
+            MenuMessage::SelectIndex(index) => {
                 if index < state.items.len() && state.selected_index != Some(index) {
                     state.selected_index = Some(index);
                     Some(MenuOutput::SelectionChanged(index))

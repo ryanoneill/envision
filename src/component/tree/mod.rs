@@ -18,7 +18,7 @@
 //!
 //! // Navigate and expand
 //! Tree::update(&mut state, TreeMessage::Expand);
-//! Tree::update(&mut state, TreeMessage::SelectNext);
+//! Tree::update(&mut state, TreeMessage::Down);
 //! ```
 
 use ratatui::prelude::*;
@@ -174,10 +174,10 @@ struct FlatNode {
 /// Messages that can be sent to a Tree component.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TreeMessage {
-    /// Move selection to the next visible node.
-    SelectNext,
-    /// Move selection to the previous visible node.
-    SelectPrevious,
+    /// Move selection down to the next visible node.
+    Down,
+    /// Move selection up to the previous visible node.
+    Up,
     /// Expand the currently selected node.
     Expand,
     /// Collapse the currently selected node.
@@ -426,7 +426,7 @@ impl<T: Clone> TreeState<T> {
 /// let mut state = TreeState::new(vec![docs, projects]);
 ///
 /// // Navigate
-/// Tree::update(&mut state, TreeMessage::SelectNext);
+/// Tree::update(&mut state, TreeMessage::Down);
 /// Tree::update(&mut state, TreeMessage::Expand);
 /// ```
 pub struct Tree<T>(std::marker::PhantomData<T>);
@@ -490,13 +490,13 @@ impl<T: Clone + 'static> Component for Tree<T> {
         let selected = state.selected_index?;
 
         match msg {
-            TreeMessage::SelectNext => {
+            TreeMessage::Down => {
                 if selected < flat.len() - 1 {
                     state.selected_index = Some(selected + 1);
                 }
                 None
             }
-            TreeMessage::SelectPrevious => {
+            TreeMessage::Up => {
                 if selected > 0 {
                     state.selected_index = Some(selected - 1);
                 }

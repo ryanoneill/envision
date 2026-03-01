@@ -18,7 +18,7 @@
 //! let _ = Select::update(&mut state, SelectMessage::Open);
 //!
 //! // Select an option (navigating to index 1, then confirming)
-//! let _ = Select::update(&mut state, SelectMessage::SelectNext);
+//! let _ = Select::update(&mut state, SelectMessage::Down);
 //! let output = Select::update(&mut state, SelectMessage::Confirm);
 //! assert_eq!(output, Some(SelectOutput::Selected("Green".to_string())));
 //! ```
@@ -38,10 +38,10 @@ pub enum SelectMessage {
     Close,
     /// Toggle the dropdown open/closed.
     Toggle,
-    /// Move selection to next option.
-    SelectNext,
-    /// Move selection to previous option.
-    SelectPrevious,
+    /// Move selection down to the next option.
+    Down,
+    /// Move selection up to the previous option.
+    Up,
     /// Confirm current selection.
     Confirm,
 }
@@ -217,8 +217,8 @@ impl SelectState {
 /// The select itself doesn't handle keyboard events directly. Your application
 /// should map:
 /// - Enter/Space to [`SelectMessage::Toggle`] (open/close)
-/// - Up arrow to [`SelectMessage::SelectPrevious`]
-/// - Down arrow to [`SelectMessage::SelectNext`]
+/// - Down arrow to [`SelectMessage::Down`]
+/// - Up arrow to [`SelectMessage::Up`]
 /// - Enter to [`SelectMessage::Confirm`] (when open)
 /// - Escape to [`SelectMessage::Close`]
 ///
@@ -253,7 +253,7 @@ impl SelectState {
 /// Select::update(&mut state, SelectMessage::Open);
 ///
 /// // Navigate to index 1 and confirm (selection changes from None to Some(1))
-/// Select::update(&mut state, SelectMessage::SelectNext);
+/// Select::update(&mut state, SelectMessage::Down);
 /// let output = Select::update(&mut state, SelectMessage::Confirm);
 /// assert_eq!(output, Some(SelectOutput::Selected("Medium".to_string())));
 /// ```
@@ -295,7 +295,7 @@ impl Component for Select {
                 }
                 None
             }
-            SelectMessage::SelectNext => {
+            SelectMessage::Down => {
                 if state.is_open && !state.options.is_empty() {
                     state.highlighted_index = (state.highlighted_index + 1) % state.options.len();
                     Some(SelectOutput::SelectionChanged(state.highlighted_index))
@@ -303,7 +303,7 @@ impl Component for Select {
                     None
                 }
             }
-            SelectMessage::SelectPrevious => {
+            SelectMessage::Up => {
                 if state.is_open && !state.options.is_empty() {
                     if state.highlighted_index == 0 {
                         state.highlighted_index = state.options.len() - 1;
