@@ -1,5 +1,0 @@
----
-source: src/component/status_bar/tests.rs
-expression: terminal.backend().to_string()
----
-00:00

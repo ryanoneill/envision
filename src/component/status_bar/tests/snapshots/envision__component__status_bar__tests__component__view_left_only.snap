@@ -1,0 +1,6 @@
+---
+source: src/component/status_bar/tests/component.rs
+assertion_line: 143
+expression: terminal.backend().to_string()
+---
+LEFT

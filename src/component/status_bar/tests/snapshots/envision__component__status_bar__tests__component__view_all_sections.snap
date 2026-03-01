@@ -1,5 +1,6 @@
 ---
-source: src/component/status_bar/tests.rs
+source: src/component/status_bar/tests/component.rs
+assertion_line: 193
 expression: terminal.backend().to_string()
 ---
 LEFT                                 CENTER                                RIGHT
