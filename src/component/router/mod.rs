@@ -247,10 +247,7 @@ impl<S: Clone + PartialEq> Router<S> {
     /// This inherent method is available for all screen types that implement
     /// `Clone + PartialEq`. Screen types that also implement `Default` can
     /// use the [`Component`] trait methods instead.
-    pub fn update(
-        state: &mut RouterState<S>,
-        msg: RouterMessage<S>,
-    ) -> Option<RouterOutput<S>> {
+    pub fn update(state: &mut RouterState<S>, msg: RouterMessage<S>) -> Option<RouterOutput<S>> {
         match msg {
             RouterMessage::Navigate(screen) => {
                 if state.current == screen {
