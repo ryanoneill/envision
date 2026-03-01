@@ -239,6 +239,9 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     pub async fn run_terminal(mut self) -> io::Result<()> {
         use futures_util::StreamExt;
 
+        #[cfg(feature = "tracing")]
+        tracing::info!("starting terminal runtime loop");
+
         let mut tick_interval = tokio::time::interval(self.config.tick_rate);
         let mut render_interval = tokio::time::interval(self.config.frame_rate);
         let mut event_stream = crossterm::event::EventStream::new();
@@ -637,6 +640,9 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
     /// Dispatches a message to update the state.
     pub fn dispatch(&mut self, msg: A::Message) {
+        #[cfg(feature = "tracing")]
+        tracing::debug!("dispatch: updating state");
+
         let cmd = A::update(&mut self.core.state, msg);
         self.commands.execute(cmd);
 
@@ -682,6 +688,9 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// Processes messages received from async tasks.
     fn process_async_messages(&mut self) {
         while let Ok(msg) = self.message_rx.try_recv() {
+            #[cfg(feature = "tracing")]
+            tracing::debug!("processing async message");
+
             self.dispatch(msg);
         }
     }
@@ -727,6 +736,9 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// - [`process_event`](Runtime::process_event) — Process exactly one event
     /// - [`run_ticks`](Runtime::run_ticks) — Convenience: run N full tick cycles
     pub fn tick(&mut self) -> io::Result<()> {
+        #[cfg(feature = "tracing")]
+        tracing::trace!("tick: start");
+
         // Process pending commands
         self.process_commands();
 
@@ -737,6 +749,11 @@ impl<A: App, B: Backend> Runtime<A, B> {
         let mut messages_processed = 0;
         while self.process_event() && messages_processed < self.core.max_messages_per_tick {
             messages_processed += 1;
+        }
+
+        #[cfg(feature = "tracing")]
+        if messages_processed > 0 {
+            tracing::debug!(messages_processed, "tick: processed events");
         }
 
         // Handle tick
