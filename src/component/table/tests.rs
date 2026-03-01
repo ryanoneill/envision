@@ -962,3 +962,25 @@ mod handle_event_tests {
         assert_eq!(msg, Some(TableMessage::Up));
     }
 }
+
+// ========== Builder Tests ==========
+
+#[test]
+fn test_with_disabled_builder() {
+    let state = TableState::new(test_rows(), test_columns()).with_disabled(true);
+    assert!(state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_false_builder() {
+    let state = TableState::new(test_rows(), test_columns()).with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_prevents_navigation() {
+    let mut state = TableState::new(test_rows(), test_columns()).with_disabled(true);
+    let output = Table::<TestRow>::update(&mut state, TableMessage::Down);
+    assert_eq!(output, None);
+    assert_eq!(state.selected_index(), Some(0));
+}

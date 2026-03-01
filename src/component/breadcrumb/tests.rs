@@ -729,3 +729,50 @@ fn test_instance_methods() {
     let msg = state.handle_event(&Event::key(KeyCode::Left));
     assert_eq!(msg, Some(BreadcrumbMessage::Left));
 }
+
+// ========== Builder Tests ==========
+
+#[test]
+fn test_with_separator() {
+    let state = BreadcrumbState::from_labels(vec!["Home", "Docs"]).with_separator(" / ");
+    assert_eq!(state.separator(), " / ");
+}
+
+#[test]
+fn test_with_max_visible() {
+    let state =
+        BreadcrumbState::from_labels(vec!["A", "B", "C", "D", "E"]).with_max_visible(Some(3));
+    assert_eq!(state.max_visible(), Some(3));
+    assert!(state.is_truncated());
+}
+
+#[test]
+fn test_with_max_visible_none() {
+    let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]).with_max_visible(None);
+    assert_eq!(state.max_visible(), None);
+    assert!(!state.is_truncated());
+}
+
+#[test]
+fn test_with_disabled_breadcrumb() {
+    let state = BreadcrumbState::from_labels(vec!["Home"]).with_disabled(true);
+    assert!(state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_false_breadcrumb() {
+    let state = BreadcrumbState::from_labels(vec!["Home"]).with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_builder_chaining_breadcrumb() {
+    let state = BreadcrumbState::from_labels(vec!["A", "B", "C", "D", "E"])
+        .with_separator(" / ")
+        .with_max_visible(Some(3))
+        .with_disabled(true);
+    assert_eq!(state.separator(), " / ");
+    assert_eq!(state.max_visible(), Some(3));
+    assert!(state.is_disabled());
+    assert!(state.is_truncated());
+}

@@ -394,6 +394,36 @@ impl<T: TableRow> TableState<T> {
         self.disabled = disabled;
     }
 
+    /// Sets the disabled state (builder method).
+    ///
+    /// Disabled tables do not respond to messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    ///
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> {
+    ///         vec![self.name.clone()]
+    ///     }
+    /// }
+    ///
+    /// let state = TableState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Length(10))],
+    /// ).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Applies the current sort to the display order.
     fn apply_sort(&mut self) {
         if let Some((col, direction)) = self.sort {

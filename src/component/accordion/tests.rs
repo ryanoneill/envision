@@ -742,3 +742,45 @@ fn test_instance_methods() {
     let msg = state.handle_event(&Event::key(KeyCode::Up));
     assert_eq!(msg, Some(AccordionMessage::Up));
 }
+
+// ========== Builder Tests ==========
+
+#[test]
+fn test_with_focused_index() {
+    let state =
+        AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")]).with_focused_index(2);
+    assert_eq!(state.focused_index(), 2);
+}
+
+#[test]
+fn test_with_focused_index_clamps() {
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]).with_focused_index(10);
+    assert_eq!(state.focused_index(), 1);
+}
+
+#[test]
+fn test_with_focused_index_empty() {
+    let state = AccordionState::new(vec![]).with_focused_index(5);
+    assert_eq!(state.focused_index(), 0);
+}
+
+#[test]
+fn test_with_disabled() {
+    let state = AccordionState::from_pairs(vec![("A", "1")]).with_disabled(true);
+    assert!(state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_false() {
+    let state = AccordionState::from_pairs(vec![("A", "1")]).with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_builder_chaining() {
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")])
+        .with_focused_index(1)
+        .with_disabled(true);
+    assert_eq!(state.focused_index(), 1);
+    assert!(state.is_disabled());
+}

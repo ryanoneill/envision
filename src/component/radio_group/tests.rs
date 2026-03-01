@@ -395,3 +395,26 @@ fn test_instance_update() {
     let output = state.update(RadioGroupMessage::Down);
     assert_eq!(output, Some(RadioGroupOutput::SelectionChanged(1)));
 }
+
+// ========== Builder Tests ==========
+
+#[test]
+fn test_with_disabled_builder() {
+    let state = RadioGroupState::new(vec!["A", "B", "C"]).with_disabled(true);
+    assert!(state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_false_builder() {
+    let state = RadioGroupState::new(vec!["A", "B", "C"]).with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_prevents_navigation() {
+    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()])
+        .with_disabled(true);
+    let output = RadioGroup::<String>::update(&mut state, RadioGroupMessage::Down);
+    assert_eq!(output, None);
+    assert_eq!(state.selected_index(), Some(0));
+}

@@ -631,3 +631,75 @@ fn test_instance_dispatch_event() {
     let output = state.dispatch_event(&Event::key(KeyCode::Esc));
     assert_eq!(output, Some(DialogOutput::Closed));
 }
+
+// ========================================
+// Builder Tests
+// ========================================
+
+#[test]
+fn test_with_title() {
+    let state = DialogState::default().with_title("My Title");
+    assert_eq!(state.title(), "My Title");
+}
+
+#[test]
+fn test_with_message_builder() {
+    let state = DialogState::default().with_message("Important message");
+    assert_eq!(state.message(), "Important message");
+}
+
+#[test]
+fn test_with_buttons_builder() {
+    let buttons = vec![
+        DialogButton::new("yes", "Yes"),
+        DialogButton::new("no", "No"),
+    ];
+    let state = DialogState::default().with_buttons(buttons);
+    assert_eq!(state.buttons().len(), 2);
+    assert_eq!(state.buttons()[0].id(), "yes");
+    assert_eq!(state.buttons()[1].id(), "no");
+}
+
+#[test]
+fn test_with_primary_button_builder() {
+    let state = DialogState::new(
+        "T",
+        "M",
+        vec![
+            DialogButton::new("a", "A"),
+            DialogButton::new("b", "B"),
+            DialogButton::new("c", "C"),
+        ],
+    )
+    .with_primary_button(2);
+    assert_eq!(state.primary_button(), 2);
+}
+
+#[test]
+fn test_with_primary_button_clamps() {
+    let state =
+        DialogState::new("T", "M", vec![DialogButton::new("ok", "OK")]).with_primary_button(10);
+    assert_eq!(state.primary_button(), 0);
+}
+
+#[test]
+fn test_with_primary_button_empty() {
+    let state = DialogState::default().with_primary_button(5);
+    assert_eq!(state.primary_button(), 0);
+}
+
+#[test]
+fn test_builder_chaining_dialog() {
+    let state = DialogState::default()
+        .with_title("Delete?")
+        .with_message("Are you sure?")
+        .with_buttons(vec![
+            DialogButton::new("cancel", "Cancel"),
+            DialogButton::new("ok", "OK"),
+        ])
+        .with_primary_button(1);
+    assert_eq!(state.title(), "Delete?");
+    assert_eq!(state.message(), "Are you sure?");
+    assert_eq!(state.buttons().len(), 2);
+    assert_eq!(state.primary_button(), 1);
+}

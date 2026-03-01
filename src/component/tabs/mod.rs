@@ -188,6 +188,21 @@ impl<T: Clone> TabsState<T> {
         self.disabled = disabled;
     }
 
+    /// Sets the disabled state (builder method).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TabsState;
+    ///
+    /// let state = TabsState::new(vec!["A", "B", "C"]).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Move selection to the left (previous tab).
     ///
     /// Returns true if the selection changed.

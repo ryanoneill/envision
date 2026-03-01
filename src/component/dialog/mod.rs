@@ -300,6 +300,76 @@ impl DialogState {
         }
     }
 
+    /// Sets the dialog title (builder method).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DialogState;
+    ///
+    /// let state = DialogState::default().with_title("My Title");
+    /// assert_eq!(state.title(), "My Title");
+    /// ```
+    pub fn with_title(mut self, title: impl Into<String>) -> Self {
+        self.title = title.into();
+        self
+    }
+
+    /// Sets the dialog message (builder method).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DialogState;
+    ///
+    /// let state = DialogState::default().with_message("Important message");
+    /// assert_eq!(state.message(), "Important message");
+    /// ```
+    pub fn with_message(mut self, message: impl Into<String>) -> Self {
+        self.message = message.into();
+        self
+    }
+
+    /// Sets the dialog buttons (builder method).
+    ///
+    /// Resets focus to the first button or primary button index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DialogButton, DialogState};
+    ///
+    /// let state = DialogState::default().with_buttons(vec![
+    ///     DialogButton::new("ok", "OK"),
+    ///     DialogButton::new("cancel", "Cancel"),
+    /// ]);
+    /// assert_eq!(state.buttons().len(), 2);
+    /// ```
+    pub fn with_buttons(mut self, buttons: Vec<DialogButton>) -> Self {
+        self.set_buttons(buttons);
+        self
+    }
+
+    /// Sets the primary button index (builder method).
+    ///
+    /// The index is clamped to the valid range.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DialogButton, DialogState};
+    ///
+    /// let state = DialogState::new("T", "M", vec![
+    ///     DialogButton::new("a", "A"),
+    ///     DialogButton::new("b", "B"),
+    /// ]).with_primary_button(1);
+    /// assert_eq!(state.primary_button(), 1);
+    /// ```
+    pub fn with_primary_button(mut self, index: usize) -> Self {
+        self.set_primary_button(index);
+        self
+    }
+
     /// Returns true if the dialog is focused.
     pub fn is_focused(&self) -> bool {
         self.focused

@@ -278,6 +278,43 @@ impl AccordionState {
         self.disabled = disabled;
     }
 
+    /// Sets the focused panel index (builder method).
+    ///
+    /// If the index is out of bounds, it will be clamped to the valid range.
+    /// Has no effect on an empty accordion.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionState;
+    ///
+    /// let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")])
+    ///     .with_focused_index(2);
+    /// assert_eq!(state.focused_index(), 2);
+    /// ```
+    pub fn with_focused_index(mut self, index: usize) -> Self {
+        if !self.panels.is_empty() {
+            self.focused_index = index.min(self.panels.len() - 1);
+        }
+        self
+    }
+
+    /// Sets the disabled state (builder method).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionState;
+    ///
+    /// let state = AccordionState::from_pairs(vec![("A", "1")])
+    ///     .with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Returns the count of expanded panels.
     pub fn expanded_count(&self) -> usize {
         self.panels.iter().filter(|p| p.expanded).count()

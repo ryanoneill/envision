@@ -214,6 +214,28 @@ impl MenuState {
         }
     }
 
+    /// Sets the selected item index (builder method).
+    ///
+    /// If the index is out of bounds, it will be clamped to the valid range.
+    /// Has no effect on an empty menu.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MenuState, MenuItem};
+    ///
+    /// let state = MenuState::new(vec![
+    ///     MenuItem::new("File"),
+    ///     MenuItem::new("Edit"),
+    ///     MenuItem::new("View"),
+    /// ]).with_selected(1);
+    /// assert_eq!(state.selected_index(), Some(1));
+    /// ```
+    pub fn with_selected(mut self, index: usize) -> Self {
+        self.set_selected_index(index);
+        self
+    }
+
     /// Returns the currently selected item.
     pub fn selected_item(&self) -> Option<&MenuItem> {
         self.items.get(self.selected_index?)

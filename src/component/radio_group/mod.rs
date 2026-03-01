@@ -176,6 +176,23 @@ impl<T: Clone> RadioGroupState<T> {
         self.disabled = disabled;
     }
 
+    /// Sets the disabled state (builder method).
+    ///
+    /// Disabled radio groups do not respond to messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RadioGroupState;
+    ///
+    /// let state = RadioGroupState::new(vec!["A", "B", "C"]).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Returns true if the options are empty.
     pub fn is_empty(&self) -> bool {
         self.options.is_empty()

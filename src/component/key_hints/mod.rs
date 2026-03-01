@@ -180,12 +180,6 @@ pub enum KeyHintsMessage {
     Clear,
 }
 
-/// Output messages from a KeyHints component.
-///
-/// KeyHints is display-only and doesn't produce output messages.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum KeyHintsOutput {}
-
 /// State for a KeyHints component.
 ///
 /// Contains all hints and display configuration.
@@ -448,7 +442,7 @@ pub struct KeyHints;
 impl Component for KeyHints {
     type State = KeyHintsState;
     type Message = KeyHintsMessage;
-    type Output = KeyHintsOutput;
+    type Output = ();
 
     fn init() -> Self::State {
         KeyHintsState::default()

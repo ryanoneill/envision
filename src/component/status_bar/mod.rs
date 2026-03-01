@@ -172,12 +172,6 @@ pub enum StatusBarMessage {
     },
 }
 
-/// Output messages from a StatusBar.
-///
-/// StatusBar is display-only, so there are no output messages.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum StatusBarOutput {}
-
 /// State for a StatusBar component.
 #[derive(Clone, Debug, Default)]
 pub struct StatusBarState {
@@ -442,7 +436,7 @@ impl StatusBar {
 impl Component for StatusBar {
     type State = StatusBarState;
     type Message = StatusBarMessage;
-    type Output = StatusBarOutput;
+    type Output = ();
 
     fn init() -> Self::State {
         StatusBarState::default()
