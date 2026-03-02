@@ -201,7 +201,8 @@ impl App for DashboardApp {
                 }
 
                 // Simulate memory data (slowly rising)
-                let new_mem = 50.0 + (state.tick_count as f64 * 0.05).sin() * 15.0
+                let new_mem = 50.0
+                    + (state.tick_count as f64 * 0.05).sin() * 15.0
                     + state.tick_count as f64 * 0.1;
                 let new_mem = new_mem.clamp(0.0, 100.0);
                 state.mem_history.push(new_mem);
@@ -302,8 +303,7 @@ impl App for DashboardApp {
         let area = frame.area();
 
         // Clear background
-        let bg_block = Block::default()
-            .style(Style::default().bg(CATPPUCCIN_BASE));
+        let bg_block = Block::default().style(Style::default().bg(CATPPUCCIN_BASE));
         frame.render_widget(bg_block, area);
 
         // Main layout
@@ -387,10 +387,7 @@ fn render_title_bar(state: &State, frame: &mut Frame, area: Rect, _theme: &Theme
                 .fg(CATPPUCCIN_LAVENDER)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(
-            tick_indicator,
-            Style::default().fg(CATPPUCCIN_GREEN),
-        ),
+        Span::styled(tick_indicator, Style::default().fg(CATPPUCCIN_GREEN)),
     ]);
 
     let status = format!(" tick: {} ", state.tick_count);
@@ -401,10 +398,13 @@ fn render_title_bar(state: &State, frame: &mut Frame, area: Rect, _theme: &Theme
         .padding(Padding::horizontal(1))
         .title(title)
         .title_alignment(Alignment::Left)
-        .title_bottom(Line::from(vec![Span::styled(
-            status,
-            Style::default().fg(CATPPUCCIN_OVERLAY0),
-        )]).alignment(Alignment::Right));
+        .title_bottom(
+            Line::from(vec![Span::styled(
+                status,
+                Style::default().fg(CATPPUCCIN_OVERLAY0),
+            )])
+            .alignment(Alignment::Right),
+        );
 
     frame.render_widget(title_block, area);
 }
