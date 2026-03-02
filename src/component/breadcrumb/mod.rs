@@ -53,7 +53,10 @@ use crate::theme::Theme;
 /// assert_eq!(segment.data(), Some("/products"));
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct BreadcrumbSegment {
     /// The display label for this segment.
     label: String,
@@ -147,7 +150,10 @@ pub enum BreadcrumbOutput {
 /// assert_eq!(state.separator(), " > ");
 /// ```
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct BreadcrumbState {
     /// The breadcrumb segments.
     segments: Vec<BreadcrumbSegment>,

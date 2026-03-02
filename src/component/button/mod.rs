@@ -47,7 +47,10 @@ pub enum ButtonOutput {
 
 /// State for a Button component.
 #[derive(Clone, Debug, Default, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ButtonState {
     /// The button label.
     label: String,

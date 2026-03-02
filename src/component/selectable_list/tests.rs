@@ -501,10 +501,8 @@ fn test_filter_case_insensitive() {
 
 #[test]
 fn test_filter_no_matches() {
-    let mut state = SelectableListState::with_items(vec![
-        "Apple".to_string(),
-        "Banana".to_string(),
-    ]);
+    let mut state =
+        SelectableListState::with_items(vec!["Apple".to_string(), "Banana".to_string()]);
     state.set_filter_text("xyz");
     assert_eq!(state.visible_count(), 0);
     assert_eq!(state.selected_index(), None);
@@ -603,7 +601,10 @@ fn test_filter_select_returns_original_item() {
 
     // Select it
     let output = SelectableList::<String>::update(&mut state, SelectableListMessage::Select);
-    assert_eq!(output, Some(SelectableListOutput::Selected("Apricot".to_string())));
+    assert_eq!(
+        output,
+        Some(SelectableListOutput::Selected("Apricot".to_string()))
+    );
 }
 
 #[test]
@@ -619,40 +620,39 @@ fn test_filter_message_set_filter() {
     );
     assert_eq!(state.filter_text(), "eta");
     assert_eq!(state.visible_count(), 1);
-    assert_eq!(output, Some(SelectableListOutput::FilterChanged("eta".to_string())));
+    assert_eq!(
+        output,
+        Some(SelectableListOutput::FilterChanged("eta".to_string()))
+    );
 }
 
 #[test]
 fn test_filter_message_clear_filter() {
-    let mut state = SelectableListState::with_items(vec![
-        "Alpha".to_string(),
-        "Beta".to_string(),
-    ]);
+    let mut state = SelectableListState::with_items(vec!["Alpha".to_string(), "Beta".to_string()]);
     state.set_filter_text("alpha");
     assert_eq!(state.visible_count(), 1);
 
     let output = SelectableList::<String>::update(&mut state, SelectableListMessage::ClearFilter);
     assert_eq!(state.filter_text(), "");
     assert_eq!(state.visible_count(), 2);
-    assert_eq!(output, Some(SelectableListOutput::FilterChanged(String::new())));
+    assert_eq!(
+        output,
+        Some(SelectableListOutput::FilterChanged(String::new()))
+    );
 }
 
 #[test]
 fn test_filter_empty_string_shows_all() {
-    let mut state = SelectableListState::with_items(vec![
-        "Apple".to_string(),
-        "Banana".to_string(),
-    ]);
+    let mut state =
+        SelectableListState::with_items(vec!["Apple".to_string(), "Banana".to_string()]);
     state.set_filter_text("");
     assert_eq!(state.visible_count(), 2);
 }
 
 #[test]
 fn test_filter_set_items_clears_filter() {
-    let mut state = SelectableListState::with_items(vec![
-        "Apple".to_string(),
-        "Banana".to_string(),
-    ]);
+    let mut state =
+        SelectableListState::with_items(vec!["Apple".to_string(), "Banana".to_string()]);
     state.set_filter_text("ap");
     assert_eq!(state.visible_count(), 1);
 
@@ -738,10 +738,8 @@ fn test_filter_disabled_navigation() {
 
 #[test]
 fn test_filter_disabled_still_allows_filter_change() {
-    let mut state = SelectableListState::with_items(vec![
-        "Apple".to_string(),
-        "Banana".to_string(),
-    ]);
+    let mut state =
+        SelectableListState::with_items(vec!["Apple".to_string(), "Banana".to_string()]);
     state.set_disabled(true);
 
     // SetFilter should work even when disabled
@@ -749,6 +747,9 @@ fn test_filter_disabled_still_allows_filter_change() {
         &mut state,
         SelectableListMessage::SetFilter("ap".to_string()),
     );
-    assert_eq!(output, Some(SelectableListOutput::FilterChanged("ap".to_string())));
+    assert_eq!(
+        output,
+        Some(SelectableListOutput::FilterChanged("ap".to_string()))
+    );
     assert_eq!(state.visible_count(), 1);
 }

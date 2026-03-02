@@ -61,9 +61,7 @@ use crate::error::EnvisionError;
 /// assert!(result.is_err());
 /// # });
 /// ```
-pub async fn load_state<S: DeserializeOwned>(
-    path: impl AsRef<Path>,
-) -> Result<S, EnvisionError> {
+pub async fn load_state<S: DeserializeOwned>(path: impl AsRef<Path>) -> Result<S, EnvisionError> {
     let path = path.as_ref();
     let contents = tokio::fs::read_to_string(path).await?;
     serde_json::from_str(&contents).map_err(|e| {

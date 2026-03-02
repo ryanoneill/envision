@@ -250,10 +250,7 @@ impl<M> Command<M> {
             Err(_) => return Command::none(),
         };
         let path = path.into();
-        Command::try_perform_async(
-            async move { tokio::fs::write(path, json).await },
-            |_| None,
-        )
+        Command::try_perform_async(async move { tokio::fs::write(path, json).await }, |_| None)
     }
 
     /// Combines multiple commands into one.

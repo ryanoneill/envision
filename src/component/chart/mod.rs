@@ -95,20 +95,12 @@ impl DataSeries {
 
     /// Returns the minimum value, or 0.0 if empty.
     pub fn min(&self) -> f64 {
-        self.values
-            .iter()
-            .copied()
-            .reduce(f64::min)
-            .unwrap_or(0.0)
+        self.values.iter().copied().reduce(f64::min).unwrap_or(0.0)
     }
 
     /// Returns the maximum value, or 0.0 if empty.
     pub fn max(&self) -> f64 {
-        self.values
-            .iter()
-            .copied()
-            .reduce(f64::max)
-            .unwrap_or(0.0)
+        self.values.iter().copied().reduce(f64::max).unwrap_or(0.0)
     }
 
     /// Returns the most recent value.
@@ -604,17 +596,11 @@ fn render_legend(state: &ChartState, frame: &mut Frame, area: Rect) {
             } else {
                 "○"
             };
-            let separator = if i < state.series.len() - 1 {
-                "  "
-            } else {
-                ""
-            };
-            vec![
-                Span::styled(
-                    format!("{} {}{}", marker, s.label(), separator),
-                    Style::default().fg(s.color()),
-                ),
-            ]
+            let separator = if i < state.series.len() - 1 { "  " } else { "" };
+            vec![Span::styled(
+                format!("{} {}{}", marker, s.label(), separator),
+                Style::default().fg(s.color()),
+            )]
         })
         .collect();
 
@@ -624,12 +610,7 @@ fn render_legend(state: &ChartState, frame: &mut Frame, area: Rect) {
 }
 
 /// Renders a line chart using sparkline.
-fn render_line_chart(
-    state: &ChartState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-) {
+fn render_line_chart(state: &ChartState, frame: &mut Frame, area: Rect, theme: &Theme) {
     if state.series.is_empty() {
         return;
     }
@@ -658,22 +639,14 @@ fn render_line_chart(
             let p_max = Paragraph::new(max_text)
                 .style(Style::default().fg(Color::DarkGray))
                 .alignment(Alignment::Right);
-            frame.render_widget(
-                p_max,
-                Rect::new(y_area.x, y_area.y, y_area.width, 1),
-            );
+            frame.render_widget(p_max, Rect::new(y_area.x, y_area.y, y_area.width, 1));
 
             let p_min = Paragraph::new(min_text)
                 .style(Style::default().fg(Color::DarkGray))
                 .alignment(Alignment::Right);
             frame.render_widget(
                 p_min,
-                Rect::new(
-                    y_area.x,
-                    y_area.y + y_area.height - 1,
-                    y_area.width,
-                    1,
-                ),
+                Rect::new(y_area.x, y_area.y + y_area.height - 1, y_area.width, 1),
             );
         }
     }

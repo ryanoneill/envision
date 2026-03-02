@@ -44,9 +44,7 @@
 //! ```
 
 // Re-export ratatui layout types
-pub use ratatui::layout::{
-    Alignment, Constraint, Direction, Layout, Margin, Position, Rect, Size,
-};
+pub use ratatui::layout::{Alignment, Constraint, Direction, Layout, Margin, Position, Rect, Size};
 pub use ratatui::Frame;
 pub use ratatui::Terminal;
 

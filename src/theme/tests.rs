@@ -277,7 +277,11 @@ fn test_all_themes_distinct() {
     ];
     for i in 0..themes.len() {
         for j in (i + 1)..themes.len() {
-            assert_ne!(themes[i], themes[j], "themes at indices {} and {} should differ", i, j);
+            assert_ne!(
+                themes[i], themes[j],
+                "themes at indices {} and {} should differ",
+                i, j
+            );
         }
     }
 }

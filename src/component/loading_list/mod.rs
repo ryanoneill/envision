@@ -39,7 +39,10 @@ use crate::theme::Theme;
 
 /// Loading state of an individual item.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ItemState {
     /// Item is ready (normal state).
     #[default]
@@ -101,7 +104,10 @@ impl ItemState {
 
 /// A single item in the loading list.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct LoadingListItem<T: Clone> {
     /// The underlying data.
     data: T,
@@ -223,7 +229,10 @@ pub enum LoadingListOutput<T: Clone> {
 
 /// State for the LoadingList component.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct LoadingListState<T: Clone> {
     /// All items.
     items: Vec<LoadingListItem<T>>,

@@ -158,7 +158,10 @@ pub enum TextAreaOutput {
 
 /// State for a TextArea component.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct TextAreaState {
     /// Lines of text.
     lines: Vec<String>,
@@ -375,7 +378,11 @@ impl TextAreaState {
         }
         let a = (ar, ac);
         let b = (self.cursor_row, self.cursor_col);
-        if a < b { Some((a, b)) } else { Some((b, a)) }
+        if a < b {
+            Some((a, b))
+        } else {
+            Some((b, a))
+        }
     }
 
     /// Returns the selected text, or None if no selection.
@@ -554,8 +561,11 @@ impl Component for TextArea {
                     if let Some(text) = system_clipboard_get() {
                         return Some(TextAreaMessage::Paste(text));
                     }
-                    if state.clipboard.is_empty() { None }
-                    else { Some(TextAreaMessage::Paste(state.clipboard.clone())) }
+                    if state.clipboard.is_empty() {
+                        None
+                    } else {
+                        Some(TextAreaMessage::Paste(state.clipboard.clone()))
+                    }
                 }
                 KeyCode::Char('a') if ctrl => Some(TextAreaMessage::SelectAll),
                 KeyCode::Char(c) if !ctrl => Some(TextAreaMessage::Insert(c)),
@@ -629,7 +639,9 @@ impl Component for TextArea {
                 } else if state.backspace() {
                     state.undo_stack.save(snapshot, EditKind::Delete);
                     Some(TextAreaOutput::Changed(state.value()))
-                } else { None }
+                } else {
+                    None
+                }
             }
             TextAreaMessage::Delete => {
                 let snapshot = state.snapshot();
@@ -640,7 +652,9 @@ impl Component for TextArea {
                 } else if state.delete() {
                     state.undo_stack.save(snapshot, EditKind::Delete);
                     Some(TextAreaOutput::Changed(state.value()))
-                } else { None }
+                } else {
+                    None
+                }
             }
             // Navigation (clears selection)
             TextAreaMessage::Left => {
@@ -650,7 +664,9 @@ impl Component for TextArea {
                         state.cursor_col = start.1;
                     }
                     state.clear_selection();
-                } else { state.move_left(); }
+                } else {
+                    state.move_left();
+                }
                 None
             }
             TextAreaMessage::Right => {
@@ -660,12 +676,26 @@ impl Component for TextArea {
                         state.cursor_col = end.1;
                     }
                     state.clear_selection();
-                } else { state.move_right(); }
+                } else {
+                    state.move_right();
+                }
                 None
             }
-            TextAreaMessage::Up => { state.clear_selection(); state.move_up(); None }
-            TextAreaMessage::Down => { state.clear_selection(); state.move_down(); None }
-            TextAreaMessage::Home => { state.clear_selection(); state.cursor_col = 0; None }
+            TextAreaMessage::Up => {
+                state.clear_selection();
+                state.move_up();
+                None
+            }
+            TextAreaMessage::Down => {
+                state.clear_selection();
+                state.move_down();
+                None
+            }
+            TextAreaMessage::Home => {
+                state.clear_selection();
+                state.cursor_col = 0;
+                None
+            }
             TextAreaMessage::End => {
                 state.clear_selection();
                 state.cursor_col = state.lines[state.cursor_row].len();
@@ -683,23 +713,61 @@ impl Component for TextArea {
                 state.cursor_col = state.lines[state.cursor_row].len();
                 None
             }
-            TextAreaMessage::WordLeft => { state.clear_selection(); state.move_word_left(); None }
-            TextAreaMessage::WordRight => { state.clear_selection(); state.move_word_right(); None }
+            TextAreaMessage::WordLeft => {
+                state.clear_selection();
+                state.move_word_left();
+                None
+            }
+            TextAreaMessage::WordRight => {
+                state.clear_selection();
+                state.move_word_right();
+                None
+            }
             // Selection movement
-            TextAreaMessage::SelectLeft => { state.ensure_selection_anchor(); state.move_left(); None }
-            TextAreaMessage::SelectRight => { state.ensure_selection_anchor(); state.move_right(); None }
-            TextAreaMessage::SelectUp => { state.ensure_selection_anchor(); state.move_up(); None }
-            TextAreaMessage::SelectDown => { state.ensure_selection_anchor(); state.move_down(); None }
-            TextAreaMessage::SelectHome => { state.ensure_selection_anchor(); state.cursor_col = 0; None }
+            TextAreaMessage::SelectLeft => {
+                state.ensure_selection_anchor();
+                state.move_left();
+                None
+            }
+            TextAreaMessage::SelectRight => {
+                state.ensure_selection_anchor();
+                state.move_right();
+                None
+            }
+            TextAreaMessage::SelectUp => {
+                state.ensure_selection_anchor();
+                state.move_up();
+                None
+            }
+            TextAreaMessage::SelectDown => {
+                state.ensure_selection_anchor();
+                state.move_down();
+                None
+            }
+            TextAreaMessage::SelectHome => {
+                state.ensure_selection_anchor();
+                state.cursor_col = 0;
+                None
+            }
             TextAreaMessage::SelectEnd => {
                 state.ensure_selection_anchor();
                 state.cursor_col = state.lines[state.cursor_row].len();
                 None
             }
-            TextAreaMessage::SelectWordLeft => { state.ensure_selection_anchor(); state.move_word_left(); None }
-            TextAreaMessage::SelectWordRight => { state.ensure_selection_anchor(); state.move_word_right(); None }
+            TextAreaMessage::SelectWordLeft => {
+                state.ensure_selection_anchor();
+                state.move_word_left();
+                None
+            }
+            TextAreaMessage::SelectWordRight => {
+                state.ensure_selection_anchor();
+                state.move_word_right();
+                None
+            }
             TextAreaMessage::SelectAll => {
-                if state.is_empty() { return None; }
+                if state.is_empty() {
+                    return None;
+                }
                 state.selection_anchor = Some((0, 0));
                 let last = state.lines.len() - 1;
                 state.cursor_row = last;
@@ -713,7 +781,9 @@ impl Component for TextArea {
                     #[cfg(feature = "clipboard")]
                     system_clipboard_set(&text);
                     Some(TextAreaOutput::Copied(text))
-                } else { None }
+                } else {
+                    None
+                }
             }
             TextAreaMessage::Cut => {
                 if let Some(text) = state.selected_text() {
@@ -724,15 +794,23 @@ impl Component for TextArea {
                     state.delete_selection();
                     state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
-                } else { None }
+                } else {
+                    None
+                }
             }
             TextAreaMessage::Paste(text) => {
-                if text.is_empty() { return None; }
+                if text.is_empty() {
+                    return None;
+                }
                 let snapshot = state.snapshot();
                 state.undo_stack.save(snapshot, EditKind::Other);
                 state.delete_selection();
                 for c in text.chars() {
-                    if c == '\n' { state.new_line(); } else { state.insert(c); }
+                    if c == '\n' {
+                        state.new_line();
+                    } else {
+                        state.insert(c);
+                    }
                 }
                 Some(TextAreaOutput::Changed(state.value()))
             }
@@ -743,7 +821,9 @@ impl Component for TextArea {
                 if state.delete_line() {
                     state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
-                } else { None }
+                } else {
+                    None
+                }
             }
             TextAreaMessage::DeleteToEnd => {
                 let snapshot = state.snapshot();
@@ -754,7 +834,9 @@ impl Component for TextArea {
                 } else if state.delete_to_end() {
                     state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
-                } else { None }
+                } else {
+                    None
+                }
             }
             TextAreaMessage::DeleteToStart => {
                 let snapshot = state.snapshot();
@@ -765,7 +847,9 @@ impl Component for TextArea {
                 } else if state.delete_to_start() {
                     state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
-                } else { None }
+                } else {
+                    None
+                }
             }
             TextAreaMessage::Clear => {
                 state.clear_selection();
@@ -777,7 +861,9 @@ impl Component for TextArea {
                     state.cursor_col = 0;
                     state.scroll_offset = 0;
                     Some(TextAreaOutput::Changed(state.value()))
-                } else { None }
+                } else {
+                    None
+                }
             }
             TextAreaMessage::SetValue(value) => {
                 let old_value = state.value();
@@ -786,7 +872,9 @@ impl Component for TextArea {
                     state.undo_stack.save(snapshot, EditKind::Other);
                     state.set_value(value);
                     Some(TextAreaOutput::Changed(state.value()))
-                } else { None }
+                } else {
+                    None
+                }
             }
             TextAreaMessage::Submit => Some(TextAreaOutput::Submitted(state.value())),
             TextAreaMessage::Undo => {

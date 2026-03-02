@@ -10,7 +10,10 @@ use ratatui::prelude::*;
 ///
 /// Items can display static text or dynamic content that updates over time.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum StatusBarItemContent {
     /// Static text content.
     Static(String),
@@ -123,7 +126,10 @@ impl StatusBarItemContent {
 
 /// Style variants for status bar items.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum StatusBarStyle {
     /// Default style (no special coloring).
     #[default]
@@ -156,7 +162,10 @@ impl StatusBarStyle {
 
 /// A single item in the status bar.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct StatusBarItem {
     /// The content of the item.
     pub(super) content: StatusBarItemContent,

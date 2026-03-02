@@ -174,7 +174,10 @@ pub enum StatusBarMessage {
 
 /// State for a StatusBar component.
 #[derive(Clone, Debug, Default, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct StatusBarState {
     /// Items aligned to the left.
     left: Vec<StatusBarItem>,

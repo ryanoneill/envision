@@ -259,10 +259,9 @@ fn test_router_state_round_trip() {
 
 #[test]
 fn test_loading_list_state_round_trip() {
-    let state = LoadingListState::with_items(
-        vec!["task1".to_string(), "task2".to_string()],
-        |t| t.clone(),
-    );
+    let state = LoadingListState::with_items(vec!["task1".to_string(), "task2".to_string()], |t| {
+        t.clone()
+    });
     let restored: LoadingListState<String> = round_trip(&state);
     assert_eq!(restored.items().len(), 2);
 }

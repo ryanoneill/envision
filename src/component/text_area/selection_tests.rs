@@ -116,7 +116,7 @@ fn test_multiline_selection() {
 fn test_select_across_lines() {
     let mut state = TextAreaState::with_value("abc\ndef");
     state.set_cursor(0, 1); // After 'a'
-    // Select from (0,1) to (1,2) using SelectDown then SelectRight
+                            // Select from (0,1) to (1,2) using SelectDown then SelectRight
     TextArea::update(&mut state, TextAreaMessage::SelectDown);
     TextArea::update(&mut state, TextAreaMessage::SelectRight);
     let text = state.selected_text().unwrap();
@@ -263,7 +263,10 @@ fn test_paste_replaces_selection() {
 #[test]
 fn test_paste_multiline() {
     let mut state = TextAreaState::new();
-    TextArea::update(&mut state, TextAreaMessage::Paste("line1\nline2\nline3".into()));
+    TextArea::update(
+        &mut state,
+        TextAreaMessage::Paste("line1\nline2\nline3".into()),
+    );
     assert_eq!(state.value(), "line1\nline2\nline3");
     assert_eq!(state.line_count(), 3);
 }
@@ -293,10 +296,7 @@ fn test_copy_then_paste() {
 #[test]
 fn test_shift_left_event() {
     let state = focused_state("hello");
-    let msg = TextArea::handle_event(
-        &state,
-        &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT),
-    );
+    let msg = TextArea::handle_event(&state, &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT));
     assert_eq!(msg, Some(TextAreaMessage::SelectLeft));
 }
 
@@ -313,20 +313,14 @@ fn test_shift_right_event() {
 #[test]
 fn test_shift_up_event() {
     let state = focused_state("hello");
-    let msg = TextArea::handle_event(
-        &state,
-        &Event::key_with(KeyCode::Up, KeyModifiers::SHIFT),
-    );
+    let msg = TextArea::handle_event(&state, &Event::key_with(KeyCode::Up, KeyModifiers::SHIFT));
     assert_eq!(msg, Some(TextAreaMessage::SelectUp));
 }
 
 #[test]
 fn test_shift_down_event() {
     let state = focused_state("hello");
-    let msg = TextArea::handle_event(
-        &state,
-        &Event::key_with(KeyCode::Down, KeyModifiers::SHIFT),
-    );
+    let msg = TextArea::handle_event(&state, &Event::key_with(KeyCode::Down, KeyModifiers::SHIFT));
     assert_eq!(msg, Some(TextAreaMessage::SelectDown));
 }
 
