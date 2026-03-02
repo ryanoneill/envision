@@ -281,7 +281,7 @@ impl App for DashboardApp {
                 if state.focus.is_focused(&Panel::Navigation) {
                     if let Some(idx) = state.menu.selected_index() {
                         let name = state.menu.items()[idx].label().to_string();
-                        state.toasts.info(&format!("Navigated to {}", name));
+                        state.toasts.info(format!("Navigated to {}", name));
                     }
                 }
             }
