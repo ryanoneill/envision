@@ -39,19 +39,21 @@ jobs:
             ${{ runner.os }}-cargo-${{ matrix.rust }}-
 
       - name: Run tests
+        shell: bash
         run: |
           if [ "${{ matrix.rust }}" = "stable" ]; then
             cargo test --all-features --verbose
           else
-            cargo test --features serialization,input-components,data-components,display-components,navigation-components,overlay-components,compound-components --verbose
+            cargo test --no-default-features --features serialization,input-components,data-components,display-components,navigation-components,overlay-components,compound-components --verbose
           fi
 
       - name: Build examples
+        shell: bash
         run: |
           if [ "${{ matrix.rust }}" = "stable" ]; then
             cargo build --examples
           else
-            cargo build --examples --features serialization,input-components,data-components,display-components,navigation-components,overlay-components,compound-components
+            cargo build --examples --no-default-features --features serialization,input-components,data-components,display-components,navigation-components,overlay-components,compound-components
           fi
 
   no-default-features:
