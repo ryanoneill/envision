@@ -47,6 +47,26 @@ pub enum InputFieldMessage {
     WordLeft,
     /// Move cursor right by one word.
     WordRight,
+    /// Extend selection left by one character.
+    SelectLeft,
+    /// Extend selection right by one character.
+    SelectRight,
+    /// Extend selection to the beginning of the input.
+    SelectHome,
+    /// Extend selection to the end of the input.
+    SelectEnd,
+    /// Extend selection left by one word.
+    SelectWordLeft,
+    /// Extend selection right by one word.
+    SelectWordRight,
+    /// Select all text.
+    SelectAll,
+    /// Copy the selected text to the internal clipboard.
+    Copy,
+    /// Cut the selected text to the internal clipboard.
+    Cut,
+    /// Paste text at the cursor position, replacing any selection.
+    Paste(String),
     /// Delete from cursor to beginning of word.
     DeleteWordBack,
     /// Delete from cursor to end of word.
@@ -66,6 +86,8 @@ pub enum InputFieldOutput {
     Submitted(String),
     /// The value changed.
     Changed(String),
+    /// Text was copied to the internal clipboard.
+    Copied(String),
 }
 
 /// State for an InputField component.
@@ -81,6 +103,11 @@ pub struct InputFieldState {
     disabled: bool,
     /// Placeholder text shown when empty.
     placeholder: String,
+    /// Selection anchor (byte offset). When `Some`, text is selected from
+    /// the anchor to the cursor. The anchor stays fixed while the cursor moves.
+    selection_anchor: Option<usize>,
+    /// Internal clipboard buffer for copy/cut/paste operations.
+    clipboard: String,
 }
 
 impl InputFieldState {
@@ -99,6 +126,8 @@ impl InputFieldState {
             focused: false,
             disabled: false,
             placeholder: String::new(),
+            selection_anchor: None,
+            clipboard: String::new(),
         }
     }
 
@@ -110,6 +139,8 @@ impl InputFieldState {
             focused: false,
             disabled: false,
             placeholder: placeholder.into(),
+            selection_anchor: None,
+            clipboard: String::new(),
         }
     }
 
@@ -122,6 +153,7 @@ impl InputFieldState {
     pub fn set_value(&mut self, value: impl Into<String>) {
         self.value = value.into();
         self.cursor = self.value.len();
+        self.selection_anchor = None;
     }
 
     /// Returns the cursor position (character index).
@@ -164,6 +196,61 @@ impl InputFieldState {
             .nth(clamped)
             .map(|(i, _)| i)
             .unwrap_or(self.value.len());
+    }
+
+    /// Returns true if there is an active text selection.
+    pub fn has_selection(&self) -> bool {
+        self.selection_anchor.is_some() && self.selection_anchor != Some(self.cursor)
+    }
+
+    /// Returns the selected byte range as `(start, end)` where `start < end`.
+    ///
+    /// Returns `None` if there is no active selection or the selection is empty.
+    pub fn selection_range(&self) -> Option<(usize, usize)> {
+        self.selection_anchor.and_then(|anchor| {
+            if anchor == self.cursor {
+                None
+            } else {
+                let start = anchor.min(self.cursor);
+                let end = anchor.max(self.cursor);
+                Some((start, end))
+            }
+        })
+    }
+
+    /// Returns the currently selected text, or `None` if no selection.
+    pub fn selected_text(&self) -> Option<&str> {
+        self.selection_range().map(|(start, end)| &self.value[start..end])
+    }
+
+    /// Returns a reference to the internal clipboard contents.
+    pub fn clipboard(&self) -> &str {
+        &self.clipboard
+    }
+
+    /// Clears the current selection without modifying text.
+    fn clear_selection(&mut self) {
+        self.selection_anchor = None;
+    }
+
+    /// Sets the selection anchor to the current cursor position if not already set.
+    fn ensure_selection_anchor(&mut self) {
+        if self.selection_anchor.is_none() {
+            self.selection_anchor = Some(self.cursor);
+        }
+    }
+
+    /// Deletes the currently selected text, returning the deleted text.
+    ///
+    /// Moves the cursor to the start of the selection. Clears the selection.
+    /// Returns `None` if no text was selected.
+    fn delete_selection(&mut self) -> Option<String> {
+        let (start, end) = self.selection_range()?;
+        let deleted: String = self.value[start..end].to_string();
+        self.value.drain(start..end);
+        self.cursor = start;
+        self.selection_anchor = None;
+        Some(deleted)
     }
 
     /// Move cursor left by one character.
@@ -376,62 +463,164 @@ impl Component for InputField {
         }
         match msg {
             InputFieldMessage::Insert(c) => {
+                state.delete_selection();
                 state.insert(c);
                 Some(InputFieldOutput::Changed(state.value.clone()))
             }
             InputFieldMessage::Backspace => {
-                if state.backspace() {
+                if state.has_selection() {
+                    state.delete_selection();
+                    Some(InputFieldOutput::Changed(state.value.clone()))
+                } else if state.backspace() {
                     Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
             InputFieldMessage::Delete => {
-                if state.delete() {
+                if state.has_selection() {
+                    state.delete_selection();
+                    Some(InputFieldOutput::Changed(state.value.clone()))
+                } else if state.delete() {
                     Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
             InputFieldMessage::Left => {
-                state.move_left();
+                if state.has_selection() {
+                    // Move cursor to start of selection
+                    if let Some((start, _)) = state.selection_range() {
+                        state.cursor = start;
+                    }
+                    state.clear_selection();
+                } else {
+                    state.move_left();
+                }
                 None
             }
             InputFieldMessage::Right => {
-                state.move_right();
+                if state.has_selection() {
+                    // Move cursor to end of selection
+                    if let Some((_, end)) = state.selection_range() {
+                        state.cursor = end;
+                    }
+                    state.clear_selection();
+                } else {
+                    state.move_right();
+                }
                 None
             }
             InputFieldMessage::Home => {
+                state.clear_selection();
                 state.cursor = 0;
                 None
             }
             InputFieldMessage::End => {
+                state.clear_selection();
                 state.cursor = state.value.len();
                 None
             }
             InputFieldMessage::WordLeft => {
+                state.clear_selection();
                 state.move_word_left();
                 None
             }
             InputFieldMessage::WordRight => {
+                state.clear_selection();
                 state.move_word_right();
                 None
             }
+            InputFieldMessage::SelectLeft => {
+                state.ensure_selection_anchor();
+                state.move_left();
+                None
+            }
+            InputFieldMessage::SelectRight => {
+                state.ensure_selection_anchor();
+                state.move_right();
+                None
+            }
+            InputFieldMessage::SelectHome => {
+                state.ensure_selection_anchor();
+                state.cursor = 0;
+                None
+            }
+            InputFieldMessage::SelectEnd => {
+                state.ensure_selection_anchor();
+                state.cursor = state.value.len();
+                None
+            }
+            InputFieldMessage::SelectWordLeft => {
+                state.ensure_selection_anchor();
+                state.move_word_left();
+                None
+            }
+            InputFieldMessage::SelectWordRight => {
+                state.ensure_selection_anchor();
+                state.move_word_right();
+                None
+            }
+            InputFieldMessage::SelectAll => {
+                if state.value.is_empty() {
+                    return None;
+                }
+                state.selection_anchor = Some(0);
+                state.cursor = state.value.len();
+                None
+            }
+            InputFieldMessage::Copy => {
+                if let Some(text) = state.selected_text() {
+                    let text = text.to_string();
+                    state.clipboard = text.clone();
+                    Some(InputFieldOutput::Copied(text))
+                } else {
+                    None
+                }
+            }
+            InputFieldMessage::Cut => {
+                if let Some(text) = state.selected_text() {
+                    let text = text.to_string();
+                    state.clipboard = text.clone();
+                    state.delete_selection();
+                    Some(InputFieldOutput::Changed(state.value.clone()))
+                } else {
+                    None
+                }
+            }
+            InputFieldMessage::Paste(text) => {
+                if text.is_empty() {
+                    return None;
+                }
+                state.delete_selection();
+                // Insert each character at cursor position
+                for c in text.chars() {
+                    state.insert(c);
+                }
+                Some(InputFieldOutput::Changed(state.value.clone()))
+            }
             InputFieldMessage::DeleteWordBack => {
-                if state.delete_word_back() {
+                if state.has_selection() {
+                    state.delete_selection();
+                    Some(InputFieldOutput::Changed(state.value.clone()))
+                } else if state.delete_word_back() {
                     Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
             InputFieldMessage::DeleteWordForward => {
-                if state.delete_word_forward() {
+                if state.has_selection() {
+                    state.delete_selection();
+                    Some(InputFieldOutput::Changed(state.value.clone()))
+                } else if state.delete_word_forward() {
                     Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
             InputFieldMessage::Clear => {
+                state.clear_selection();
                 if !state.value.is_empty() {
                     state.value.clear();
                     state.cursor = 0;
@@ -456,14 +645,43 @@ impl Component for InputField {
         if !state.focused || state.disabled {
             return None;
         }
+
+        // Handle paste events from terminal (bracketed paste)
+        if let Event::Paste(ref text) = event {
+            return Some(InputFieldMessage::Paste(text.clone()));
+        }
+
         if let Some(key) = event.as_key() {
             let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+            let shift = key.modifiers.contains(KeyModifiers::SHIFT);
             match key.code {
+                // Clipboard operations
+                KeyCode::Char('c') if ctrl => Some(InputFieldMessage::Copy),
+                KeyCode::Char('x') if ctrl => Some(InputFieldMessage::Cut),
+                KeyCode::Char('v') if ctrl => {
+                    // Paste from internal clipboard
+                    if state.clipboard.is_empty() {
+                        None
+                    } else {
+                        Some(InputFieldMessage::Paste(state.clipboard.clone()))
+                    }
+                }
+                KeyCode::Char('a') if ctrl => Some(InputFieldMessage::SelectAll),
+                // Character input (only when no ctrl modifier)
                 KeyCode::Char(c) if !ctrl => Some(InputFieldMessage::Insert(c)),
+                // Selection movement (shift+key)
+                KeyCode::Left if ctrl && shift => Some(InputFieldMessage::SelectWordLeft),
+                KeyCode::Right if ctrl && shift => Some(InputFieldMessage::SelectWordRight),
+                KeyCode::Left if shift => Some(InputFieldMessage::SelectLeft),
+                KeyCode::Right if shift => Some(InputFieldMessage::SelectRight),
+                KeyCode::Home if shift => Some(InputFieldMessage::SelectHome),
+                KeyCode::End if shift => Some(InputFieldMessage::SelectEnd),
+                // Deletion
                 KeyCode::Backspace if ctrl => Some(InputFieldMessage::DeleteWordBack),
                 KeyCode::Delete if ctrl => Some(InputFieldMessage::DeleteWordForward),
                 KeyCode::Backspace => Some(InputFieldMessage::Backspace),
                 KeyCode::Delete => Some(InputFieldMessage::Delete),
+                // Navigation (clears selection)
                 KeyCode::Left if ctrl => Some(InputFieldMessage::WordLeft),
                 KeyCode::Right if ctrl => Some(InputFieldMessage::WordRight),
                 KeyCode::Left => Some(InputFieldMessage::Left),
@@ -479,43 +697,58 @@ impl Component for InputField {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
-        let display_text = if state.value.is_empty() && !state.placeholder.is_empty() {
-            state.placeholder.clone()
-        } else {
-            state.value.clone()
-        };
-
-        let style = if state.disabled {
-            theme.disabled_style()
-        } else if state.focused {
-            theme.focused_style()
-        } else if state.value.is_empty() && !state.placeholder.is_empty() {
-            theme.placeholder_style()
-        } else {
-            theme.normal_style()
-        };
-
         let border_style = if state.focused {
             theme.focused_border_style()
         } else {
             theme.border_style()
         };
 
-        let paragraph = Paragraph::new(display_text).style(style).block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(border_style),
-        );
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(border_style);
 
+        let is_placeholder =
+            state.value.is_empty() && !state.placeholder.is_empty();
+
+        let base_style = if state.disabled {
+            theme.disabled_style()
+        } else if state.focused {
+            theme.focused_style()
+        } else if is_placeholder {
+            theme.placeholder_style()
+        } else {
+            theme.normal_style()
+        };
+
+        let text = if is_placeholder {
+            &state.placeholder
+        } else {
+            &state.value
+        };
+
+        // Build line with selection highlighting
+        let line = if let Some((sel_start, sel_end)) = state.selection_range() {
+            let selection_style = theme.selection_style();
+            let before = &state.value[..sel_start];
+            let selected = &state.value[sel_start..sel_end];
+            let after = &state.value[sel_end..];
+            Line::from(vec![
+                Span::styled(before.to_string(), base_style),
+                Span::styled(selected.to_string(), selection_style),
+                Span::styled(after.to_string(), base_style),
+            ])
+        } else {
+            Line::from(Span::styled(text.to_string(), base_style))
+        };
+
+        let paragraph = Paragraph::new(line).block(block);
         frame.render_widget(paragraph, area);
 
         // Show cursor when focused
         if state.focused && area.width > 2 && area.height > 2 {
-            // Calculate cursor x position (accounting for border)
             let cursor_x = area.x + 1 + state.cursor_position() as u16;
             let cursor_y = area.y + 1;
 
-            // Only show cursor if it's within the visible area
             if cursor_x < area.x + area.width - 1 {
                 frame.set_cursor_position((cursor_x, cursor_y));
             }
