@@ -61,7 +61,7 @@ impl<A: App, B: Backend> RuntimeCore<A, B> {
         if let Some(event) = self.events.pop() {
             match self.overlay_stack.handle_event(&event) {
                 OverlayAction::Consumed => ProcessEventResult::Consumed,
-                OverlayAction::Message(msg) => ProcessEventResult::Dispatch(msg),
+                OverlayAction::KeepAndMessage(msg) => ProcessEventResult::Dispatch(msg),
                 OverlayAction::Dismiss => {
                     self.overlay_stack.pop();
                     ProcessEventResult::Consumed
