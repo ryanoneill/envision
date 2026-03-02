@@ -917,3 +917,55 @@ fn test_instance_update() {
     assert!(matches!(output, Some(TextAreaOutput::Changed(_))));
     assert_eq!(state.value(), "a");
 }
+
+// ========== cursor_display_position Tests ==========
+
+#[test]
+fn test_cursor_display_position_emoji() {
+    let mut state = TextAreaState::new();
+    TextArea::update(&mut state, TextAreaMessage::Insert('A'));
+    TextArea::update(&mut state, TextAreaMessage::Insert('\u{1F600}'));
+    TextArea::update(&mut state, TextAreaMessage::Insert('B'));
+    // "A😀B" — char col is 3, display col is 1 + 2 + 1 = 4
+    assert_eq!(state.cursor_position(), (0, 3));
+    assert_eq!(state.cursor_display_position(), (0, 4));
+}
+
+#[test]
+fn test_cursor_display_position_cjk() {
+    let mut state = TextAreaState::new();
+    TextArea::update(&mut state, TextAreaMessage::Insert('日'));
+    TextArea::update(&mut state, TextAreaMessage::Insert('本'));
+    // "日本" — char col is 2, display col is 2 + 2 = 4
+    assert_eq!(state.cursor_position(), (0, 2));
+    assert_eq!(state.cursor_display_position(), (0, 4));
+}
+
+#[test]
+fn test_cursor_display_position_multiline_emoji() {
+    let mut state = TextAreaState::new();
+    for c in "Hello".chars() {
+        TextArea::update(&mut state, TextAreaMessage::Insert(c));
+    }
+    TextArea::update(&mut state, TextAreaMessage::NewLine);
+    TextArea::update(&mut state, TextAreaMessage::Insert('😀'));
+    TextArea::update(&mut state, TextAreaMessage::Insert('B'));
+    // Line 1: "Hello", Line 2: "😀B"
+    // cursor at (1, 3) char count, (1, 3) display width (2 + 1 = 3)
+    assert_eq!(state.cursor_position(), (1, 2));
+    assert_eq!(state.cursor_display_position(), (1, 3));
+}
+
+#[test]
+fn test_cursor_display_position_ascii() {
+    let state = TextAreaState::with_value("hello");
+    // For ASCII, display position equals character position.
+    assert_eq!(state.cursor_display_position(), (0, 5));
+    assert_eq!(state.cursor_position(), (0, 5));
+}
+
+#[test]
+fn test_cursor_display_position_empty() {
+    let state = TextAreaState::new();
+    assert_eq!(state.cursor_display_position(), (0, 0));
+}

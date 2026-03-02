@@ -824,7 +824,7 @@ fn render_search_bar(state: &LogViewerState, frame: &mut Frame, area: Rect, them
 
     // Show cursor when search is focused
     if state.focused && state.focus == Focus::Search && !state.disabled {
-        let cursor_x = area.x + 2 + state.search.cursor_position() as u16;
+        let cursor_x = area.x + 2 + state.search.cursor_display_position() as u16;
         if cursor_x < area.right() {
             frame.set_cursor_position(Position::new(cursor_x, area.y));
         }
