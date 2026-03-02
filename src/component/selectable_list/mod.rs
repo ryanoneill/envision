@@ -44,6 +44,10 @@ pub enum SelectableListMessage {
     PageDown(usize),
     /// Select the current item (triggers output).
     Select,
+    /// Set the filter text for searching items.
+    SetFilter(String),
+    /// Clear the filter text.
+    ClearFilter,
 }
 
 /// Output messages from a SelectableList.
@@ -51,8 +55,10 @@ pub enum SelectableListMessage {
 pub enum SelectableListOutput<T: Clone> {
     /// An item was selected (e.g., Enter pressed).
     Selected(T),
-    /// The selection changed to a new index.
+    /// The selection changed to a new index (original item index).
     SelectionChanged(usize),
+    /// The filter text changed.
+    FilterChanged(String),
 }
 
 /// State for a SelectableList component.
@@ -62,6 +68,8 @@ pub struct SelectableListState<T: Clone> {
     list_state: ListState,
     focused: bool,
     disabled: bool,
+    filter_text: String,
+    filtered_indices: Vec<usize>,
 }
 
 impl<T: Clone + PartialEq> PartialEq for SelectableListState<T> {
@@ -70,6 +78,7 @@ impl<T: Clone + PartialEq> PartialEq for SelectableListState<T> {
             && self.list_state.selected() == other.list_state.selected()
             && self.focused == other.focused
             && self.disabled == other.disabled
+            && self.filter_text == other.filter_text
     }
 }
 
@@ -80,6 +89,8 @@ impl<T: Clone> Default for SelectableListState<T> {
             list_state: ListState::default(),
             focused: false,
             disabled: false,
+            filter_text: String::new(),
+            filtered_indices: Vec::new(),
         }
     }
 }
@@ -94,11 +105,14 @@ impl<T: Clone> SelectableListState<T> {
 
     /// Creates a new state with the given items.
     pub fn with_items(items: Vec<T>) -> Self {
+        let filtered_indices: Vec<usize> = (0..items.len()).collect();
         let mut state = Self {
             items,
             list_state: ListState::default(),
             focused: false,
             disabled: false,
+            filter_text: String::new(),
+            filtered_indices,
         };
         if !state.items.is_empty() {
             state.list_state.select(Some(0));
@@ -111,32 +125,44 @@ impl<T: Clone> SelectableListState<T> {
         &self.items
     }
 
-    /// Sets the items, resetting selection to the first item if any.
+    /// Sets the items, clearing any active filter and resetting selection.
     pub fn set_items(&mut self, items: Vec<T>) {
         self.items = items;
-        if self.items.is_empty() {
+        self.filter_text.clear();
+        self.filtered_indices = (0..self.items.len()).collect();
+        if self.filtered_indices.is_empty() {
             self.list_state.select(None);
         } else {
             let current = self.list_state.selected().unwrap_or(0);
-            let new_index = current.min(self.items.len().saturating_sub(1));
+            let new_index = current.min(self.filtered_indices.len().saturating_sub(1));
             self.list_state.select(Some(new_index));
         }
     }
 
-    /// Returns the currently selected index.
+    /// Returns the currently selected index in the original items list.
     pub fn selected_index(&self) -> Option<usize> {
-        self.list_state.selected()
+        self.list_state
+            .selected()
+            .and_then(|i| self.filtered_indices.get(i).copied())
     }
 
     /// Returns a reference to the currently selected item.
     pub fn selected_item(&self) -> Option<&T> {
-        self.list_state.selected().and_then(|i| self.items.get(i))
+        self.selected_index().and_then(|i| self.items.get(i))
     }
 
-    /// Selects the item at the given index.
+    /// Selects the item at the given index in the original items list.
+    ///
+    /// If the item is filtered out, the selection is unchanged.
     pub fn select(&mut self, index: Option<usize>) {
         match index {
-            Some(i) if i < self.items.len() => self.list_state.select(Some(i)),
+            Some(i) if i < self.items.len() => {
+                if let Some(filtered_pos) =
+                    self.filtered_indices.iter().position(|&fi| fi == i)
+                {
+                    self.list_state.select(Some(filtered_pos));
+                }
+            }
             Some(_) => {} // Index out of bounds, ignore
             None => self.list_state.select(None),
         }
@@ -150,6 +176,16 @@ impl<T: Clone> SelectableListState<T> {
     /// Returns the number of items in the list.
     pub fn len(&self) -> usize {
         self.items.len()
+    }
+
+    /// Returns the current filter text.
+    pub fn filter_text(&self) -> &str {
+        &self.filter_text
+    }
+
+    /// Returns the number of items visible after filtering.
+    pub fn visible_count(&self) -> usize {
+        self.filtered_indices.len()
     }
 }
 
@@ -178,6 +214,55 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
+    }
+
+    /// Sets the filter text for case-insensitive substring matching.
+    ///
+    /// Items whose `Display` output contains the filter text (case-insensitive)
+    /// are shown. Selection is preserved if the selected item remains visible,
+    /// otherwise it moves to the first visible item.
+    pub fn set_filter_text(&mut self, text: &str) {
+        self.filter_text = text.to_string();
+        self.apply_filter();
+    }
+
+    /// Clears the filter, showing all items.
+    pub fn clear_filter(&mut self) {
+        self.filter_text.clear();
+        self.apply_filter();
+    }
+
+    /// Recomputes filtered_indices based on the current filter_text.
+    fn apply_filter(&mut self) {
+        let previously_selected = self.selected_index();
+
+        if self.filter_text.is_empty() {
+            self.filtered_indices = (0..self.items.len()).collect();
+        } else {
+            let filter_lower = self.filter_text.to_lowercase();
+            self.filtered_indices = self
+                .items
+                .iter()
+                .enumerate()
+                .filter(|(_, item)| format!("{}", item).to_lowercase().contains(&filter_lower))
+                .map(|(i, _)| i)
+                .collect();
+        }
+
+        // Try to preserve the previously selected item
+        if let Some(prev_idx) = previously_selected {
+            if let Some(new_pos) = self.filtered_indices.iter().position(|&i| i == prev_idx) {
+                self.list_state.select(Some(new_pos));
+                return;
+            }
+        }
+
+        // Otherwise, select first visible item or none
+        if self.filtered_indices.is_empty() {
+            self.list_state.select(None);
+        } else {
+            self.list_state.select(Some(0));
+        }
     }
 
     /// Maps an input event to a selectable list message.
@@ -239,11 +324,23 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.items.is_empty() {
+        match msg {
+            SelectableListMessage::SetFilter(text) => {
+                state.set_filter_text(&text);
+                return Some(SelectableListOutput::FilterChanged(text));
+            }
+            SelectableListMessage::ClearFilter => {
+                state.clear_filter();
+                return Some(SelectableListOutput::FilterChanged(String::new()));
+            }
+            _ => {}
+        }
+
+        if state.disabled || state.filtered_indices.is_empty() {
             return None;
         }
 
-        let len = state.items.len();
+        let len = state.filtered_indices.len();
         let current = state.list_state.selected().unwrap_or(0);
 
         match msg {
@@ -251,47 +348,57 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
                 let new_index = current.saturating_sub(1);
                 if new_index != current {
                     state.list_state.select(Some(new_index));
-                    return Some(SelectableListOutput::SelectionChanged(new_index));
+                    let orig = state.filtered_indices[new_index];
+                    return Some(SelectableListOutput::SelectionChanged(orig));
                 }
             }
             SelectableListMessage::Down => {
                 let new_index = (current + 1).min(len - 1);
                 if new_index != current {
                     state.list_state.select(Some(new_index));
-                    return Some(SelectableListOutput::SelectionChanged(new_index));
+                    let orig = state.filtered_indices[new_index];
+                    return Some(SelectableListOutput::SelectionChanged(orig));
                 }
             }
             SelectableListMessage::First => {
                 if current != 0 {
                     state.list_state.select(Some(0));
-                    return Some(SelectableListOutput::SelectionChanged(0));
+                    let orig = state.filtered_indices[0];
+                    return Some(SelectableListOutput::SelectionChanged(orig));
                 }
             }
             SelectableListMessage::Last => {
                 let last = len - 1;
                 if current != last {
                     state.list_state.select(Some(last));
-                    return Some(SelectableListOutput::SelectionChanged(last));
+                    let orig = state.filtered_indices[last];
+                    return Some(SelectableListOutput::SelectionChanged(orig));
                 }
             }
             SelectableListMessage::PageUp(page_size) => {
                 let new_index = current.saturating_sub(page_size);
                 if new_index != current {
                     state.list_state.select(Some(new_index));
-                    return Some(SelectableListOutput::SelectionChanged(new_index));
+                    let orig = state.filtered_indices[new_index];
+                    return Some(SelectableListOutput::SelectionChanged(orig));
                 }
             }
             SelectableListMessage::PageDown(page_size) => {
                 let new_index = (current + page_size).min(len - 1);
                 if new_index != current {
                     state.list_state.select(Some(new_index));
-                    return Some(SelectableListOutput::SelectionChanged(new_index));
+                    let orig = state.filtered_indices[new_index];
+                    return Some(SelectableListOutput::SelectionChanged(orig));
                 }
             }
             SelectableListMessage::Select => {
-                if let Some(item) = state.items.get(current).cloned() {
+                let orig = state.filtered_indices[current];
+                if let Some(item) = state.items.get(orig).cloned() {
                     return Some(SelectableListOutput::Selected(item));
                 }
+            }
+            SelectableListMessage::SetFilter(_) | SelectableListMessage::ClearFilter => {
+                unreachable!("handled above")
             }
         }
 
@@ -299,11 +406,10 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
-        // Default view uses Display trait - users can implement custom rendering
         let items: Vec<ListItem> = state
-            .items
+            .filtered_indices
             .iter()
-            .map(|item| ListItem::new(format!("{}", item)))
+            .map(|&idx| ListItem::new(format!("{}", state.items[idx])))
             .collect();
 
         let highlight_style = if state.disabled {
