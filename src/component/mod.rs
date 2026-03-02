@@ -121,6 +121,7 @@ mod select;
 mod text_area;
 
 // Compound components
+mod form;
 mod searchable_list;
 
 // Data components
@@ -215,6 +216,7 @@ pub use progress_bar::{ProgressBar, ProgressBarMessage, ProgressBarOutput, Progr
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 
 // Compound components
+pub use form::{Form, FormField, FormFieldKind, FormMessage, FormOutput, FormState, FormValue};
 pub use searchable_list::{
     SearchableList, SearchableListMessage, SearchableListOutput, SearchableListState,
 };
