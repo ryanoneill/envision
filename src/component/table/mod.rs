@@ -245,6 +245,10 @@ pub enum TableMessage {
     SortBy(usize),
     /// Clear the current sort, returning to original order.
     ClearSort,
+    /// Set the filter text for searching rows.
+    SetFilter(String),
+    /// Clear the filter text.
+    ClearFilter,
 }
 
 /// Output messages from a Table component.
@@ -263,6 +267,8 @@ pub enum TableOutput<T: Clone> {
     },
     /// Sort was cleared.
     SortCleared,
+    /// The filter text changed.
+    FilterChanged(String),
 }
 
 /// State for a Table component.
@@ -277,6 +283,7 @@ pub struct TableState<T: TableRow> {
     display_order: Vec<usize>,
     focused: bool,
     disabled: bool,
+    filter_text: String,
 }
 
 impl<T: TableRow + PartialEq> PartialEq for TableState<T> {
@@ -288,6 +295,7 @@ impl<T: TableRow + PartialEq> PartialEq for TableState<T> {
             && self.display_order == other.display_order
             && self.focused == other.focused
             && self.disabled == other.disabled
+            && self.filter_text == other.filter_text
     }
 }
 
@@ -301,6 +309,7 @@ impl<T: TableRow> Default for TableState<T> {
             display_order: Vec::new(),
             focused: false,
             disabled: false,
+            filter_text: String::new(),
         }
     }
 }
@@ -343,6 +352,7 @@ impl<T: TableRow> TableState<T> {
             display_order,
             focused: false,
             disabled: false,
+            filter_text: String::new(),
         }
     }
 
@@ -364,6 +374,7 @@ impl<T: TableRow> TableState<T> {
             display_order,
             focused: false,
             disabled: false,
+            filter_text: String::new(),
         }
     }
 
@@ -418,12 +429,13 @@ impl<T: TableRow> TableState<T> {
         self.rows.is_empty()
     }
 
-    /// Sets the rows, resetting sort and adjusting selection.
+    /// Sets the rows, clearing filter and sort, and adjusting selection.
     ///
     /// If there were rows selected, the selection is preserved if valid,
     /// otherwise clamped to the last row.
     pub fn set_rows(&mut self, rows: Vec<T>) {
         self.rows = rows;
+        self.filter_text.clear();
         self.display_order = (0..self.rows.len()).collect();
         self.sort = None;
 
@@ -490,8 +502,56 @@ impl<T: TableRow> TableState<T> {
         self
     }
 
-    /// Applies the current sort to the display order.
-    fn apply_sort(&mut self) {
+    /// Returns the current filter text.
+    pub fn filter_text(&self) -> &str {
+        &self.filter_text
+    }
+
+    /// Returns the number of rows visible after filtering.
+    pub fn visible_count(&self) -> usize {
+        self.display_order.len()
+    }
+
+    /// Sets the filter text for case-insensitive substring matching on cell content.
+    ///
+    /// Rows where any cell contains the filter text (case-insensitive) are shown.
+    /// Selection is preserved if the selected row remains visible.
+    pub fn set_filter_text(&mut self, text: &str) {
+        self.filter_text = text.to_string();
+        self.rebuild_display_order();
+    }
+
+    /// Clears the filter, showing all rows.
+    pub fn clear_filter(&mut self) {
+        self.filter_text.clear();
+        self.rebuild_display_order();
+    }
+
+    /// Rebuilds the display order by applying filter, then sort.
+    fn rebuild_display_order(&mut self) {
+        let selected_original = self
+            .selected
+            .and_then(|i| self.display_order.get(i).copied());
+
+        // Filter
+        if self.filter_text.is_empty() {
+            self.display_order = (0..self.rows.len()).collect();
+        } else {
+            let filter_lower = self.filter_text.to_lowercase();
+            self.display_order = self
+                .rows
+                .iter()
+                .enumerate()
+                .filter(|(_, row)| {
+                    row.cells()
+                        .iter()
+                        .any(|cell| cell.to_lowercase().contains(&filter_lower))
+                })
+                .map(|(i, _)| i)
+                .collect();
+        }
+
+        // Sort
         if let Some((col, direction)) = self.sort {
             self.display_order.sort_by(|&a, &b| {
                 let cells_a = self.rows[a].cells();
@@ -502,9 +562,14 @@ impl<T: TableRow> TableState<T> {
                     SortDirection::Descending => cmp.reverse(),
                 }
             });
-        } else {
-            // Reset to original order
-            self.display_order = (0..self.rows.len()).collect();
+        }
+
+        // Preserve selection
+        if let Some(orig) = selected_original {
+            self.selected = self.find_display_index(orig);
+        }
+        if self.selected.is_none() && !self.display_order.is_empty() {
+            self.selected = Some(0);
         }
     }
 
@@ -616,7 +681,19 @@ impl<T: TableRow + 'static> Component for Table<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.rows.is_empty() {
+        match msg {
+            TableMessage::SetFilter(ref text) => {
+                state.set_filter_text(text);
+                return Some(TableOutput::FilterChanged(text.clone()));
+            }
+            TableMessage::ClearFilter => {
+                state.clear_filter();
+                return Some(TableOutput::FilterChanged(String::new()));
+            }
+            _ => {}
+        }
+
+        if state.disabled || state.display_order.is_empty() {
             return None;
         }
 
@@ -677,11 +754,6 @@ impl<T: TableRow + 'static> Component for Table<T> {
                         return None;
                     }
 
-                    // Get the currently selected row's original index
-                    let selected_original = state
-                        .selected
-                        .and_then(|i| state.display_order.get(i).copied());
-
                     // Toggle sort: None -> Asc -> Desc -> None
                     let new_sort = match state.sort {
                         Some((c, SortDirection::Ascending)) if c == col => {
@@ -692,12 +764,7 @@ impl<T: TableRow + 'static> Component for Table<T> {
                     };
 
                     state.sort = new_sort;
-                    state.apply_sort();
-
-                    // Restore selection to the same row
-                    if let Some(orig) = selected_original {
-                        state.selected = state.find_display_index(orig);
-                    }
+                    state.rebuild_display_order();
 
                     return match new_sort {
                         Some((column, direction)) => {
@@ -709,21 +776,13 @@ impl<T: TableRow + 'static> Component for Table<T> {
             }
             TableMessage::ClearSort => {
                 if state.sort.is_some() {
-                    // Get the currently selected row's original index
-                    let selected_original = state
-                        .selected
-                        .and_then(|i| state.display_order.get(i).copied());
-
                     state.sort = None;
-                    state.apply_sort();
-
-                    // Restore selection to the same row
-                    if let Some(orig) = selected_original {
-                        state.selected = state.find_display_index(orig);
-                    }
-
+                    state.rebuild_display_order();
                     return Some(TableOutput::SortCleared);
                 }
+            }
+            TableMessage::SetFilter(_) | TableMessage::ClearFilter => {
+                unreachable!("handled above")
             }
         }
 
@@ -833,5 +892,7 @@ impl<T: TableRow + 'static> Focusable for Table<T> {
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod filter_tests;
 #[cfg(test)]
 mod view_tests;

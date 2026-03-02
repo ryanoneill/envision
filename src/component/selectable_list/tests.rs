@@ -464,3 +464,291 @@ fn test_instance_update() {
     let output = state.update(SelectableListMessage::Down);
     assert_eq!(output, Some(SelectableListOutput::SelectionChanged(1)));
 }
+
+// Filter tests
+
+#[test]
+fn test_filter_text_default() {
+    let state = SelectableListState::with_items(vec!["a", "b", "c"]);
+    assert_eq!(state.filter_text(), "");
+    assert_eq!(state.visible_count(), 3);
+}
+
+#[test]
+fn test_set_filter_text() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Cherry".to_string(),
+        "Apricot".to_string(),
+    ]);
+    state.set_filter_text("ap");
+    assert_eq!(state.filter_text(), "ap");
+    assert_eq!(state.visible_count(), 2); // Apple, Apricot
+}
+
+#[test]
+fn test_filter_case_insensitive() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "banana".to_string(),
+        "CHERRY".to_string(),
+    ]);
+    state.set_filter_text("APPLE");
+    assert_eq!(state.visible_count(), 1);
+    assert_eq!(state.selected_item(), Some(&"Apple".to_string()));
+}
+
+#[test]
+fn test_filter_no_matches() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+    ]);
+    state.set_filter_text("xyz");
+    assert_eq!(state.visible_count(), 0);
+    assert_eq!(state.selected_index(), None);
+    assert_eq!(state.selected_item(), None);
+}
+
+#[test]
+fn test_clear_filter() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Cherry".to_string(),
+    ]);
+    state.set_filter_text("ap");
+    assert_eq!(state.visible_count(), 1);
+
+    state.clear_filter();
+    assert_eq!(state.filter_text(), "");
+    assert_eq!(state.visible_count(), 3);
+}
+
+#[test]
+fn test_filter_preserves_selection() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Apricot".to_string(),
+    ]);
+    // Select Apricot (index 2)
+    state.select(Some(2));
+    assert_eq!(state.selected_item(), Some(&"Apricot".to_string()));
+
+    // Filter to "ap" - Apple (0) and Apricot (2)
+    state.set_filter_text("ap");
+    assert_eq!(state.visible_count(), 2);
+    // Apricot should still be selected
+    assert_eq!(state.selected_item(), Some(&"Apricot".to_string()));
+    assert_eq!(state.selected_index(), Some(2)); // original index
+}
+
+#[test]
+fn test_filter_resets_selection_when_item_hidden() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Cherry".to_string(),
+    ]);
+    // Select Banana (index 1)
+    state.select(Some(1));
+
+    // Filter to "ap" - only Apple visible
+    state.set_filter_text("ap");
+    assert_eq!(state.visible_count(), 1);
+    // Banana is filtered out, selection moves to first visible (Apple)
+    assert_eq!(state.selected_item(), Some(&"Apple".to_string()));
+    assert_eq!(state.selected_index(), Some(0));
+}
+
+#[test]
+fn test_filter_navigation() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Apricot".to_string(),
+        "Avocado".to_string(),
+    ]);
+    state.focused = true;
+    state.set_filter_text("ap");
+    // Filtered: Apple(0), Apricot(2) -- "ap" matches Apple and Apricot
+    assert_eq!(state.visible_count(), 2);
+    assert_eq!(state.selected_index(), Some(0)); // Apple
+
+    // Navigate down to Apricot
+    let output = SelectableList::<String>::update(&mut state, SelectableListMessage::Down);
+    assert_eq!(state.selected_item(), Some(&"Apricot".to_string()));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(2))); // original index
+
+    // At end, stay
+    let output = SelectableList::<String>::update(&mut state, SelectableListMessage::Down);
+    assert_eq!(output, None);
+    assert_eq!(state.selected_item(), Some(&"Apricot".to_string()));
+}
+
+#[test]
+fn test_filter_select_returns_original_item() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Apricot".to_string(),
+    ]);
+    state.set_filter_text("ap");
+    // Filtered: Apple(0), Apricot(2)
+
+    // Navigate to Apricot
+    SelectableList::<String>::update(&mut state, SelectableListMessage::Down);
+
+    // Select it
+    let output = SelectableList::<String>::update(&mut state, SelectableListMessage::Select);
+    assert_eq!(output, Some(SelectableListOutput::Selected("Apricot".to_string())));
+}
+
+#[test]
+fn test_filter_message_set_filter() {
+    let mut state = SelectableListState::with_items(vec![
+        "Alpha".to_string(),
+        "Beta".to_string(),
+        "Gamma".to_string(),
+    ]);
+    let output = SelectableList::<String>::update(
+        &mut state,
+        SelectableListMessage::SetFilter("eta".to_string()),
+    );
+    assert_eq!(state.filter_text(), "eta");
+    assert_eq!(state.visible_count(), 1);
+    assert_eq!(output, Some(SelectableListOutput::FilterChanged("eta".to_string())));
+}
+
+#[test]
+fn test_filter_message_clear_filter() {
+    let mut state = SelectableListState::with_items(vec![
+        "Alpha".to_string(),
+        "Beta".to_string(),
+    ]);
+    state.set_filter_text("alpha");
+    assert_eq!(state.visible_count(), 1);
+
+    let output = SelectableList::<String>::update(&mut state, SelectableListMessage::ClearFilter);
+    assert_eq!(state.filter_text(), "");
+    assert_eq!(state.visible_count(), 2);
+    assert_eq!(output, Some(SelectableListOutput::FilterChanged(String::new())));
+}
+
+#[test]
+fn test_filter_empty_string_shows_all() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+    ]);
+    state.set_filter_text("");
+    assert_eq!(state.visible_count(), 2);
+}
+
+#[test]
+fn test_filter_set_items_clears_filter() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+    ]);
+    state.set_filter_text("ap");
+    assert_eq!(state.visible_count(), 1);
+
+    state.set_items(vec!["X".to_string(), "Y".to_string(), "Z".to_string()]);
+    assert_eq!(state.filter_text(), "");
+    assert_eq!(state.visible_count(), 3);
+}
+
+#[test]
+fn test_filter_first_last_navigation() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Apricot".to_string(),
+        "Avocado".to_string(),
+    ]);
+    state.set_filter_text("a");
+    // Filtered: Apple(0), Apricot(2), Avocado(3)
+
+    let output = SelectableList::<String>::update(&mut state, SelectableListMessage::Last);
+    assert_eq!(state.selected_item(), Some(&"Avocado".to_string()));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(3)));
+
+    let output = SelectableList::<String>::update(&mut state, SelectableListMessage::First);
+    assert_eq!(state.selected_item(), Some(&"Apple".to_string()));
+    assert_eq!(output, Some(SelectableListOutput::SelectionChanged(0)));
+}
+
+#[test]
+fn test_filter_select_by_original_index() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Apricot".to_string(),
+    ]);
+    state.set_filter_text("ap");
+    // Filtered: Apple(0), Apricot(2)
+
+    // Select by original index 2 (Apricot)
+    state.select(Some(2));
+    assert_eq!(state.selected_item(), Some(&"Apricot".to_string()));
+
+    // Try to select filtered-out item (Banana at index 1) - should be ignored
+    state.select(Some(1));
+    assert_eq!(state.selected_item(), Some(&"Apricot".to_string()));
+}
+
+#[test]
+fn test_filter_view() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Apricot".to_string(),
+        "Cherry".to_string(),
+    ]);
+    state.focused = true;
+    state.set_filter_text("ap");
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+    terminal
+        .draw(|frame| {
+            SelectableList::<String>::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_filter_disabled_navigation() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Apricot".to_string(),
+    ]);
+    state.set_disabled(true);
+    state.set_filter_text("ap");
+
+    // Navigation should be blocked when disabled
+    let output = SelectableList::<String>::update(&mut state, SelectableListMessage::Down);
+    assert_eq!(output, None);
+}
+
+#[test]
+fn test_filter_disabled_still_allows_filter_change() {
+    let mut state = SelectableListState::with_items(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+    ]);
+    state.set_disabled(true);
+
+    // SetFilter should work even when disabled
+    let output = SelectableList::<String>::update(
+        &mut state,
+        SelectableListMessage::SetFilter("ap".to_string()),
+    );
+    assert_eq!(output, Some(SelectableListOutput::FilterChanged("ap".to_string())));
+    assert_eq!(state.visible_count(), 1);
+}
