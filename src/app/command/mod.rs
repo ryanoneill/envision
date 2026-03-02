@@ -221,27 +221,9 @@ impl<M> Command<M> {
     /// Creates a command that saves application state to a JSON file.
     ///
     /// Serializes the state to JSON synchronously, then writes the file
-    /// asynchronously via tokio. If serialization fails, returns
-    /// [`Command::none`] (the error is silently dropped since serialization
-    /// failures are programming errors rather than runtime errors).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::app::Command;
-    /// use serde::Serialize;
-    ///
-    /// #[derive(Serialize)]
-    /// struct MyState { count: i32 }
-    ///
-    /// let state = MyState { count: 42 };
-    /// let cmd: Command<String> = Command::save_state(&state, "/tmp/state.json");
-    /// ```
-    /// Creates a command that saves application state to a JSON file.
-    ///
-    /// Serializes the state to JSON and writes it to the specified path
-    /// synchronously via a callback. If serialization fails, returns
-    /// [`Command::none`].
+    /// asynchronously via `tokio::fs::write`. If serialization fails,
+    /// returns [`Command::none`]. File write errors are reported to the
+    /// runtime's error channel (see [`Runtime::take_errors`](crate::Runtime::take_errors)).
     ///
     /// # Example
     ///
@@ -268,10 +250,10 @@ impl<M> Command<M> {
             Err(_) => return Command::none(),
         };
         let path = path.into();
-        Command::perform(move || {
-            let _ = std::fs::write(path, json);
-            None
-        })
+        Command::try_perform_async(
+            async move { tokio::fs::write(path, json).await },
+            |_| None,
+        )
     }
 
     /// Combines multiple commands into one.
