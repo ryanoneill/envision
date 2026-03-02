@@ -10,6 +10,7 @@ readme = "README.md"
 documentation = "https://docs.rs/envision"
 keywords = ["tui", "terminal", "ratatui", "testing", "headless"]
 categories = ["command-line-interface", "development-tools::testing"]
+exclude = [".claude/", "CLAUDE.md"]
 
 [features]
 default = ["serialization", "full"]
