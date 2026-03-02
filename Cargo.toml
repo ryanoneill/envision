@@ -68,6 +68,10 @@ name = "themed_app"
 required-features = ["input-components", "data-components", "display-components"]
 
 [[example]]
+name = "beautiful_dashboard"
+required-features = ["full"]
+
+[[example]]
 name = "component_showcase"
 required-features = ["full"]
 
