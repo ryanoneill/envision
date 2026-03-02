@@ -1,3 +1,4 @@
+#![cfg(feature = "full")]
 //! Integration tests exercising multi-component workflows through the public API.
 
 use envision::{
