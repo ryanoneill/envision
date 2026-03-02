@@ -128,6 +128,7 @@ mod data_grid;
 mod log_viewer;
 mod chat_view;
 mod metrics_dashboard;
+mod chart;
 
 // Data components
 #[cfg(feature = "data-components")]
@@ -232,6 +233,7 @@ pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
 pub use log_viewer::{LogViewer, LogViewerMessage, LogViewerOutput, LogViewerState};
 pub use chat_view::{ChatMessage, ChatRole, ChatView, ChatViewMessage, ChatViewOutput, ChatViewState};
 pub use metrics_dashboard::{MetricKind, MetricWidget, MetricsDashboard, MetricsDashboardMessage, MetricsDashboardOutput, MetricsDashboardState};
+pub use chart::{Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries};
 
 #[cfg(feature = "display-components")]
 pub use status_bar::{
