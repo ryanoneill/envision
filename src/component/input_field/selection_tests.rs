@@ -432,6 +432,10 @@ fn test_ctrl_x_event() {
     assert_eq!(msg, Some(InputFieldMessage::Cut));
 }
 
+/// When the clipboard feature is enabled, system clipboard content takes
+/// precedence over the internal clipboard, making this test environment-dependent.
+/// This test validates the internal clipboard fallback path (no clipboard feature).
+#[cfg(not(feature = "clipboard"))]
 #[test]
 fn test_ctrl_v_event_with_clipboard() {
     let mut state = focused_state("hello");
@@ -440,11 +444,27 @@ fn test_ctrl_v_event_with_clipboard() {
     assert_eq!(msg, Some(InputFieldMessage::Paste("world".into())));
 }
 
+/// When the clipboard feature is enabled, system clipboard may have content,
+/// so Ctrl+V may produce a Paste message even with empty internal clipboard.
+/// This test validates the no-content path (no clipboard feature).
+#[cfg(not(feature = "clipboard"))]
 #[test]
 fn test_ctrl_v_event_empty_clipboard() {
     let state = focused_state("hello");
     let msg = InputField::handle_event(&state, &Event::ctrl('v'));
     assert_eq!(msg, None);
+}
+
+/// With the clipboard feature enabled, Ctrl+V always produces a Paste message
+/// when either system or internal clipboard has content.
+#[cfg(feature = "clipboard")]
+#[test]
+fn test_ctrl_v_event_with_internal_clipboard() {
+    let mut state = focused_state("hello");
+    state.clipboard = "world".into();
+    let msg = InputField::handle_event(&state, &Event::ctrl('v'));
+    // System clipboard may override internal, but should still produce a Paste
+    assert!(matches!(msg, Some(InputFieldMessage::Paste(_))));
 }
 
 #[test]
