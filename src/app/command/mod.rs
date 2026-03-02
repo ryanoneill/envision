@@ -218,6 +218,62 @@ impl<M> Command<M> {
         }
     }
 
+    /// Creates a command that saves application state to a JSON file.
+    ///
+    /// Serializes the state to JSON synchronously, then writes the file
+    /// asynchronously via tokio. If serialization fails, returns
+    /// [`Command::none`] (the error is silently dropped since serialization
+    /// failures are programming errors rather than runtime errors).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    /// use serde::Serialize;
+    ///
+    /// #[derive(Serialize)]
+    /// struct MyState { count: i32 }
+    ///
+    /// let state = MyState { count: 42 };
+    /// let cmd: Command<String> = Command::save_state(&state, "/tmp/state.json");
+    /// ```
+    /// Creates a command that saves application state to a JSON file.
+    ///
+    /// Serializes the state to JSON and writes it to the specified path
+    /// synchronously via a callback. If serialization fails, returns
+    /// [`Command::none`].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    /// use serde::Serialize;
+    ///
+    /// #[derive(Serialize)]
+    /// struct MyState { count: i32 }
+    ///
+    /// let state = MyState { count: 42 };
+    /// let cmd: Command<String> = Command::save_state(&state, "/tmp/state.json");
+    /// ```
+    #[cfg(feature = "serialization")]
+    pub fn save_state<S: serde::Serialize>(
+        state: &S,
+        path: impl Into<std::path::PathBuf>,
+    ) -> Command<M>
+    where
+        M: Send + 'static,
+    {
+        let json = match serde_json::to_string(state) {
+            Ok(json) => json,
+            Err(_) => return Command::none(),
+        };
+        let path = path.into();
+        Command::perform(move || {
+            let _ = std::fs::write(path, json);
+            None
+        })
+    }
+
     /// Combines multiple commands into one.
     pub fn combine(commands: impl IntoIterator<Item = Command<M>>) -> Self {
         let mut actions = Vec::new();
