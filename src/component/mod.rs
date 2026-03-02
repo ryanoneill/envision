@@ -125,6 +125,7 @@ mod form;
 mod searchable_list;
 mod split_panel;
 mod data_grid;
+mod log_viewer;
 
 // Data components
 #[cfg(feature = "data-components")]
@@ -226,6 +227,7 @@ pub use split_panel::{
     SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput, SplitPanelState,
 };
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
+pub use log_viewer::{LogViewer, LogViewerMessage, LogViewerOutput, LogViewerState};
 
 #[cfg(feature = "display-components")]
 pub use status_bar::{
