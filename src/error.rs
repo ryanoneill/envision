@@ -28,15 +28,19 @@ pub type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
 /// Structured error type for the Envision framework.
 ///
 /// Represents the different categories of errors that can occur when
-/// using Envision. Each variant provides context about the failure mode.
+/// using Envision. Each variant provides structured context about the
+/// failure mode, enabling callers to match on specific fields.
 ///
 /// # Example
 ///
 /// ```rust
 /// use envision::error::EnvisionError;
 ///
-/// let err = EnvisionError::Config("invalid theme name".into());
-/// assert_eq!(err.to_string(), "configuration error: invalid theme name");
+/// let err = EnvisionError::config("theme", "invalid theme name");
+/// assert_eq!(
+///     err.to_string(),
+///     "configuration error: field `theme`: invalid theme name"
+/// );
 /// ```
 #[derive(Debug)]
 pub enum EnvisionError {
@@ -44,22 +48,112 @@ pub enum EnvisionError {
     Io(std::io::Error),
 
     /// A rendering error occurred.
-    Render(String),
+    Render {
+        /// The component that failed to render.
+        component: &'static str,
+        /// Details about the rendering failure.
+        detail: String,
+    },
 
     /// A configuration error occurred.
-    Config(String),
+    Config {
+        /// The configuration field that caused the error.
+        field: String,
+        /// The reason the configuration is invalid.
+        reason: String,
+    },
 
     /// A subscription error occurred.
-    Subscription(String),
+    Subscription {
+        /// The type of subscription that failed.
+        subscription_type: &'static str,
+        /// Details about the subscription failure.
+        detail: String,
+    },
+}
+
+impl EnvisionError {
+    /// Creates a rendering error.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::error::EnvisionError;
+    ///
+    /// let err = EnvisionError::render("ProgressBar", "width must be positive");
+    /// assert_eq!(
+    ///     err.to_string(),
+    ///     "render error: component `ProgressBar`: width must be positive"
+    /// );
+    /// ```
+    pub fn render(component: &'static str, detail: impl Into<String>) -> Self {
+        EnvisionError::Render {
+            component,
+            detail: detail.into(),
+        }
+    }
+
+    /// Creates a configuration error.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::error::EnvisionError;
+    ///
+    /// let err = EnvisionError::config("theme", "unknown theme name");
+    /// assert_eq!(
+    ///     err.to_string(),
+    ///     "configuration error: field `theme`: unknown theme name"
+    /// );
+    /// ```
+    pub fn config(field: impl Into<String>, reason: impl Into<String>) -> Self {
+        EnvisionError::Config {
+            field: field.into(),
+            reason: reason.into(),
+        }
+    }
+
+    /// Creates a subscription error.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::error::EnvisionError;
+    ///
+    /// let err = EnvisionError::subscription("tick", "interval too small");
+    /// assert_eq!(
+    ///     err.to_string(),
+    ///     "subscription error: type `tick`: interval too small"
+    /// );
+    /// ```
+    pub fn subscription(subscription_type: &'static str, detail: impl Into<String>) -> Self {
+        EnvisionError::Subscription {
+            subscription_type,
+            detail: detail.into(),
+        }
+    }
 }
 
 impl fmt::Display for EnvisionError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             EnvisionError::Io(err) => write!(f, "I/O error: {}", err),
-            EnvisionError::Render(msg) => write!(f, "render error: {}", msg),
-            EnvisionError::Config(msg) => write!(f, "configuration error: {}", msg),
-            EnvisionError::Subscription(msg) => write!(f, "subscription error: {}", msg),
+            EnvisionError::Render { component, detail } => {
+                write!(f, "render error: component `{}`: {}", component, detail)
+            }
+            EnvisionError::Config { field, reason } => {
+                write!(f, "configuration error: field `{}`: {}", field, reason)
+            }
+            EnvisionError::Subscription {
+                subscription_type,
+                detail,
+            } => {
+                write!(
+                    f,
+                    "subscription error: type `{}`: {}",
+                    subscription_type, detail
+                )
+            }
         }
     }
 }
@@ -68,9 +162,9 @@ impl std::error::Error for EnvisionError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             EnvisionError::Io(err) => Some(err),
-            EnvisionError::Render(_) | EnvisionError::Config(_) | EnvisionError::Subscription(_) => {
-                None
-            }
+            EnvisionError::Render { .. }
+            | EnvisionError::Config { .. }
+            | EnvisionError::Subscription { .. } => None,
         }
     }
 }
@@ -94,22 +188,28 @@ mod tests {
 
     #[test]
     fn render_error_display() {
-        let err = EnvisionError::Render("failed to draw widget".into());
-        assert_eq!(err.to_string(), "render error: failed to draw widget");
+        let err = EnvisionError::render("ProgressBar", "failed to draw widget");
+        assert_eq!(
+            err.to_string(),
+            "render error: component `ProgressBar`: failed to draw widget"
+        );
     }
 
     #[test]
     fn config_error_display() {
-        let err = EnvisionError::Config("invalid theme name".into());
-        assert_eq!(err.to_string(), "configuration error: invalid theme name");
+        let err = EnvisionError::config("theme", "invalid theme name");
+        assert_eq!(
+            err.to_string(),
+            "configuration error: field `theme`: invalid theme name"
+        );
     }
 
     #[test]
     fn subscription_error_display() {
-        let err = EnvisionError::Subscription("tick interval too small".into());
+        let err = EnvisionError::subscription("tick", "interval too small");
         assert_eq!(
             err.to_string(),
-            "subscription error: tick interval too small"
+            "subscription error: type `tick`: interval too small"
         );
     }
 
@@ -129,25 +229,25 @@ mod tests {
 
     #[test]
     fn render_error_no_source() {
-        let err = EnvisionError::Render("bad render".into());
+        let err = EnvisionError::render("Widget", "bad render");
         assert!(std::error::Error::source(&err).is_none());
     }
 
     #[test]
     fn config_error_no_source() {
-        let err = EnvisionError::Config("bad config".into());
+        let err = EnvisionError::config("key", "bad config");
         assert!(std::error::Error::source(&err).is_none());
     }
 
     #[test]
     fn subscription_error_no_source() {
-        let err = EnvisionError::Subscription("bad sub".into());
+        let err = EnvisionError::subscription("tick", "bad sub");
         assert!(std::error::Error::source(&err).is_none());
     }
 
     #[test]
     fn debug_format() {
-        let err = EnvisionError::Config("test".into());
+        let err = EnvisionError::config("key", "test");
         let debug = format!("{:?}", err);
         assert!(debug.contains("Config"));
         assert!(debug.contains("test"));
@@ -159,5 +259,44 @@ mod tests {
             Err("test error".into())
         }
         assert!(returns_boxed().is_err());
+    }
+
+    #[test]
+    fn render_error_fields_accessible() {
+        let err = EnvisionError::render("Table", "column overflow");
+        match err {
+            EnvisionError::Render { component, detail } => {
+                assert_eq!(component, "Table");
+                assert_eq!(detail, "column overflow");
+            }
+            _ => panic!("expected Render variant"),
+        }
+    }
+
+    #[test]
+    fn config_error_fields_accessible() {
+        let err = EnvisionError::config("tick_rate", "must be positive");
+        match err {
+            EnvisionError::Config { field, reason } => {
+                assert_eq!(field, "tick_rate");
+                assert_eq!(reason, "must be positive");
+            }
+            _ => panic!("expected Config variant"),
+        }
+    }
+
+    #[test]
+    fn subscription_error_fields_accessible() {
+        let err = EnvisionError::subscription("interval", "already running");
+        match err {
+            EnvisionError::Subscription {
+                subscription_type,
+                detail,
+            } => {
+                assert_eq!(subscription_type, "interval");
+                assert_eq!(detail, "already running");
+            }
+            _ => panic!("expected Subscription variant"),
+        }
     }
 }
