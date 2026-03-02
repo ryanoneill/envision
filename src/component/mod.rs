@@ -121,13 +121,21 @@ mod select;
 mod text_area;
 
 // Compound components
+#[cfg(feature = "compound-components")]
 mod form;
+#[cfg(feature = "compound-components")]
 mod searchable_list;
+#[cfg(feature = "compound-components")]
 mod split_panel;
+#[cfg(feature = "compound-components")]
 mod data_grid;
+#[cfg(feature = "compound-components")]
 mod log_viewer;
+#[cfg(feature = "compound-components")]
 mod chat_view;
+#[cfg(feature = "compound-components")]
 mod metrics_dashboard;
+#[cfg(feature = "compound-components")]
 mod chart;
 
 // Data components
@@ -222,17 +230,25 @@ pub use progress_bar::{ProgressBar, ProgressBarMessage, ProgressBarOutput, Progr
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 
 // Compound components
+#[cfg(feature = "compound-components")]
 pub use form::{Form, FormField, FormFieldKind, FormMessage, FormOutput, FormState, FormValue};
+#[cfg(feature = "compound-components")]
 pub use searchable_list::{
     SearchableList, SearchableListMessage, SearchableListOutput, SearchableListState,
 };
+#[cfg(feature = "compound-components")]
 pub use split_panel::{
     SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput, SplitPanelState,
 };
+#[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
+#[cfg(feature = "compound-components")]
 pub use log_viewer::{LogViewer, LogViewerMessage, LogViewerOutput, LogViewerState};
+#[cfg(feature = "compound-components")]
 pub use chat_view::{ChatMessage, ChatRole, ChatView, ChatViewMessage, ChatViewOutput, ChatViewState};
+#[cfg(feature = "compound-components")]
 pub use metrics_dashboard::{MetricKind, MetricWidget, MetricsDashboard, MetricsDashboardMessage, MetricsDashboardOutput, MetricsDashboardState};
+#[cfg(feature = "compound-components")]
 pub use chart::{Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries};
 
 #[cfg(feature = "display-components")]
