@@ -333,6 +333,25 @@ pub trait Component: Sized {
     /// [`Theme::nord()`] for the Nord color palette.
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme);
 
+    /// Renders the component with optional tracing instrumentation.
+    ///
+    /// When the `tracing` feature is enabled, this emits a trace-level span
+    /// around the [`view`](Component::view) call with the component type name
+    /// and render area dimensions. When the feature is disabled, this is
+    /// identical to calling `view` directly.
+    fn traced_view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        #[cfg(feature = "tracing")]
+        tracing::trace!(
+            component = std::any::type_name::<Self>(),
+            area.x = area.x,
+            area.y = area.y,
+            area.width = area.width,
+            area.height = area.height,
+            "view: rendering component"
+        );
+        Self::view(state, frame, area, theme);
+    }
+
     /// Maps an input event to a component message.
     ///
     /// This is the read-only half of event handling. It inspects the
@@ -356,7 +375,19 @@ pub trait Component: Sized {
     /// This is the primary method users should call for event routing.
     fn dispatch_event(state: &mut Self::State, event: &Event) -> Option<Self::Output> {
         if let Some(msg) = Self::handle_event(state, event) {
-            Self::update(state, msg)
+            #[cfg(feature = "tracing")]
+            tracing::debug!(
+                component = std::any::type_name::<Self>(),
+                "dispatch_event: updating state"
+            );
+            let output = Self::update(state, msg);
+            #[cfg(feature = "tracing")]
+            tracing::trace!(
+                component = std::any::type_name::<Self>(),
+                has_output = output.is_some(),
+                "dispatch_event: update complete"
+            );
+            output
         } else {
             None
         }
