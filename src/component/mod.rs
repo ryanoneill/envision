@@ -357,14 +357,15 @@ pub trait Component: Sized {
     /// identical to calling `view` directly.
     fn traced_view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
         #[cfg(feature = "tracing")]
-        tracing::trace!(
+        let _span = tracing::trace_span!(
+            "component_view",
             component = std::any::type_name::<Self>(),
             area.x = area.x,
             area.y = area.y,
             area.width = area.width,
             area.height = area.height,
-            "view: rendering component"
-        );
+        )
+        .entered();
         Self::view(state, frame, area, theme);
     }
 
@@ -392,17 +393,14 @@ pub trait Component: Sized {
     fn dispatch_event(state: &mut Self::State, event: &Event) -> Option<Self::Output> {
         if let Some(msg) = Self::handle_event(state, event) {
             #[cfg(feature = "tracing")]
-            tracing::debug!(
+            let _span = tracing::debug_span!(
+                "component_dispatch",
                 component = std::any::type_name::<Self>(),
-                "dispatch_event: updating state"
-            );
+            )
+            .entered();
             let output = Self::update(state, msg);
             #[cfg(feature = "tracing")]
-            tracing::trace!(
-                component = std::any::type_name::<Self>(),
-                has_output = output.is_some(),
-                "dispatch_event: update complete"
-            );
+            tracing::trace!(has_output = output.is_some(), "update complete");
             output
         } else {
             None

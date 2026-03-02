@@ -641,7 +641,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// Dispatches a message to update the state.
     pub fn dispatch(&mut self, msg: A::Message) {
         #[cfg(feature = "tracing")]
-        tracing::debug!("dispatch: updating state");
+        let _span = tracing::debug_span!("dispatch").entered();
 
         let cmd = A::update(&mut self.core.state, msg);
         self.commands.execute(cmd);
@@ -687,10 +687,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
     /// Processes messages received from async tasks.
     fn process_async_messages(&mut self) {
-        while let Ok(msg) = self.message_rx.try_recv() {
-            #[cfg(feature = "tracing")]
-            tracing::debug!("processing async message");
+        #[cfg(feature = "tracing")]
+        let _span = tracing::debug_span!("process_async_messages").entered();
 
+        while let Ok(msg) = self.message_rx.try_recv() {
             self.dispatch(msg);
         }
     }
@@ -737,7 +737,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// - [`run_ticks`](Runtime::run_ticks) — Convenience: run N full tick cycles
     pub fn tick(&mut self) -> io::Result<()> {
         #[cfg(feature = "tracing")]
-        tracing::trace!("tick: start");
+        let _span = tracing::debug_span!("tick").entered();
 
         // Process pending commands
         self.process_commands();
