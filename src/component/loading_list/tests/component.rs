@@ -103,10 +103,10 @@ fn test_update_down() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
 
     LoadingList::update(&mut state, LoadingListMessage::Down);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 
     LoadingList::update(&mut state, LoadingListMessage::Down);
-    assert_eq!(state.selected(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
 }
 
 #[test]
@@ -116,7 +116,7 @@ fn test_update_down_wrap() {
     state.set_selected(Some(2)); // Last item
 
     LoadingList::update(&mut state, LoadingListMessage::Down);
-    assert_eq!(state.selected(), Some(0)); // Wraps
+    assert_eq!(state.selected_index(), Some(0)); // Wraps
 }
 
 #[test]
@@ -126,7 +126,7 @@ fn test_update_up() {
     state.set_selected(Some(2));
 
     LoadingList::update(&mut state, LoadingListMessage::Up);
-    assert_eq!(state.selected(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
 }
 
 #[test]
@@ -136,7 +136,7 @@ fn test_update_up_wrap() {
     state.set_selected(Some(0));
 
     LoadingList::update(&mut state, LoadingListMessage::Up);
-    assert_eq!(state.selected(), Some(2)); // Wraps
+    assert_eq!(state.selected_index(), Some(2)); // Wraps
 }
 
 #[test]
@@ -146,7 +146,7 @@ fn test_update_first() {
     state.set_selected(Some(2));
 
     LoadingList::update(&mut state, LoadingListMessage::First);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -155,7 +155,7 @@ fn test_update_last() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
 
     LoadingList::update(&mut state, LoadingListMessage::Last);
-    assert_eq!(state.selected(), Some(2));
+    assert_eq!(state.selected_index(), Some(2));
 }
 
 #[test]
@@ -323,7 +323,7 @@ fn test_update_set_items() {
     LoadingList::update(&mut state, LoadingListMessage::SetItems(items));
 
     assert_eq!(state.len(), 3);
-    assert!(state.selected().is_none()); // Selection cleared
+    assert!(state.selected_index().is_none()); // Selection cleared
     assert_eq!(state.items()[0].label(), "Item 1"); // Uses default labeling
 }
 
@@ -362,7 +362,7 @@ fn test_up_no_selection() {
     // No selection set
 
     let output = LoadingList::update(&mut state, LoadingListMessage::Up);
-    assert_eq!(state.selected(), Some(2)); // Goes to last item
+    assert_eq!(state.selected_index(), Some(2)); // Goes to last item
     assert!(matches!(
         output,
         Some(LoadingListOutput::SelectionChanged(2))
@@ -376,7 +376,7 @@ fn test_down_no_selection() {
     // No selection set
 
     let output = LoadingList::update(&mut state, LoadingListMessage::Down);
-    assert_eq!(state.selected(), Some(0)); // Goes to first item
+    assert_eq!(state.selected_index(), Some(0)); // Goes to first item
     assert!(matches!(
         output,
         Some(LoadingListOutput::SelectionChanged(0))
@@ -537,15 +537,15 @@ fn test_mixed_item_states_with_navigation() {
 
     // Navigate through all items regardless of state
     LoadingList::update(&mut state, LoadingListMessage::Down);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
     assert!(state.selected_item().unwrap().is_loading());
 
     LoadingList::update(&mut state, LoadingListMessage::Down);
-    assert_eq!(state.selected(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
     assert!(state.selected_item().unwrap().is_error());
 
     LoadingList::update(&mut state, LoadingListMessage::Down);
-    assert_eq!(state.selected(), Some(2));
+    assert_eq!(state.selected_index(), Some(2));
     assert!(state.selected_item().unwrap().is_ready());
 
     // Select works on items in any state
@@ -568,24 +568,24 @@ fn test_large_loading_list_navigation() {
 
     // Navigate through them (wrapping navigation, starts with no selection)
     LoadingList::update(&mut state, LoadingListMessage::Down);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 
     for _ in 0..50 {
         LoadingList::update(&mut state, LoadingListMessage::Down);
     }
-    assert_eq!(state.selected(), Some(50));
+    assert_eq!(state.selected_index(), Some(50));
 
     LoadingList::update(&mut state, LoadingListMessage::First);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 
     LoadingList::update(&mut state, LoadingListMessage::Last);
-    assert_eq!(state.selected(), Some(99));
+    assert_eq!(state.selected_index(), Some(99));
 
     // Down from last wraps to first
     LoadingList::update(&mut state, LoadingListMessage::Down);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 
     // Up from first wraps to last
     LoadingList::update(&mut state, LoadingListMessage::Up);
-    assert_eq!(state.selected(), Some(99));
+    assert_eq!(state.selected_index(), Some(99));
 }

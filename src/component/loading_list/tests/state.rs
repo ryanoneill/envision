@@ -8,7 +8,7 @@ use super::*;
 fn test_state_new() {
     let state: LoadingListState<String> = LoadingListState::new();
     assert!(state.is_empty());
-    assert!(state.selected().is_none());
+    assert!(state.selected_index().is_none());
     assert!(state.show_indicators());
 }
 
@@ -83,14 +83,36 @@ fn test_state_counts() {
 }
 
 #[test]
-fn test_state_selected() {
+fn test_state_selected_index() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
 
     state.set_selected(Some(1));
-    assert_eq!(state.selected(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected_item().unwrap().label(), "Item Two");
     assert_eq!(state.selected_data().unwrap().id, 2);
+}
+
+#[test]
+fn test_selected_returns_item() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    // No selection returns None
+    assert!(state.selected().is_none());
+
+    // With selection returns the item
+    state.set_selected(Some(0));
+    let item = state.selected().unwrap();
+    assert_eq!(item.label(), "Item One");
+    assert_eq!(item.data().id, 1);
+
+    // selected() and selected_item() return the same thing
+    state.set_selected(Some(2));
+    assert_eq!(
+        state.selected().unwrap().label(),
+        state.selected_item().unwrap().label()
+    );
 }
 
 #[test]
@@ -99,7 +121,7 @@ fn test_state_selected_clamped() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
 
     state.set_selected(Some(100)); // Too high
-    assert_eq!(state.selected(), Some(2)); // Clamped to last
+    assert_eq!(state.selected_index(), Some(2)); // Clamped to last
 }
 
 #[test]
@@ -119,7 +141,7 @@ fn test_state_clear() {
 
     state.clear();
     assert!(state.is_empty());
-    assert!(state.selected().is_none());
+    assert!(state.selected_index().is_none());
 }
 
 #[test]
