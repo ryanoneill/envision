@@ -487,101 +487,6 @@ fn test_disabled() {
     );
 }
 
-// View Tests
-
-#[test]
-fn test_view_renders() {
-    let state = TableState::new(test_rows(), test_columns());
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
-
-    terminal
-        .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_view_with_header() {
-    let state = TableState::new(test_rows(), test_columns());
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
-
-    terminal
-        .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_view_with_sort_indicator() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
-
-    terminal
-        .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_view_focused() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    state.focused = true;
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
-
-    terminal
-        .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_view_disabled() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    state.disabled = true;
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
-
-    terminal
-        .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_view_empty() {
-    let state: TableState<TestRow> = TableState::new(vec![], test_columns());
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
-
-    terminal
-        .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
 // Integration Tests
 
 #[test]
@@ -701,24 +606,6 @@ fn test_set_selected_out_of_bounds() {
 }
 
 #[test]
-fn test_view_descending_sort_indicator() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    // Sort ascending first, then descending
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
-
-    terminal
-        .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
 fn test_clear_sort_preserves_selection() {
     let mut state = TableState::with_selected(test_rows(), test_columns(), 1);
     // Initially selected: Alice (index 1 in original order)
@@ -733,22 +620,6 @@ fn test_clear_sort_preserves_selection() {
     // Selection should still point to Alice (back at index 1)
     let selected = state.selected_row().unwrap();
     assert_eq!(selected.name, "Alice");
-}
-
-#[test]
-fn test_view_unfocused() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    state.focused = false;
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
-
-    terminal
-        .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
 }
 
 #[test]
@@ -990,4 +861,55 @@ fn test_selected_item() {
     let state = TableState::with_selected(test_rows(), test_columns(), 1);
     assert_eq!(state.selected_item().unwrap().name, "Alice");
     assert_eq!(state.selected_item(), state.selected_row());
+}
+
+// Column convenience constructor tests
+
+#[test]
+fn test_column_fixed() {
+    let col = Column::fixed("Name", 20);
+    assert_eq!(col.header(), "Name");
+    assert_eq!(col.width(), Constraint::Length(20));
+    assert!(!col.is_sortable());
+    assert_eq!(col, Column::new("Name", Constraint::Length(20)));
+}
+
+#[test]
+fn test_column_fixed_sortable() {
+    let col = Column::fixed("Name", 15).sortable();
+    assert_eq!(col.width(), Constraint::Length(15));
+    assert!(col.is_sortable());
+}
+
+#[test]
+fn test_column_min() {
+    let col = Column::min("Description", 10);
+    assert_eq!(col.header(), "Description");
+    assert_eq!(col.width(), Constraint::Min(10));
+    assert!(!col.is_sortable());
+    assert_eq!(col, Column::new("Description", Constraint::Min(10)));
+}
+
+#[test]
+fn test_column_percent() {
+    let col = Column::percent("Status", 25);
+    assert_eq!(col.header(), "Status");
+    assert_eq!(col.width(), Constraint::Percentage(25));
+    assert!(!col.is_sortable());
+    assert_eq!(col, Column::new("Status", Constraint::Percentage(25)));
+}
+
+#[test]
+fn test_column_constructors_in_table() {
+    let columns = vec![
+        Column::fixed("ID", 5),
+        Column::min("Name", 10).sortable(),
+        Column::percent("Progress", 30),
+    ];
+    let state = TableState::new(test_rows(), columns);
+    assert_eq!(state.columns().len(), 3);
+    assert_eq!(state.columns()[0].width(), Constraint::Length(5));
+    assert_eq!(state.columns()[1].width(), Constraint::Min(10));
+    assert!(state.columns()[1].is_sortable());
+    assert_eq!(state.columns()[2].width(), Constraint::Percentage(30));
 }

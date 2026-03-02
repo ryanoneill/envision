@@ -148,6 +148,52 @@ impl Column {
         self.width
     }
 
+    /// Creates a column with a fixed width.
+    ///
+    /// This is a shorthand for `Column::new(header, Constraint::Length(width))`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    ///
+    /// let col = Column::fixed("Name", 20);
+    /// assert_eq!(col.header(), "Name");
+    /// ```
+    pub fn fixed(header: impl Into<String>, width: u16) -> Self {
+        Self::new(header, Constraint::Length(width))
+    }
+
+    /// Creates a column with a minimum width.
+    ///
+    /// This is a shorthand for `Column::new(header, Constraint::Min(width))`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    ///
+    /// let col = Column::min("Description", 10);
+    /// ```
+    pub fn min(header: impl Into<String>, width: u16) -> Self {
+        Self::new(header, Constraint::Min(width))
+    }
+
+    /// Creates a column that takes a percentage of available width.
+    ///
+    /// This is a shorthand for `Column::new(header, Constraint::Percentage(percent))`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    ///
+    /// let col = Column::percent("Status", 25);
+    /// ```
+    pub fn percent(header: impl Into<String>, percent: u16) -> Self {
+        Self::new(header, Constraint::Percentage(percent))
+    }
+
     /// Returns whether this column is sortable.
     pub fn is_sortable(&self) -> bool {
         self.sortable
@@ -787,3 +833,5 @@ impl<T: TableRow + 'static> Focusable for Table<T> {
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod view_tests;
