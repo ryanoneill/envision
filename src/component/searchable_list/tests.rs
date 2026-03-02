@@ -866,3 +866,127 @@ fn test_partial_eq_different_filter() {
     );
     assert_ne!(state1, state2);
 }
+
+// =============================================================================
+// Custom matcher
+// =============================================================================
+
+#[test]
+fn test_default_substring_matching_still_works() {
+    let mut state = SearchableListState::new(sample_items());
+    SearchableList::set_focused(&mut state, true);
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("an".into()),
+    );
+    assert_eq!(state.filtered_count(), 1);
+    assert_eq!(state.filtered_items(), vec![&"Banana".to_string()]);
+}
+
+#[test]
+fn test_custom_matcher_filters_correctly() {
+    let mut state = SearchableListState::new(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Apricot".to_string(),
+        "Avocado".to_string(),
+    ])
+    .with_matcher(|query, item| {
+        let item_lower = item.to_lowercase();
+        let query_lower = query.to_lowercase();
+        if item_lower.starts_with(&query_lower) {
+            Some(0)
+        } else {
+            None
+        }
+    });
+    SearchableList::set_focused(&mut state, true);
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("ap".into()),
+    );
+    assert_eq!(state.filtered_count(), 2);
+    let filtered: Vec<&String> = state.filtered_items();
+    assert!(filtered.contains(&&"Apple".to_string()));
+    assert!(filtered.contains(&&"Apricot".to_string()));
+}
+
+#[test]
+fn test_scored_matcher_sorts_by_score_descending() {
+    let mut state = SearchableListState::new(vec![
+        "Banana".to_string(),
+        "Apple".to_string(),
+        "Cantaloupe".to_string(),
+        "Date".to_string(),
+    ])
+    .with_matcher(|query, item| {
+        let item_lower = item.to_lowercase();
+        let query_lower = query.to_lowercase();
+        item_lower.find(&query_lower).map(|pos| -(pos as i64))
+    });
+    SearchableList::set_focused(&mut state, true);
+    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("a".into()));
+    assert_eq!(state.filtered_count(), 4);
+    // Apple should be first (score 0), others have score -1
+    let filtered = state.filtered_items();
+    assert_eq!(*filtered[0], "Apple");
+}
+
+#[test]
+fn test_none_scores_filter_items_out() {
+    let mut state = SearchableListState::new(vec![
+        "Strawberry".to_string(),
+        "Apple".to_string(),
+        "Blueberry".to_string(),
+        "Banana".to_string(),
+    ])
+    .with_matcher(|_query, item| {
+        if item.to_lowercase().contains("berry") {
+            Some(0)
+        } else {
+            None
+        }
+    });
+    SearchableList::set_focused(&mut state, true);
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("anything".into()),
+    );
+    assert_eq!(state.filtered_count(), 2);
+    let filtered = state.filtered_items();
+    assert!(filtered.contains(&&"Strawberry".to_string()));
+    assert!(filtered.contains(&&"Blueberry".to_string()));
+    assert!(!filtered.contains(&&"Apple".to_string()));
+    assert!(!filtered.contains(&&"Banana".to_string()));
+}
+
+#[test]
+fn test_custom_matcher_empty_filter_shows_all() {
+    let mut state = SearchableListState::new(vec!["Apple".to_string(), "Banana".to_string()])
+        .with_matcher(|_query, _item| None);
+    SearchableList::set_focused(&mut state, true);
+    assert_eq!(state.filtered_count(), 2);
+    assert_eq!(state.filter_text(), "");
+}
+
+#[test]
+fn test_custom_matcher_receives_original_query() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+
+    let received_uppercase = Arc::new(AtomicBool::new(false));
+    let received_uppercase_clone = received_uppercase.clone();
+    let mut state =
+        SearchableListState::new(vec!["Test".to_string()]).with_matcher(move |query, _item| {
+            if query.chars().any(|c| c.is_uppercase()) {
+                received_uppercase_clone.store(true, Ordering::Relaxed);
+            }
+            Some(0)
+        });
+    SearchableList::set_focused(&mut state, true);
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("ABC".into()),
+    );
+    assert!(received_uppercase.load(Ordering::Relaxed));
+}

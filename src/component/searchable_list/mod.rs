@@ -40,6 +40,10 @@ use super::{Component, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
+/// A matcher function that takes `(query, item_text)` and returns
+/// `None` for no match or `Some(score)` for a ranked match (higher = better).
+type MatcherFn = dyn Fn(&str, &str) -> Option<i64>;
+
 /// Messages that can be sent to a SearchableList.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SearchableListMessage {
@@ -97,7 +101,6 @@ enum Focus {
 ///
 /// Contains the full list of items, the current filter text, and the
 /// filtered subset that is displayed. The filter is case-insensitive.
-#[derive(Clone, Debug)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
@@ -122,6 +125,45 @@ pub struct SearchableListState<T: Clone> {
     disabled: bool,
     /// Placeholder text for the filter input.
     placeholder: String,
+    /// Custom matcher function: (query, item_text) -> Option<score>.
+    /// None means no match, Some(score) for ranked match (higher = better).
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    matcher: Option<Box<MatcherFn>>,
+}
+
+impl<T: Clone> Clone for SearchableListState<T> {
+    fn clone(&self) -> Self {
+        Self {
+            items: self.items.clone(),
+            filtered_indices: self.filtered_indices.clone(),
+            filter_text: self.filter_text.clone(),
+            selected: self.selected,
+            list_state: self.list_state.clone(),
+            internal_focus: self.internal_focus.clone(),
+            focused: self.focused,
+            disabled: self.disabled,
+            placeholder: self.placeholder.clone(),
+            // The matcher closure cannot be cloned; clones start with no custom matcher.
+            matcher: None,
+        }
+    }
+}
+
+impl<T: Clone + std::fmt::Debug> std::fmt::Debug for SearchableListState<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SearchableListState")
+            .field("items", &self.items)
+            .field("filtered_indices", &self.filtered_indices)
+            .field("filter_text", &self.filter_text)
+            .field("selected", &self.selected)
+            .field("list_state", &self.list_state)
+            .field("internal_focus", &self.internal_focus)
+            .field("focused", &self.focused)
+            .field("disabled", &self.disabled)
+            .field("placeholder", &self.placeholder)
+            .field("matcher", &self.matcher.as_ref().map(|_| "..."))
+            .finish()
+    }
 }
 
 impl<T: Clone + PartialEq> PartialEq for SearchableListState<T> {
@@ -150,6 +192,7 @@ impl<T: Clone> Default for SearchableListState<T> {
             focused: false,
             disabled: false,
             placeholder: "Type to filter...".to_string(),
+            matcher: None,
         }
     }
 }
@@ -185,6 +228,7 @@ impl<T: Clone> SearchableListState<T> {
             focused: false,
             disabled: false,
             placeholder: "Type to filter...".to_string(),
+            matcher: None,
         }
     }
 
@@ -259,6 +303,41 @@ impl<T: Clone> SearchableListState<T> {
         self
     }
 
+    /// Sets a custom matcher function (builder pattern).
+    ///
+    /// The matcher takes `(query, item_text)` and returns `None` for no match
+    /// or `Some(score)` for a ranked match. Higher scores appear first in the
+    /// filtered results.
+    ///
+    /// When no custom matcher is set, the default case-insensitive substring
+    /// match is used (all matches are treated equally and maintain original order).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// // Prefix-only matcher that scores by match length
+    /// let state = SearchableListState::new(vec![
+    ///     "Apple".to_string(),
+    ///     "Banana".to_string(),
+    ///     "Apricot".to_string(),
+    /// ]).with_matcher(|query, item| {
+    ///     let item_lower = item.to_lowercase();
+    ///     let query_lower = query.to_lowercase();
+    ///     if item_lower.starts_with(&query_lower) {
+    ///         // Shorter items rank higher (more specific match)
+    ///         Some(1000 - item.len() as i64)
+    ///     } else {
+    ///         None
+    ///     }
+    /// });
+    /// ```
+    pub fn with_matcher(mut self, matcher: impl Fn(&str, &str) -> Option<i64> + 'static) -> Self {
+        self.matcher = Some(Box::new(matcher));
+        self
+    }
+
     /// Returns true if the component is empty (no items at all).
     pub fn is_empty(&self) -> bool {
         self.items.is_empty()
@@ -326,10 +405,25 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
     /// Recomputes the filtered indices based on the current filter text.
     fn refilter(&mut self) {
         let filter_lower = self.filter_text.to_lowercase();
-        self.filtered_indices = if filter_lower.is_empty() {
-            (0..self.items.len()).collect()
+        if filter_lower.is_empty() {
+            self.filtered_indices = (0..self.items.len()).collect();
+        } else if let Some(ref matcher) = self.matcher {
+            // Custom matcher: collect (index, score) pairs, sort by score descending
+            let mut scored: Vec<(usize, i64)> = self
+                .items
+                .iter()
+                .enumerate()
+                .filter_map(|(i, item)| {
+                    let text = format!("{}", item);
+                    matcher(&self.filter_text, &text).map(|score| (i, score))
+                })
+                .collect();
+            scored.sort_by(|a, b| b.1.cmp(&a.1));
+            self.filtered_indices = scored.into_iter().map(|(i, _)| i).collect();
         } else {
-            self.items
+            // Default: case-insensitive substring match
+            self.filtered_indices = self
+                .items
                 .iter()
                 .enumerate()
                 .filter(|(_, item)| {
@@ -337,7 +431,7 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
                     text.contains(&filter_lower)
                 })
                 .map(|(i, _)| i)
-                .collect()
+                .collect();
         };
 
         // Reset selection to first filtered item
