@@ -1,8 +1,9 @@
 //! Theming support for Envision components.
 //!
 //! The theme module provides customizable color schemes for all UI components.
-//! Two themes are included by default: a `Default` theme matching ratatui's
-//! standard colors, and a `Nord` theme based on the popular Nord color palette.
+//! Five themes are included by default: a `Default` theme matching ratatui's
+//! standard colors, and four popular dark themes (Nord, Dracula, Solarized Dark,
+//! Gruvbox Dark).
 //!
 //! # Example
 //!
@@ -14,6 +15,9 @@
 //!
 //! // Use Nord theme (blue focused, muted disabled)
 //! let nord_theme = Theme::nord();
+//!
+//! // Use Dracula theme (purple focused, dark disabled)
+//! let dracula_theme = Theme::dracula();
 //!
 //! // Components use theme in their view() method:
 //! // Component::view(&state, frame, area, &nord_theme);
@@ -75,6 +79,89 @@ pub const NORD13: Color = Color::Rgb(235, 203, 139);
 pub const NORD14: Color = Color::Rgb(163, 190, 140);
 /// Nord Aurora - purple
 pub const NORD15: Color = Color::Rgb(180, 142, 173);
+
+// =============================================================================
+// Dracula Color Palette Constants
+// =============================================================================
+
+/// Dracula - background (#282A36)
+pub const DRACULA_BG: Color = Color::Rgb(40, 42, 54);
+/// Dracula - current line (#44475A)
+pub const DRACULA_CURRENT: Color = Color::Rgb(68, 71, 90);
+/// Dracula - foreground (#F8F8F2)
+pub const DRACULA_FG: Color = Color::Rgb(248, 248, 242);
+/// Dracula - comment (#6272A4)
+pub const DRACULA_COMMENT: Color = Color::Rgb(98, 114, 164);
+/// Dracula - cyan (#8BE9FD)
+pub const DRACULA_CYAN: Color = Color::Rgb(139, 233, 253);
+/// Dracula - green (#50FA7B)
+pub const DRACULA_GREEN: Color = Color::Rgb(80, 250, 123);
+/// Dracula - orange (#FFB86C)
+pub const DRACULA_ORANGE: Color = Color::Rgb(255, 184, 108);
+/// Dracula - pink (#FF79C6)
+pub const DRACULA_PINK: Color = Color::Rgb(255, 121, 198);
+/// Dracula - purple (#BD93F9)
+pub const DRACULA_PURPLE: Color = Color::Rgb(189, 147, 249);
+/// Dracula - red (#FF5555)
+pub const DRACULA_RED: Color = Color::Rgb(255, 85, 85);
+/// Dracula - yellow (#F1FA8C)
+pub const DRACULA_YELLOW: Color = Color::Rgb(241, 250, 140);
+
+// =============================================================================
+// Solarized Dark Color Palette Constants
+// =============================================================================
+
+/// Solarized Dark - base03 (darkest background, #002B36)
+pub const SOLARIZED_BASE03: Color = Color::Rgb(0, 43, 54);
+/// Solarized Dark - base02 (background highlights, #073642)
+pub const SOLARIZED_BASE02: Color = Color::Rgb(7, 54, 66);
+/// Solarized Dark - base01 (comments, #586E75)
+pub const SOLARIZED_BASE01: Color = Color::Rgb(88, 110, 117);
+/// Solarized Dark - base0 (primary text, #839496)
+pub const SOLARIZED_BASE0: Color = Color::Rgb(131, 148, 150);
+/// Solarized Dark - base1 (emphasized text, #93A1A1)
+pub const SOLARIZED_BASE1: Color = Color::Rgb(147, 161, 161);
+/// Solarized Dark - blue (#268BD2)
+pub const SOLARIZED_BLUE: Color = Color::Rgb(38, 139, 210);
+/// Solarized Dark - cyan (#2AA198)
+pub const SOLARIZED_CYAN: Color = Color::Rgb(42, 161, 152);
+/// Solarized Dark - green (#859900)
+pub const SOLARIZED_GREEN: Color = Color::Rgb(133, 153, 0);
+/// Solarized Dark - yellow (#B58900)
+pub const SOLARIZED_YELLOW: Color = Color::Rgb(181, 137, 0);
+/// Solarized Dark - orange (#CB4B16)
+pub const SOLARIZED_ORANGE: Color = Color::Rgb(203, 75, 22);
+/// Solarized Dark - red (#DC322F)
+pub const SOLARIZED_RED: Color = Color::Rgb(220, 50, 47);
+/// Solarized Dark - magenta (#D33682)
+pub const SOLARIZED_MAGENTA: Color = Color::Rgb(211, 54, 130);
+
+// =============================================================================
+// Gruvbox Dark Color Palette Constants
+// =============================================================================
+
+/// Gruvbox Dark - bg (dark background, #282828)
+pub const GRUVBOX_BG: Color = Color::Rgb(40, 40, 40);
+/// Gruvbox Dark - bg1 (lighter background, #3C3836)
+pub const GRUVBOX_BG1: Color = Color::Rgb(60, 56, 54);
+/// Gruvbox Dark - fg (light foreground, #EBDBB2)
+pub const GRUVBOX_FG: Color = Color::Rgb(235, 219, 178);
+/// Gruvbox Dark - gray (#928374)
+pub const GRUVBOX_GRAY: Color = Color::Rgb(146, 131, 116);
+/// Gruvbox Dark - red (#FB4934)
+pub const GRUVBOX_RED: Color = Color::Rgb(251, 73, 52);
+/// Gruvbox Dark - green (#B8BB26)
+pub const GRUVBOX_GREEN: Color = Color::Rgb(184, 187, 38);
+/// Gruvbox Dark - yellow (#FABD2F)
+pub const GRUVBOX_YELLOW: Color = Color::Rgb(250, 189, 47);
+/// Gruvbox Dark - blue (#83A598)
+pub const GRUVBOX_BLUE: Color = Color::Rgb(131, 165, 152);
+/// Gruvbox Dark - purple (#D3869B)
+pub const GRUVBOX_PURPLE: Color = Color::Rgb(211, 134, 155);
+/// Gruvbox Dark - aqua (#8EC07C)
+pub const GRUVBOX_AQUA: Color = Color::Rgb(142, 192, 124);
+/// Gruvbox Dark - orange (#FE8019)
+pub const GRUVBOX_ORANGE: Color = Color::Rgb(254, 128, 25);
 
 // =============================================================================
 // Theme Struct
@@ -213,6 +300,138 @@ impl Theme {
 
             progress_filled: NORD8,
             progress_empty: NORD1,
+        }
+    }
+
+    /// Creates a new Dracula-themed color scheme.
+    ///
+    /// The Dracula theme uses the popular Dracula color palette with its
+    /// characteristic purples, pinks, and vibrant accent colors.
+    ///
+    /// # Colors
+    ///
+    /// - Focused: Purple (#BD93F9)
+    /// - Selected: Pink (#FF79C6)
+    /// - Disabled: Comment (#6272A4)
+    /// - Success: Green (#50FA7B)
+    /// - Warning: Yellow (#F1FA8C)
+    /// - Error: Red (#FF5555)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::theme::Theme;
+    ///
+    /// let theme = Theme::dracula();
+    /// assert_eq!(theme.focused, envision::theme::DRACULA_PURPLE);
+    /// ```
+    pub fn dracula() -> Self {
+        Self {
+            background: DRACULA_BG,
+            foreground: DRACULA_FG,
+            border: DRACULA_COMMENT,
+
+            focused: DRACULA_PURPLE,
+            selected: DRACULA_PINK,
+            disabled: DRACULA_COMMENT,
+            placeholder: DRACULA_COMMENT,
+
+            primary: DRACULA_CYAN,
+            success: DRACULA_GREEN,
+            warning: DRACULA_YELLOW,
+            error: DRACULA_RED,
+            info: DRACULA_CYAN,
+
+            progress_filled: DRACULA_PURPLE,
+            progress_empty: DRACULA_CURRENT,
+        }
+    }
+
+    /// Creates a new Solarized Dark-themed color scheme.
+    ///
+    /// The Solarized Dark theme uses Ethan Schoonover's carefully designed
+    /// color palette optimized for readability and reduced eye strain.
+    ///
+    /// # Colors
+    ///
+    /// - Focused: Blue (#268BD2)
+    /// - Selected: Cyan (#2AA198)
+    /// - Disabled: Base01 (#586E75)
+    /// - Success: Green (#859900)
+    /// - Warning: Yellow (#B58900)
+    /// - Error: Red (#DC322F)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::theme::Theme;
+    ///
+    /// let theme = Theme::solarized_dark();
+    /// assert_eq!(theme.focused, envision::theme::SOLARIZED_BLUE);
+    /// ```
+    pub fn solarized_dark() -> Self {
+        Self {
+            background: SOLARIZED_BASE03,
+            foreground: SOLARIZED_BASE0,
+            border: SOLARIZED_BASE01,
+
+            focused: SOLARIZED_BLUE,
+            selected: SOLARIZED_CYAN,
+            disabled: SOLARIZED_BASE01,
+            placeholder: SOLARIZED_BASE01,
+
+            primary: SOLARIZED_BLUE,
+            success: SOLARIZED_GREEN,
+            warning: SOLARIZED_YELLOW,
+            error: SOLARIZED_RED,
+            info: SOLARIZED_CYAN,
+
+            progress_filled: SOLARIZED_BLUE,
+            progress_empty: SOLARIZED_BASE02,
+        }
+    }
+
+    /// Creates a new Gruvbox Dark-themed color scheme.
+    ///
+    /// The Gruvbox Dark theme uses the retro-groove Gruvbox color palette
+    /// with its warm, earthy tones and high contrast.
+    ///
+    /// # Colors
+    ///
+    /// - Focused: Yellow (#FABD2F)
+    /// - Selected: Blue (#83A598)
+    /// - Disabled: Gray (#928374)
+    /// - Success: Green (#B8BB26)
+    /// - Warning: Orange (#FE8019)
+    /// - Error: Red (#FB4934)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::theme::Theme;
+    ///
+    /// let theme = Theme::gruvbox_dark();
+    /// assert_eq!(theme.focused, envision::theme::GRUVBOX_YELLOW);
+    /// ```
+    pub fn gruvbox_dark() -> Self {
+        Self {
+            background: GRUVBOX_BG,
+            foreground: GRUVBOX_FG,
+            border: GRUVBOX_GRAY,
+
+            focused: GRUVBOX_YELLOW,
+            selected: GRUVBOX_BLUE,
+            disabled: GRUVBOX_GRAY,
+            placeholder: GRUVBOX_GRAY,
+
+            primary: GRUVBOX_AQUA,
+            success: GRUVBOX_GREEN,
+            warning: GRUVBOX_ORANGE,
+            error: GRUVBOX_RED,
+            info: GRUVBOX_BLUE,
+
+            progress_filled: GRUVBOX_YELLOW,
+            progress_empty: GRUVBOX_BG1,
         }
     }
 

@@ -26,6 +26,9 @@ enum ActiveTheme {
     #[default]
     Default,
     Nord,
+    Dracula,
+    SolarizedDark,
+    GruvboxDark,
 }
 
 impl ActiveTheme {
@@ -33,13 +36,19 @@ impl ActiveTheme {
         match self {
             ActiveTheme::Default => "Default",
             ActiveTheme::Nord => "Nord",
+            ActiveTheme::Dracula => "Dracula",
+            ActiveTheme::SolarizedDark => "Solarized Dark",
+            ActiveTheme::GruvboxDark => "Gruvbox Dark",
         }
     }
 
-    fn toggle(&self) -> Self {
+    fn next(&self) -> Self {
         match self {
             ActiveTheme::Default => ActiveTheme::Nord,
-            ActiveTheme::Nord => ActiveTheme::Default,
+            ActiveTheme::Nord => ActiveTheme::Dracula,
+            ActiveTheme::Dracula => ActiveTheme::SolarizedDark,
+            ActiveTheme::SolarizedDark => ActiveTheme::GruvboxDark,
+            ActiveTheme::GruvboxDark => ActiveTheme::Default,
         }
     }
 }
@@ -103,7 +112,7 @@ impl App for ThemedApp {
     fn update(state: &mut State, msg: Msg) -> Command<Msg> {
         match msg {
             Msg::ToggleTheme => {
-                state.active_theme = state.active_theme.toggle();
+                state.active_theme = state.active_theme.next();
             }
             Msg::ButtonPressed => {
                 // Toggle button focused state for visual feedback
@@ -140,6 +149,9 @@ impl App for ThemedApp {
         let theme = match state.active_theme {
             ActiveTheme::Default => Theme::default(),
             ActiveTheme::Nord => Theme::nord(),
+            ActiveTheme::Dracula => Theme::dracula(),
+            ActiveTheme::SolarizedDark => Theme::solarized_dark(),
+            ActiveTheme::GruvboxDark => Theme::gruvbox_dark(),
         };
 
         let area = frame.area();
@@ -295,12 +307,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Nord Theme (after interactions):");
     println!("{}\n", vt.display_ansi());
 
+    // Cycle through remaining themes
+    for _ in 0..3 {
+        vt.dispatch(Msg::ToggleTheme);
+        vt.tick()?;
+        println!("{} Theme:", vt.state().active_theme.name());
+        println!("{}\n", vt.display_ansi());
+    }
+
     // Show theme comparison
     println!("=== Theme Comparison ===");
-    println!("Default theme uses: Yellow focus, DarkGray disabled, Cyan primary");
-    println!("Nord theme uses: Light Blue focus (#88C0D0), Muted gray disabled, Dark blue primary");
-    println!("\nThe Nord theme provides a cohesive, eye-friendly color palette");
-    println!("inspired by the Arctic's colors - ideal for extended coding sessions.");
+    println!("Default:        Yellow focus, DarkGray disabled, Cyan primary");
+    println!("Nord:           Light Blue focus (#88C0D0), Muted gray disabled, Dark blue primary");
+    println!("Dracula:        Purple focus (#BD93F9), Comment gray disabled, Cyan primary");
+    println!("Solarized Dark: Blue focus (#268BD2), Base01 disabled, Blue primary");
+    println!("Gruvbox Dark:   Yellow focus (#FABD2F), Gray disabled, Aqua primary");
 
     Ok(())
 }
