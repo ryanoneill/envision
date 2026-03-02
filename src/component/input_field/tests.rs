@@ -630,3 +630,58 @@ fn test_instance_update_disabled() {
     assert_eq!(output, None);
     assert_eq!(state.value(), "hello");
 }
+
+// ========== cursor_display_position Tests ==========
+
+#[test]
+fn test_cursor_display_position_ascii() {
+    let state = InputFieldState::with_value("hello");
+    // For ASCII, display position equals character position.
+    assert_eq!(state.cursor_display_position(), 5);
+    assert_eq!(state.cursor_position(), 5);
+}
+
+#[test]
+fn test_cursor_display_position_emoji() {
+    let mut state = InputFieldState::new();
+    InputField::update(&mut state, InputFieldMessage::Insert('A'));
+    InputField::update(&mut state, InputFieldMessage::Insert('\u{1F600}'));
+    InputField::update(&mut state, InputFieldMessage::Insert('B'));
+    // "A😀B" — char pos is 3, but display is 1 + 2 + 1 = 4
+    assert_eq!(state.cursor_position(), 3);
+    assert_eq!(state.cursor_display_position(), 4);
+
+    // Move cursor left (before 'B'), display pos should be 1 + 2 = 3
+    InputField::update(&mut state, InputFieldMessage::Left);
+    assert_eq!(state.cursor_position(), 2);
+    assert_eq!(state.cursor_display_position(), 3);
+}
+
+#[test]
+fn test_cursor_display_position_cjk() {
+    let mut state = InputFieldState::new();
+    InputField::update(&mut state, InputFieldMessage::Insert('日'));
+    InputField::update(&mut state, InputFieldMessage::Insert('本'));
+    // "日本" — char pos is 2, display is 2 + 2 = 4
+    assert_eq!(state.cursor_position(), 2);
+    assert_eq!(state.cursor_display_position(), 4);
+}
+
+#[test]
+fn test_cursor_display_position_mixed() {
+    let mut state = InputFieldState::new();
+    // "A日😀B"
+    InputField::update(&mut state, InputFieldMessage::Insert('A'));
+    InputField::update(&mut state, InputFieldMessage::Insert('日'));
+    InputField::update(&mut state, InputFieldMessage::Insert('\u{1F600}'));
+    InputField::update(&mut state, InputFieldMessage::Insert('B'));
+    // char pos = 4, display = 1 + 2 + 2 + 1 = 6
+    assert_eq!(state.cursor_position(), 4);
+    assert_eq!(state.cursor_display_position(), 6);
+}
+
+#[test]
+fn test_cursor_display_position_empty() {
+    let state = InputFieldState::new();
+    assert_eq!(state.cursor_display_position(), 0);
+}

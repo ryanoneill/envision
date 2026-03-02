@@ -902,7 +902,7 @@ fn render_input(state: &ChatViewState, frame: &mut Frame, area: Rect, theme: &Th
 
     // Show cursor when input is focused
     if state.focused && state.focus == Focus::Input && !state.disabled {
-        let (cursor_row, cursor_col) = state.input.cursor_position();
+        let (cursor_row, cursor_col) = state.input.cursor_display_position();
         let cursor_x = area.x + 1 + cursor_col as u16;
         let cursor_y = area.y + 1 + cursor_row as u16;
         if cursor_x < area.right() - 1 && cursor_y < area.bottom() - 1 {

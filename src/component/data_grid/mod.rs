@@ -610,7 +610,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                 if let Some(col_area) = col_areas.get(state.selected_column) {
                     // +2 for header row and margin
                     let cursor_y = content_area.y + 2 + (row_idx as u16);
-                    let cursor_x = col_area.x + state.editor.cursor_position() as u16;
+                    let cursor_x = col_area.x + state.editor.cursor_display_position() as u16;
                     if cursor_y < area.bottom() && cursor_x < col_area.right() {
                         frame.set_cursor_position(Position::new(cursor_x, cursor_y));
                     }

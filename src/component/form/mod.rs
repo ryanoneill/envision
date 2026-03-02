@@ -772,7 +772,7 @@ fn render_text_field(
 
     // Show cursor when focused
     if is_focused && !state.is_disabled() {
-        let cursor_x = area.x + 1 + state.cursor_position() as u16;
+        let cursor_x = area.x + 1 + state.cursor_display_position() as u16;
         let cursor_y = area.y + 1;
         frame.set_cursor_position(Position::new(cursor_x, cursor_y));
     }

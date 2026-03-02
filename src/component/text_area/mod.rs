@@ -23,6 +23,7 @@
 
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
+use unicode_width::UnicodeWidthStr;
 
 use super::{Component, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
@@ -282,6 +283,31 @@ impl TextAreaState {
             .chars()
             .count();
         (self.cursor_row, char_col)
+    }
+
+    /// Returns the cursor display position as (row, terminal_column_width).
+    ///
+    /// Unlike [`cursor_position()`](Self::cursor_position) which returns the
+    /// character count for the column, this returns the display width
+    /// accounting for wide characters (emoji, CJK) that occupy 2 terminal columns.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaState, TextAreaMessage, Component};
+    ///
+    /// let mut state = TextArea::init();
+    /// TextArea::update(&mut state, TextAreaMessage::Insert('A'));
+    /// TextArea::update(&mut state, TextAreaMessage::Insert('\u{1F600}')); // emoji
+    ///
+    /// // Character count is 2 (two characters)
+    /// assert_eq!(state.cursor_position(), (0, 2));
+    /// // Display width is 3 (A=1 + 😀=2)
+    /// assert_eq!(state.cursor_display_position(), (0, 3));
+    /// ```
+    pub fn cursor_display_position(&self) -> (usize, usize) {
+        let display_col = self.lines[self.cursor_row][..self.cursor_col].width();
+        (self.cursor_row, display_col)
     }
 
     /// Returns the cursor row.
@@ -953,11 +979,9 @@ impl Component for TextArea {
         // Show cursor when focused
         if state.focused && area.width > 2 && area.height > 2 {
             let cursor_row_in_view = state.cursor_row.saturating_sub(scroll);
-            let char_col = state.lines[state.cursor_row][..state.cursor_col]
-                .chars()
-                .count();
+            let (_, display_col) = state.cursor_display_position();
 
-            let cursor_x = area.x + 1 + char_col as u16;
+            let cursor_x = area.x + 1 + display_col as u16;
             let cursor_y = area.y + 1 + cursor_row_in_view as u16;
 
             // Only show cursor if it's within the visible area

@@ -21,6 +21,7 @@
 
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
+use unicode_width::UnicodeWidthStr;
 
 use super::{Component, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
@@ -202,6 +203,30 @@ impl InputFieldState {
     /// Returns the cursor position (character index).
     pub fn cursor_position(&self) -> usize {
         self.value[..self.cursor].chars().count()
+    }
+
+    /// Returns the cursor display position (terminal column width).
+    ///
+    /// Unlike [`cursor_position()`](Self::cursor_position) which returns the
+    /// character count, this returns the display width accounting for
+    /// wide characters (emoji, CJK) that occupy 2 terminal columns.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{InputField, InputFieldState, InputFieldMessage, Component};
+    ///
+    /// let mut state = InputField::init();
+    /// InputField::update(&mut state, InputFieldMessage::Insert('A'));
+    /// InputField::update(&mut state, InputFieldMessage::Insert('\u{1F600}')); // emoji
+    ///
+    /// // Character count is 2 (two characters)
+    /// assert_eq!(state.cursor_position(), 2);
+    /// // Display width is 3 (A=1 + 😀=2)
+    /// assert_eq!(state.cursor_display_position(), 3);
+    /// ```
+    pub fn cursor_display_position(&self) -> usize {
+        self.value[..self.cursor].width()
     }
 
     /// Returns the cursor byte offset.
@@ -871,7 +896,7 @@ impl Component for InputField {
 
         // Show cursor when focused
         if state.focused && area.width > 2 && area.height > 2 {
-            let cursor_x = area.x + 1 + state.cursor_position() as u16;
+            let cursor_x = area.x + 1 + state.cursor_display_position() as u16;
             let cursor_y = area.y + 1;
 
             if cursor_x < area.x + area.width - 1 {
