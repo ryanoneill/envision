@@ -1,12 +1,13 @@
 //! Session persistence helpers for saving and loading application state.
 //!
-//! This module provides convenience functions for serializing application state
-//! to JSON files and deserializing it back. All functions require the
+//! This module provides async convenience functions for serializing application
+//! state to JSON files and deserializing it back. All functions require the
 //! `serialization` feature.
 //!
 //! # Example
 //!
 //! ```rust
+//! # tokio_test::block_on(async {
 //! use envision::app::persistence::load_state;
 //! use serde::{Deserialize, Serialize};
 //!
@@ -18,16 +19,17 @@
 //!
 //! // Save state to a file
 //! let dir = std::env::temp_dir().join("envision_doc_test");
-//! std::fs::create_dir_all(&dir).unwrap();
+//! tokio::fs::create_dir_all(&dir).await.unwrap();
 //! let path = dir.join("state.json");
 //! let state = AppState { counter: 42, name: "test".into() };
 //! let json = serde_json::to_string(&state).unwrap();
-//! std::fs::write(&path, &json).unwrap();
+//! tokio::fs::write(&path, &json).await.unwrap();
 //!
 //! // Load it back
-//! let loaded: AppState = load_state(&path).unwrap();
+//! let loaded: AppState = load_state(&path).await.unwrap();
 //! assert_eq!(loaded, state);
-//! # std::fs::remove_dir_all(&dir).unwrap();
+//! # tokio::fs::remove_dir_all(&dir).await.unwrap();
+//! # });
 //! ```
 
 use std::path::Path;
@@ -36,15 +38,16 @@ use serde::de::DeserializeOwned;
 
 use crate::error::EnvisionError;
 
-/// Loads application state from a JSON file.
+/// Loads application state from a JSON file asynchronously.
 ///
-/// Reads the file at `path`, deserializes it as JSON, and returns the
-/// deserialized state. Returns [`EnvisionError::Io`] for file system errors
-/// and [`EnvisionError::Config`] for deserialization errors.
+/// Reads the file at `path` using `tokio::fs`, deserializes it as JSON, and
+/// returns the deserialized state. Returns [`EnvisionError::Io`] for file
+/// system errors and [`EnvisionError::Config`] for deserialization errors.
 ///
 /// # Example
 ///
 /// ```rust
+/// # tokio_test::block_on(async {
 /// use envision::app::persistence::load_state;
 /// use serde::Deserialize;
 ///
@@ -54,12 +57,15 @@ use crate::error::EnvisionError;
 /// }
 ///
 /// // Returns EnvisionError::Io for missing files
-/// let result: Result<MyState, _> = load_state("/nonexistent/path.json");
+/// let result: Result<MyState, _> = load_state("/nonexistent/path.json").await;
 /// assert!(result.is_err());
+/// # });
 /// ```
-pub fn load_state<S: DeserializeOwned>(path: impl AsRef<Path>) -> Result<S, EnvisionError> {
+pub async fn load_state<S: DeserializeOwned>(
+    path: impl AsRef<Path>,
+) -> Result<S, EnvisionError> {
     let path = path.as_ref();
-    let contents = std::fs::read_to_string(path)?;
+    let contents = tokio::fs::read_to_string(path).await?;
     serde_json::from_str(&contents).map_err(|e| {
         EnvisionError::config(
             path.display().to_string(),
