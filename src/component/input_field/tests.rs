@@ -1,6 +1,9 @@
 use super::*;
 use crate::input::{Event, KeyCode, KeyModifiers};
 
+#[path = "selection_tests.rs"]
+mod selection_tests;
+
 #[test]
 fn test_init() {
     let state = InputField::init();

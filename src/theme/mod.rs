@@ -267,6 +267,11 @@ impl Theme {
         }
     }
 
+    /// Returns a style for text selection (highlighted text in input fields).
+    pub fn selection_style(&self) -> Style {
+        Style::default().bg(self.selected).fg(self.foreground)
+    }
+
     /// Returns a style for disabled elements.
     pub fn disabled_style(&self) -> Style {
         Style::default().fg(self.disabled)

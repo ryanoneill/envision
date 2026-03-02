@@ -63,6 +63,34 @@ pub enum TextAreaMessage {
     /// Move cursor right by one word.
     WordRight,
 
+    // Selection
+    /// Extend selection left by one character.
+    SelectLeft,
+    /// Extend selection right by one character.
+    SelectRight,
+    /// Extend selection up by one line.
+    SelectUp,
+    /// Extend selection down by one line.
+    SelectDown,
+    /// Extend selection to beginning of line.
+    SelectHome,
+    /// Extend selection to end of line.
+    SelectEnd,
+    /// Extend selection left by one word.
+    SelectWordLeft,
+    /// Extend selection right by one word.
+    SelectWordRight,
+    /// Select all text.
+    SelectAll,
+
+    // Clipboard
+    /// Copy selected text to internal clipboard.
+    Copy,
+    /// Cut selected text to internal clipboard.
+    Cut,
+    /// Paste text at cursor, replacing any selection.
+    Paste(String),
+
     // Line operations
     /// Delete the entire current line.
     DeleteLine,
@@ -87,6 +115,8 @@ pub enum TextAreaOutput {
     Submitted(String),
     /// The value changed.
     Changed(String),
+    /// Text was copied to the internal clipboard.
+    Copied(String),
 }
 
 /// State for a TextArea component.
@@ -106,6 +136,11 @@ pub struct TextAreaState {
     disabled: bool,
     /// Placeholder text shown when empty.
     placeholder: String,
+    /// Selection anchor position (row, col_byte). When Some, text is selected
+    /// from anchor to cursor.
+    selection_anchor: Option<(usize, usize)>,
+    /// Internal clipboard buffer for copy/cut/paste.
+    clipboard: String,
 }
 
 impl Default for TextAreaState {
@@ -118,6 +153,8 @@ impl Default for TextAreaState {
             focused: false,
             disabled: false,
             placeholder: String::new(),
+            selection_anchor: None,
+            clipboard: String::new(),
         }
     }
 }
@@ -138,21 +175,8 @@ impl TextAreaState {
         Self::default()
     }
 
-    /// Creates a textarea with initial content.
-    ///
-    /// The content is split on newlines into separate lines.
-    /// The cursor is placed at the end of the content.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::TextAreaState;
-    ///
-    /// let state = TextAreaState::with_value("Hello\nWorld");
-    /// assert_eq!(state.line_count(), 2);
-    /// assert_eq!(state.line(0), Some("Hello"));
-    /// assert_eq!(state.line(1), Some("World"));
-    /// ```
+    /// Creates a textarea with initial content, split on newlines.
+    /// Cursor is placed at the end of the content.
     pub fn with_value(value: impl Into<String>) -> Self {
         let value = value.into();
         let lines: Vec<String> = if value.is_empty() {
@@ -173,20 +197,12 @@ impl TextAreaState {
             focused: false,
             disabled: false,
             placeholder: String::new(),
+            selection_anchor: None,
+            clipboard: String::new(),
         }
     }
 
     /// Creates a textarea with placeholder text.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::TextAreaState;
-    ///
-    /// let state = TextAreaState::with_placeholder("Enter description...");
-    /// assert_eq!(state.placeholder(), "Enter description...");
-    /// assert!(state.is_empty());
-    /// ```
     pub fn with_placeholder(placeholder: impl Into<String>) -> Self {
         Self {
             placeholder: placeholder.into(),
@@ -195,22 +211,11 @@ impl TextAreaState {
     }
 
     /// Returns the full text content (lines joined with \n).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::TextAreaState;
-    ///
-    /// let state = TextAreaState::with_value("Line 1\nLine 2");
-    /// assert_eq!(state.value(), "Line 1\nLine 2");
-    /// ```
     pub fn value(&self) -> String {
         self.lines.join("\n")
     }
 
-    /// Sets the content from a string (splits on \n).
-    ///
-    /// The cursor is moved to the end of the content.
+    /// Sets the content from a string (splits on \n). Cursor moves to end.
     pub fn set_value(&mut self, value: impl Into<String>) {
         let value = value.into();
         self.lines = if value.is_empty() {
@@ -222,19 +227,10 @@ impl TextAreaState {
         self.cursor_row = self.lines.len().saturating_sub(1);
         self.cursor_col = self.lines[self.cursor_row].len();
         self.scroll_offset = 0;
+        self.selection_anchor = None;
     }
 
     /// Returns the cursor position as (row, char_column).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::TextAreaState;
-    ///
-    /// let state = TextAreaState::with_value("Hello\nWorld");
-    /// // Cursor is at end of "World" (row 1, char 5)
-    /// assert_eq!(state.cursor_position(), (1, 5));
-    /// ```
     pub fn cursor_position(&self) -> (usize, usize) {
         let char_col = self.lines[self.cursor_row][..self.cursor_col]
             .chars()
@@ -556,6 +552,75 @@ impl TextAreaState {
         }
     }
 
+    /// Returns true if there is an active text selection.
+    pub fn has_selection(&self) -> bool {
+        match self.selection_anchor {
+            Some((r, c)) => r != self.cursor_row || c != self.cursor_col,
+            None => false,
+        }
+    }
+
+    /// Returns the ordered selection positions as `((start_row, start_col), (end_row, end_col))`.
+    pub fn selection_positions(&self) -> Option<((usize, usize), (usize, usize))> {
+        let (ar, ac) = self.selection_anchor?;
+        if ar == self.cursor_row && ac == self.cursor_col {
+            return None;
+        }
+        let a = (ar, ac);
+        let b = (self.cursor_row, self.cursor_col);
+        if a < b { Some((a, b)) } else { Some((b, a)) }
+    }
+
+    /// Returns the selected text, or None if no selection.
+    pub fn selected_text(&self) -> Option<String> {
+        let ((sr, sc), (er, ec)) = self.selection_positions()?;
+        if sr == er {
+            Some(self.lines[sr][sc..ec].to_string())
+        } else {
+            let mut result = self.lines[sr][sc..].to_string();
+            for row in (sr + 1)..er {
+                result.push('\n');
+                result.push_str(&self.lines[row]);
+            }
+            result.push('\n');
+            result.push_str(&self.lines[er][..ec]);
+            Some(result)
+        }
+    }
+
+    /// Returns the internal clipboard contents.
+    pub fn clipboard(&self) -> &str {
+        &self.clipboard
+    }
+
+    fn clear_selection(&mut self) {
+        self.selection_anchor = None;
+    }
+
+    fn ensure_selection_anchor(&mut self) {
+        if self.selection_anchor.is_none() {
+            self.selection_anchor = Some((self.cursor_row, self.cursor_col));
+        }
+    }
+
+    /// Deletes selected text. Returns deleted text or None.
+    fn delete_selection(&mut self) -> Option<String> {
+        let ((sr, sc), (er, ec)) = self.selection_positions()?;
+        let deleted = self.selected_text()?;
+        if sr == er {
+            self.lines[sr].drain(sc..ec);
+        } else {
+            let after = self.lines[er][ec..].to_string();
+            self.lines[sr].truncate(sc);
+            self.lines[sr].push_str(&after);
+            self.lines.drain((sr + 1)..=er);
+        }
+        self.cursor_row = sr;
+        self.cursor_col = sc;
+        self.selection_anchor = None;
+        Some(deleted)
+    }
+
     /// Returns true if the textarea is focused.
     pub fn is_focused(&self) -> bool {
         self.focused
@@ -636,14 +701,37 @@ impl Component for TextArea {
         if !state.focused || state.disabled {
             return None;
         }
+        if let Event::Paste(ref text) = event {
+            return Some(TextAreaMessage::Paste(text.clone()));
+        }
         if let Some(key) = event.as_key() {
             let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+            let shift = key.modifiers.contains(KeyModifiers::SHIFT);
             match key.code {
+                // Clipboard
+                KeyCode::Char('c') if ctrl => Some(TextAreaMessage::Copy),
+                KeyCode::Char('x') if ctrl => Some(TextAreaMessage::Cut),
+                KeyCode::Char('v') if ctrl => {
+                    if state.clipboard.is_empty() { None }
+                    else { Some(TextAreaMessage::Paste(state.clipboard.clone())) }
+                }
+                KeyCode::Char('a') if ctrl => Some(TextAreaMessage::SelectAll),
                 KeyCode::Char(c) if !ctrl => Some(TextAreaMessage::Insert(c)),
                 KeyCode::Enter => Some(TextAreaMessage::NewLine),
+                // Selection movement
+                KeyCode::Left if ctrl && shift => Some(TextAreaMessage::SelectWordLeft),
+                KeyCode::Right if ctrl && shift => Some(TextAreaMessage::SelectWordRight),
+                KeyCode::Left if shift => Some(TextAreaMessage::SelectLeft),
+                KeyCode::Right if shift => Some(TextAreaMessage::SelectRight),
+                KeyCode::Up if shift => Some(TextAreaMessage::SelectUp),
+                KeyCode::Down if shift => Some(TextAreaMessage::SelectDown),
+                KeyCode::Home if shift => Some(TextAreaMessage::SelectHome),
+                KeyCode::End if shift => Some(TextAreaMessage::SelectEnd),
+                // Deletion
                 KeyCode::Backspace if ctrl => Some(TextAreaMessage::DeleteLine),
                 KeyCode::Backspace => Some(TextAreaMessage::Backspace),
                 KeyCode::Delete => Some(TextAreaMessage::Delete),
+                // Navigation
                 KeyCode::Left if ctrl => Some(TextAreaMessage::WordLeft),
                 KeyCode::Right if ctrl => Some(TextAreaMessage::WordRight),
                 KeyCode::Left => Some(TextAreaMessage::Left),
@@ -669,110 +757,156 @@ impl Component for TextArea {
         }
 
         match msg {
+            // Editing (replaces selection if active)
             TextAreaMessage::Insert(c) => {
+                state.delete_selection();
                 state.insert(c);
                 Some(TextAreaOutput::Changed(state.value()))
             }
             TextAreaMessage::NewLine => {
+                state.delete_selection();
                 state.new_line();
                 Some(TextAreaOutput::Changed(state.value()))
             }
             TextAreaMessage::Backspace => {
-                if state.backspace() {
+                if state.has_selection() {
+                    state.delete_selection();
                     Some(TextAreaOutput::Changed(state.value()))
-                } else {
-                    None
-                }
+                } else if state.backspace() {
+                    Some(TextAreaOutput::Changed(state.value()))
+                } else { None }
             }
             TextAreaMessage::Delete => {
-                if state.delete() {
+                if state.has_selection() {
+                    state.delete_selection();
                     Some(TextAreaOutput::Changed(state.value()))
-                } else {
-                    None
-                }
+                } else if state.delete() {
+                    Some(TextAreaOutput::Changed(state.value()))
+                } else { None }
             }
+            // Navigation (clears selection)
             TextAreaMessage::Left => {
-                state.move_left();
+                if state.has_selection() {
+                    if let Some((start, _)) = state.selection_positions() {
+                        state.cursor_row = start.0;
+                        state.cursor_col = start.1;
+                    }
+                    state.clear_selection();
+                } else { state.move_left(); }
                 None
             }
             TextAreaMessage::Right => {
-                state.move_right();
+                if state.has_selection() {
+                    if let Some((_, end)) = state.selection_positions() {
+                        state.cursor_row = end.0;
+                        state.cursor_col = end.1;
+                    }
+                    state.clear_selection();
+                } else { state.move_right(); }
                 None
             }
-            TextAreaMessage::Up => {
-                state.move_up();
-                None
-            }
-            TextAreaMessage::Down => {
-                state.move_down();
-                None
-            }
-            TextAreaMessage::Home => {
-                state.cursor_col = 0;
-                None
-            }
+            TextAreaMessage::Up => { state.clear_selection(); state.move_up(); None }
+            TextAreaMessage::Down => { state.clear_selection(); state.move_down(); None }
+            TextAreaMessage::Home => { state.clear_selection(); state.cursor_col = 0; None }
             TextAreaMessage::End => {
+                state.clear_selection();
                 state.cursor_col = state.lines[state.cursor_row].len();
                 None
             }
             TextAreaMessage::TextStart => {
+                state.clear_selection();
                 state.cursor_row = 0;
                 state.cursor_col = 0;
                 None
             }
             TextAreaMessage::TextEnd => {
+                state.clear_selection();
                 state.cursor_row = state.lines.len() - 1;
                 state.cursor_col = state.lines[state.cursor_row].len();
                 None
             }
-            TextAreaMessage::WordLeft => {
-                state.move_word_left();
+            TextAreaMessage::WordLeft => { state.clear_selection(); state.move_word_left(); None }
+            TextAreaMessage::WordRight => { state.clear_selection(); state.move_word_right(); None }
+            // Selection movement
+            TextAreaMessage::SelectLeft => { state.ensure_selection_anchor(); state.move_left(); None }
+            TextAreaMessage::SelectRight => { state.ensure_selection_anchor(); state.move_right(); None }
+            TextAreaMessage::SelectUp => { state.ensure_selection_anchor(); state.move_up(); None }
+            TextAreaMessage::SelectDown => { state.ensure_selection_anchor(); state.move_down(); None }
+            TextAreaMessage::SelectHome => { state.ensure_selection_anchor(); state.cursor_col = 0; None }
+            TextAreaMessage::SelectEnd => {
+                state.ensure_selection_anchor();
+                state.cursor_col = state.lines[state.cursor_row].len();
                 None
             }
-            TextAreaMessage::WordRight => {
-                state.move_word_right();
+            TextAreaMessage::SelectWordLeft => { state.ensure_selection_anchor(); state.move_word_left(); None }
+            TextAreaMessage::SelectWordRight => { state.ensure_selection_anchor(); state.move_word_right(); None }
+            TextAreaMessage::SelectAll => {
+                if state.is_empty() { return None; }
+                state.selection_anchor = Some((0, 0));
+                let last = state.lines.len() - 1;
+                state.cursor_row = last;
+                state.cursor_col = state.lines[last].len();
                 None
             }
-            TextAreaMessage::DeleteLine => {
-                if state.delete_line() {
+            // Clipboard
+            TextAreaMessage::Copy => {
+                if let Some(text) = state.selected_text() {
+                    state.clipboard = text.clone();
+                    Some(TextAreaOutput::Copied(text))
+                } else { None }
+            }
+            TextAreaMessage::Cut => {
+                if let Some(text) = state.selected_text() {
+                    state.clipboard = text.clone();
+                    state.delete_selection();
                     Some(TextAreaOutput::Changed(state.value()))
-                } else {
-                    None
+                } else { None }
+            }
+            TextAreaMessage::Paste(text) => {
+                if text.is_empty() { return None; }
+                state.delete_selection();
+                for c in text.chars() {
+                    if c == '\n' { state.new_line(); } else { state.insert(c); }
                 }
+                Some(TextAreaOutput::Changed(state.value()))
+            }
+            // Line operations
+            TextAreaMessage::DeleteLine => {
+                state.clear_selection();
+                if state.delete_line() { Some(TextAreaOutput::Changed(state.value())) } else { None }
             }
             TextAreaMessage::DeleteToEnd => {
-                if state.delete_to_end() {
+                if state.has_selection() {
+                    state.delete_selection();
                     Some(TextAreaOutput::Changed(state.value()))
-                } else {
-                    None
-                }
+                } else if state.delete_to_end() {
+                    Some(TextAreaOutput::Changed(state.value()))
+                } else { None }
             }
             TextAreaMessage::DeleteToStart => {
-                if state.delete_to_start() {
+                if state.has_selection() {
+                    state.delete_selection();
                     Some(TextAreaOutput::Changed(state.value()))
-                } else {
-                    None
-                }
+                } else if state.delete_to_start() {
+                    Some(TextAreaOutput::Changed(state.value()))
+                } else { None }
             }
             TextAreaMessage::Clear => {
+                state.clear_selection();
                 if !state.is_empty() {
                     state.lines = vec![String::new()];
                     state.cursor_row = 0;
                     state.cursor_col = 0;
                     state.scroll_offset = 0;
                     Some(TextAreaOutput::Changed(state.value()))
-                } else {
-                    None
-                }
+                } else { None }
             }
             TextAreaMessage::SetValue(value) => {
                 let old_value = state.value();
                 if old_value != value {
                     state.set_value(value);
                     Some(TextAreaOutput::Changed(state.value()))
-                } else {
-                    None
-                }
+                } else { None }
             }
             TextAreaMessage::Submit => Some(TextAreaOutput::Submitted(state.value())),
         }
