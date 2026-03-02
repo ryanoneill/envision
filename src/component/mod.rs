@@ -124,6 +124,7 @@ mod text_area;
 mod form;
 mod searchable_list;
 mod split_panel;
+mod data_grid;
 
 // Data components
 #[cfg(feature = "data-components")]
@@ -224,6 +225,7 @@ pub use searchable_list::{
 pub use split_panel::{
     SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput, SplitPanelState,
 };
+pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
 
 #[cfg(feature = "display-components")]
 pub use status_bar::{
