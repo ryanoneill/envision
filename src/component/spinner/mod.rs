@@ -60,6 +60,7 @@ use crate::theme::Theme;
 /// assert_eq!(custom.frames().len(), 5);
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub enum SpinnerStyle {
     /// Braille dots animation (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏).
     ///
@@ -133,6 +134,7 @@ pub enum SpinnerMessage {
 
 /// State for a Spinner component.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct SpinnerState {
     /// The animation style.
     style: SpinnerStyle,

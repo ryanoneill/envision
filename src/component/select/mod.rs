@@ -60,6 +60,7 @@ pub enum SelectOutput {
 
 /// State for a Select component.
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct SelectState {
     /// Available options.
     options: Vec<String>,

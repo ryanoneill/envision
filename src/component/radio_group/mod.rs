@@ -61,6 +61,7 @@ pub enum RadioGroupOutput<T: Clone> {
 
 /// State for a RadioGroup component.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct RadioGroupState<T: Clone> {
     /// The available options.
     options: Vec<T>,

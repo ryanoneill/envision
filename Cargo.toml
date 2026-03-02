@@ -30,7 +30,7 @@ display-components = []
 navigation-components = []
 overlay-components = []
 
-serialization = ["dep:serde", "dep:serde_json", "compact_str/serde"]
+serialization = ["dep:serde", "dep:serde_json", "compact_str/serde", "ratatui/serde"]
 tracing = ["dep:tracing"]
 
 [dependencies]

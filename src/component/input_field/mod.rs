@@ -104,6 +104,7 @@ pub enum InputFieldOutput {
 
 /// State for an InputField component.
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct InputFieldState {
     /// The current text value.
     value: String,

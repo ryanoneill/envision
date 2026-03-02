@@ -73,6 +73,7 @@ pub enum DropdownOutput {
 
 /// State for a Dropdown component.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct DropdownState {
     /// All available options.
     options: Vec<String>,

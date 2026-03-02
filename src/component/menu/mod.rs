@@ -30,6 +30,7 @@ use crate::theme::Theme;
 
 /// A menu item.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct MenuItem {
     label: String,
     enabled: bool,
@@ -116,6 +117,7 @@ pub enum MenuOutput {
 
 /// State for a Menu component.
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct MenuState {
     /// Menu items.
     items: Vec<MenuItem>,
