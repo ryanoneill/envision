@@ -25,6 +25,14 @@ use ratatui::widgets::{Block, Borders, Paragraph};
 use super::{Component, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
+use crate::undo::{EditKind, UndoStack};
+
+/// A snapshot of InputField state for undo/redo.
+#[derive(Debug, Clone)]
+struct InputSnapshot {
+    value: String,
+    cursor: usize,
+}
 
 /// Messages that can be sent to an InputField.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -57,6 +65,10 @@ pub enum InputFieldMessage {
     SetValue(String),
     /// Submit the current value.
     Submit,
+    /// Undo the last edit.
+    Undo,
+    /// Redo the last undone edit.
+    Redo,
 }
 
 /// Output messages from an InputField.
@@ -81,6 +93,8 @@ pub struct InputFieldState {
     disabled: bool,
     /// Placeholder text shown when empty.
     placeholder: String,
+    /// Undo/redo history stack.
+    undo_stack: UndoStack<InputSnapshot>,
 }
 
 impl InputFieldState {
@@ -99,6 +113,7 @@ impl InputFieldState {
             focused: false,
             disabled: false,
             placeholder: String::new(),
+            undo_stack: UndoStack::default(),
         }
     }
 
@@ -110,6 +125,7 @@ impl InputFieldState {
             focused: false,
             disabled: false,
             placeholder: placeholder.into(),
+            undo_stack: UndoStack::default(),
         }
     }
 
@@ -164,6 +180,30 @@ impl InputFieldState {
             .nth(clamped)
             .map(|(i, _)| i)
             .unwrap_or(self.value.len());
+    }
+
+    /// Returns true if there are edits that can be undone.
+    pub fn can_undo(&self) -> bool {
+        self.undo_stack.can_undo()
+    }
+
+    /// Returns true if there are edits that can be redone.
+    pub fn can_redo(&self) -> bool {
+        self.undo_stack.can_redo()
+    }
+
+    /// Creates a snapshot of the current state for undo.
+    fn snapshot(&self) -> InputSnapshot {
+        InputSnapshot {
+            value: self.value.clone(),
+            cursor: self.cursor,
+        }
+    }
+
+    /// Restores state from a snapshot.
+    fn restore(&mut self, snapshot: InputSnapshot) {
+        self.value = snapshot.value;
+        self.cursor = snapshot.cursor;
     }
 
     /// Move cursor left by one character.
@@ -376,18 +416,30 @@ impl Component for InputField {
         }
         match msg {
             InputFieldMessage::Insert(c) => {
+                if c.is_whitespace() {
+                    state.undo_stack.break_group();
+                }
+                let snapshot = state.snapshot();
+                state.undo_stack.save(snapshot, EditKind::Insert);
                 state.insert(c);
+                if c.is_whitespace() {
+                    state.undo_stack.break_group();
+                }
                 Some(InputFieldOutput::Changed(state.value.clone()))
             }
             InputFieldMessage::Backspace => {
+                let snapshot = state.snapshot();
                 if state.backspace() {
+                    state.undo_stack.save(snapshot, EditKind::Delete);
                     Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
             InputFieldMessage::Delete => {
+                let snapshot = state.snapshot();
                 if state.delete() {
+                    state.undo_stack.save(snapshot, EditKind::Delete);
                     Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
@@ -418,14 +470,18 @@ impl Component for InputField {
                 None
             }
             InputFieldMessage::DeleteWordBack => {
+                let snapshot = state.snapshot();
                 if state.delete_word_back() {
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
                 }
             }
             InputFieldMessage::DeleteWordForward => {
+                let snapshot = state.snapshot();
                 if state.delete_word_forward() {
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
                     None
@@ -433,6 +489,8 @@ impl Component for InputField {
             }
             InputFieldMessage::Clear => {
                 if !state.value.is_empty() {
+                    let snapshot = state.snapshot();
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     state.value.clear();
                     state.cursor = 0;
                     Some(InputFieldOutput::Changed(state.value.clone()))
@@ -442,6 +500,8 @@ impl Component for InputField {
             }
             InputFieldMessage::SetValue(value) => {
                 if state.value != value {
+                    let snapshot = state.snapshot();
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     state.set_value(value);
                     Some(InputFieldOutput::Changed(state.value.clone()))
                 } else {
@@ -449,6 +509,24 @@ impl Component for InputField {
                 }
             }
             InputFieldMessage::Submit => Some(InputFieldOutput::Submitted(state.value.clone())),
+            InputFieldMessage::Undo => {
+                let snapshot = state.snapshot();
+                if let Some(restored) = state.undo_stack.undo(snapshot) {
+                    state.restore(restored);
+                    Some(InputFieldOutput::Changed(state.value.clone()))
+                } else {
+                    None
+                }
+            }
+            InputFieldMessage::Redo => {
+                let snapshot = state.snapshot();
+                if let Some(restored) = state.undo_stack.redo(snapshot) {
+                    state.restore(restored);
+                    Some(InputFieldOutput::Changed(state.value.clone()))
+                } else {
+                    None
+                }
+            }
         }
     }
 
@@ -459,6 +537,8 @@ impl Component for InputField {
         if let Some(key) = event.as_key() {
             let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
             match key.code {
+                KeyCode::Char('z') if ctrl => Some(InputFieldMessage::Undo),
+                KeyCode::Char('y') if ctrl => Some(InputFieldMessage::Redo),
                 KeyCode::Char(c) if !ctrl => Some(InputFieldMessage::Insert(c)),
                 KeyCode::Backspace if ctrl => Some(InputFieldMessage::DeleteWordBack),
                 KeyCode::Delete if ctrl => Some(InputFieldMessage::DeleteWordForward),

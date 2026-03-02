@@ -914,3 +914,6 @@ fn test_instance_update() {
     assert!(matches!(output, Some(TextAreaOutput::Changed(_))));
     assert_eq!(state.value(), "a");
 }
+
+#[path = "undo_tests.rs"]
+mod undo_tests;

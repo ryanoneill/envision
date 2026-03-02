@@ -27,6 +27,15 @@ use ratatui::widgets::{Block, Borders, Paragraph};
 use super::{Component, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
+use crate::undo::{EditKind, UndoStack};
+
+/// A snapshot of TextArea state for undo/redo.
+#[derive(Debug, Clone)]
+struct TextAreaSnapshot {
+    lines: Vec<String>,
+    cursor_row: usize,
+    cursor_col: usize,
+}
 
 /// Messages that can be sent to a TextArea.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -78,6 +87,12 @@ pub enum TextAreaMessage {
     SetValue(String),
     /// Submit the current value.
     Submit,
+
+    // Undo/Redo
+    /// Undo the last edit.
+    Undo,
+    /// Redo the last undone edit.
+    Redo,
 }
 
 /// Output messages from a TextArea.
@@ -106,6 +121,8 @@ pub struct TextAreaState {
     disabled: bool,
     /// Placeholder text shown when empty.
     placeholder: String,
+    /// Undo/redo history stack.
+    undo_stack: UndoStack<TextAreaSnapshot>,
 }
 
 impl Default for TextAreaState {
@@ -118,6 +135,7 @@ impl Default for TextAreaState {
             focused: false,
             disabled: false,
             placeholder: String::new(),
+            undo_stack: UndoStack::default(),
         }
     }
 }
@@ -173,6 +191,7 @@ impl TextAreaState {
             focused: false,
             disabled: false,
             placeholder: String::new(),
+            undo_stack: UndoStack::default(),
         }
     }
 
@@ -318,6 +337,32 @@ impl TextAreaState {
         if self.cursor_row >= self.scroll_offset + visible_lines {
             self.scroll_offset = self.cursor_row - visible_lines + 1;
         }
+    }
+
+    /// Returns true if there are edits that can be undone.
+    pub fn can_undo(&self) -> bool {
+        self.undo_stack.can_undo()
+    }
+
+    /// Returns true if there are edits that can be redone.
+    pub fn can_redo(&self) -> bool {
+        self.undo_stack.can_redo()
+    }
+
+    /// Creates a snapshot of the current state for undo.
+    fn snapshot(&self) -> TextAreaSnapshot {
+        TextAreaSnapshot {
+            lines: self.lines.clone(),
+            cursor_row: self.cursor_row,
+            cursor_col: self.cursor_col,
+        }
+    }
+
+    /// Restores state from a snapshot.
+    fn restore(&mut self, snapshot: TextAreaSnapshot) {
+        self.lines = snapshot.lines;
+        self.cursor_row = snapshot.cursor_row;
+        self.cursor_col = snapshot.cursor_col;
     }
 
     /// Insert a character at the cursor position.
@@ -639,6 +684,8 @@ impl Component for TextArea {
         if let Some(key) = event.as_key() {
             let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
             match key.code {
+                KeyCode::Char('z') if ctrl => Some(TextAreaMessage::Undo),
+                KeyCode::Char('y') if ctrl => Some(TextAreaMessage::Redo),
                 KeyCode::Char(c) if !ctrl => Some(TextAreaMessage::Insert(c)),
                 KeyCode::Enter => Some(TextAreaMessage::NewLine),
                 KeyCode::Backspace if ctrl => Some(TextAreaMessage::DeleteLine),
@@ -670,22 +717,36 @@ impl Component for TextArea {
 
         match msg {
             TextAreaMessage::Insert(c) => {
+                if c.is_whitespace() {
+                    state.undo_stack.break_group();
+                }
+                let snapshot = state.snapshot();
+                state.undo_stack.save(snapshot, EditKind::Insert);
                 state.insert(c);
+                if c.is_whitespace() {
+                    state.undo_stack.break_group();
+                }
                 Some(TextAreaOutput::Changed(state.value()))
             }
             TextAreaMessage::NewLine => {
+                let snapshot = state.snapshot();
+                state.undo_stack.save(snapshot, EditKind::Other);
                 state.new_line();
                 Some(TextAreaOutput::Changed(state.value()))
             }
             TextAreaMessage::Backspace => {
+                let snapshot = state.snapshot();
                 if state.backspace() {
+                    state.undo_stack.save(snapshot, EditKind::Delete);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else {
                     None
                 }
             }
             TextAreaMessage::Delete => {
+                let snapshot = state.snapshot();
                 if state.delete() {
+                    state.undo_stack.save(snapshot, EditKind::Delete);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else {
                     None
@@ -734,21 +795,27 @@ impl Component for TextArea {
                 None
             }
             TextAreaMessage::DeleteLine => {
+                let snapshot = state.snapshot();
                 if state.delete_line() {
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else {
                     None
                 }
             }
             TextAreaMessage::DeleteToEnd => {
+                let snapshot = state.snapshot();
                 if state.delete_to_end() {
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else {
                     None
                 }
             }
             TextAreaMessage::DeleteToStart => {
+                let snapshot = state.snapshot();
                 if state.delete_to_start() {
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else {
                     None
@@ -756,6 +823,8 @@ impl Component for TextArea {
             }
             TextAreaMessage::Clear => {
                 if !state.is_empty() {
+                    let snapshot = state.snapshot();
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     state.lines = vec![String::new()];
                     state.cursor_row = 0;
                     state.cursor_col = 0;
@@ -768,6 +837,8 @@ impl Component for TextArea {
             TextAreaMessage::SetValue(value) => {
                 let old_value = state.value();
                 if old_value != value {
+                    let snapshot = state.snapshot();
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     state.set_value(value);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else {
@@ -775,6 +846,24 @@ impl Component for TextArea {
                 }
             }
             TextAreaMessage::Submit => Some(TextAreaOutput::Submitted(state.value())),
+            TextAreaMessage::Undo => {
+                let snapshot = state.snapshot();
+                if let Some(restored) = state.undo_stack.undo(snapshot) {
+                    state.restore(restored);
+                    Some(TextAreaOutput::Changed(state.value()))
+                } else {
+                    None
+                }
+            }
+            TextAreaMessage::Redo => {
+                let snapshot = state.snapshot();
+                if let Some(restored) = state.undo_stack.redo(snapshot) {
+                    state.restore(restored);
+                    Some(TextAreaOutput::Changed(state.value()))
+                } else {
+                    None
+                }
+            }
         }
     }
 

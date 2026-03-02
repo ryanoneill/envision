@@ -627,3 +627,6 @@ fn test_instance_update_disabled() {
     assert_eq!(output, None);
     assert_eq!(state.value(), "hello");
 }
+
+#[path = "undo_tests.rs"]
+mod undo_tests;

@@ -105,6 +105,7 @@ pub mod harness;
 pub mod input;
 pub mod overlay;
 pub mod theme;
+pub(crate) mod undo;
 
 // Re-export commonly used types
 pub use adapter::{DualBackend, DualBackendBuilder};
