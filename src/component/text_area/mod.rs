@@ -158,6 +158,7 @@ pub struct TextAreaState {
     /// Internal clipboard buffer for copy/cut/paste.
     clipboard: String,
     /// Undo/redo history stack.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     undo_stack: UndoStack<TextAreaSnapshot>,
 }
 

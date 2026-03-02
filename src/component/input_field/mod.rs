@@ -122,6 +122,7 @@ pub struct InputFieldState {
     /// Internal clipboard buffer for copy/cut/paste operations.
     clipboard: String,
     /// Undo/redo history stack.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     undo_stack: UndoStack<InputSnapshot>,
 }
 
