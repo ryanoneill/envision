@@ -111,8 +111,10 @@ pub trait TableRow: Clone {
 /// assert!(col.is_sortable());
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct Column {
     header: String,
+    #[cfg_attr(feature = "serialization", serde(skip))]
     width: Constraint,
     sortable: bool,
 }
@@ -202,6 +204,7 @@ impl Column {
 
 /// Sort direction for table columns.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub enum SortDirection {
     /// Sort in ascending order (A-Z, 0-9).
     #[default]
@@ -275,6 +278,7 @@ pub enum TableOutput<T: Clone> {
 ///
 /// Holds the rows, columns, selection state, and sort configuration.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct TableState<T: TableRow> {
     rows: Vec<T>,
     columns: Vec<Column>,

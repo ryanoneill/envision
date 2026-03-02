@@ -104,6 +104,7 @@ pub enum InputFieldOutput {
 
 /// State for an InputField component.
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct InputFieldState {
     /// The current text value.
     value: String,
@@ -121,6 +122,7 @@ pub struct InputFieldState {
     /// Internal clipboard buffer for copy/cut/paste operations.
     clipboard: String,
     /// Undo/redo history stack.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     undo_stack: UndoStack<InputSnapshot>,
 }
 

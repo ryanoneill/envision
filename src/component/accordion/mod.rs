@@ -55,6 +55,7 @@ use crate::theme::Theme;
 /// assert!(panel.is_expanded());
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct AccordionPanel {
     /// The panel header/title.
     title: String,
@@ -154,6 +155,7 @@ pub enum AccordionOutput {
 
 /// State for an Accordion component.
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct AccordionState {
     /// The accordion panels.
     panels: Vec<AccordionPanel>,

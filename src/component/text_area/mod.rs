@@ -136,6 +136,7 @@ pub enum TextAreaOutput {
 
 /// State for a TextArea component.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct TextAreaState {
     /// Lines of text.
     lines: Vec<String>,
@@ -157,6 +158,7 @@ pub struct TextAreaState {
     /// Internal clipboard buffer for copy/cut/paste.
     clipboard: String,
     /// Undo/redo history stack.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     undo_stack: UndoStack<TextAreaSnapshot>,
 }
 

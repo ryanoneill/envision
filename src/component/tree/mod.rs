@@ -30,6 +30,7 @@ use crate::theme::Theme;
 
 /// A node in the tree hierarchy.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct TreeNode<T> {
     /// Display label for the node.
     label: String,
@@ -221,6 +222,7 @@ pub enum TreeOutput {
 
 /// State for a Tree component.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct TreeState<T> {
     /// The root nodes of the tree.
     roots: Vec<TreeNode<T>>,

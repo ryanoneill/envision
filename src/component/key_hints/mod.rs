@@ -31,6 +31,7 @@ use crate::theme::Theme;
 
 /// Layout style for key hints display.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub enum KeyHintsLayout {
     /// Hints are displayed with even spacing.
     #[default]
@@ -53,6 +54,7 @@ pub enum KeyHintsLayout {
 ///     .with_enabled(true);
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct KeyHint {
     /// The key or key combination.
     key: String,
@@ -195,6 +197,7 @@ pub enum KeyHintsMessage {
 ///     .hint("Esc", "Cancel");
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct KeyHintsState {
     /// All key hints.
     hints: Vec<KeyHint>,

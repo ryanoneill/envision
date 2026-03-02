@@ -127,6 +127,7 @@ pub enum RouterOutput<S: Clone + PartialEq> {
 /// assert!(!state.can_go_back());
 /// ```
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct RouterState<S: Clone + PartialEq> {
     /// The current screen.
     current: S,

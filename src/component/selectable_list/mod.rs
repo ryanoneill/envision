@@ -63,8 +63,10 @@ pub enum SelectableListOutput<T: Clone> {
 
 /// State for a SelectableList component.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct SelectableListState<T: Clone> {
     items: Vec<T>,
+    #[cfg_attr(feature = "serialization", serde(skip))]
     list_state: ListState,
     focused: bool,
     disabled: bool,

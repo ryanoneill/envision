@@ -64,6 +64,7 @@ pub enum TabsOutput<T: Clone> {
 /// The state tracks the available tabs, the currently selected tab,
 /// and focus/disabled states.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
 pub struct TabsState<T: Clone> {
     /// The available tabs.
     tabs: Vec<T>,
