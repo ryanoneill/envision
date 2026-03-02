@@ -20,7 +20,7 @@
 //!
 //! assert_eq!(state.widget_count(), 3);
 //! assert_eq!(state.columns(), 3);
-//! assert_eq!(state.selected_index(), 0);
+//! assert_eq!(state.selected_index(), Some(0));
 //! ```
 
 use std::marker::PhantomData;
@@ -273,7 +273,7 @@ pub struct MetricsDashboardState {
     /// Number of columns in the grid layout.
     columns: usize,
     /// Currently selected widget index.
-    selected: usize,
+    selected: Option<usize>,
     /// Whether the component is focused.
     focused: bool,
     /// Whether the component is disabled.
@@ -287,7 +287,7 @@ impl Default for MetricsDashboardState {
         Self {
             widgets: Vec::new(),
             columns: 3,
-            selected: 0,
+            selected: None,
             focused: false,
             disabled: false,
             title: None,
@@ -311,10 +311,11 @@ impl MetricsDashboardState {
     /// assert_eq!(state.columns(), 2);
     /// ```
     pub fn new(widgets: Vec<MetricWidget>, columns: usize) -> Self {
+        let selected = if widgets.is_empty() { None } else { Some(0) };
         Self {
             widgets,
             columns: columns.max(1),
-            selected: 0,
+            selected,
             focused: false,
             disabled: false,
             title: None,
@@ -380,18 +381,19 @@ impl MetricsDashboardState {
     }
 
     /// Returns the selected widget index.
-    pub fn selected_index(&self) -> usize {
+    pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
 
     /// Returns a reference to the selected widget.
     pub fn selected_widget(&self) -> Option<&MetricWidget> {
-        self.widgets.get(self.selected)
+        self.widgets.get(self.selected?)
     }
 
     /// Returns the (row, column) position of the selected widget.
-    pub fn selected_position(&self) -> (usize, usize) {
-        (self.selected / self.columns, self.selected % self.columns)
+    pub fn selected_position(&self) -> Option<(usize, usize)> {
+        let selected = self.selected?;
+        Some((selected / self.columns, selected % self.columns))
     }
 
     /// Returns the title.
@@ -497,23 +499,25 @@ impl Component for MetricsDashboard {
 
         let len = state.widgets.len();
         let cols = state.columns;
-        let current = state.selected;
+        let current = state.selected.unwrap_or(0);
         let current_row = current / cols;
         let current_col = current % cols;
 
         match msg {
             MetricsDashboardMessage::Left => {
                 if current_col > 0 {
-                    state.selected = current - 1;
-                    Some(MetricsDashboardOutput::SelectionChanged(state.selected))
+                    let new_index = current - 1;
+                    state.selected = Some(new_index);
+                    Some(MetricsDashboardOutput::SelectionChanged(new_index))
                 } else {
                     None
                 }
             }
             MetricsDashboardMessage::Right => {
                 if current_col < cols - 1 && current + 1 < len {
-                    state.selected = current + 1;
-                    Some(MetricsDashboardOutput::SelectionChanged(state.selected))
+                    let new_index = current + 1;
+                    state.selected = Some(new_index);
+                    Some(MetricsDashboardOutput::SelectionChanged(new_index))
                 } else {
                     None
                 }
@@ -522,8 +526,8 @@ impl Component for MetricsDashboard {
                 if current_row > 0 {
                     let new_index = (current_row - 1) * cols + current_col;
                     if new_index < len {
-                        state.selected = new_index;
-                        Some(MetricsDashboardOutput::SelectionChanged(state.selected))
+                        state.selected = Some(new_index);
+                        Some(MetricsDashboardOutput::SelectionChanged(new_index))
                     } else {
                         None
                     }
@@ -534,15 +538,15 @@ impl Component for MetricsDashboard {
             MetricsDashboardMessage::Down => {
                 let new_index = (current_row + 1) * cols + current_col;
                 if new_index < len {
-                    state.selected = new_index;
-                    Some(MetricsDashboardOutput::SelectionChanged(state.selected))
+                    state.selected = Some(new_index);
+                    Some(MetricsDashboardOutput::SelectionChanged(new_index))
                 } else {
                     None
                 }
             }
             MetricsDashboardMessage::First => {
                 if current != 0 {
-                    state.selected = 0;
+                    state.selected = Some(0);
                     Some(MetricsDashboardOutput::SelectionChanged(0))
                 } else {
                     None
@@ -551,7 +555,7 @@ impl Component for MetricsDashboard {
             MetricsDashboardMessage::Last => {
                 let last = len - 1;
                 if current != last {
-                    state.selected = last;
+                    state.selected = Some(last);
                     Some(MetricsDashboardOutput::SelectionChanged(last))
                 } else {
                     None
@@ -593,7 +597,7 @@ impl Component for MetricsDashboard {
             for (col_idx, col_area) in col_areas.iter().enumerate() {
                 let widget_idx = row_idx * cols + col_idx;
                 if let Some(widget) = state.widgets.get(widget_idx) {
-                    let is_selected = widget_idx == state.selected;
+                    let is_selected = state.selected == Some(widget_idx);
                     render_widget(widget, is_selected, state, frame, *col_area, theme);
                 }
             }

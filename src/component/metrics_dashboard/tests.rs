@@ -27,7 +27,7 @@ fn test_new() {
     let state = MetricsDashboardState::new(sample_widgets(), 3);
     assert_eq!(state.widget_count(), 6);
     assert_eq!(state.columns(), 3);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert!(!state.is_focused());
     assert!(!state.is_disabled());
 }
@@ -231,13 +231,13 @@ fn test_rows_empty() {
 #[test]
 fn test_selected_position() {
     let mut state = focused_state();
-    assert_eq!(state.selected_position(), (0, 0));
+    assert_eq!(state.selected_position(), Some((0, 0)));
 
     MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
-    assert_eq!(state.selected_position(), (0, 1));
+    assert_eq!(state.selected_position(), Some((0, 1)));
 
     MetricsDashboard::update(&mut state, MetricsDashboardMessage::Down);
-    assert_eq!(state.selected_position(), (1, 1));
+    assert_eq!(state.selected_position(), Some((1, 1)));
 }
 
 // =============================================================================
@@ -248,7 +248,7 @@ fn test_selected_position() {
 fn test_right() {
     let mut state = focused_state();
     let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
-    assert_eq!(state.selected_index(), 1);
+    assert_eq!(state.selected_index(), Some(1));
     assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(1)));
 }
 
@@ -257,7 +257,7 @@ fn test_left() {
     let mut state = focused_state();
     MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
     let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Left);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(0)));
 }
 
@@ -267,7 +267,7 @@ fn test_right_at_row_end() {
     MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
     MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
     let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
-    assert_eq!(state.selected_index(), 2);
+    assert_eq!(state.selected_index(), Some(2));
     assert_eq!(output, None);
 }
 
@@ -275,7 +275,7 @@ fn test_right_at_row_end() {
 fn test_left_at_row_start() {
     let mut state = focused_state();
     let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Left);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(output, None);
 }
 
@@ -283,7 +283,7 @@ fn test_left_at_row_start() {
 fn test_down() {
     let mut state = focused_state();
     let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Down);
-    assert_eq!(state.selected_index(), 3);
+    assert_eq!(state.selected_index(), Some(3));
     assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(3)));
 }
 
@@ -292,7 +292,7 @@ fn test_up() {
     let mut state = focused_state();
     MetricsDashboard::update(&mut state, MetricsDashboardMessage::Down);
     let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Up);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(0)));
 }
 
@@ -316,7 +316,7 @@ fn test_first() {
     let mut state = focused_state();
     MetricsDashboard::update(&mut state, MetricsDashboardMessage::Last);
     let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::First);
-    assert_eq!(state.selected_index(), 0);
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(0)));
 }
 
@@ -324,7 +324,7 @@ fn test_first() {
 fn test_last() {
     let mut state = focused_state();
     let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Last);
-    assert_eq!(state.selected_index(), 5);
+    assert_eq!(state.selected_index(), Some(5));
     assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(5)));
 }
 
@@ -603,6 +603,14 @@ fn test_partial_eq() {
 // =============================================================================
 // Edge cases
 // =============================================================================
+
+#[test]
+fn test_empty_dashboard_selected_index_is_none() {
+    let state = MetricsDashboardState::default();
+    assert_eq!(state.selected_index(), None);
+    assert!(state.selected_widget().is_none());
+    assert!(state.selected_position().is_none());
+}
 
 #[test]
 fn test_empty_dashboard_ignores_navigation() {
