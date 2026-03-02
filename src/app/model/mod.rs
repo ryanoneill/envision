@@ -25,7 +25,7 @@ use crate::input::Event;
 ///
 /// ```rust
 /// use envision::app::{App, Command};
-/// use ratatui::Frame;
+/// use envision::layout::Frame;
 ///
 /// struct MyApp;
 ///

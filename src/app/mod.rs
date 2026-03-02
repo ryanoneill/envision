@@ -36,7 +36,7 @@
 //! ```rust
 //! use envision::app::{App, Command, Update};
 //! use envision::input::Event;
-//! use ratatui::Frame;
+//! use envision::layout::Frame;
 //!
 //! // Define your state
 //! #[derive(Default, Clone)]

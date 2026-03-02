@@ -12,10 +12,9 @@
 use envision::annotation::{with_annotations, Annotate, Annotation, WidgetType};
 use envision::backend::CaptureBackend;
 use envision::harness::TestHarness;
-use ratatui::layout::{Alignment, Constraint, Layout};
-use ratatui::style::{Color, Modifier, Style};
+use envision::layout::{Alignment, Constraint, Layout, Terminal};
+use envision::style::{Color, Modifier, Style};
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
-use ratatui::Terminal;
 
 fn main() {
     println!("╔══════════════════════════════════════╗");

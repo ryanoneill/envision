@@ -6,11 +6,10 @@
 //! Run with: cargo run --example capture_backend
 
 use envision::backend::CaptureBackend;
-use ratatui::layout::{Constraint, Layout};
-use ratatui::style::{Color, Style};
+use envision::layout::{Constraint, Layout, Terminal};
+use envision::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
-use ratatui::Terminal;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a CaptureBackend - this captures all rendering without a real terminal

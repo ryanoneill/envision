@@ -12,9 +12,6 @@ use envision::component::{
     SelectableList, SelectableListMessage, SelectableListState,
 };
 use envision::prelude::*;
-use ratatui::layout::{Alignment, Constraint, Layout};
-use ratatui::style::{Modifier, Style};
-use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 /// The application marker type

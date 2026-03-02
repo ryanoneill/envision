@@ -21,8 +21,7 @@ use super::OverlayAction;
 /// use envision::input::Event;
 /// use envision::theme::Theme;
 /// use crossterm::event::KeyCode;
-/// use ratatui::layout::Rect;
-/// use ratatui::Frame;
+/// use envision::layout::{Rect, Frame};
 ///
 /// struct ConfirmDialog {
 ///     message: String,

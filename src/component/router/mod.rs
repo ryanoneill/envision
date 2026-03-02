@@ -33,7 +33,7 @@
 //!
 //! ```rust
 //! use envision::component::RouterState;
-//! use ratatui::Frame;
+//! use envision::layout::Frame;
 //!
 //! #[derive(Clone, Debug, PartialEq, Eq)]
 //! enum Screen { Home, Settings, Profile }

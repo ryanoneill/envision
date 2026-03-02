@@ -90,7 +90,7 @@ pub enum TooltipOutput {
 ///
 /// ```rust
 /// use envision::component::{TooltipState, TooltipPosition};
-/// use ratatui::style::Color;
+/// use envision::style::Color;
 ///
 /// let state = TooltipState::new("Helpful tooltip text")
 ///     .with_title("Info")
@@ -206,7 +206,7 @@ impl TooltipState {
     ///
     /// ```rust
     /// use envision::component::TooltipState;
-    /// use ratatui::style::Color;
+    /// use envision::style::Color;
     ///
     /// let state = TooltipState::new("Content").with_fg_color(Color::Yellow);
     /// assert_eq!(state.fg_color(), Color::Yellow);
@@ -222,7 +222,7 @@ impl TooltipState {
     ///
     /// ```rust
     /// use envision::component::TooltipState;
-    /// use ratatui::style::Color;
+    /// use envision::style::Color;
     ///
     /// let state = TooltipState::new("Content").with_bg_color(Color::DarkGray);
     /// assert_eq!(state.bg_color(), Color::DarkGray);
@@ -238,7 +238,7 @@ impl TooltipState {
     ///
     /// ```rust
     /// use envision::component::TooltipState;
-    /// use ratatui::style::Color;
+    /// use envision::style::Color;
     ///
     /// let state = TooltipState::new("Content").with_border_color(Color::Yellow);
     /// assert_eq!(state.border_color(), Color::Yellow);
@@ -485,7 +485,6 @@ impl Tooltip {
     ///
     /// ```rust
     /// use envision::component::{Tooltip, TooltipState, Toggleable};
-    /// use ratatui::prelude::*;
     ///
     /// let mut state = TooltipState::new("Button help text");
     /// Tooltip::show(&mut state);

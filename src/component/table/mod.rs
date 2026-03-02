@@ -10,7 +10,7 @@
 //!     Column, Component, Focusable, SortDirection, Table, TableMessage, TableOutput,
 //!     TableRow, TableState,
 //! };
-//! use ratatui::layout::Constraint;
+//! use envision::layout::Constraint;
 //!
 //! // Define your row type
 //! #[derive(Clone, Debug, PartialEq)]
@@ -53,9 +53,10 @@
 
 use std::marker::PhantomData;
 
-use ratatui::layout::Constraint;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Cell, Row};
+
+use crate::layout::Constraint;
 
 use super::{Component, Focusable};
 use crate::input::{Event, KeyCode};
@@ -104,7 +105,7 @@ pub trait TableRow: Clone {
 ///
 /// ```rust
 /// use envision::component::Column;
-/// use ratatui::layout::Constraint;
+/// use envision::layout::Constraint;
 ///
 /// let col = Column::new("Name", Constraint::Length(20)).sortable();
 /// assert_eq!(col.header(), "Name");
@@ -268,7 +269,7 @@ impl<T: TableRow> TableState<T> {
     ///
     /// ```rust
     /// use envision::component::{Column, TableRow, TableState};
-    /// use ratatui::layout::Constraint;
+    /// use envision::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
@@ -422,7 +423,7 @@ impl<T: TableRow> TableState<T> {
     ///
     /// ```rust
     /// use envision::component::{Column, TableRow, TableState};
-    /// use ratatui::layout::Constraint;
+    /// use envision::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
@@ -527,7 +528,7 @@ impl<T: TableRow + 'static> TableState<T> {
 /// use envision::component::{
 ///     Column, Component, Table, TableMessage, TableRow, TableState,
 /// };
-/// use ratatui::layout::Constraint;
+/// use envision::layout::Constraint;
 ///
 /// #[derive(Clone, Debug, PartialEq)]
 /// struct Person {

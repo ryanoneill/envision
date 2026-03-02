@@ -32,7 +32,7 @@ use super::output::OutputFormat;
 ///
 /// ```rust
 /// use envision::backend::CaptureBackend;
-/// use ratatui::Terminal;
+/// use envision::layout::Terminal;
 /// use ratatui::widgets::Paragraph;
 ///
 /// let backend = CaptureBackend::new(80, 24);

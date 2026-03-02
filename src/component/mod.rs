@@ -36,7 +36,8 @@
 //! ```rust
 //! use envision::component::{Component, Focusable};
 //! use envision::theme::Theme;
-//! use ratatui::prelude::*;
+//! use envision::layout::{Rect, Frame};
+//! use envision::style::Stylize;
 //!
 //! struct Counter;
 //!
@@ -284,7 +285,7 @@ pub trait Component: Sized {
 /// ```rust
 /// use envision::component::{Component, Focusable};
 /// use envision::theme::Theme;
-/// use ratatui::prelude::*;
+/// use envision::layout::{Rect, Frame};
 ///
 /// struct TextInput;
 ///
@@ -351,7 +352,7 @@ pub trait Focusable: Component {
 /// ```rust
 /// use envision::component::{Component, Toggleable};
 /// use envision::theme::Theme;
-/// use ratatui::prelude::*;
+/// use envision::layout::{Rect, Frame};
 ///
 /// struct HelpPanel;
 ///
