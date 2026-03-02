@@ -187,3 +187,97 @@ fn test_selected_highlight_style_unfocused() {
     assert_eq!(style.bg, Some(NORD3));
     assert_eq!(style.fg, Some(NORD6));
 }
+
+#[test]
+fn test_dracula_theme() {
+    let theme = Theme::dracula();
+    assert_eq!(theme.background, DRACULA_BG);
+    assert_eq!(theme.foreground, DRACULA_FG);
+    assert_eq!(theme.border, DRACULA_COMMENT);
+    assert_eq!(theme.focused, DRACULA_PURPLE);
+    assert_eq!(theme.selected, DRACULA_PINK);
+    assert_eq!(theme.disabled, DRACULA_COMMENT);
+    assert_eq!(theme.placeholder, DRACULA_COMMENT);
+    assert_eq!(theme.primary, DRACULA_CYAN);
+    assert_eq!(theme.success, DRACULA_GREEN);
+    assert_eq!(theme.warning, DRACULA_YELLOW);
+    assert_eq!(theme.error, DRACULA_RED);
+    assert_eq!(theme.info, DRACULA_CYAN);
+    assert_eq!(theme.progress_filled, DRACULA_PURPLE);
+    assert_eq!(theme.progress_empty, DRACULA_CURRENT);
+}
+
+#[test]
+fn test_dracula_colors() {
+    assert_eq!(DRACULA_BG, Color::Rgb(40, 42, 54));
+    assert_eq!(DRACULA_PURPLE, Color::Rgb(189, 147, 249));
+    assert_eq!(DRACULA_GREEN, Color::Rgb(80, 250, 123));
+}
+
+#[test]
+fn test_solarized_dark_theme() {
+    let theme = Theme::solarized_dark();
+    assert_eq!(theme.background, SOLARIZED_BASE03);
+    assert_eq!(theme.foreground, SOLARIZED_BASE0);
+    assert_eq!(theme.border, SOLARIZED_BASE01);
+    assert_eq!(theme.focused, SOLARIZED_BLUE);
+    assert_eq!(theme.selected, SOLARIZED_CYAN);
+    assert_eq!(theme.disabled, SOLARIZED_BASE01);
+    assert_eq!(theme.placeholder, SOLARIZED_BASE01);
+    assert_eq!(theme.primary, SOLARIZED_BLUE);
+    assert_eq!(theme.success, SOLARIZED_GREEN);
+    assert_eq!(theme.warning, SOLARIZED_YELLOW);
+    assert_eq!(theme.error, SOLARIZED_RED);
+    assert_eq!(theme.info, SOLARIZED_CYAN);
+    assert_eq!(theme.progress_filled, SOLARIZED_BLUE);
+    assert_eq!(theme.progress_empty, SOLARIZED_BASE02);
+}
+
+#[test]
+fn test_solarized_dark_colors() {
+    assert_eq!(SOLARIZED_BASE03, Color::Rgb(0, 43, 54));
+    assert_eq!(SOLARIZED_BLUE, Color::Rgb(38, 139, 210));
+    assert_eq!(SOLARIZED_GREEN, Color::Rgb(133, 153, 0));
+}
+
+#[test]
+fn test_gruvbox_dark_theme() {
+    let theme = Theme::gruvbox_dark();
+    assert_eq!(theme.background, GRUVBOX_BG);
+    assert_eq!(theme.foreground, GRUVBOX_FG);
+    assert_eq!(theme.border, GRUVBOX_GRAY);
+    assert_eq!(theme.focused, GRUVBOX_YELLOW);
+    assert_eq!(theme.selected, GRUVBOX_BLUE);
+    assert_eq!(theme.disabled, GRUVBOX_GRAY);
+    assert_eq!(theme.placeholder, GRUVBOX_GRAY);
+    assert_eq!(theme.primary, GRUVBOX_AQUA);
+    assert_eq!(theme.success, GRUVBOX_GREEN);
+    assert_eq!(theme.warning, GRUVBOX_ORANGE);
+    assert_eq!(theme.error, GRUVBOX_RED);
+    assert_eq!(theme.info, GRUVBOX_BLUE);
+    assert_eq!(theme.progress_filled, GRUVBOX_YELLOW);
+    assert_eq!(theme.progress_empty, GRUVBOX_BG1);
+}
+
+#[test]
+fn test_gruvbox_dark_colors() {
+    assert_eq!(GRUVBOX_BG, Color::Rgb(40, 40, 40));
+    assert_eq!(GRUVBOX_YELLOW, Color::Rgb(250, 189, 47));
+    assert_eq!(GRUVBOX_GREEN, Color::Rgb(184, 187, 38));
+}
+
+#[test]
+fn test_all_themes_distinct() {
+    let themes = [
+        Theme::default(),
+        Theme::nord(),
+        Theme::dracula(),
+        Theme::solarized_dark(),
+        Theme::gruvbox_dark(),
+    ];
+    for i in 0..themes.len() {
+        for j in (i + 1)..themes.len() {
+            assert_ne!(themes[i], themes[j], "themes at indices {} and {} should differ", i, j);
+        }
+    }
+}
