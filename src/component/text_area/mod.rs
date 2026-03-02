@@ -29,6 +29,28 @@ use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 use crate::undo::{EditKind, UndoStack};
 
+/// Attempt to write text to the system clipboard.
+///
+/// Errors are silently ignored — this is best-effort. Falls back gracefully
+/// in headless environments (CI, SSH) where no clipboard provider exists.
+#[cfg(feature = "clipboard")]
+fn system_clipboard_set(text: &str) {
+    if let Ok(mut cb) = arboard::Clipboard::new() {
+        let _ = cb.set_text(text);
+    }
+}
+
+/// Attempt to read text from the system clipboard.
+///
+/// Returns `None` if the clipboard is unavailable or doesn't contain text.
+#[cfg(feature = "clipboard")]
+fn system_clipboard_get() -> Option<String> {
+    arboard::Clipboard::new()
+        .ok()
+        .and_then(|mut cb| cb.get_text().ok())
+        .filter(|s| !s.is_empty())
+}
+
 mod cursor;
 
 /// A snapshot of TextArea state for undo/redo.
@@ -527,6 +549,11 @@ impl Component for TextArea {
                 KeyCode::Char('c') if ctrl => Some(TextAreaMessage::Copy),
                 KeyCode::Char('x') if ctrl => Some(TextAreaMessage::Cut),
                 KeyCode::Char('v') if ctrl => {
+                    // Try system clipboard first, fall back to internal
+                    #[cfg(feature = "clipboard")]
+                    if let Some(text) = system_clipboard_get() {
+                        return Some(TextAreaMessage::Paste(text));
+                    }
                     if state.clipboard.is_empty() { None }
                     else { Some(TextAreaMessage::Paste(state.clipboard.clone())) }
                 }
@@ -683,6 +710,8 @@ impl Component for TextArea {
             TextAreaMessage::Copy => {
                 if let Some(text) = state.selected_text() {
                     state.clipboard = text.clone();
+                    #[cfg(feature = "clipboard")]
+                    system_clipboard_set(&text);
                     Some(TextAreaOutput::Copied(text))
                 } else { None }
             }
@@ -690,6 +719,8 @@ impl Component for TextArea {
                 if let Some(text) = state.selected_text() {
                     let snapshot = state.snapshot();
                     state.clipboard = text.clone();
+                    #[cfg(feature = "clipboard")]
+                    system_clipboard_set(&text);
                     state.delete_selection();
                     state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
