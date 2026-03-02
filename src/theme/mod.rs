@@ -1,9 +1,9 @@
 //! Theming support for Envision components.
 //!
 //! The theme module provides customizable color schemes for all UI components.
-//! Five themes are included by default: a `Default` theme matching ratatui's
-//! standard colors, and four popular dark themes (Nord, Dracula, Solarized Dark,
-//! Gruvbox Dark).
+//! Six themes are included by default: a `Default` theme matching ratatui's
+//! standard colors, and five popular dark themes (Nord, Dracula, Solarized Dark,
+//! Gruvbox Dark, Catppuccin Mocha).
 //!
 //! # Example
 //!
@@ -37,6 +37,9 @@
 //!     ..Theme::default()
 //! };
 //! ```
+
+pub mod catppuccin;
+pub use catppuccin::*;
 
 use ratatui::style::{Color, Modifier, Style};
 
@@ -432,6 +435,50 @@ impl Theme {
 
             progress_filled: GRUVBOX_YELLOW,
             progress_empty: GRUVBOX_BG1,
+        }
+    }
+
+    /// Creates a new Catppuccin Mocha-themed color scheme.
+    ///
+    /// The Catppuccin Mocha theme is one of the most popular modern terminal
+    /// palettes, featuring soothing pastel colors on a warm dark background.
+    ///
+    /// # Colors
+    ///
+    /// - Focused: Lavender (#B4BEFE)
+    /// - Selected: Mauve (#CBA6F7)
+    /// - Disabled: Surface2 (#585B70)
+    /// - Success: Green (#A6E3A1)
+    /// - Warning: Yellow (#F9E2AF)
+    /// - Error: Red (#F38BA8)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::theme::Theme;
+    ///
+    /// let theme = Theme::catppuccin_mocha();
+    /// assert_eq!(theme.focused, envision::theme::CATPPUCCIN_LAVENDER);
+    /// ```
+    pub fn catppuccin_mocha() -> Self {
+        Self {
+            background: CATPPUCCIN_BASE,
+            foreground: CATPPUCCIN_TEXT,
+            border: CATPPUCCIN_SURFACE2,
+
+            focused: CATPPUCCIN_LAVENDER,
+            selected: CATPPUCCIN_MAUVE,
+            disabled: CATPPUCCIN_SURFACE2,
+            placeholder: CATPPUCCIN_OVERLAY0,
+
+            primary: CATPPUCCIN_BLUE,
+            success: CATPPUCCIN_GREEN,
+            warning: CATPPUCCIN_YELLOW,
+            error: CATPPUCCIN_RED,
+            info: CATPPUCCIN_SAPPHIRE,
+
+            progress_filled: CATPPUCCIN_LAVENDER,
+            progress_empty: CATPPUCCIN_SURFACE0,
         }
     }
 

@@ -29,6 +29,7 @@ enum ActiveTheme {
     Dracula,
     SolarizedDark,
     GruvboxDark,
+    CatppuccinMocha,
 }
 
 impl ActiveTheme {
@@ -39,6 +40,7 @@ impl ActiveTheme {
             ActiveTheme::Dracula => "Dracula",
             ActiveTheme::SolarizedDark => "Solarized Dark",
             ActiveTheme::GruvboxDark => "Gruvbox Dark",
+            ActiveTheme::CatppuccinMocha => "Catppuccin Mocha",
         }
     }
 
@@ -48,7 +50,8 @@ impl ActiveTheme {
             ActiveTheme::Nord => ActiveTheme::Dracula,
             ActiveTheme::Dracula => ActiveTheme::SolarizedDark,
             ActiveTheme::SolarizedDark => ActiveTheme::GruvboxDark,
-            ActiveTheme::GruvboxDark => ActiveTheme::Default,
+            ActiveTheme::GruvboxDark => ActiveTheme::CatppuccinMocha,
+            ActiveTheme::CatppuccinMocha => ActiveTheme::Default,
         }
     }
 }
@@ -152,6 +155,7 @@ impl App for ThemedApp {
             ActiveTheme::Dracula => Theme::dracula(),
             ActiveTheme::SolarizedDark => Theme::solarized_dark(),
             ActiveTheme::GruvboxDark => Theme::gruvbox_dark(),
+            ActiveTheme::CatppuccinMocha => Theme::catppuccin_mocha(),
         };
 
         let area = frame.area();
@@ -308,7 +312,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}\n", vt.display_ansi());
 
     // Cycle through remaining themes
-    for _ in 0..3 {
+    for _ in 0..4 {
         vt.dispatch(Msg::ToggleTheme);
         vt.tick()?;
         println!("{} Theme:", vt.state().active_theme.name());
@@ -322,6 +326,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Dracula:        Purple focus (#BD93F9), Comment gray disabled, Cyan primary");
     println!("Solarized Dark: Blue focus (#268BD2), Base01 disabled, Blue primary");
     println!("Gruvbox Dark:   Yellow focus (#FABD2F), Gray disabled, Aqua primary");
+    println!("Catppuccin:     Lavender focus (#B4BEFE), Surface2 disabled, Blue primary");
 
     Ok(())
 }

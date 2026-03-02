@@ -267,6 +267,32 @@ fn test_gruvbox_dark_colors() {
 }
 
 #[test]
+fn test_catppuccin_mocha_theme() {
+    let theme = Theme::catppuccin_mocha();
+    assert_eq!(theme.background, CATPPUCCIN_BASE);
+    assert_eq!(theme.foreground, CATPPUCCIN_TEXT);
+    assert_eq!(theme.border, CATPPUCCIN_SURFACE2);
+    assert_eq!(theme.focused, CATPPUCCIN_LAVENDER);
+    assert_eq!(theme.selected, CATPPUCCIN_MAUVE);
+    assert_eq!(theme.disabled, CATPPUCCIN_SURFACE2);
+    assert_eq!(theme.placeholder, CATPPUCCIN_OVERLAY0);
+    assert_eq!(theme.primary, CATPPUCCIN_BLUE);
+    assert_eq!(theme.success, CATPPUCCIN_GREEN);
+    assert_eq!(theme.warning, CATPPUCCIN_YELLOW);
+    assert_eq!(theme.error, CATPPUCCIN_RED);
+    assert_eq!(theme.info, CATPPUCCIN_SAPPHIRE);
+    assert_eq!(theme.progress_filled, CATPPUCCIN_LAVENDER);
+    assert_eq!(theme.progress_empty, CATPPUCCIN_SURFACE0);
+}
+
+#[test]
+fn test_catppuccin_mocha_colors() {
+    assert_eq!(CATPPUCCIN_BASE, Color::Rgb(30, 30, 46));
+    assert_eq!(CATPPUCCIN_LAVENDER, Color::Rgb(180, 190, 254));
+    assert_eq!(CATPPUCCIN_GREEN, Color::Rgb(166, 227, 161));
+}
+
+#[test]
 fn test_all_themes_distinct() {
     let themes = [
         Theme::default(),
@@ -274,6 +300,7 @@ fn test_all_themes_distinct() {
         Theme::dracula(),
         Theme::solarized_dark(),
         Theme::gruvbox_dark(),
+        Theme::catppuccin_mocha(),
     ];
     for i in 0..themes.len() {
         for j in (i + 1)..themes.len() {
