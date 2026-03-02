@@ -123,6 +123,7 @@ mod text_area;
 // Compound components
 mod form;
 mod searchable_list;
+mod split_panel;
 
 // Data components
 #[cfg(feature = "data-components")]
@@ -219,6 +220,9 @@ pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 pub use form::{Form, FormField, FormFieldKind, FormMessage, FormOutput, FormState, FormValue};
 pub use searchable_list::{
     SearchableList, SearchableListMessage, SearchableListOutput, SearchableListState,
+};
+pub use split_panel::{
+    SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput, SplitPanelState,
 };
 
 #[cfg(feature = "display-components")]
