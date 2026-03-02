@@ -74,7 +74,7 @@ fn test_dispatch_event() {
         output,
         Some(LoadingListOutput::SelectionChanged(0))
     ));
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 // ========================================
@@ -97,7 +97,7 @@ fn test_instance_methods() {
         output,
         Some(LoadingListOutput::SelectionChanged(0))
     ));
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 
     // instance dispatch_event
     let output = state.dispatch_event(&Event::key(KeyCode::Down));
@@ -105,7 +105,7 @@ fn test_instance_methods() {
         output,
         Some(LoadingListOutput::SelectionChanged(1))
     ));
-    assert_eq!(state.selected(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
 }
 
 // ========================================
@@ -152,7 +152,7 @@ fn test_disabled_prevents_navigation() {
 
     let output = LoadingList::<TestItem>::update(&mut state, LoadingListMessage::Down);
     assert_eq!(output, None);
-    assert_eq!(state.selected(), None);
+    assert_eq!(state.selected_index(), None);
 
     let output = LoadingList::<TestItem>::update(&mut state, LoadingListMessage::Up);
     assert_eq!(output, None);

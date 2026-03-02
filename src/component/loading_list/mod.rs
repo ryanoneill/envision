@@ -362,13 +362,41 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Returns the selected index.
-    pub fn selected(&self) -> Option<usize> {
+    pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
 
     /// Returns the selected item.
-    pub fn selected_item(&self) -> Option<&LoadingListItem<T>> {
+    ///
+    /// This is the canonical `selected()` method consistent with other Envision
+    /// components (Tabs, RadioGroup, etc.) that return `Option<&T>`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// #[derive(Clone)]
+    /// struct Task { name: String }
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec![Task { name: "Build".to_string() }],
+    ///     |t| t.name.clone(),
+    /// );
+    /// assert!(state.selected().is_none());
+    ///
+    /// state.set_selected(Some(0));
+    /// assert_eq!(state.selected().unwrap().label(), "Build");
+    /// ```
+    pub fn selected(&self) -> Option<&LoadingListItem<T>> {
         self.selected.and_then(|i| self.items.get(i))
+    }
+
+    /// Returns the selected item.
+    ///
+    /// Alias for [`selected()`](Self::selected).
+    pub fn selected_item(&self) -> Option<&LoadingListItem<T>> {
+        self.selected()
     }
 
     /// Returns the selected item's data.
