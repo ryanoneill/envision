@@ -108,6 +108,7 @@ pub mod layout;
 pub mod overlay;
 pub mod style;
 pub mod theme;
+pub(crate) mod undo;
 
 // Re-export commonly used types
 pub use adapter::{DualBackend, DualBackendBuilder};
