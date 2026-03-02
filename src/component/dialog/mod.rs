@@ -40,7 +40,10 @@ use crate::theme::Theme;
 /// assert_eq!(button.label(), "Save Changes");
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct DialogButton {
     /// Unique identifier returned when this button is pressed.
     id: String,
@@ -110,7 +113,10 @@ pub enum DialogOutput {
 /// Contains all the state needed to render and manage a dialog,
 /// including title, message, buttons, and focus state.
 #[derive(Clone, Debug, Default, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct DialogState {
     /// Dialog title.
     title: String,

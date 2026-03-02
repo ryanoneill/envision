@@ -56,7 +56,10 @@ pub enum ProgressBarOutput {
 
 /// State for a ProgressBar component.
 #[derive(Clone, Debug, Default, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ProgressBarState {
     /// The current progress value (0.0 to 1.0).
     progress: f32,

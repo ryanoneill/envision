@@ -34,7 +34,10 @@ use crate::theme::Theme;
 
 /// Status of a progress item.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ProgressItemStatus {
     /// Item is pending (not yet started).
     #[default]
@@ -71,7 +74,10 @@ impl ProgressItemStatus {
 
 /// A single progress item.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ProgressItem {
     /// Unique identifier.
     id: String,
@@ -199,7 +205,10 @@ pub enum MultiProgressOutput {
 
 /// State for the MultiProgress component.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct MultiProgressState {
     /// All progress items.
     items: Vec<ProgressItem>,

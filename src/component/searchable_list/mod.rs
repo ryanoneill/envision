@@ -82,7 +82,10 @@ pub enum SearchableListOutput<T: Clone> {
 
 /// Identifies which sub-component has focus within the SearchableList.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 enum Focus {
     /// The filter input field has focus.
     Filter,
@@ -95,7 +98,10 @@ enum Focus {
 /// Contains the full list of items, the current filter text, and the
 /// filtered subset that is displayed. The filter is case-insensitive.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct SearchableListState<T: Clone> {
     /// All items (unfiltered).
     items: Vec<T>,
@@ -569,13 +575,11 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
                 }
                 None
             }
-            SearchableListMessage::Select => {
-                state
-                    .selected
-                    .and_then(|si| state.filtered_indices.get(si).copied())
-                    .and_then(|i| state.items.get(i).cloned())
-                    .map(SearchableListOutput::Selected)
-            }
+            SearchableListMessage::Select => state
+                .selected
+                .and_then(|si| state.filtered_indices.get(si).copied())
+                .and_then(|i| state.items.get(i).cloned())
+                .map(SearchableListOutput::Selected),
             SearchableListMessage::ToggleFocus => {
                 state.internal_focus = match state.internal_focus {
                     Focus::Filter => Focus::List,

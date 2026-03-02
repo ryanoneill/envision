@@ -21,10 +21,22 @@ fn test_columns() -> Vec<Column> {
 
 fn test_rows() -> Vec<TestRow> {
     vec![
-        TestRow { name: "Apple".into(), category: "Fruit".into() },
-        TestRow { name: "Banana".into(), category: "Fruit".into() },
-        TestRow { name: "Carrot".into(), category: "Vegetable".into() },
-        TestRow { name: "Apricot".into(), category: "Fruit".into() },
+        TestRow {
+            name: "Apple".into(),
+            category: "Fruit".into(),
+        },
+        TestRow {
+            name: "Banana".into(),
+            category: "Fruit".into(),
+        },
+        TestRow {
+            name: "Carrot".into(),
+            category: "Vegetable".into(),
+        },
+        TestRow {
+            name: "Apricot".into(),
+            category: "Fruit".into(),
+        },
     ]
 }
 
@@ -101,7 +113,7 @@ fn test_filter_resets_selection_when_row_hidden() {
     // Filter to "fruit" — Carrot is "Vegetable", gets filtered out
     state.set_filter_text("fruit");
     assert_eq!(state.visible_count(), 3); // Apple, Banana, Apricot
-    // Selection moves to first visible
+                                          // Selection moves to first visible
     assert_eq!(state.selected_row().unwrap().name, "Apple");
 }
 
@@ -179,9 +191,10 @@ fn test_set_rows_clears_filter() {
     state.set_filter_text("ap");
     assert_eq!(state.visible_count(), 2);
 
-    state.set_rows(vec![
-        TestRow { name: "X".into(), category: "Y".into() },
-    ]);
+    state.set_rows(vec![TestRow {
+        name: "X".into(),
+        category: "Y".into(),
+    }]);
     assert_eq!(state.filter_text(), "");
     assert_eq!(state.visible_count(), 1);
 }

@@ -50,7 +50,10 @@ pub enum CheckboxOutput {
 
 /// State for a Checkbox component.
 #[derive(Clone, Debug, Default, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct CheckboxState {
     /// The checkbox label.
     label: String,

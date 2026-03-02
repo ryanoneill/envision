@@ -41,7 +41,10 @@ const DEFAULT_MAX_VISIBLE: usize = 5;
 ///
 /// Each level has a distinct color for visual differentiation.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ToastLevel {
     /// General information (blue).
     #[default]
@@ -59,7 +62,10 @@ pub enum ToastLevel {
 /// Each toast has a unique ID, message, severity level, and optional
 /// remaining duration for auto-dismiss.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ToastItem {
     /// Unique identifier for this toast.
     id: u64,
@@ -136,7 +142,10 @@ pub enum ToastOutput {
 /// Manages a collection of toast notifications with support for
 /// auto-dismiss, manual dismiss, and configurable limits.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ToastState {
     /// Active toasts.
     toasts: Vec<ToastItem>,

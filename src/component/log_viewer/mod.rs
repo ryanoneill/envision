@@ -798,12 +798,7 @@ impl Focusable for LogViewer {
 }
 
 /// Renders the search bar area.
-fn render_search_bar(
-    state: &LogViewerState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-) {
+fn render_search_bar(state: &LogViewerState, frame: &mut Frame, area: Rect, theme: &Theme) {
     let search_style = if state.disabled {
         theme.disabled_style()
     } else if state.focus == Focus::Search {
@@ -837,12 +832,7 @@ fn render_search_bar(
 }
 
 /// Renders the filter bar showing which severity levels are active.
-fn render_filter_bar(
-    state: &LogViewerState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-) {
+fn render_filter_bar(state: &LogViewerState, frame: &mut Frame, area: Rect, theme: &Theme) {
     let filter_style = if state.disabled {
         theme.disabled_style()
     } else {
@@ -895,12 +885,7 @@ fn render_filter_bar(
 }
 
 /// Renders the log entries area.
-fn render_log(
-    state: &LogViewerState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-) {
+fn render_log(state: &LogViewerState, frame: &mut Frame, area: Rect, theme: &Theme) {
     let visible = state.visible_entries();
 
     let border_style = if state.disabled {

@@ -288,7 +288,10 @@ fn test_paste() {
     state.set_cursor(5);
     let output = InputField::update(&mut state, InputFieldMessage::Paste(" world".into()));
     assert_eq!(state.value(), "hello world");
-    assert_eq!(output, Some(InputFieldOutput::Changed("hello world".into())));
+    assert_eq!(
+        output,
+        Some(InputFieldOutput::Changed("hello world".into()))
+    );
 }
 
 #[test]
@@ -361,10 +364,8 @@ fn focused_state(value: &str) -> InputFieldState {
 #[test]
 fn test_shift_left_event() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(
-        &state,
-        &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT),
-    );
+    let msg =
+        InputField::handle_event(&state, &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT));
     assert_eq!(msg, Some(InputFieldMessage::SelectLeft));
 }
 
@@ -381,20 +382,15 @@ fn test_shift_right_event() {
 #[test]
 fn test_shift_home_event() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(
-        &state,
-        &Event::key_with(KeyCode::Home, KeyModifiers::SHIFT),
-    );
+    let msg =
+        InputField::handle_event(&state, &Event::key_with(KeyCode::Home, KeyModifiers::SHIFT));
     assert_eq!(msg, Some(InputFieldMessage::SelectHome));
 }
 
 #[test]
 fn test_shift_end_event() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(
-        &state,
-        &Event::key_with(KeyCode::End, KeyModifiers::SHIFT),
-    );
+    let msg = InputField::handle_event(&state, &Event::key_with(KeyCode::End, KeyModifiers::SHIFT));
     assert_eq!(msg, Some(InputFieldMessage::SelectEnd));
 }
 
@@ -562,7 +558,7 @@ fn test_selection_preserved_across_multiple_shifts() {
 fn test_select_then_reverse_direction() {
     let mut state = InputFieldState::with_value("hello");
     state.set_cursor(2); // After "he"
-    // Select right twice: anchor=2, cursor=4, selected "ll"
+                         // Select right twice: anchor=2, cursor=4, selected "ll"
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     assert_eq!(state.selected_text(), Some("ll"));

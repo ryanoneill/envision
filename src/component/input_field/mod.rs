@@ -126,7 +126,10 @@ pub enum InputFieldOutput {
 
 /// State for an InputField component.
 #[derive(Clone, Debug, Default, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct InputFieldState {
     /// The current text value.
     value: String,
@@ -260,7 +263,8 @@ impl InputFieldState {
 
     /// Returns the currently selected text, or `None` if no selection.
     pub fn selected_text(&self) -> Option<&str> {
-        self.selection_range().map(|(start, end)| &self.value[start..end])
+        self.selection_range()
+            .map(|(start, end)| &self.value[start..end])
     }
 
     /// Returns a reference to the internal clipboard contents.
@@ -829,8 +833,7 @@ impl Component for InputField {
             .borders(Borders::ALL)
             .border_style(border_style);
 
-        let is_placeholder =
-            state.value.is_empty() && !state.placeholder.is_empty();
+        let is_placeholder = state.value.is_empty() && !state.placeholder.is_empty();
 
         let base_style = if state.disabled {
             theme.disabled_style()

@@ -36,7 +36,10 @@ use crate::theme::Theme;
 
 /// The orientation of a split panel.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum SplitOrientation {
     /// Panes are arranged left-right (vertical divider).
     Vertical,
@@ -76,7 +79,10 @@ pub enum SplitPanelOutput {
 
 /// Identifies which pane has focus.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 enum Pane {
     First,
     Second,
@@ -87,7 +93,10 @@ enum Pane {
 /// Manages the split ratio, orientation, and which pane has focus.
 /// The parent is responsible for rendering content into each pane.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct SplitPanelState {
     /// The orientation of the split.
     orientation: SplitOrientation,
@@ -303,10 +312,7 @@ impl SplitPanelState {
 
         let chunks = Layout::default()
             .direction(direction)
-            .constraints([
-                Constraint::Length(first_size),
-                Constraint::Min(0),
-            ])
+            .constraints([Constraint::Length(first_size), Constraint::Min(0)])
             .split(area);
 
         (chunks[0], chunks[1])

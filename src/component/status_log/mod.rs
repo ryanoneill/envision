@@ -29,7 +29,10 @@ use crate::theme::Theme;
 
 /// Severity level for status log entries.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum StatusLogLevel {
     /// Informational message.
     #[default]
@@ -66,7 +69,10 @@ impl StatusLogLevel {
 
 /// A single status log entry.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct StatusLogEntry {
     /// Unique identifier.
     id: u64,
@@ -180,7 +186,10 @@ pub enum StatusLogOutput {
 /// state.info("Application started");
 /// ```
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct StatusLogState {
     /// All log entries (stored in insertion order, displayed newest first).
     entries: Vec<StatusLogEntry>,

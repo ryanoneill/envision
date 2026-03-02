@@ -399,9 +399,7 @@ impl FormState {
         match state {
             FieldState::Text(s) => FormValue::Text(s.value().to_string()),
             FieldState::Checkbox(s) => FormValue::Bool(s.is_checked()),
-            FieldState::Select(s) => {
-                FormValue::Selected(s.selected_item().map(|v| v.to_string()))
-            }
+            FieldState::Select(s) => FormValue::Selected(s.selected_item().map(|v| v.to_string())),
         }
     }
 
@@ -508,9 +506,7 @@ impl Component for Form {
 
             // Ctrl+Enter submits the form
             if key.code == KeyCode::Enter
-                && key
-                    .modifiers
-                    .contains(crate::input::KeyModifiers::CONTROL)
+                && key.modifiers.contains(crate::input::KeyModifiers::CONTROL)
             {
                 return Some(FormMessage::Submit);
             }

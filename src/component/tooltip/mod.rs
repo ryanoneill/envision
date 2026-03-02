@@ -41,7 +41,10 @@ use crate::theme::Theme;
 /// assert_eq!(position, TooltipPosition::Below);
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum TooltipPosition {
     /// Display above the target.
     Above,
@@ -101,7 +104,10 @@ pub enum TooltipOutput {
 ///     .with_bg_color(Color::DarkGray);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct TooltipState {
     /// The tooltip content/text.
     content: String,

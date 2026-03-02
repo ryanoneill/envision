@@ -145,12 +145,12 @@ pub use component::{
 #[cfg(feature = "display-components")]
 pub use component::{
     KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress,
-    MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressBar,
-    ProgressBarMessage, ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus,
-    Section, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem,
-    StatusBarItemContent, StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog,
-    StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState, Toast,
-    ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
+    MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressBar, ProgressBarMessage,
+    ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus, Section, Spinner,
+    SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
+    StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
+    StatusLogMessage, StatusLogOutput, StatusLogState, Toast, ToastItem, ToastLevel, ToastMessage,
+    ToastOutput, ToastState,
 };
 
 // Navigation components

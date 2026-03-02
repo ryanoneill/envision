@@ -68,8 +68,7 @@ fn test_default_placeholder() {
 
 #[test]
 fn test_with_placeholder() {
-    let state = SearchableListState::<String>::new(vec![])
-        .with_placeholder("Search...");
+    let state = SearchableListState::<String>::new(vec![]).with_placeholder("Search...");
     assert_eq!(state.placeholder(), "Search...");
 }
 
@@ -82,8 +81,7 @@ fn test_set_placeholder() {
 
 #[test]
 fn test_with_disabled() {
-    let state = SearchableListState::<String>::new(vec![])
-        .with_disabled(true);
+    let state = SearchableListState::<String>::new(vec![]).with_disabled(true);
     assert!(state.is_disabled());
 }
 
@@ -131,7 +129,10 @@ fn test_set_focused_and_is_focused() {
 #[test]
 fn test_filter_narrows_items() {
     let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("an".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("an".into()),
+    );
     assert_eq!(state.filtered_count(), 1); // "Banana"
     assert_eq!(state.filtered_items(), vec![&"Banana".to_string()]);
 }
@@ -139,7 +140,10 @@ fn test_filter_narrows_items() {
 #[test]
 fn test_filter_is_case_insensitive() {
     let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("APPLE".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("APPLE".into()),
+    );
     assert_eq!(state.filtered_count(), 1);
     assert_eq!(state.filtered_items(), vec![&"Apple".to_string()]);
 }
@@ -147,14 +151,20 @@ fn test_filter_is_case_insensitive() {
 #[test]
 fn test_filter_matches_substring() {
     let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("err".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("err".into()),
+    );
     assert_eq!(state.filtered_count(), 2); // Cherry, Elderberry
 }
 
 #[test]
 fn test_filter_no_matches() {
     let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("xyz".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("xyz".into()),
+    );
     assert_eq!(state.filtered_count(), 0);
     assert_eq!(state.selected_index(), None);
     assert_eq!(state.selected_item(), None);
@@ -189,7 +199,10 @@ fn test_filter_changed_returns_output() {
 #[test]
 fn test_empty_filter_shows_all_items() {
     let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("app".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("app".into()),
+    );
     assert_eq!(state.filtered_count(), 1);
 
     SearchableList::update(&mut state, SearchableListMessage::FilterChanged("".into()));
@@ -238,7 +251,10 @@ fn test_filter_char_from_list_switches_focus_to_filter() {
 #[test]
 fn test_filter_backspace_removes_last_char() {
     let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("abc".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("abc".into()),
+    );
     SearchableList::update(&mut state, SearchableListMessage::FilterBackspace);
     assert_eq!(state.filter_text(), "ab");
 }
@@ -253,7 +269,10 @@ fn test_filter_backspace_on_empty_returns_none() {
 #[test]
 fn test_filter_clear_empties_filter() {
     let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("abc".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("abc".into()),
+    );
     let output = SearchableList::update(&mut state, SearchableListMessage::FilterClear);
     assert_eq!(state.filter_text(), "");
     assert_eq!(state.filtered_count(), 5);
@@ -398,7 +417,10 @@ fn test_select_returns_selected_item() {
 fn test_select_with_filter_returns_correct_item() {
     let mut state = focused_state();
     // Filter to show only "Cherry" and "Elderberry"
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("err".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("err".into()),
+    );
     assert_eq!(state.filtered_count(), 2);
 
     // Select first filtered item (Cherry)
@@ -412,7 +434,10 @@ fn test_select_with_filter_returns_correct_item() {
 #[test]
 fn test_select_with_filter_second_item() {
     let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("err".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("err".into()),
+    );
     SearchableList::update(&mut state, SearchableListMessage::Down);
     let output = SearchableList::update(&mut state, SearchableListMessage::Select);
     assert_eq!(
@@ -424,7 +449,10 @@ fn test_select_with_filter_second_item() {
 #[test]
 fn test_select_on_empty_filtered_list_returns_none() {
     let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("xyz".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("xyz".into()),
+    );
     let output = SearchableList::update(&mut state, SearchableListMessage::Select);
     assert_eq!(output, None);
 }
@@ -445,7 +473,10 @@ fn test_select_on_empty_list_returns_none() {
 fn test_navigation_respects_filtered_bounds() {
     let mut state = focused_state();
     // Filter to 2 items
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("err".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("err".into()),
+    );
     assert_eq!(state.filtered_count(), 2);
 
     // Down should work
@@ -471,10 +502,8 @@ fn test_disabled_ignores_all_messages() {
     let output = SearchableList::update(&mut state, SearchableListMessage::Down);
     assert_eq!(output, None);
 
-    let output = SearchableList::update(
-        &mut state,
-        SearchableListMessage::FilterChanged("a".into()),
-    );
+    let output =
+        SearchableList::update(&mut state, SearchableListMessage::FilterChanged("a".into()));
     assert_eq!(output, None);
 
     let output = SearchableList::update(&mut state, SearchableListMessage::Select);
@@ -714,7 +743,10 @@ fn test_instance_update() {
 fn test_instance_dispatch_event() {
     let mut state = focused_state();
     let output = state.dispatch_event(&Event::char('a'));
-    assert!(matches!(output, Some(SearchableListOutput::FilterChanged(_))));
+    assert!(matches!(
+        output,
+        Some(SearchableListOutput::FilterChanged(_))
+    ));
 }
 
 // =============================================================================
@@ -761,7 +793,10 @@ fn test_render_focused_list() {
 fn test_render_with_filter() {
     let mut state = SearchableListState::new(sample_items());
     SearchableList::set_focused(&mut state, true);
-    SearchableList::update(&mut state, SearchableListMessage::FilterChanged("an".into()));
+    SearchableList::update(
+        &mut state,
+        SearchableListMessage::FilterChanged("an".into()),
+    );
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
@@ -825,6 +860,9 @@ fn test_partial_eq_different_filter() {
     let mut state1 = SearchableListState::new(sample_items());
     let state2 = SearchableListState::new(sample_items());
     SearchableList::set_focused(&mut state1, true);
-    SearchableList::update(&mut state1, SearchableListMessage::FilterChanged("a".into()));
+    SearchableList::update(
+        &mut state1,
+        SearchableListMessage::FilterChanged("a".into()),
+    );
     assert_ne!(state1, state2);
 }

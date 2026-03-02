@@ -4,8 +4,7 @@ use crate::component::test_utils;
 fn sample_series() -> Vec<DataSeries> {
     vec![
         DataSeries::new("Series A", vec![10.0, 20.0, 30.0, 25.0, 15.0]),
-        DataSeries::new("Series B", vec![5.0, 15.0, 10.0, 20.0, 25.0])
-            .with_color(Color::Red),
+        DataSeries::new("Series B", vec![5.0, 15.0, 10.0, 20.0, 25.0]).with_color(Color::Red),
     ]
 }
 
@@ -470,10 +469,7 @@ fn test_render_bar_vertical() {
 
 #[test]
 fn test_render_bar_horizontal() {
-    let state = ChartState::bar_horizontal(vec![DataSeries::new(
-        "Values",
-        vec![10.0, 20.0, 30.0],
-    )]);
+    let state = ChartState::bar_horizontal(vec![DataSeries::new("Values", vec![10.0, 20.0, 30.0])]);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {

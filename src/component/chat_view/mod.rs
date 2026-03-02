@@ -356,9 +356,7 @@ impl ChatViewState {
         content: impl Into<String>,
         timestamp: impl Into<String>,
     ) {
-        self.push_message(
-            ChatMessage::new(ChatRole::User, content).with_timestamp(timestamp),
-        );
+        self.push_message(ChatMessage::new(ChatRole::User, content).with_timestamp(timestamp));
     }
 
     /// Adds a system message with a timestamp.
@@ -367,9 +365,7 @@ impl ChatViewState {
         content: impl Into<String>,
         timestamp: impl Into<String>,
     ) {
-        self.push_message(
-            ChatMessage::new(ChatRole::System, content).with_timestamp(timestamp),
-        );
+        self.push_message(ChatMessage::new(ChatRole::System, content).with_timestamp(timestamp));
     }
 
     /// Adds an assistant message with a timestamp.
@@ -378,9 +374,7 @@ impl ChatViewState {
         content: impl Into<String>,
         timestamp: impl Into<String>,
     ) {
-        self.push_message(
-            ChatMessage::new(ChatRole::Assistant, content).with_timestamp(timestamp),
-        );
+        self.push_message(ChatMessage::new(ChatRole::Assistant, content).with_timestamp(timestamp));
     }
 
     /// Clears all messages.
@@ -773,12 +767,7 @@ impl Focusable for ChatView {
 }
 
 /// Renders the message history area.
-fn render_history(
-    state: &ChatViewState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-) {
+fn render_history(state: &ChatViewState, frame: &mut Frame, area: Rect, theme: &Theme) {
     let border_style = if state.disabled {
         theme.disabled_style()
     } else if state.focused && state.focus == Focus::History {
@@ -830,7 +819,11 @@ fn render_history(
 }
 
 /// Formats a chat message into display lines.
-fn format_message(msg: &ChatMessage, show_timestamps: bool, _width: usize) -> Vec<(Line<'_>, ChatRole)> {
+fn format_message(
+    msg: &ChatMessage,
+    show_timestamps: bool,
+    _width: usize,
+) -> Vec<(Line<'_>, ChatRole)> {
     let mut result = Vec::new();
     let role = msg.role();
     let style = Style::default().fg(role.color());
@@ -848,19 +841,13 @@ fn format_message(msg: &ChatMessage, show_timestamps: bool, _width: usize) -> Ve
         }
     }
 
-    header_spans.push(Span::styled(
-        format!("{}:", msg.display_name()),
-        bold_style,
-    ));
+    header_spans.push(Span::styled(format!("{}:", msg.display_name()), bold_style));
 
     result.push((Line::from(header_spans), role));
 
     // Content lines
     for line in msg.content().lines() {
-        result.push((
-            Line::from(Span::styled(format!("  {}", line), style)),
-            role,
-        ));
+        result.push((Line::from(Span::styled(format!("  {}", line), style)), role));
     }
 
     // Handle empty content
@@ -872,12 +859,7 @@ fn format_message(msg: &ChatMessage, show_timestamps: bool, _width: usize) -> Ve
 }
 
 /// Renders the input area.
-fn render_input(
-    state: &ChatViewState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-) {
+fn render_input(state: &ChatViewState, frame: &mut Frame, area: Rect, theme: &Theme) {
     let border_style = if state.disabled {
         theme.disabled_style()
     } else if state.focused && state.focus == Focus::Input {

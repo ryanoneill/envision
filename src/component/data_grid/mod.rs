@@ -237,10 +237,7 @@ impl<T: TableRow> DataGridState<T> {
             .and_then(|ri| self.rows.get(ri))
             .map(|row| {
                 let cells = row.cells();
-                cells
-                    .get(self.selected_column)
-                    .cloned()
-                    .unwrap_or_default()
+                cells.get(self.selected_column).cloned().unwrap_or_default()
             })
     }
 
@@ -607,9 +604,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                 let content_area = area.inner(Margin::new(1, 1));
                 let col_areas = Layout::default()
                     .direction(Direction::Horizontal)
-                    .constraints(
-                        state.columns.iter().map(|c| c.width()).collect::<Vec<_>>(),
-                    )
+                    .constraints(state.columns.iter().map(|c| c.width()).collect::<Vec<_>>())
                     .split(content_area);
 
                 if let Some(col_area) = col_areas.get(state.selected_column) {

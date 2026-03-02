@@ -75,8 +75,7 @@ fn test_with_bounds() {
 
 #[test]
 fn test_with_bounds_clamps_ratio() {
-    let state = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.95)
-        .with_bounds(0.2, 0.8);
+    let state = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.95).with_bounds(0.2, 0.8);
     assert!((state.ratio() - 0.8).abs() < f32::EPSILON);
 }
 
@@ -348,10 +347,8 @@ fn test_ctrl_down_maps_to_grow_first() {
 #[test]
 fn test_ctrl_up_maps_to_shrink_first() {
     let state = vertical_state();
-    let msg = SplitPanel::handle_event(
-        &state,
-        &Event::key_with(KeyCode::Up, KeyModifiers::CONTROL),
-    );
+    let msg =
+        SplitPanel::handle_event(&state, &Event::key_with(KeyCode::Up, KeyModifiers::CONTROL));
     assert_eq!(msg, Some(SplitPanelMessage::ShrinkFirst));
 }
 

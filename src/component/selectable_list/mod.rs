@@ -63,7 +63,10 @@ pub enum SelectableListOutput<T: Clone> {
 
 /// State for a SelectableList component.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serialization", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct SelectableListState<T: Clone> {
     items: Vec<T>,
     #[cfg_attr(feature = "serialization", serde(skip))]
@@ -159,9 +162,7 @@ impl<T: Clone> SelectableListState<T> {
     pub fn select(&mut self, index: Option<usize>) {
         match index {
             Some(i) if i < self.items.len() => {
-                if let Some(filtered_pos) =
-                    self.filtered_indices.iter().position(|&fi| fi == i)
-                {
+                if let Some(filtered_pos) = self.filtered_indices.iter().position(|&fi| fi == i) {
                     self.list_state.select(Some(filtered_pos));
                 }
             }
