@@ -341,6 +341,25 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
         result.and(cleanup_result)
     }
 
+    /// Runs the interactive terminal event loop, blocking the current thread.
+    ///
+    /// This is a convenience wrapper around [`run_terminal`](Runtime::run_terminal) for
+    /// applications that don't want to set up their own tokio runtime. It creates
+    /// a multi-threaded tokio runtime internally and blocks on the async event loop.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// // requires real terminal
+    /// fn main() -> std::io::Result<()> {
+    ///     Runtime::<MyApp>::new_terminal()?.run_terminal_blocking()
+    /// }
+    /// ```
+    pub fn run_terminal_blocking(self) -> io::Result<()> {
+        let rt = tokio::runtime::Runtime::new().map_err(io::Error::other)?;
+        rt.block_on(self.run_terminal())
+    }
+
     /// Converts a crossterm event to our Event type.
     fn convert_crossterm_event(event: &CrosstermEvent) -> Option<Event> {
         match event {

@@ -1,7 +1,9 @@
 mod async_tests;
 
 use super::*;
+use ratatui::backend::CrosstermBackend;
 use ratatui::widgets::Paragraph;
+use std::io::{self, Stdout};
 
 struct CounterApp;
 
@@ -572,6 +574,15 @@ fn test_virtual_terminal_find_text() {
 
     let positions = vt.find_text("Not Here");
     assert!(positions.is_empty());
+}
+
+#[test]
+fn test_run_terminal_blocking_exists() {
+    // Verify that run_terminal_blocking is available on the terminal runtime type.
+    // We can't actually call it (requires a real terminal), but we can verify
+    // the method exists by taking a function pointer to it.
+    let _: fn(Runtime<CounterApp, CrosstermBackend<Stdout>>) -> io::Result<()> =
+        Runtime::<CounterApp, CrosstermBackend<Stdout>>::run_terminal_blocking;
 }
 
 // =========================================================================
