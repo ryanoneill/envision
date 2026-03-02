@@ -120,6 +120,9 @@ mod select;
 #[cfg(feature = "input-components")]
 mod text_area;
 
+// Compound components
+mod searchable_list;
+
 // Data components
 #[cfg(feature = "data-components")]
 mod loading_list;
@@ -210,6 +213,12 @@ pub use multi_progress::{
 pub use progress_bar::{ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState};
 #[cfg(feature = "display-components")]
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
+
+// Compound components
+pub use searchable_list::{
+    SearchableList, SearchableListMessage, SearchableListOutput, SearchableListState,
+};
+
 #[cfg(feature = "display-components")]
 pub use status_bar::{
     Section, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarState,
