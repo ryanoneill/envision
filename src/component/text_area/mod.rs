@@ -27,6 +27,17 @@ use ratatui::widgets::{Block, Borders, Paragraph};
 use super::{Component, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
+use crate::undo::{EditKind, UndoStack};
+
+mod cursor;
+
+/// A snapshot of TextArea state for undo/redo.
+#[derive(Debug, Clone)]
+struct TextAreaSnapshot {
+    lines: Vec<String>,
+    cursor_row: usize,
+    cursor_col: usize,
+}
 
 /// Messages that can be sent to a TextArea.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -106,6 +117,10 @@ pub enum TextAreaMessage {
     SetValue(String),
     /// Submit the current value.
     Submit,
+    /// Undo the last edit.
+    Undo,
+    /// Redo the last undone edit.
+    Redo,
 }
 
 /// Output messages from a TextArea.
@@ -141,6 +156,8 @@ pub struct TextAreaState {
     selection_anchor: Option<(usize, usize)>,
     /// Internal clipboard buffer for copy/cut/paste.
     clipboard: String,
+    /// Undo/redo history stack.
+    undo_stack: UndoStack<TextAreaSnapshot>,
 }
 
 impl Default for TextAreaState {
@@ -155,6 +172,7 @@ impl Default for TextAreaState {
             placeholder: String::new(),
             selection_anchor: None,
             clipboard: String::new(),
+            undo_stack: UndoStack::default(),
         }
     }
 }
@@ -199,6 +217,7 @@ impl TextAreaState {
             placeholder: String::new(),
             selection_anchor: None,
             clipboard: String::new(),
+            undo_stack: UndoStack::default(),
         }
     }
 
@@ -316,242 +335,6 @@ impl TextAreaState {
         }
     }
 
-    /// Insert a character at the cursor position.
-    fn insert(&mut self, c: char) {
-        self.lines[self.cursor_row].insert(self.cursor_col, c);
-        self.cursor_col += c.len_utf8();
-    }
-
-    /// Insert a newline at the cursor position.
-    fn new_line(&mut self) {
-        let remainder = self.lines[self.cursor_row].split_off(self.cursor_col);
-        self.lines.insert(self.cursor_row + 1, remainder);
-        self.cursor_row += 1;
-        self.cursor_col = 0;
-    }
-
-    /// Delete the character before the cursor.
-    fn backspace(&mut self) -> bool {
-        if self.cursor_col > 0 {
-            // Find previous character boundary
-            let prev_cursor = self.cursor_col;
-            self.cursor_col = self.lines[self.cursor_row][..self.cursor_col]
-                .char_indices()
-                .last()
-                .map(|(i, _)| i)
-                .unwrap_or(0);
-            self.lines[self.cursor_row].drain(self.cursor_col..prev_cursor);
-            true
-        } else if self.cursor_row > 0 {
-            // Join with previous line
-            let current_line = self.lines.remove(self.cursor_row);
-            self.cursor_row -= 1;
-            self.cursor_col = self.lines[self.cursor_row].len();
-            self.lines[self.cursor_row].push_str(&current_line);
-            true
-        } else {
-            false
-        }
-    }
-
-    /// Delete the character at the cursor.
-    fn delete(&mut self) -> bool {
-        let line_len = self.lines[self.cursor_row].len();
-        if self.cursor_col < line_len {
-            // Find next character boundary
-            let next = self.lines[self.cursor_row][self.cursor_col..]
-                .char_indices()
-                .nth(1)
-                .map(|(i, _)| self.cursor_col + i)
-                .unwrap_or(line_len);
-            self.lines[self.cursor_row].drain(self.cursor_col..next);
-            true
-        } else if self.cursor_row < self.lines.len() - 1 {
-            // Join with next line
-            let next_line = self.lines.remove(self.cursor_row + 1);
-            self.lines[self.cursor_row].push_str(&next_line);
-            true
-        } else {
-            false
-        }
-    }
-
-    /// Move cursor left by one character.
-    fn move_left(&mut self) {
-        if self.cursor_col > 0 {
-            self.cursor_col = self.lines[self.cursor_row][..self.cursor_col]
-                .char_indices()
-                .last()
-                .map(|(i, _)| i)
-                .unwrap_or(0);
-        } else if self.cursor_row > 0 {
-            // Wrap to end of previous line
-            self.cursor_row -= 1;
-            self.cursor_col = self.lines[self.cursor_row].len();
-        }
-    }
-
-    /// Move cursor right by one character.
-    fn move_right(&mut self) {
-        let line_len = self.lines[self.cursor_row].len();
-        if self.cursor_col < line_len {
-            self.cursor_col = self.lines[self.cursor_row][self.cursor_col..]
-                .char_indices()
-                .nth(1)
-                .map(|(i, _)| self.cursor_col + i)
-                .unwrap_or(line_len);
-        } else if self.cursor_row < self.lines.len() - 1 {
-            // Wrap to start of next line
-            self.cursor_row += 1;
-            self.cursor_col = 0;
-        }
-    }
-
-    /// Move cursor up by one line.
-    fn move_up(&mut self) {
-        if self.cursor_row > 0 {
-            // Remember char position, not byte position
-            let char_pos = self.lines[self.cursor_row][..self.cursor_col]
-                .chars()
-                .count();
-            self.cursor_row -= 1;
-            // Restore to same char position (clamped to line length)
-            let line = &self.lines[self.cursor_row];
-            let char_count = line.chars().count();
-            let target_pos = char_pos.min(char_count);
-            self.cursor_col = line
-                .char_indices()
-                .nth(target_pos)
-                .map(|(i, _)| i)
-                .unwrap_or(line.len());
-        }
-    }
-
-    /// Move cursor down by one line.
-    fn move_down(&mut self) {
-        if self.cursor_row < self.lines.len() - 1 {
-            // Remember char position, not byte position
-            let char_pos = self.lines[self.cursor_row][..self.cursor_col]
-                .chars()
-                .count();
-            self.cursor_row += 1;
-            // Restore to same char position (clamped to line length)
-            let line = &self.lines[self.cursor_row];
-            let char_count = line.chars().count();
-            let target_pos = char_pos.min(char_count);
-            self.cursor_col = line
-                .char_indices()
-                .nth(target_pos)
-                .map(|(i, _)| i)
-                .unwrap_or(line.len());
-        }
-    }
-
-    /// Move cursor to the start of the previous word.
-    fn move_word_left(&mut self) {
-        if self.cursor_col == 0 {
-            // If at line start, move to previous line end
-            if self.cursor_row > 0 {
-                self.cursor_row -= 1;
-                self.cursor_col = self.lines[self.cursor_row].len();
-            }
-            return;
-        }
-
-        let before = &self.lines[self.cursor_row][..self.cursor_col];
-        let chars: Vec<(usize, char)> = before.char_indices().collect();
-
-        // Skip trailing whitespace
-        let mut idx = chars.len() - 1;
-        while idx > 0 && chars[idx].1.is_whitespace() {
-            idx -= 1;
-        }
-
-        // Skip word characters
-        while idx > 0 && !chars[idx - 1].1.is_whitespace() {
-            idx -= 1;
-        }
-
-        self.cursor_col = chars.get(idx).map(|(i, _)| *i).unwrap_or(0);
-    }
-
-    /// Move cursor to the end of the next word.
-    fn move_word_right(&mut self) {
-        let line_len = self.lines[self.cursor_row].len();
-        if self.cursor_col >= line_len {
-            // If at line end, move to next line start
-            if self.cursor_row < self.lines.len() - 1 {
-                self.cursor_row += 1;
-                self.cursor_col = 0;
-            }
-            return;
-        }
-
-        let after = &self.lines[self.cursor_row][self.cursor_col..];
-        let chars: Vec<(usize, char)> = after.char_indices().collect();
-
-        // Skip leading non-whitespace
-        let mut idx = 0;
-        while idx < chars.len() && !chars[idx].1.is_whitespace() {
-            idx += 1;
-        }
-
-        // Skip whitespace
-        while idx < chars.len() && chars[idx].1.is_whitespace() {
-            idx += 1;
-        }
-
-        self.cursor_col = chars
-            .get(idx)
-            .map(|(i, _)| self.cursor_col + *i)
-            .unwrap_or(line_len);
-    }
-
-    /// Delete the entire current line.
-    fn delete_line(&mut self) -> bool {
-        if self.lines.len() > 1 {
-            self.lines.remove(self.cursor_row);
-            if self.cursor_row >= self.lines.len() {
-                self.cursor_row = self.lines.len() - 1;
-            }
-            // Clamp cursor column
-            let line_len = self.lines[self.cursor_row].len();
-            self.cursor_col = self.cursor_col.min(line_len);
-            true
-        } else {
-            // Single line: just clear it
-            if !self.lines[0].is_empty() {
-                self.lines[0].clear();
-                self.cursor_col = 0;
-                true
-            } else {
-                false
-            }
-        }
-    }
-
-    /// Delete from cursor to end of line.
-    fn delete_to_end(&mut self) -> bool {
-        let line_len = self.lines[self.cursor_row].len();
-        if self.cursor_col < line_len {
-            self.lines[self.cursor_row].truncate(self.cursor_col);
-            true
-        } else {
-            false
-        }
-    }
-
-    /// Delete from cursor to beginning of line.
-    fn delete_to_start(&mut self) -> bool {
-        if self.cursor_col > 0 {
-            self.lines[self.cursor_row].drain(..self.cursor_col);
-            self.cursor_col = 0;
-            true
-        } else {
-            false
-        }
-    }
-
     /// Returns true if there is an active text selection.
     pub fn has_selection(&self) -> bool {
         match self.selection_anchor {
@@ -619,6 +402,33 @@ impl TextAreaState {
         self.cursor_col = sc;
         self.selection_anchor = None;
         Some(deleted)
+    }
+
+    /// Returns true if there are edits that can be undone.
+    pub fn can_undo(&self) -> bool {
+        self.undo_stack.can_undo()
+    }
+
+    /// Returns true if there are edits that can be redone.
+    pub fn can_redo(&self) -> bool {
+        self.undo_stack.can_redo()
+    }
+
+    /// Creates a snapshot of the current state for undo.
+    fn snapshot(&self) -> TextAreaSnapshot {
+        TextAreaSnapshot {
+            lines: self.lines.clone(),
+            cursor_row: self.cursor_row,
+            cursor_col: self.cursor_col,
+        }
+    }
+
+    /// Restores state from a snapshot.
+    fn restore(&mut self, snapshot: TextAreaSnapshot) {
+        self.lines = snapshot.lines;
+        self.cursor_row = snapshot.cursor_row;
+        self.cursor_col = snapshot.cursor_col;
+        self.clear_selection();
     }
 
     /// Returns true if the textarea is focused.
@@ -708,6 +518,9 @@ impl Component for TextArea {
             let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
             let shift = key.modifiers.contains(KeyModifiers::SHIFT);
             match key.code {
+                // Undo/redo
+                KeyCode::Char('z') if ctrl => Some(TextAreaMessage::Undo),
+                KeyCode::Char('y') if ctrl => Some(TextAreaMessage::Redo),
                 // Clipboard
                 KeyCode::Char('c') if ctrl => Some(TextAreaMessage::Copy),
                 KeyCode::Char('x') if ctrl => Some(TextAreaMessage::Cut),
@@ -759,28 +572,44 @@ impl Component for TextArea {
         match msg {
             // Editing (replaces selection if active)
             TextAreaMessage::Insert(c) => {
+                if c.is_whitespace() {
+                    state.undo_stack.break_group();
+                }
+                let snapshot = state.snapshot();
+                state.undo_stack.save(snapshot, EditKind::Insert);
                 state.delete_selection();
                 state.insert(c);
+                if c.is_whitespace() {
+                    state.undo_stack.break_group();
+                }
                 Some(TextAreaOutput::Changed(state.value()))
             }
             TextAreaMessage::NewLine => {
+                let snapshot = state.snapshot();
+                state.undo_stack.save(snapshot, EditKind::Other);
                 state.delete_selection();
                 state.new_line();
                 Some(TextAreaOutput::Changed(state.value()))
             }
             TextAreaMessage::Backspace => {
+                let snapshot = state.snapshot();
                 if state.has_selection() {
                     state.delete_selection();
+                    state.undo_stack.save(snapshot, EditKind::Delete);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else if state.backspace() {
+                    state.undo_stack.save(snapshot, EditKind::Delete);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else { None }
             }
             TextAreaMessage::Delete => {
+                let snapshot = state.snapshot();
                 if state.has_selection() {
                     state.delete_selection();
+                    state.undo_stack.save(snapshot, EditKind::Delete);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else if state.delete() {
+                    state.undo_stack.save(snapshot, EditKind::Delete);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else { None }
             }
@@ -857,13 +686,17 @@ impl Component for TextArea {
             }
             TextAreaMessage::Cut => {
                 if let Some(text) = state.selected_text() {
+                    let snapshot = state.snapshot();
                     state.clipboard = text.clone();
                     state.delete_selection();
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else { None }
             }
             TextAreaMessage::Paste(text) => {
                 if text.is_empty() { return None; }
+                let snapshot = state.snapshot();
+                state.undo_stack.save(snapshot, EditKind::Other);
                 state.delete_selection();
                 for c in text.chars() {
                     if c == '\n' { state.new_line(); } else { state.insert(c); }
@@ -873,27 +706,39 @@ impl Component for TextArea {
             // Line operations
             TextAreaMessage::DeleteLine => {
                 state.clear_selection();
-                if state.delete_line() { Some(TextAreaOutput::Changed(state.value())) } else { None }
+                let snapshot = state.snapshot();
+                if state.delete_line() {
+                    state.undo_stack.save(snapshot, EditKind::Other);
+                    Some(TextAreaOutput::Changed(state.value()))
+                } else { None }
             }
             TextAreaMessage::DeleteToEnd => {
+                let snapshot = state.snapshot();
                 if state.has_selection() {
                     state.delete_selection();
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else if state.delete_to_end() {
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else { None }
             }
             TextAreaMessage::DeleteToStart => {
+                let snapshot = state.snapshot();
                 if state.has_selection() {
                     state.delete_selection();
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else if state.delete_to_start() {
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else { None }
             }
             TextAreaMessage::Clear => {
                 state.clear_selection();
                 if !state.is_empty() {
+                    let snapshot = state.snapshot();
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     state.lines = vec![String::new()];
                     state.cursor_row = 0;
                     state.cursor_col = 0;
@@ -904,11 +749,31 @@ impl Component for TextArea {
             TextAreaMessage::SetValue(value) => {
                 let old_value = state.value();
                 if old_value != value {
+                    let snapshot = state.snapshot();
+                    state.undo_stack.save(snapshot, EditKind::Other);
                     state.set_value(value);
                     Some(TextAreaOutput::Changed(state.value()))
                 } else { None }
             }
             TextAreaMessage::Submit => Some(TextAreaOutput::Submitted(state.value())),
+            TextAreaMessage::Undo => {
+                let snapshot = state.snapshot();
+                if let Some(restored) = state.undo_stack.undo(snapshot) {
+                    state.restore(restored);
+                    Some(TextAreaOutput::Changed(state.value()))
+                } else {
+                    None
+                }
+            }
+            TextAreaMessage::Redo => {
+                let snapshot = state.snapshot();
+                if let Some(restored) = state.undo_stack.redo(snapshot) {
+                    state.restore(restored);
+                    Some(TextAreaOutput::Changed(state.value()))
+                } else {
+                    None
+                }
+            }
         }
     }
 
@@ -997,3 +862,5 @@ impl Focusable for TextArea {
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod undo_tests;
