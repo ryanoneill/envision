@@ -21,6 +21,7 @@ full = [
     "display-components",
     "navigation-components",
     "overlay-components",
+    "compound-components",
 ]
 
 # Component groups
@@ -29,6 +30,7 @@ data-components = []
 display-components = []
 navigation-components = []
 overlay-components = []
+compound-components = ["input-components", "data-components", "display-components"]
 
 serialization = ["dep:serde", "dep:serde_json", "compact_str/serde", "ratatui/serde"]
 tracing = ["dep:tracing"]
