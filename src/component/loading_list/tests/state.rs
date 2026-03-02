@@ -109,7 +109,10 @@ fn test_selected_returns_item() {
 
     // selected() and selected_item() return the same thing
     state.set_selected(Some(2));
-    assert_eq!(state.selected().unwrap().label(), state.selected_item().unwrap().label());
+    assert_eq!(
+        state.selected().unwrap().label(),
+        state.selected_item().unwrap().label()
+    );
 }
 
 #[test]
