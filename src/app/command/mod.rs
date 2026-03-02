@@ -322,6 +322,9 @@ impl<M: Send + 'static> CommandHandler<M> {
     /// Async actions are collected for later spawning via [`spawn_pending`](CommandHandler::spawn_pending).
     pub fn execute(&mut self, command: Command<M>) {
         for action in command.into_actions() {
+            #[cfg(feature = "tracing")]
+            tracing::trace!("executing command action");
+
             if let Some(async_action) = self.core.execute_action(action) {
                 match async_action {
                     CommandAction::Async(fut) => {
@@ -348,6 +351,15 @@ impl<M: Send + 'static> CommandHandler<M> {
         err_tx: tokio::sync::mpsc::Sender<BoxedError>,
         cancel: tokio_util::sync::CancellationToken,
     ) {
+        #[cfg(feature = "tracing")]
+        {
+            let regular = self.pending_futures.len();
+            let fallible = self.pending_fallible_futures.len();
+            if regular > 0 || fallible > 0 {
+                tracing::debug!(regular, fallible, "spawning async command tasks");
+            }
+        }
+
         // Spawn regular async futures
         for fut in self.pending_futures.drain(..) {
             let tx = msg_tx.clone();

@@ -34,6 +34,9 @@ impl<A: App, B: Backend> RuntimeCore<A, B> {
     ///
     /// Renders the main app view first, then any active overlays on top.
     pub(crate) fn render(&mut self) -> io::Result<()> {
+        #[cfg(feature = "tracing")]
+        tracing::trace!("render: drawing frame");
+
         let theme = &self.theme;
         let overlay_stack = &self.overlay_stack;
         self.terminal.draw(|frame| {

@@ -14,12 +14,14 @@ categories = ["command-line-interface", "development-tools::testing"]
 [features]
 default = ["serialization"]
 serialization = ["dep:serde", "dep:serde_json", "compact_str/serde"]
+tracing = ["dep:tracing"]
 
 [dependencies]
 ratatui = "0.29"
 crossterm = { version = "0.28", features = ["event-stream"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
 serde_json = { version = "1.0", optional = true }
+tracing = { version = "0.1", optional = true }
 unicode-width = "0.2"
 compact_str = "0.8"
 tokio = { version = "1", features = ["sync", "rt", "macros", "time"] }
