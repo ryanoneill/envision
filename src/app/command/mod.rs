@@ -218,6 +218,44 @@ impl<M> Command<M> {
         }
     }
 
+    /// Creates a command that saves application state to a JSON file.
+    ///
+    /// Serializes the state to JSON synchronously, then writes the file
+    /// asynchronously via `tokio::fs::write`. If serialization fails,
+    /// returns [`Command::none`]. File write errors are reported to the
+    /// runtime's error channel (see [`Runtime::take_errors`](crate::Runtime::take_errors)).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    /// use serde::Serialize;
+    ///
+    /// #[derive(Serialize)]
+    /// struct MyState { count: i32 }
+    ///
+    /// let state = MyState { count: 42 };
+    /// let cmd: Command<String> = Command::save_state(&state, "/tmp/state.json");
+    /// ```
+    #[cfg(feature = "serialization")]
+    pub fn save_state<S: serde::Serialize>(
+        state: &S,
+        path: impl Into<std::path::PathBuf>,
+    ) -> Command<M>
+    where
+        M: Send + 'static,
+    {
+        let json = match serde_json::to_string(state) {
+            Ok(json) => json,
+            Err(_) => return Command::none(),
+        };
+        let path = path.into();
+        Command::try_perform_async(
+            async move { tokio::fs::write(path, json).await },
+            |_| None,
+        )
+    }
+
     /// Combines multiple commands into one.
     pub fn combine(commands: impl IntoIterator<Item = Command<M>>) -> Self {
         let mut actions = Vec::new();

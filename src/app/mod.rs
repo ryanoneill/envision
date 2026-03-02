@@ -81,6 +81,8 @@
 mod command;
 mod command_core;
 mod model;
+#[cfg(feature = "serialization")]
+pub mod persistence;
 mod runtime;
 mod runtime_core;
 mod subscription;
@@ -88,6 +90,8 @@ mod update;
 
 pub use command::{BoxedError, Command, CommandHandler};
 pub use model::App;
+#[cfg(feature = "serialization")]
+pub use persistence::load_state;
 pub use runtime::{Runtime, RuntimeConfig};
 pub use subscription::{
     batch, interval_immediate, terminal_events, tick, BatchSubscription, BoxedSubscription,
