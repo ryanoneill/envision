@@ -28,7 +28,7 @@ fn test_select_left() {
 #[test]
 fn test_select_right() {
     let mut state = TextAreaState::with_value("hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::SelectRight);
     assert_eq!(state.selected_text(), Some("h".to_string()));
 }
@@ -43,7 +43,7 @@ fn test_select_home() {
 #[test]
 fn test_select_end() {
     let mut state = TextAreaState::with_value("hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::SelectEnd);
     assert_eq!(state.selected_text(), Some("hello".to_string()));
 }
@@ -61,7 +61,7 @@ fn test_select_up() {
 #[test]
 fn test_select_down() {
     let mut state = TextAreaState::with_value("line1\nline2");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::SelectDown);
     assert!(state.has_selection());
 }
@@ -76,7 +76,7 @@ fn test_select_word_left() {
 #[test]
 fn test_select_word_right() {
     let mut state = TextAreaState::with_value("hello world");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::SelectWordRight);
     assert_eq!(state.selected_text(), Some("hello ".to_string()));
 }
@@ -103,7 +103,7 @@ fn test_select_all_empty() {
 #[test]
 fn test_multiline_selection() {
     let mut state = TextAreaState::with_value("abc\ndef\nghi");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     // Select from start to end of line 1
     TextArea::update(&mut state, TextAreaMessage::SelectDown);
     TextArea::update(&mut state, TextAreaMessage::SelectEnd);
@@ -115,8 +115,8 @@ fn test_multiline_selection() {
 #[test]
 fn test_select_across_lines() {
     let mut state = TextAreaState::with_value("abc\ndef");
-    state.set_cursor(0, 1); // After 'a'
-                            // Select from (0,1) to (1,2) using SelectDown then SelectRight
+    state.set_cursor_position(0, 1); // After 'a'
+                                     // Select from (0,1) to (1,2) using SelectDown then SelectRight
     TextArea::update(&mut state, TextAreaMessage::SelectDown);
     TextArea::update(&mut state, TextAreaMessage::SelectRight);
     let text = state.selected_text().unwrap();
@@ -140,7 +140,7 @@ fn test_left_clears_selection() {
 #[test]
 fn test_right_clears_selection() {
     let mut state = TextAreaState::with_value("hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::SelectRight);
     assert!(state.has_selection());
 
@@ -387,7 +387,7 @@ fn test_set_value_clears_selection() {
 fn test_delete_partial_multiline_selection() {
     let mut state = TextAreaState::with_value("abc\ndef\nghi");
     // Select from middle of line 0 to middle of line 2
-    state.set_cursor(0, 1); // After 'a'
+    state.set_cursor_position(0, 1); // After 'a'
     state.selection_anchor = Some((0, 1));
     state.cursor_row = 2;
     state.cursor_col = 2; // After 'gh'

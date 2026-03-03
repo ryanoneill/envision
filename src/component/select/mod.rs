@@ -204,6 +204,22 @@ impl SelectState {
         self.placeholder = placeholder.into();
     }
 
+    /// Sets the placeholder text (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectState;
+    ///
+    /// let state = SelectState::new(vec!["Red", "Green", "Blue"])
+    ///     .with_placeholder("Choose a color...");
+    /// assert_eq!(state.placeholder(), "Choose a color...");
+    /// ```
+    pub fn with_placeholder(mut self, placeholder: impl Into<String>) -> Self {
+        self.placeholder = placeholder.into();
+        self
+    }
+
     /// Returns true if the select is disabled.
     pub fn is_disabled(&self) -> bool {
         self.disabled

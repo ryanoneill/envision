@@ -1,0 +1,10 @@
+---
+source: src/component/tree/tests/snapshot.rs
+expression: terminal.backend().to_string()
+---
+▼ Root                                  
+    Item 1                              
+    Item 2                              
+    Item 3                              
+    Item 4                              
+    Item 5

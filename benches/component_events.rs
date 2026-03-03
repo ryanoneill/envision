@@ -137,7 +137,7 @@ fn bench_handle_event(c: &mut Criterion) {
         let mut state = InputFieldState::with_value(&text);
         state.set_focused(true);
         // Place cursor in the middle for realistic benchmarking
-        state.set_cursor(size / 2);
+        state.set_cursor_position(size / 2);
 
         group.bench_with_input(
             BenchmarkId::new("input_field/focused/insert", size),
@@ -219,7 +219,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
                 let mut state = TextAreaState::with_value(&content);
                 state.set_focused(true);
                 // Start at top so Down always moves
-                state.set_cursor(0, 0);
+                state.set_cursor_position(0, 0);
                 b.iter(|| TextArea::dispatch_event(black_box(&mut state), black_box(&event_down)))
             },
         );
@@ -237,7 +237,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
             |b, _| {
                 let mut state = InputFieldState::with_value(&text);
                 state.set_focused(true);
-                state.set_cursor(size / 2);
+                state.set_cursor_position(size / 2);
                 b.iter(|| {
                     InputField::dispatch_event(black_box(&mut state), black_box(&event_insert))
                 })
@@ -252,7 +252,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
             |b, _| {
                 let mut state = InputFieldState::with_value(&text);
                 state.set_focused(true);
-                state.set_cursor(size / 2);
+                state.set_cursor_position(size / 2);
                 b.iter(|| {
                     InputField::dispatch_event(black_box(&mut state), black_box(&event_backspace))
                 })
