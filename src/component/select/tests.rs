@@ -442,3 +442,18 @@ fn test_with_disabled_prevents_open() {
     assert_eq!(output, None);
     assert!(!state.is_open());
 }
+
+#[test]
+fn test_with_placeholder() {
+    let state = SelectState::new(vec!["A", "B", "C"]).with_placeholder("Pick one...");
+    assert_eq!(state.placeholder(), "Pick one...");
+}
+
+#[test]
+fn test_with_placeholder_chained() {
+    let state = SelectState::new(vec!["A", "B", "C"])
+        .with_placeholder("Pick one...")
+        .with_disabled(true);
+    assert_eq!(state.placeholder(), "Pick one...");
+    assert!(state.is_disabled());
+}

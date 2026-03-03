@@ -80,7 +80,7 @@ fn test_backspace() {
 #[test]
 fn test_delete() {
     let mut state = InputFieldState::with_value("abc");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
 
     let output = InputField::update(&mut state, InputFieldMessage::Delete);
     assert_eq!(state.value(), "bc");
@@ -117,12 +117,12 @@ fn test_cursor_bounds() {
     let mut state = InputFieldState::with_value("hi");
 
     // Can't go left past beginning
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     InputField::update(&mut state, InputFieldMessage::Left);
     assert_eq!(state.cursor_position(), 0);
 
     // Can't go right past end
-    state.set_cursor(10); // Over the length
+    state.set_cursor_position(10); // Over the length
     assert_eq!(state.cursor_position(), 2); // Clamped
     InputField::update(&mut state, InputFieldMessage::Right);
     assert_eq!(state.cursor_position(), 2);
@@ -171,7 +171,7 @@ fn test_delete_word_back() {
 #[test]
 fn test_delete_word_forward() {
     let mut state = InputFieldState::with_value("hello world");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
 
     let output = InputField::update(&mut state, InputFieldMessage::DeleteWordForward);
     assert_eq!(state.value(), "world");
@@ -236,7 +236,7 @@ fn test_submit() {
 #[test]
 fn test_insert_at_cursor() {
     let mut state = InputFieldState::with_value("helo");
-    state.set_cursor(3);
+    state.set_cursor_position(3);
 
     InputField::update(&mut state, InputFieldMessage::Insert('l'));
     assert_eq!(state.value(), "hello");
