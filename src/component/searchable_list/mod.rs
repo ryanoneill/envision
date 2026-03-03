@@ -125,8 +125,8 @@ pub struct SearchableListState<T: Clone> {
     disabled: bool,
     /// Placeholder text for the filter input.
     placeholder: String,
-    /// Custom matcher function: (query, item_text) -> Option<score>.
-    /// None means no match, Some(score) for ranked match (higher = better).
+    /// Custom matcher function: `(query, item_text) -> Option<score>`.
+    /// `None` means no match, `Some(score)` for ranked match (higher = better).
     #[cfg_attr(feature = "serialization", serde(skip))]
     matcher: Option<Box<MatcherFn>>,
 }
