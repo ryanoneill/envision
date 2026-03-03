@@ -265,7 +265,6 @@ fn test_state_default() {
     assert!(state.is_empty());
     assert_eq!(state.len(), 0);
     assert_eq!(state.selected_index(), None);
-    assert!(state.selected().is_none());
     assert!(state.selected_item().is_none());
     assert!(state.selected_data().is_none());
     assert!(!state.is_focused());
@@ -350,7 +349,6 @@ fn test_set_selected_none() {
 
     state.set_selected(None);
     assert_eq!(state.selected_index(), None);
-    assert!(state.selected().is_none());
     assert!(state.selected_item().is_none());
     assert!(state.selected_data().is_none());
 }
@@ -362,7 +360,7 @@ fn test_set_selected_on_empty_list() {
     state.set_selected(Some(0));
     // With empty list, index 0 is clamped via min(0.saturating_sub(1)) = min(0, 0) = Some(0)
     // But get will return None since items is empty
-    assert!(state.selected().is_none());
+    assert!(state.selected_item().is_none());
 }
 
 // ========================================
