@@ -32,6 +32,7 @@
 
 use std::fmt::Display;
 use std::marker::PhantomData;
+use std::sync::Arc;
 
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph};
@@ -127,8 +128,9 @@ pub struct SearchableListState<T: Clone> {
     placeholder: String,
     /// Custom matcher function: `(query, item_text) -> Option<score>`.
     /// `None` means no match, `Some(score)` for ranked match (higher = better).
+    /// Wrapped in `Arc` so that `SearchableListState` can derive `Clone`.
     #[cfg_attr(feature = "serialization", serde(skip))]
-    matcher: Option<Box<MatcherFn>>,
+    matcher: Option<Arc<MatcherFn>>,
 }
 
 impl<T: Clone> Clone for SearchableListState<T> {
@@ -143,8 +145,7 @@ impl<T: Clone> Clone for SearchableListState<T> {
             focused: self.focused,
             disabled: self.disabled,
             placeholder: self.placeholder.clone(),
-            // The matcher closure cannot be cloned; clones start with no custom matcher.
-            matcher: None,
+            matcher: self.matcher.clone(),
         }
     }
 }
@@ -334,7 +335,7 @@ impl<T: Clone> SearchableListState<T> {
     /// });
     /// ```
     pub fn with_matcher(mut self, matcher: impl Fn(&str, &str) -> Option<i64> + 'static) -> Self {
-        self.matcher = Some(Box::new(matcher));
+        self.matcher = Some(Arc::new(matcher));
         self
     }
 
@@ -771,5 +772,7 @@ impl<T: Clone + Display + 'static> Focusable for SearchableList<T> {
     }
 }
 
+#[cfg(test)]
+mod event_tests;
 #[cfg(test)]
 mod tests;
