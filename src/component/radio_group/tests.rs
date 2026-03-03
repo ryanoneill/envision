@@ -434,3 +434,63 @@ fn test_selected_item_empty() {
     let state: RadioGroupState<&str> = RadioGroupState::new(vec![]);
     assert_eq!(state.selected_item(), None);
 }
+
+// ========== set_options Tests ==========
+
+#[test]
+fn test_set_options_updates_options() {
+    let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
+    state.set_options(vec!["X", "Y", "Z"]);
+    assert_eq!(state.options(), &["X", "Y", "Z"]);
+    assert_eq!(state.len(), 3);
+}
+
+#[test]
+fn test_set_options_preserves_valid_selection() {
+    let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
+    state.set_selected(1);
+    state.set_options(vec!["X", "Y", "Z"]);
+    assert_eq!(state.selected_index(), Some(1));
+}
+
+#[test]
+fn test_set_options_clamps_selection() {
+    let mut state = RadioGroupState::with_selected(vec!["A", "B", "C", "D", "E"], 4);
+    assert_eq!(state.selected_index(), Some(4));
+
+    state.set_options(vec!["X", "Y"]);
+    assert_eq!(state.selected_index(), Some(1)); // Clamped to last valid index
+    assert_eq!(state.selected(), Some(&"Y"));
+}
+
+#[test]
+fn test_set_options_empty_clears_selection() {
+    let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
+    assert_eq!(state.selected_index(), Some(0));
+
+    state.set_options(Vec::<&str>::new());
+    assert_eq!(state.selected_index(), None);
+    assert!(state.is_empty());
+}
+
+#[test]
+fn test_set_options_from_empty_to_non_empty() {
+    let mut state = RadioGroupState::<&str>::new(vec![]);
+    assert_eq!(state.selected_index(), None);
+
+    state.set_options(vec!["X", "Y"]);
+    assert_eq!(state.options(), &["X", "Y"]);
+    // Selection remains None since there was no prior selection
+    assert_eq!(state.selected_index(), None);
+}
+
+#[test]
+fn test_set_options_selection_at_boundary() {
+    let mut state = RadioGroupState::with_selected(vec!["A", "B", "C"], 2);
+    assert_eq!(state.selected_index(), Some(2));
+
+    // Set options to exactly 3 items - index 2 is still valid
+    state.set_options(vec!["X", "Y", "Z"]);
+    assert_eq!(state.selected_index(), Some(2));
+    assert_eq!(state.selected(), Some(&"Z"));
+}
