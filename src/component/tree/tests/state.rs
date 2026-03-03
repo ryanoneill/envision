@@ -173,3 +173,57 @@ fn test_state_visible_count() {
     let state = TreeState::new(vec![root]);
     assert_eq!(state.visible_count(), 3);
 }
+
+#[test]
+fn test_state_with_selected() {
+    let mut root = TreeNode::new_expanded("Root", ());
+    root.add_child(TreeNode::new("Child 1", ()));
+    root.add_child(TreeNode::new("Child 2", ()));
+
+    let state = TreeState::new(vec![root]).with_selected(1);
+    assert_eq!(state.selected_index(), Some(1));
+}
+
+#[test]
+fn test_state_with_selected_first() {
+    let state = TreeState::new(vec![TreeNode::new("Root", ())]).with_selected(0);
+    assert_eq!(state.selected_index(), Some(0));
+}
+
+#[test]
+fn test_state_with_selected_last() {
+    let mut root = TreeNode::new_expanded("Root", ());
+    root.add_child(TreeNode::new("Child 1", ()));
+    root.add_child(TreeNode::new("Child 2", ()));
+
+    let state = TreeState::new(vec![root]).with_selected(2);
+    assert_eq!(state.selected_index(), Some(2));
+}
+
+#[test]
+fn test_state_with_selected_clamped() {
+    let mut root = TreeNode::new_expanded("Root", ());
+    root.add_child(TreeNode::new("Child", ()));
+
+    // 2 visible nodes (Root, Child), index 100 should clamp to 1
+    let state = TreeState::new(vec![root]).with_selected(100);
+    assert_eq!(state.selected_index(), Some(1));
+}
+
+#[test]
+fn test_state_with_selected_empty() {
+    let state: TreeState<()> = TreeState::new(Vec::new()).with_selected(0);
+    assert_eq!(state.selected_index(), None);
+}
+
+#[test]
+fn test_state_with_selected_chained() {
+    let mut root = TreeNode::new_expanded("Root", ());
+    root.add_child(TreeNode::new("Child", ()));
+
+    let state = TreeState::new(vec![root])
+        .with_selected(1)
+        .with_disabled(true);
+    assert_eq!(state.selected_index(), Some(1));
+    assert!(state.is_disabled());
+}

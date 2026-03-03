@@ -204,3 +204,56 @@ fn test_set_loading_invalid_index() {
     state.set_ready(100);
     state.set_error(100, "Error");
 }
+
+// with_selected tests
+
+#[test]
+fn test_state_with_selected() {
+    let items = make_items();
+    let state = LoadingListState::with_items(items, |i| i.name.clone()).with_selected(1);
+    assert_eq!(state.selected_index(), Some(1));
+    assert_eq!(state.selected_item().unwrap().label(), "Item Two");
+}
+
+#[test]
+fn test_state_with_selected_first() {
+    let items = make_items();
+    let state = LoadingListState::with_items(items, |i| i.name.clone()).with_selected(0);
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(state.selected_item().unwrap().label(), "Item One");
+}
+
+#[test]
+fn test_state_with_selected_last() {
+    let items = make_items();
+    let state = LoadingListState::with_items(items, |i| i.name.clone()).with_selected(2);
+    assert_eq!(state.selected_index(), Some(2));
+    assert_eq!(state.selected_item().unwrap().label(), "Item Three");
+}
+
+#[test]
+fn test_state_with_selected_clamped() {
+    let items = make_items();
+    let state = LoadingListState::with_items(items, |i| i.name.clone()).with_selected(100);
+    assert_eq!(state.selected_index(), Some(2));
+    assert_eq!(state.selected_item().unwrap().label(), "Item Three");
+}
+
+#[test]
+fn test_state_with_selected_empty() {
+    let state: LoadingListState<String> = LoadingListState::new().with_selected(0);
+    assert_eq!(state.selected_index(), None);
+    assert!(state.selected_item().is_none());
+}
+
+#[test]
+fn test_state_with_selected_chained() {
+    let items = make_items();
+    let state = LoadingListState::with_items(items, |i| i.name.clone())
+        .with_selected(1)
+        .with_title("My List")
+        .with_disabled(true);
+    assert_eq!(state.selected_index(), Some(1));
+    assert_eq!(state.title(), Some("My List"));
+    assert!(state.is_disabled());
+}
