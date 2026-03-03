@@ -189,6 +189,36 @@ impl<T: Clone> TabsState<T> {
         &self.tabs
     }
 
+    /// Sets the available tabs.
+    ///
+    /// If the current selected index would be out of bounds for the new tabs,
+    /// it is clamped to the last valid index. If the new tabs are empty,
+    /// the selection is set to `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TabsState;
+    ///
+    /// let mut state = TabsState::new(vec!["Home", "Settings", "Help"]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    ///
+    /// state.set_tabs(vec!["Tab A", "Tab B"]);
+    /// assert_eq!(state.tabs(), &["Tab A", "Tab B"]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
+    pub fn set_tabs(&mut self, tabs: Vec<T>) {
+        self.tabs = tabs;
+
+        if self.tabs.is_empty() {
+            self.selected = None;
+        } else if let Some(idx) = self.selected {
+            if idx >= self.tabs.len() {
+                self.selected = Some(self.tabs.len() - 1);
+            }
+        }
+    }
+
     /// Returns the number of tabs.
     pub fn len(&self) -> usize {
         self.tabs.len()

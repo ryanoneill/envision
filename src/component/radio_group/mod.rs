@@ -154,6 +154,36 @@ impl<T: Clone> RadioGroupState<T> {
         &self.options
     }
 
+    /// Sets the available options.
+    ///
+    /// If the current selected index would be out of bounds for the new options,
+    /// it is clamped to the last valid index. If the new options are empty,
+    /// the selection is set to `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RadioGroupState;
+    ///
+    /// let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    ///
+    /// state.set_options(vec!["X", "Y"]);
+    /// assert_eq!(state.options(), &["X", "Y"]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
+    pub fn set_options(&mut self, options: Vec<T>) {
+        self.options = options;
+
+        if self.options.is_empty() {
+            self.selected = None;
+        } else if let Some(idx) = self.selected {
+            if idx >= self.options.len() {
+                self.selected = Some(self.options.len() - 1);
+            }
+        }
+    }
+
     /// Returns the currently selected index.
     ///
     /// Returns `None` if the options are empty.

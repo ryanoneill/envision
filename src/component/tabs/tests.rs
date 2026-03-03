@@ -615,3 +615,63 @@ fn test_selected_item_empty() {
     let state: TabsState<&str> = TabsState::new(vec![]);
     assert_eq!(state.selected_item(), None);
 }
+
+// ========== set_tabs Tests ==========
+
+#[test]
+fn test_set_tabs_updates_tabs() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+    state.set_tabs(vec!["X", "Y", "Z"]);
+    assert_eq!(state.tabs(), &["X", "Y", "Z"]);
+    assert_eq!(state.len(), 3);
+}
+
+#[test]
+fn test_set_tabs_preserves_valid_selection() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+    state.set_selected(1);
+    state.set_tabs(vec!["X", "Y", "Z"]);
+    assert_eq!(state.selected_index(), Some(1));
+}
+
+#[test]
+fn test_set_tabs_clamps_selection() {
+    let mut state = TabsState::with_selected(vec!["A", "B", "C", "D", "E"], 4);
+    assert_eq!(state.selected_index(), Some(4));
+
+    state.set_tabs(vec!["X", "Y"]);
+    assert_eq!(state.selected_index(), Some(1)); // Clamped to last valid index
+    assert_eq!(state.selected(), Some(&"Y"));
+}
+
+#[test]
+fn test_set_tabs_empty_clears_selection() {
+    let mut state = TabsState::new(vec!["A", "B", "C"]);
+    assert_eq!(state.selected_index(), Some(0));
+
+    state.set_tabs(Vec::<&str>::new());
+    assert_eq!(state.selected_index(), None);
+    assert!(state.is_empty());
+}
+
+#[test]
+fn test_set_tabs_from_empty_to_non_empty() {
+    let mut state = TabsState::<&str>::new(vec![]);
+    assert_eq!(state.selected_index(), None);
+
+    state.set_tabs(vec!["X", "Y"]);
+    assert_eq!(state.tabs(), &["X", "Y"]);
+    // Selection remains None since there was no prior selection
+    assert_eq!(state.selected_index(), None);
+}
+
+#[test]
+fn test_set_tabs_selection_at_boundary() {
+    let mut state = TabsState::with_selected(vec!["A", "B", "C"], 2);
+    assert_eq!(state.selected_index(), Some(2));
+
+    // Set tabs to exactly 3 items - index 2 is still valid
+    state.set_tabs(vec!["X", "Y", "Z"]);
+    assert_eq!(state.selected_index(), Some(2));
+    assert_eq!(state.selected(), Some(&"Z"));
+}
