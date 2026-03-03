@@ -813,11 +813,11 @@ mod overlay_tests {
 
     #[test]
     fn test_runtime_overlay_message_from_event() {
-        // Test the OverlayAction::Message path in process_event
+        // Test the OverlayAction::KeepAndMessage path in process_event
         struct MsgOverlay;
         impl Overlay<EventMsg> for MsgOverlay {
             fn handle_event(&mut self, _event: &Event) -> OverlayAction<EventMsg> {
-                OverlayAction::Message(EventMsg::KeyPressed('z'))
+                OverlayAction::KeepAndMessage(EventMsg::KeyPressed('z'))
             }
             fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
         }

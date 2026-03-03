@@ -80,7 +80,7 @@ struct MessageOverlay {
 
 impl Overlay<TestMsg> for MessageOverlay {
     fn handle_event(&mut self, _event: &Event) -> OverlayAction<TestMsg> {
-        OverlayAction::Message(TestMsg::FromOverlay(self.msg.clone()))
+        OverlayAction::KeepAndMessage(TestMsg::FromOverlay(self.msg.clone()))
     }
 
     fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}

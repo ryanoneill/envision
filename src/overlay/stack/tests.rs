@@ -27,7 +27,7 @@ struct MessageOverlay {
 
 impl Overlay<i32> for MessageOverlay {
     fn handle_event(&mut self, _event: &Event) -> OverlayAction<i32> {
-        OverlayAction::Message(self.value)
+        OverlayAction::KeepAndMessage(self.value)
     }
 
     fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
@@ -111,7 +111,7 @@ fn test_stack_handle_event_propagate_to_bottom() {
     let event = Event::char('a');
     let action = stack.handle_event(&event);
     // Top propagates, bottom produces message
-    assert!(matches!(action, OverlayAction::Message(42)));
+    assert!(matches!(action, OverlayAction::KeepAndMessage(42)));
 }
 
 #[test]

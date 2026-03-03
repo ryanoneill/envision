@@ -258,7 +258,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
                             if let Some(envision_event) = Self::convert_crossterm_event(&event) {
                                 match self.core.overlay_stack.handle_event(&envision_event) {
                                     OverlayAction::Consumed => {}
-                                    OverlayAction::Message(msg) => self.dispatch(msg),
+                                    OverlayAction::KeepAndMessage(msg) => self.dispatch(msg),
                                     OverlayAction::Dismiss => {
                                         self.core.overlay_stack.pop();
                                     }
