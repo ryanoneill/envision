@@ -237,3 +237,259 @@ fn test_instance_dispatch_event_disabled() {
     let output = state.dispatch_event(&Event::key(KeyCode::Down));
     assert!(output.is_none());
 }
+
+// ========================================
+// Unrecognized Event Tests
+// ========================================
+
+#[test]
+fn test_handle_event_unrecognized_key() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+
+    let msg = MultiProgress::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+
+    let msg = MultiProgress::handle_event(&state, &Event::key(KeyCode::Tab));
+    assert_eq!(msg, None);
+
+    let msg = MultiProgress::handle_event(&state, &Event::key(KeyCode::Esc));
+    assert_eq!(msg, None);
+
+    let msg = MultiProgress::handle_event(&state, &Event::key(KeyCode::Home));
+    assert_eq!(msg, None);
+
+    let msg = MultiProgress::handle_event(&state, &Event::key(KeyCode::End));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_handle_event_unrecognized_char() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+
+    let msg = MultiProgress::handle_event(&state, &Event::char('a'));
+    assert_eq!(msg, None);
+
+    let msg = MultiProgress::handle_event(&state, &Event::char('z'));
+    assert_eq!(msg, None);
+
+    let msg = MultiProgress::handle_event(&state, &Event::char('q'));
+    assert_eq!(msg, None);
+}
+
+#[test]
+fn test_handle_event_instance_unrecognized() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+
+    let msg = state.handle_event(&Event::key(KeyCode::Enter));
+    assert_eq!(msg, None);
+}
+
+// ========================================
+// Dispatch Event Returns None for Unrecognized
+// ========================================
+
+#[test]
+fn test_dispatch_event_unrecognized_returns_none() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+
+    let output = MultiProgress::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    assert!(output.is_none());
+}
+
+#[test]
+fn test_dispatch_event_unfocused_returns_none() {
+    let mut state = MultiProgressState::new();
+    // Not focused
+
+    let output = MultiProgress::dispatch_event(&mut state, &Event::key(KeyCode::Up));
+    assert!(output.is_none());
+}
+
+// ========================================
+// Dispatch Event Scroll Up
+// ========================================
+
+#[test]
+fn test_dispatch_event_scroll_up() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+    for i in 0..10 {
+        state.add(format!("id{}", i), format!("Item {}", i));
+    }
+    state.set_scroll_offset(5);
+
+    MultiProgress::dispatch_event(&mut state, &Event::key(KeyCode::Up));
+    assert_eq!(state.scroll_offset(), 4);
+}
+
+#[test]
+fn test_dispatch_event_scroll_up_vim_k() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+    for i in 0..10 {
+        state.add(format!("id{}", i), format!("Item {}", i));
+    }
+    state.set_scroll_offset(5);
+
+    MultiProgress::dispatch_event(&mut state, &Event::char('k'));
+    assert_eq!(state.scroll_offset(), 4);
+}
+
+#[test]
+fn test_dispatch_event_scroll_down_vim_j() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+    for i in 0..10 {
+        state.add(format!("id{}", i), format!("Item {}", i));
+    }
+    state.set_scroll_offset(3);
+
+    MultiProgress::dispatch_event(&mut state, &Event::char('j'));
+    assert_eq!(state.scroll_offset(), 4);
+}
+
+#[test]
+fn test_instance_dispatch_event_scroll_up() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+    for i in 0..10 {
+        state.add(format!("id{}", i), format!("Item {}", i));
+    }
+    state.set_scroll_offset(5);
+
+    state.dispatch_event(&Event::key(KeyCode::Up));
+    assert_eq!(state.scroll_offset(), 4);
+}
+
+// ========================================
+// Disabled Prevents All Message Variants
+// ========================================
+
+#[test]
+fn test_update_set_progress_ignored_when_disabled() {
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    state.set_disabled(true);
+
+    let output = MultiProgress::update(
+        &mut state,
+        MultiProgressMessage::SetProgress {
+            id: "id1".to_string(),
+            progress: 0.5,
+        },
+    );
+    assert!(output.is_none());
+    assert_eq!(state.find("id1").unwrap().progress(), 0.0);
+}
+
+#[test]
+fn test_update_set_status_ignored_when_disabled() {
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    state.set_disabled(true);
+
+    let output = MultiProgress::update(
+        &mut state,
+        MultiProgressMessage::SetStatus {
+            id: "id1".to_string(),
+            status: ProgressItemStatus::Active,
+        },
+    );
+    assert!(output.is_none());
+    assert_eq!(
+        state.find("id1").unwrap().status(),
+        ProgressItemStatus::Pending
+    );
+}
+
+#[test]
+fn test_update_set_message_ignored_when_disabled() {
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    state.set_disabled(true);
+
+    let output = MultiProgress::update(
+        &mut state,
+        MultiProgressMessage::SetMessage {
+            id: "id1".to_string(),
+            message: Some("Message".to_string()),
+        },
+    );
+    assert!(output.is_none());
+    assert!(state.find("id1").unwrap().message().is_none());
+}
+
+#[test]
+fn test_update_fail_ignored_when_disabled() {
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    state.set_disabled(true);
+
+    let output = MultiProgress::update(
+        &mut state,
+        MultiProgressMessage::Fail {
+            id: "id1".to_string(),
+            message: Some("Error".to_string()),
+        },
+    );
+    assert!(output.is_none());
+    assert_eq!(
+        state.find("id1").unwrap().status(),
+        ProgressItemStatus::Pending
+    );
+}
+
+#[test]
+fn test_update_remove_ignored_when_disabled() {
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    state.set_disabled(true);
+
+    let output = MultiProgress::update(
+        &mut state,
+        MultiProgressMessage::Remove("id1".to_string()),
+    );
+    assert!(output.is_none());
+    assert_eq!(state.len(), 1);
+}
+
+#[test]
+fn test_update_scroll_down_ignored_when_disabled() {
+    let mut state = MultiProgressState::new();
+    for i in 0..5 {
+        state.add(format!("id{}", i), format!("Item {}", i));
+    }
+    state.set_disabled(true);
+
+    MultiProgress::update(&mut state, MultiProgressMessage::ScrollDown);
+    assert_eq!(state.scroll_offset(), 0);
+}
+
+#[test]
+fn test_update_scroll_to_top_ignored_when_disabled() {
+    let mut state = MultiProgressState::new();
+    for i in 0..5 {
+        state.add(format!("id{}", i), format!("Item {}", i));
+    }
+    state.set_scroll_offset(3);
+    state.set_disabled(true);
+
+    MultiProgress::update(&mut state, MultiProgressMessage::ScrollToTop);
+    assert_eq!(state.scroll_offset(), 3);
+}
+
+#[test]
+fn test_update_scroll_to_bottom_ignored_when_disabled() {
+    let mut state = MultiProgressState::new();
+    for i in 0..5 {
+        state.add(format!("id{}", i), format!("Item {}", i));
+    }
+    state.set_disabled(true);
+
+    MultiProgress::update(&mut state, MultiProgressMessage::ScrollToBottom);
+    assert_eq!(state.scroll_offset(), 0);
+}
