@@ -362,7 +362,7 @@ impl App for ShowcaseApp {
 
         // Content panel based on selected tab
         let content_area = main_chunks[2];
-        match state.tabs.selected() {
+        match state.tabs.selected_item() {
             Some(Panel::Form) => render_form_panel(state, frame, content_area, &theme),
             Some(Panel::Data) => render_data_panel(state, frame, content_area, &theme),
             Some(Panel::Status) => render_status_panel(state, frame, content_area, &theme),

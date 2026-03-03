@@ -385,6 +385,30 @@ impl MetricsDashboardState {
         self.selected
     }
 
+    /// Sets the selected widget index.
+    ///
+    /// The index is clamped to the valid range. Has no effect on empty dashboards.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    ///     MetricWidget::counter("B", 0),
+    ///     MetricWidget::counter("C", 0),
+    /// ], 3);
+    /// state.set_selected(2);
+    /// assert_eq!(state.selected_index(), Some(2));
+    /// ```
+    pub fn set_selected(&mut self, index: usize) {
+        if self.widgets.is_empty() {
+            return;
+        }
+        self.selected = Some(index.min(self.widgets.len() - 1));
+    }
+
     /// Returns a reference to the selected widget.
     pub fn selected_widget(&self) -> Option<&MetricWidget> {
         self.widgets.get(self.selected?)

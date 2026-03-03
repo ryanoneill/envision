@@ -208,7 +208,7 @@ impl DropdownState {
     }
 
     /// Sets the selected option index.
-    pub fn set_selected_index(&mut self, index: Option<usize>) {
+    pub fn set_selected(&mut self, index: Option<usize>) {
         if let Some(idx) = index {
             if idx < self.options.len() {
                 self.selected_index = Some(idx);

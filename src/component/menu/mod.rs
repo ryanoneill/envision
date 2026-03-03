@@ -244,7 +244,7 @@ impl MenuState {
     ///
     /// If the index is out of bounds, it will be clamped to the valid range.
     /// Has no effect on an empty menu.
-    pub fn set_selected_index(&mut self, index: usize) {
+    pub fn set_selected(&mut self, index: usize) {
         if !self.items.is_empty() {
             self.selected_index = Some(index.min(self.items.len() - 1));
         }
@@ -268,7 +268,7 @@ impl MenuState {
     /// assert_eq!(state.selected_index(), Some(1));
     /// ```
     pub fn with_selected(mut self, index: usize) -> Self {
-        self.set_selected_index(index);
+        self.set_selected(index);
         self
     }
 

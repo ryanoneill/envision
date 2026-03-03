@@ -398,8 +398,7 @@ impl<T: Clone> LoadingListState<T> {
 
     /// Returns the selected item.
     ///
-    /// This is the canonical `selected()` method consistent with other Envision
-    /// components (Tabs, RadioGroup, etc.) that return `Option<&T>`.
+    /// Returns `None` if no item is selected.
     ///
     /// # Example
     ///
@@ -413,20 +412,13 @@ impl<T: Clone> LoadingListState<T> {
     ///     vec![Task { name: "Build".to_string() }],
     ///     |t| t.name.clone(),
     /// );
-    /// assert!(state.selected().is_none());
+    /// assert!(state.selected_item().is_none());
     ///
     /// state.set_selected(Some(0));
-    /// assert_eq!(state.selected().unwrap().label(), "Build");
+    /// assert_eq!(state.selected_item().unwrap().label(), "Build");
     /// ```
-    pub fn selected(&self) -> Option<&LoadingListItem<T>> {
-        self.selected.and_then(|i| self.items.get(i))
-    }
-
-    /// Returns the selected item.
-    ///
-    /// Alias for [`selected()`](Self::selected).
     pub fn selected_item(&self) -> Option<&LoadingListItem<T>> {
-        self.selected()
+        self.selected.and_then(|i| self.items.get(i))
     }
 
     /// Returns the selected item's data.

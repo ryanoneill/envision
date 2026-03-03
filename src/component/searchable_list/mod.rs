@@ -268,6 +268,33 @@ impl<T: Clone> SearchableListState<T> {
             .and_then(|&i| self.items.get(i))
     }
 
+    /// Sets the selected index within the filtered list.
+    ///
+    /// The index is clamped to the valid range of filtered items. Has no effect
+    /// on empty filtered lists.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let mut state = SearchableListState::new(vec![
+    ///     "Apple".to_string(),
+    ///     "Banana".to_string(),
+    ///     "Cherry".to_string(),
+    /// ]);
+    /// state.set_selected(2);
+    /// assert_eq!(state.selected_index(), Some(2));
+    /// assert_eq!(state.selected_item(), Some(&"Cherry".to_string()));
+    /// ```
+    pub fn set_selected(&mut self, index: usize) {
+        if self.filtered_indices.is_empty() {
+            return;
+        }
+        self.selected = Some(index.min(self.filtered_indices.len() - 1));
+        self.sync_list_state();
+    }
+
     /// Returns true if the filter input has focus (vs the list).
     pub fn is_filter_focused(&self) -> bool {
         self.internal_focus == Focus::Filter

@@ -94,25 +94,22 @@ fn test_state_selected_index() {
 }
 
 #[test]
-fn test_selected_returns_item() {
+fn test_selected_item_returns_item() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
 
     // No selection returns None
-    assert!(state.selected().is_none());
+    assert!(state.selected_item().is_none());
 
     // With selection returns the item
     state.set_selected(Some(0));
-    let item = state.selected().unwrap();
+    let item = state.selected_item().unwrap();
     assert_eq!(item.label(), "Item One");
     assert_eq!(item.data().id, 1);
 
-    // selected() and selected_item() return the same thing
+    // Verify selected item at different index
     state.set_selected(Some(2));
-    assert_eq!(
-        state.selected().unwrap().label(),
-        state.selected_item().unwrap().label()
-    );
+    assert_eq!(state.selected_item().unwrap().label(), "Item Three");
 }
 
 #[test]
@@ -268,7 +265,6 @@ fn test_state_default() {
     assert!(state.is_empty());
     assert_eq!(state.len(), 0);
     assert_eq!(state.selected_index(), None);
-    assert!(state.selected().is_none());
     assert!(state.selected_item().is_none());
     assert!(state.selected_data().is_none());
     assert!(!state.is_focused());
@@ -353,7 +349,6 @@ fn test_set_selected_none() {
 
     state.set_selected(None);
     assert_eq!(state.selected_index(), None);
-    assert!(state.selected().is_none());
     assert!(state.selected_item().is_none());
     assert!(state.selected_data().is_none());
 }
@@ -365,7 +360,7 @@ fn test_set_selected_on_empty_list() {
     state.set_selected(Some(0));
     // With empty list, index 0 is clamped via min(0.saturating_sub(1)) = min(0, 0) = Some(0)
     // But get will return None since items is empty
-    assert!(state.selected().is_none());
+    assert!(state.selected_item().is_none());
 }
 
 // ========================================

@@ -52,7 +52,7 @@ fn test_new() {
     let state = DataGridState::new(sample_rows(), sample_columns());
     assert_eq!(state.row_count(), 3);
     assert_eq!(state.column_count(), 2);
-    assert_eq!(state.selected_row_index(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.selected_column(), 0);
     assert!(!state.is_editing());
 }
@@ -60,7 +60,7 @@ fn test_new() {
 #[test]
 fn test_new_empty() {
     let state = DataGridState::<Person>::new(vec![], sample_columns());
-    assert_eq!(state.selected_row_index(), None);
+    assert_eq!(state.selected_index(), None);
     assert!(state.is_empty());
 }
 
@@ -111,7 +111,7 @@ fn test_current_cell_value_second_column() {
 fn test_down() {
     let mut state = focused_grid();
     let output = DataGrid::update(&mut state, DataGridMessage::Down);
-    assert_eq!(state.selected_row_index(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
     assert_eq!(output, Some(DataGridOutput::SelectionChanged(1)));
 }
 
@@ -120,7 +120,7 @@ fn test_up() {
     let mut state = focused_grid();
     DataGrid::update(&mut state, DataGridMessage::Down);
     let output = DataGrid::update(&mut state, DataGridMessage::Up);
-    assert_eq!(state.selected_row_index(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(output, Some(DataGridOutput::SelectionChanged(0)));
 }
 
@@ -146,7 +146,7 @@ fn test_first() {
     DataGrid::update(&mut state, DataGridMessage::Down);
     DataGrid::update(&mut state, DataGridMessage::Down);
     let output = DataGrid::update(&mut state, DataGridMessage::First);
-    assert_eq!(state.selected_row_index(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(output, Some(DataGridOutput::SelectionChanged(0)));
 }
 
@@ -154,7 +154,7 @@ fn test_first() {
 fn test_last() {
     let mut state = focused_grid();
     let output = DataGrid::update(&mut state, DataGridMessage::Last);
-    assert_eq!(state.selected_row_index(), Some(2));
+    assert_eq!(state.selected_index(), Some(2));
     assert_eq!(output, Some(DataGridOutput::SelectionChanged(2)));
 }
 
@@ -473,7 +473,7 @@ fn test_set_rows() {
         age: "1".into(),
     }]);
     assert_eq!(state.row_count(), 1);
-    assert_eq!(state.selected_row_index(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -490,13 +490,13 @@ fn test_set_rows_cancels_edit() {
 fn test_set_rows_clamps_selection() {
     let mut state = focused_grid();
     DataGrid::update(&mut state, DataGridMessage::Last);
-    assert_eq!(state.selected_row_index(), Some(2));
+    assert_eq!(state.selected_index(), Some(2));
 
     state.set_rows(vec![Person {
         name: "Only".into(),
         age: "1".into(),
     }]);
-    assert_eq!(state.selected_row_index(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 // =============================================================================
