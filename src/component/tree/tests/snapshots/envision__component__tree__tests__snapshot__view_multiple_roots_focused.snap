@@ -1,0 +1,9 @@
+---
+source: src/component/tree/tests/snapshot.rs
+expression: terminal.backend().to_string()
+---
+▼ Documents                             
+    readme.md                           
+▼ Projects                              
+    envision                            
+  Downloads

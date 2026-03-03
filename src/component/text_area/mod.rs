@@ -361,7 +361,7 @@ impl TextAreaState {
     /// Sets the cursor position (row, char_column).
     ///
     /// Both row and column are clamped to valid ranges.
-    pub fn set_cursor(&mut self, row: usize, col: usize) {
+    pub fn set_cursor_position(&mut self, row: usize, col: usize) {
         self.cursor_row = row.min(self.lines.len().saturating_sub(1));
         // Convert char position to byte offset
         let line = &self.lines[self.cursor_row];
