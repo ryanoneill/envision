@@ -202,8 +202,52 @@ jobs:
         with:
           path: target/doc
 
-  bench:
-    name: Benchmarks
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      runtime: ${{ steps.filter.outputs.runtime }}
+      component-view: ${{ steps.filter.outputs.component-view }}
+      component-events: ${{ steps.filter.outputs.component-events }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'src/backend/**'
+              - 'benches/capture_backend.rs'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+            runtime:
+              - 'src/app/**'
+              - 'src/backend/**'
+              - 'src/overlay/**'
+              - 'benches/runtime.rs'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+            component-view:
+              - 'src/component/**'
+              - 'src/backend/**'
+              - 'src/theme/**'
+              - 'benches/component_view.rs'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+            component-events:
+              - 'src/component/**'
+              - 'src/input/**'
+              - 'benches/component_events.rs'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+
+  bench-backend:
+    name: Bench Backend
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -228,25 +272,175 @@ jobs:
         uses: actions/cache@v4
         with:
           path: target/criterion
-          key: criterion-baseline-${{ github.base_ref || 'main' }}
+          key: criterion-baseline-backend-${{ github.base_ref || 'main' }}
           restore-keys: |
-            criterion-baseline-main
+            criterion-baseline-backend-main
 
       - name: Run benchmarks
-        run: cargo bench --all-features
+        run: cargo bench --bench capture_backend --all-features
 
       - name: Save baseline
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: actions/cache/save@v4
         with:
           path: target/criterion
-          key: criterion-baseline-main
+          key: criterion-baseline-backend-main
 
       - name: Upload benchmark results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: criterion-report
+          name: criterion-report-backend
+          path: target/criterion
+          retention-days: 14
+
+  bench-runtime:
+    name: Bench Runtime
+    needs: changes
+    if: needs.changes.outputs.runtime == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-bench-
+
+      - name: Restore baseline
+        uses: actions/cache@v4
+        with:
+          path: target/criterion
+          key: criterion-baseline-runtime-${{ github.base_ref || 'main' }}
+          restore-keys: |
+            criterion-baseline-runtime-main
+
+      - name: Run benchmarks
+        run: cargo bench --bench runtime --all-features
+
+      - name: Save baseline
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/cache/save@v4
+        with:
+          path: target/criterion
+          key: criterion-baseline-runtime-main
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: criterion-report-runtime
+          path: target/criterion
+          retention-days: 14
+
+  bench-component-view:
+    name: Bench Component View
+    needs: changes
+    if: needs.changes.outputs.component-view == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-bench-
+
+      - name: Restore baseline
+        uses: actions/cache@v4
+        with:
+          path: target/criterion
+          key: criterion-baseline-component-view-${{ github.base_ref || 'main' }}
+          restore-keys: |
+            criterion-baseline-component-view-main
+
+      - name: Run benchmarks
+        run: cargo bench --bench component_view --all-features
+
+      - name: Save baseline
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/cache/save@v4
+        with:
+          path: target/criterion
+          key: criterion-baseline-component-view-main
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: criterion-report-component-view
+          path: target/criterion
+          retention-days: 14
+
+  bench-component-events:
+    name: Bench Component Events
+    needs: changes
+    if: needs.changes.outputs.component-events == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-bench-
+
+      - name: Restore baseline
+        uses: actions/cache@v4
+        with:
+          path: target/criterion
+          key: criterion-baseline-component-events-${{ github.base_ref || 'main' }}
+          restore-keys: |
+            criterion-baseline-component-events-main
+
+      - name: Run benchmarks
+        run: cargo bench --bench component_events --all-features
+
+      - name: Save baseline
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/cache/save@v4
+        with:
+          path: target/criterion
+          key: criterion-baseline-component-events-main
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: criterion-report-component-events
           path: target/criterion
           retention-days: 14
 
