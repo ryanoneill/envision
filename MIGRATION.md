@@ -332,6 +332,37 @@ if state.is_disabled() { /* ... */ }
 This is additive and not breaking unless you have custom components that
 implement the `Focusable` trait and also need to support disabled state.
 
+### Selection API Consistency
+
+The selection API has been standardized across all components. The canonical
+methods are now `selected_item()` for getting the selected value and
+`set_selected()` for setting the selection index.
+
+| Component | Old Method | New Method |
+|-----------|-----------|------------|
+| RadioGroup, Tabs, LoadingList | `selected()` | `selected_item()` |
+| Dropdown, Menu, Select | `set_selected_index()` | `set_selected()` |
+| DataGrid | `selected_row_index()` | `selected_index()` |
+| InputField, TextArea | `set_cursor()` | `set_cursor_position()` |
+
+**Before (0.4.x):**
+
+```rust
+let item = state.selected();        // RadioGroup, Tabs
+state.set_selected_index(Some(1));   // Select, Dropdown
+let idx = state.selected_row_index(); // DataGrid
+state.set_cursor(5);                 // InputField
+```
+
+**After (0.5.0):**
+
+```rust
+let item = state.selected_item();   // All selection components
+state.set_selected(Some(1));        // All selection components
+let idx = state.selected_index();   // All selection components
+state.set_cursor_position(5);       // InputField, TextArea
+```
+
 ### Quick Migration Checklist
 
 - [ ] Replace `AsyncRuntime` / sync `Runtime` with unified `Runtime`
@@ -348,5 +379,9 @@ implement the `Focusable` trait and also need to support disabled state.
 - [ ] Rename `OverlayAction::Message` to `OverlayAction::KeepAndMessage`
 - [ ] Update any component message/output type names to new `{Component}Message`/`{Component}Output` convention
 - [ ] Handle `selected_index()` returning `Option<usize>` instead of `usize`
+- [ ] Rename `selected()` → `selected_item()` on RadioGroup, Tabs, LoadingList
+- [ ] Rename `set_selected_index()` → `set_selected()` on Select, Dropdown, Menu
+- [ ] Rename `selected_row_index()` → `selected_index()` on DataGrid
+- [ ] Rename `set_cursor()` → `set_cursor_position()` on InputField, TextArea
 - [ ] If using serde: ensure `serialization` feature is enabled (it is by default)
 - [ ] If using specific component groups: add the appropriate feature flags
