@@ -1,11 +1,12 @@
 ---
-source: src/component/loading_list/tests/component.rs
+source: src/component/loading_list/tests/view.rs
+assertion_line: 17
 expression: terminal.backend().to_string()
 ---
 ┌──────────────────────────────────────────────────────────┐
-│    Item One                                              │
-│▸   Item Two                                              │
-│    Item Three                                            │
+│                                                          │
+│                                                          │
+│                                                          │
 │                                                          │
 │                                                          │
 │                                                          │
