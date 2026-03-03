@@ -517,10 +517,7 @@ fn test_tick_affects_all_sections() {
     for section in [Section::Left, Section::Center, Section::Right] {
         StatusBar::update(
             &mut state,
-            StatusBarMessage::StartTimer {
-                section,
-                index: 0,
-            },
+            StatusBarMessage::StartTimer { section, index: 0 },
         );
     }
 
