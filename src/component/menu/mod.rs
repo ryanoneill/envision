@@ -160,6 +160,19 @@ impl MenuState {
     }
 
     /// Returns the menu items.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = MenuState::new(vec![
+    ///     MenuItem::new("File"),
+    ///     MenuItem::new("Edit"),
+    /// ]);
+    /// assert_eq!(state.items().len(), 2);
+    /// assert_eq!(state.items()[0].label(), "File");
+    /// ```
     pub fn items(&self) -> &[MenuItem] {
         &self.items
     }
@@ -211,6 +224,18 @@ impl MenuState {
     /// Returns the currently selected item index.
     ///
     /// Returns `None` if the menu is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    ///
+    /// let empty = MenuState::new(vec![]);
+    /// assert_eq!(empty.selected_index(), None);
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected_index
     }
@@ -248,26 +273,73 @@ impl MenuState {
     }
 
     /// Returns the currently selected item.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
+    /// assert_eq!(state.selected_item().unwrap().label(), "File");
+    /// ```
     pub fn selected_item(&self) -> Option<&MenuItem> {
         self.items.get(self.selected_index?)
     }
 
     /// Returns true if the menu is focused.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = MenuState::new(vec![MenuItem::new("File")]);
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = MenuState::new(vec![MenuItem::new("File")]);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the menu is disabled.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = MenuState::new(vec![MenuItem::new("File")]);
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = MenuState::new(vec![MenuItem::new("File")]);
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }

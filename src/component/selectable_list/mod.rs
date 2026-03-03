@@ -104,11 +104,30 @@ impl<T: Clone> SelectableListState<T> {
     /// Creates a new state with the given items.
     ///
     /// If the items list is non-empty, the first item is selected.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectableListState::new(vec!["apple", "banana", "cherry"]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// assert_eq!(state.len(), 3);
+    /// ```
     pub fn new(items: Vec<T>) -> Self {
         Self::with_items(items)
     }
 
     /// Creates a new state with the given items.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectableListState::with_items(vec![1, 2, 3]);
+    /// assert_eq!(state.selected_item(), Some(&1));
+    /// ```
     pub fn with_items(items: Vec<T>) -> Self {
         let filtered_indices: Vec<usize> = (0..items.len()).collect();
         let mut state = Self {
@@ -150,11 +169,31 @@ impl<T: Clone> SelectableListState<T> {
     }
 
     /// Returns a reference to the items.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectableListState::new(vec!["a", "b", "c"]);
+    /// assert_eq!(state.items(), &["a", "b", "c"]);
+    /// ```
     pub fn items(&self) -> &[T] {
         &self.items
     }
 
     /// Sets the items, clearing any active filter and resetting selection.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectableListState::new(vec!["old"]);
+    /// state.set_items(vec!["new1", "new2"]);
+    /// assert_eq!(state.items(), &["new1", "new2"]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn set_items(&mut self, items: Vec<T>) {
         self.items = items;
         self.filter_text.clear();
@@ -169,6 +208,18 @@ impl<T: Clone> SelectableListState<T> {
     }
 
     /// Returns the currently selected index in the original items list.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectableListState::new(vec!["a", "b", "c"]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    ///
+    /// let empty: SelectableListState<String> = SelectableListState::new(vec![]);
+    /// assert_eq!(empty.selected_index(), None);
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.list_state
             .selected()
@@ -176,6 +227,15 @@ impl<T: Clone> SelectableListState<T> {
     }
 
     /// Returns a reference to the currently selected item.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectableListState::new(vec!["a", "b", "c"]);
+    /// assert_eq!(state.selected_item(), Some(&"a"));
+    /// ```
     pub fn selected_item(&self) -> Option<&T> {
         self.selected_index().and_then(|i| self.items.get(i))
     }
@@ -183,6 +243,17 @@ impl<T: Clone> SelectableListState<T> {
     /// Selects the item at the given index in the original items list.
     ///
     /// If the item is filtered out, the selection is unchanged.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectableListState::new(vec!["a", "b", "c"]);
+    /// state.select(Some(2));
+    /// assert_eq!(state.selected_index(), Some(2));
+    /// assert_eq!(state.selected_item(), Some(&"c"));
+    /// ```
     pub fn select(&mut self, index: Option<usize>) {
         match index {
             Some(i) if i < self.items.len() => {
@@ -196,11 +267,32 @@ impl<T: Clone> SelectableListState<T> {
     }
 
     /// Returns true if the list is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let empty: SelectableListState<i32> = SelectableListState::new(vec![]);
+    /// assert!(empty.is_empty());
+    ///
+    /// let non_empty = SelectableListState::new(vec![1]);
+    /// assert!(!non_empty.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.items.is_empty()
     }
 
     /// Returns the number of items in the list.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectableListState::new(vec!["a", "b", "c"]);
+    /// assert_eq!(state.len(), 3);
+    /// ```
     pub fn len(&self) -> usize {
         self.items.len()
     }
@@ -218,21 +310,59 @@ impl<T: Clone> SelectableListState<T> {
 
 impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
     /// Returns true if the selectable list is focused.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectableListState::new(vec!["a", "b"]);
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectableListState::new(vec!["a", "b"]);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the selectable list is disabled.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectableListState::new(vec!["a"]);
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectableListState::new(vec!["a"]);
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }

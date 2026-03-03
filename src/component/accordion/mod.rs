@@ -222,6 +222,16 @@ impl AccordionState {
     }
 
     /// Returns the panels slice.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    /// assert_eq!(state.panels().len(), 2);
+    /// assert_eq!(state.panels()[0].title(), "A");
+    /// ```
     pub fn panels(&self) -> &[AccordionPanel] {
         &self.panels
     }
@@ -346,26 +356,84 @@ impl AccordionState {
     }
 
     /// Returns the count of expanded panels.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let panels = vec![
+    ///     AccordionPanel::new("A", "1").expanded(),
+    ///     AccordionPanel::new("B", "2"),
+    /// ];
+    /// let state = AccordionState::new(panels);
+    /// assert_eq!(state.expanded_count(), 1);
+    /// ```
     pub fn expanded_count(&self) -> usize {
         self.panels.iter().filter(|p| p.expanded).count()
     }
 
     /// Returns true if any panel is expanded.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let panels = vec![
+    ///     AccordionPanel::new("A", "1"),
+    ///     AccordionPanel::new("B", "2").expanded(),
+    /// ];
+    /// let state = AccordionState::new(panels);
+    /// assert!(state.is_any_expanded());
+    /// ```
     pub fn is_any_expanded(&self) -> bool {
         self.panels.iter().any(|p| p.expanded)
     }
 
     /// Returns true if all panels are expanded.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let panels = vec![
+    ///     AccordionPanel::new("A", "1").expanded(),
+    ///     AccordionPanel::new("B", "2").expanded(),
+    /// ];
+    /// let state = AccordionState::new(panels);
+    /// assert!(state.is_all_expanded());
+    /// ```
     pub fn is_all_expanded(&self) -> bool {
         !self.panels.is_empty() && self.panels.iter().all(|p| p.expanded)
     }
 
     /// Returns true if the accordion is focused.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = AccordionState::from_pairs(vec![("A", "1")]);
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = AccordionState::from_pairs(vec![("A", "1")]);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }

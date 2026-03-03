@@ -253,16 +253,45 @@ impl DialogState {
     }
 
     /// Returns the dialog title.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DialogState::alert("Error", "Something went wrong.");
+    /// assert_eq!(state.title(), "Error");
+    /// ```
     pub fn title(&self) -> &str {
         &self.title
     }
 
     /// Returns the dialog message.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DialogState::alert("Error", "File not found.");
+    /// assert_eq!(state.message(), "File not found.");
+    /// ```
     pub fn message(&self) -> &str {
         &self.message
     }
 
     /// Returns the dialog buttons.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DialogState::confirm("Delete?", "Are you sure?");
+    /// assert_eq!(state.buttons().len(), 2);
+    /// assert_eq!(state.buttons()[0].id(), "cancel");
+    /// assert_eq!(state.buttons()[1].id(), "ok");
+    /// ```
     pub fn buttons(&self) -> &[DialogButton] {
         &self.buttons
     }
@@ -383,11 +412,30 @@ impl DialogState {
     }
 
     /// Returns true if the dialog is focused.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DialogState::alert("Info", "Done.");
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DialogState::alert("Info", "Done.");
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
@@ -409,11 +457,30 @@ impl DialogState {
     }
 
     /// Returns true if the dialog is visible.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DialogState::alert("Info", "Done.");
+    /// assert!(!state.is_visible());
+    /// ```
     pub fn is_visible(&self) -> bool {
         self.visible
     }
 
     /// Sets the visibility state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DialogState::alert("Info", "Done.");
+    /// state.set_visible(true);
+    /// assert!(state.is_visible());
+    /// ```
     pub fn set_visible(&mut self, visible: bool) {
         Dialog::set_visible(self, visible);
     }

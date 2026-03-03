@@ -392,11 +392,49 @@ impl<T: TableRow> TableState<T> {
     }
 
     /// Returns a reference to the rows.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = TableState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// assert_eq!(state.rows().len(), 1);
+    /// assert_eq!(state.rows()[0].name, "A");
+    /// ```
     pub fn rows(&self) -> &[T] {
         &self.rows
     }
 
     /// Returns a reference to the columns.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = TableState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// assert_eq!(state.columns().len(), 1);
+    /// assert_eq!(state.columns()[0].header(), "Name");
+    /// ```
     pub fn columns(&self) -> &[Column] {
         &self.columns
     }
@@ -411,6 +449,24 @@ impl<T: TableRow> TableState<T> {
     /// Returns a reference to the currently selected row.
     ///
     /// Returns `None` if no row is selected or the table is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = TableState::new(
+    ///     vec![Item { name: "first".into() }, Item { name: "second".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// assert_eq!(state.selected_row().unwrap().name, "first");
+    /// ```
     pub fn selected_row(&self) -> Option<&T> {
         self.selected
             .and_then(|i| self.display_order.get(i))
@@ -465,6 +521,25 @@ impl<T: TableRow> TableState<T> {
     ///
     /// Pass `None` to clear the selection.
     /// Out of bounds indices are ignored.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = TableState::new(
+    ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// state.set_selected(Some(1));
+    /// assert_eq!(state.selected_index(), Some(1));
+    /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         match index {
             Some(i) if i < self.display_order.len() => self.selected = Some(i),
