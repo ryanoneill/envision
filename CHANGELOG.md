@@ -7,33 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-03-02
+
 ### Added
 
 - **Consistent `selected_item()` accessor** on all selection-based components
-  (RadioGroup, Tabs, Table, Dropdown, Select, Tree)
-- **Disabled state** on all Focusable components: Dialog, InputField, Menu,
-  MultiProgress, SelectableList, StatusLog, TextArea, Tree
-- **`with_disabled()` builder** on Button (was missing)
+  (RadioGroup, Tabs, Table, Dropdown, Select, Tree, DataGrid)
+- **Consistent `set_selected()` setter** on all selection-based components
+  (SelectableList, SearchableList, DataGrid, Tree, MetricsDashboard)
+- **Disabled state** on all Focusable components with `is_disabled()`/`set_disabled()`
+- **`with_disabled()` builder** on all components supporting disabled state
+- **`with_placeholder()` builder** on Dropdown and Select
 - **`serialization` feature flag**: serde/serde_json are now optional
   dependencies behind a default feature, allowing users to opt out
-
-### Changed
-
-- Consistent `{Component}Message` / `{Component}Output` naming across all
-  components
-- Unified navigation variant naming (Up/Down/Left/Right) across components
-- `selected_index()` returns `Option<usize>` consistently across all components
-- Display-only components use `()` for Output instead of empty enums
-- Builder chain methods (`with_*`) added to 7 components for consistency
-
-### Fixed
-
-- Builder methods now available on all components that have state configuration
-
-## [0.5.0] - 2026-02-15
-
-### Added
-
+- **Feature flags** for component groups: `input-components`, `data-components`,
+  `display-components`, `navigation-components`, `overlay-components`,
+  `compound-components`
 - **Overlay/Modal system**: Runtime-owned `OverlayStack` for layered UI
   - `Overlay` trait for custom overlay implementations
   - `OverlayAction` for overlay lifecycle management
@@ -54,6 +43,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Selection API standardized**: `selected()` removed in favor of `selected_item()`,
+  `set_selected_index()` renamed to `set_selected()`, `selected_row_index()`
+  renamed to `selected_index()`
+- **Cursor API standardized**: `set_cursor()` renamed to `set_cursor_position()`
+  on InputField and TextArea
+- Consistent `{Component}Message` / `{Component}Output` naming across all
+  components
+- Unified navigation variant naming (Up/Down/Left/Right) across components
+- `selected_index()` returns `Option<usize>` consistently across all components
+- Display-only components use `()` for Output instead of empty enums
+- `SearchableListState` matcher changed from `Box<dyn Fn>` to `Arc<dyn Fn>`
+  for proper `Clone` support
 - **Unified Runtime**: Sync `Runtime` replaced with single async `Runtime`
   - `Runtime::new_terminal()` for interactive use
   - `Runtime::virtual_terminal()` for programmatic control
@@ -78,6 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Router::init()` no longer panics on empty route configuration
 - Theme style methods return correct fg/bg colors
 - Race conditions in tick/interval cancellation tests on Windows
+- `SearchableListState::clone()` now correctly preserves the matcher function
+  (previously silently set it to `None`)
 
 ## [0.4.1] - 2026-01-15
 
