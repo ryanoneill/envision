@@ -19,6 +19,15 @@
 //! }
 //! ```
 //!
+//! Or without your own tokio runtime:
+//!
+//! ```rust,ignore
+//! // requires real terminal
+//! fn main() -> std::io::Result<()> {
+//!     Runtime::<MyApp>::new_terminal()?.run_terminal_blocking()
+//! }
+//! ```
+//!
 //! ### Virtual Terminal Mode - For Programmatic Control
 //!
 //! ```rust
