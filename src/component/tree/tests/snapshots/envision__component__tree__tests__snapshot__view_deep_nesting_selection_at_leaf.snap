@@ -1,0 +1,8 @@
+---
+source: src/component/tree/tests/snapshot.rs
+expression: terminal.backend().to_string()
+---
+▼ Level 1                               
+  ▼ Level 2                             
+    ▼ Level 3                           
+        Leaf

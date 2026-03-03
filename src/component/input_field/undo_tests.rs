@@ -106,7 +106,7 @@ fn test_grouped_deletes_undo_together() {
 #[test]
 fn test_delete_forward_grouped() {
     let mut state = InputFieldState::with_value("hello");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     InputField::update(&mut state, InputFieldMessage::Delete);
     InputField::update(&mut state, InputFieldMessage::Delete);
     assert_eq!(state.value(), "llo");
@@ -170,7 +170,7 @@ fn test_delete_word_back_is_own_undo_entry() {
 #[test]
 fn test_delete_word_forward_is_own_undo_entry() {
     let mut state = InputFieldState::with_value("hello world");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     InputField::update(&mut state, InputFieldMessage::DeleteWordForward);
     assert_eq!(state.value(), "world");
 
