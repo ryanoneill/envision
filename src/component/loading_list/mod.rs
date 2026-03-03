@@ -323,6 +323,36 @@ impl<T: Clone> LoadingListState<T> {
         }
     }
 
+    /// Sets the initially selected index (builder method).
+    ///
+    /// The index is clamped to the valid range. Has no effect on empty lists.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// #[derive(Clone)]
+    /// struct Task { name: String }
+    ///
+    /// let state = LoadingListState::with_items(
+    ///     vec![
+    ///         Task { name: "Build".to_string() },
+    ///         Task { name: "Test".to_string() },
+    ///         Task { name: "Deploy".to_string() },
+    ///     ],
+    ///     |t| t.name.clone(),
+    /// ).with_selected(1);
+    /// assert_eq!(state.selected_index(), Some(1));
+    /// ```
+    pub fn with_selected(mut self, index: usize) -> Self {
+        if self.items.is_empty() {
+            return self;
+        }
+        self.selected = Some(index.min(self.items.len() - 1));
+        self
+    }
+
     /// Sets the title.
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());

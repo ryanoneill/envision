@@ -125,6 +125,30 @@ impl<T: Clone> SelectableListState<T> {
         state
     }
 
+    /// Sets the initially selected index (builder method).
+    ///
+    /// The index is clamped to the valid range. Has no effect on empty lists.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectableListState;
+    ///
+    /// let state = SelectableListState::new(vec!["A", "B", "C"]).with_selected(1);
+    /// assert_eq!(state.selected_index(), Some(1));
+    /// assert_eq!(state.selected_item(), Some(&"B"));
+    /// ```
+    pub fn with_selected(mut self, index: usize) -> Self {
+        if self.items.is_empty() {
+            return self;
+        }
+        let clamped = index.min(self.items.len() - 1);
+        if let Some(filtered_pos) = self.filtered_indices.iter().position(|&fi| fi == clamped) {
+            self.list_state.select(Some(filtered_pos));
+        }
+        self
+    }
+
     /// Returns a reference to the items.
     pub fn items(&self) -> &[T] {
         &self.items

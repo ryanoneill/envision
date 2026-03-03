@@ -753,3 +753,49 @@ fn test_filter_disabled_still_allows_filter_change() {
     );
     assert_eq!(state.visible_count(), 1);
 }
+
+// with_selected tests
+
+#[test]
+fn test_with_selected() {
+    let state = SelectableListState::new(vec!["a", "b", "c"]).with_selected(1);
+    assert_eq!(state.selected_index(), Some(1));
+    assert_eq!(state.selected_item(), Some(&"b"));
+}
+
+#[test]
+fn test_with_selected_first() {
+    let state = SelectableListState::new(vec!["a", "b", "c"]).with_selected(0);
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(state.selected_item(), Some(&"a"));
+}
+
+#[test]
+fn test_with_selected_last() {
+    let state = SelectableListState::new(vec!["a", "b", "c"]).with_selected(2);
+    assert_eq!(state.selected_index(), Some(2));
+    assert_eq!(state.selected_item(), Some(&"c"));
+}
+
+#[test]
+fn test_with_selected_clamped() {
+    let state = SelectableListState::new(vec!["a", "b", "c"]).with_selected(100);
+    assert_eq!(state.selected_index(), Some(2));
+    assert_eq!(state.selected_item(), Some(&"c"));
+}
+
+#[test]
+fn test_with_selected_empty() {
+    let state = SelectableListState::<String>::new(vec![]).with_selected(0);
+    assert_eq!(state.selected_index(), None);
+    assert_eq!(state.selected_item(), None);
+}
+
+#[test]
+fn test_with_selected_chained() {
+    let state = SelectableListState::new(vec!["a", "b", "c"])
+        .with_selected(2)
+        .with_disabled(true);
+    assert_eq!(state.selected_index(), Some(2));
+    assert!(state.is_disabled());
+}
