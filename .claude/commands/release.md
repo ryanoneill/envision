@@ -32,8 +32,8 @@ Release a new version of envision. Takes an optional version argument (major, mi
 2. Run `cargo clippy -- -D warnings` - no clippy warnings
 3. Run `cargo fmt --check` - code must be formatted
 4. Check `git status` - working tree should be clean (warn if not)
-6. Check we're on the main branch
-7. Check for unpublished commits since last tag
+5. Check we're on the main branch
+6. Check for unpublished commits since last tag
 
 ### Step 3: Update Version
 
