@@ -47,7 +47,6 @@
       "Bash(tr:*)",
       "Bash(grep:*)",
 
-      "Bash(fastbreak:*)",
 
       "WebSearch",
       "WebFetch(domain:ratatui.rs)",
