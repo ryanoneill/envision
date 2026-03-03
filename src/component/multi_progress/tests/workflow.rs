@@ -313,10 +313,7 @@ fn test_full_workflow_add_progress_complete() {
         id: "ch1".to_string(),
         label: "Chapter 1".to_string(),
     });
-    assert_eq!(
-        output,
-        Some(MultiProgressOutput::Added("ch1".to_string()))
-    );
+    assert_eq!(output, Some(MultiProgressOutput::Added("ch1".to_string())));
 
     state.update(MultiProgressMessage::Add {
         id: "ch2".to_string(),
@@ -351,10 +348,7 @@ fn test_full_workflow_add_progress_complete() {
         id: "ch2".to_string(),
         message: Some("Timeout".to_string()),
     });
-    assert_eq!(
-        output,
-        Some(MultiProgressOutput::Failed("ch2".to_string()))
-    );
+    assert_eq!(output, Some(MultiProgressOutput::Failed("ch2".to_string())));
     assert_eq!(state.failed_count(), 1);
 
     // Remove ch2

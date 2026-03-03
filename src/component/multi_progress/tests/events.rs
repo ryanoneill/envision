@@ -449,10 +449,7 @@ fn test_update_remove_ignored_when_disabled() {
     state.add("id1", "Item 1");
     state.set_disabled(true);
 
-    let output = MultiProgress::update(
-        &mut state,
-        MultiProgressMessage::Remove("id1".to_string()),
-    );
+    let output = MultiProgress::update(&mut state, MultiProgressMessage::Remove("id1".to_string()));
     assert!(output.is_none());
     assert_eq!(state.len(), 1);
 }
