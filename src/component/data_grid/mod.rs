@@ -173,7 +173,7 @@ impl<T: TableRow> DataGridState<T> {
     ///     vec![Item { name: "A".into() }],
     ///     vec![Column::new("Name", Constraint::Min(10))],
     /// );
-    /// assert_eq!(state.selected_row_index(), Some(0));
+    /// assert_eq!(state.selected_index(), Some(0));
     /// assert_eq!(state.selected_column(), 0);
     /// ```
     pub fn new(rows: Vec<T>, columns: Vec<Column>) -> Self {
@@ -202,7 +202,7 @@ impl<T: TableRow> DataGridState<T> {
     }
 
     /// Returns the currently selected row index.
-    pub fn selected_row_index(&self) -> Option<usize> {
+    pub fn selected_index(&self) -> Option<usize> {
         self.selected_row
     }
 
@@ -214,6 +214,38 @@ impl<T: TableRow> DataGridState<T> {
     /// Returns a reference to the currently selected item.
     pub fn selected_item(&self) -> Option<&T> {
         self.selected_row()
+    }
+
+    /// Sets the selected row index.
+    ///
+    /// The index is clamped to the valid range. Has no effect on empty grids.
+    /// Cancels any active edit.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// state.set_selected(1);
+    /// assert_eq!(state.selected_index(), Some(1));
+    /// ```
+    pub fn set_selected(&mut self, index: usize) {
+        if self.rows.is_empty() {
+            return;
+        }
+        self.editing = false;
+        self.selected_row = Some(index.min(self.rows.len() - 1));
     }
 
     /// Returns the currently selected column index.

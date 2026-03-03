@@ -94,25 +94,22 @@ fn test_state_selected_index() {
 }
 
 #[test]
-fn test_selected_returns_item() {
+fn test_selected_item_returns_item() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
 
     // No selection returns None
-    assert!(state.selected().is_none());
+    assert!(state.selected_item().is_none());
 
     // With selection returns the item
     state.set_selected(Some(0));
-    let item = state.selected().unwrap();
+    let item = state.selected_item().unwrap();
     assert_eq!(item.label(), "Item One");
     assert_eq!(item.data().id, 1);
 
-    // selected() and selected_item() return the same thing
+    // Verify selected item at different index
     state.set_selected(Some(2));
-    assert_eq!(
-        state.selected().unwrap().label(),
-        state.selected_item().unwrap().label()
-    );
+    assert_eq!(state.selected_item().unwrap().label(), "Item Three");
 }
 
 #[test]

@@ -375,6 +375,32 @@ impl<T: Clone> TreeState<T> {
         self.selected_index
     }
 
+    /// Sets the selected index in the flattened view.
+    ///
+    /// The index is clamped to the valid range of visible nodes.
+    /// Has no effect on empty trees.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreeState, TreeNode};
+    ///
+    /// let mut root = TreeNode::new_expanded("Root", ());
+    /// root.add_child(TreeNode::new("Child 1", ()));
+    /// root.add_child(TreeNode::new("Child 2", ()));
+    ///
+    /// let mut state = TreeState::new(vec![root]);
+    /// state.set_selected(2);
+    /// assert_eq!(state.selected_index(), Some(2));
+    /// ```
+    pub fn set_selected(&mut self, index: usize) {
+        if self.roots.is_empty() {
+            return;
+        }
+        let visible = self.flatten().len();
+        self.selected_index = Some(index.min(visible.saturating_sub(1)));
+    }
+
     /// Returns true if the tree is empty.
     pub fn is_empty(&self) -> bool {
         self.roots.is_empty()

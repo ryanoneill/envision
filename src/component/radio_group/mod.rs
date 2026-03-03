@@ -109,7 +109,7 @@ impl<T: Clone> RadioGroupState<T> {
     ///
     /// let state = RadioGroupState::new(vec!["Option A", "Option B", "Option C"]);
     /// assert_eq!(state.selected_index(), Some(0));
-    /// assert_eq!(state.selected(), Some(&"Option A"));
+    /// assert_eq!(state.selected_item(), Some(&"Option A"));
     /// ```
     pub fn new(options: Vec<T>) -> Self {
         let selected = if options.is_empty() { None } else { Some(0) };
@@ -133,7 +133,7 @@ impl<T: Clone> RadioGroupState<T> {
     ///
     /// let state = RadioGroupState::with_selected(vec!["A", "B", "C"], 1);
     /// assert_eq!(state.selected_index(), Some(1));
-    /// assert_eq!(state.selected(), Some(&"B"));
+    /// assert_eq!(state.selected_item(), Some(&"B"));
     /// ```
     pub fn with_selected(options: Vec<T>, selected: usize) -> Self {
         let selected = if options.is_empty() {
@@ -191,19 +191,11 @@ impl<T: Clone> RadioGroupState<T> {
         self.selected
     }
 
-    /// Returns a reference to the currently selected option.
-    ///
-    /// Returns `None` if the options are empty or no selection exists.
-    pub fn selected(&self) -> Option<&T> {
-        self.options.get(self.selected?)
-    }
-
     /// Returns a reference to the currently selected item.
     ///
-    /// This is an alias for [`selected()`](Self::selected) that provides a
-    /// consistent accessor name across all selection-based components.
+    /// Returns `None` if the options are empty or no selection exists.
     pub fn selected_item(&self) -> Option<&T> {
-        self.selected()
+        self.options.get(self.selected?)
     }
 
     /// Sets the selected index.

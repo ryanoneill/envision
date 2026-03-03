@@ -13,7 +13,7 @@
 //! Tabs::set_focused(&mut state, true);
 //!
 //! assert_eq!(state.selected_index(), Some(0));
-//! assert_eq!(state.selected(), Some(&"Home"));
+//! assert_eq!(state.selected_item(), Some(&"Home"));
 //!
 //! // Navigate right
 //! let output = Tabs::<&str>::update(&mut state, TabsMessage::Right);
@@ -135,7 +135,7 @@ impl<T: Clone> TabsState<T> {
     ///
     /// let state = TabsState::with_selected(vec!["A", "B", "C"], 1);
     /// assert_eq!(state.selected_index(), Some(1));
-    /// assert_eq!(state.selected(), Some(&"B"));
+    /// assert_eq!(state.selected_item(), Some(&"B"));
     /// ```
     pub fn with_selected(tabs: Vec<T>, selected: usize) -> Self {
         let selected = if tabs.is_empty() {
@@ -158,19 +158,11 @@ impl<T: Clone> TabsState<T> {
         self.selected
     }
 
-    /// Returns the currently selected tab.
+    /// Returns the currently selected item.
     ///
     /// Returns `None` if there are no tabs or no selection.
-    pub fn selected(&self) -> Option<&T> {
-        self.tabs.get(self.selected?)
-    }
-
-    /// Returns a reference to the currently selected item.
-    ///
-    /// This is an alias for [`selected()`](Self::selected) that provides a
-    /// consistent accessor name across all selection-based components.
     pub fn selected_item(&self) -> Option<&T> {
-        self.selected()
+        self.tabs.get(self.selected?)
     }
 
     /// Sets the selected tab by index.
@@ -417,7 +409,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
                     None
                 }
             }
-            TabsMessage::Confirm => state.selected().cloned().map(TabsOutput::Confirmed),
+            TabsMessage::Confirm => state.selected_item().cloned().map(TabsOutput::Confirmed),
         }
     }
 
