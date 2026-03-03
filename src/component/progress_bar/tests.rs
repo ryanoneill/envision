@@ -260,6 +260,36 @@ fn test_view_without_label() {
 }
 
 #[test]
+fn test_with_disabled() {
+    let state = ProgressBarState::new().with_disabled(true);
+    assert!(state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_false() {
+    let state = ProgressBarState::new().with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_disabled_default_is_false() {
+    let state = ProgressBarState::new();
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_set_disabled() {
+    let mut state = ProgressBarState::new();
+    assert!(!state.is_disabled());
+
+    state.set_disabled(true);
+    assert!(state.is_disabled());
+
+    state.set_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
 fn test_full_workflow() {
     let mut state = ProgressBarState::with_label("Downloading");
 

@@ -150,6 +150,8 @@ pub struct SpinnerState {
     spinning: bool,
     /// Optional label displayed next to the spinner.
     label: Option<String>,
+    /// Whether the component is disabled.
+    disabled: bool,
 }
 
 impl Default for SpinnerState {
@@ -159,6 +161,7 @@ impl Default for SpinnerState {
             frame: 0,
             spinning: true,
             label: None,
+            disabled: false,
         }
     }
 }
@@ -257,6 +260,32 @@ impl SpinnerState {
     /// Returns the current frame index.
     pub fn frame_index(&self) -> usize {
         self.frame
+    }
+
+    /// Returns true if the spinner is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpinnerState;
+    ///
+    /// let state = SpinnerState::new()
+    ///     .with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
     }
 }
 
