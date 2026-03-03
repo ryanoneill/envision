@@ -204,6 +204,134 @@ use envision::prelude::*;
 // Use OverlayAction to push/pop overlays
 ```
 
+### OverlayAction::Message Renamed
+
+`OverlayAction::Message(M)` has been renamed to `OverlayAction::KeepAndMessage(M)`
+to make it clear that the overlay is kept (not dismissed) while the message is
+dispatched.
+
+**Before (0.4.x):**
+
+```rust
+fn handle_event(&mut self, event: &Event) -> OverlayAction<Msg> {
+    OverlayAction::Message(Msg::DoSomething)
+}
+```
+
+**After (0.5.0):**
+
+```rust
+fn handle_event(&mut self, event: &Event) -> OverlayAction<Msg> {
+    OverlayAction::KeepAndMessage(Msg::DoSomething)
+}
+```
+
+### Feature Flags for Components
+
+Components are now organized behind feature flags. All are enabled by default
+via the `full` feature, so most users will not need to change anything. If you
+want to reduce compile times, you can select only the component groups you need.
+
+| Feature | Components |
+|---------|-----------|
+| `input-components` | Button, Checkbox, Dropdown, InputField, RadioGroup, Select, TextArea |
+| `data-components` | LoadingList, SelectableList, Table, Tree |
+| `display-components` | KeyHints, MultiProgress, ProgressBar, Spinner, StatusBar, StatusLog, Toast |
+| `navigation-components` | Accordion, Breadcrumb, Menu, Router, Tabs |
+| `overlay-components` | Dialog, Tooltip |
+| `compound-components` | SearchableList, Form, SplitPanel, DataGrid, LogViewer, ChatView, MetricsDashboard, Chart |
+| `clipboard` | System clipboard support for InputField and TextArea |
+
+**Before (0.4.x):**
+
+```toml
+[dependencies]
+envision = "0.4"
+```
+
+**After (0.5.0):**
+
+```toml
+# All components (default)
+[dependencies]
+envision = "0.5"
+
+# Or select specific groups
+[dependencies]
+envision = { version = "0.5", default-features = false, features = ["input-components", "data-components"] }
+```
+
+### Serialization Feature Flag
+
+Serde support is now behind the `serialization` feature flag. It is enabled
+by default, so this is only a breaking change if you were relying on serde
+derives without specifying the feature.
+
+```toml
+# Serde support included (default)
+envision = "0.5"
+
+# Opt out of serde
+envision = { version = "0.5", default-features = false, features = ["full"] }
+```
+
+### Consistent Component Naming
+
+All component message and output types now follow a consistent naming convention:
+`{Component}Message` for input messages and `{Component}Output` for output messages.
+
+**Before (0.4.x):**
+
+```rust
+// Some components used inconsistent names
+use envision::component::{SelectableListMsg, ListOutput};
+```
+
+**After (0.5.0):**
+
+```rust
+use envision::component::{SelectableListMessage, SelectableListOutput};
+```
+
+### Consistent selected_index() Return Type
+
+`selected_index()` now returns `Option<usize>` consistently across all
+components. Previously some components returned `usize` directly.
+
+**Before (0.4.x):**
+
+```rust
+let index: usize = state.selected_index(); // could panic on empty list
+```
+
+**After (0.5.0):**
+
+```rust
+let index: Option<usize> = state.selected_index(); // None when empty
+if let Some(idx) = state.selected_index() {
+    // handle selection
+}
+```
+
+### Disabled State
+
+All focusable components now support a disabled state. When disabled, components
+ignore all input events and render with `theme.disabled_style()`.
+
+```rust
+// Set via builder
+let state = ButtonState::new("Submit").with_disabled(true);
+
+// Or via setter
+state.set_disabled(true);
+
+// Check state
+if state.is_disabled() { /* ... */ }
+```
+
+This is additive and not breaking unless you have custom components that
+implement the `Focusable` trait and also need to support disabled state.
+
 ### Quick Migration Checklist
 
 - [ ] Replace `AsyncRuntime` / sync `Runtime` with unified `Runtime`
@@ -217,3 +345,8 @@ use envision::prelude::*;
 - [ ] Remove any `Command::clone()` calls
 - [ ] Update imports if relying on ratatui re-exports from the prelude
 - [ ] Consider adopting `dispatch_event` for simpler event routing
+- [ ] Rename `OverlayAction::Message` to `OverlayAction::KeepAndMessage`
+- [ ] Update any component message/output type names to new `{Component}Message`/`{Component}Output` convention
+- [ ] Handle `selected_index()` returning `Option<usize>` instead of `usize`
+- [ ] If using serde: ensure `serialization` feature is enabled (it is by default)
+- [ ] If using specific component groups: add the appropriate feature flags
