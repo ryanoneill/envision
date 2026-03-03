@@ -251,6 +251,22 @@ impl DropdownState {
         self.placeholder = placeholder.into();
     }
 
+    /// Sets the placeholder text (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DropdownState;
+    ///
+    /// let state = DropdownState::new(vec!["Apple", "Banana", "Cherry"])
+    ///     .with_placeholder("Search fruits...");
+    /// assert_eq!(state.placeholder(), "Search fruits...");
+    /// ```
+    pub fn with_placeholder(mut self, placeholder: impl Into<String>) -> Self {
+        self.placeholder = placeholder.into();
+        self
+    }
+
     /// Returns true if the dropdown is disabled.
     pub fn is_disabled(&self) -> bool {
         self.disabled

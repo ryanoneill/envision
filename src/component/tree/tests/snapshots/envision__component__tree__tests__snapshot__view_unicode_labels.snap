@@ -1,0 +1,8 @@
+---
+source: src/component/tree/tests/snapshot.rs
+expression: terminal.backend().to_string()
+---
+▼ 文 件 夹                                 
+    文 档 .txt                            
+    图 片 .png                            
+  설 정

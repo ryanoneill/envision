@@ -103,7 +103,7 @@ fn test_grouped_backspace_undo_together() {
 #[test]
 fn test_grouped_delete_undo_together() {
     let mut state = TextAreaState::with_value("hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::Delete);
     TextArea::update(&mut state, TextAreaMessage::Delete);
     assert_eq!(state.value(), "llo");
@@ -159,7 +159,7 @@ fn test_newline_breaks_insert_group() {
 #[test]
 fn test_delete_line_undo() {
     let mut state = TextAreaState::with_value("abc\ndef\nghi");
-    state.set_cursor(1, 0);
+    state.set_cursor_position(1, 0);
     TextArea::update(&mut state, TextAreaMessage::DeleteLine);
     assert_eq!(state.value(), "abc\nghi");
 
@@ -170,7 +170,7 @@ fn test_delete_line_undo() {
 #[test]
 fn test_delete_to_end_undo() {
     let mut state = TextAreaState::with_value("hello world");
-    state.set_cursor(0, 5);
+    state.set_cursor_position(0, 5);
     TextArea::update(&mut state, TextAreaMessage::DeleteToEnd);
     assert_eq!(state.value(), "hello");
 
@@ -181,7 +181,7 @@ fn test_delete_to_end_undo() {
 #[test]
 fn test_delete_to_start_undo() {
     let mut state = TextAreaState::with_value("hello world");
-    state.set_cursor(0, 6);
+    state.set_cursor_position(0, 6);
     TextArea::update(&mut state, TextAreaMessage::DeleteToStart);
     assert_eq!(state.value(), "world");
 
@@ -323,7 +323,7 @@ fn test_can_redo() {
 #[test]
 fn test_backspace_join_lines_undo() {
     let mut state = TextAreaState::with_value("abc\ndef");
-    state.set_cursor(1, 0);
+    state.set_cursor_position(1, 0);
     TextArea::update(&mut state, TextAreaMessage::Backspace);
     assert_eq!(state.value(), "abcdef");
     assert_eq!(state.line_count(), 1);
