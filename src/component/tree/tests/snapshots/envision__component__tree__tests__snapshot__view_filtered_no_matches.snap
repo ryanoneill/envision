@@ -1,0 +1,5 @@
+---
+source: src/component/tree/tests/snapshot.rs
+expression: terminal.backend().to_string()
+---
+

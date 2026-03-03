@@ -1,0 +1,7 @@
+---
+source: src/component/tree/tests/snapshot.rs
+expression: terminal.backend().to_string()
+---
+▼ Root                                  
+    Child 1                             
+    Child 2
