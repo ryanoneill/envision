@@ -221,7 +221,9 @@ fn test_state_with_selected_chained() {
     let mut root = TreeNode::new_expanded("Root", ());
     root.add_child(TreeNode::new("Child", ()));
 
-    let state = TreeState::new(vec![root]).with_selected(1).with_disabled(true);
+    let state = TreeState::new(vec![root])
+        .with_selected(1)
+        .with_disabled(true);
     assert_eq!(state.selected_index(), Some(1));
     assert!(state.is_disabled());
 }
