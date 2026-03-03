@@ -354,10 +354,8 @@ fn test_disabled_allows_set_items_via_update() {
         id: 10,
         name: "New".to_string(),
     }];
-    let output = LoadingList::<TestItem>::update(
-        &mut state,
-        LoadingListMessage::SetItems(new_items),
-    );
+    let output =
+        LoadingList::<TestItem>::update(&mut state, LoadingListMessage::SetItems(new_items));
     assert!(output.is_none());
     assert_eq!(state.len(), 1);
 }

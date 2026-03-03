@@ -503,8 +503,7 @@ fn test_with_items_custom_label_fn() {
             name: "Beta".to_string(),
         },
     ];
-    let state =
-        LoadingListState::with_items(items, |i| format!("{}: {}", i.id, i.name));
+    let state = LoadingListState::with_items(items, |i| format!("{}: {}", i.id, i.name));
     assert_eq!(state.items()[0].label(), "1: Alpha");
     assert_eq!(state.items()[1].label(), "2: Beta");
 }
