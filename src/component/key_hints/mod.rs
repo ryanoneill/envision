@@ -220,6 +220,8 @@ pub struct KeyHintsState {
     key_style: Style,
     /// Action style.
     action_style: Style,
+    /// Whether the component is disabled.
+    disabled: bool,
 }
 
 impl Default for KeyHintsState {
@@ -231,6 +233,7 @@ impl Default for KeyHintsState {
             hint_separator: "  ".to_string(),
             key_style: Style::default().fg(Color::Green),
             action_style: Style::default(),
+            disabled: false,
         }
     }
 }
@@ -422,6 +425,32 @@ impl KeyHintsState {
     /// Sets the action style.
     pub fn set_action_style(&mut self, style: Style) {
         self.action_style = style;
+    }
+
+    /// Returns true if the key hints are disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let state = KeyHintsState::new()
+    ///     .with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
     }
 }
 

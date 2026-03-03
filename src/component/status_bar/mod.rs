@@ -189,6 +189,8 @@ pub struct StatusBarState {
     separator: String,
     /// Background style for the entire bar.
     background: Color,
+    /// Whether the component is disabled.
+    disabled: bool,
 }
 
 impl StatusBarState {
@@ -211,6 +213,7 @@ impl StatusBarState {
             right: Vec::new(),
             separator: " | ".to_string(),
             background: Color::DarkGray,
+            disabled: false,
         }
     }
 
@@ -331,6 +334,32 @@ impl StatusBarState {
     /// Sets the background color.
     pub fn set_background(&mut self, color: Color) {
         self.background = color;
+    }
+
+    /// Returns true if the status bar is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarState;
+    ///
+    /// let state = StatusBarState::new()
+    ///     .with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
     }
 
     /// Returns true if all sections are empty.

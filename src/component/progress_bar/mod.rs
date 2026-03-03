@@ -65,6 +65,8 @@ pub struct ProgressBarState {
     progress: f32,
     /// Optional label to display.
     label: Option<String>,
+    /// Whether the component is disabled.
+    disabled: bool,
 }
 
 impl ProgressBarState {
@@ -99,6 +101,7 @@ impl ProgressBarState {
         Self {
             progress: progress.clamp(0.0, 1.0),
             label: None,
+            disabled: false,
         }
     }
 
@@ -116,6 +119,7 @@ impl ProgressBarState {
         Self {
             progress: 0.0,
             label: Some(label.into()),
+            disabled: false,
         }
     }
 
@@ -150,6 +154,32 @@ impl ProgressBarState {
     /// Sets the label.
     pub fn set_label(&mut self, label: Option<String>) {
         self.label = label;
+    }
+
+    /// Returns true if the progress bar is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Sets the disabled state using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::new()
+    ///     .with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
     }
 }
 

@@ -354,6 +354,40 @@ fn test_view_inline_layout() {
 }
 
 // ========================================
+// Disabled Tests
+// ========================================
+
+#[test]
+fn test_with_disabled() {
+    let state = KeyHintsState::new().with_disabled(true);
+    assert!(state.is_disabled());
+}
+
+#[test]
+fn test_with_disabled_false() {
+    let state = KeyHintsState::new().with_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_disabled_default_is_false() {
+    let state = KeyHintsState::new();
+    assert!(!state.is_disabled());
+}
+
+#[test]
+fn test_set_disabled() {
+    let mut state = KeyHintsState::new();
+    assert!(!state.is_disabled());
+
+    state.set_disabled(true);
+    assert!(state.is_disabled());
+
+    state.set_disabled(false);
+    assert!(!state.is_disabled());
+}
+
+// ========================================
 // Style Tests
 // ========================================
 
