@@ -316,7 +316,7 @@ impl InputFieldState {
     }
 
     /// Moves cursor to the given character position.
-    pub fn set_cursor(&mut self, char_pos: usize) {
+    pub fn set_cursor_position(&mut self, char_pos: usize) {
         let char_count = self.value.chars().count();
         let clamped = char_pos.min(char_count);
         self.cursor = self

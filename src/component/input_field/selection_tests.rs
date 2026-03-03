@@ -36,7 +36,7 @@ fn test_select_left_multiple() {
 #[test]
 fn test_select_right() {
     let mut state = InputFieldState::with_value("hello");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     assert!(state.has_selection());
     assert_eq!(state.selected_text(), Some("h"));
@@ -46,7 +46,7 @@ fn test_select_right() {
 #[test]
 fn test_select_right_multiple() {
     let mut state = InputFieldState::with_value("hello");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     InputField::update(&mut state, InputFieldMessage::SelectRight);
@@ -64,7 +64,7 @@ fn test_select_home() {
 #[test]
 fn test_select_end() {
     let mut state = InputFieldState::with_value("hello");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     InputField::update(&mut state, InputFieldMessage::SelectEnd);
     assert_eq!(state.selected_text(), Some("hello"));
     assert_eq!(state.cursor_position(), 5);
@@ -81,7 +81,7 @@ fn test_select_word_left() {
 #[test]
 fn test_select_word_right() {
     let mut state = InputFieldState::with_value("hello world");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     InputField::update(&mut state, InputFieldMessage::SelectWordRight);
     assert_eq!(state.selected_text(), Some("hello "));
 }
@@ -122,7 +122,7 @@ fn test_left_clears_selection() {
 #[test]
 fn test_right_clears_selection() {
     let mut state = InputFieldState::with_value("hello");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     assert!(state.has_selection());
@@ -146,7 +146,7 @@ fn test_home_clears_selection() {
 #[test]
 fn test_end_clears_selection() {
     let mut state = InputFieldState::with_value("hello");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     assert!(state.has_selection());
 
@@ -171,7 +171,7 @@ fn test_insert_replaces_selection() {
 #[test]
 fn test_insert_replaces_partial_selection() {
     let mut state = InputFieldState::with_value("hello world");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     // Select "hello"
     for _ in 0..5 {
         InputField::update(&mut state, InputFieldMessage::SelectRight);
@@ -238,7 +238,7 @@ fn test_delete_word_forward_deletes_selection() {
 fn test_copy_with_selection() {
     let mut state = InputFieldState::with_value("hello world");
     // Select "hello"
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     for _ in 0..5 {
         InputField::update(&mut state, InputFieldMessage::SelectRight);
     }
@@ -263,7 +263,7 @@ fn test_copy_without_selection() {
 fn test_cut_with_selection() {
     let mut state = InputFieldState::with_value("hello world");
     // Select "hello"
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     for _ in 0..5 {
         InputField::update(&mut state, InputFieldMessage::SelectRight);
     }
@@ -285,7 +285,7 @@ fn test_cut_without_selection() {
 #[test]
 fn test_paste() {
     let mut state = InputFieldState::with_value("hello");
-    state.set_cursor(5);
+    state.set_cursor_position(5);
     let output = InputField::update(&mut state, InputFieldMessage::Paste(" world".into()));
     assert_eq!(state.value(), "hello world");
     assert_eq!(
@@ -315,7 +315,7 @@ fn test_paste_empty_string() {
 #[test]
 fn test_paste_at_cursor() {
     let mut state = InputFieldState::with_value("helo");
-    state.set_cursor(3); // Between 'l' and 'o'
+    state.set_cursor_position(3); // Between 'l' and 'o'
     InputField::update(&mut state, InputFieldMessage::Paste("l".into()));
     assert_eq!(state.value(), "hello");
 }
@@ -337,7 +337,7 @@ fn test_copy_then_paste() {
 fn test_cut_then_paste() {
     let mut state = InputFieldState::with_value("hello world");
     // Select "hello"
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     for _ in 0..5 {
         InputField::update(&mut state, InputFieldMessage::SelectRight);
     }
@@ -500,7 +500,7 @@ fn test_select_all_utf8() {
 #[test]
 fn test_cut_utf8() {
     let mut state = InputFieldState::with_value("héllo wörld");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     // Select "héllo"
     for _ in 0..5 {
         InputField::update(&mut state, InputFieldMessage::SelectRight);
@@ -524,7 +524,7 @@ fn test_paste_utf8() {
 #[test]
 fn test_select_left_at_start() {
     let mut state = InputFieldState::with_value("hello");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     InputField::update(&mut state, InputFieldMessage::SelectLeft);
     // Should set anchor but cursor can't move further
     assert!(!state.has_selection()); // anchor == cursor
@@ -541,7 +541,7 @@ fn test_select_right_at_end() {
 #[test]
 fn test_selection_preserved_across_multiple_shifts() {
     let mut state = InputFieldState::with_value("hello world");
-    state.set_cursor(0);
+    state.set_cursor_position(0);
     // Select "hello" then extend to "hello world"
     for _ in 0..5 {
         InputField::update(&mut state, InputFieldMessage::SelectRight);
@@ -557,8 +557,8 @@ fn test_selection_preserved_across_multiple_shifts() {
 #[test]
 fn test_select_then_reverse_direction() {
     let mut state = InputFieldState::with_value("hello");
-    state.set_cursor(2); // After "he"
-                         // Select right twice: anchor=2, cursor=4, selected "ll"
+    state.set_cursor_position(2); // After "he"
+                                  // Select right twice: anchor=2, cursor=4, selected "ll"
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     assert_eq!(state.selected_text(), Some("ll"));

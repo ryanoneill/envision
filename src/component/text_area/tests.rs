@@ -76,9 +76,9 @@ fn test_line() {
 #[test]
 fn test_current_line() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     assert_eq!(state.current_line(), "Hello");
-    state.set_cursor(1, 0);
+    state.set_cursor_position(1, 0);
     assert_eq!(state.current_line(), "World");
 }
 
@@ -106,23 +106,23 @@ fn test_cursor_position() {
 }
 
 #[test]
-fn test_set_cursor() {
+fn test_set_cursor_position() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(0, 2);
+    state.set_cursor_position(0, 2);
     assert_eq!(state.cursor_position(), (0, 2));
 }
 
 #[test]
 fn test_cursor_clamp_row() {
     let mut state = TextAreaState::with_value("Hello");
-    state.set_cursor(10, 0); // Row out of bounds
+    state.set_cursor_position(10, 0); // Row out of bounds
     assert_eq!(state.cursor_row(), 0);
 }
 
 #[test]
 fn test_cursor_clamp_col() {
     let mut state = TextAreaState::with_value("Hi");
-    state.set_cursor(0, 100); // Col out of bounds
+    state.set_cursor_position(0, 100); // Col out of bounds
     assert_eq!(state.cursor_position(), (0, 2));
 }
 
@@ -151,7 +151,7 @@ fn test_insert_unicode() {
 #[test]
 fn test_newline() {
     let mut state = TextAreaState::with_value("Hello");
-    state.set_cursor(0, 2);
+    state.set_cursor_position(0, 2);
     TextArea::update(&mut state, TextAreaMessage::NewLine);
     assert_eq!(state.line_count(), 2);
     assert_eq!(state.line(0), Some("He"));
@@ -162,7 +162,7 @@ fn test_newline() {
 #[test]
 fn test_newline_at_start() {
     let mut state = TextAreaState::with_value("Hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::NewLine);
     assert_eq!(state.line(0), Some(""));
     assert_eq!(state.line(1), Some("Hello"));
@@ -187,7 +187,7 @@ fn test_backspace() {
 #[test]
 fn test_backspace_join_lines() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(1, 0); // Start of second line
+    state.set_cursor_position(1, 0); // Start of second line
     TextArea::update(&mut state, TextAreaMessage::Backspace);
     assert_eq!(state.value(), "HelloWorld");
     assert_eq!(state.cursor_position(), (0, 5));
@@ -196,7 +196,7 @@ fn test_backspace_join_lines() {
 #[test]
 fn test_backspace_first_line_start() {
     let mut state = TextAreaState::with_value("Hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     let output = TextArea::update(&mut state, TextAreaMessage::Backspace);
     assert_eq!(output, None);
     assert_eq!(state.value(), "Hello");
@@ -205,7 +205,7 @@ fn test_backspace_first_line_start() {
 #[test]
 fn test_delete() {
     let mut state = TextAreaState::with_value("Hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     let output = TextArea::update(&mut state, TextAreaMessage::Delete);
     assert_eq!(state.value(), "ello");
     assert!(matches!(output, Some(TextAreaOutput::Changed(_))));
@@ -214,7 +214,7 @@ fn test_delete() {
 #[test]
 fn test_delete_join_lines() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(0, 5); // End of first line
+    state.set_cursor_position(0, 5); // End of first line
     TextArea::update(&mut state, TextAreaMessage::Delete);
     assert_eq!(state.value(), "HelloWorld");
 }
@@ -239,7 +239,7 @@ fn test_left() {
 #[test]
 fn test_left_wrap() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(1, 0);
+    state.set_cursor_position(1, 0);
     TextArea::update(&mut state, TextAreaMessage::Left);
     assert_eq!(state.cursor_position(), (0, 5)); // End of first line
 }
@@ -247,7 +247,7 @@ fn test_left_wrap() {
 #[test]
 fn test_left_at_start() {
     let mut state = TextAreaState::with_value("Hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::Left);
     assert_eq!(state.cursor_position(), (0, 0)); // Stays at start
 }
@@ -255,7 +255,7 @@ fn test_left_at_start() {
 #[test]
 fn test_right() {
     let mut state = TextAreaState::with_value("Hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::Right);
     assert_eq!(state.cursor_position(), (0, 1));
 }
@@ -263,7 +263,7 @@ fn test_right() {
 #[test]
 fn test_right_wrap() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(0, 5); // End of first line
+    state.set_cursor_position(0, 5); // End of first line
     TextArea::update(&mut state, TextAreaMessage::Right);
     assert_eq!(state.cursor_position(), (1, 0)); // Start of second line
 }
@@ -286,7 +286,7 @@ fn test_up() {
 #[test]
 fn test_up_clamps_column() {
     let mut state = TextAreaState::with_value("Hi\nHello");
-    state.set_cursor(1, 5); // End of "Hello"
+    state.set_cursor_position(1, 5); // End of "Hello"
     TextArea::update(&mut state, TextAreaMessage::Up);
     assert_eq!(state.cursor_position(), (0, 2)); // Clamped to "Hi" length
 }
@@ -294,7 +294,7 @@ fn test_up_clamps_column() {
 #[test]
 fn test_up_at_first_line() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(0, 2);
+    state.set_cursor_position(0, 2);
     TextArea::update(&mut state, TextAreaMessage::Up);
     assert_eq!(state.cursor_position(), (0, 2)); // Stays on first line
 }
@@ -302,7 +302,7 @@ fn test_up_at_first_line() {
 #[test]
 fn test_down() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(0, 2);
+    state.set_cursor_position(0, 2);
     TextArea::update(&mut state, TextAreaMessage::Down);
     assert_eq!(state.cursor_position(), (1, 2));
 }
@@ -310,7 +310,7 @@ fn test_down() {
 #[test]
 fn test_down_clamps_column() {
     let mut state = TextAreaState::with_value("Hello\nHi");
-    state.set_cursor(0, 5); // End of "Hello"
+    state.set_cursor_position(0, 5); // End of "Hello"
     TextArea::update(&mut state, TextAreaMessage::Down);
     assert_eq!(state.cursor_position(), (1, 2)); // Clamped to "Hi" length
 }
@@ -333,7 +333,7 @@ fn test_home() {
 #[test]
 fn test_end() {
     let mut state = TextAreaState::with_value("Hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::End);
     assert_eq!(state.cursor_position(), (0, 5));
 }
@@ -348,7 +348,7 @@ fn test_text_start() {
 #[test]
 fn test_text_end() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::TextEnd);
     assert_eq!(state.cursor_position(), (1, 5));
 }
@@ -363,7 +363,7 @@ fn test_word_left() {
 #[test]
 fn test_word_right() {
     let mut state = TextAreaState::with_value("hello world");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::WordRight);
     assert_eq!(state.cursor_position(), (0, 6)); // After "hello "
 }
@@ -373,7 +373,7 @@ fn test_word_right() {
 #[test]
 fn test_delete_line() {
     let mut state = TextAreaState::with_value("Line 1\nLine 2\nLine 3");
-    state.set_cursor(1, 0);
+    state.set_cursor_position(1, 0);
     TextArea::update(&mut state, TextAreaMessage::DeleteLine);
     assert_eq!(state.line_count(), 2);
     assert_eq!(state.value(), "Line 1\nLine 3");
@@ -390,7 +390,7 @@ fn test_delete_line_single() {
 #[test]
 fn test_delete_to_end() {
     let mut state = TextAreaState::with_value("Hello World");
-    state.set_cursor(0, 5);
+    state.set_cursor_position(0, 5);
     TextArea::update(&mut state, TextAreaMessage::DeleteToEnd);
     assert_eq!(state.value(), "Hello");
 }
@@ -398,7 +398,7 @@ fn test_delete_to_end() {
 #[test]
 fn test_delete_to_start() {
     let mut state = TextAreaState::with_value("Hello World");
-    state.set_cursor(0, 6);
+    state.set_cursor_position(0, 6);
     TextArea::update(&mut state, TextAreaMessage::DeleteToStart);
     assert_eq!(state.value(), "World");
     assert_eq!(state.cursor_position(), (0, 0));
@@ -460,7 +460,7 @@ fn test_scroll_offset() {
 #[test]
 fn test_ensure_cursor_visible_down() {
     let mut state = TextAreaState::with_value("1\n2\n3\n4\n5\n6\n7\n8\n9\n10");
-    state.set_cursor(9, 0); // Last line
+    state.set_cursor_position(9, 0); // Last line
     state.ensure_cursor_visible(5);
     assert!(state.scroll_offset > 0);
     assert!(state.cursor_row >= state.scroll_offset);
@@ -471,7 +471,7 @@ fn test_ensure_cursor_visible_down() {
 fn test_ensure_cursor_visible_up() {
     let mut state = TextAreaState::with_value("1\n2\n3\n4\n5\n6\n7\n8\n9\n10");
     state.scroll_offset = 5;
-    state.set_cursor(2, 0);
+    state.set_cursor_position(2, 0);
     state.ensure_cursor_visible(5);
     assert_eq!(state.scroll_offset, 2);
 }
@@ -609,7 +609,7 @@ fn test_cursor_col_accessor() {
 #[test]
 fn test_word_left_at_line_start() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(1, 0); // Start of "World"
+    state.set_cursor_position(1, 0); // Start of "World"
     TextArea::update(&mut state, TextAreaMessage::WordLeft);
     // Should wrap to end of previous line
     assert_eq!(state.cursor_position(), (0, 5));
@@ -618,7 +618,7 @@ fn test_word_left_at_line_start() {
 #[test]
 fn test_word_left_skip_whitespace() {
     let mut state = TextAreaState::with_value("hello   world");
-    state.set_cursor(0, 8); // In the middle of spaces
+    state.set_cursor_position(0, 8); // In the middle of spaces
     TextArea::update(&mut state, TextAreaMessage::WordLeft);
     assert!(state.cursor_col() < 8);
 }
@@ -626,7 +626,7 @@ fn test_word_left_skip_whitespace() {
 #[test]
 fn test_word_right_at_line_end() {
     let mut state = TextAreaState::with_value("Hello\nWorld");
-    state.set_cursor(0, 5); // End of "Hello"
+    state.set_cursor_position(0, 5); // End of "Hello"
     TextArea::update(&mut state, TextAreaMessage::WordRight);
     // Should wrap to start of next line
     assert_eq!(state.cursor_position(), (1, 0));
@@ -635,7 +635,7 @@ fn test_word_right_at_line_end() {
 #[test]
 fn test_word_right_skip_word() {
     let mut state = TextAreaState::with_value("abc def");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::WordRight);
     // Should skip past "abc " to start of "def"
     assert_eq!(state.cursor_position(), (0, 4));
@@ -644,7 +644,7 @@ fn test_word_right_skip_word() {
 #[test]
 fn test_delete_line_last_line() {
     let mut state = TextAreaState::with_value("Line 1\nLine 2");
-    state.set_cursor(1, 3); // On last line
+    state.set_cursor_position(1, 3); // On last line
     TextArea::update(&mut state, TextAreaMessage::DeleteLine);
     // Should adjust cursor_row when deleting the last line
     assert_eq!(state.line_count(), 1);
@@ -670,7 +670,7 @@ fn test_delete_to_end_at_end() {
 #[test]
 fn test_delete_to_start_at_start() {
     let mut state = TextAreaState::with_value("Hello");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     let output = TextArea::update(&mut state, TextAreaMessage::DeleteToStart);
     assert_eq!(output, None);
 }
@@ -698,7 +698,7 @@ fn test_view_with_scroll() {
 fn test_view_cursor_above_scroll() {
     let mut state = TextAreaState::with_value("1\n2\n3\n4\n5\n6\n7\n8\n9\n10");
     state.scroll_offset = 5; // Scroll down
-    state.set_cursor(2, 0); // Cursor above scroll
+    state.set_cursor_position(2, 0); // Cursor above scroll
     state.focused = true;
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
@@ -729,7 +729,7 @@ fn test_backspace_unicode() {
 #[test]
 fn test_delete_unicode() {
     let mut state = TextAreaState::with_value("日本");
-    state.set_cursor(0, 0);
+    state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::Delete);
     assert_eq!(state.value(), "本");
 }
