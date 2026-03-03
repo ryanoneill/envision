@@ -1,12 +1,12 @@
 ---
-source: src/component/loading_list/tests/component.rs
+source: src/component/multi_progress/tests/workflow.rs
 expression: terminal.backend().to_string()
 ---
 ┌──────────────────────────────────────────────────────────┐
-│    Item One                                              │
-│▸   Item Two                                              │
-│    Item Three                                            │
-│                                                          │
+│● Download  75% ████████████████████████████░░░░░░░░░░    │
+│✓ Upload 100% ████████████████████████████████████████    │
+│✗ Process  Error: Timeout                                 │
+│○ Verify   0% ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░    │
 │                                                          │
 │                                                          │
 │                                                          │

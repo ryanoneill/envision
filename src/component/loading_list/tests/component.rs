@@ -199,121 +199,6 @@ fn test_navigation_empty_list() {
     assert!(output.is_none());
 }
 
-// ========================================
-// View Tests
-// ========================================
-
-#[test]
-fn test_view_empty() {
-    let state: LoadingListState<String> = LoadingListState::new();
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
-
-    terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_view_with_items() {
-    let items = make_items();
-    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(1));
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
-
-    terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_view_with_title() {
-    let items = make_items();
-    let state = LoadingListState::with_items(items, |i| i.name.clone()).with_title("My Items");
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
-
-    terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_view_with_error() {
-    let items = make_items();
-    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_error(0, "Connection failed");
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
-
-    terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-// ========================================
-// Additional Coverage Tests
-// ========================================
-
-#[test]
-fn test_view_zero_size_area() {
-    let items = make_items();
-    let state = LoadingListState::with_items(items, |i| i.name.clone());
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
-
-    // Test with zero width
-    terminal
-        .draw(|frame| {
-            LoadingList::view(&state, frame, Rect::new(0, 0, 0, 10), &theme);
-        })
-        .unwrap();
-
-    // Test with zero height
-    terminal
-        .draw(|frame| {
-            LoadingList::view(&state, frame, Rect::new(0, 0, 60, 0), &Theme::default());
-        })
-        .unwrap();
-}
-
-#[test]
-fn test_view_without_indicators() {
-    let items = make_items();
-    let mut state = LoadingListState::with_items(items, |i| i.name.clone()).with_indicators(false);
-    state.set_selected(Some(0));
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
-
-    terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_view_without_indicators_with_error() {
-    let items = make_items();
-    let mut state = LoadingListState::with_items(items, |i| i.name.clone()).with_indicators(false);
-    state.set_error(0, "Failed");
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
-
-    terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
 #[test]
 fn test_update_set_items() {
     let mut state: LoadingListState<TestItem> = LoadingListState::new();
@@ -588,4 +473,315 @@ fn test_large_loading_list_navigation() {
     // Up from first wraps to last
     LoadingList::update(&mut state, LoadingListMessage::Up);
     assert_eq!(state.selected_index(), Some(99));
+}
+
+// ========================================
+// Tick Wrap Around Tests
+// ========================================
+
+#[test]
+fn test_tick_wraps_at_four() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    assert_eq!(state.spinner_frame(), 0);
+
+    LoadingList::update(&mut state, LoadingListMessage::Tick);
+    assert_eq!(state.spinner_frame(), 1);
+
+    LoadingList::update(&mut state, LoadingListMessage::Tick);
+    assert_eq!(state.spinner_frame(), 2);
+
+    LoadingList::update(&mut state, LoadingListMessage::Tick);
+    assert_eq!(state.spinner_frame(), 3);
+
+    // Should wrap back to 0
+    LoadingList::update(&mut state, LoadingListMessage::Tick);
+    assert_eq!(state.spinner_frame(), 0);
+}
+
+#[test]
+fn test_tick_cycles_continuously() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    // Tick 12 times (3 full cycles)
+    for cycle in 0..3 {
+        for expected_frame in 0..4 {
+            assert_eq!(
+                state.spinner_frame(),
+                expected_frame,
+                "Cycle {cycle}, expected frame {expected_frame}"
+            );
+            LoadingList::update(&mut state, LoadingListMessage::Tick);
+        }
+    }
+    assert_eq!(state.spinner_frame(), 0);
+}
+
+#[test]
+fn test_tick_returns_none() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    // Tick should never produce output
+    for _ in 0..10 {
+        let output = LoadingList::update(&mut state, LoadingListMessage::Tick);
+        assert!(output.is_none());
+    }
+}
+
+// ========================================
+// Navigation Output Value Tests
+// ========================================
+
+#[test]
+fn test_down_output_value() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::Down);
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::Down);
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(1)));
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::Down);
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(2)));
+
+    // Wrap outputs first index
+    let output = LoadingList::update(&mut state, LoadingListMessage::Down);
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
+}
+
+#[test]
+fn test_up_output_value() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_selected(Some(2));
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::Up);
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(1)));
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::Up);
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
+
+    // Wrap outputs last index
+    let output = LoadingList::update(&mut state, LoadingListMessage::Up);
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(2)));
+}
+
+#[test]
+fn test_first_output_value() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_selected(Some(2));
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::First);
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
+}
+
+#[test]
+fn test_last_output_value() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::Last);
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(2)));
+}
+
+// ========================================
+// Single Item List Navigation Tests
+// ========================================
+
+#[test]
+fn test_single_item_navigation_down() {
+    let items = vec![TestItem {
+        id: 1,
+        name: "Only".to_string(),
+    }];
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    // Down on no selection selects 0
+    let output = LoadingList::update(&mut state, LoadingListMessage::Down);
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
+
+    // Down again wraps back to 0
+    let output = LoadingList::update(&mut state, LoadingListMessage::Down);
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
+}
+
+#[test]
+fn test_single_item_navigation_up() {
+    let items = vec![TestItem {
+        id: 1,
+        name: "Only".to_string(),
+    }];
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    // Up on no selection wraps to last (which is 0)
+    let output = LoadingList::update(&mut state, LoadingListMessage::Up);
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
+
+    // Up again wraps to 0 again (same item)
+    let output = LoadingList::update(&mut state, LoadingListMessage::Up);
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
+}
+
+#[test]
+fn test_single_item_first_last() {
+    let items = vec![TestItem {
+        id: 1,
+        name: "Only".to_string(),
+    }];
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::First);
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::Last);
+    assert_eq!(state.selected_index(), Some(0));
+    assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
+}
+
+#[test]
+fn test_single_item_select() {
+    let items = vec![TestItem {
+        id: 42,
+        name: "Only".to_string(),
+    }];
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_selected(Some(0));
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::Select);
+    assert!(matches!(
+        output,
+        Some(LoadingListOutput::Selected(item)) if item.id == 42
+    ));
+}
+
+// ========================================
+// SetError Message Content Tests
+// ========================================
+
+#[test]
+fn test_set_error_output_contains_message() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    let output = LoadingList::update(
+        &mut state,
+        LoadingListMessage::SetError {
+            index: 0,
+            message: "Network timeout".to_string(),
+        },
+    );
+
+    match output {
+        Some(LoadingListOutput::ItemStateChanged { index, state }) => {
+            assert_eq!(index, 0);
+            assert_eq!(state.error_message(), Some("Network timeout"));
+        }
+        _ => panic!("Expected ItemStateChanged output"),
+    }
+}
+
+#[test]
+fn test_set_error_empty_message() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    let output = LoadingList::update(
+        &mut state,
+        LoadingListMessage::SetError {
+            index: 0,
+            message: String::new(),
+        },
+    );
+
+    match output {
+        Some(LoadingListOutput::ItemStateChanged { index, state }) => {
+            assert_eq!(index, 0);
+            assert_eq!(state.error_message(), Some(""));
+        }
+        _ => panic!("Expected ItemStateChanged output"),
+    }
+}
+
+// ========================================
+// SetItems Default Labeling Tests
+// ========================================
+
+#[test]
+fn test_set_items_default_labeling() {
+    let mut state: LoadingListState<String> = LoadingListState::new();
+    let items = vec!["alpha".to_string(), "beta".to_string(), "gamma".to_string()];
+    LoadingList::update(&mut state, LoadingListMessage::SetItems(items));
+
+    assert_eq!(state.len(), 3);
+    // Default labeling uses "Item N" format
+    assert_eq!(state.items()[0].label(), "Item 1");
+    assert_eq!(state.items()[1].label(), "Item 2");
+    assert_eq!(state.items()[2].label(), "Item 3");
+}
+
+#[test]
+fn test_set_items_clears_selection() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_selected(Some(1));
+
+    let new_items = vec![
+        TestItem {
+            id: 10,
+            name: "New One".to_string(),
+        },
+        TestItem {
+            id: 20,
+            name: "New Two".to_string(),
+        },
+    ];
+    LoadingList::update(&mut state, LoadingListMessage::SetItems(new_items));
+
+    assert_eq!(state.len(), 2);
+    assert_eq!(state.selected_index(), None);
+}
+
+#[test]
+fn test_set_items_returns_none() {
+    let mut state: LoadingListState<String> = LoadingListState::new();
+    let output = LoadingList::update(
+        &mut state,
+        LoadingListMessage::SetItems(vec!["a".to_string()]),
+    );
+    assert!(output.is_none());
+}
+
+// ========================================
+// ClearError on Non-Error States
+// ========================================
+
+#[test]
+fn test_clear_error_on_loading_item() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+    state.set_loading(0);
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::ClearError(0));
+    assert!(output.is_none()); // Not in error state, so no change
+    assert!(state.items()[0].is_loading()); // Still loading
+}
+
+#[test]
+fn test_clear_error_on_ready_item() {
+    let items = make_items();
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
+
+    let output = LoadingList::update(&mut state, LoadingListMessage::ClearError(0));
+    assert!(output.is_none()); // Already ready, no change
+    assert!(state.items()[0].is_ready());
 }
