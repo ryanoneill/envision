@@ -154,11 +154,31 @@ pub struct InputFieldState {
 
 impl InputFieldState {
     /// Creates a new empty input field state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = InputFieldState::new();
+    /// assert_eq!(state.value(), "");
+    /// assert_eq!(state.cursor_position(), 0);
+    /// ```
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Creates a new state with the given initial value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = InputFieldState::with_value("hello");
+    /// assert_eq!(state.value(), "hello");
+    /// assert_eq!(state.cursor_position(), 5);
+    /// ```
     pub fn with_value(value: impl Into<String>) -> Self {
         let value = value.into();
         let cursor = value.len();
@@ -175,6 +195,16 @@ impl InputFieldState {
     }
 
     /// Creates a new state with placeholder text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = InputFieldState::with_placeholder("Enter name...");
+    /// assert_eq!(state.placeholder(), "Enter name...");
+    /// assert_eq!(state.value(), "");
+    /// ```
     pub fn with_placeholder(placeholder: impl Into<String>) -> Self {
         Self {
             value: String::new(),
@@ -189,11 +219,31 @@ impl InputFieldState {
     }
 
     /// Returns the current value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = InputFieldState::with_value("hello");
+    /// assert_eq!(state.value(), "hello");
+    /// ```
     pub fn value(&self) -> &str {
         &self.value
     }
 
     /// Sets the value and moves cursor to the end.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = InputFieldState::new();
+    /// state.set_value("world");
+    /// assert_eq!(state.value(), "world");
+    /// assert_eq!(state.cursor_position(), 5);
+    /// ```
     pub fn set_value(&mut self, value: impl Into<String>) {
         self.value = value.into();
         self.cursor = self.value.len();
@@ -201,6 +251,15 @@ impl InputFieldState {
     }
 
     /// Returns the cursor position (character index).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = InputFieldState::with_value("abc");
+    /// assert_eq!(state.cursor_position(), 3);
+    /// ```
     pub fn cursor_position(&self) -> usize {
         self.value[..self.cursor].chars().count()
     }
@@ -480,11 +539,30 @@ impl InputFieldState {
     }
 
     /// Returns true if the input field is focused.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = InputFieldState::new();
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = InputFieldState::new();
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }

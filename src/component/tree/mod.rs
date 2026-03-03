@@ -287,6 +287,19 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Returns the root nodes.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = TreeState::new(vec![
+    ///     TreeNode::new("Root 1", 1),
+    ///     TreeNode::new("Root 2", 2),
+    /// ]);
+    /// assert_eq!(state.roots().len(), 2);
+    /// assert_eq!(state.roots()[0].label(), "Root 1");
+    /// ```
     pub fn roots(&self) -> &[TreeNode<T>] {
         &self.roots
     }
@@ -300,6 +313,17 @@ impl<T: Clone> TreeState<T> {
     ///
     /// Resets selection to the first node, or `None` if the new roots are empty.
     /// Clears any active filter.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = TreeState::new(vec![TreeNode::new("Old", 0)]);
+    /// state.set_roots(vec![TreeNode::new("New 1", 1), TreeNode::new("New 2", 2)]);
+    /// assert_eq!(state.roots().len(), 2);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn set_roots(&mut self, roots: Vec<TreeNode<T>>) {
         self.roots = roots;
         self.filter_text.clear();
@@ -309,6 +333,18 @@ impl<T: Clone> TreeState<T> {
     /// Returns the currently selected index in the flattened view.
     ///
     /// Returns `None` if the tree is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = TreeState::new(vec![TreeNode::new("Root", ())]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    ///
+    /// let empty: TreeState<()> = TreeState::new(vec![]);
+    /// assert_eq!(empty.selected_index(), None);
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected_index
     }
@@ -452,6 +488,17 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Returns a reference to the currently selected node.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = TreeState::new(vec![TreeNode::new("Root", 42)]);
+    /// let node = state.selected_node().unwrap();
+    /// assert_eq!(node.label(), "Root");
+    /// assert_eq!(node.data(), &42);
+    /// ```
     pub fn selected_node(&self) -> Option<&TreeNode<T>> {
         let path = self.selected_path()?;
         self.get_node(&path)
@@ -461,11 +508,32 @@ impl<T: Clone> TreeState<T> {
     ///
     /// This is an alias for [`selected_node()`](Self::selected_node) that provides a
     /// consistent accessor name across all selection-based components.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = TreeState::new(vec![TreeNode::new("Root", 1)]);
+    /// assert_eq!(state.selected_item(), state.selected_node());
+    /// ```
     pub fn selected_item(&self) -> Option<&TreeNode<T>> {
         self.selected_node()
     }
 
     /// Expands all nodes in the tree.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut root = TreeNode::new("Root", ());
+    /// root.add_child(TreeNode::new("Child", ()));
+    /// let mut state = TreeState::new(vec![root]);
+    /// state.expand_all();
+    /// assert!(state.roots()[0].is_expanded());
+    /// ```
     pub fn expand_all(&mut self) {
         for root in &mut self.roots {
             Self::expand_all_recursive(root);
@@ -483,6 +551,18 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Collapses all nodes in the tree.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut root = TreeNode::new_expanded("Root", ());
+    /// root.add_child(TreeNode::new("Child", ()));
+    /// let mut state = TreeState::new(vec![root]);
+    /// state.collapse_all();
+    /// assert!(!state.roots()[0].is_expanded());
+    /// ```
     pub fn collapse_all(&mut self) {
         for root in &mut self.roots {
             Self::collapse_all_recursive(root);
@@ -500,6 +580,19 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Returns the number of visible nodes.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut root = TreeNode::new_expanded("Root", ());
+    /// root.add_child(TreeNode::new("Child 1", ()));
+    /// root.add_child(TreeNode::new("Child 2", ()));
+    /// let state = TreeState::new(vec![root]);
+    /// // Root + 2 children visible (root is expanded)
+    /// assert_eq!(state.visible_count(), 3);
+    /// ```
     pub fn visible_count(&self) -> usize {
         self.flatten().len()
     }
@@ -555,21 +648,59 @@ impl<T: Clone> TreeState<T> {
 
 impl<T: Clone + 'static> TreeState<T> {
     /// Returns true if the tree is focused.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state: TreeState<()> = TreeState::new(vec![]);
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the tree is disabled.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state: TreeState<()> = TreeState::new(vec![]);
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
