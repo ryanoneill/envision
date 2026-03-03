@@ -1,9 +1,10 @@
 ---
-source: src/component/loading_list/tests/component.rs
+source: src/component/loading_list/tests/view.rs
+assertion_line: 61
 expression: terminal.backend().to_string()
 ---
-┌My Items──────────────────────────────────────────────────┐
-│    Item One                                              │
+┌──────────────────────────────────────────────────────────┐
+│  ✗ Item One - Error: Connection failed                   │
 │    Item Two                                              │
 │    Item Three                                            │
 │                                                          │
