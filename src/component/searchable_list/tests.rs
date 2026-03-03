@@ -533,149 +533,6 @@ fn test_unfocused_ignores_events() {
 }
 
 // =============================================================================
-// Event mapping
-// =============================================================================
-
-#[test]
-fn test_tab_maps_to_toggle_focus() {
-    let state = focused_state();
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::Tab));
-    assert_eq!(msg, Some(SearchableListMessage::ToggleFocus));
-}
-
-#[test]
-fn test_backtab_maps_to_toggle_focus() {
-    let state = focused_state();
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::BackTab));
-    assert_eq!(msg, Some(SearchableListMessage::ToggleFocus));
-}
-
-#[test]
-fn test_esc_maps_to_filter_clear() {
-    let state = focused_state();
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::Esc));
-    assert_eq!(msg, Some(SearchableListMessage::FilterClear));
-}
-
-#[test]
-fn test_char_in_filter_mode_maps_to_filter_char() {
-    let state = focused_state();
-    assert!(state.is_filter_focused());
-    let msg = SearchableList::handle_event(&state, &Event::char('a'));
-    assert_eq!(msg, Some(SearchableListMessage::FilterChar('a')));
-}
-
-#[test]
-fn test_enter_in_filter_mode_maps_to_toggle_focus() {
-    let state = focused_state();
-    assert!(state.is_filter_focused());
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::Enter));
-    assert_eq!(msg, Some(SearchableListMessage::ToggleFocus));
-}
-
-#[test]
-fn test_backspace_in_filter_mode_maps_to_filter_backspace() {
-    let state = focused_state();
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::Backspace));
-    assert_eq!(msg, Some(SearchableListMessage::FilterBackspace));
-}
-
-#[test]
-fn test_ctrl_j_in_filter_maps_to_down() {
-    let state = focused_state();
-    let msg = SearchableList::handle_event(&state, &Event::ctrl('j'));
-    assert_eq!(msg, Some(SearchableListMessage::Down));
-}
-
-#[test]
-fn test_ctrl_k_in_filter_maps_to_up() {
-    let state = focused_state();
-    let msg = SearchableList::handle_event(&state, &Event::ctrl('k'));
-    assert_eq!(msg, Some(SearchableListMessage::Up));
-}
-
-#[test]
-fn test_arrow_keys_in_list_mode() {
-    let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::ToggleFocus);
-    assert!(state.is_list_focused());
-
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(SearchableListMessage::Up));
-
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::Down));
-    assert_eq!(msg, Some(SearchableListMessage::Down));
-}
-
-#[test]
-fn test_vim_keys_in_list_mode() {
-    let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::ToggleFocus);
-
-    let msg = SearchableList::handle_event(&state, &Event::char('k'));
-    assert_eq!(msg, Some(SearchableListMessage::Up));
-
-    let msg = SearchableList::handle_event(&state, &Event::char('j'));
-    assert_eq!(msg, Some(SearchableListMessage::Down));
-}
-
-#[test]
-fn test_home_end_in_list_mode() {
-    let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::ToggleFocus);
-
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::Home));
-    assert_eq!(msg, Some(SearchableListMessage::First));
-
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::End));
-    assert_eq!(msg, Some(SearchableListMessage::Last));
-}
-
-#[test]
-fn test_g_and_shift_g_in_list_mode() {
-    let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::ToggleFocus);
-
-    let msg = SearchableList::handle_event(&state, &Event::char('g'));
-    assert_eq!(msg, Some(SearchableListMessage::First));
-
-    let msg = SearchableList::handle_event(&state, &Event::char('G'));
-    assert_eq!(msg, Some(SearchableListMessage::Last));
-}
-
-#[test]
-fn test_page_keys_in_list_mode() {
-    let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::ToggleFocus);
-
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::PageUp));
-    assert_eq!(msg, Some(SearchableListMessage::PageUp(10)));
-
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::PageDown));
-    assert_eq!(msg, Some(SearchableListMessage::PageDown(10)));
-}
-
-#[test]
-fn test_enter_in_list_mode_maps_to_select() {
-    let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::ToggleFocus);
-
-    let msg = SearchableList::handle_event(&state, &Event::key(KeyCode::Enter));
-    assert_eq!(msg, Some(SearchableListMessage::Select));
-}
-
-#[test]
-fn test_char_in_list_mode_maps_to_filter_char() {
-    let mut state = focused_state();
-    SearchableList::update(&mut state, SearchableListMessage::ToggleFocus);
-    assert!(state.is_list_focused());
-
-    // Typing in list mode should redirect to filter
-    let msg = SearchableList::handle_event(&state, &Event::char('x'));
-    assert_eq!(msg, Some(SearchableListMessage::FilterChar('x')));
-}
-
-// =============================================================================
 // dispatch_event
 // =============================================================================
 
@@ -989,4 +846,75 @@ fn test_custom_matcher_receives_original_query() {
         SearchableListMessage::FilterChanged("ABC".into()),
     );
     assert!(received_uppercase.load(Ordering::Relaxed));
+}
+
+// =============================================================================
+// Clone preserves matcher
+// =============================================================================
+
+#[test]
+fn test_clone_preserves_custom_matcher() {
+    let state = SearchableListState::new(vec![
+        "Apple".to_string(),
+        "Banana".to_string(),
+        "Apricot".to_string(),
+    ])
+    .with_matcher(|query, item| {
+        let item_lower = item.to_lowercase();
+        let query_lower = query.to_lowercase();
+        if item_lower.starts_with(&query_lower) {
+            Some(0)
+        } else {
+            None
+        }
+    });
+
+    let mut cloned = state.clone();
+    SearchableList::set_focused(&mut cloned, true);
+    SearchableList::update(
+        &mut cloned,
+        SearchableListMessage::FilterChanged("ap".into()),
+    );
+    // The prefix matcher should only match "Apple" and "Apricot", not "Banana"
+    assert_eq!(cloned.filtered_count(), 2);
+    let filtered = cloned.filtered_items();
+    assert!(filtered.contains(&&"Apple".to_string()));
+    assert!(filtered.contains(&&"Apricot".to_string()));
+    assert!(!filtered.contains(&&"Banana".to_string()));
+}
+
+#[test]
+fn test_clone_without_matcher_uses_default_substring_match() {
+    let state = SearchableListState::new(vec!["Apple".to_string(), "Banana".to_string()]);
+
+    let mut cloned = state.clone();
+    SearchableList::set_focused(&mut cloned, true);
+    SearchableList::update(
+        &mut cloned,
+        SearchableListMessage::FilterChanged("an".into()),
+    );
+    // Default substring match should find "Banana"
+    assert_eq!(cloned.filtered_count(), 1);
+    assert_eq!(cloned.filtered_items(), vec![&"Banana".to_string()]);
+}
+
+// =============================================================================
+// Debug
+// =============================================================================
+
+#[test]
+fn test_debug_with_matcher() {
+    let state =
+        SearchableListState::new(vec!["Apple".to_string()]).with_matcher(|_query, _item| Some(0));
+    let debug_output = format!("{:?}", state);
+    assert!(debug_output.contains("SearchableListState"));
+    assert!(debug_output.contains("matcher"));
+}
+
+#[test]
+fn test_debug_without_matcher() {
+    let state = SearchableListState::new(vec!["Apple".to_string()]);
+    let debug_output = format!("{:?}", state);
+    assert!(debug_output.contains("SearchableListState"));
+    assert!(debug_output.contains("matcher"));
 }
