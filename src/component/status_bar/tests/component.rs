@@ -319,3 +319,191 @@ fn test_view_heartbeat() {
 
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+// Additional view tests
+
+#[test]
+fn test_view_left_and_right_no_center() {
+    let mut state = StatusBarState::new();
+    state.push_left(StatusBarItem::new("LEFT"));
+    state.push_right(StatusBarItem::new("RIGHT"));
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
+
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_view_many_items_in_section() {
+    let mut state = StatusBarState::new();
+    state.push_left(StatusBarItem::new("A"));
+    state.push_left(StatusBarItem::new("B"));
+    state.push_left(StatusBarItem::new("C"));
+    state.push_left(StatusBarItem::new("D"));
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
+
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_view_counter_no_label() {
+    let mut state = StatusBarState::new();
+    state.push_right(StatusBarItem::counter());
+
+    StatusBar::update(
+        &mut state,
+        StatusBarMessage::SetCounter {
+            section: Section::Right,
+            index: 0,
+            value: 42,
+        },
+    );
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
+
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_view_all_styles() {
+    let mut state = StatusBarState::new();
+    state.push_left(StatusBarItem::new("Default").with_style(StatusBarStyle::Default));
+    state.push_left(StatusBarItem::new("Info").with_style(StatusBarStyle::Info));
+    state.push_left(StatusBarItem::new("Success").with_style(StatusBarStyle::Success));
+    state.push_left(StatusBarItem::new("Warning").with_style(StatusBarStyle::Warning));
+    state.push_left(StatusBarItem::new("Error").with_style(StatusBarStyle::Error));
+    state.push_left(StatusBarItem::new("Muted").with_style(StatusBarStyle::Muted));
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
+
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_view_narrow_width() {
+    let mut state = StatusBarState::new();
+    state.push_left(StatusBarItem::new("LEFT"));
+    state.push_center(StatusBarItem::new("CENTER"));
+    state.push_right(StatusBarItem::new("RIGHT"));
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 1);
+
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_view_multiple_items_right() {
+    let mut state = StatusBarState::new();
+    state.push_right(StatusBarItem::new("UTF-8").with_style(StatusBarStyle::Muted));
+    state.push_right(StatusBarItem::new("Ln 42, Col 8"));
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
+
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_view_mixed_dynamic_items() {
+    let mut state = StatusBarState::new();
+    state.push_left(StatusBarItem::elapsed_time());
+    state.push_center(StatusBarItem::new("file.txt"));
+    state.push_right(StatusBarItem::counter().with_label("Files"));
+    state.push_right(StatusBarItem::heartbeat());
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
+
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+// Render section edge cases
+
+#[test]
+fn test_render_section_with_separator_disabled() {
+    let theme = Theme::default();
+    let items = vec![
+        StatusBarItem::new("A").with_separator(false),
+        StatusBarItem::new("B"),
+    ];
+    let spans = StatusBar::render_section(&items, " | ", &theme);
+    // A (no sep) + B = 2 spans
+    assert_eq!(spans.len(), 2);
+}
+
+#[test]
+fn test_render_section_all_separators_disabled() {
+    let theme = Theme::default();
+    let items = vec![
+        StatusBarItem::new("A").with_separator(false),
+        StatusBarItem::new("B").with_separator(false),
+        StatusBarItem::new("C"),
+    ];
+    let spans = StatusBar::render_section(&items, " | ", &theme);
+    // A (no sep) + B (no sep) + C = 3 spans (no separators added)
+    assert_eq!(spans.len(), 3);
+}
+
+#[test]
+fn test_render_section_span_content() {
+    let theme = Theme::default();
+    let items = vec![StatusBarItem::new("Hello"), StatusBarItem::new("World")];
+    let spans = StatusBar::render_section(&items, " | ", &theme);
+    assert_eq!(spans.len(), 3);
+    assert_eq!(spans[0].content.as_ref(), "Hello");
+    assert_eq!(spans[1].content.as_ref(), " | ");
+    assert_eq!(spans[2].content.as_ref(), "World");
+}
+
+// Init test
+
+#[test]
+fn test_init_returns_empty_state() {
+    let state = StatusBar::init();
+    assert!(state.is_empty());
+    assert_eq!(state.len(), 0);
+    assert!(!state.is_disabled());
+    // init() uses Default, which gives an empty separator
+    assert_eq!(state.separator(), "");
+}
