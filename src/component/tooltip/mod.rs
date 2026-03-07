@@ -335,6 +335,36 @@ impl TooltipState {
     pub fn set_border_color(&mut self, color: Color) {
         self.border_color = color;
     }
+
+    /// Sets the visibility state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = TooltipState::new("Help text");
+    /// state.set_visible(true);
+    /// assert!(state.is_visible());
+    /// ```
+    pub fn set_visible(&mut self, visible: bool) {
+        Tooltip::set_visible(self, visible);
+    }
+
+    /// Sets the visibility state using builder pattern.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = TooltipState::new("Help text").with_visible(true);
+    /// assert!(state.is_visible());
+    /// ```
+    pub fn with_visible(mut self, visible: bool) -> Self {
+        Tooltip::set_visible(&mut self, visible);
+        self
+    }
 }
 
 /// A tooltip component for displaying contextual information.

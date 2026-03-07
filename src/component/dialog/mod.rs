@@ -485,6 +485,21 @@ impl DialogState {
         Dialog::set_visible(self, visible);
     }
 
+    /// Sets the visibility state using builder pattern.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DialogState::alert("Info", "Done.").with_visible(true);
+    /// assert!(state.is_visible());
+    /// ```
+    pub fn with_visible(mut self, visible: bool) -> Self {
+        Dialog::set_visible(&mut self, visible);
+        self
+    }
+
     /// Maps an input event to a dialog message.
     pub fn handle_event(&self, event: &Event) -> Option<DialogMessage> {
         Dialog::handle_event(self, event)

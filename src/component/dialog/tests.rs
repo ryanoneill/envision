@@ -595,6 +595,18 @@ fn test_instance_set_visible() {
 }
 
 #[test]
+fn test_with_visible() {
+    let state = DialogState::alert("T", "M").with_visible(true);
+    assert!(state.is_visible());
+}
+
+#[test]
+fn test_with_visible_false() {
+    let state = DialogState::alert("T", "M").with_visible(false);
+    assert!(!state.is_visible());
+}
+
+#[test]
 fn test_instance_is_focused() {
     let mut state = DialogState::alert("T", "M");
     assert!(!state.is_focused());

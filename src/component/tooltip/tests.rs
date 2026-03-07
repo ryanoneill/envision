@@ -657,3 +657,25 @@ fn test_annotation_emitted() {
     assert_eq!(regions.len(), 1);
     assert!(regions[0].annotation.has_id("tooltip"));
 }
+
+#[test]
+fn test_with_visible() {
+    let state = TooltipState::new("Help").with_visible(true);
+    assert!(state.is_visible());
+}
+
+#[test]
+fn test_with_visible_false() {
+    let state = TooltipState::new("Help").with_visible(false);
+    assert!(!state.is_visible());
+}
+
+#[test]
+fn test_instance_set_visible() {
+    let mut state = TooltipState::new("Help");
+    assert!(!state.is_visible());
+    state.set_visible(true);
+    assert!(state.is_visible());
+    state.set_visible(false);
+    assert!(!state.is_visible());
+}
