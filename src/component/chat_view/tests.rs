@@ -939,7 +939,7 @@ fn test_role_style_per_role() {
 fn test_format_message_uses_base_style() {
     let msg = ChatMessage::new(ChatRole::User, "Hello");
     let custom_style = Style::default().fg(Color::Red);
-    let lines = format_message(&msg, false, 40, custom_style);
+    let lines = super::render_helpers::format_message(&msg, false, 40, custom_style);
     // Header line should use bold variant of custom style
     let (header, _) = &lines[0];
     let header_span = &header.spans[0]; // "You:" span
