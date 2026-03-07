@@ -885,7 +885,9 @@ fn test_default_role_style() {
 #[test]
 fn test_custom_role_style() {
     let mut state = ChatViewState::new();
-    let custom = Style::default().fg(Color::Red).add_modifier(Modifier::ITALIC);
+    let custom = Style::default()
+        .fg(Color::Red)
+        .add_modifier(Modifier::ITALIC);
     state.set_role_style(ChatRole::User, custom);
     assert_eq!(state.role_style(&ChatRole::User), custom);
     // Other roles unchanged
@@ -941,10 +943,7 @@ fn test_format_message_uses_base_style() {
     // Header line should use bold variant of custom style
     let (header, _) = &lines[0];
     let header_span = &header.spans[0]; // "You:" span
-    assert_eq!(
-        header_span.style,
-        custom_style.add_modifier(Modifier::BOLD)
-    );
+    assert_eq!(header_span.style, custom_style.add_modifier(Modifier::BOLD));
     // Content line should use custom style
     let (content, _) = &lines[1];
     let content_span = &content.spans[0]; // "  Hello" span
