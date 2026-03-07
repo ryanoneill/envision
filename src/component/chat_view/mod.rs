@@ -984,4 +984,6 @@ fn render_input(state: &ChatViewState, frame: &mut Frame, area: Rect, theme: &Th
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;
