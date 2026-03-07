@@ -568,3 +568,22 @@ fn test_unicode_node_labels() {
     assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected_node().unwrap().label(), "설정");
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = TreeState::new(vec![TreeNode::new("Root", ())]);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Tree::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Tree);
+    assert_eq!(regions.len(), 1);
+}

@@ -166,3 +166,43 @@ fn test_instance_update() {
     let output = state.update(ButtonMessage::Press);
     assert_eq!(output, Some(ButtonOutput::Pressed));
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = ButtonState::new("Submit");
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Button::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Button);
+    assert_eq!(regions.len(), 1);
+    assert_eq!(regions[0].annotation.label, Some("Submit".to_string()));
+    assert!(!regions[0].annotation.focused);
+    assert!(!regions[0].annotation.disabled);
+}
+
+#[test]
+fn test_annotation_focused() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let mut state = ButtonState::new("OK");
+    Button::set_focused(&mut state, true);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Button::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    let regions = registry.find_by_type(&WidgetType::Button);
+    assert_eq!(regions.len(), 1);
+    assert!(regions[0].annotation.focused);
+}

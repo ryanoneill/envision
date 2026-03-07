@@ -785,3 +785,23 @@ fn test_clear_error_on_ready_item() {
     assert!(output.is_none()); // Already ready, no change
     assert!(state.items()[0].is_ready());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let items = make_items();
+    let state = LoadingListState::with_items(items, |i| i.name.clone());
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                LoadingList::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::LoadingList);
+    assert_eq!(regions.len(), 1);
+}

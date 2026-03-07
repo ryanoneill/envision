@@ -424,3 +424,22 @@ fn test_default_matches_init() {
     assert_eq!(default_state.key_style(), init_state.key_style());
     assert_eq!(default_state.action_style(), init_state.action_style());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = KeyHintsState::new().hint("Enter", "Select");
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                KeyHints::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::KeyHints);
+    assert_eq!(regions.len(), 1);
+}

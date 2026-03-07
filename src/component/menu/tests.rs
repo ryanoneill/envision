@@ -650,3 +650,22 @@ fn test_instance_update_disabled() {
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(0));
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Menu::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Menu);
+    assert_eq!(regions.len(), 1);
+}
