@@ -1,0 +1,9 @@
+---
+source: src/component/line_input/tests.rs
+assertion_line: 1004
+expression: terminal.backend().to_string()
+---
+┌──────────┐
+│世 界 你 好 ab│
+│          │
+└──────────┘

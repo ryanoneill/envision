@@ -1,0 +1,10 @@
+---
+source: src/component/line_input/tests.rs
+assertion_line: 991
+expression: terminal.backend().to_string()
+---
+┌──────────┐
+│hello worl│
+│d!        │
+│          │
+└──────────┘

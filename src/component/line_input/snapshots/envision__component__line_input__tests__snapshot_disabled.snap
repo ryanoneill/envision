@@ -1,0 +1,8 @@
+---
+source: src/component/line_input/tests.rs
+assertion_line: 966
+expression: terminal.backend().to_string()
+---
+┌──────────────────┐
+│hello             │
+└──────────────────┘
