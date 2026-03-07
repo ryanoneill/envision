@@ -45,10 +45,8 @@ impl App for LineInputApp {
     fn update(state: &mut State, msg: Msg) -> Command<Msg> {
         match msg {
             Msg::Input(m) => {
-                if let Some(output) = state.input.update(m) {
-                    if let LineInputOutput::Submitted(value) = output {
-                        state.submissions.push(value);
-                    }
+                if let Some(LineInputOutput::Submitted(value)) = state.input.update(m) {
+                    state.submissions.push(value);
                 }
             }
             Msg::Quit => return Command::quit(),
