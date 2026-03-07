@@ -21,6 +21,7 @@
 //! assert_eq!(state.messages()[2].role(), ChatRole::Assistant);
 //! ```
 
+use std::collections::HashMap;
 use std::marker::PhantomData;
 
 use ratatui::prelude::*;
@@ -233,6 +234,8 @@ pub struct ChatViewState {
     show_timestamps: bool,
     /// Input area height in lines.
     input_height: u16,
+    /// Custom styles per role (overrides default role colors).
+    role_styles: Option<HashMap<ChatRole, Style>>,
 }
 
 impl Default for ChatViewState {
@@ -248,6 +251,7 @@ impl Default for ChatViewState {
             disabled: false,
             show_timestamps: false,
             input_height: 3,
+            role_styles: None,
         }
     }
 }
@@ -263,6 +267,7 @@ impl PartialEq for ChatViewState {
             && self.disabled == other.disabled
             && self.show_timestamps == other.show_timestamps
             && self.input_height == other.input_height
+            && self.role_styles == other.role_styles
     }
 }
 
@@ -493,6 +498,69 @@ impl ChatViewState {
     /// Sets the disabled state.
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
+    }
+
+    // ---- Role style configuration ----
+
+    /// Returns the style for a given role.
+    ///
+    /// If a custom style has been set via [`set_role_style`](Self::set_role_style),
+    /// that style is returned. Otherwise returns `Style::default().fg(role.color())`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChatViewState, ChatRole};
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let state = ChatViewState::new();
+    /// assert_eq!(state.role_style(&ChatRole::User), Style::default().fg(Color::Cyan));
+    /// ```
+    pub fn role_style(&self, role: &ChatRole) -> Style {
+        self.role_styles
+            .as_ref()
+            .and_then(|styles| styles.get(role).copied())
+            .unwrap_or_else(|| Style::default().fg(role.color()))
+    }
+
+    /// Sets a custom style for a chat role.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChatViewState, ChatRole};
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_role_style(ChatRole::User, Style::default().fg(Color::Red));
+    /// assert_eq!(state.role_style(&ChatRole::User), Style::default().fg(Color::Red));
+    /// ```
+    pub fn set_role_style(&mut self, role: ChatRole, style: Style) {
+        self.role_styles
+            .get_or_insert_with(HashMap::new)
+            .insert(role, style);
+    }
+
+    /// Sets a custom style for a chat role (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChatViewState, ChatRole};
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let state = ChatViewState::new()
+    ///     .with_role_style(ChatRole::Assistant, Style::default().fg(Color::Yellow));
+    /// assert_eq!(state.role_style(&ChatRole::Assistant), Style::default().fg(Color::Yellow));
+    /// ```
+    pub fn with_role_style(mut self, role: ChatRole, style: Style) -> Self {
+        self.set_role_style(role, style);
+        self
+    }
+
+    /// Clears all custom role styles, reverting to defaults.
+    pub fn clear_role_styles(&mut self) {
+        self.role_styles = None;
     }
 
     /// Maps an input event to a chat view message.
@@ -791,7 +859,10 @@ fn render_history(state: &ChatViewState, frame: &mut Frame, area: Rect, theme: &
     let display_lines: Vec<(Line, ChatRole)> = state
         .messages
         .iter()
-        .flat_map(|msg| format_message(msg, state.show_timestamps, inner.width as usize))
+        .flat_map(|msg| {
+            let base_style = state.role_style(&msg.role());
+            format_message(msg, state.show_timestamps, inner.width as usize, base_style)
+        })
         .collect();
 
     let total_lines = display_lines.len();
@@ -823,10 +894,11 @@ fn format_message(
     msg: &ChatMessage,
     show_timestamps: bool,
     _width: usize,
+    base_style: Style,
 ) -> Vec<(Line<'_>, ChatRole)> {
     let mut result = Vec::new();
     let role = msg.role();
-    let style = Style::default().fg(role.color());
+    let style = base_style;
     let bold_style = style.add_modifier(Modifier::BOLD);
 
     // Header line: [timestamp] Username:

@@ -860,3 +860,110 @@ fn test_input_start_end() {
     ChatView::update(&mut state, ChatViewMessage::Input('!'));
     assert_eq!(state.input_value(), "!a\nb");
 }
+
+// =============================================================================
+// Role style inheritance
+// =============================================================================
+
+#[test]
+fn test_default_role_style() {
+    let state = ChatViewState::new();
+    assert_eq!(
+        state.role_style(&ChatRole::User),
+        Style::default().fg(Color::Cyan)
+    );
+    assert_eq!(
+        state.role_style(&ChatRole::System),
+        Style::default().fg(Color::DarkGray)
+    );
+    assert_eq!(
+        state.role_style(&ChatRole::Assistant),
+        Style::default().fg(Color::Green)
+    );
+}
+
+#[test]
+fn test_custom_role_style() {
+    let mut state = ChatViewState::new();
+    let custom = Style::default().fg(Color::Red).add_modifier(Modifier::ITALIC);
+    state.set_role_style(ChatRole::User, custom);
+    assert_eq!(state.role_style(&ChatRole::User), custom);
+    // Other roles unchanged
+    assert_eq!(
+        state.role_style(&ChatRole::Assistant),
+        Style::default().fg(Color::Green)
+    );
+}
+
+#[test]
+fn test_with_role_style_builder() {
+    let custom = Style::default().fg(Color::Yellow);
+    let state = ChatViewState::new().with_role_style(ChatRole::Assistant, custom);
+    assert_eq!(state.role_style(&ChatRole::Assistant), custom);
+}
+
+#[test]
+fn test_clear_role_styles() {
+    let mut state = ChatViewState::new();
+    state.set_role_style(ChatRole::User, Style::default().fg(Color::Red));
+    state.clear_role_styles();
+    assert_eq!(
+        state.role_style(&ChatRole::User),
+        Style::default().fg(Color::Cyan)
+    );
+}
+
+#[test]
+fn test_role_style_per_role() {
+    let state = ChatViewState::new()
+        .with_role_style(ChatRole::User, Style::default().fg(Color::Red))
+        .with_role_style(ChatRole::System, Style::default().fg(Color::Blue))
+        .with_role_style(ChatRole::Assistant, Style::default().fg(Color::Yellow));
+    assert_eq!(
+        state.role_style(&ChatRole::User),
+        Style::default().fg(Color::Red)
+    );
+    assert_eq!(
+        state.role_style(&ChatRole::System),
+        Style::default().fg(Color::Blue)
+    );
+    assert_eq!(
+        state.role_style(&ChatRole::Assistant),
+        Style::default().fg(Color::Yellow)
+    );
+}
+
+#[test]
+fn test_format_message_uses_base_style() {
+    let msg = ChatMessage::new(ChatRole::User, "Hello");
+    let custom_style = Style::default().fg(Color::Red);
+    let lines = format_message(&msg, false, 40, custom_style);
+    // Header line should use bold variant of custom style
+    let (header, _) = &lines[0];
+    let header_span = &header.spans[0]; // "You:" span
+    assert_eq!(
+        header_span.style,
+        custom_style.add_modifier(Modifier::BOLD)
+    );
+    // Content line should use custom style
+    let (content, _) = &lines[1];
+    let content_span = &content.spans[0]; // "  Hello" span
+    assert_eq!(content_span.style, custom_style);
+}
+
+#[test]
+fn test_render_with_custom_role_styles() {
+    let mut state = ChatViewState::new()
+        .with_role_style(ChatRole::User, Style::default().fg(Color::Red))
+        .with_role_style(ChatRole::Assistant, Style::default().fg(Color::Yellow));
+    ChatView::set_focused(&mut state, true);
+    state.push_user("Hello");
+    state.push_assistant("Hi!");
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            ChatView::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+    // Just verify it renders without panicking
+}
