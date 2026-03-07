@@ -1,0 +1,25 @@
+---
+source: src/component/log_viewer/snapshot_tests.rs
+assertion_line: 38
+expression: terminal.backend().to_string()
+---
+/ Search...                                                           
+1:● Info 2:● Success 3:● Warning 4:● Error                            
+┌────────────────────────────────────────────────────────────────────┐
+│✗ Connection timeout                                                │
+│⚠ Disk space low                                                    │
+│✓ Connected to database                                             │
+│ℹ Server started                                                    │
+│                                                                    │
+│                                                                    │
+│                                                                    │
+│                                                                    │
+│                                                                    │
+│                                                                    │
+│                                                                    │
+│                                                                    │
+│                                                                    │
+│                                                                    │
+│                                                                    │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘

@@ -971,4 +971,6 @@ fn render_log(state: &LogViewerState, frame: &mut Frame, area: Rect, theme: &The
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;

@@ -672,4 +672,6 @@ impl<T: TableRow + 'static> Focusable for DataGrid<T> {
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;

@@ -783,4 +783,6 @@ fn render_bar_chart(
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;
