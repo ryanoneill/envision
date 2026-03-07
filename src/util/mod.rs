@@ -19,7 +19,7 @@
 //! assert_eq!(truncate_to_width("hello world", 5), "hello");
 //!
 //! // CJK characters are 2 columns wide
-//! assert_eq!(truncate_to_width("AB", 3), "A");
+//! assert_eq!(truncate_to_width("世界", 3), "世");
 //!
 //! // Wrapped line counting
 //! assert_eq!(wrapped_line_count("hello world", 5), 3);
@@ -59,9 +59,9 @@ use unicode_width::UnicodeWidthChar;
 /// assert_eq!(truncate_to_width("hello", 0), "");
 ///
 /// // CJK characters (2 columns each)
-/// assert_eq!(truncate_to_width("AB", 4), "AB");
-/// assert_eq!(truncate_to_width("AB", 3), "A");
-/// assert_eq!(truncate_to_width("AB", 1), "");
+/// assert_eq!(truncate_to_width("世界", 4), "世界");
+/// assert_eq!(truncate_to_width("世界", 3), "世");
+/// assert_eq!(truncate_to_width("世界", 1), "");
 /// ```
 pub fn truncate_to_width(s: &str, max_width: usize) -> &str {
     let mut width = 0;
@@ -108,7 +108,7 @@ pub fn truncate_to_width(s: &str, max_width: usize) -> &str {
 /// assert_eq!(wrapped_line_count("hello", 0), 0);
 ///
 /// // CJK wrapping (2 columns each)
-/// assert_eq!(wrapped_line_count("ABCD", 5), 2);
+/// assert_eq!(wrapped_line_count("世界你好", 5), 2);
 /// ```
 pub fn wrapped_line_count(s: &str, width: usize) -> usize {
     if width == 0 {
