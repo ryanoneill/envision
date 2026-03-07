@@ -135,6 +135,15 @@ impl SelectState {
     }
 
     /// Returns the options list.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectState::new(vec!["Red", "Green", "Blue"]);
+    /// assert_eq!(state.options(), &["Red", "Green", "Blue"]);
+    /// ```
     pub fn options(&self) -> &[String] {
         &self.options
     }
@@ -142,6 +151,17 @@ impl SelectState {
     /// Sets the options list.
     ///
     /// Resets selection if the current selected index is out of bounds.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectState::with_selection(vec!["A", "B"], 1);
+    /// state.set_options(vec!["X", "Y", "Z"]);
+    /// assert_eq!(state.options(), &["X", "Y", "Z"]);
+    /// assert_eq!(state.selected_index(), Some(1));
+    /// ```
     pub fn set_options<S: Into<String>>(&mut self, options: Vec<S>) {
         self.options = options.into_iter().map(|s| s.into()).collect();
 
@@ -159,11 +179,35 @@ impl SelectState {
     }
 
     /// Returns the selected option index.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectState::new(vec!["A", "B"]);
+    /// assert_eq!(state.selected_index(), None);
+    ///
+    /// let state = SelectState::with_selection(vec!["A", "B"], 0);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected_index
     }
 
     /// Returns the selected option value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectState::with_selection(vec!["Red", "Green", "Blue"], 2);
+    /// assert_eq!(state.selected_value(), Some("Blue"));
+    ///
+    /// let state = SelectState::new(vec!["Red", "Green", "Blue"]);
+    /// assert_eq!(state.selected_value(), None);
+    /// ```
     pub fn selected_value(&self) -> Option<&str> {
         self.selected_index
             .and_then(|idx| self.options.get(idx).map(|s| s.as_str()))
@@ -173,11 +217,33 @@ impl SelectState {
     ///
     /// This is an alias for [`selected_value()`](Self::selected_value) that provides a
     /// consistent accessor name across all selection-based components.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectState::with_selection(vec!["Red", "Green"], 0);
+    /// assert_eq!(state.selected_item(), Some("Red"));
+    /// ```
     pub fn selected_item(&self) -> Option<&str> {
         self.selected_value()
     }
 
     /// Sets the selected option index.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectState::new(vec!["A", "B", "C"]);
+    /// state.set_selected(Some(2));
+    /// assert_eq!(state.selected_value(), Some("C"));
+    ///
+    /// state.set_selected(None);
+    /// assert_eq!(state.selected_value(), None);
+    /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         if let Some(idx) = index {
             if idx < self.options.len() {
@@ -190,16 +256,47 @@ impl SelectState {
     }
 
     /// Returns true if the dropdown is open.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectState::new(vec!["A", "B"]);
+    /// assert!(!state.is_open());
+    ///
+    /// state.update(SelectMessage::Open);
+    /// assert!(state.is_open());
+    /// ```
     pub fn is_open(&self) -> bool {
         self.is_open
     }
 
     /// Returns the placeholder text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectState::new(vec!["A", "B"]);
+    /// assert_eq!(state.placeholder(), "Select...");
+    /// ```
     pub fn placeholder(&self) -> &str {
         &self.placeholder
     }
 
     /// Sets the placeholder text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectState::new(vec!["A", "B"]);
+    /// state.set_placeholder("Pick one...");
+    /// assert_eq!(state.placeholder(), "Pick one...");
+    /// ```
     pub fn set_placeholder(&mut self, placeholder: impl Into<String>) {
         self.placeholder = placeholder.into();
     }
@@ -221,11 +318,34 @@ impl SelectState {
     }
 
     /// Returns true if the select is disabled.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectState::new(vec!["A", "B"]);
+    /// assert!(!state.is_disabled());
+    ///
+    /// let state = SelectState::new(vec!["A", "B"]).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectState::new(vec!["A", "B"]);
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// assert!(!state.is_open());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
         if disabled {
@@ -234,32 +354,104 @@ impl SelectState {
     }
 
     /// Sets the disabled state using builder pattern.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = SelectState::new(vec!["A", "B"]).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Returns true if the select is focused.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectState::new(vec!["A", "B"]);
+    /// assert!(!state.is_focused());
+    ///
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectState::new(vec!["A", "B"]);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    ///
+    /// state.set_focused(false);
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Maps an input event to a select message.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectState::new(vec!["A", "B"]);
+    /// state.set_focused(true);
+    ///
+    /// let event = Event::key(KeyCode::Enter);
+    /// assert_eq!(state.handle_event(&event), Some(SelectMessage::Toggle));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<SelectMessage> {
         Select::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectState::new(vec!["A", "B"]);
+    /// state.set_focused(true);
+    /// state.update(SelectMessage::Open);
+    ///
+    /// let event = Event::key(KeyCode::Down);
+    /// let output = state.dispatch_event(&event);
+    /// assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<SelectOutput> {
         Select::dispatch_event(self, event)
     }
 
     /// Updates the select state with a message, returning any output.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectState::new(vec!["Apple", "Banana", "Cherry"]);
+    /// state.update(SelectMessage::Open);
+    /// state.update(SelectMessage::Down);
+    /// let output = state.update(SelectMessage::Confirm);
+    /// assert_eq!(output, Some(SelectOutput::Selected("Banana".to_string())));
+    /// ```
     pub fn update(&mut self, msg: SelectMessage) -> Option<SelectOutput> {
         Select::update(self, msg)
     }

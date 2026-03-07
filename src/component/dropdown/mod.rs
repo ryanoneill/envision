@@ -166,6 +166,15 @@ impl DropdownState {
     }
 
     /// Returns the options list.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DropdownState::new(vec!["Apple", "Banana"]);
+    /// assert_eq!(state.options(), &["Apple", "Banana"]);
+    /// ```
     pub fn options(&self) -> &[String] {
         &self.options
     }
@@ -174,6 +183,17 @@ impl DropdownState {
     ///
     /// Resets selection if the current selected index is out of bounds.
     /// Also updates the filtered indices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::with_selection(vec!["A", "B"], 1);
+    /// state.set_options(vec!["X", "Y", "Z"]);
+    /// assert_eq!(state.options(), &["X", "Y", "Z"]);
+    /// assert_eq!(state.selected_index(), Some(1));
+    /// ```
     pub fn set_options<S: Into<String>>(&mut self, options: Vec<S>) {
         self.options = options.into_iter().map(|s| s.into()).collect();
 
@@ -189,11 +209,35 @@ impl DropdownState {
     }
 
     /// Returns the selected option index.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DropdownState::new(vec!["A", "B"]);
+    /// assert_eq!(state.selected_index(), None);
+    ///
+    /// let state = DropdownState::with_selection(vec!["A", "B"], 0);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected_index
     }
 
     /// Returns the selected option value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DropdownState::with_selection(vec!["Apple", "Banana"], 1);
+    /// assert_eq!(state.selected_value(), Some("Banana"));
+    ///
+    /// let state = DropdownState::new(vec!["Apple", "Banana"]);
+    /// assert_eq!(state.selected_value(), None);
+    /// ```
     pub fn selected_value(&self) -> Option<&str> {
         self.selected_index
             .and_then(|idx| self.options.get(idx).map(|s| s.as_str()))
@@ -203,11 +247,33 @@ impl DropdownState {
     ///
     /// This is an alias for [`selected_value()`](Self::selected_value) that provides a
     /// consistent accessor name across all selection-based components.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DropdownState::with_selection(vec!["Apple", "Banana"], 0);
+    /// assert_eq!(state.selected_item(), Some("Apple"));
+    /// ```
     pub fn selected_item(&self) -> Option<&str> {
         self.selected_value()
     }
 
     /// Sets the selected option index.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["A", "B", "C"]);
+    /// state.set_selected(Some(2));
+    /// assert_eq!(state.selected_value(), Some("C"));
+    ///
+    /// state.set_selected(None);
+    /// assert_eq!(state.selected_value(), None);
+    /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         if let Some(idx) = index {
             if idx < self.options.len() {
@@ -219,11 +285,33 @@ impl DropdownState {
     }
 
     /// Returns the current filter text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["Apple", "Banana"]);
+    /// assert_eq!(state.filter_text(), "");
+    ///
+    /// state.update(DropdownMessage::Insert('a'));
+    /// assert_eq!(state.filter_text(), "a");
+    /// ```
     pub fn filter_text(&self) -> &str {
         &self.filter_text
     }
 
     /// Returns the filtered options (values, not indices).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["Apple", "Banana", "Cherry"]);
+    /// state.update(DropdownMessage::Insert('a'));
+    /// assert_eq!(state.filtered_options(), vec!["Apple", "Banana"]);
+    /// ```
     pub fn filtered_options(&self) -> Vec<&str> {
         self.filtered_indices
             .iter()
@@ -232,21 +320,64 @@ impl DropdownState {
     }
 
     /// Returns the number of filtered options.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["Apple", "Banana", "Cherry"]);
+    /// assert_eq!(state.filtered_count(), 3);
+    ///
+    /// state.update(DropdownMessage::Insert('a'));
+    /// assert_eq!(state.filtered_count(), 2);
+    /// ```
     pub fn filtered_count(&self) -> usize {
         self.filtered_indices.len()
     }
 
     /// Returns true if the dropdown is open.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["A", "B"]);
+    /// assert!(!state.is_open());
+    ///
+    /// state.update(DropdownMessage::Open);
+    /// assert!(state.is_open());
+    /// ```
     pub fn is_open(&self) -> bool {
         self.is_open
     }
 
     /// Returns the placeholder text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DropdownState::new(vec!["A", "B"]);
+    /// assert_eq!(state.placeholder(), "Search...");
+    /// ```
     pub fn placeholder(&self) -> &str {
         &self.placeholder
     }
 
     /// Sets the placeholder text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["A", "B"]);
+    /// state.set_placeholder("Pick one...");
+    /// assert_eq!(state.placeholder(), "Pick one...");
+    /// ```
     pub fn set_placeholder(&mut self, placeholder: impl Into<String>) {
         self.placeholder = placeholder.into();
     }
@@ -268,11 +399,34 @@ impl DropdownState {
     }
 
     /// Returns true if the dropdown is disabled.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DropdownState::new(vec!["A", "B"]);
+    /// assert!(!state.is_disabled());
+    ///
+    /// let state = DropdownState::new(vec!["A", "B"]).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["A", "B"]);
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// assert!(!state.is_open());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
         if disabled {
@@ -281,32 +435,105 @@ impl DropdownState {
     }
 
     /// Sets the disabled state using builder pattern.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DropdownState::new(vec!["A", "B"]).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Returns true if the dropdown is focused.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["A", "B"]);
+    /// assert!(!state.is_focused());
+    ///
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["A", "B"]);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    ///
+    /// state.set_focused(false);
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Maps an input event to a dropdown message.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["A", "B"]);
+    /// state.set_focused(true);
+    /// state.update(DropdownMessage::Open);
+    ///
+    /// let event = Event::key(KeyCode::Down);
+    /// assert_eq!(state.handle_event(&event), Some(DropdownMessage::Down));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<DropdownMessage> {
         Dropdown::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["A", "B"]);
+    /// state.set_focused(true);
+    /// state.update(DropdownMessage::Open);
+    ///
+    /// let event = Event::key(KeyCode::Down);
+    /// let output = state.dispatch_event(&event);
+    /// assert_eq!(output, Some(DropdownOutput::SelectionChanged(1)));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<DropdownOutput> {
         Dropdown::dispatch_event(self, event)
     }
 
     /// Updates the dropdown state with a message, returning any output.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = DropdownState::new(vec!["Apple", "Banana", "Cherry"]);
+    /// state.update(DropdownMessage::Open);
+    /// state.update(DropdownMessage::Down);
+    /// let output = state.update(DropdownMessage::Confirm);
+    /// assert_eq!(output, Some(DropdownOutput::Selected("Banana".to_string())));
+    /// ```
     pub fn update(&mut self, msg: DropdownMessage) -> Option<DropdownOutput> {
         Dropdown::update(self, msg)
     }
