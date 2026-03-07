@@ -251,7 +251,14 @@ impl Component for Checkbox {
         };
 
         let paragraph = Paragraph::new(text).style(style);
-        frame.render_widget(paragraph, area);
+
+        let annotation = crate::annotation::Annotation::checkbox("checkbox")
+            .with_label(state.label.as_str())
+            .with_selected(state.checked);
+        let annotated = crate::annotation::Annotate::new(paragraph, annotation)
+            .focused(state.focused)
+            .disabled(state.disabled);
+        frame.render_widget(annotated, area);
     }
 }
 

@@ -675,3 +675,23 @@ fn test_empty_form_ignores_events() {
     let msg = Form::handle_event(&state, &Event::char('a'));
     assert_eq!(msg, None);
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = sample_form();
+    let (mut terminal, theme) = test_utils::setup_render(40, 20);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Form::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Form);
+    assert_eq!(regions.len(), 1);
+    assert!(regions[0].annotation.has_id("form"));
+}

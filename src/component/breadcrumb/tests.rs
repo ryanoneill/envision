@@ -790,3 +790,25 @@ fn test_default_matches_init() {
     assert_eq!(default_state.separator(), init_state.separator());
     assert_eq!(default_state.max_visible(), init_state.max_visible());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = BreadcrumbState::new(vec![
+        BreadcrumbSegment::new("Home"),
+        BreadcrumbSegment::new("Products"),
+    ]);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Breadcrumb::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Breadcrumb);
+    assert_eq!(regions.len(), 1);
+}

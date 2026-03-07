@@ -253,3 +253,41 @@ fn test_with_disabled_prevents_handle_event() {
     let msg = Checkbox::handle_event(&state, &Event::key(KeyCode::Enter));
     assert_eq!(msg, None);
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = CheckboxState::new("Accept TOS");
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Checkbox::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Checkbox);
+    assert_eq!(regions.len(), 1);
+    assert_eq!(regions[0].annotation.label, Some("Accept TOS".to_string()));
+    assert!(!regions[0].annotation.selected);
+}
+
+#[test]
+fn test_annotation_checked() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let mut state = CheckboxState::new("Accept");
+    Checkbox::update(&mut state, CheckboxMessage::Toggle);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Checkbox::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    let regions = registry.find_by_type(&WidgetType::Checkbox);
+    assert!(regions[0].annotation.selected);
+}

@@ -299,6 +299,15 @@ impl Component for TitleCard {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::title_card("title_card")
+                    .with_label(state.title.as_str())
+                    .with_disabled(state.disabled),
+            );
+        });
+
         let render_area = if state.bordered {
             let border_style = if state.disabled {
                 theme.disabled_style()

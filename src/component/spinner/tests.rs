@@ -272,3 +272,23 @@ fn test_default_matches_init() {
     assert_eq!(default_state.is_spinning(), init_state.is_spinning());
     assert_eq!(default_state.label(), init_state.label());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = SpinnerState::with_label("Loading");
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Spinner::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Spinner);
+    assert_eq!(regions.len(), 1);
+    assert_eq!(regions[0].annotation.label, Some("Loading".to_string()));
+}

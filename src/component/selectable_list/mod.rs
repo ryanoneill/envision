@@ -588,6 +588,16 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        crate::annotation::with_registry(|reg| {
+            let mut ann = crate::annotation::Annotation::list("selectable_list")
+                .with_focus(state.focused)
+                .with_disabled(state.disabled);
+            if let Some(idx) = state.selected_index() {
+                ann = ann.with_selected(true).with_value(idx.to_string());
+            }
+            reg.register(area, ann);
+        });
+
         let items: Vec<ListItem> = state
             .filtered_indices
             .iter()

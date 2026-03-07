@@ -596,6 +596,15 @@ impl Component for MultiProgress {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::new(crate::annotation::WidgetType::MultiProgress)
+                    .with_id("multi_progress")
+                    .with_meta("item_count", state.items.len().to_string()),
+            );
+        });
+
         let block = if let Some(title) = &state.title {
             Block::default().borders(Borders::ALL).title(title.as_str())
         } else {

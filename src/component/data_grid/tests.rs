@@ -633,3 +633,23 @@ fn test_navigation_does_not_change_edit_state() {
     DataGrid::update(&mut state, DataGridMessage::Down);
     assert!(!state.is_editing());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = DataGridState::new(sample_rows(), sample_columns());
+    let (mut terminal, theme) = test_utils::setup_render(60, 15);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                DataGrid::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Table);
+    assert_eq!(regions.len(), 1);
+    assert!(regions[0].annotation.has_id("data_grid"));
+}

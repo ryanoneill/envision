@@ -320,6 +320,15 @@ impl Component for ScrollableText {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::scrollable_text("scrollable_text")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         let border_style = if state.disabled {
             theme.disabled_style()
         } else if state.focused {

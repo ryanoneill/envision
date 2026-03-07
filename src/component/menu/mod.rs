@@ -511,7 +511,12 @@ impl Component for Menu {
 
         let paragraph = Paragraph::new(menu_text).style(style);
 
-        frame.render_widget(paragraph, area);
+        let annotation = crate::annotation::Annotation::new(crate::annotation::WidgetType::Menu)
+            .with_id("menu")
+            .with_focus(state.focused)
+            .with_disabled(state.disabled);
+        let annotated = crate::annotation::Annotate::new(paragraph, annotation);
+        frame.render_widget(annotated, area);
     }
 }
 

@@ -548,3 +548,24 @@ fn test_set_progress_no_auto_activate_if_zero() {
         ProgressItemStatus::Pending
     );
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                MultiProgress::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::MultiProgress);
+    assert_eq!(regions.len(), 1);
+    assert!(regions[0].annotation.has_id("multi_progress"));
+}

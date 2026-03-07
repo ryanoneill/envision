@@ -316,3 +316,24 @@ fn test_full_workflow() {
     assert_eq!(state.percentage(), 0);
     assert!(!state.is_complete());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let mut state = ProgressBarState::with_label("Downloading");
+    state.set_progress(0.5);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                ProgressBar::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Progress);
+    assert_eq!(regions.len(), 1);
+    assert_eq!(regions[0].annotation.value, Some("50%".to_string()));
+}

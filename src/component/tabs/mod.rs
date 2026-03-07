@@ -471,7 +471,14 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             .select(selected_idx)
             .highlight_style(highlight_style);
 
-        frame.render_widget(tabs_widget, area);
+        let annotation = crate::annotation::Annotation::new(crate::annotation::WidgetType::TabBar)
+            .with_id("tabs")
+            .with_focus(state.focused)
+            .with_disabled(state.disabled)
+            .with_selected(true)
+            .with_value(selected_idx.to_string());
+        let annotated = crate::annotation::Annotate::new(tabs_widget, annotation);
+        frame.render_widget(annotated, area);
     }
 }
 

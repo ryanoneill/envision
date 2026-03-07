@@ -465,6 +465,16 @@ impl Component for SplitPanel {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        crate::annotation::with_registry(|reg| {
+            reg.open(
+                area,
+                crate::annotation::Annotation::new(crate::annotation::WidgetType::SplitPanel)
+                    .with_id("split_panel")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         let (first_area, second_area) = state.layout(area);
 
         let first_focused = state.focused && state.focused_pane == Pane::First;
@@ -498,6 +508,10 @@ impl Component for SplitPanel {
 
         frame.render_widget(first_block, first_area);
         frame.render_widget(second_block, second_area);
+
+        crate::annotation::with_registry(|reg| {
+            reg.close();
+        });
     }
 }
 

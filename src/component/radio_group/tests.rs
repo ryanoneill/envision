@@ -494,3 +494,22 @@ fn test_set_options_selection_at_boundary() {
     assert_eq!(state.selected_index(), Some(2));
     assert_eq!(state.selected_item(), Some(&"Z"));
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string()]);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                RadioGroup::<String>::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::RadioGroup);
+    assert_eq!(regions.len(), 1);
+}

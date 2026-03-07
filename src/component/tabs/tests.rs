@@ -675,3 +675,22 @@ fn test_set_tabs_selection_at_boundary() {
     assert_eq!(state.selected_index(), Some(2));
     assert_eq!(state.selected_item(), Some(&"Z"));
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = TabsState::new(vec!["Tab1".to_string(), "Tab2".to_string()]);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 3);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Tabs::<String>::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::TabBar);
+    assert_eq!(regions.len(), 1);
+}

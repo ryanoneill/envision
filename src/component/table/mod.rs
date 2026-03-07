@@ -896,6 +896,16 @@ impl<T: TableRow + 'static> Component for Table<T> {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        crate::annotation::with_registry(|reg| {
+            let mut ann = crate::annotation::Annotation::table("table")
+                .with_focus(state.focused)
+                .with_disabled(state.disabled);
+            if let Some(idx) = state.selected {
+                ann = ann.with_selected(true).with_value(idx.to_string());
+            }
+            reg.register(area, ann);
+        });
+
         // Build header row with sort indicators
         let header_cells: Vec<Cell> = state
             .columns

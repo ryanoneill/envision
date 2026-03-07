@@ -685,3 +685,25 @@ fn test_cursor_display_position_empty() {
     let state = InputFieldState::new();
     assert_eq!(state.cursor_display_position(), 0);
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let mut state = InputFieldState::new();
+    InputField::update(&mut state, InputFieldMessage::Insert('H'));
+    InputField::update(&mut state, InputFieldMessage::Insert('i'));
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                InputField::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Input);
+    assert_eq!(regions.len(), 1);
+    assert_eq!(regions[0].annotation.value, Some("Hi".to_string()));
+}

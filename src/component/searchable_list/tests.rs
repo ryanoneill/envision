@@ -918,3 +918,23 @@ fn test_debug_without_matcher() {
     assert!(debug_output.contains("SearchableListState"));
     assert!(debug_output.contains("matcher"));
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = SearchableListState::new(sample_items());
+    let (mut terminal, theme) = test_utils::setup_render(40, 15);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                SearchableList::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::SearchableList);
+    assert_eq!(regions.len(), 1);
+    assert!(regions[0].annotation.has_id("searchable_list"));
+}

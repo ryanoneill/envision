@@ -913,3 +913,22 @@ fn test_column_constructors_in_table() {
     assert!(state.columns()[1].is_sortable());
     assert_eq!(state.columns()[2].width(), Constraint::Percentage(30));
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = TableState::new(test_rows(), test_columns());
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Table::<TestRow>::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Table);
+    assert_eq!(regions.len(), 1);
+}

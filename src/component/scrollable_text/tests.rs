@@ -424,3 +424,24 @@ fn test_view_disabled() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = ScrollableTextState::new().with_content("text");
+    let (mut terminal, theme) = test_utils::setup_render(30, 5);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                ScrollableText::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::ScrollableText);
+    assert_eq!(regions.len(), 1);
+    assert!(!regions[0].annotation.focused);
+    assert!(!regions[0].annotation.disabled);
+}

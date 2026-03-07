@@ -713,6 +713,16 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        crate::annotation::with_registry(|reg| {
+            reg.open(
+                area,
+                crate::annotation::Annotation::new(crate::annotation::WidgetType::SearchableList)
+                    .with_id("searchable_list")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         // Split area: filter input on top (3 lines), list below
         let chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -786,6 +796,10 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
 
         let mut list_state = state.list_state.clone();
         frame.render_stateful_widget(list_widget, chunks[1], &mut list_state);
+
+        crate::annotation::with_registry(|reg| {
+            reg.close();
+        });
     }
 }
 

@@ -419,6 +419,18 @@ impl Component for Select {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        crate::annotation::with_registry(|reg| {
+            let mut ann = crate::annotation::Annotation::new(crate::annotation::WidgetType::Select)
+                .with_id("select")
+                .with_focus(state.focused)
+                .with_disabled(state.disabled)
+                .with_expanded(state.is_open);
+            if let Some(val) = state.selected_value() {
+                ann = ann.with_value(val.to_string());
+            }
+            reg.register(area, ann);
+        });
+
         let style = if state.disabled {
             theme.disabled_style()
         } else if state.focused {

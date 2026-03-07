@@ -636,3 +636,24 @@ fn test_default_matches_init() {
     assert_eq!(default_state.bg_color(), init_state.bg_color());
     assert_eq!(default_state.border_color(), init_state.border_color());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let mut state = TooltipState::new("Helpful tip");
+    Tooltip::set_visible(&mut state, true);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Tooltip::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Tooltip);
+    assert_eq!(regions.len(), 1);
+    assert!(regions[0].annotation.has_id("tooltip"));
+}

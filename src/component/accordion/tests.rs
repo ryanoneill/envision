@@ -784,3 +784,23 @@ fn test_builder_chaining() {
     assert_eq!(state.focused_index(), 1);
     assert!(state.is_disabled());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state =
+        AccordionState::from_pairs(vec![("Panel A", "Content A"), ("Panel B", "Content B")]);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Accordion::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Accordion);
+    assert_eq!(regions.len(), 1);
+}

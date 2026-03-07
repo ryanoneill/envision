@@ -822,3 +822,23 @@ fn test_with_placeholder_chained() {
     assert_eq!(state.placeholder(), "Pick one...");
     assert!(state.is_disabled());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = DropdownState::new(vec!["A".to_string(), "B".to_string()]);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Dropdown::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Dropdown);
+    assert_eq!(regions.len(), 1);
+    assert_eq!(regions[0].annotation.expanded, Some(false));
+}

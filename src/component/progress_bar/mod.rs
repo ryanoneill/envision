@@ -271,9 +271,15 @@ impl Component for ProgressBar {
             .block(Block::default().borders(Borders::ALL))
             .gauge_style(theme.progress_filled_style())
             .percent(state.percentage())
-            .label(label);
+            .label(label.clone());
 
-        frame.render_widget(gauge, area);
+        let annotation =
+            crate::annotation::Annotation::new(crate::annotation::WidgetType::Progress)
+                .with_id("progress_bar")
+                .with_label(label)
+                .with_value(format!("{}%", state.percentage()));
+        let annotated = crate::annotation::Annotate::new(gauge, annotation);
+        frame.render_widget(annotated, area);
     }
 }
 
