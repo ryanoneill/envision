@@ -7,13 +7,14 @@ use envision::{
     CheckboxOutput, CheckboxState, Column, Command, Component, Dialog, DialogButton, DialogMessage,
     DialogOutput, DialogState, Dropdown, DropdownState, Event, FocusManager, Focusable, InputField,
     InputFieldMessage, InputFieldOutput, InputFieldState, KeyHint, KeyHints, KeyHintsState,
-    LoadingList, LoadingListState, Menu, MenuItem, MenuState, MultiProgress, MultiProgressState,
-    ProgressBar, ProgressBarState, RadioGroup, RadioGroupMessage, RadioGroupOutput,
-    RadioGroupState, Select, SelectState, SelectableList, SelectableListMessage,
-    SelectableListOutput, SelectableListState, Spinner, SpinnerState, StatusBar, StatusBarState,
-    StatusLog, StatusLogState, Table, TableRow, TableState, Tabs, TabsMessage, TabsOutput,
-    TabsState, TextArea, TextAreaState, Theme, Toast, ToastState, Toggleable, Tooltip,
-    TooltipState, Tree, TreeNode, TreeState,
+    LineInput, LineInputState, LoadingList, LoadingListState, Menu, MenuItem, MenuState,
+    MultiProgress, MultiProgressState, ProgressBar, ProgressBarState, RadioGroup,
+    RadioGroupMessage, RadioGroupOutput, RadioGroupState, ScrollableText, ScrollableTextState,
+    Select, SelectState, SelectableList, SelectableListMessage, SelectableListOutput,
+    SelectableListState, Spinner, SpinnerState, StatusBar, StatusBarState, StatusLog,
+    StatusLogState, Table, TableRow, TableState, Tabs, TabsMessage, TabsOutput, TabsState,
+    TextArea, TextAreaState, Theme, TitleCard, TitleCardState, Toast, ToastState, Toggleable,
+    Tooltip, TooltipState, Tree, TreeNode, TreeState,
 };
 use ratatui::prelude::*;
 use ratatui::Terminal;
@@ -599,6 +600,24 @@ fn test_components_handle_zero_size_area() {
     assert_view_zero_size("LoadingList", |frame, area, theme| {
         let state: LoadingListState<String> = LoadingListState::new();
         LoadingList::<String>::view(&state, frame, area, theme);
+    });
+
+    // ScrollableText
+    assert_view_zero_size("ScrollableText", |frame, area, theme| {
+        let state = ScrollableTextState::new();
+        ScrollableText::view(&state, frame, area, theme);
+    });
+
+    // TitleCard
+    assert_view_zero_size("TitleCard", |frame, area, theme| {
+        let state = TitleCardState::new("Title");
+        TitleCard::view(&state, frame, area, theme);
+    });
+
+    // LineInput
+    assert_view_zero_size("LineInput", |frame, area, theme| {
+        let state = LineInputState::new();
+        LineInput::view(&state, frame, area, theme);
     });
 }
 
