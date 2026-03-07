@@ -1,387 +1,587 @@
 # Migration Guide
 
-## Migrating from 0.4.x to 0.5.0
+## v0.4.x to v0.5.0
 
-Version 0.5.0 unifies the runtime, streamlines the component API, and
-introduces an overlay system. This guide covers every breaking change
-with before/after code examples.
+This guide covers all breaking changes, new required patterns, and migration
+steps for upgrading from envision v0.4.x to v0.5.0. Each breaking change
+includes concrete before/after code examples so you can follow the migration
+mechanically.
 
-### Unified Runtime
+---
 
-The sync `Runtime` and `AsyncRuntime` have been merged into a single
-async `Runtime`. All apps now use the same type.
+### Breaking Changes
 
-**Before (0.4.x):**
+#### 1. Unified Runtime (AsyncRuntime Removed)
+
+The separate sync `Runtime` and `AsyncRuntime` have been merged into a single
+async `Runtime`. All runtime usage is now async.
 
 ```rust
-// Synchronous usage
-let runtime = Runtime::new(MyApp)?;
+// Before (v0.4.x) -- sync runtime
+let mut runtime = Runtime::<MyApp>::new(terminal)?;
 runtime.run()?;
 
-// Async usage
-let runtime = AsyncRuntime::new(MyApp)?;
+// Before (v0.4.x) -- async runtime
+let mut runtime = AsyncRuntime::<MyApp>::new(terminal)?;
+runtime.run().await?;
+
+// After (v0.5.0) -- single async runtime
+let mut runtime = Runtime::<MyApp>::new_terminal()?;
 runtime.run().await?;
 ```
 
-**After (0.5.0):**
+For testing, `virtual_terminal()` continues to work the same way:
 
 ```rust
-// Interactive terminal (async)
-Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
-
-// Headless / testing (sync-style with tick)
-let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
-vt.tick()?;
+// Both v0.4.x and v0.5.0
+let mut runtime = Runtime::<MyApp>::virtual_terminal(80, 24)?;
 ```
 
-### Runtime Method Renames
+#### 2. Runtime Method Renames
 
-| 0.4.x | 0.5.0 | Notes |
-|-------|-------|-------|
-| `Runtime::terminal()` | `Runtime::new_terminal()` | Creates interactive terminal |
-| `Runtime::inner_terminal()` | `Runtime::terminal()` | Access underlying terminal |
-| `AsyncTestHarness` | `AppHarness` | Test harness for full app testing |
-| `step()` | `tick()` | Advance one frame |
-
-**Before (0.4.x):**
+| v0.4.x | v0.5.0 |
+|--------|--------|
+| `Runtime::terminal()` | `Runtime::new_terminal()` |
+| `Runtime::inner_terminal()` | `Runtime::terminal()` |
+| `AsyncTestHarness` | `AppHarness` |
+| `step()` | `tick()` |
 
 ```rust
-let harness = AsyncTestHarness::new(MyApp, 80, 24)?;
-harness.step()?;
+// Before (v0.4.x)
+let runtime = Runtime::<MyApp>::terminal()?;
 let terminal = runtime.inner_terminal();
-```
+harness.step()?;
 
-**After (0.5.0):**
-
-```rust
-let harness = AppHarness::new(MyApp, 80, 24)?;
-harness.tick()?;
+// After (v0.5.0)
+let runtime = Runtime::<MyApp>::new_terminal()?;
 let terminal = runtime.terminal();
+harness.tick().await?;
 ```
 
-### Message Requires Send + 'static
+#### 3. `App::Message` Requires `Send + 'static`
 
-`App::Message` (and by extension `Component::Message`) must now be
-`Send + 'static` to support async command execution across tokio tasks.
-
-**Before (0.4.x):**
+All `App::Message` types must now be `Send + 'static` for async compatibility.
 
 ```rust
-// This worked even with non-Send types
-enum Msg {
-    Data(Rc<String>),  // Rc is not Send
-}
-```
-
-**After (0.5.0):**
-
-```rust
-// Messages must be Send + 'static
-enum Msg {
-    Data(Arc<String>),  // Arc is Send
-}
-```
-
-If your message type contains non-Send fields, wrap them in `Arc` or
-restructure to store data in state rather than passing it through
-messages.
-
-### State: Clone No Longer Required
-
-The `Clone` bound has been removed from `App::State` and
-`Component::State`. You can still derive `Clone` if needed, but the
-framework no longer requires it.
-
-**Before (0.4.x):**
-
-```rust
-// Clone was required
+// Before (v0.4.x) -- this worked even without Send
 #[derive(Clone)]
-struct AppState {
-    // Must clone entire state each tick
-    large_data: Vec<Record>,
+enum Msg {
+    Data(Rc<String>),        // Rc is not Send
+    Callback(Box<dyn Fn()>), // dyn Fn() is not Send
+}
+
+// After (v0.5.0) -- must be Send + 'static
+#[derive(Clone)]
+enum Msg {
+    Data(Arc<String>),               // Arc is Send
+    Callback(Box<dyn Fn() + Send>),  // explicitly Send
 }
 ```
 
-**After (0.5.0):**
+#### 4. `State: Clone` No Longer Required
+
+The `Clone` bound has been removed from `App::State` and `Component::State`.
+This is not breaking for most users, but if you had generic code relying on
+the implicit `Clone` bound from the trait, you will need to add it explicitly.
 
 ```rust
-// Clone is optional
-struct AppState {
-    large_data: Vec<Record>,
+// Before (v0.4.x) -- Clone was enforced by the trait
+impl App for MyApp {
+    type State = State;  // State: Clone was required
+}
+
+// After (v0.5.0) -- Clone is optional
+impl App for MyApp {
+    type State = State;  // Clone no longer required
 }
 ```
 
-### SimulatedEvent Renamed to Event
+You can now use non-cloneable types in your state (file handles, channels, etc.).
 
-The `SimulatedEvent` type has been renamed to `Event` for consistency.
+#### 5. `SimulatedEvent` Renamed to `Event`
 
-**Before (0.4.x):**
+This was deprecated in v0.4.0 and is now fully removed.
 
 ```rust
+// Before (v0.4.x)
 use envision::input::SimulatedEvent;
-
 let event = SimulatedEvent::key(KeyCode::Enter);
-```
 
-**After (0.5.0):**
-
-```rust
+// After (v0.5.0)
 use envision::input::Event;
-
 let event = Event::key(KeyCode::Enter);
 ```
 
-### New Event Handling Methods
-
-Components now support `handle_event` and `dispatch_event` for
-streamlined event routing. The `dispatch_event` method combines event
-mapping and state update in a single call.
-
-**Before (0.4.x):**
+#### 6. `step()` Method and All Deprecated APIs Removed
 
 ```rust
-// Manual two-step event handling
-if let Some(msg) = my_event_handler(&state, &event) {
-    MyComponent::update(&mut state, msg);
+// Before (v0.4.x)
+runtime.step()?;
+
+// After (v0.5.0)
+runtime.tick().await?;
+```
+
+#### 7. `Command` Is No Longer `Clone`
+
+`Command` contains `Box<dyn FnOnce>` and `Pin<Box<dyn Future>>` which cannot
+be cloned. The broken `Clone` implementation has been removed.
+
+```rust
+// Before (v0.4.x) -- compiled but was unsound
+let cmd = Command::none();
+let cmd2 = cmd.clone();
+
+// After (v0.5.0) -- will not compile
+let cmd = Command::none();
+// let cmd2 = cmd.clone();  // Error: Command does not implement Clone
+
+// Fix: create commands via a function
+fn make_cmd() -> Command<Msg> {
+    Command::none()
 }
 ```
 
-**After (0.5.0):**
+#### 8. Selection API Standardized
+
+The selection accessor methods have been standardized across all components.
+
+**`selected()` removed -- use `selected_item()`**
 
 ```rust
-// One-step dispatch
-MyComponent::dispatch_event(&mut state, &event);
+// Before (v0.4.x)
+let item = state.selected();
 
-// Or using instance methods (eliminates turbofish for generics)
-state.dispatch_event(&event);
+// After (v0.5.0)
+let item = state.selected_item();
 ```
 
-### Slimmed Prelude
+Affected components: RadioGroup, Tabs, Table, Dropdown, Select, Tree, DataGrid.
 
-The prelude no longer re-exports `ratatui::prelude::*`. Layout and
-style types are now re-exported through envision's own modules.
-
-**Before (0.4.x):**
+**`set_selected_index()` renamed to `set_selected()`**
 
 ```rust
-use envision::prelude::*;
-// ratatui types were available directly
+// Before (v0.4.x)
+state.set_selected_index(2);
+
+// After (v0.5.0)
+state.set_selected(2);
 ```
 
-**After (0.5.0):**
+Affected components: SelectableList, SearchableList, DataGrid, Tree,
+MetricsDashboard.
+
+**`selected_row_index()` renamed to `selected_index()`**
 
 ```rust
-use envision::prelude::*;
-// Layout types available: Rect, Constraint, Direction, Layout, etc.
-// Style types available: Color, Style, Modifier, Stylize
-// If you need additional ratatui types, import them explicitly:
-// use ratatui::widgets::Paragraph;
+// Before (v0.4.x)
+let idx: usize = state.selected_row_index();
+
+// After (v0.5.0)
+let idx: Option<usize> = state.selected_index();
 ```
 
-### Removed APIs
-
-The following APIs have been removed without replacement:
-
-- **`step()`** — Use `tick()` instead.
-- **`Command::clone()`** — `Command` contains `Box<dyn FnOnce>` and
-  `Pin<Box<dyn Future>>` which cannot be cloned. If you need to send
-  the same command multiple times, create it in a function and call
-  the function each time.
-- **All deprecated methods** from 0.4.x have been removed.
-
-### Overlay System (New)
-
-Version 0.5.0 introduces a runtime-owned `OverlayStack` for layered
-UI elements like modals and dialogs. This is additive — no migration
-needed unless you were managing dialog visibility manually.
+`selected_index()` now consistently returns `Option<usize>` across all
+components. Code that assumed a bare `usize` return will need to handle
+the `Option`.
 
 ```rust
-use envision::prelude::*;
+// Before (v0.4.x)
+let index: usize = state.selected_index();
 
-// Overlays are managed by the runtime
-// Implement the Overlay trait for custom overlays
-// Use OverlayAction to push/pop overlays
-```
-
-### OverlayAction::Message Renamed
-
-`OverlayAction::Message(M)` has been renamed to `OverlayAction::KeepAndMessage(M)`
-to make it clear that the overlay is kept (not dismissed) while the message is
-dispatched.
-
-**Before (0.4.x):**
-
-```rust
-fn handle_event(&mut self, event: &Event) -> OverlayAction<Msg> {
-    OverlayAction::Message(Msg::DoSomething)
-}
-```
-
-**After (0.5.0):**
-
-```rust
-fn handle_event(&mut self, event: &Event) -> OverlayAction<Msg> {
-    OverlayAction::KeepAndMessage(Msg::DoSomething)
-}
-```
-
-### Feature Flags for Components
-
-Components are now organized behind feature flags. All are enabled by default
-via the `full` feature, so most users will not need to change anything. If you
-want to reduce compile times, you can select only the component groups you need.
-
-| Feature | Components |
-|---------|-----------|
-| `input-components` | Button, Checkbox, Dropdown, InputField, RadioGroup, Select, TextArea |
-| `data-components` | LoadingList, SelectableList, Table, Tree |
-| `display-components` | KeyHints, MultiProgress, ProgressBar, Spinner, StatusBar, StatusLog, Toast |
-| `navigation-components` | Accordion, Breadcrumb, Menu, Router, Tabs |
-| `overlay-components` | Dialog, Tooltip |
-| `compound-components` | SearchableList, Form, SplitPanel, DataGrid, LogViewer, ChatView, MetricsDashboard, Chart |
-| `clipboard` | System clipboard support for InputField and TextArea |
-
-**Before (0.4.x):**
-
-```toml
-[dependencies]
-envision = "0.4"
-```
-
-**After (0.5.0):**
-
-```toml
-# All components (default)
-[dependencies]
-envision = "0.5"
-
-# Or select specific groups
-[dependencies]
-envision = { version = "0.5", default-features = false, features = ["input-components", "data-components"] }
-```
-
-### Serialization Feature Flag
-
-Serde support is now behind the `serialization` feature flag. It is enabled
-by default, so this is only a breaking change if you were relying on serde
-derives without specifying the feature.
-
-```toml
-# Serde support included (default)
-envision = "0.5"
-
-# Opt out of serde
-envision = { version = "0.5", default-features = false, features = ["full"] }
-```
-
-### Consistent Component Naming
-
-All component message and output types now follow a consistent naming convention:
-`{Component}Message` for input messages and `{Component}Output` for output messages.
-
-**Before (0.4.x):**
-
-```rust
-// Some components used inconsistent names
-use envision::component::{SelectableListMsg, ListOutput};
-```
-
-**After (0.5.0):**
-
-```rust
-use envision::component::{SelectableListMessage, SelectableListOutput};
-```
-
-### Consistent selected_index() Return Type
-
-`selected_index()` now returns `Option<usize>` consistently across all
-components. Previously some components returned `usize` directly.
-
-**Before (0.4.x):**
-
-```rust
-let index: usize = state.selected_index(); // could panic on empty list
-```
-
-**After (0.5.0):**
-
-```rust
-let index: Option<usize> = state.selected_index(); // None when empty
-if let Some(idx) = state.selected_index() {
+// After (v0.5.0)
+if let Some(index) = state.selected_index() {
     // handle selection
 }
 ```
 
-### Disabled State
+#### 9. Cursor API Standardized
 
-All focusable components now support a disabled state. When disabled, components
-ignore all input events and render with `theme.disabled_style()`.
+**`set_cursor()` renamed to `set_cursor_position()`**
 
 ```rust
-// Set via builder
+// Before (v0.4.x)
+state.set_cursor(5);
+
+// After (v0.5.0)
+state.set_cursor_position(5);
+```
+
+Affected components: InputField, TextArea.
+
+#### 10. Message and Output Naming Standardized
+
+All component message/output types now follow `{Component}Message` /
+`{Component}Output` naming.
+
+```rust
+// Before (v0.4.x) -- varied naming
+use envision::component::SelectableListMsg;
+
+// After (v0.5.0) -- consistent naming
+use envision::component::SelectableListMessage;
+```
+
+Navigation message variants are standardized to `Up`/`Down`/`Left`/`Right`:
+
+```rust
+// Before (v0.4.x)
+SelectableListMsg::MoveUp
+TabsMsg::SelectNext
+
+// After (v0.5.0)
+SelectableListMessage::Up
+TabsMessage::Right
+```
+
+#### 11. Display-Only Components Use `()` for Output
+
+Components that are display-only (ProgressBar, Spinner, etc.) now use `()`
+as their `Output` type instead of custom empty enums. This only affects you
+if you were pattern-matching on their output type.
+
+#### 12. SearchableListState Matcher Uses `Arc`
+
+```rust
+// Before (v0.4.x)
+let matcher: Box<dyn Fn(&T, &str) -> bool> = Box::new(|item, query| { ... });
+
+// After (v0.5.0)
+let matcher: Arc<dyn Fn(&T, &str) -> bool> = Arc::new(|item, query| { ... });
+```
+
+This enables proper `Clone` support for `SearchableListState`.
+
+#### 13. Slimmed Prelude
+
+The prelude no longer re-exports `ratatui::prelude::*` directly. Layout and
+style types are re-exported through envision's own modules. If you need
+additional ratatui types, import them explicitly.
+
+The prelude still includes: `App`, `Command`, `Runtime`, `RuntimeConfig`,
+`Subscription`, `Event`, `KeyCode`, `Theme`, all component types,
+`CaptureBackend`, `TestHarness`, `AppHarness`, layout types (`Rect`,
+`Constraint`, `Layout`, etc.), and style types (`Color`, `Style`, etc.).
+
+```rust
+// If you need ratatui types not in the prelude:
+use ratatui::widgets::Paragraph;
+```
+
+---
+
+### Migration Steps
+
+Follow these steps in order to migrate your project.
+
+#### Step 1: Update Cargo.toml
+
+```toml
+[dependencies]
+envision = "0.5"
+```
+
+All features are enabled by default. To customize, see the Feature Flags
+section below.
+
+#### Step 2: Fix Runtime Usage
+
+Replace sync/async runtime constructors with the unified runtime:
+
+```rust
+// Replace AsyncRuntime with Runtime
+// Replace Runtime::terminal() with Runtime::new_terminal()
+// Replace runtime.inner_terminal() with runtime.terminal()
+```
+
+#### Step 3: Fix Event Type References
+
+```rust
+// Search and replace:
+// SimulatedEvent -> Event
+```
+
+#### Step 4: Fix `step()` to `tick()`
+
+```rust
+// Replace all step() calls with tick().await
+```
+
+#### Step 5: Fix Selection and Cursor API Calls
+
+| Old Method | New Method |
+|---|---|
+| `.selected()` (on component state) | `.selected_item()` |
+| `.set_selected_index(n)` | `.set_selected(n)` |
+| `.selected_row_index()` | `.selected_index()` |
+| `.set_cursor(n)` | `.set_cursor_position(n)` |
+
+#### Step 6: Fix Message Type Names
+
+Replace old message/output type names with the standardized versions. The
+pattern is always `{Component}Message` and `{Component}Output`.
+
+#### Step 7: Ensure Message Types Are `Send + 'static`
+
+Audit your `App::Message` enum for non-`Send` types (`Rc`, `Cell`,
+`RefCell`, raw pointers). Replace with `Arc`, `Mutex`, or restructure
+to store data in state instead of messages.
+
+#### Step 8: Remove `Command::clone()` Calls
+
+If you were cloning commands, create them via a helper function instead.
+
+---
+
+### New Required Patterns
+
+#### handle_event and dispatch_event
+
+Every component now supports `handle_event` (read-only event-to-message
+mapping) and `dispatch_event` (combines handle_event + update in one call).
+Both are available as static trait methods and as instance methods on all
+state types.
+
+**Static trait method (works, but verbose with generics):**
+
+```rust
+let msg = SelectableList::<String>::handle_event(&state, &event);
+if let Some(msg) = msg {
+    let output = SelectableList::<String>::update(&mut state, msg);
+}
+```
+
+**Instance method (preferred, eliminates turbofish):**
+
+```rust
+if let Some(output) = state.dispatch_event(&event) {
+    match output {
+        SelectableListOutput::Selected(item) => { /* ... */ }
+        SelectableListOutput::SelectionChanged(idx) => { /* ... */ }
+        _ => {}
+    }
+}
+```
+
+The instance methods are available on every state type: `ButtonState`,
+`InputFieldState`, `SelectableListState<T>`, `TabsState<T>`,
+`TableState<T>`, etc.
+
+#### Typical Event Routing Pattern
+
+```rust
+fn update(state: &mut AppState, msg: AppMsg) -> Command<AppMsg> {
+    match msg {
+        AppMsg::TerminalEvent(event) => {
+            // Route event to the focused component
+            if let Some(output) = state.list.dispatch_event(&event) {
+                match output {
+                    SelectableListOutput::Selected(item) => {
+                        // handle item selection
+                    }
+                    SelectableListOutput::SelectionChanged(idx) => {
+                        // handle navigation
+                    }
+                    _ => {}
+                }
+            }
+        }
+        // ...
+    }
+    Command::none()
+}
+```
+
+---
+
+### Feature Flags
+
+Components are now organized behind feature flags for smaller binaries
+and faster compile times. All are enabled by default via the `full` feature.
+
+| Feature | Components |
+|---------|-----------|
+| `input-components` | Button, Checkbox, Dropdown, InputField, LineInput, RadioGroup, Select, TextArea |
+| `data-components` | LoadingList, SelectableList, Table, Tree |
+| `display-components` | KeyHints, MultiProgress, ProgressBar, ScrollableText, Spinner, StatusBar, StatusLog, TitleCard, Toast |
+| `navigation-components` | Accordion, Breadcrumb, Menu, Router, Tabs |
+| `overlay-components` | Dialog, Tooltip |
+| `compound-components` | Chart, ChatView, DataGrid, Form, LogViewer, MetricsDashboard, SearchableList, SplitPanel (implies input + data + display) |
+| `serialization` (default) | serde support for all state types |
+| `clipboard` | System clipboard integration for InputField and TextArea |
+| `tracing` | Tracing instrumentation for component rendering and dispatch |
+
+**Include everything (default):**
+
+```toml
+[dependencies]
+envision = "0.5"
+```
+
+**Opt out of serialization:**
+
+```toml
+[dependencies]
+envision = { version = "0.5", default-features = false, features = ["full"] }
+```
+
+**Only specific component groups:**
+
+```toml
+[dependencies]
+envision = { version = "0.5", default-features = false, features = [
+    "input-components",
+    "data-components",
+] }
+```
+
+---
+
+### Deprecated Patterns
+
+The following patterns still work in v0.5.0 but should be updated.
+
+#### Static Trait Methods for Event Handling
+
+Static trait methods work but are verbose, especially with generic components:
+
+```rust
+// Works but verbose (especially with generics requiring turbofish)
+let msg = SelectableList::<String>::handle_event(&state, &event);
+if let Some(msg) = msg {
+    SelectableList::<String>::update(&mut state, msg);
+}
+
+// Preferred: use instance methods
+state.dispatch_event(&event);
+```
+
+#### Static Trait Methods for Focus
+
+```rust
+// Works but verbose
+Button::set_focused(&mut state, true);
+assert!(Button::is_focused(&state));
+
+// Preferred: use instance methods
+state.set_focused(true);
+assert!(state.is_focused());
+```
+
+#### Static Trait Methods for Update
+
+```rust
+// Works but verbose
+Button::update(&mut state, ButtonMessage::Press);
+
+// Preferred: use instance methods
+state.update(ButtonMessage::Press);
+```
+
+---
+
+### New Capabilities
+
+#### Disabled State on All Focusable Components
+
+Every focusable component now supports `is_disabled()`, `set_disabled()`,
+and `with_disabled()`. Disabled components ignore all input events and
+render with `theme.disabled_style()`.
+
+```rust
+// Builder pattern
 let state = ButtonState::new("Submit").with_disabled(true);
 
-// Or via setter
+// Mutation
 state.set_disabled(true);
+assert!(state.is_disabled());
 
-// Check state
-if state.is_disabled() { /* ... */ }
+// Disabled components ignore events
+let output = state.dispatch_event(&Event::key(KeyCode::Enter));
+assert!(output.is_none());
 ```
 
-This is additive and not breaking unless you have custom components that
-implement the `Focusable` trait and also need to support disabled state.
+#### Overlay/Modal System
 
-### Selection API Consistency
-
-The selection API has been standardized across all components. The canonical
-methods are now `selected_item()` for getting the selected value and
-`set_selected()` for setting the selection index.
-
-| Component | Old Method | New Method |
-|-----------|-----------|------------|
-| RadioGroup, Tabs, LoadingList | `selected()` | `selected_item()` |
-| Dropdown, Menu, Select | `set_selected_index()` | `set_selected()` |
-| DataGrid | `selected_row_index()` | `selected_index()` |
-| InputField, TextArea | `set_cursor()` | `set_cursor_position()` |
-
-**Before (0.4.x):**
+The new `OverlayStack` provides runtime-managed layered UI for modals,
+dialogs, and other overlays with priority-based rendering and dismiss support.
 
 ```rust
-let item = state.selected();        // RadioGroup, Tabs
-state.set_selected_index(Some(1));   // Select, Dropdown
-let idx = state.selected_row_index(); // DataGrid
-state.set_cursor(5);                 // InputField
+use envision::overlay::{Overlay, OverlayAction, OverlayStack};
+
+struct HelpOverlay;
+
+impl Overlay for HelpOverlay {
+    fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme) {
+        // render overlay content
+    }
+
+    fn handle_event(&mut self, event: &Event) -> OverlayAction {
+        if let Some(key) = event.as_key() {
+            if key.code == KeyCode::Esc {
+                return OverlayAction::Dismiss;
+            }
+        }
+        OverlayAction::Consumed
+    }
+}
 ```
 
-**After (0.5.0):**
+#### `Command::future()` Alias
+
+A more ergonomic way to create async commands:
 
 ```rust
-let item = state.selected_item();   // All selection components
-state.set_selected(Some(1));        // All selection components
-let idx = state.selected_index();   // All selection components
-state.set_cursor_position(5);       // InputField, TextArea
+Command::future(async { fetch_data().await }, Msg::DataLoaded)
 ```
+
+#### `cell_at()` Convenience Method
+
+Available on `Runtime`, `TestHarness`, and `AppHarness` for easier cell
+inspection in tests:
+
+```rust
+let cell = runtime.cell_at(5, 2);
+assert_eq!(cell.symbol(), "X");
+```
+
+#### `AppHarness::snapshot()`
+
+Capture test snapshots directly from the harness:
+
+```rust
+let harness = AppHarness::<MyApp>::new(80, 24)?;
+harness.dispatch(Msg::LoadData).await;
+let snapshot = harness.snapshot();
+insta::assert_snapshot!(snapshot);
+```
+
+#### Placeholder Support on Dropdown and Select
+
+```rust
+let state = DropdownState::new(options).with_placeholder("Choose an option...");
+let state = SelectState::new(options).with_placeholder("Select...");
+```
+
+---
 
 ### Quick Migration Checklist
 
+- [ ] Update `Cargo.toml` to `envision = "0.5"`
 - [ ] Replace `AsyncRuntime` / sync `Runtime` with unified `Runtime`
-- [ ] Rename `terminal()` → `new_terminal()`
-- [ ] Rename `inner_terminal()` → `terminal()`
-- [ ] Rename `AsyncTestHarness` → `AppHarness`
+- [ ] Rename `Runtime::terminal()` to `Runtime::new_terminal()`
+- [ ] Rename `runtime.inner_terminal()` to `runtime.terminal()`
+- [ ] Rename `AsyncTestHarness` to `AppHarness`
 - [ ] Replace `step()` with `tick()`
 - [ ] Replace `SimulatedEvent` with `Event`
-- [ ] Ensure `Message` types are `Send + 'static` (use `Arc` not `Rc`)
-- [ ] Remove `Clone` derive from `State` if it was only there for the framework
+- [ ] Ensure `App::Message` types are `Send + 'static` (use `Arc` not `Rc`)
 - [ ] Remove any `Command::clone()` calls
-- [ ] Update imports if relying on ratatui re-exports from the prelude
-- [ ] Consider adopting `dispatch_event` for simpler event routing
-- [ ] Rename `OverlayAction::Message` to `OverlayAction::KeepAndMessage`
-- [ ] Update any component message/output type names to new `{Component}Message`/`{Component}Output` convention
+- [ ] Rename `selected()` to `selected_item()`
+- [ ] Rename `set_selected_index()` to `set_selected()`
+- [ ] Rename `selected_row_index()` to `selected_index()`
 - [ ] Handle `selected_index()` returning `Option<usize>` instead of `usize`
-- [ ] Rename `selected()` → `selected_item()` on RadioGroup, Tabs, LoadingList
-- [ ] Rename `set_selected_index()` → `set_selected()` on Select, Dropdown, Menu
-- [ ] Rename `selected_row_index()` → `selected_index()` on DataGrid
-- [ ] Rename `set_cursor()` → `set_cursor_position()` on InputField, TextArea
-- [ ] If using serde: ensure `serialization` feature is enabled (it is by default)
-- [ ] If using specific component groups: add the appropriate feature flags
+- [ ] Rename `set_cursor()` to `set_cursor_position()`
+- [ ] Update component message/output type names to `{Component}Message` / `{Component}Output`
+- [ ] Update ratatui imports if relying on types no longer in the prelude
+- [ ] Consider adopting `dispatch_event` and instance methods for cleaner code
+- [ ] Add feature flags to `Cargo.toml` if you want to reduce compile times
