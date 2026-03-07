@@ -38,43 +38,37 @@ Execute these steps in order, using subagents for parallelism where possible.
 
 ### Step 1: Automated Data Collection
 
-Run all of the following commands and capture their output. These provide baseline data for the evaluation.
+First, build and run the envision-audit tool. This Rust CLI tool collects the bulk of the data needed for the audit automatically, replacing many individual bash/grep commands.
 
 ```bash
-cargo test 2>&1 | tail -20
-cargo clippy -- -D warnings 2>&1
-cargo doc --no-deps --all-features 2>&1 | tail -20
-cargo build --examples 2>&1
-cargo test --doc 2>&1 | tail -20
-find src -name "*.rs" -exec wc -l {} + | sort -rn | head -30
-find tests -name "*.rs" -exec wc -l {} + | sort -rn | head -20 2>/dev/null
-find benches -name "*.rs" -exec wc -l {} + | sort -rn | head -10 2>/dev/null
-find examples -name "*.rs" -exec wc -l {} + | sort -rn | head -10 2>/dev/null
+# Build the audit tool (if not already built)
+cd tools/audit && cargo build --release 2>&1 && cd ../..
+
+# Run the full audit tool — captures file stats, code analysis, project analysis, and cargo checks
+./tools/audit/target/release/envision-audit all 2>&1
 ```
 
-Also collect:
-- Version from `Cargo.toml`
-- Git short hash from `git rev-parse --short HEAD`
-- Total unit test count, doc test count, integration test count
-- Total public items via `grep -r "pub " src/ --include="*.rs" | wc -l`
+The tool output includes:
+- **FILE STATISTICS**: Line counts per file, files exceeding 1000 lines, totals by directory
+- **CODE ANALYSIS**: Component listing, trait implementations (Focusable/Toggleable/disabled), builder methods, accessor symmetry, doc test coverage per component, tests per component, naming patterns, instance method consistency, standard trait derives (Debug/Clone/Default/PartialEq), module/type doc coverage, quality checks (unsafe blocks, clippy suppressions, #![warn(missing_docs)], public item count, lib.rs re-exports)
+- **PROJECT ANALYSIS**: Project files (README, CHANGELOG, etc.), feature flags, dependencies, CI pipeline summary, example component coverage, benchmark listing
+- **CARGO CHECKS**: cargo test, clippy, doc, build --examples, test --doc results with pass/fail counts, plus unit/integration/doc test breakdown
 
-### Step 2: Structural Analysis
+Parse and use this output as the baseline data for the evaluation. The tool already provides version, git hash, test counts, public item counts, and structural analysis.
 
-Use grep, glob, and read tools to gather:
+### Step 2: Supplementary Analysis
 
-- Count public items per module
-- Identify naming inconsistencies across components (selected/selected_item/selected_value/etc.)
-- Verify trait implementations: Focusable, Toggleable, disabled state per component
-- Verify builder methods (`with_*`) exist consistently or not
-- Verify instance methods on all State types
-- Check doc test presence per public method
-- Check file sizes against 1000-line limit
-- Count and categorize tests per component
-- Check for `#[allow(clippy::...)]` suppressions and whether justified
-- Check for `unsafe` blocks
-- Check `#![warn(missing_docs)]` enforcement
-- Count re-exports in `lib.rs`
-- Check CI pipeline configuration
+The audit tool covers most of Step 2 automatically. Use grep, glob, and read tools only for details the tool doesn't capture:
+
+- Sample specific doc tests for quality (do they test meaningful behavior, or just `assert!(true)`?)
+- Check for `# Panics`, `# Errors`, `# Examples` sections in doc comments
+- Check cross-references between related types in documentation
+- Check for `ignore`/`no_run` doc tests without explanation
+- Verify `compact_str` usage consistency (sporadic vs comprehensive)
+- Review ratatui integration patterns in `view()` signatures
+- Check if AppHarness is used in integration tests
+- Look for proptest usage patterns in test files
+- Review README quick-start example for clarity
 
 ### Step 3: Per-Category Deep Evaluation
 

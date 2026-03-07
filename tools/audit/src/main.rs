@@ -6,6 +6,7 @@ use std::process;
 mod cargo_checks;
 mod code_analysis;
 mod file_stats;
+mod project_analysis;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -29,10 +30,13 @@ fn main() {
         Some("stats") => file_stats::run(&project_root),
         Some("code") => code_analysis::run(&project_root),
         Some("cargo") => cargo_checks::run(&project_root),
+        Some("project") => project_analysis::run(&project_root),
         Some("all") | None => {
             file_stats::run(&project_root);
             println!();
             code_analysis::run(&project_root);
+            println!();
+            project_analysis::run(&project_root);
             println!();
             cargo_checks::run(&project_root);
         }
@@ -115,6 +119,7 @@ fn print_usage() {
     eprintln!("Commands:");
     eprintln!("  stats    File and line count statistics");
     eprintln!("  code     Source code analysis");
+    eprintln!("  project  Project-level analysis (files, deps, CI, examples)");
     eprintln!("  cargo    Run cargo checks (test, clippy, doc)");
     eprintln!("  all      Run all analyses (default)");
     eprintln!();
