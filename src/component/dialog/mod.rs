@@ -625,6 +625,16 @@ impl Component for Dialog {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::dialog(state.title.as_str())
+                    .with_id("dialog")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         // Calculate dialog size
         let dialog_width = (area.width * 60 / 100).clamp(30, 80);
         let message_lines = state.message.lines().count().max(1) as u16;

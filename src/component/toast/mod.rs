@@ -446,6 +446,14 @@ impl Component for Toast {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::toast("toast")
+                    .with_meta("count", state.toasts.len().to_string()),
+            );
+        });
+
         // Calculate toast dimensions
         let toast_width = 40.min(area.width);
         let toast_height = 3;

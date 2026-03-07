@@ -796,6 +796,16 @@ impl Component for InputField {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::input("input_field")
+                    .with_value(state.value.as_str())
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         let border_style = if state.focused {
             theme.focused_border_style()
         } else {

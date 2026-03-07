@@ -619,7 +619,12 @@ impl Component for Breadcrumb {
         }
 
         let line = Line::from(spans);
-        frame.render_widget(Paragraph::new(line), area);
+
+        let annotation = crate::annotation::Annotation::breadcrumb("breadcrumb")
+            .with_focus(state.focused)
+            .with_disabled(state.disabled);
+        let annotated = crate::annotation::Annotate::new(Paragraph::new(line), annotation);
+        frame.render_widget(annotated, area);
     }
 }
 

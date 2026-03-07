@@ -739,6 +739,16 @@ impl<T: Clone> Component for LoadingList<T> {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            let mut ann = crate::annotation::Annotation::loading_list("loading_list")
+                .with_focus(state.focused)
+                .with_disabled(state.disabled);
+            if let Some(idx) = state.selected {
+                ann = ann.with_selected(true).with_value(idx.to_string());
+            }
+            reg.register(area, ann);
+        });
+
         let block = if let Some(title) = &state.title {
             Block::default().borders(Borders::ALL).title(title.as_str())
         } else {

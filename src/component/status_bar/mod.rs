@@ -641,7 +641,13 @@ impl Component for StatusBar {
         let line = Line::from(line_spans);
         let paragraph = Paragraph::new(line).style(bg_style);
 
-        frame.render_widget(paragraph, area);
+        let item_count = state.left.len() + state.center.len() + state.right.len();
+        let annotation =
+            crate::annotation::Annotation::new(crate::annotation::WidgetType::StatusBar)
+                .with_id("status_bar")
+                .with_meta("item_count", item_count.to_string());
+        let annotated = crate::annotation::Annotate::new(paragraph, annotation);
+        frame.render_widget(annotated, area);
     }
 }
 

@@ -762,6 +762,15 @@ impl Component for LogViewer {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::container("log_viewer")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         // Layout: search bar (1 line) + filter bar (1 line) + log area
         let chunks = Layout::default()
             .direction(Direction::Vertical)

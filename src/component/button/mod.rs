@@ -223,7 +223,12 @@ impl Component for Button {
                     .border_style(border_style),
             );
 
-        frame.render_widget(paragraph, area);
+        let annotation =
+            crate::annotation::Annotation::button("button").with_label(state.label.as_str());
+        let annotated = crate::annotation::Annotate::new(paragraph, annotation)
+            .focused(state.focused)
+            .disabled(state.disabled);
+        frame.render_widget(annotated, area);
     }
 }
 

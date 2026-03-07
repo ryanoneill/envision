@@ -594,6 +594,15 @@ impl Component for MetricsDashboard {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::container("metrics_dashboard")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         let rows = state.rows();
         let cols = state.columns;
 

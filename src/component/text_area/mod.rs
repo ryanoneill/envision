@@ -853,6 +853,17 @@ impl Component for TextArea {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        crate::annotation::with_registry(|reg| {
+            let first_line = state.lines.first().map_or("", |l| l.as_str());
+            reg.register(
+                area,
+                crate::annotation::Annotation::text_area("text_area")
+                    .with_value(first_line)
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         let inner_height = area.height.saturating_sub(2) as usize; // Account for borders
 
         // Ensure cursor is visible

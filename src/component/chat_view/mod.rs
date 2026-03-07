@@ -806,6 +806,15 @@ impl Component for ChatView {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.open(
+                area,
+                crate::annotation::Annotation::container("chat_view")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         // Layout: history + input
         let input_h = state.input_height + 2; // +2 for border
         let chunks = Layout::default()
@@ -818,6 +827,10 @@ impl Component for ChatView {
 
         render_history(state, frame, history_area, theme);
         render_input(state, frame, input_area, theme);
+
+        crate::annotation::with_registry(|reg| {
+            reg.close();
+        });
     }
 }
 

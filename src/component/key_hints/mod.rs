@@ -556,7 +556,12 @@ impl Component for KeyHints {
         };
 
         let paragraph = Paragraph::new(line).alignment(alignment);
-        frame.render_widget(paragraph, area);
+
+        let annotation =
+            crate::annotation::Annotation::new(crate::annotation::WidgetType::KeyHints)
+                .with_id("key_hints");
+        let annotated = crate::annotation::Annotate::new(paragraph, annotation);
+        frame.render_widget(annotated, area);
     }
 }
 

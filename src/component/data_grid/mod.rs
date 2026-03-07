@@ -550,6 +550,15 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::table("data_grid")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         let widths: Vec<Constraint> = state.columns.iter().map(|c| c.width()).collect();
 
         // Build header row

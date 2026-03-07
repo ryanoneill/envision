@@ -399,7 +399,16 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
             .collect();
 
         let list = List::new(items);
-        frame.render_widget(list, area);
+
+        let mut ann = crate::annotation::Annotation::new(crate::annotation::WidgetType::RadioGroup)
+            .with_id("radio_group")
+            .with_focus(state.focused)
+            .with_disabled(state.disabled);
+        if let Some(idx) = state.selected {
+            ann = ann.with_selected(true).with_value(idx.to_string());
+        }
+        let annotated = crate::annotation::Annotate::new(list, ann);
+        frame.render_widget(annotated, area);
     }
 }
 

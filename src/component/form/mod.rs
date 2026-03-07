@@ -696,6 +696,16 @@ impl Component for Form {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.open(
+                area,
+                crate::annotation::Annotation::new(crate::annotation::WidgetType::Form)
+                    .with_id("form")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         // Allocate space: each text/select field gets 3 lines (label+border),
         // each checkbox gets 1 line.
         let constraints: Vec<Constraint> = state
@@ -733,6 +743,10 @@ impl Component for Form {
                 }
             }
         }
+
+        crate::annotation::with_registry(|reg| {
+            reg.close();
+        });
     }
 }
 

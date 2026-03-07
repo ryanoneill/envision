@@ -825,7 +825,13 @@ impl<T: Clone + 'static> Component for Tree<T> {
         let lines = Self::render_lines(state, area.width, theme);
         let text = Text::from(lines);
         let paragraph = Paragraph::new(text);
-        frame.render_widget(paragraph, area);
+
+        let annotation = crate::annotation::Annotation::new(crate::annotation::WidgetType::Tree)
+            .with_id("tree")
+            .with_focus(state.focused)
+            .with_disabled(state.disabled);
+        let annotated = crate::annotation::Annotate::new(paragraph, annotation);
+        frame.render_widget(annotated, area);
     }
 }
 

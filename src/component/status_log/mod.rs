@@ -613,6 +613,15 @@ impl Component for StatusLog {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::new(crate::annotation::WidgetType::StatusLog)
+                    .with_id("status_log")
+                    .with_meta("entry_count", state.len().to_string()),
+            );
+        });
+
         let block = if let Some(title) = &state.title {
             Block::default().borders(Borders::ALL).title(title.as_str())
         } else {

@@ -366,7 +366,10 @@ impl Component for Spinner {
 
         let paragraph = Paragraph::new(text).style(theme.info_style());
 
-        frame.render_widget(paragraph, area);
+        let annotation = crate::annotation::Annotation::spinner("spinner")
+            .with_label(state.label.as_deref().unwrap_or(""));
+        let annotated = crate::annotation::Annotate::new(paragraph, annotation);
+        frame.render_widget(annotated, area);
     }
 }
 

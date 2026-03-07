@@ -455,6 +455,16 @@ impl Component for Tooltip {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, _theme: &Theme) {
+        if state.visible {
+            crate::annotation::with_registry(|reg| {
+                reg.register(
+                    area,
+                    crate::annotation::Annotation::tooltip("tooltip")
+                        .with_label(state.content.as_str()),
+                );
+            });
+        }
+
         // Use the area as both target and bounds for basic view
         // Note: Tooltip uses its own colors from state rather than theme
         Self::view_at(state, frame, area, area);

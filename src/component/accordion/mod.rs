@@ -671,6 +671,15 @@ impl Component for Accordion {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::accordion("accordion")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         let mut y = area.y;
 
         for (i, panel) in state.panels.iter().enumerate() {

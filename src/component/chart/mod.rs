@@ -514,6 +514,15 @@ impl Component for Chart {
             return;
         }
 
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::container("chart")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
         let border_style = if state.disabled {
             theme.disabled_style()
         } else if state.focused {
