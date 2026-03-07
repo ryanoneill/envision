@@ -138,9 +138,10 @@ pub use component::{Component, FocusManager, Focusable, Toggleable};
 pub use component::{
     Button, ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
     CheckboxState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, InputField,
-    InputFieldMessage, InputFieldOutput, InputFieldState, RadioGroup, RadioGroupMessage,
-    RadioGroupOutput, RadioGroupState, Select, SelectMessage, SelectOutput, SelectState, TextArea,
-    TextAreaMessage, TextAreaOutput, TextAreaState,
+    InputFieldMessage, InputFieldOutput, InputFieldState, LineInput, LineInputMessage,
+    LineInputOutput, LineInputState, RadioGroup, RadioGroupMessage, RadioGroupOutput,
+    RadioGroupState, Select, SelectMessage, SelectOutput, SelectState, TextArea, TextAreaMessage,
+    TextAreaOutput, TextAreaState,
 };
 
 // Data components

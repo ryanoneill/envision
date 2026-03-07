@@ -114,6 +114,8 @@ mod dropdown;
 #[cfg(feature = "input-components")]
 mod input_field;
 #[cfg(feature = "input-components")]
+mod line_input;
+#[cfg(feature = "input-components")]
 mod radio_group;
 #[cfg(feature = "input-components")]
 mod select;
@@ -198,6 +200,8 @@ pub use checkbox::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState};
 pub use dropdown::{Dropdown, DropdownMessage, DropdownOutput, DropdownState};
 #[cfg(feature = "input-components")]
 pub use input_field::{InputField, InputFieldMessage, InputFieldOutput, InputFieldState};
+#[cfg(feature = "input-components")]
+pub use line_input::{LineInput, LineInputMessage, LineInputOutput, LineInputState};
 #[cfg(feature = "input-components")]
 pub use radio_group::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState};
 #[cfg(feature = "input-components")]
