@@ -119,6 +119,7 @@ pub mod style;
 pub mod theme;
 #[cfg(feature = "input-components")]
 pub(crate) mod undo;
+pub mod util;
 
 // Re-export commonly used types
 pub use adapter::{DualBackend, DualBackendBuilder};
