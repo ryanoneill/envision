@@ -16,6 +16,12 @@ struct ComponentInfo {
     unit_test_count: usize,
     snapshot_test_count: usize,
     public_method_names: Vec<String>,
+    // Instance method checks
+    has_instance_handle_event: bool,
+    has_instance_dispatch_event: bool,
+    has_instance_update: bool,
+    // Standard trait derives
+    state_derives: Vec<String>,
 }
 
 pub fn run(root: &Path) {
@@ -32,6 +38,9 @@ pub fn run(root: &Path) {
     print_doctest_summary(&components);
     print_test_summary(&components);
     print_naming_patterns(&components);
+    print_instance_methods(&components);
+    print_trait_derives(&components);
+    print_module_doc_coverage(&src, root);
     print_quality_checks(&src, root);
     print_reexports(&src);
 }
@@ -89,6 +98,15 @@ fn analyze_single_component(dir: &Path) -> ComponentInfo {
         fs::read_to_string(dir.join("snapshot_tests.rs")).unwrap_or_default();
     let snapshot_test_count = snapshot_content.matches("#[test]").count();
 
+    // Instance method checks (methods that take &self or &mut self)
+    let has_instance_handle_event = mod_content.contains("pub fn handle_event(&self")
+        || mod_content.contains("pub fn handle_event(&mut self");
+    let has_instance_dispatch_event = mod_content.contains("pub fn dispatch_event(&mut self");
+    let has_instance_update = mod_content.contains("pub fn update(&mut self");
+
+    // Standard trait derives on State type
+    let state_derives = extract_state_derives(&mod_content);
+
     ComponentInfo {
         has_focusable,
         has_toggleable,
@@ -102,6 +120,10 @@ fn analyze_single_component(dir: &Path) -> ComponentInfo {
         unit_test_count,
         snapshot_test_count,
         public_method_names,
+        has_instance_handle_event,
+        has_instance_dispatch_event,
+        has_instance_update,
+        state_derives,
     }
 }
 
@@ -346,6 +368,186 @@ fn print_naming_patterns(components: &BTreeMap<String, ComponentInfo>) {
             }
         }
     }
+}
+
+fn print_instance_methods(components: &BTreeMap<String, ComponentInfo>) {
+    println!("\nInstance Methods on State Types:");
+
+    // Only check components that have Focusable (interactive components)
+    let interactive: Vec<_> = components
+        .iter()
+        .filter(|(_, i)| i.has_focusable)
+        .collect();
+
+    let checks = [
+        ("handle_event", "has_instance_handle_event"),
+        ("dispatch_event", "has_instance_dispatch_event"),
+        ("update", "has_instance_update"),
+    ];
+
+    for (method_name, field_name) in &checks {
+        let missing: Vec<_> = interactive
+            .iter()
+            .filter(|(_, i)| {
+                !match *field_name {
+                    "has_instance_handle_event" => i.has_instance_handle_event,
+                    "has_instance_dispatch_event" => i.has_instance_dispatch_event,
+                    "has_instance_update" => i.has_instance_update,
+                    _ => false,
+                }
+            })
+            .map(|(n, _)| n.as_str())
+            .collect();
+
+        if missing.is_empty() {
+            println!(
+                "  {}: all {} Focusable components have it",
+                method_name,
+                interactive.len()
+            );
+        } else {
+            println!(
+                "  {}: {}/{} Focusable components (missing {}):",
+                method_name,
+                interactive.len() - missing.len(),
+                interactive.len(),
+                missing.len()
+            );
+            for name in &missing {
+                println!("    missing: {}", name);
+            }
+        }
+    }
+}
+
+fn print_trait_derives(components: &BTreeMap<String, ComponentInfo>) {
+    println!("\nStandard Trait Derives on State Types:");
+
+    let traits = ["Debug", "Clone", "Default", "PartialEq"];
+    for trait_name in &traits {
+        let has_it: Vec<_> = components
+            .iter()
+            .filter(|(_, i)| i.state_derives.iter().any(|d| d == *trait_name))
+            .map(|(n, _)| n.as_str())
+            .collect();
+        let missing: Vec<_> = components
+            .iter()
+            .filter(|(_, i)| {
+                !i.state_derives.is_empty()
+                    && !i.state_derives.iter().any(|d| d == *trait_name)
+            })
+            .map(|(n, _)| n.as_str())
+            .collect();
+
+        println!(
+            "  {}: {}/{} components",
+            trait_name,
+            has_it.len(),
+            components.len()
+        );
+        if !missing.is_empty() && missing.len() <= 10 {
+            for name in &missing {
+                println!("    missing: {}", name);
+            }
+        }
+    }
+}
+
+fn print_module_doc_coverage(src: &Path, root: &Path) {
+    println!("\nModule & Type Doc Coverage:");
+
+    let all_files = collect_all_rs_files(src);
+
+    // Check for //! module-level docs in mod.rs files
+    let mut total_modules = 0;
+    let mut with_module_docs = 0;
+    let mut missing_module_docs: Vec<PathBuf> = Vec::new();
+
+    for (path, content) in &all_files {
+        if path.file_name().is_some_and(|n| n == "mod.rs" || n == "lib.rs") {
+            total_modules += 1;
+            if content.lines().any(|l| l.trim().starts_with("//!")) {
+                with_module_docs += 1;
+            } else {
+                let display = path.strip_prefix(root).unwrap_or(path);
+                missing_module_docs.push(display.to_path_buf());
+            }
+        }
+    }
+
+    println!(
+        "  Module-level docs (//!): {}/{} ({:.0}%)",
+        with_module_docs,
+        total_modules,
+        if total_modules > 0 {
+            with_module_docs as f64 / total_modules as f64 * 100.0
+        } else {
+            0.0
+        }
+    );
+    if !missing_module_docs.is_empty() && missing_module_docs.len() <= 15 {
+        for path in &missing_module_docs {
+            println!("    missing: {}", path.display());
+        }
+    } else if missing_module_docs.len() > 15 {
+        for path in missing_module_docs.iter().take(10) {
+            println!("    missing: {}", path.display());
+        }
+        println!(
+            "    ... and {} more",
+            missing_module_docs.len() - 10
+        );
+    }
+
+    // Check for /// docs on public structs/enums/traits
+    let mut total_types = 0;
+    let mut with_type_docs = 0;
+
+    for (_path, content) in &all_files {
+        let lines: Vec<&str> = content.lines().collect();
+        for (i, line) in lines.iter().enumerate() {
+            let trimmed = line.trim();
+            if (trimmed.starts_with("pub struct ")
+                || trimmed.starts_with("pub enum ")
+                || trimmed.starts_with("pub trait "))
+                && !trimmed.contains("pub(crate)")
+                && !trimmed.contains("pub(super)")
+            {
+                total_types += 1;
+                // Check if there's a /// doc comment above
+                if i > 0 {
+                    let mut j = i;
+                    let mut found_doc = false;
+                    while j > 0 {
+                        j -= 1;
+                        let prev = lines[j].trim();
+                        if prev.starts_with("///") {
+                            found_doc = true;
+                            break;
+                        } else if prev.starts_with("#[") || prev.is_empty() {
+                            continue;
+                        } else {
+                            break;
+                        }
+                    }
+                    if found_doc {
+                        with_type_docs += 1;
+                    }
+                }
+            }
+        }
+    }
+
+    println!(
+        "  Type-level docs (///): {}/{} ({:.0}%)",
+        with_type_docs,
+        total_types,
+        if total_types > 0 {
+            with_type_docs as f64 / total_types as f64 * 100.0
+        } else {
+            0.0
+        }
+    );
 }
 
 fn print_quality_checks(src: &Path, root: &Path) {
@@ -625,6 +827,53 @@ fn extract_all_public_fn_names(content: &str) -> Vec<String> {
         }
     }
     names
+}
+
+fn extract_state_derives(content: &str) -> Vec<String> {
+    let mut derives = Vec::new();
+    let lines: Vec<&str> = content.lines().collect();
+
+    for (i, line) in lines.iter().enumerate() {
+        let trimmed = line.trim();
+        // Look for pub struct ...State
+        if trimmed.starts_with("pub struct ") && trimmed.contains("State") {
+            // Collect the attribute block above the struct by joining lines
+            // that are part of attributes (handles multi-line #[cfg_attr(...)])
+            let mut attr_block = String::new();
+            let mut j = i;
+            while j > 0 {
+                j -= 1;
+                let prev = lines[j].trim();
+                if prev.starts_with("///") || prev.is_empty() {
+                    continue;
+                }
+                // Part of attribute block: starts with #[ or is continuation
+                // of a multi-line attribute (contains ), or derive, or feature)
+                if prev.starts_with("#[")
+                    || prev.starts_with("//!")
+                    || prev.ends_with(')')
+                    || prev.ends_with(")]")
+                    || prev.ends_with(',')
+                    || prev.starts_with("derive(")
+                    || prev.starts_with("feature")
+                {
+                    attr_block.push(' ');
+                    attr_block.push_str(prev);
+                } else {
+                    break;
+                }
+            }
+
+            for trait_name in ["Debug", "Clone", "Default", "PartialEq"] {
+                if attr_block.contains(trait_name) {
+                    derives.push(trait_name.to_string());
+                }
+            }
+            break; // Only check first State struct
+        }
+    }
+
+    derives
 }
 
 fn extract_fn_name(line: &str) -> Option<String> {

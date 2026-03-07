@@ -32,6 +32,9 @@ pub fn run(root: &Path) {
     for (name, args) in checks {
         run_check(name, args, root);
     }
+
+    println!();
+    print_test_breakdown(root);
 }
 
 fn run_check(name: &str, args: &[&str], root: &Path) {
@@ -111,4 +114,57 @@ fn count_clippy_warnings(output: &str) -> usize {
         .lines()
         .filter(|line| line.starts_with("warning:") && !line.contains("generated"))
         .count()
+}
+
+fn print_test_breakdown(root: &Path) {
+    println!("Test Breakdown:");
+
+    // Unit tests (cargo test --lib)
+    let unit = run_test_count(root, &["test", "--lib", "--all-features"]);
+
+    // Integration tests (cargo test --tests, excluding --lib and --doc)
+    let integration = run_test_count(root, &["test", "--tests", "--all-features"]);
+
+    // Doc tests (cargo test --doc)
+    let doc = run_test_count(root, &["test", "--doc", "--all-features"]);
+
+    println!(
+        "  Unit tests (--lib):   {} passed, {} failed, {} ignored",
+        unit.0, unit.1, unit.2
+    );
+    println!(
+        "  Integration (--tests): {} passed, {} failed, {} ignored",
+        integration.0, integration.1, integration.2
+    );
+    println!(
+        "  Doc tests (--doc):    {} passed, {} failed, {} ignored",
+        doc.0, doc.1, doc.2
+    );
+
+    let total_passed = unit.0 + integration.0 + doc.0;
+    let total_failed = unit.1 + integration.1 + doc.1;
+    let total_ignored = unit.2 + integration.2 + doc.2;
+    println!(
+        "  Total:                {} passed, {} failed, {} ignored",
+        total_passed, total_failed, total_ignored
+    );
+}
+
+fn run_test_count(root: &Path, args: &[&str]) -> (usize, usize, usize) {
+    let output = Command::new("cargo")
+        .args(args)
+        .current_dir(root)
+        .output();
+
+    match output {
+        Ok(o) => {
+            let combined = format!(
+                "{}{}",
+                String::from_utf8_lossy(&o.stdout),
+                String::from_utf8_lossy(&o.stderr)
+            );
+            count_tests(&combined)
+        }
+        Err(_) => (0, 0, 0),
+    }
 }
