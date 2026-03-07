@@ -157,7 +157,8 @@ pub use component::{
 pub use component::{
     KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress,
     MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressBar, ProgressBarMessage,
-    ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus, Section, Spinner,
+    ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus, ScrollableText,
+    ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section, Spinner,
     SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
     StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
     StatusLogMessage, StatusLogOutput, StatusLogState, TitleCard, TitleCardMessage, TitleCardState,

@@ -156,6 +156,8 @@ mod multi_progress;
 #[cfg(feature = "display-components")]
 mod progress_bar;
 #[cfg(feature = "display-components")]
+mod scrollable_text;
+#[cfg(feature = "display-components")]
 mod spinner;
 #[cfg(feature = "display-components")]
 mod status_bar;
@@ -258,6 +260,10 @@ pub use split_panel::{
     SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput, SplitPanelState,
 };
 
+#[cfg(feature = "display-components")]
+pub use scrollable_text::{
+    ScrollableText, ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState,
+};
 #[cfg(feature = "display-components")]
 pub use status_bar::{
     Section, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarState,
