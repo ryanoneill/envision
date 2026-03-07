@@ -162,6 +162,8 @@ mod status_bar;
 #[cfg(feature = "display-components")]
 mod status_log;
 #[cfg(feature = "display-components")]
+mod title_card;
+#[cfg(feature = "display-components")]
 mod toast;
 
 // Navigation components
@@ -265,6 +267,8 @@ pub use status_bar::{
 pub use status_log::{
     StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState,
 };
+#[cfg(feature = "display-components")]
+pub use title_card::{TitleCard, TitleCardMessage, TitleCardState};
 #[cfg(feature = "display-components")]
 pub use toast::{Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState};
 
