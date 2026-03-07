@@ -9,7 +9,9 @@ fn focused_state() -> ScrollableTextState {
 
 fn content_state() -> ScrollableTextState {
     let mut state = focused_state();
-    state.set_content("Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10");
+    state.set_content(
+        "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10",
+    );
     state
 }
 
@@ -372,8 +374,8 @@ fn test_view_empty() {
 
 #[test]
 fn test_view_with_content() {
-    let state = ScrollableTextState::new()
-        .with_content("Hello, world!\nThis is a test.\nLine three.");
+    let state =
+        ScrollableTextState::new().with_content("Hello, world!\nThis is a test.\nLine three.");
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {

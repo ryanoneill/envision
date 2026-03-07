@@ -156,11 +156,11 @@ mod multi_progress;
 #[cfg(feature = "display-components")]
 mod progress_bar;
 #[cfg(feature = "display-components")]
+mod scrollable_text;
+#[cfg(feature = "display-components")]
 mod spinner;
 #[cfg(feature = "display-components")]
 mod status_bar;
-#[cfg(feature = "display-components")]
-mod scrollable_text;
 #[cfg(feature = "display-components")]
 mod status_log;
 #[cfg(feature = "display-components")]

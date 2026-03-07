@@ -253,9 +253,7 @@ impl Component for ScrollableText {
 
         match key.code {
             KeyCode::Up | KeyCode::Char('k') if !ctrl => Some(ScrollableTextMessage::ScrollUp),
-            KeyCode::Down | KeyCode::Char('j') if !ctrl => {
-                Some(ScrollableTextMessage::ScrollDown)
-            }
+            KeyCode::Down | KeyCode::Char('j') if !ctrl => Some(ScrollableTextMessage::ScrollDown),
             KeyCode::PageUp => Some(ScrollableTextMessage::PageUp(10)),
             KeyCode::PageDown => Some(ScrollableTextMessage::PageDown(10)),
             KeyCode::Char('u') if ctrl => Some(ScrollableTextMessage::PageUp(10)),
