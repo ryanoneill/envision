@@ -966,3 +966,20 @@ fn test_render_with_custom_role_styles() {
         .unwrap();
     // Just verify it renders without panicking
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::with_annotations;
+    let state = ChatViewState::new();
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                ChatView::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert!(registry.get_by_id("chat_view").is_some());
+}

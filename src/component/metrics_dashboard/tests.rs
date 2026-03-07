@@ -642,3 +642,20 @@ fn test_set_title() {
     state.set_title(None);
     assert_eq!(state.title(), None);
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::with_annotations;
+    let state = MetricsDashboardState::new(sample_widgets(), 3);
+    let (mut terminal, theme) = test_utils::setup_render(80, 24);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                MetricsDashboard::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert!(registry.get_by_id("metrics_dashboard").is_some());
+}

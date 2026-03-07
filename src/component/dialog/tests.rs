@@ -703,3 +703,24 @@ fn test_builder_chaining_dialog() {
     assert_eq!(state.buttons().len(), 2);
     assert_eq!(state.primary_button(), 1);
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let mut state = DialogState::alert("Title", "Message");
+    Dialog::show(&mut state);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Dialog::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Dialog);
+    assert_eq!(regions.len(), 1);
+    assert!(regions[0].annotation.has_id("dialog"));
+}

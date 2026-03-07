@@ -528,3 +528,23 @@ fn test_partial_eq_different_ratio() {
     let state2 = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.3);
     assert_ne!(state1, state2);
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = SplitPanelState::new(SplitOrientation::Vertical);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                SplitPanel::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::SplitPanel);
+    assert_eq!(regions.len(), 1);
+    assert!(regions[0].annotation.has_id("split_panel"));
+}

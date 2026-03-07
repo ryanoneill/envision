@@ -917,3 +917,20 @@ fn test_set_show_timestamps() {
     state.set_show_timestamps(false);
     assert!(!state.show_timestamps());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::with_annotations;
+    let state = LogViewerState::new();
+    let (mut terminal, theme) = test_utils::setup_render(60, 15);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                LogViewer::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert!(registry.get_by_id("log_viewer").is_some());
+}

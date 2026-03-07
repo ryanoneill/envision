@@ -811,3 +811,31 @@ fn test_default_matches_init() {
     assert_eq!(default_state.is_disabled(), init_state.is_disabled());
     assert_eq!(default_state.title(), init_state.title());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let mut state = StatusLogState::new();
+    StatusLog::update(
+        &mut state,
+        StatusLogMessage::Push {
+            message: "Hello".to_string(),
+            level: StatusLogLevel::Info,
+            timestamp: None,
+        },
+    );
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                StatusLog::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::StatusLog);
+    assert_eq!(regions.len(), 1);
+    assert!(regions[0].annotation.has_id("status_log"));
+}

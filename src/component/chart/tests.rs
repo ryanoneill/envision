@@ -542,3 +542,20 @@ fn test_single_series_cycling() {
     assert_eq!(state.active_series(), 0);
     assert_eq!(output, Some(ChartOutput::ActiveSeriesChanged(0)));
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::with_annotations;
+    let state = ChartState::line(sample_series());
+    let (mut terminal, theme) = test_utils::setup_render(40, 15);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Chart::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert!(registry.get_by_id("chart").is_some());
+}
