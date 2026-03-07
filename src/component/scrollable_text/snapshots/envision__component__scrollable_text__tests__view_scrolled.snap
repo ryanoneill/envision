@@ -1,0 +1,11 @@
+---
+source: src/component/scrollable_text/tests.rs
+assertion_line: 396
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│Line 4                                │
+│Line 5                                │
+│Line 6                                │
+│Line 7                                │
+└──────────────────────────────────────┘

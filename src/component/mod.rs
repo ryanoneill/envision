@@ -160,6 +160,8 @@ mod spinner;
 #[cfg(feature = "display-components")]
 mod status_bar;
 #[cfg(feature = "display-components")]
+mod scrollable_text;
+#[cfg(feature = "display-components")]
 mod status_log;
 #[cfg(feature = "display-components")]
 mod title_card;
@@ -258,6 +260,10 @@ pub use split_panel::{
     SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput, SplitPanelState,
 };
 
+#[cfg(feature = "display-components")]
+pub use scrollable_text::{
+    ScrollableText, ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState,
+};
 #[cfg(feature = "display-components")]
 pub use status_bar::{
     Section, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarState,
