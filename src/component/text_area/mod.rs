@@ -224,6 +224,16 @@ impl TextAreaState {
 
     /// Creates a textarea with initial content, split on newlines.
     /// Cursor is placed at the end of the content.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = TextAreaState::with_value("Hello\nWorld");
+    /// assert_eq!(state.value(), "Hello\nWorld");
+    /// assert_eq!(state.line_count(), 2);
+    /// ```
     pub fn with_value(value: impl Into<String>) -> Self {
         let value = value.into();
         let lines: Vec<String> = if value.is_empty() {
@@ -251,6 +261,16 @@ impl TextAreaState {
     }
 
     /// Creates a textarea with placeholder text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = TextAreaState::with_placeholder("Enter text...");
+    /// assert_eq!(state.placeholder(), "Enter text...");
+    /// assert!(state.is_empty());
+    /// ```
     pub fn with_placeholder(placeholder: impl Into<String>) -> Self {
         Self {
             placeholder: placeholder.into(),
@@ -259,11 +279,31 @@ impl TextAreaState {
     }
 
     /// Returns the full text content (lines joined with \n).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = TextAreaState::with_value("line1\nline2");
+    /// assert_eq!(state.value(), "line1\nline2");
+    /// ```
     pub fn value(&self) -> String {
         self.lines.join("\n")
     }
 
     /// Sets the content from a string (splits on \n). Cursor moves to end.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = TextAreaState::new();
+    /// state.set_value("Hello\nWorld");
+    /// assert_eq!(state.value(), "Hello\nWorld");
+    /// assert_eq!(state.cursor_position(), (1, 5));
+    /// ```
     pub fn set_value(&mut self, value: impl Into<String>) {
         let value = value.into();
         self.lines = if value.is_empty() {
@@ -339,6 +379,15 @@ impl TextAreaState {
     /// Returns true if the textarea is empty.
     ///
     /// A textarea is empty if it contains only a single empty line.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// assert!(TextAreaState::new().is_empty());
+    /// assert!(!TextAreaState::with_value("hi").is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.lines.len() == 1 && self.lines[0].is_empty()
     }
