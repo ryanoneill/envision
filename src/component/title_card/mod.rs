@@ -343,10 +343,7 @@ impl Component for TitleCard {
 
         // Calculate vertical centering
         let content_height = if state.subtitle.is_some() { 2 } else { 1 };
-        let vertical_offset = render_area
-            .height
-            .saturating_sub(content_height)
-            / 2;
+        let vertical_offset = render_area.height.saturating_sub(content_height) / 2;
 
         // Render title
         let title_area = Rect::new(
@@ -365,15 +362,11 @@ impl Component for TitleCard {
         if let Some(subtitle) = &state.subtitle {
             let subtitle_y = render_area.y + vertical_offset + 1;
             if subtitle_y < render_area.y + render_area.height {
-                let subtitle_area = Rect::new(
-                    render_area.x,
-                    subtitle_y,
-                    render_area.width,
-                    1,
-                );
+                let subtitle_area = Rect::new(render_area.x, subtitle_y, render_area.width, 1);
 
-                let subtitle_paragraph = Paragraph::new(Span::styled(subtitle.as_str(), subtitle_style))
-                    .alignment(Alignment::Center);
+                let subtitle_paragraph =
+                    Paragraph::new(Span::styled(subtitle.as_str(), subtitle_style))
+                        .alignment(Alignment::Center);
                 frame.render_widget(subtitle_paragraph, subtitle_area);
             }
         }
