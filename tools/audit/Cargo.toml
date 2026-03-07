@@ -1,0 +1,13 @@
+[package]
+name = "envision-audit"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Audit tool for the envision library"
+
+[[bin]]
+name = "envision-audit"
+path = "src/main.rs"
+
+[dependencies]
+regex = "1"
