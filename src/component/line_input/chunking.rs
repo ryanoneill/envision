@@ -246,10 +246,7 @@ mod tests {
     fn test_partition_is_exact() {
         let buffer = "hello world";
         let chunks = chunk_buffer(buffer, 5);
-        let reconstructed: String = chunks
-            .iter()
-            .map(|r| &buffer[r.clone()])
-            .collect();
+        let reconstructed: String = chunks.iter().map(|r| &buffer[r.clone()]).collect();
         assert_eq!(reconstructed, buffer);
     }
 
@@ -257,10 +254,7 @@ mod tests {
     fn test_partition_is_exact_cjk() {
         let buffer = "世界你好";
         let chunks = chunk_buffer(buffer, 3);
-        let reconstructed: String = chunks
-            .iter()
-            .map(|r| &buffer[r.clone()])
-            .collect();
+        let reconstructed: String = chunks.iter().map(|r| &buffer[r.clone()]).collect();
         assert_eq!(reconstructed, buffer);
     }
 }

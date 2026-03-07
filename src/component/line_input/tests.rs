@@ -242,10 +242,7 @@ fn test_paste() {
     let output = state.update(LineInputMessage::Paste("xyz".to_string()));
     assert_eq!(state.value(), "axyzb");
     assert_eq!(state.cursor_byte_offset(), 4);
-    assert_eq!(
-        output,
-        Some(LineInputOutput::Changed("axyzb".to_string()))
-    );
+    assert_eq!(output, Some(LineInputOutput::Changed("axyzb".to_string())));
 }
 
 #[test]
@@ -647,7 +644,10 @@ fn test_handle_event_char() {
     let mut state = LineInputState::new();
     state.set_focused(true);
     let event = Event::char('a');
-    assert_eq!(state.handle_event(&event), Some(LineInputMessage::Insert('a')));
+    assert_eq!(
+        state.handle_event(&event),
+        Some(LineInputMessage::Insert('a'))
+    );
 }
 
 #[test]
@@ -703,12 +703,30 @@ fn test_handle_event_arrows() {
 fn test_handle_event_ctrl_keys() {
     let mut state = LineInputState::new();
     state.set_focused(true);
-    assert_eq!(state.handle_event(&Event::ctrl('z')), Some(LineInputMessage::Undo));
-    assert_eq!(state.handle_event(&Event::ctrl('y')), Some(LineInputMessage::Redo));
-    assert_eq!(state.handle_event(&Event::ctrl('a')), Some(LineInputMessage::SelectAll));
-    assert_eq!(state.handle_event(&Event::ctrl('u')), Some(LineInputMessage::Clear));
-    assert_eq!(state.handle_event(&Event::ctrl('c')), Some(LineInputMessage::Copy));
-    assert_eq!(state.handle_event(&Event::ctrl('x')), Some(LineInputMessage::Cut));
+    assert_eq!(
+        state.handle_event(&Event::ctrl('z')),
+        Some(LineInputMessage::Undo)
+    );
+    assert_eq!(
+        state.handle_event(&Event::ctrl('y')),
+        Some(LineInputMessage::Redo)
+    );
+    assert_eq!(
+        state.handle_event(&Event::ctrl('a')),
+        Some(LineInputMessage::SelectAll)
+    );
+    assert_eq!(
+        state.handle_event(&Event::ctrl('u')),
+        Some(LineInputMessage::Clear)
+    );
+    assert_eq!(
+        state.handle_event(&Event::ctrl('c')),
+        Some(LineInputMessage::Copy)
+    );
+    assert_eq!(
+        state.handle_event(&Event::ctrl('x')),
+        Some(LineInputMessage::Cut)
+    );
 }
 
 #[test]

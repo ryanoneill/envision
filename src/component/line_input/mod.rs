@@ -478,7 +478,8 @@ impl Component for LineInput {
 
             // Up/Down: context-dependent
             KeyCode::Up => {
-                let (row, _) = cursor_to_visual(&state.buffer, state.cursor, state.last_display_width);
+                let (row, _) =
+                    cursor_to_visual(&state.buffer, state.cursor, state.last_display_width);
                 if row == 0 {
                     Some(LineInputMessage::HistoryPrev)
                 } else {
@@ -486,7 +487,8 @@ impl Component for LineInput {
                 }
             }
             KeyCode::Down => {
-                let (row, _) = cursor_to_visual(&state.buffer, state.cursor, state.last_display_width);
+                let (row, _) =
+                    cursor_to_visual(&state.buffer, state.cursor, state.last_display_width);
                 let chunks = chunk_buffer(&state.buffer, state.last_display_width);
                 let last_row = chunks.len().saturating_sub(1);
                 // Also handle phantom trailing row
@@ -518,8 +520,7 @@ impl Component for LineInput {
                 let snapshot = state.snapshot();
                 state.undo_stack.save(snapshot, EditKind::Insert);
                 state.delete_selection();
-                let (new_buffer, new_cursor) =
-                    editing::insert_char(&state.buffer, state.cursor, c);
+                let (new_buffer, new_cursor) = editing::insert_char(&state.buffer, state.cursor, c);
                 state.buffer = new_buffer;
                 state.cursor = new_cursor;
                 if c.is_whitespace() {
@@ -556,9 +557,7 @@ impl Component for LineInput {
                     state.delete_selection();
                     state.history.exit_browse();
                     Some(LineInputOutput::Changed(state.buffer.clone()))
-                } else if let Some(new_buffer) =
-                    editing::delete_at(&state.buffer, state.cursor)
-                {
+                } else if let Some(new_buffer) = editing::delete_at(&state.buffer, state.cursor) {
                     state.undo_stack.save(snapshot, EditKind::Delete);
                     state.buffer = new_buffer;
                     state.history.exit_browse();
@@ -684,8 +683,7 @@ impl Component for LineInput {
                 let width = state.last_display_width;
                 let (row, col) = cursor_to_visual(&state.buffer, state.cursor, width);
                 if row > 0 {
-                    state.cursor =
-                        chunking::visual_to_cursor(&state.buffer, row - 1, col, width);
+                    state.cursor = chunking::visual_to_cursor(&state.buffer, row - 1, col, width);
                 }
                 None
             }
@@ -694,8 +692,7 @@ impl Component for LineInput {
                 state.clear_selection();
                 let width = state.last_display_width;
                 let (row, col) = cursor_to_visual(&state.buffer, state.cursor, width);
-                state.cursor =
-                    chunking::visual_to_cursor(&state.buffer, row + 1, col, width);
+                state.cursor = chunking::visual_to_cursor(&state.buffer, row + 1, col, width);
                 None
             }
 
@@ -887,10 +884,7 @@ impl Component for LineInput {
                     if !before.is_empty() {
                         spans.push(Span::styled(before.to_string(), base_style));
                     }
-                    spans.push(Span::styled(
-                        selected.to_string(),
-                        theme.selection_style(),
-                    ));
+                    spans.push(Span::styled(selected.to_string(), theme.selection_style()));
                     if !after.is_empty() {
                         spans.push(Span::styled(after.to_string(), base_style));
                     }
@@ -908,8 +902,7 @@ impl Component for LineInput {
 
         // Set cursor position when focused
         if state.focused && !state.disabled && inner.width > 0 && inner.height > 0 {
-            let (cursor_row, cursor_col) =
-                cursor_to_visual(&state.buffer, state.cursor, width);
+            let (cursor_row, cursor_col) = cursor_to_visual(&state.buffer, state.cursor, width);
 
             let cursor_x = inner.x + cursor_col as u16;
             let cursor_y = inner.y + cursor_row as u16;
