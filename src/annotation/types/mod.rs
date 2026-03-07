@@ -79,6 +79,57 @@ pub enum WidgetType {
     /// A tree view
     Tree,
 
+    /// A spinner/loading indicator
+    Spinner,
+
+    /// A toast notification
+    Toast,
+
+    /// A tooltip overlay
+    Tooltip,
+
+    /// An accordion panel group
+    Accordion,
+
+    /// A breadcrumb navigation trail
+    Breadcrumb,
+
+    /// A loading list
+    LoadingList,
+
+    /// A key hints display
+    KeyHints,
+
+    /// A multi-progress display
+    MultiProgress,
+
+    /// A status log
+    StatusLog,
+
+    /// A title card display
+    TitleCard,
+
+    /// A line input
+    LineInput,
+
+    /// A dropdown select
+    Dropdown,
+
+    /// A scrollable text display
+    ScrollableText,
+
+    /// A form container
+    Form,
+
+    /// A split panel container
+    SplitPanel,
+
+    /// A searchable list container
+    SearchableList,
+
+    /// A radio group
+    RadioGroup,
+
     /// A custom widget type
     Custom(String),
 }
@@ -99,6 +150,12 @@ impl WidgetType {
                 | WidgetType::Tab
                 | WidgetType::MenuItem
                 | WidgetType::Tree
+                | WidgetType::LineInput
+                | WidgetType::Dropdown
+                | WidgetType::LoadingList
+                | WidgetType::Accordion
+                | WidgetType::RadioGroup
+                | WidgetType::SearchableList
         )
     }
 
@@ -106,7 +163,12 @@ impl WidgetType {
     pub fn is_container(&self) -> bool {
         matches!(
             self,
-            WidgetType::Container | WidgetType::Dialog | WidgetType::Scroll | WidgetType::Sidebar
+            WidgetType::Container
+                | WidgetType::Dialog
+                | WidgetType::Scroll
+                | WidgetType::Sidebar
+                | WidgetType::Form
+                | WidgetType::SplitPanel
         )
     }
 }
@@ -238,6 +300,91 @@ impl Annotation {
     /// Creates a header annotation.
     pub fn header(text: impl Into<String>) -> Self {
         Self::new(WidgetType::Header).with_label(text)
+    }
+
+    /// Creates a spinner annotation.
+    pub fn spinner(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Spinner).with_id(id)
+    }
+
+    /// Creates a toast annotation.
+    pub fn toast(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Toast).with_id(id)
+    }
+
+    /// Creates a tooltip annotation.
+    pub fn tooltip(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Tooltip).with_id(id)
+    }
+
+    /// Creates an accordion annotation.
+    pub fn accordion(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Accordion).with_id(id)
+    }
+
+    /// Creates a breadcrumb annotation.
+    pub fn breadcrumb(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Breadcrumb).with_id(id)
+    }
+
+    /// Creates a loading list annotation.
+    pub fn loading_list(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::LoadingList).with_id(id)
+    }
+
+    /// Creates a key hints annotation.
+    pub fn key_hints(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::KeyHints).with_id(id)
+    }
+
+    /// Creates a multi-progress annotation.
+    pub fn multi_progress(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::MultiProgress).with_id(id)
+    }
+
+    /// Creates a status log annotation.
+    pub fn status_log(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::StatusLog).with_id(id)
+    }
+
+    /// Creates a title card annotation.
+    pub fn title_card(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::TitleCard).with_id(id)
+    }
+
+    /// Creates a line input annotation.
+    pub fn line_input(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::LineInput).with_id(id)
+    }
+
+    /// Creates a dropdown annotation.
+    pub fn dropdown(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Dropdown).with_id(id)
+    }
+
+    /// Creates a scrollable text annotation.
+    pub fn scrollable_text(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::ScrollableText).with_id(id)
+    }
+
+    /// Creates a form annotation.
+    pub fn form(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Form).with_id(id)
+    }
+
+    /// Creates a split panel annotation.
+    pub fn split_panel(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::SplitPanel).with_id(id)
+    }
+
+    /// Creates a searchable list annotation.
+    pub fn searchable_list(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::SearchableList).with_id(id)
+    }
+
+    /// Creates a radio group annotation.
+    pub fn radio_group(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::RadioGroup).with_id(id)
     }
 
     /// Creates a custom widget annotation.
