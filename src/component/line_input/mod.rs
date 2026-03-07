@@ -50,6 +50,10 @@ pub struct LineInput;
 
 /// State for the [`LineInput`] component.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct LineInputState {
     /// The text buffer (single line, no newlines).
     buffer: String,
@@ -66,10 +70,13 @@ pub struct LineInputState {
     /// Internal clipboard.
     clipboard: String,
     /// Command history.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     history: History,
     /// Undo/redo stack.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     undo_stack: UndoStack<LineInputSnapshot>,
     /// Last known display width from the parent layout.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     last_display_width: usize,
 }
 
