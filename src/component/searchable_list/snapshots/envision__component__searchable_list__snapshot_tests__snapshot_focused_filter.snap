@@ -1,0 +1,25 @@
+---
+source: src/component/searchable_list/snapshot_tests.rs
+assertion_line: 52
+expression: terminal.backend().to_string()
+---
+┌ Filter ──────────────────────────────────────────────────┐
+│Type to filter...                                         │
+└───────────────────────────────────────────────────── 5/5 ┘
+┌──────────────────────────────────────────────────────────┐
+│> Apple                                                   │
+│  Banana                                                  │
+│  Cherry                                                  │
+│  Date                                                    │
+│  Elderberry                                              │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘

@@ -1,0 +1,6 @@
+---
+source: src/component/metrics_dashboard/snapshot_tests.rs
+assertion_line: 28
+expression: terminal.backend().to_string()
+---
+

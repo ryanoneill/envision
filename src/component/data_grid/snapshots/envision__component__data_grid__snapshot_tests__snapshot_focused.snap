@@ -1,0 +1,25 @@
+---
+source: src/component/data_grid/snapshot_tests.rs
+assertion_line: 78
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────────────────────────┐
+│  [Name]                       Age                        │
+│                                                          │
+│> Alice                        30                         │
+│  Bob                          25                         │
+│  Charlie                      35                         │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘

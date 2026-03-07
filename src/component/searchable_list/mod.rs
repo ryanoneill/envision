@@ -816,4 +816,6 @@ impl<T: Clone + Display + 'static> Focusable for SearchableList<T> {
 #[cfg(test)]
 mod event_tests;
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;
