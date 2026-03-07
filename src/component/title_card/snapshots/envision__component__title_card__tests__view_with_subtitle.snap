@@ -1,0 +1,11 @@
+---
+source: src/component/title_card/tests.rs
+assertion_line: 258
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│                                      │
+│            My Application            │
+│              Version 1.0             │
+│                                      │
+└──────────────────────────────────────┘

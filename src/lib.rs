@@ -160,8 +160,8 @@ pub use component::{
     ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus, Section, Spinner,
     SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
     StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
-    StatusLogMessage, StatusLogOutput, StatusLogState, Toast, ToastItem, ToastLevel, ToastMessage,
-    ToastOutput, ToastState,
+    StatusLogMessage, StatusLogOutput, StatusLogState, TitleCard, TitleCardMessage, TitleCardState,
+    Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
 };
 
 // Navigation components

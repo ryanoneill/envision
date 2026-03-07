@@ -1,0 +1,10 @@
+---
+source: src/component/title_card/tests.rs
+assertion_line: 284
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│                                      │
+│            Disabled Title            │
+│                                      │
+└──────────────────────────────────────┘
