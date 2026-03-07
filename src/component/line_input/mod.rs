@@ -18,6 +18,8 @@ mod editing;
 mod history;
 
 #[cfg(test)]
+mod handle_event_tests;
+#[cfg(test)]
 mod property_tests;
 #[cfg(test)]
 mod tests;
@@ -65,6 +67,8 @@ pub struct LineInputState {
     selection_anchor: Option<usize>,
     /// Internal clipboard.
     clipboard: String,
+    /// Maximum number of characters allowed, or `None` for unlimited.
+    max_length: Option<usize>,
     /// Command history.
     history: History,
     /// Undo/redo stack.
@@ -83,6 +87,7 @@ impl Default for LineInputState {
             placeholder: String::new(),
             selection_anchor: None,
             clipboard: String::new(),
+            max_length: None,
             history: History::default(),
             undo_stack: UndoStack::default(),
             last_display_width: 80,
@@ -122,6 +127,15 @@ impl LineInputState {
     /// Sets the disabled state (builder pattern).
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
+        self
+    }
+
+    /// Sets the maximum character count (builder pattern).
+    ///
+    /// When set, insertions and pastes that would exceed this limit are
+    /// rejected or truncated. `None` means unlimited.
+    pub fn with_max_length(mut self, max: usize) -> Self {
+        self.max_length = Some(max);
         self
     }
 
@@ -172,6 +186,18 @@ impl LineInputState {
     /// Returns the current display width.
     pub fn display_width(&self) -> usize {
         self.last_display_width
+    }
+
+    /// Returns the maximum character length, or `None` if unlimited.
+    pub fn max_length(&self) -> Option<usize> {
+        self.max_length
+    }
+
+    /// Sets the maximum character length. `None` means unlimited.
+    ///
+    /// Does not truncate existing content -- only constrains future edits.
+    pub fn set_max_length(&mut self, max: Option<usize>) {
+        self.max_length = max;
     }
 
     /// Returns the placeholder text.
@@ -275,6 +301,14 @@ impl LineInputState {
     }
 
     // --- Private helpers ---
+
+    /// Returns the number of characters that can still be inserted before reaching max_length.
+    fn remaining_capacity(&self) -> usize {
+        match self.max_length {
+            Some(max) => max.saturating_sub(self.buffer.chars().count()),
+            None => usize::MAX,
+        }
+    }
 
     fn snapshot(&self) -> LineInputSnapshot {
         LineInputSnapshot {
@@ -514,6 +548,18 @@ impl Component for LineInput {
 
         match msg {
             LineInputMessage::Insert(c) => {
+                // Check max_length before inserting.
+                // If there is a selection, account for the characters that will be removed.
+                let selection_chars = state
+                    .selection_range()
+                    .map(|(s, e)| state.buffer[s..e].chars().count())
+                    .unwrap_or(0);
+                let effective_len = state.buffer.chars().count() - selection_chars;
+                if let Some(max) = state.max_length {
+                    if effective_len >= max {
+                        return None;
+                    }
+                }
                 if c.is_whitespace() {
                     state.undo_stack.break_group();
                 }
@@ -622,6 +668,16 @@ impl Component for LineInput {
             LineInputMessage::SetValue(value) => {
                 let snapshot = state.snapshot();
                 state.undo_stack.save(snapshot, EditKind::Other);
+                // Truncate value to max_length
+                let value = if let Some(max) = state.max_length {
+                    if value.chars().count() > max {
+                        value.chars().take(max).collect()
+                    } else {
+                        value
+                    }
+                } else {
+                    value
+                };
                 state.buffer = value;
                 state.cursor = state.buffer.len();
                 state.clear_selection();
@@ -633,6 +689,16 @@ impl Component for LineInput {
                 let snapshot = state.snapshot();
                 state.undo_stack.save(snapshot, EditKind::Other);
                 state.delete_selection();
+                // Truncate paste content to remaining capacity
+                let remaining = state.remaining_capacity();
+                if remaining == 0 {
+                    return None;
+                }
+                let text = if remaining < usize::MAX {
+                    text.chars().take(remaining).collect()
+                } else {
+                    text
+                };
                 let (new_buffer, new_cursor) =
                     editing::insert_str(&state.buffer, state.cursor, &text);
                 state.buffer = new_buffer;
