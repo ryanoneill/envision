@@ -865,3 +865,24 @@ fn test_max_length_insert_with_selection_replacement() {
     assert!(output.is_some());
     assert_eq!(state.value(), "x");
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = LineInputState::new();
+    let (mut terminal, theme) = setup_render(30, 5);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                LineInput::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::LineInput);
+    assert_eq!(regions.len(), 1);
+    assert!(!regions[0].annotation.focused);
+    assert!(!regions[0].annotation.disabled);
+}

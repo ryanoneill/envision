@@ -307,3 +307,24 @@ fn test_view_small_area() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = TitleCardState::new("Hello");
+    let (mut terminal, theme) = test_utils::setup_render(40, 7);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                TitleCard::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::TitleCard);
+    assert_eq!(regions.len(), 1);
+    assert_eq!(regions[0].annotation.label, Some("Hello".to_string()));
+    assert!(!regions[0].annotation.disabled);
+}

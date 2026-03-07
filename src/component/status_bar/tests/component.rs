@@ -507,3 +507,26 @@ fn test_init_returns_empty_state() {
     // init() uses Default, which gives an empty separator
     assert_eq!(state.separator(), "");
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = StatusBarState::new();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 1);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                StatusBar::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::StatusBar);
+    assert_eq!(regions.len(), 1);
+    assert_eq!(
+        regions[0].annotation.metadata.get("item_count"),
+        Some(&"0".to_string())
+    );
+}

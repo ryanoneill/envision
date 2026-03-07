@@ -628,3 +628,27 @@ fn test_default_matches_init() {
     );
     assert_eq!(default_state.max_visible(), init_state.max_visible());
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let mut state = ToastState::new();
+    state.push("Hello".into(), ToastLevel::Info, Some(5000));
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                Toast::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::Toast);
+    assert_eq!(regions.len(), 1);
+    assert_eq!(
+        regions[0].annotation.metadata.get("count"),
+        Some(&"1".to_string())
+    );
+}

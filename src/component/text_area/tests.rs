@@ -969,3 +969,24 @@ fn test_cursor_display_position_empty() {
     let state = TextAreaState::new();
     assert_eq!(state.cursor_display_position(), (0, 0));
 }
+
+// Annotation tests
+
+#[test]
+fn test_annotation_emitted() {
+    use crate::annotation::{with_annotations, WidgetType};
+    let state = TextAreaState::new();
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                TextArea::view(&state, frame, frame.area(), &theme);
+            })
+            .unwrap();
+    });
+    assert_eq!(registry.len(), 1);
+    let regions = registry.find_by_type(&WidgetType::TextArea);
+    assert_eq!(regions.len(), 1);
+    assert!(!regions[0].annotation.focused);
+    assert!(!regions[0].annotation.disabled);
+}
