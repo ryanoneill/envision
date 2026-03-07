@@ -58,6 +58,10 @@ pub enum ScrollableTextOutput {
 ///
 /// Contains the text content, scroll position, and display options.
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ScrollableTextState {
     /// The text content.
     content: String,

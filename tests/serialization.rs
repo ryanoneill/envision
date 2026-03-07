@@ -178,6 +178,34 @@ fn test_tooltip_state_round_trip() {
     assert_eq!(restored.content(), "Helpful tip");
 }
 
+#[test]
+fn test_scrollable_text_state_round_trip() {
+    let state = ScrollableTextState::new()
+        .with_content("Hello, world!")
+        .with_title("Preview");
+    let restored = round_trip(&state);
+    assert_eq!(restored.content(), "Hello, world!");
+    assert_eq!(restored.title(), Some("Preview"));
+}
+
+#[test]
+fn test_title_card_state_round_trip() {
+    let state = TitleCardState::new("My App")
+        .with_subtitle("v1.0")
+        .with_prefix("\u{1f680} ");
+    let restored = round_trip(&state);
+    assert_eq!(restored.title(), "My App");
+    assert_eq!(restored.subtitle(), Some("v1.0"));
+    assert_eq!(restored.prefix(), Some("\u{1f680} "));
+}
+
+#[test]
+fn test_line_input_state_round_trip() {
+    let state = LineInputState::with_value("hello world");
+    let restored = round_trip(&state);
+    assert_eq!(restored.value(), "hello world");
+}
+
 // =============================================================================
 // Generic State types
 // =============================================================================

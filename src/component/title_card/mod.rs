@@ -47,6 +47,10 @@ pub enum TitleCardMessage {
 ///
 /// Contains the title text, optional decorations, and styling configuration.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct TitleCardState {
     /// The title text.
     title: String,

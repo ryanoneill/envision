@@ -5,6 +5,10 @@
 
 /// A ring buffer for input history.
 #[derive(Clone, Debug)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct History {
     /// Previous entries (oldest first).
     entries: Vec<String>,
