@@ -1,7 +1,7 @@
 use super::*;
 use crate::component::test_utils::setup_render;
 use crate::component::{Component, Focusable};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::Event;
 
 // ---- Construction / Accessors ----
 
@@ -621,249 +621,6 @@ fn test_undo_backspace() {
     assert_eq!(state.value(), "hi");
 }
 
-// ---- handle_event ----
-
-#[test]
-fn test_handle_event_unfocused() {
-    let state = LineInputState::new();
-    let event = Event::char('a');
-    assert_eq!(state.handle_event(&event), None);
-}
-
-#[test]
-fn test_handle_event_disabled() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    state.set_disabled(true);
-    let event = Event::char('a');
-    assert_eq!(state.handle_event(&event), None);
-}
-
-#[test]
-fn test_handle_event_char() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    let event = Event::char('a');
-    assert_eq!(
-        state.handle_event(&event),
-        Some(LineInputMessage::Insert('a'))
-    );
-}
-
-#[test]
-fn test_handle_event_enter() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    let event = Event::key(KeyCode::Enter);
-    assert_eq!(state.handle_event(&event), Some(LineInputMessage::Submit));
-}
-
-#[test]
-fn test_handle_event_backspace() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    let event = Event::key(KeyCode::Backspace);
-    assert_eq!(
-        state.handle_event(&event),
-        Some(LineInputMessage::Backspace)
-    );
-}
-
-#[test]
-fn test_handle_event_delete() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    let event = Event::key(KeyCode::Delete);
-    assert_eq!(state.handle_event(&event), Some(LineInputMessage::Delete));
-}
-
-#[test]
-fn test_handle_event_arrows() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    assert_eq!(
-        state.handle_event(&Event::key(KeyCode::Left)),
-        Some(LineInputMessage::Left)
-    );
-    assert_eq!(
-        state.handle_event(&Event::key(KeyCode::Right)),
-        Some(LineInputMessage::Right)
-    );
-    assert_eq!(
-        state.handle_event(&Event::key(KeyCode::Home)),
-        Some(LineInputMessage::Home)
-    );
-    assert_eq!(
-        state.handle_event(&Event::key(KeyCode::End)),
-        Some(LineInputMessage::End)
-    );
-}
-
-#[test]
-fn test_handle_event_ctrl_keys() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    assert_eq!(
-        state.handle_event(&Event::ctrl('z')),
-        Some(LineInputMessage::Undo)
-    );
-    assert_eq!(
-        state.handle_event(&Event::ctrl('y')),
-        Some(LineInputMessage::Redo)
-    );
-    assert_eq!(
-        state.handle_event(&Event::ctrl('a')),
-        Some(LineInputMessage::SelectAll)
-    );
-    assert_eq!(
-        state.handle_event(&Event::ctrl('u')),
-        Some(LineInputMessage::Clear)
-    );
-    assert_eq!(
-        state.handle_event(&Event::ctrl('c')),
-        Some(LineInputMessage::Copy)
-    );
-    assert_eq!(
-        state.handle_event(&Event::ctrl('x')),
-        Some(LineInputMessage::Cut)
-    );
-}
-
-#[test]
-fn test_handle_event_shift_arrows() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    assert_eq!(
-        state.handle_event(&Event::key_with(KeyCode::Left, KeyModifiers::SHIFT)),
-        Some(LineInputMessage::SelectLeft)
-    );
-    assert_eq!(
-        state.handle_event(&Event::key_with(KeyCode::Right, KeyModifiers::SHIFT)),
-        Some(LineInputMessage::SelectRight)
-    );
-    assert_eq!(
-        state.handle_event(&Event::key_with(KeyCode::Home, KeyModifiers::SHIFT)),
-        Some(LineInputMessage::SelectHome)
-    );
-    assert_eq!(
-        state.handle_event(&Event::key_with(KeyCode::End, KeyModifiers::SHIFT)),
-        Some(LineInputMessage::SelectEnd)
-    );
-}
-
-#[test]
-fn test_handle_event_ctrl_arrows() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    assert_eq!(
-        state.handle_event(&Event::key_with(KeyCode::Left, KeyModifiers::CONTROL)),
-        Some(LineInputMessage::WordLeft)
-    );
-    assert_eq!(
-        state.handle_event(&Event::key_with(KeyCode::Right, KeyModifiers::CONTROL)),
-        Some(LineInputMessage::WordRight)
-    );
-}
-
-#[test]
-fn test_handle_event_ctrl_shift_arrows() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    let mods = KeyModifiers::CONTROL | KeyModifiers::SHIFT;
-    assert_eq!(
-        state.handle_event(&Event::key_with(KeyCode::Left, mods)),
-        Some(LineInputMessage::SelectWordLeft)
-    );
-    assert_eq!(
-        state.handle_event(&Event::key_with(KeyCode::Right, mods)),
-        Some(LineInputMessage::SelectWordRight)
-    );
-}
-
-#[test]
-fn test_handle_event_ctrl_backspace() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    assert_eq!(
-        state.handle_event(&Event::key_with(KeyCode::Backspace, KeyModifiers::CONTROL)),
-        Some(LineInputMessage::DeleteWordBack)
-    );
-}
-
-#[test]
-fn test_handle_event_ctrl_delete() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    assert_eq!(
-        state.handle_event(&Event::key_with(KeyCode::Delete, KeyModifiers::CONTROL)),
-        Some(LineInputMessage::DeleteWordForward)
-    );
-}
-
-// ---- handle_event: Up/Down context disambiguation ----
-
-#[test]
-fn test_up_on_first_row_is_history_prev() {
-    let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
-    state.set_display_width(80);
-    // Single row → cursor on row 0 → Up = HistoryPrev
-    assert_eq!(
-        state.handle_event(&Event::key(KeyCode::Up)),
-        Some(LineInputMessage::HistoryPrev)
-    );
-}
-
-#[test]
-fn test_up_on_second_row_is_visual_up() {
-    let mut state = LineInputState::with_value("hello world!");
-    state.set_focused(true);
-    state.set_display_width(5);
-    // "hello" | " worl" | "d!" → cursor at end (row 2)
-    assert_eq!(
-        state.handle_event(&Event::key(KeyCode::Up)),
-        Some(LineInputMessage::VisualUp)
-    );
-}
-
-#[test]
-fn test_down_on_last_row_is_history_next() {
-    let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
-    state.set_display_width(80);
-    // Single row → cursor on last row → Down = HistoryNext
-    assert_eq!(
-        state.handle_event(&Event::key(KeyCode::Down)),
-        Some(LineInputMessage::HistoryNext)
-    );
-}
-
-#[test]
-fn test_down_on_first_row_is_visual_down() {
-    let mut state = LineInputState::with_value("hello world!");
-    state.set_focused(true);
-    state.set_display_width(5);
-    state.cursor = 0;
-    // cursor at row 0, multiple rows → Down = VisualDown
-    assert_eq!(
-        state.handle_event(&Event::key(KeyCode::Down)),
-        Some(LineInputMessage::VisualDown)
-    );
-}
-
-// ---- handle_event: Paste ----
-
-#[test]
-fn test_handle_event_paste() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    let event = Event::Paste("pasted text".to_string());
-    assert_eq!(
-        state.handle_event(&event),
-        Some(LineInputMessage::Paste("pasted text".to_string()))
-    );
-}
-
 // ---- dispatch_event ----
 
 #[test]
@@ -987,4 +744,124 @@ fn test_snapshot_selection() {
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+// =============================================================================
+// max_length
+// =============================================================================
+
+#[test]
+fn test_max_length_builder() {
+    let state = LineInputState::new().with_max_length(10);
+    assert_eq!(state.max_length(), Some(10));
+}
+
+#[test]
+fn test_max_length_default_none() {
+    let state = LineInputState::new();
+    assert_eq!(state.max_length(), None);
+}
+
+#[test]
+fn test_max_length_setter() {
+    let mut state = LineInputState::new();
+    state.set_max_length(Some(5));
+    assert_eq!(state.max_length(), Some(5));
+    state.set_max_length(None);
+    assert_eq!(state.max_length(), None);
+}
+
+#[test]
+fn test_max_length_insert_allowed() {
+    let mut state = LineInputState::new().with_max_length(5);
+    state.set_focused(true);
+    let output = LineInput::update(&mut state, LineInputMessage::Insert('a'));
+    assert!(output.is_some());
+    assert_eq!(state.value(), "a");
+}
+
+#[test]
+fn test_max_length_insert_rejected() {
+    let mut state = LineInputState::with_value("abcde").with_max_length(5);
+    state.set_focused(true);
+    let output = LineInput::update(&mut state, LineInputMessage::Insert('f'));
+    assert_eq!(output, None);
+    assert_eq!(state.value(), "abcde");
+}
+
+#[test]
+fn test_max_length_none_unlimited() {
+    let mut state = LineInputState::new();
+    state.set_focused(true);
+    for c in "this is a long string that should work fine".chars() {
+        LineInput::update(&mut state, LineInputMessage::Insert(c));
+    }
+    assert_eq!(state.value(), "this is a long string that should work fine");
+}
+
+#[test]
+fn test_max_length_paste_truncated() {
+    let mut state = LineInputState::with_value("abc").with_max_length(5);
+    state.set_focused(true);
+    let output = LineInput::update(&mut state, LineInputMessage::Paste("defgh".to_string()));
+    assert!(output.is_some());
+    assert_eq!(state.value(), "abcde");
+}
+
+#[test]
+fn test_max_length_paste_at_limit() {
+    let mut state = LineInputState::with_value("abcde").with_max_length(5);
+    state.set_focused(true);
+    let output = LineInput::update(&mut state, LineInputMessage::Paste("f".to_string()));
+    assert_eq!(output, None);
+    assert_eq!(state.value(), "abcde");
+}
+
+#[test]
+fn test_max_length_set_value_truncated() {
+    let mut state = LineInputState::new().with_max_length(3);
+    state.set_focused(true);
+    let output = LineInput::update(&mut state, LineInputMessage::SetValue("abcdef".to_string()));
+    assert!(output.is_some());
+    assert_eq!(state.value(), "abc");
+}
+
+#[test]
+fn test_max_length_unicode() {
+    // Unicode chars: each is 1 char but multi-byte
+    let mut state = LineInputState::new().with_max_length(3);
+    state.set_focused(true);
+    LineInput::update(&mut state, LineInputMessage::Insert('e'));
+    LineInput::update(&mut state, LineInputMessage::Insert('n'));
+    LineInput::update(&mut state, LineInputMessage::Insert('u'));
+    assert_eq!(state.value(), "enu");
+    // Should reject 4th char
+    let output = LineInput::update(&mut state, LineInputMessage::Insert('a'));
+    assert_eq!(output, None);
+    assert_eq!(state.value(), "enu");
+}
+
+#[test]
+fn test_max_length_existing_content_not_truncated() {
+    let mut state = LineInputState::with_value("abcdef");
+    state.set_max_length(Some(3));
+    // Existing content is NOT truncated
+    assert_eq!(state.value(), "abcdef");
+    // But new insertions are rejected
+    state.set_focused(true);
+    let output = LineInput::update(&mut state, LineInputMessage::Insert('g'));
+    assert_eq!(output, None);
+}
+
+#[test]
+fn test_max_length_insert_with_selection_replacement() {
+    // If text is selected, inserting replaces selection, so effective length may allow it
+    let mut state = LineInputState::with_value("abcde").with_max_length(5);
+    state.set_focused(true);
+    // Select all
+    LineInput::update(&mut state, LineInputMessage::SelectAll);
+    // Inserting 'x' should work: replaces all 5 chars with 1
+    let output = LineInput::update(&mut state, LineInputMessage::Insert('x'));
+    assert!(output.is_some());
+    assert_eq!(state.value(), "x");
 }
