@@ -74,6 +74,18 @@ required-features = ["full"]
 name = "component_showcase"
 required-features = ["full"]
 
+[[example]]
+name = "scrollable_text"
+required-features = ["display-components"]
+
+[[example]]
+name = "title_card"
+required-features = ["display-components"]
+
+[[example]]
+name = "line_input"
+required-features = ["input-components"]
+
 [[bench]]
 name = "capture_backend"
 harness = false
