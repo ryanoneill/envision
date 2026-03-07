@@ -86,6 +86,10 @@ required-features = ["display-components"]
 name = "line_input"
 required-features = ["input-components"]
 
+[[example]]
+name = "chat_app"
+required-features = ["compound-components"]
+
 [[bench]]
 name = "capture_backend"
 harness = false
