@@ -1,0 +1,13 @@
+---
+source: src/component/styled_text/tests.rs
+assertion_line: 512
+expression: display
+---
+┌────────────────────────────────────────────────┐
+│Welcome                                         │
+│This is a paragraph.                            │
+│                                                │
+│                                                │
+│                                                │
+│                                                │
+└────────────────────────────────────────────────┘

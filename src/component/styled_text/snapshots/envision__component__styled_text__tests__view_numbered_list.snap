@@ -1,0 +1,13 @@
+---
+source: src/component/styled_text/tests.rs
+assertion_line: 554
+expression: display
+---
+┌────────────────────────────────────────────────┐
+│  1. First                                      │
+│  2. Second                                     │
+│  3. Third                                      │
+│                                                │
+│                                                │
+│                                                │
+└────────────────────────────────────────────────┘

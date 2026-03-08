@@ -162,8 +162,9 @@ pub use component::{
     ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section, Spinner,
     SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
     StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
-    StatusLogMessage, StatusLogOutput, StatusLogState, TitleCard, TitleCardMessage, TitleCardState,
-    Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
+    StatusLogMessage, StatusLogOutput, StatusLogState, StyledText, StyledTextMessage,
+    StyledTextOutput, StyledTextState, TitleCard, TitleCardMessage, TitleCardState, Toast,
+    ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
 };
 
 // Navigation components

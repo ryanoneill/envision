@@ -1,0 +1,6 @@
+---
+source: src/component/styled_text/tests.rs
+assertion_line: 626
+expression: display
+---
+No border

@@ -139,6 +139,9 @@ pub enum WidgetType {
     /// A step indicator
     StepIndicator,
 
+    /// A styled text display
+    StyledText,
+
     /// A custom widget type
     Custom(String),
 }
@@ -412,6 +415,11 @@ impl Annotation {
     /// Creates a step indicator annotation.
     pub fn step_indicator(id: impl Into<String>) -> Self {
         Self::new(WidgetType::StepIndicator).with_id(id)
+    }
+
+    /// Creates a styled text annotation.
+    pub fn styled_text(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::StyledText).with_id(id)
     }
 
     /// Creates a custom widget annotation.
