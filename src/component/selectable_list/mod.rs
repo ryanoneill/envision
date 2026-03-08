@@ -614,11 +614,10 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             reg.register(area, ann);
         });
 
-        let items: Vec<ListItem> = state
-            .filtered_indices
-            .iter()
-            .map(|&idx| ListItem::new(format!("{}", state.items[idx])))
-            .collect();
+        let mut items = Vec::with_capacity(state.filtered_indices.len());
+        for &idx in &state.filtered_indices {
+            items.push(ListItem::new(state.items[idx].to_string()));
+        }
 
         let highlight_style = if state.disabled {
             theme.disabled_style()
