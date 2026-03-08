@@ -611,6 +611,47 @@ pub trait Toggleable: Component {
     }
 }
 
+/// A component that can be disabled.
+///
+/// When disabled, a component should render in a visually distinct style
+/// (e.g., grayed out) and ignore interactive input events.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::{Component, Disableable, Focusable, SelectableList};
+///
+/// let mut state = SelectableList::<String>::init();
+/// assert!(!SelectableList::<String>::is_disabled(&state));
+///
+/// SelectableList::<String>::disable(&mut state);
+/// assert!(SelectableList::<String>::is_disabled(&state));
+///
+/// SelectableList::<String>::enable(&mut state);
+/// assert!(!SelectableList::<String>::is_disabled(&state));
+/// ```
+pub trait Disableable: Component {
+    /// Returns true if this component is currently disabled.
+    fn is_disabled(state: &Self::State) -> bool;
+
+    /// Sets the disabled state of this component.
+    fn set_disabled(state: &mut Self::State, disabled: bool);
+
+    /// Disables this component.
+    ///
+    /// Convenience method equivalent to `set_disabled(state, true)`.
+    fn disable(state: &mut Self::State) {
+        Self::set_disabled(state, true);
+    }
+
+    /// Enables this component.
+    ///
+    /// Convenience method equivalent to `set_disabled(state, false)`.
+    fn enable(state: &mut Self::State) {
+        Self::set_disabled(state, false);
+    }
+}
+
 #[cfg(test)]
 mod test_utils;
 #[cfg(test)]

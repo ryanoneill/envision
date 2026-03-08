@@ -131,7 +131,7 @@ pub use app::{
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 // Core component traits and utilities (always available)
-pub use component::{Component, FocusManager, Focusable, Toggleable};
+pub use component::{Component, Disableable, FocusManager, Focusable, Toggleable};
 
 // Input components
 #[cfg(feature = "input-components")]
