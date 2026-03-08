@@ -196,6 +196,15 @@ impl ConfirmDialogState {
     }
 
     /// Creates an Ok/Cancel dialog.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConfirmDialogState, confirm_dialog::ButtonConfig};
+    ///
+    /// let state = ConfirmDialogState::ok_cancel("Confirm", "Are you sure?");
+    /// assert_eq!(state.button_config(), &ButtonConfig::OkCancel);
+    /// ```
     pub fn ok_cancel(title: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             title: title.into(),
@@ -225,6 +234,15 @@ impl ConfirmDialogState {
     }
 
     /// Creates a Yes/No/Cancel dialog.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConfirmDialogState, confirm_dialog::ButtonConfig};
+    ///
+    /// let state = ConfirmDialogState::yes_no_cancel("Save?", "Save changes?");
+    /// assert_eq!(state.button_config(), &ButtonConfig::YesNoCancel);
+    /// ```
     pub fn yes_no_cancel(title: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             title: title.into(),
@@ -238,6 +256,18 @@ impl ConfirmDialogState {
     ///
     /// The `destructive_index` indicates which button is destructive
     /// and will be styled with error colors.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConfirmDialogState, confirm_dialog::ButtonConfig};
+    ///
+    /// let state = ConfirmDialogState::destructive(
+    ///     "Delete?", "This cannot be undone.",
+    ///     ButtonConfig::YesNo, 0,
+    /// );
+    /// assert_eq!(state.destructive_button(), Some(0));
+    /// ```
     pub fn destructive(
         title: impl Into<String>,
         message: impl Into<String>,
@@ -254,29 +284,77 @@ impl ConfirmDialogState {
     }
 
     /// Sets the button configuration (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConfirmDialogState, confirm_dialog::ButtonConfig};
+    ///
+    /// let state = ConfirmDialogState::new("Title", "Message")
+    ///     .with_button_config(ButtonConfig::YesNo);
+    /// assert_eq!(state.button_config(), &ButtonConfig::YesNo);
+    /// ```
     pub fn with_button_config(mut self, config: ButtonConfig) -> Self {
         self.button_config = config;
         self
     }
 
     /// Sets the destructive button index (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let state = ConfirmDialogState::new("Delete", "Sure?")
+    ///     .with_destructive_button(Some(0));
+    /// assert_eq!(state.destructive_button(), Some(0));
+    /// ```
     pub fn with_destructive_button(mut self, index: Option<usize>) -> Self {
         self.destructive_button = index;
         self
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let state = ConfirmDialogState::new("Title", "Message")
+    ///     .with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Returns the dialog title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let state = ConfirmDialogState::new("Confirm", "Are you sure?");
+    /// assert_eq!(state.title(), "Confirm");
+    /// ```
     pub fn title(&self) -> &str {
         &self.title
     }
 
     /// Returns the dialog message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let state = ConfirmDialogState::new("Confirm", "Are you sure?");
+    /// assert_eq!(state.message(), "Are you sure?");
+    /// ```
     pub fn message(&self) -> &str {
         &self.message
     }
@@ -287,6 +365,15 @@ impl ConfirmDialogState {
     }
 
     /// Returns the focused button index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let state = ConfirmDialogState::new("Title", "Message");
+    /// assert_eq!(state.focused_button(), 0);
+    /// ```
     pub fn focused_button(&self) -> usize {
         self.focused_button
     }
@@ -297,52 +384,158 @@ impl ConfirmDialogState {
     }
 
     /// Returns true if the dialog is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let state = ConfirmDialogState::new("Title", "Message");
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let mut state = ConfirmDialogState::new("Title", "Message");
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the dialog is visible.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let state = ConfirmDialogState::new("Title", "Message");
+    /// assert!(!state.is_visible());
+    /// ```
     pub fn is_visible(&self) -> bool {
         self.visible
     }
 
     /// Sets the visibility state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let mut state = ConfirmDialogState::new("Title", "Message");
+    /// state.set_visible(true);
+    /// assert!(state.is_visible());
+    /// ```
     pub fn set_visible(&mut self, visible: bool) {
         ConfirmDialog::set_visible(self, visible);
     }
 
     /// Sets the visibility (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let state = ConfirmDialogState::new("Title", "Message")
+    ///     .with_visible(true);
+    /// assert!(state.is_visible());
+    /// ```
     pub fn with_visible(mut self, visible: bool) -> Self {
         ConfirmDialog::set_visible(&mut self, visible);
         self
     }
 
     /// Returns true if the dialog is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let state = ConfirmDialogState::new("Title", "Message");
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let mut state = ConfirmDialogState::new("Title", "Message");
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
 
     /// Maps an input event to a dialog message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConfirmDialogState, ConfirmDialogMessage};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = ConfirmDialogState::yes_no("Delete?", "Sure?");
+    /// state.set_visible(true);
+    /// let event = Event::key(KeyCode::Esc);
+    /// assert_eq!(state.handle_event(&event), Some(ConfirmDialogMessage::Close));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<ConfirmDialogMessage> {
         ConfirmDialog::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConfirmDialogState, ConfirmDialogOutput};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = ConfirmDialogState::new("Info", "Done.");
+    /// state.set_visible(true);
+    /// let event = Event::key(KeyCode::Esc);
+    /// let output = state.dispatch_event(&event);
+    /// assert_eq!(output, Some(ConfirmDialogOutput::Closed));
+    /// assert!(!state.is_visible());
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<ConfirmDialogOutput> {
         ConfirmDialog::dispatch_event(self, event)
     }
 
     /// Updates the dialog state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{
+    ///     ConfirmDialogState, ConfirmDialogMessage, ConfirmDialogOutput, ConfirmDialogResult,
+    /// };
+    ///
+    /// let mut state = ConfirmDialogState::yes_no("Delete?", "Sure?");
+    /// state.set_visible(true);
+    /// let output = state.update(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes));
+    /// assert_eq!(output, Some(ConfirmDialogOutput::Confirmed(ConfirmDialogResult::Yes)));
+    /// ```
     pub fn update(&mut self, msg: ConfirmDialogMessage) -> Option<ConfirmDialogOutput> {
         ConfirmDialog::update(self, msg)
     }

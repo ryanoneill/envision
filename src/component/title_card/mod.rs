@@ -145,30 +145,80 @@ impl TitleCardState {
     }
 
     /// Sets the suffix decoration (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let state = TitleCardState::new("App")
+    ///     .with_suffix(" v2");
+    /// assert_eq!(state.suffix(), Some(" v2"));
+    /// ```
     pub fn with_suffix(mut self, suffix: impl Into<String>) -> Self {
         self.suffix = Some(suffix.into());
         self
     }
 
     /// Sets the title style (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let style = Style::default().fg(Color::Red);
+    /// let state = TitleCardState::new("App").with_title_style(style);
+    /// assert_eq!(state.title_style(), style);
+    /// ```
     pub fn with_title_style(mut self, style: Style) -> Self {
         self.title_style = style;
         self
     }
 
     /// Sets the subtitle style (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let style = Style::default().fg(Color::Gray);
+    /// let state = TitleCardState::new("App").with_subtitle_style(style);
+    /// assert_eq!(state.subtitle_style(), style);
+    /// ```
     pub fn with_subtitle_style(mut self, style: Style) -> Self {
         self.subtitle_style = style;
         self
     }
 
     /// Sets whether to show a border (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let state = TitleCardState::new("App").with_bordered(false);
+    /// assert!(!state.is_bordered());
+    /// ```
     pub fn with_bordered(mut self, bordered: bool) -> Self {
         self.bordered = bordered;
         self
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let state = TitleCardState::new("App").with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -177,6 +227,15 @@ impl TitleCardState {
     // ---- Getters ----
 
     /// Returns the title text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let state = TitleCardState::new("My App");
+    /// assert_eq!(state.title(), "My App");
+    /// ```
     pub fn title(&self) -> &str {
         &self.title
     }
@@ -192,6 +251,15 @@ impl TitleCardState {
     }
 
     /// Returns the suffix decoration.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let state = TitleCardState::new("App");
+    /// assert_eq!(state.suffix(), None);
+    /// ```
     pub fn suffix(&self) -> Option<&str> {
         self.suffix.as_deref()
     }
@@ -212,6 +280,15 @@ impl TitleCardState {
     }
 
     /// Returns whether the component is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let state = TitleCardState::new("App");
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
@@ -219,21 +296,61 @@ impl TitleCardState {
     // ---- Setters ----
 
     /// Sets the title text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let mut state = TitleCardState::new("Old");
+    /// state.set_title("New");
+    /// assert_eq!(state.title(), "New");
+    /// ```
     pub fn set_title(&mut self, title: impl Into<String>) {
         self.title = title.into();
     }
 
     /// Sets the subtitle text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let mut state = TitleCardState::new("App");
+    /// state.set_subtitle(Some("Version 2.0".to_string()));
+    /// assert_eq!(state.subtitle(), Some("Version 2.0"));
+    /// ```
     pub fn set_subtitle(&mut self, subtitle: Option<String>) {
         self.subtitle = subtitle;
     }
 
     /// Sets the prefix decoration.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let mut state = TitleCardState::new("App");
+    /// state.set_prefix(Some(">> ".to_string()));
+    /// assert_eq!(state.prefix(), Some(">> "));
+    /// ```
     pub fn set_prefix(&mut self, prefix: Option<String>) {
         self.prefix = prefix;
     }
 
     /// Sets the suffix decoration.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let mut state = TitleCardState::new("App");
+    /// state.set_suffix(Some(" <<".to_string()));
+    /// assert_eq!(state.suffix(), Some(" <<"));
+    /// ```
     pub fn set_suffix(&mut self, suffix: Option<String>) {
         self.suffix = suffix;
     }
@@ -249,11 +366,31 @@ impl TitleCardState {
     }
 
     /// Sets whether to show a border.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let mut state = TitleCardState::new("App");
+    /// state.set_bordered(false);
+    /// assert!(!state.is_bordered());
+    /// ```
     pub fn set_bordered(&mut self, bordered: bool) {
         self.bordered = bordered;
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let mut state = TitleCardState::new("App");
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }

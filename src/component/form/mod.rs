@@ -36,6 +36,10 @@
 //! assert_eq!(state.value("agree"), Some(FormValue::Bool(true)));
 //! ```
 
+pub mod field;
+
+pub use field::{FormField, FormFieldKind, FormValue};
+
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
@@ -45,124 +49,6 @@ use super::{
 };
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
-
-/// Describes a field to include in a form.
-///
-/// Each field has an ID for retrieval, a label for display, and a kind
-/// that determines the widget type and behavior.
-#[derive(Clone, Debug, PartialEq)]
-pub struct FormField {
-    /// Unique identifier for this field.
-    id: String,
-    /// Display label shown above or beside the field.
-    label: String,
-    /// The type and configuration of this field.
-    kind: FormFieldKind,
-}
-
-/// The type of a form field.
-#[derive(Clone, Debug, PartialEq)]
-pub enum FormFieldKind {
-    /// A text input field.
-    Text,
-    /// A text input with a placeholder.
-    TextWithPlaceholder(String),
-    /// A checkbox (boolean toggle).
-    Checkbox,
-    /// A select dropdown with options.
-    Select(Vec<String>),
-}
-
-/// A collected value from a form field.
-#[derive(Clone, Debug, PartialEq)]
-pub enum FormValue {
-    /// Text from a text input field.
-    Text(String),
-    /// Boolean from a checkbox.
-    Bool(bool),
-    /// Selected option from a select field (value and index).
-    Selected(Option<String>),
-}
-
-impl FormField {
-    /// Creates a text input field.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::FormField;
-    ///
-    /// let field = FormField::text("email", "Email Address");
-    /// assert_eq!(field.id(), "email");
-    /// assert_eq!(field.label(), "Email Address");
-    /// ```
-    pub fn text(id: impl Into<String>, label: impl Into<String>) -> Self {
-        Self {
-            id: id.into(),
-            label: label.into(),
-            kind: FormFieldKind::Text,
-        }
-    }
-
-    /// Creates a text input field with placeholder text.
-    pub fn text_with_placeholder(
-        id: impl Into<String>,
-        label: impl Into<String>,
-        placeholder: impl Into<String>,
-    ) -> Self {
-        Self {
-            id: id.into(),
-            label: label.into(),
-            kind: FormFieldKind::TextWithPlaceholder(placeholder.into()),
-        }
-    }
-
-    /// Creates a checkbox field.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::FormField;
-    ///
-    /// let field = FormField::checkbox("agree", "I agree");
-    /// assert_eq!(field.id(), "agree");
-    /// ```
-    pub fn checkbox(id: impl Into<String>, label: impl Into<String>) -> Self {
-        Self {
-            id: id.into(),
-            label: label.into(),
-            kind: FormFieldKind::Checkbox,
-        }
-    }
-
-    /// Creates a select dropdown field.
-    pub fn select<S: Into<String>>(
-        id: impl Into<String>,
-        label: impl Into<String>,
-        options: Vec<S>,
-    ) -> Self {
-        Self {
-            id: id.into(),
-            label: label.into(),
-            kind: FormFieldKind::Select(options.into_iter().map(Into::into).collect()),
-        }
-    }
-
-    /// Returns the field ID.
-    pub fn id(&self) -> &str {
-        &self.id
-    }
-
-    /// Returns the field label.
-    pub fn label(&self) -> &str {
-        &self.label
-    }
-
-    /// Returns the field kind.
-    pub fn kind(&self) -> &FormFieldKind {
-        &self.kind
-    }
-}
 
 /// Internal representation of a field's widget state.
 #[derive(Clone, Debug, PartialEq)]
@@ -279,37 +165,110 @@ impl FormState {
     }
 
     /// Returns the number of fields.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![
+    ///     FormField::text("a", "A"),
+    ///     FormField::text("b", "B"),
+    /// ]);
+    /// assert_eq!(state.field_count(), 2);
+    /// ```
     pub fn field_count(&self) -> usize {
         self.fields.len()
     }
 
     /// Returns the ID of the currently focused field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![
+    ///     FormField::text("name", "Name"),
+    ///     FormField::checkbox("agree", "I agree"),
+    /// ]);
+    /// assert_eq!(state.focused_field_id(), Some("name"));
+    /// ```
     pub fn focused_field_id(&self) -> Option<&str> {
         self.fields.get(self.focused_index).map(|f| f.id.as_str())
     }
 
     /// Returns the index of the currently focused field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![
+    ///     FormField::text("name", "Name"),
+    /// ]);
+    /// assert_eq!(state.focused_field_index(), 0);
+    /// ```
     pub fn focused_field_index(&self) -> usize {
         self.focused_index
     }
 
     /// Returns true if the form is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![FormField::text("name", "Name")]);
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let mut state = FormState::new(vec![FormField::text("name", "Name")]);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
         self.sync_field_focus();
     }
 
     /// Returns true if the form is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![FormField::text("name", "Name")]);
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let mut state = FormState::new(vec![FormField::text("name", "Name")]);
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
         for state in &mut self.states {
@@ -322,6 +281,16 @@ impl FormState {
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![FormField::text("name", "Name")])
+    ///     .with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.set_disabled(disabled);
         self
@@ -351,6 +320,21 @@ impl FormState {
     }
 
     /// Returns all field values as ID-value pairs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![
+    ///     FormField::text("name", "Name"),
+    ///     FormField::checkbox("agree", "I agree"),
+    /// ]);
+    /// let values = state.values();
+    /// assert_eq!(values.len(), 2);
+    /// assert_eq!(values[0].0, "name");
+    /// assert_eq!(values[1].0, "agree");
+    /// ```
     pub fn values(&self) -> Vec<(String, FormValue)> {
         self.fields
             .iter()
@@ -360,41 +344,139 @@ impl FormState {
     }
 
     /// Returns the field descriptors.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![
+    ///     FormField::text("name", "Name"),
+    /// ]);
+    /// assert_eq!(state.fields().len(), 1);
+    /// assert_eq!(state.fields()[0].id(), "name");
+    /// ```
     pub fn fields(&self) -> &[FormField] {
         &self.fields
     }
 
     /// Returns the label for a field at the given index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![
+    ///     FormField::text("name", "Full Name"),
+    /// ]);
+    /// assert_eq!(state.field_label(0), Some("Full Name"));
+    /// assert_eq!(state.field_label(99), None);
+    /// ```
     pub fn field_label(&self, index: usize) -> Option<&str> {
         self.fields.get(index).map(|f| f.label.as_str())
     }
 
     /// Returns true if the field at the given index is a text field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![
+    ///     FormField::text("name", "Name"),
+    ///     FormField::checkbox("agree", "Agree"),
+    /// ]);
+    /// assert!(state.is_text_field(0));
+    /// assert!(!state.is_text_field(1));
+    /// ```
     pub fn is_text_field(&self, index: usize) -> bool {
         matches!(self.states.get(index), Some(FieldState::Text(_)))
     }
 
     /// Returns true if the field at the given index is a checkbox.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![
+    ///     FormField::text("name", "Name"),
+    ///     FormField::checkbox("agree", "Agree"),
+    /// ]);
+    /// assert!(!state.is_checkbox_field(0));
+    /// assert!(state.is_checkbox_field(1));
+    /// ```
     pub fn is_checkbox_field(&self, index: usize) -> bool {
         matches!(self.states.get(index), Some(FieldState::Checkbox(_)))
     }
 
     /// Returns true if the field at the given index is a select.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField};
+    ///
+    /// let state = FormState::new(vec![
+    ///     FormField::select("color", "Color", vec!["Red", "Blue"]),
+    /// ]);
+    /// assert!(state.is_select_field(0));
+    /// ```
     pub fn is_select_field(&self, index: usize) -> bool {
         matches!(self.states.get(index), Some(FieldState::Select(_)))
     }
 
     /// Maps an input event to a form message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField, FormMessage};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = FormState::new(vec![FormField::text("name", "Name")]);
+    /// state.set_focused(true);
+    /// let event = Event::key(KeyCode::Tab);
+    /// assert_eq!(state.handle_event(&event), Some(FormMessage::FocusNext));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<FormMessage> {
         Form::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField, FormOutput, FormValue};
+    /// use envision::input::Event;
+    ///
+    /// let mut state = FormState::new(vec![FormField::text("name", "Name")]);
+    /// state.set_focused(true);
+    /// let event = Event::char('A');
+    /// let output = state.dispatch_event(&event);
+    /// assert!(matches!(output, Some(FormOutput::FieldChanged(_, FormValue::Text(_)))));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<FormOutput> {
         Form::dispatch_event(self, event)
     }
 
     /// Updates the form state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormState, FormField, FormMessage, FormOutput};
+    ///
+    /// let mut state = FormState::new(vec![
+    ///     FormField::text("name", "Name"),
+    /// ]);
+    /// let output = state.update(FormMessage::Submit);
+    /// assert!(matches!(output, Some(FormOutput::Submitted(_))));
+    /// ```
     pub fn update(&mut self, msg: FormMessage) -> Option<FormOutput> {
         Form::update(self, msg)
     }
