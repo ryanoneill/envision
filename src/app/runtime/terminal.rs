@@ -61,18 +61,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// Returns an error if enabling raw mode, entering alternate screen,
     /// enabling mouse capture, or creating the terminal fails.
     pub fn terminal_with_config(config: RuntimeConfig) -> io::Result<Self> {
-        // Set up terminal
-        enable_raw_mode()?;
-        let mut stdout = io::stdout();
-        stdout.execute(EnterAlternateScreen)?;
-        stdout.execute(EnableMouseCapture)?;
-
-        // Run the on_setup hook if configured
-        if let Some(ref hook) = config.on_setup {
-            hook()?;
-        }
-
-        let backend = CrosstermBackend::new(stdout);
+        let backend = Self::setup_terminal(&config)?;
         Self::with_backend_and_config(backend, config)
     }
 
@@ -112,12 +101,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
         init_cmd: Command<A::Message>,
         config: RuntimeConfig,
     ) -> io::Result<Self> {
-        enable_raw_mode()?;
-        let mut stdout = io::stdout();
-        stdout.execute(EnterAlternateScreen)?;
-        stdout.execute(EnableMouseCapture)?;
-
-        let backend = CrosstermBackend::new(stdout);
+        let backend = Self::setup_terminal(&config)?;
         Self::with_backend_state_and_config(backend, state, init_cmd, config)
     }
 
@@ -276,6 +260,28 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     pub fn run_terminal_blocking(self) -> io::Result<A::State> {
         let rt = tokio::runtime::Runtime::new().map_err(io::Error::other)?;
         rt.block_on(self.run_terminal())
+    }
+
+    /// Sets up the terminal for TUI operation and returns the backend.
+    ///
+    /// This shared helper ensures both `terminal_with_config` and
+    /// `terminal_with_state_and_config` perform identical setup:
+    /// - Enables raw mode
+    /// - Enters alternate screen
+    /// - Enables mouse capture
+    /// - Runs the `on_setup` hook if configured
+    fn setup_terminal(config: &RuntimeConfig) -> io::Result<CrosstermBackend<Stdout>> {
+        enable_raw_mode()?;
+        let mut stdout = io::stdout();
+        stdout.execute(EnterAlternateScreen)?;
+        stdout.execute(EnableMouseCapture)?;
+
+        // Run the on_setup hook if configured
+        if let Some(ref hook) = config.on_setup {
+            hook()?;
+        }
+
+        Ok(CrosstermBackend::new(stdout))
     }
 
     /// Converts a crossterm event to our Event type.
