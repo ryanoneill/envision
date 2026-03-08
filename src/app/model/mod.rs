@@ -73,8 +73,6 @@ use crate::input::Event;
 ///   [`Runtime::virtual_terminal_with_state()`](crate::app::Runtime::virtual_terminal_with_state),
 ///   etc.) accept a pre-built state and **skip** `init()` entirely.
 ///
-/// See the [module-level documentation](self) for details.
-///
 /// # Example
 ///
 /// ```rust
