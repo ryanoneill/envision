@@ -38,6 +38,10 @@ serialization = ["dep:serde", "dep:serde_json", "compact_str/serde", "ratatui/se
 tracing = ["dep:tracing"]
 clipboard = ["dep:arboard"]
 
+# Expose AppHarness async test utilities (advance_time, wait_for, etc.)
+# for integration tests and downstream crates. Not included in default or full.
+test-utils = ["tokio/test-util"]
+
 [dependencies]
 ratatui = "0.29"
 crossterm = { version = "0.28", features = ["event-stream"] }
