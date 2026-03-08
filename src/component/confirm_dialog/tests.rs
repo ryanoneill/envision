@@ -40,8 +40,7 @@ fn test_yes_no_cancel() {
 
 #[test]
 fn test_destructive() {
-    let state =
-        ConfirmDialogState::destructive("Delete?", "Sure?", ButtonConfig::YesNo, 0);
+    let state = ConfirmDialogState::destructive("Delete?", "Sure?", ButtonConfig::YesNo, 0);
     assert_eq!(state.destructive_button(), Some(0));
 }
 
@@ -158,9 +157,7 @@ fn test_press_cancel_in_ok_cancel() {
     let output = ConfirmDialog::update(&mut state, ConfirmDialogMessage::Press);
     assert_eq!(
         output,
-        Some(ConfirmDialogOutput::Confirmed(
-            ConfirmDialogResult::Cancel
-        ))
+        Some(ConfirmDialogOutput::Confirmed(ConfirmDialogResult::Cancel))
     );
 }
 
@@ -174,9 +171,7 @@ fn test_y_shortcut_yes_no() {
     let msg = ConfirmDialog::handle_event(&state, &Event::char('y'));
     assert_eq!(
         msg,
-        Some(ConfirmDialogMessage::SelectResult(
-            ConfirmDialogResult::Yes
-        ))
+        Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes))
     );
 }
 
@@ -200,9 +195,7 @@ fn test_y_shortcut_uppercase() {
     let msg = ConfirmDialog::handle_event(&state, &Event::char('Y'));
     assert_eq!(
         msg,
-        Some(ConfirmDialogMessage::SelectResult(
-            ConfirmDialogResult::Yes
-        ))
+        Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes))
     );
 }
 

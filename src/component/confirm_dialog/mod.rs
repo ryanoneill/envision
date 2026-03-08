@@ -459,9 +459,7 @@ impl Component for ConfirmDialog {
                 KeyCode::Enter => Some(ConfirmDialogMessage::Press),
                 KeyCode::Esc => Some(ConfirmDialogMessage::Close),
                 KeyCode::Char('y') | KeyCode::Char('Y') if state.button_config.has_yes_no() => {
-                    Some(ConfirmDialogMessage::SelectResult(
-                        ConfirmDialogResult::Yes,
-                    ))
+                    Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes))
                 }
                 KeyCode::Char('n') | KeyCode::Char('N') if state.button_config.has_yes_no() => {
                     Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::No))
