@@ -55,9 +55,9 @@ mod config;
 mod terminal;
 pub use config::RuntimeConfig;
 
-use std::io;
+use std::io::{self, Stdout};
 
-use ratatui::backend::Backend;
+use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::Terminal;
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
@@ -103,6 +103,48 @@ pub struct Runtime<A: App, B: Backend> {
     /// Active subscriptions as streams
     subscriptions: Vec<std::pin::Pin<Box<dyn tokio_stream::Stream<Item = A::Message> + Send>>>,
 }
+
+/// Alias for a runtime using the crossterm terminal backend (production).
+///
+/// This is the type returned by [`Runtime::new_terminal()`] and
+/// [`Runtime::terminal_with_config()`]. Use this alias when you need to
+/// store or pass a terminal-mode runtime without spelling out the backend type.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// // requires real terminal
+/// let runtime: TerminalRuntime<MyApp> = Runtime::new_terminal()?;
+/// ```
+pub type TerminalRuntime<A> = Runtime<A, CrosstermBackend<Stdout>>;
+
+/// Alias for a runtime using the virtual capture backend (testing/automation).
+///
+/// This is the type returned by [`Runtime::virtual_terminal()`] and
+/// [`Runtime::virtual_terminal_with_config()`]. Use this alias when you need
+/// to store or pass a virtual-terminal runtime without spelling out the backend type.
+///
+/// # Example
+///
+/// ```rust
+/// # use envision::prelude::*;
+/// # use envision::VirtualRuntime;
+/// # struct MyApp;
+/// # #[derive(Default, Clone)]
+/// # struct MyState;
+/// # #[derive(Clone)]
+/// # enum MyMsg {}
+/// # impl App for MyApp {
+/// #     type State = MyState;
+/// #     type Message = MyMsg;
+/// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+/// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+/// #     fn view(state: &MyState, frame: &mut Frame) {}
+/// # }
+/// let vt: VirtualRuntime<MyApp> = Runtime::virtual_terminal(80, 24)?;
+/// # Ok::<(), std::io::Error>(())
+/// ```
+pub type VirtualRuntime<A> = Runtime<A, CaptureBackend>;
 
 // =============================================================================
 // Virtual Terminal Mode - for programmatic control (agents, testing)
