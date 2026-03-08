@@ -42,7 +42,9 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Row, Table as RatatuiTable};
 
-use super::{Column, Component, Disableable, Focusable, InputFieldMessage, InputFieldState, TableRow};
+use super::{
+    Column, Component, Disableable, Focusable, InputFieldMessage, InputFieldState, TableRow,
+};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
