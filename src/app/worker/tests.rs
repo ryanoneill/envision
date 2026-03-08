@@ -156,7 +156,7 @@ async fn test_spawn_with_progress() {
             progress_sender.send_percentage(0.5).await.ok();
             Ok::<_, String>("done".to_string())
         },
-        |p| Msg::Progress(p),
+        Msg::Progress,
         |result: Result<String, String>| match result {
             Ok(data) => Msg::Done(data),
             Err(e) => Msg::Failed(e),
