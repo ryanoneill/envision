@@ -1,9 +1,13 @@
 //! A searchable log viewer with severity filtering.
 //!
-//! `LogViewer` composes a [`StatusLog`](super::StatusLog) with an
+//! [`LogViewer`] composes a [`StatusLog`](super::StatusLog) with an
 //! [`InputField`](super::InputField) search bar and severity-level toggle
 //! filters. Press `/` to focus the search bar, `Escape` to clear and return
 //! to the log, and `1`-`4` to toggle Info/Success/Warning/Error filters.
+//! State is stored in [`LogViewerState`], updated via [`LogViewerMessage`],
+//! and produces [`LogViewerOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
 //!
 //! # Example
 //!

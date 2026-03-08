@@ -1,7 +1,14 @@
 //! A rich text display component with semantic block elements and inline styling.
 //!
-//! `StyledText` renders structured content composed of headings, paragraphs,
-//! lists, code blocks, and horizontal rules with scrolling support.
+//! [`StyledText`] renders structured content composed of headings, paragraphs,
+//! lists, code blocks, and horizontal rules with scrolling support. State is
+//! stored in [`StyledTextState`], updated via [`StyledTextMessage`], and
+//! produces [`StyledTextOutput`]. Content is built with [`StyledContent`],
+//! [`StyledBlock`], and [`StyledInline`].
+//!
+//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//!
+//! See also [`ScrollableText`](super::ScrollableText) for plain text display.
 //!
 //! # Example
 //!

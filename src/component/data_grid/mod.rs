@@ -1,8 +1,11 @@
 //! A data grid with inline cell editing.
 //!
-//! `DataGrid` wraps [`Table`](super::Table) adding column navigation and
+//! [`DataGrid<T>`] wraps [`Table`](super::Table) adding column navigation and
 //! inline cell editing. Press Enter to edit a cell, Escape to cancel, and
-//! Enter again to confirm the edit.
+//! Enter again to confirm the edit. State is stored in [`DataGridState<T>`],
+//! updated via [`DataGridMessage`], and produces [`DataGridOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
 //!
 //! # Example
 //!

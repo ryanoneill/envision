@@ -1,7 +1,8 @@
 //! A stylish display-only component for application titles.
 //!
-//! `TitleCard` provides a centered title display with optional emoji
-//! prefix/suffix, subtitle, configurable styles, and borders.
+//! [`TitleCard`] provides a centered title display with optional emoji
+//! prefix/suffix, subtitle, configurable styles, and borders. State is
+//! stored in [`TitleCardState`] and updated via [`TitleCardMessage`].
 //!
 //! # Example
 //!

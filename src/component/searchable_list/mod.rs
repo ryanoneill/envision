@@ -1,9 +1,13 @@
 //! A searchable list component combining a text filter with a selectable list.
 //!
-//! `SearchableList` composes an [`InputField`](super::InputField) and a
+//! [`SearchableList<T>`] composes an [`InputField`](super::InputField) and a
 //! [`SelectableList`](super::SelectableList) into a single component. Typing
 //! in the filter field narrows the visible items, and keyboard navigation
-//! lets the user select from the filtered results.
+//! lets the user select from the filtered results. State is stored in
+//! [`SearchableListState<T>`], updated via [`SearchableListMessage`], and
+//! produces [`SearchableListOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

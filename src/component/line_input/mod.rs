@@ -12,6 +12,14 @@
 //! - Undo/redo with edit grouping
 //! - Selection, copy, cut, paste
 //! - Word-level navigation and deletion
+//!
+//! State is stored in [`LineInputState`], updated via [`LineInputMessage`],
+//! and produces [`LineInputOutput`].
+//!
+//! Implements [`Focusable`](super::Focusable) and [`Disableable`](super::Disableable).
+//!
+//! See also [`InputField`](super::InputField) for a simpler single-line input,
+//! and [`TextArea`](super::TextArea) for multi-line editing.
 
 mod chunking;
 mod editing;

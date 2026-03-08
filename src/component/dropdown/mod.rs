@@ -1,8 +1,13 @@
 //! A searchable dropdown selection component.
 //!
-//! `Dropdown` provides a filterable dropdown menu for selecting a single option
+//! [`Dropdown`] provides a filterable dropdown menu for selecting a single option
 //! from a list. Users can type to filter options, then navigate and select
-//! using keyboard controls.
+//! using keyboard controls. State is stored in [`DropdownState`], updated via
+//! [`DropdownMessage`], and produces [`DropdownOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`Select`](super::Select) for a simpler dropdown without filtering.
 //!
 //! # Example
 //!

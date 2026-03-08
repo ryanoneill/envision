@@ -1,7 +1,14 @@
 //! A generic selectable list component with keyboard navigation.
 //!
-//! `SelectableList` provides a scrollable list of items with selection
-//! tracking and keyboard navigation (vim-style and arrow keys).
+//! [`SelectableList<T>`] provides a scrollable list of items with selection
+//! tracking and keyboard navigation (vim-style and arrow keys). State is
+//! stored in [`SelectableListState<T>`], updated via [`SelectableListMessage`],
+//! and produces [`SelectableListOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`SearchableList`](super::SearchableList) for a filterable variant,
+//! and [`LoadingList`](super::LoadingList) for lists with loading states.
 //!
 //! # Example
 //!

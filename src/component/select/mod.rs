@@ -1,8 +1,13 @@
 //! A dropdown selection component.
 //!
-//! `Select` provides a compact dropdown menu for selecting a single option
+//! [`Select`] provides a compact dropdown menu for selecting a single option
 //! from a list. It displays the selected value when closed and shows all
-//! options when opened.
+//! options when opened. State is stored in [`SelectState`], updated via
+//! [`SelectMessage`], and produces [`SelectOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`Dropdown`](super::Dropdown) for a variant with search filtering.
 //!
 //! # Example
 //!

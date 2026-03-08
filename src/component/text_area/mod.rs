@@ -1,7 +1,14 @@
 //! A multi-line text editing component with cursor navigation.
 //!
-//! `TextArea` provides multi-line text input with cursor movement,
-//! text insertion, deletion, and line operations.
+//! [`TextArea`] provides multi-line text input with cursor movement,
+//! text insertion, deletion, and line operations. State is stored in
+//! [`TextAreaState`], updated via [`TextAreaMessage`], and produces
+//! [`TextAreaOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`InputField`](super::InputField) for single-line input,
+//! and [`LineInput`](super::LineInput) for a wrapping single-line input.
 //!
 //! # Example
 //!

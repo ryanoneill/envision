@@ -1,8 +1,12 @@
 //! An accordion component with collapsible panels.
 //!
-//! `Accordion` provides a vertically stacked list of panels that can be
+//! [`Accordion`] provides a vertically stacked list of panels that can be
 //! expanded or collapsed. Multiple panels can be open simultaneously,
-//! and keyboard navigation is supported.
+//! and keyboard navigation is supported. State is stored in
+//! [`AccordionState`], updated via [`AccordionMessage`], and produces
+//! [`AccordionOutput`]. Panels are defined with [`AccordionPanel`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

@@ -1,8 +1,11 @@
 //! A component for displaying multiple concurrent progress indicators.
 //!
-//! `MultiProgress` provides a scrollable list of progress bars for tracking
+//! [`MultiProgress`] provides a scrollable list of progress bars for tracking
 //! multiple concurrent operations, commonly used in file processing, downloads,
-//! or batch operations.
+//! or batch operations. State is stored in [`MultiProgressState`] and updated
+//! via [`MultiProgressMessage`].
+//!
+//! See also [`ProgressBar`](super::ProgressBar) for a single progress indicator.
 //!
 //! # Example
 //!

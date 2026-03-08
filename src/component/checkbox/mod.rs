@@ -1,7 +1,12 @@
 //! A toggleable checkbox component with keyboard activation.
 //!
-//! `Checkbox` provides a boolean input that can be toggled via keyboard
-//! (Enter or Space) when focused.
+//! [`Checkbox`] provides a boolean input that can be toggled via keyboard
+//! (Enter or Space) when focused. State is stored in [`CheckboxState`],
+//! updated via [`CheckboxMessage`], and produces [`CheckboxOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`Button`](super::Button) for a press-only action.
 //!
 //! # Example
 //!

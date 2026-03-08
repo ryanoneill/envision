@@ -1,8 +1,12 @@
 //! A breadcrumb navigation component.
 //!
-//! `Breadcrumb` displays a hierarchical navigation path with clickable segments.
+//! [`Breadcrumb`] displays a hierarchical navigation path with clickable segments.
 //! Users can navigate through the path using keyboard navigation, and selecting
-//! a segment emits an output for navigation handling.
+//! a segment emits an output for navigation handling. State is stored in
+//! [`BreadcrumbState`], updated via [`BreadcrumbMessage`], and produces
+//! [`BreadcrumbOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

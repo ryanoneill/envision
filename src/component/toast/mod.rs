@@ -1,7 +1,8 @@
 //! A toast notification component for temporary messages.
 //!
-//! `Toast` provides non-modal notifications that appear as a vertical stack,
-//! with severity levels and auto-dismiss support.
+//! [`Toast`] provides non-modal notifications that appear as a vertical stack,
+//! with severity levels and auto-dismiss support. State is stored in
+//! [`ToastState`] and updated via [`ToastMessage`].
 //!
 //! # Example
 //!

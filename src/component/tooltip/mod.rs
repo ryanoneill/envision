@@ -1,8 +1,12 @@
 //! A tooltip component for displaying contextual information.
 //!
-//! `Tooltip` provides a positioned overlay that displays helpful information
+//! [`Tooltip`] provides a positioned overlay that displays helpful information
 //! relative to a target area. Supports configurable positioning with automatic
-//! fallback, optional auto-hide, and basic styling.
+//! fallback, optional auto-hide, and basic styling. State is stored in
+//! [`TooltipState`], updated via [`TooltipMessage`], and produces
+//! [`TooltipOutput`].
+//!
+//! Implements [`Toggleable`].
 //!
 //! # Example
 //!
