@@ -130,6 +130,9 @@ pub enum WidgetType {
     /// A radio group
     RadioGroup,
 
+    /// A file browser
+    FileBrowser,
+
     /// A custom widget type
     Custom(String),
 }
@@ -156,6 +159,7 @@ impl WidgetType {
                 | WidgetType::Accordion
                 | WidgetType::RadioGroup
                 | WidgetType::SearchableList
+                | WidgetType::FileBrowser
         )
     }
 
@@ -385,6 +389,11 @@ impl Annotation {
     /// Creates a radio group annotation.
     pub fn radio_group(id: impl Into<String>) -> Self {
         Self::new(WidgetType::RadioGroup).with_id(id)
+    }
+
+    /// Creates a file browser annotation.
+    pub fn file_browser(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::FileBrowser).with_id(id)
     }
 
     /// Creates a custom widget annotation.

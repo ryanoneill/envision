@@ -1,0 +1,16 @@
+---
+source: src/component/file_browser/tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────────────────────────┐
+│/                                                         │
+│Filter: m                                                 │
+│  📄  Cargo.toml  1.0K                                     │
+│  📄  main.rs  512B                                        │
+│  📄  README.md  2.0K                                      │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
