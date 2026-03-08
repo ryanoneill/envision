@@ -226,6 +226,11 @@ impl<T: Clone> SelectableListState<T> {
             .and_then(|i| self.filtered_indices.get(i).copied())
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Returns a reference to the currently selected item.
     ///
     /// # Examples

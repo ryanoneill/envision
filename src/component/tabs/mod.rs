@@ -158,6 +158,11 @@ impl<T: Clone> TabsState<T> {
         self.selected
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Returns the currently selected item.
     ///
     /// Returns `None` if there are no tabs or no selection.

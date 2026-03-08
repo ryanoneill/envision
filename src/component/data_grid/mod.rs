@@ -206,6 +206,11 @@ impl<T: TableRow> DataGridState<T> {
         self.selected_row
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Returns a reference to the currently selected row.
     pub fn selected_row(&self) -> Option<&T> {
         self.selected_row.and_then(|i| self.rows.get(i))

@@ -195,6 +195,11 @@ impl SelectState {
         self.selected_index
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Returns the selected option value.
     ///
     /// # Examples

@@ -261,6 +261,11 @@ impl<T: Clone> SearchableListState<T> {
         self.selected
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Returns a reference to the currently selected item.
     pub fn selected_item(&self) -> Option<&T> {
         self.selected

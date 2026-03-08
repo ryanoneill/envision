@@ -385,6 +385,11 @@ impl MetricsDashboardState {
         self.selected
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Sets the selected widget index.
     ///
     /// The index is clamped to the valid range. Has no effect on empty dashboards.

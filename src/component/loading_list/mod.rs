@@ -396,6 +396,11 @@ impl<T: Clone> LoadingListState<T> {
         self.selected
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Returns the selected item.
     ///
     /// Returns `None` if no item is selected.
