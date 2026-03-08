@@ -129,8 +129,8 @@ pub use app::{
     ChannelSubscription, Command, DebounceSubscription, FilterSubscription,
     IntervalImmediateBuilder, IntervalImmediateSubscription, MappedSubscription, Runtime,
     RuntimeConfig, StreamSubscription, Subscription, SubscriptionExt, TakeSubscription,
-    TerminalEventSubscription, ThrottleSubscription, TickSubscription, TickSubscriptionBuilder,
-    TimerSubscription,
+    TerminalEventSubscription, TerminalRuntime, ThrottleSubscription, TickSubscription,
+    TickSubscriptionBuilder, TimerSubscription, VirtualRuntime,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 // Core component traits and utilities (always available)
@@ -206,7 +206,7 @@ pub use theme::Theme;
 /// ```
 pub mod prelude {
     // Core framework
-    pub use crate::app::{App, Command, Runtime, RuntimeConfig};
+    pub use crate::app::{App, Command, Runtime, RuntimeConfig, TerminalRuntime, VirtualRuntime};
 
     // Subscriptions
     pub use crate::app::{
