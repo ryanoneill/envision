@@ -46,7 +46,8 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// // requires real terminal
     /// #[tokio::main]
     /// async fn main() -> std::io::Result<()> {
-    ///     Runtime::<MyApp>::new_terminal()?.run_terminal().await
+    ///     let _final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
+    ///     Ok(())
     /// }
     /// ```
     pub fn new_terminal() -> io::Result<Self> {
@@ -135,10 +136,12 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// // requires real terminal
     /// #[tokio::main]
     /// async fn main() -> std::io::Result<()> {
-    ///     Runtime::<MyApp>::new_terminal()?.run_terminal().await
+    ///     let final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
+    ///     println!("Final count: {}", final_state.count);
+    ///     Ok(())
     /// }
     /// ```
-    pub async fn run_terminal(mut self) -> io::Result<()> {
+    pub async fn run_terminal(mut self) -> io::Result<A::State> {
         use futures_util::StreamExt;
 
         #[cfg(feature = "tracing")]
@@ -239,8 +242,9 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
         // Call on_exit
         A::on_exit(&self.core.state);
 
-        // Return the first error if any
-        result.and(cleanup_result)
+        // Return the first error if any, otherwise return the final state
+        result.and(cleanup_result)?;
+        Ok(self.core.state)
     }
 
     /// Runs the interactive terminal event loop, blocking the current thread.
@@ -259,10 +263,12 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// ```rust,ignore
     /// // requires real terminal
     /// fn main() -> std::io::Result<()> {
-    ///     Runtime::<MyApp>::new_terminal()?.run_terminal_blocking()
+    ///     let final_state = Runtime::<MyApp>::new_terminal()?.run_terminal_blocking()?;
+    ///     println!("Final count: {}", final_state.count);
+    ///     Ok(())
     /// }
     /// ```
-    pub fn run_terminal_blocking(self) -> io::Result<()> {
+    pub fn run_terminal_blocking(self) -> io::Result<A::State> {
         let rt = tokio::runtime::Runtime::new().map_err(io::Error::other)?;
         rt.block_on(self.run_terminal())
     }
