@@ -142,6 +142,9 @@ pub enum WidgetType {
     /// A styled text display
     StyledText,
 
+    /// A pane layout manager
+    PaneLayout,
+
     /// A custom widget type
     Custom(String),
 }
@@ -420,6 +423,11 @@ impl Annotation {
     /// Creates a styled text annotation.
     pub fn styled_text(id: impl Into<String>) -> Self {
         Self::new(WidgetType::StyledText).with_id(id)
+    }
+
+    /// Creates a pane layout annotation.
+    pub fn pane_layout(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::PaneLayout).with_id(id)
     }
 
     /// Creates a custom widget annotation.
