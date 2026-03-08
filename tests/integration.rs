@@ -1,20 +1,23 @@
 #![cfg(feature = "full")]
 //! Integration tests exercising multi-component workflows through the public API.
 
+use envision::component::{
+    SearchableList, SearchableListMessage, SearchableListOutput, SearchableListState,
+};
 use envision::{
-    Accordion, AccordionPanel, AccordionState, App, AppHarness, Breadcrumb, BreadcrumbSegment,
-    BreadcrumbState, Button, ButtonOutput, ButtonState, CaptureBackend, Checkbox, CheckboxMessage,
-    CheckboxOutput, CheckboxState, Column, Command, Component, Dialog, DialogButton, DialogMessage,
-    DialogOutput, DialogState, Dropdown, DropdownState, Event, FocusManager, Focusable, InputField,
-    InputFieldMessage, InputFieldOutput, InputFieldState, KeyHint, KeyHints, KeyHintsState,
-    LineInput, LineInputState, LoadingList, LoadingListState, Menu, MenuItem, MenuState,
-    MultiProgress, MultiProgressState, ProgressBar, ProgressBarState, RadioGroup,
-    RadioGroupMessage, RadioGroupOutput, RadioGroupState, ScrollableText, ScrollableTextState,
-    Select, SelectState, SelectableList, SelectableListMessage, SelectableListOutput,
-    SelectableListState, Spinner, SpinnerState, StatusBar, StatusBarState, StatusLog,
-    StatusLogState, Table, TableRow, TableState, Tabs, TabsMessage, TabsOutput, TabsState,
-    TextArea, TextAreaState, Theme, TitleCard, TitleCardState, Toast, ToastState, Toggleable,
-    Tooltip, TooltipState, Tree, TreeNode, TreeState,
+    Accordion, AccordionPanel, AccordionState, App, AppHarness, Breadcrumb, BreadcrumbMessage,
+    BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Button, ButtonOutput, ButtonState,
+    CaptureBackend, Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState, Column, Command,
+    Component, Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Dropdown,
+    DropdownState, Event, FocusManager, Focusable, InputField, InputFieldMessage, InputFieldOutput,
+    InputFieldState, KeyHint, KeyHints, KeyHintsState, LineInput, LineInputState, LoadingList,
+    LoadingListState, Menu, MenuItem, MenuState, MultiProgress, MultiProgressState, ProgressBar,
+    ProgressBarState, RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState,
+    ScrollableText, ScrollableTextState, Select, SelectState, SelectableList,
+    SelectableListMessage, SelectableListOutput, SelectableListState, Spinner, SpinnerState,
+    StatusBar, StatusBarState, StatusLog, StatusLogState, Table, TableRow, TableState, Tabs,
+    TabsMessage, TabsOutput, TabsState, TextArea, TextAreaState, Theme, TitleCard, TitleCardState,
+    Toast, ToastState, Toggleable, Tooltip, TooltipState, Tree, TreeNode, TreeState,
 };
 use ratatui::prelude::*;
 use ratatui::Terminal;
@@ -685,4 +688,240 @@ fn test_app_harness_counter_workflow() {
 
     // Also verify old value is no longer displayed
     harness.assert_not_contains("Count: 5");
+}
+
+// ---------------------------------------------------------------------------
+// Test 5: Settings panel workflow with tabs, input, radio, checkbox
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_settings_panel_with_tabs_and_components() {
+    #[derive(Clone, PartialEq, Debug)]
+    enum Panel {
+        General,
+        Appearance,
+        Keybinds,
+    }
+
+    let mut focus =
+        FocusManager::with_initial_focus(vec![Panel::General, Panel::Appearance, Panel::Keybinds]);
+
+    // Components for each tab
+    let mut tabs = TabsState::new(vec![
+        "General".to_string(),
+        "Appearance".to_string(),
+        "Keybinds".to_string(),
+    ]);
+    let mut input = InputFieldState::new(); // General tab
+    let mut radio = RadioGroupState::new(vec![
+        // Appearance tab
+        "Light".to_string(),
+        "Dark".to_string(),
+        "System".to_string(),
+    ]);
+    let mut checkbox = CheckboxState::new("Vim Mode"); // Keybinds tab
+
+    // Start on General tab, type a name
+    assert_eq!(focus.focused(), Some(&Panel::General));
+    InputField::set_focused(&mut input, true);
+    for c in "MyApp".chars() {
+        InputField::update(&mut input, InputFieldMessage::Insert(c));
+    }
+    assert_eq!(input.value(), "MyApp");
+
+    // Switch to Appearance tab
+    Tabs::<String>::update(&mut tabs, TabsMessage::Right);
+    assert_eq!(tabs.selected_index(), Some(1));
+    focus.focus_next();
+    InputField::set_focused(&mut input, false);
+    RadioGroup::<String>::set_focused(&mut radio, true);
+
+    // Select "Dark" theme
+    RadioGroup::<String>::update(&mut radio, RadioGroupMessage::Down);
+    let output = RadioGroup::<String>::update(&mut radio, RadioGroupMessage::Confirm);
+    assert_eq!(
+        output,
+        Some(RadioGroupOutput::Confirmed("Dark".to_string()))
+    );
+    assert_eq!(radio.selected_index(), Some(1));
+
+    // Switch to Keybinds tab
+    Tabs::<String>::update(&mut tabs, TabsMessage::Right);
+    focus.focus_next();
+    RadioGroup::<String>::set_focused(&mut radio, false);
+    Checkbox::set_focused(&mut checkbox, true);
+
+    // Toggle vim mode
+    let output = Checkbox::update(&mut checkbox, CheckboxMessage::Toggle);
+    assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
+    assert!(checkbox.is_checked());
+
+    // Switch back to General tab — verify state preserved
+    Tabs::<String>::update(&mut tabs, TabsMessage::Left);
+    Tabs::<String>::update(&mut tabs, TabsMessage::Left);
+    assert_eq!(tabs.selected_index(), Some(0));
+    focus.focus_first();
+    Checkbox::set_focused(&mut checkbox, false);
+    InputField::set_focused(&mut input, true);
+
+    // All states preserved
+    assert_eq!(input.value(), "MyApp");
+    assert_eq!(radio.selected_index(), Some(1));
+    assert!(checkbox.is_checked());
+}
+
+// ---------------------------------------------------------------------------
+// Test 6: Master-detail with dialog confirmation
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_master_detail_with_dialog_confirmation() {
+    let mut list = SelectableListState::new(vec![
+        "Document A".to_string(),
+        "Document B".to_string(),
+        "Document C".to_string(),
+        "Document D".to_string(),
+        "Document E".to_string(),
+    ]);
+    SelectableList::<String>::set_focused(&mut list, true);
+
+    // Navigate to item 2
+    SelectableList::<String>::update(&mut list, SelectableListMessage::Down);
+    SelectableList::<String>::update(&mut list, SelectableListMessage::Down);
+    assert_eq!(list.selected_index(), Some(2));
+    assert_eq!(list.selected_item(), Some(&"Document C".to_string()));
+
+    // Open a confirmation dialog for deletion
+    let mut dialog = DialogState::confirm("Delete?", "Delete Document C permanently?");
+    Dialog::update(&mut dialog, DialogMessage::Open);
+    assert!(Dialog::is_visible(&dialog));
+    SelectableList::<String>::set_focused(&mut list, false);
+
+    // Navigate to Cancel and press — should close dialog without change
+    Dialog::update(&mut dialog, DialogMessage::FocusPrev);
+    let output = Dialog::update(&mut dialog, DialogMessage::Press);
+    assert_eq!(output, Some(DialogOutput::ButtonPressed("cancel".into())));
+    assert!(!Dialog::is_visible(&dialog));
+
+    // List still has 5 items, selection preserved
+    assert_eq!(list.items().len(), 5);
+    assert_eq!(list.selected_index(), Some(2));
+
+    // Re-open dialog, this time confirm
+    Dialog::update(&mut dialog, DialogMessage::Open);
+    assert_eq!(dialog.focused_button(), 1); // OK is primary
+    let output = Dialog::update(&mut dialog, DialogMessage::Press);
+    assert_eq!(output, Some(DialogOutput::ButtonPressed("ok".into())));
+
+    // Simulate deletion: rebuild list without item 2
+    let remaining: Vec<String> = list
+        .items()
+        .iter()
+        .enumerate()
+        .filter(|(i, _)| *i != 2)
+        .map(|(_, item)| item.clone())
+        .collect();
+    let mut list = SelectableListState::new(remaining);
+    assert_eq!(list.items().len(), 4);
+    // Selection should be at the new index 2 (was "Document D")
+    SelectableList::<String>::update(&mut list, SelectableListMessage::Down);
+    SelectableList::<String>::update(&mut list, SelectableListMessage::Down);
+    assert_eq!(list.selected_item(), Some(&"Document D".to_string()));
+}
+
+// ---------------------------------------------------------------------------
+// Test 7: Breadcrumb navigation coordinated with tabs
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_breadcrumb_tab_navigation_coordination() {
+    let mut tabs = TabsState::new(vec![
+        "Dashboard".to_string(),
+        "Settings".to_string(),
+        "Help".to_string(),
+    ]);
+
+    // Breadcrumb reflects current location
+    let mut breadcrumb = BreadcrumbState::new(vec![
+        BreadcrumbSegment::new("Home"),
+        BreadcrumbSegment::new("Dashboard"),
+    ]);
+
+    // Initially on Dashboard
+    assert_eq!(tabs.selected_index(), Some(0));
+    assert_eq!(breadcrumb.segments().len(), 2);
+
+    // Switch tab to Settings (Right emits SelectionChanged with new index)
+    let output = Tabs::<String>::update(&mut tabs, TabsMessage::Right);
+    assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
+    assert_eq!(tabs.selected_index(), Some(1));
+
+    // Update breadcrumb to reflect
+    breadcrumb = BreadcrumbState::new(vec![
+        BreadcrumbSegment::new("Home"),
+        BreadcrumbSegment::new("Settings"),
+    ]);
+
+    // Navigate breadcrumb to "Home" (first segment)
+    Breadcrumb::set_focused(&mut breadcrumb, true);
+    Breadcrumb::update(&mut breadcrumb, BreadcrumbMessage::First);
+    let output = Breadcrumb::update(&mut breadcrumb, BreadcrumbMessage::Select);
+    assert_eq!(output, Some(BreadcrumbOutput::Selected(0)));
+
+    // This would trigger tab reset to Dashboard in a real app
+    Tabs::<String>::update(&mut tabs, TabsMessage::Left);
+    assert_eq!(tabs.selected_index(), Some(0));
+
+    breadcrumb = BreadcrumbState::new(vec![
+        BreadcrumbSegment::new("Home"),
+        BreadcrumbSegment::new("Dashboard"),
+    ]);
+    assert_eq!(breadcrumb.segments().len(), 2);
+}
+
+// ---------------------------------------------------------------------------
+// Test 8: SearchableList filter, navigate, select, clear workflow
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_searchable_list_filter_and_select_workflow() {
+    let items = vec![
+        "Apple".to_string(),
+        "Apricot".to_string(),
+        "Banana".to_string(),
+        "Blueberry".to_string(),
+        "Cherry".to_string(),
+        "Cranberry".to_string(),
+        "Date".to_string(),
+        "Elderberry".to_string(),
+        "Fig".to_string(),
+        "Grape".to_string(),
+    ];
+    let mut state = SearchableListState::new(items.clone());
+    SearchableList::<String>::set_focused(&mut state, true);
+
+    // Verify all items visible initially
+    assert_eq!(state.items().len(), 10);
+    assert_eq!(state.filtered_items().len(), 10);
+
+    // Type "Apri" to filter (case-insensitive substring)
+    for c in "Apri".chars() {
+        SearchableList::<String>::update(&mut state, SearchableListMessage::FilterChar(c));
+    }
+
+    // Should filter to "Apricot" only
+    assert_eq!(state.filtered_items().len(), 1);
+    assert_eq!(state.filter_text(), "Apri");
+
+    // Select — should return "Apricot"
+    let output = SearchableList::<String>::update(&mut state, SearchableListMessage::Select);
+    assert_eq!(
+        output,
+        Some(SearchableListOutput::Selected("Apricot".to_string()))
+    );
+
+    // Clear filter — all items restored
+    SearchableList::<String>::update(&mut state, SearchableListMessage::FilterClear);
+    assert_eq!(state.filtered_items().len(), 10);
+    assert_eq!(state.filter_text(), "");
 }
