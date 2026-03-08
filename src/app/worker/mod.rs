@@ -3,7 +3,7 @@
 //! The `Worker` module bridges async tasks to the TEA message loop with
 //! progress reporting and cancellation support. It provides a high-level
 //! API for spawning background work that integrates naturally with the
-//! [`Command`](crate::app::Command) and [`Subscription`](crate::app::Subscription)
+//! [`Command`] and [`Subscription`](crate::app::subscription::Subscription)
 //! system.
 //!
 //! # Example
@@ -100,18 +100,29 @@ impl ProgressSender {
     ///
     /// Returns `Ok(())` if the message was sent, or `Err` if the
     /// channel is closed (e.g., the worker was cancelled).
-    pub async fn send(&self, progress: WorkerProgress) -> Result<(), mpsc::error::SendError<WorkerProgress>> {
+    pub async fn send(
+        &self,
+        progress: WorkerProgress,
+    ) -> Result<(), mpsc::error::SendError<WorkerProgress>> {
         self.tx.send(progress).await
     }
 
     /// Sends a progress update with just a percentage.
-    pub async fn send_percentage(&self, percentage: f32) -> Result<(), mpsc::error::SendError<WorkerProgress>> {
+    pub async fn send_percentage(
+        &self,
+        percentage: f32,
+    ) -> Result<(), mpsc::error::SendError<WorkerProgress>> {
         self.send(WorkerProgress::new(percentage, None)).await
     }
 
     /// Sends a progress update with a percentage and status message.
-    pub async fn send_status(&self, percentage: f32, status: impl Into<String>) -> Result<(), mpsc::error::SendError<WorkerProgress>> {
-        self.send(WorkerProgress::new(percentage, Some(status.into()))).await
+    pub async fn send_status(
+        &self,
+        percentage: f32,
+        status: impl Into<String>,
+    ) -> Result<(), mpsc::error::SendError<WorkerProgress>> {
+        self.send(WorkerProgress::new(percentage, Some(status.into())))
+            .await
     }
 }
 
@@ -253,9 +264,10 @@ impl WorkerBuilder {
             Some(on_complete(result))
         });
 
-        let subscription: BoxedSubscription<M> = Box::new(
-            MappedSubscription::new(ChannelSubscription::new(progress_rx), on_progress),
-        );
+        let subscription: BoxedSubscription<M> = Box::new(MappedSubscription::new(
+            ChannelSubscription::new(progress_rx),
+            on_progress,
+        ));
 
         let handle = WorkerHandle {
             cancel,
