@@ -146,6 +146,46 @@ required-features = ["compound-components"]
 name = "searchable_list"
 required-features = ["compound-components"]
 
+[[example]]
+name = "file_browser"
+required-features = ["compound-components"]
+
+[[example]]
+name = "multi_progress"
+required-features = ["display-components"]
+
+[[example]]
+name = "pane_layout"
+required-features = ["compound-components"]
+
+[[example]]
+name = "router"
+required-features = ["navigation-components"]
+
+[[example]]
+name = "split_panel"
+required-features = ["compound-components"]
+
+[[example]]
+name = "status_bar"
+required-features = ["display-components"]
+
+[[example]]
+name = "status_log"
+required-features = ["display-components"]
+
+[[example]]
+name = "step_indicator"
+required-features = ["navigation-components"]
+
+[[example]]
+name = "styled_text"
+required-features = ["display-components"]
+
+[[example]]
+name = "tooltip"
+required-features = ["overlay-components"]
+
 [[bench]]
 name = "capture_backend"
 harness = false
