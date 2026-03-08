@@ -44,9 +44,7 @@ impl AppConfig {
     /// Builds a sample configuration as if parsed from CLI args.
     fn from_simulated_args() -> Self {
         Self {
-            files: (1..=20)
-                .map(|i| format!("document_{:02}.pdf", i))
-                .collect(),
+            files: (1..=20).map(|i| format!("document_{:02}.pdf", i)).collect(),
             output_dir: "/tmp/processed".into(),
         }
     }
@@ -185,7 +183,7 @@ impl App for ProcessorApp {
             Constraint::Length(3), // Title
             Constraint::Length(3), // Progress bar
             Constraint::Length(3), // Current file indicator
-            Constraint::Min(6),   // Status log
+            Constraint::Min(6),    // Status log
             Constraint::Length(1), // Bottom status bar
         ])
         .split(area);
