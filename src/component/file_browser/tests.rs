@@ -794,4 +794,3 @@ fn test_instance_update() {
         Some(FileBrowserOutput::SelectionChanged(1))
     ));
 }
-
