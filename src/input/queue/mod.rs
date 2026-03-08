@@ -33,11 +33,32 @@ pub struct EventQueue {
 
 impl EventQueue {
     /// Creates a new empty event queue.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::EventQueue;
+    ///
+    /// let queue = EventQueue::new();
+    /// assert!(queue.is_empty());
+    /// ```
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Creates a queue with pre-loaded events.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::{Event, EventQueue, KeyCode};
+    ///
+    /// let queue = EventQueue::with_events(vec![
+    ///     Event::char('a'),
+    ///     Event::key(KeyCode::Enter),
+    /// ]);
+    /// assert_eq!(queue.len(), 2);
+    /// ```
     pub fn with_events(events: impl IntoIterator<Item = Event>) -> Self {
         Self {
             events: events.into_iter().collect(),
@@ -60,6 +81,16 @@ impl EventQueue {
     }
 
     /// Adds an event to the end of the queue.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::{Event, EventQueue};
+    ///
+    /// let mut queue = EventQueue::new();
+    /// queue.push(Event::char('x'));
+    /// assert_eq!(queue.len(), 1);
+    /// ```
     pub fn push(&mut self, event: Event) {
         self.events.push_back(event);
     }
@@ -90,6 +121,16 @@ impl EventQueue {
     }
 
     /// Adds key events for each character in a string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::EventQueue;
+    ///
+    /// let mut queue = EventQueue::new();
+    /// queue.type_str("hello");
+    /// assert_eq!(queue.len(), 5);
+    /// ```
     pub fn type_str(&mut self, s: &str) {
         for c in s.chars() {
             self.push(Event::char(c));

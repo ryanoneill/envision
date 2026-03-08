@@ -54,6 +54,15 @@ pub(crate) enum CommandAction<M> {
 
 impl<M> Command<M> {
     /// Creates an empty command (no-op).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd: Command<String> = Command::none();
+    /// assert!(cmd.is_none());
+    /// ```
     pub fn none() -> Self {
         Self {
             actions: Vec::new(),
@@ -61,11 +70,29 @@ impl<M> Command<M> {
     }
 
     /// Returns true if this command has no actions.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// assert!(Command::<String>::none().is_none());
+    /// assert!(!Command::message("hello".to_string()).is_none());
+    /// ```
     pub fn is_none(&self) -> bool {
         self.actions.is_empty()
     }
 
     /// Creates a command that dispatches a single message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd = Command::message("data_loaded".to_string());
+    /// assert!(!cmd.is_none());
+    /// ```
     pub fn message(msg: M) -> Self {
         Self {
             actions: vec![CommandAction::Message(msg)],
@@ -73,6 +100,19 @@ impl<M> Command<M> {
     }
 
     /// Creates a command that dispatches multiple messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd = Command::batch(vec!["first".to_string(), "second".to_string()]);
+    /// assert!(!cmd.is_none());
+    ///
+    /// // An empty batch produces a no-op command
+    /// let empty: Command<String> = Command::batch(vec![]);
+    /// assert!(empty.is_none());
+    /// ```
     pub fn batch(messages: impl IntoIterator<Item = M>) -> Self {
         let msgs: Vec<M> = messages.into_iter().collect();
         if msgs.is_empty() {
@@ -85,6 +125,15 @@ impl<M> Command<M> {
     }
 
     /// Creates a command that quits the application.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd: Command<String> = Command::quit();
+    /// assert!(!cmd.is_none());
+    /// ```
     pub fn quit() -> Self {
         Self {
             actions: vec![CommandAction::Quit],
@@ -94,6 +143,16 @@ impl<M> Command<M> {
     /// Creates a command from a synchronous callback.
     ///
     /// The callback will be executed and may optionally return a message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd: Command<String> = Command::perform(|| {
+    ///     Some("done".to_string())
+    /// });
+    /// ```
     pub fn perform<F>(f: F) -> Self
     where
         F: FnOnce() -> Option<M> + Send + 'static,
@@ -254,6 +313,18 @@ impl<M> Command<M> {
     }
 
     /// Combines multiple commands into one.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let combined: Command<String> = Command::combine(vec![
+    ///     Command::message("first".to_string()),
+    ///     Command::message("second".to_string()),
+    /// ]);
+    /// assert!(!combined.is_none());
+    /// ```
     pub fn combine(commands: impl IntoIterator<Item = Command<M>>) -> Self {
         let mut actions = Vec::new();
         for cmd in commands {
@@ -263,6 +334,16 @@ impl<M> Command<M> {
     }
 
     /// Appends another command to this one.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd = Command::message("first".to_string())
+    ///     .and(Command::message("second".to_string()));
+    /// assert!(!cmd.is_none());
+    /// ```
     pub fn and(mut self, other: Command<M>) -> Self {
         self.actions.extend(other.actions);
         self
@@ -276,6 +357,15 @@ impl<M> Command<M> {
     }
 
     /// Maps the message type to a different type.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd: Command<i32> = Command::message(42);
+    /// let mapped: Command<String> = cmd.map(|n| n.to_string());
+    /// ```
     pub fn map<N, F>(self, f: F) -> Command<N>
     where
         F: Fn(M) -> N + Clone + Send + 'static,

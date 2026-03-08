@@ -4,6 +4,7 @@ use super::*;
 use ratatui::backend::CrosstermBackend;
 use ratatui::widgets::Paragraph;
 use std::io::{self, Stdout};
+use std::time::Duration;
 
 struct CounterApp;
 

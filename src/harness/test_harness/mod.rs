@@ -42,6 +42,16 @@ pub struct TestHarness {
 
 impl TestHarness {
     /// Creates a new test harness with the given dimensions.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::harness::TestHarness;
+    ///
+    /// let harness = TestHarness::new(80, 24);
+    /// assert_eq!(harness.width(), 80);
+    /// assert_eq!(harness.height(), 24);
+    /// ```
     pub fn new(width: u16, height: u16) -> Self {
         let backend = CaptureBackend::new(width, height);
         let terminal = Terminal::new(backend).expect("Failed to create terminal");
@@ -76,6 +86,20 @@ impl TestHarness {
     /// Renders a frame using the provided closure.
     ///
     /// This collects annotations during rendering and increments the frame count.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::harness::TestHarness;
+    /// use ratatui::widgets::Paragraph;
+    ///
+    /// let mut harness = TestHarness::new(80, 24);
+    /// harness.render(|frame| {
+    ///     frame.render_widget(Paragraph::new("Hello!"), frame.area());
+    /// })?;
+    /// assert!(harness.contains("Hello!"));
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn render<F>(&mut self, f: F) -> io::Result<()>
     where
         F: FnOnce(&mut ratatui::Frame),
@@ -141,6 +165,18 @@ impl TestHarness {
     }
 
     /// Queues a single event.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::harness::TestHarness;
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut harness = TestHarness::new(80, 24);
+    /// harness.push_event(Event::key(KeyCode::Enter));
+    /// let event = harness.pop_event();
+    /// assert!(event.is_some());
+    /// ```
     pub fn push_event(&mut self, event: Event) {
         self.events.push(event);
     }
@@ -151,6 +187,18 @@ impl TestHarness {
     }
 
     /// Types a string as keyboard input.
+    ///
+    /// Each character is enqueued as a separate key event.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::harness::TestHarness;
+    ///
+    /// let mut harness = TestHarness::new(80, 24);
+    /// harness.type_str("hello");
+    /// // 5 key events are now queued
+    /// ```
     pub fn type_str(&mut self, s: &str) {
         self.events.type_str(s);
     }
@@ -243,6 +291,20 @@ impl TestHarness {
     // -------------------------------------------------------------------------
 
     /// Returns true if the screen contains the given text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::harness::TestHarness;
+    /// use ratatui::widgets::Paragraph;
+    ///
+    /// let mut harness = TestHarness::new(80, 24);
+    /// harness.render(|frame| {
+    ///     frame.render_widget(Paragraph::new("Search"), frame.area());
+    /// }).unwrap();
+    /// assert!(harness.contains("Search"));
+    /// assert!(!harness.contains("Missing"));
+    /// ```
     pub fn contains(&self, needle: &str) -> bool {
         self.terminal.backend().contains_text(needle)
     }
