@@ -351,18 +351,19 @@ async fn test_async_harness_message_sender() {
     assert_eq!(harness.state().count, 1);
 }
 
-#[test]
-fn test_async_harness_subscribe() {
+#[tokio::test]
+async fn test_async_harness_subscribe() {
     use crate::app::TickSubscription;
 
     let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
     let sub = TickSubscription::new(Duration::from_millis(10), || TestMsg::Increment);
     harness.subscribe(sub);
-    // Just verify we can add a subscription
+    // Just verify we can add a subscription (spawns a tokio task)
+    harness.quit();
 }
 
-#[test]
-fn test_async_harness_subscribe_all() {
+#[tokio::test]
+async fn test_async_harness_subscribe_all() {
     use crate::app::{BoxedSubscription, TickSubscription};
 
     let mut harness = AppHarness::<TestApp>::new(80, 24).unwrap();
@@ -377,7 +378,8 @@ fn test_async_harness_subscribe_all() {
         }));
 
     harness.subscribe_all(vec![sub1, sub2]);
-    // Just verify we can add multiple subscriptions
+    // Just verify we can add multiple subscriptions (spawns tokio tasks)
+    harness.quit();
 }
 
 #[tokio::test(start_paused = true)]
