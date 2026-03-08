@@ -156,7 +156,7 @@ mod key_hints;
 #[cfg(feature = "display-components")]
 mod multi_progress;
 #[cfg(feature = "display-components")]
-mod progress_bar;
+pub mod progress_bar;
 #[cfg(feature = "display-components")]
 mod scrollable_text;
 #[cfg(feature = "display-components")]
@@ -233,7 +233,9 @@ pub use multi_progress::{
     ProgressItemStatus,
 };
 #[cfg(feature = "display-components")]
-pub use progress_bar::{ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState};
+pub use progress_bar::{
+    format_eta, ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState,
+};
 #[cfg(feature = "display-components")]
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 
