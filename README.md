@@ -10,7 +10,7 @@ A [ratatui](https://github.com/ratatui/ratatui) framework for collaborative TUI 
 
 ## Features
 
-- **Component Library** - 26 ready-to-use UI components following TEA pattern
+- **Component Library** - 37 ready-to-use UI components following TEA pattern
 - **Headless Testing** - Render your TUI without a terminal using `CaptureBackend`
 - **TEA Architecture** - The Elm Architecture pattern with `App`, `Runtime`, and `Command`
 - **Async Runtime** - Full async support with subscriptions, timers, and async commands
@@ -34,17 +34,20 @@ use envision::backend::CaptureBackend;
 use ratatui::Terminal;
 use ratatui::widgets::Paragraph;
 
-// Create a headless terminal
-let backend = CaptureBackend::new(80, 24);
-let mut terminal = Terminal::new(backend)?;
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Create a headless terminal
+    let backend = CaptureBackend::new(80, 24);
+    let mut terminal = Terminal::new(backend)?;
 
-// Render something
-terminal.draw(|frame| {
-    frame.render_widget(Paragraph::new("Hello, Envision!"), frame.area());
-})?;
+    // Render something
+    terminal.draw(|frame| {
+        frame.render_widget(Paragraph::new("Hello, Envision!"), frame.area());
+    })?;
 
-// Capture the output
-println!("{}", terminal.backend());
+    // Capture the output
+    println!("{}", terminal.backend());
+    Ok(())
+}
 ```
 
 ### TEA Architecture
@@ -92,10 +95,11 @@ impl App for MyApp {
 
 ```rust
 use envision::prelude::*;
+use ratatui::widgets::Paragraph;
 
+// Given the MyApp defined above:
 #[test]
 fn test_my_app() {
-    // Use Runtime::virtual_terminal for testing App implementations
     let mut runtime = Runtime::<MyApp>::virtual_terminal(80, 24).unwrap();
 
     runtime.dispatch(Msg::Increment);
@@ -157,6 +161,7 @@ Envision provides a comprehensive library of reusable UI components, all followi
 | Component | Description |
 |-----------|-------------|
 | `InputField` | Single-line text input with cursor navigation |
+| `LineInput` | Single-line input with visual wrapping, history, undo/redo |
 | `TextArea` | Multi-line text editor with scrolling |
 | `Checkbox` | Toggleable checkbox with label |
 | `RadioGroup` | Single-selection radio button group |
@@ -170,6 +175,8 @@ Envision provides a comprehensive library of reusable UI components, all followi
 | `ProgressBar` | Visual progress indicator with percentage |
 | `MultiProgress` | Concurrent progress indicators for batch operations |
 | `Spinner` | Animated loading indicator (multiple styles) |
+| `ScrollableText` | Scrollable read-only text display with CJK support |
+| `TitleCard` | Centered title display with subtitle and prefix/suffix |
 | `Toast` | Non-modal notification system with auto-dismiss |
 | `Tooltip` | Contextual information overlay |
 | `StatusBar` | Application status bar with sections, timers, counters |
@@ -184,16 +191,34 @@ Envision provides a comprehensive library of reusable UI components, all followi
 | `Breadcrumb` | Navigation breadcrumb trail |
 | `Router` | Multi-screen navigation with history |
 | `Tree` | Hierarchical tree view with expand/collapse |
+| `Accordion` | Collapsible panel container |
 
-### Layout Components
+### Data Components
+
+| Component | Description |
+|-----------|-------------|
+| `Table` | Data table with sorting and selection |
+| `SelectableList` | Scrollable list with keyboard navigation |
+| `LoadingList` | List with per-item loading and error states |
+
+### Overlay Components
 
 | Component | Description |
 |-----------|-------------|
 | `Dialog` | Modal dialog overlay with buttons |
-| `Accordion` | Collapsible panel container |
-| `Table` | Data table with sorting and selection |
-| `SelectableList` | Scrollable list with keyboard navigation |
-| `LoadingList` | List with per-item loading and error states |
+
+### Compound Components
+
+| Component | Description |
+|-----------|-------------|
+| `ChatView` | Chat interface with message history and input |
+| `Chart` | Data visualization with line and bar charts |
+| `DataGrid` | Editable data table with cell navigation |
+| `Form` | Multi-field form with validation |
+| `LogViewer` | Filterable log display with search |
+| `MetricsDashboard` | Dashboard with charts, counters, and gauges |
+| `SearchableList` | Filterable list with search input |
+| `SplitPanel` | Resizable dual-panel layout |
 
 ### Utility
 
@@ -247,7 +272,7 @@ Envision follows The Elm Architecture (TEA) pattern:
 
 | Module | Description |
 |--------|-------------|
-| `component` | 26 reusable UI components with `Component`, `Focusable`, `Toggleable` traits |
+| `component` | 37 reusable UI components with `Component`, `Focusable`, `Toggleable` traits |
 | `backend` | `CaptureBackend` for headless rendering |
 | `app` | TEA architecture: `App`, `Runtime`, `Command`, subscriptions |
 | `harness` | `TestHarness` and `AppHarness` for testing |
