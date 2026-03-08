@@ -71,7 +71,6 @@ use crate::input::{Event, EventQueue};
 use crate::overlay::{Overlay, OverlayStack};
 use crate::theme::Theme;
 
-
 /// The runtime that executes a TEA application.
 ///
 /// This manages the event loop, state updates, and rendering using tokio.
