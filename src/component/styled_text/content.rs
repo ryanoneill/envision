@@ -199,12 +199,7 @@ impl StyledContent {
     }
 }
 
-fn render_block(
-    block: &StyledBlock,
-    width: u16,
-    theme: &Theme,
-    lines: &mut Vec<RatLine<'static>>,
-) {
+fn render_block(block: &StyledBlock, width: u16, theme: &Theme, lines: &mut Vec<RatLine<'static>>) {
     match block {
         StyledBlock::Heading { level, text } => {
             let style = match level {
@@ -287,9 +282,10 @@ fn render_paragraph(
 fn render_inline(inline: &StyledInline, theme: &Theme) -> RatSpan<'static> {
     match inline {
         StyledInline::Plain(text) => RatSpan::styled(text.clone(), theme.normal_style()),
-        StyledInline::Bold(text) => {
-            RatSpan::styled(text.clone(), theme.normal_style().add_modifier(Modifier::BOLD))
-        }
+        StyledInline::Bold(text) => RatSpan::styled(
+            text.clone(),
+            theme.normal_style().add_modifier(Modifier::BOLD),
+        ),
         StyledInline::Italic(text) => RatSpan::styled(
             text.clone(),
             theme.normal_style().add_modifier(Modifier::ITALIC),
@@ -300,9 +296,7 @@ fn render_inline(inline: &StyledInline, theme: &Theme) -> RatSpan<'static> {
         ),
         StyledInline::Strikethrough(text) => RatSpan::styled(
             text.clone(),
-            theme
-                .normal_style()
-                .add_modifier(Modifier::CROSSED_OUT),
+            theme.normal_style().add_modifier(Modifier::CROSSED_OUT),
         ),
         StyledInline::Colored { text, fg, bg } => {
             let mut style = theme.normal_style();

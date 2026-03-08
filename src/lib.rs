@@ -163,8 +163,8 @@ pub use component::{
     SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
     StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
     StatusLogMessage, StatusLogOutput, StatusLogState, StyledText, StyledTextMessage,
-    StyledTextOutput, StyledTextState, TitleCard, TitleCardMessage, TitleCardState, Toast, ToastItem,
-    ToastLevel, ToastMessage, ToastOutput, ToastState,
+    StyledTextOutput, StyledTextState, TitleCard, TitleCardMessage, TitleCardState, Toast,
+    ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
 };
 
 // Navigation components

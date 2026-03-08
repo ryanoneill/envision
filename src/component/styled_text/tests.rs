@@ -515,13 +515,11 @@ fn test_view_heading_and_text() {
 #[test]
 fn test_view_bullet_list() {
     let (mut terminal, theme) = setup_render(50, 8);
-    let content = StyledContent::new()
-        .heading(2, "Items")
-        .bullet_list(vec![
-            vec![StyledInline::Plain("First item".to_string())],
-            vec![StyledInline::Plain("Second item".to_string())],
-            vec![StyledInline::Bold("Bold item".to_string())],
-        ]);
+    let content = StyledContent::new().heading(2, "Items").bullet_list(vec![
+        vec![StyledInline::Plain("First item".to_string())],
+        vec![StyledInline::Plain("Second item".to_string())],
+        vec![StyledInline::Bold("Bold item".to_string())],
+    ]);
     let state = StyledTextState::new().with_content(content);
 
     terminal
@@ -557,8 +555,8 @@ fn test_view_numbered_list() {
 #[test]
 fn test_view_code_block() {
     let (mut terminal, theme) = setup_render(50, 8);
-    let content = StyledContent::new()
-        .code_block(Some("rust"), "let x = 42;\nprintln!(\"{}\", x);");
+    let content =
+        StyledContent::new().code_block(Some("rust"), "let x = 42;\nprintln!(\"{}\", x);");
     let state = StyledTextState::new().with_content(content);
 
     terminal
