@@ -103,6 +103,17 @@ pub struct StyledTextState {
 
 impl StyledTextState {
     /// Creates a new empty styled text state with a border.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let state = StyledTextState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// assert!(state.show_border());
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn new() -> Self {
         Self {
             show_border: true,
@@ -128,18 +139,45 @@ impl StyledTextState {
     }
 
     /// Sets the title (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let state = StyledTextState::new().with_title("Preview");
+    /// assert_eq!(state.title(), Some("Preview"));
+    /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let state = StyledTextState::new().with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Sets whether to show the border (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let state = StyledTextState::new().with_show_border(false);
+    /// assert!(!state.show_border());
+    /// ```
     pub fn with_show_border(mut self, show: bool) -> Self {
         self.show_border = show;
         self
@@ -148,22 +186,66 @@ impl StyledTextState {
     // ---- Content accessors ----
 
     /// Returns the styled content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    /// use envision::component::styled_text::StyledContent;
+    ///
+    /// let content = StyledContent::new().text("Hello");
+    /// let state = StyledTextState::new().with_content(content);
+    /// assert!(!state.content().is_empty());
+    /// ```
     pub fn content(&self) -> &StyledContent {
         &self.content
     }
 
     /// Sets the styled content and resets scroll to top.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    /// use envision::component::styled_text::StyledContent;
+    ///
+    /// let mut state = StyledTextState::new();
+    /// state.set_content(StyledContent::new().text("New content"));
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// assert!(!state.content().is_empty());
+    /// ```
     pub fn set_content(&mut self, content: StyledContent) {
         self.content = content;
         self.scroll_offset = 0;
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let state = StyledTextState::new().with_title("Readme");
+    /// assert_eq!(state.title(), Some("Readme"));
+    ///
+    /// let state2 = StyledTextState::new();
+    /// assert_eq!(state2.title(), None);
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Returns whether the border is shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let state = StyledTextState::new();
+    /// assert!(state.show_border());
+    /// ```
     pub fn show_border(&self) -> bool {
         self.show_border
     }
@@ -171,6 +253,17 @@ impl StyledTextState {
     // ---- Scroll accessors ----
 
     /// Returns the current scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StyledTextState, StyledTextMessage};
+    ///
+    /// let mut state = StyledTextState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// state.update(StyledTextMessage::ScrollDown);
+    /// assert_eq!(state.scroll_offset(), 1);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll_offset
     }
@@ -178,21 +271,59 @@ impl StyledTextState {
     // ---- State accessors ----
 
     /// Returns true if the component is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let state = StyledTextState::new();
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let mut state = StyledTextState::new();
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the component is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let state = StyledTextState::new();
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let mut state = StyledTextState::new();
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
@@ -200,16 +331,52 @@ impl StyledTextState {
     // ---- Instance methods ----
 
     /// Maps an input event to a styled text message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StyledTextState, StyledTextMessage};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = StyledTextState::new();
+    /// state.set_focused(true);
+    /// let event = Event::key(KeyCode::Down);
+    /// assert_eq!(state.handle_event(&event), Some(StyledTextMessage::ScrollDown));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<StyledTextMessage> {
         StyledText::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StyledTextState, StyledTextOutput};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = StyledTextState::new();
+    /// state.set_focused(true);
+    /// let event = Event::key(KeyCode::Down);
+    /// let output = state.dispatch_event(&event);
+    /// assert_eq!(output, Some(StyledTextOutput::ScrollChanged(1)));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<StyledTextOutput> {
         StyledText::dispatch_event(self, event)
     }
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StyledTextState, StyledTextMessage, StyledTextOutput};
+    ///
+    /// let mut state = StyledTextState::new();
+    /// let output = state.update(StyledTextMessage::ScrollDown);
+    /// assert_eq!(output, Some(StyledTextOutput::ScrollChanged(1)));
+    /// assert_eq!(state.scroll_offset(), 1);
+    /// ```
     pub fn update(&mut self, msg: StyledTextMessage) -> Option<StyledTextOutput> {
         StyledText::update(self, msg)
     }
