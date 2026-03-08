@@ -606,10 +606,7 @@ impl Component for PaneLayout {
                 }
                 if let Some(index) = state.panes.iter().position(|p| p.id == id) {
                     state.focused_pane = index;
-                    Some(PaneLayoutOutput::FocusChanged {
-                        pane_id: id,
-                        index,
-                    })
+                    Some(PaneLayoutOutput::FocusChanged { pane_id: id, index })
                 } else {
                     None
                 }
