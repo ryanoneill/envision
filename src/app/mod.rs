@@ -93,7 +93,7 @@ pub use command::{BoxedError, Command, CommandHandler};
 pub use model::App;
 #[cfg(feature = "serialization")]
 pub use persistence::load_state;
-pub use runtime::{Runtime, RuntimeConfig, TerminalRuntime, VirtualRuntime};
+pub use runtime::{Runtime, RuntimeConfig, TerminalHook, TerminalRuntime, VirtualRuntime};
 pub use subscription::{
     batch, interval_immediate, terminal_events, tick, BatchSubscription, BoxedSubscription,
     ChannelSubscription, DebounceSubscription, FilterSubscription, IntervalImmediateBuilder,

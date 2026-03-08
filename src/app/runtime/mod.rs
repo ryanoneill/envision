@@ -54,7 +54,7 @@
 
 mod config;
 mod terminal;
-pub use config::RuntimeConfig;
+pub use config::{RuntimeConfig, TerminalHook};
 
 use std::io::{self, Stdout};
 use std::pin::Pin;
