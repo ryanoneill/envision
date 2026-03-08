@@ -222,12 +222,8 @@ mod tests {
 
     #[test]
     fn test_hook_error_propagation() {
-        let config = RuntimeConfig::new().on_setup(Arc::new(|| {
-            Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "setup failed",
-            ))
-        }));
+        let config =
+            RuntimeConfig::new().on_setup(Arc::new(|| Err(std::io::Error::other("setup failed"))));
 
         let result = config.on_setup.as_ref().unwrap()();
         assert!(result.is_err());
