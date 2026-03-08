@@ -41,8 +41,14 @@ use crate::error::EnvisionError;
 /// Loads application state from a JSON file asynchronously.
 ///
 /// Reads the file at `path` using `tokio::fs`, deserializes it as JSON, and
-/// returns the deserialized state. Returns [`EnvisionError::Io`] for file
-/// system errors and [`EnvisionError::Config`] for deserialization errors.
+/// returns the deserialized state.
+///
+/// # Errors
+///
+/// Returns [`EnvisionError::Io`] if the file cannot be read (e.g., the file
+/// does not exist or permissions are insufficient). Returns
+/// [`EnvisionError::Config`] if the file contents cannot be deserialized
+/// as valid JSON matching the expected state type.
 ///
 /// # Example
 ///

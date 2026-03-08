@@ -222,6 +222,12 @@ impl Assertion {
     }
 
     /// Checks the assertion against the test harness.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`AssertionError`] if the assertion condition is not
+    /// satisfied by the current harness state, including details about
+    /// what was expected and what was found.
     pub fn check(&self, harness: &TestHarness) -> AssertionResult {
         match self {
             Assertion::Contains(text) => {

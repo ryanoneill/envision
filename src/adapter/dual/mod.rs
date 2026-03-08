@@ -66,6 +66,10 @@ impl<P: Backend> DualBackend<P> {
     ///
     /// The capture backend will be created with the same dimensions
     /// as the primary backend.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if querying the primary backend's terminal size fails.
     pub fn with_auto_capture(primary: P) -> io::Result<Self> {
         let size = primary.size()?;
         let capture = CaptureBackend::new(size.width, size.height);
@@ -254,6 +258,11 @@ impl<P: Backend> DualBackendBuilder<P> {
     }
 
     /// Builds the dual backend.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if querying the primary backend's terminal size fails
+    /// when no explicit capture size has been set.
     pub fn build(self) -> io::Result<DualBackend<P>> {
         let size = self.primary.size()?;
         let width = self.width.unwrap_or(size.width);

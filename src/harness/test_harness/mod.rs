@@ -76,6 +76,11 @@ impl TestHarness {
     /// Renders a frame using the provided closure.
     ///
     /// This collects annotations during rendering and increments the frame count.
+    ///
+    /// # Errors
+    ///
+    /// This method currently always succeeds, but returns `io::Result`
+    /// for API consistency with terminal rendering operations.
     pub fn render<F>(&mut self, f: F) -> io::Result<()>
     where
         F: FnOnce(&mut ratatui::Frame),
@@ -367,6 +372,10 @@ impl TestHarness {
     }
 
     /// Runs an assertion and returns the result.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`AssertionError`] if the assertion condition is not met.
     pub fn assert(&self, assertion: Assertion) -> AssertionResult {
         assertion.check(self)
     }
@@ -377,6 +386,10 @@ impl TestHarness {
     }
 
     /// Runs multiple assertions, returning the first failure if any.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`AssertionError`] from the first assertion that fails.
     pub fn assert_all_ok(&self, assertions: Vec<Assertion>) -> Result<(), AssertionError> {
         for assertion in assertions {
             self.assert(assertion)?;
