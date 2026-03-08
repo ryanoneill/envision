@@ -437,13 +437,20 @@ pub trait Component: Sized {
     ///
     /// This is the primary method users should call for event routing.
     fn dispatch_event(state: &mut Self::State, event: &Event) -> Option<Self::Output> {
-        if let Some(msg) = Self::handle_event(state, event) {
-            #[cfg(feature = "tracing")]
-            let _span = tracing::debug_span!(
-                "component_dispatch",
-                component = std::any::type_name::<Self>(),
-            )
-            .entered();
+        #[cfg(feature = "tracing")]
+        let _span = tracing::debug_span!(
+            "component_dispatch",
+            component = std::any::type_name::<Self>(),
+            event_kind = event.kind_name(),
+        )
+        .entered();
+
+        let msg = Self::handle_event(state, event);
+
+        #[cfg(feature = "tracing")]
+        tracing::trace!(produced_message = msg.is_some(), "handle_event complete");
+
+        if let Some(msg) = msg {
             let output = Self::update(state, msg);
             #[cfg(feature = "tracing")]
             tracing::trace!(has_output = output.is_some(), "update complete");
