@@ -99,6 +99,6 @@ pub use subscription::{
     ChannelSubscription, DebounceSubscription, FilterSubscription, IntervalImmediateBuilder,
     IntervalImmediateSubscription, MappedSubscription, StreamSubscription, Subscription,
     SubscriptionExt, TakeSubscription, TerminalEventSubscription, ThrottleSubscription,
-    TickSubscription, TickSubscriptionBuilder, TimerSubscription,
+    TickSubscription, TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription,
 };
 pub use update::{FnUpdate, StateExt, Update, UpdateResult};

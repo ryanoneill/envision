@@ -27,7 +27,7 @@ pub use combinators::{
 };
 pub use core::{
     tick, BoxedSubscription, ChannelSubscription, StreamSubscription, Subscription,
-    TickSubscription, TickSubscriptionBuilder, TimerSubscription,
+    TickSubscription, TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription,
 };
 pub use ext::SubscriptionExt;
 pub use interval::{interval_immediate, IntervalImmediateBuilder, IntervalImmediateSubscription};

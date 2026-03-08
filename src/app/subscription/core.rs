@@ -204,6 +204,56 @@ impl<M: Send + 'static> Subscription<M> for ChannelSubscription<M> {
     }
 }
 
+/// A subscription that receives messages from an unbounded channel.
+///
+/// This is the unbounded counterpart of [`ChannelSubscription`]. Use this
+/// when the sender should never block, at the cost of unbounded memory
+/// growth if messages are produced faster than consumed.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::app::UnboundedChannelSubscription;
+///
+/// let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<String>();
+/// let subscription = UnboundedChannelSubscription::new(rx);
+/// ```
+pub struct UnboundedChannelSubscription<M> {
+    receiver: mpsc::UnboundedReceiver<M>,
+}
+
+impl<M> UnboundedChannelSubscription<M> {
+    /// Creates a subscription from an unbounded channel receiver.
+    pub fn new(receiver: mpsc::UnboundedReceiver<M>) -> Self {
+        Self { receiver }
+    }
+}
+
+impl<M: Send + 'static> Subscription<M> for UnboundedChannelSubscription<M> {
+    fn into_stream(
+        self: Box<Self>,
+        cancel: CancellationToken,
+    ) -> Pin<Box<dyn Stream<Item = M> + Send>> {
+        let mut receiver = self.receiver;
+
+        Box::pin(async_stream::stream! {
+            loop {
+                tokio::select! {
+                    msg = receiver.recv() => {
+                        match msg {
+                            Some(m) => yield m,
+                            None => break, // Channel closed
+                        }
+                    }
+                    _ = cancel.cancelled() => {
+                        break;
+                    }
+                }
+            }
+        })
+    }
+}
+
 /// A subscription that wraps a stream directly.
 ///
 /// This allows using any async stream as a subscription.
