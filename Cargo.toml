@@ -190,6 +190,10 @@ required-features = ["display-components"]
 name = "tooltip"
 required-features = ["overlay-components"]
 
+[[example]]
+name = "production_app"
+required-features = ["full"]
+
 [[bench]]
 name = "capture_backend"
 harness = false
