@@ -940,6 +940,8 @@ impl Disableable for FileBrowser {
 }
 
 #[cfg(test)]
+mod helper_tests;
+#[cfg(test)]
 mod snapshot_tests;
 #[cfg(test)]
 mod tests;
