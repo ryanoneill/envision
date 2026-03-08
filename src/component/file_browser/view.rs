@@ -39,8 +39,7 @@ pub(super) fn render(state: &FileBrowserState, frame: &mut Frame, area: Rect, th
 
     // Layout: path bar (1 line) | filter (1 line if active) | listing
     let internal_focus = state.internal_focus();
-    let has_filter =
-        !state.filter_text().is_empty() || *internal_focus == FileBrowserFocus::Filter;
+    let has_filter = !state.filter_text().is_empty() || *internal_focus == FileBrowserFocus::Filter;
 
     let path_height = 1u16;
     let filter_height = if has_filter { 1u16 } else { 0u16 };
