@@ -111,6 +111,8 @@ pub mod adapter;
 pub mod annotation;
 pub mod app;
 pub mod backend;
+#[cfg(feature = "clipboard")]
+pub(crate) mod clipboard;
 pub mod component;
 pub mod error;
 pub mod harness;

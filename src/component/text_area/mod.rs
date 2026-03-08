@@ -37,27 +37,8 @@ use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 use crate::undo::UndoStack;
 
-/// Attempt to write text to the system clipboard.
-///
-/// Errors are silently ignored — this is best-effort. Falls back gracefully
-/// in headless environments (CI, SSH) where no clipboard provider exists.
 #[cfg(feature = "clipboard")]
-fn system_clipboard_set(text: &str) {
-    if let Ok(mut cb) = arboard::Clipboard::new() {
-        let _ = cb.set_text(text);
-    }
-}
-
-/// Attempt to read text from the system clipboard.
-///
-/// Returns `None` if the clipboard is unavailable or doesn't contain text.
-#[cfg(feature = "clipboard")]
-fn system_clipboard_get() -> Option<String> {
-    arboard::Clipboard::new()
-        .ok()
-        .and_then(|mut cb| cb.get_text().ok())
-        .filter(|s| !s.is_empty())
-}
+use crate::clipboard::system_clipboard_get;
 
 mod cursor;
 mod selection;
