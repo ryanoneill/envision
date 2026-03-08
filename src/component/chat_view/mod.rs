@@ -28,8 +28,8 @@
 pub mod message;
 mod render_helpers;
 
-pub use message::{ChatMessage, ChatRole, ChatViewMessage, ChatViewOutput};
 use message::Focus;
+pub use message::{ChatMessage, ChatRole, ChatViewMessage, ChatViewOutput};
 
 use std::collections::HashMap;
 use std::marker::PhantomData;

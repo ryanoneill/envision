@@ -27,6 +27,10 @@
 //! assert_eq!(state.selected_index(), Some(0));
 //! ```
 
+pub mod widget;
+
+pub use widget::{MetricKind, MetricWidget};
+
 use std::marker::PhantomData;
 
 use ratatui::prelude::*;
@@ -35,209 +39,6 @@ use ratatui::widgets::{Block, Borders, Paragraph, Sparkline};
 use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
-
-/// The kind of metric a widget displays.
-#[derive(Clone, Debug, PartialEq)]
-pub enum MetricKind {
-    /// A numeric counter value.
-    Counter {
-        /// The current value.
-        value: i64,
-    },
-    /// A gauge value with a known range.
-    Gauge {
-        /// The current value.
-        value: u64,
-        /// The maximum value.
-        max: u64,
-    },
-    /// A status indicator (up/down).
-    Status {
-        /// Whether the status is "up" (healthy).
-        up: bool,
-    },
-    /// A text-based metric.
-    Text {
-        /// The display text.
-        text: String,
-    },
-}
-
-/// A single metric widget in the dashboard.
-#[derive(Clone, Debug, PartialEq)]
-pub struct MetricWidget {
-    /// The display label.
-    label: String,
-    /// The metric kind and value.
-    kind: MetricKind,
-    /// Sparkline history (recent values for trend display).
-    history: Vec<u64>,
-    /// Maximum history length.
-    max_history: usize,
-}
-
-impl MetricWidget {
-    /// Creates a counter widget.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::MetricWidget;
-    ///
-    /// let widget = MetricWidget::counter("Requests", 42);
-    /// assert_eq!(widget.label(), "Requests");
-    /// assert_eq!(widget.display_value(), "42");
-    /// ```
-    pub fn counter(label: impl Into<String>, value: i64) -> Self {
-        Self {
-            label: label.into(),
-            kind: MetricKind::Counter { value },
-            history: Vec::new(),
-            max_history: 20,
-        }
-    }
-
-    /// Creates a gauge widget with a maximum value.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::MetricWidget;
-    ///
-    /// let widget = MetricWidget::gauge("CPU %", 75, 100);
-    /// assert_eq!(widget.display_value(), "75/100");
-    /// ```
-    pub fn gauge(label: impl Into<String>, value: u64, max: u64) -> Self {
-        Self {
-            label: label.into(),
-            kind: MetricKind::Gauge { value, max },
-            history: Vec::new(),
-            max_history: 20,
-        }
-    }
-
-    /// Creates a status indicator widget.
-    pub fn status(label: impl Into<String>, up: bool) -> Self {
-        Self {
-            label: label.into(),
-            kind: MetricKind::Status { up },
-            history: Vec::new(),
-            max_history: 0,
-        }
-    }
-
-    /// Creates a text metric widget.
-    pub fn text(label: impl Into<String>, text: impl Into<String>) -> Self {
-        Self {
-            label: label.into(),
-            kind: MetricKind::Text { text: text.into() },
-            history: Vec::new(),
-            max_history: 0,
-        }
-    }
-
-    /// Sets the maximum history length for sparkline display (builder pattern).
-    pub fn with_max_history(mut self, max: usize) -> Self {
-        self.max_history = max;
-        self
-    }
-
-    /// Returns the label.
-    pub fn label(&self) -> &str {
-        &self.label
-    }
-
-    /// Returns the metric kind.
-    pub fn kind(&self) -> &MetricKind {
-        &self.kind
-    }
-
-    /// Returns the sparkline history.
-    pub fn history(&self) -> &[u64] {
-        &self.history
-    }
-
-    /// Returns the display value as a string.
-    pub fn display_value(&self) -> String {
-        match &self.kind {
-            MetricKind::Counter { value } => value.to_string(),
-            MetricKind::Gauge { value, max } => format!("{}/{}", value, max),
-            MetricKind::Status { up } => {
-                if *up {
-                    "UP".to_string()
-                } else {
-                    "DOWN".to_string()
-                }
-            }
-            MetricKind::Text { text } => text.clone(),
-        }
-    }
-
-    /// Sets the counter value.
-    pub fn set_counter_value(&mut self, value: i64) {
-        if let MetricKind::Counter { value: ref mut v } = self.kind {
-            *v = value;
-            if self.max_history > 0 {
-                self.history.push(value.unsigned_abs());
-                while self.history.len() > self.max_history {
-                    self.history.remove(0);
-                }
-            }
-        }
-    }
-
-    /// Sets the gauge value.
-    pub fn set_gauge_value(&mut self, value: u64) {
-        if let MetricKind::Gauge {
-            value: ref mut v,
-            max,
-        } = self.kind
-        {
-            *v = value.min(max);
-            if self.max_history > 0 {
-                self.history.push(value);
-                while self.history.len() > self.max_history {
-                    self.history.remove(0);
-                }
-            }
-        }
-    }
-
-    /// Sets the status.
-    pub fn set_status(&mut self, up: bool) {
-        if let MetricKind::Status { up: ref mut u } = self.kind {
-            *u = up;
-        }
-    }
-
-    /// Sets the text value.
-    pub fn set_text(&mut self, text: impl Into<String>) {
-        if let MetricKind::Text { text: ref mut t } = self.kind {
-            *t = text.into();
-        }
-    }
-
-    /// Increments a counter by the given amount.
-    pub fn increment(&mut self, amount: i64) {
-        if let MetricKind::Counter { ref mut value } = self.kind {
-            *value += amount;
-            if self.max_history > 0 {
-                self.history.push(value.unsigned_abs());
-                while self.history.len() > self.max_history {
-                    self.history.remove(0);
-                }
-            }
-        }
-    }
-
-    /// Returns the gauge fill percentage (0.0 to 1.0).
-    pub fn gauge_percentage(&self) -> Option<f64> {
-        match &self.kind {
-            MetricKind::Gauge { value, max } if *max > 0 => Some(*value as f64 / *max as f64),
-            _ => None,
-        }
-    }
-}
 
 /// Messages that can be sent to a MetricsDashboard.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -327,12 +128,34 @@ impl MetricsDashboardState {
     }
 
     /// Sets the title (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("Ops", 0),
+    /// ], 1).with_title("System Metrics");
+    /// assert_eq!(state.title(), Some("System Metrics"));
+    /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("Ops", 0),
+    /// ], 1).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -341,41 +164,138 @@ impl MetricsDashboardState {
     // ---- Accessors ----
 
     /// Returns the widgets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    ///     MetricWidget::counter("B", 0),
+    /// ], 2);
+    /// assert_eq!(state.widgets().len(), 2);
+    /// ```
     pub fn widgets(&self) -> &[MetricWidget] {
         &self.widgets
     }
 
     /// Returns a mutable reference to the widgets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("Ops", 0),
+    /// ], 1);
+    /// state.widgets_mut()[0].set_counter_value(42);
+    /// assert_eq!(state.widgets()[0].display_value(), "42");
+    /// ```
     pub fn widgets_mut(&mut self) -> &mut [MetricWidget] {
         &mut self.widgets
     }
 
     /// Returns a reference to the widget at the given index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("Ops", 42),
+    /// ], 1);
+    /// assert_eq!(state.widget(0).unwrap().display_value(), "42");
+    /// assert!(state.widget(1).is_none());
+    /// ```
     pub fn widget(&self, index: usize) -> Option<&MetricWidget> {
         self.widgets.get(index)
     }
 
     /// Returns a mutable reference to the widget at the given index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("Ops", 0),
+    /// ], 1);
+    /// state.widget_mut(0).unwrap().set_counter_value(10);
+    /// assert_eq!(state.widget(0).unwrap().display_value(), "10");
+    /// ```
     pub fn widget_mut(&mut self, index: usize) -> Option<&mut MetricWidget> {
         self.widgets.get_mut(index)
     }
 
     /// Returns the number of widgets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    ///     MetricWidget::counter("B", 0),
+    /// ], 2);
+    /// assert_eq!(state.widget_count(), 2);
+    /// ```
     pub fn widget_count(&self) -> usize {
         self.widgets.len()
     }
 
     /// Returns the number of columns.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    /// ], 3);
+    /// assert_eq!(state.columns(), 3);
+    /// ```
     pub fn columns(&self) -> usize {
         self.columns
     }
 
     /// Sets the number of columns.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    /// ], 3);
+    /// state.set_columns(2);
+    /// assert_eq!(state.columns(), 2);
+    /// ```
     pub fn set_columns(&mut self, columns: usize) {
         self.columns = columns.max(1);
     }
 
     /// Returns the number of rows (based on widget count and columns).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    ///     MetricWidget::counter("B", 0),
+    ///     MetricWidget::counter("C", 0),
+    ///     MetricWidget::counter("D", 0),
+    /// ], 3);
+    /// assert_eq!(state.rows(), 2); // 4 widgets in 3 columns = 2 rows
+    /// ```
     pub fn rows(&self) -> usize {
         if self.widgets.is_empty() {
             0
@@ -385,11 +305,33 @@ impl MetricsDashboardState {
     }
 
     /// Returns the selected widget index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    /// ], 1);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    /// ], 1);
+    /// assert_eq!(state.selected(), state.selected_index());
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
@@ -424,27 +366,86 @@ impl MetricsDashboardState {
     }
 
     /// Returns a reference to the selected widget.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("Ops", 42),
+    /// ], 1);
+    /// assert_eq!(state.selected_widget().unwrap().label(), "Ops");
+    /// ```
     pub fn selected_widget(&self) -> Option<&MetricWidget> {
         self.widgets.get(self.selected?)
     }
 
     /// Returns the (row, column) position of the selected widget.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    ///     MetricWidget::counter("B", 0),
+    ///     MetricWidget::counter("C", 0),
+    ///     MetricWidget::counter("D", 0),
+    /// ], 3);
+    /// state.set_selected(Some(3)); // 4th widget
+    /// assert_eq!(state.selected_position(), Some((1, 0))); // row 1, col 0
+    /// ```
     pub fn selected_position(&self) -> Option<(usize, usize)> {
         let selected = self.selected?;
         Some((selected / self.columns, selected % self.columns))
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![], 1);
+    /// assert_eq!(state.title(), None);
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![], 1);
+    /// state.set_title(Some("Dashboard".to_string()));
+    /// assert_eq!(state.title(), Some("Dashboard"));
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
 
     /// Returns true if the dashboard has no widgets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![], 1);
+    /// assert!(state.is_empty());
+    ///
+    /// let state2 = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    /// ], 1);
+    /// assert!(!state2.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.widgets.is_empty()
     }
@@ -452,36 +453,119 @@ impl MetricsDashboardState {
     // ---- Instance methods ----
 
     /// Returns true if the component is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![], 1);
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![], 1);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the component is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![], 1);
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![], 1);
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
 
     /// Maps an input event to a dashboard message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricsDashboardMessage, MetricWidget};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    /// ], 1);
+    /// state.set_focused(true);
+    /// let event = Event::key(KeyCode::Enter);
+    /// assert_eq!(state.handle_event(&event), Some(MetricsDashboardMessage::Select));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<MetricsDashboardMessage> {
         MetricsDashboard::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricsDashboardOutput, MetricWidget};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    ///     MetricWidget::counter("B", 0),
+    /// ], 2);
+    /// state.set_focused(true);
+    /// let event = Event::key(KeyCode::Right);
+    /// let output = state.dispatch_event(&event);
+    /// assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(1)));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<MetricsDashboardOutput> {
         MetricsDashboard::dispatch_event(self, event)
     }
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{
+    ///     MetricsDashboardState, MetricsDashboardMessage,
+    ///     MetricsDashboardOutput, MetricWidget,
+    /// };
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("A", 0),
+    /// ], 1);
+    /// let output = state.update(MetricsDashboardMessage::Select);
+    /// assert_eq!(output, Some(MetricsDashboardOutput::Selected(0)));
+    /// ```
     pub fn update(&mut self, msg: MetricsDashboardMessage) -> Option<MetricsDashboardOutput> {
         MetricsDashboard::update(self, msg)
     }
