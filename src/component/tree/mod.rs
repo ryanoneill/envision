@@ -362,6 +362,11 @@ impl<T: Clone> TreeState<T> {
         self.selected_index
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Sets the selected index in the flattened view.
     ///
     /// The index is clamped to the valid range of visible nodes.

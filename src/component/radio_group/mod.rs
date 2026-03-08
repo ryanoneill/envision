@@ -191,6 +191,11 @@ impl<T: Clone> RadioGroupState<T> {
         self.selected
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Returns a reference to the currently selected item.
     ///
     /// Returns `None` if the options are empty or no selection exists.

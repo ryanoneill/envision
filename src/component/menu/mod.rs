@@ -240,6 +240,11 @@ impl MenuState {
         self.selected_index
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Sets the selected item index.
     ///
     /// Pass `Some(index)` to select an item (clamped to valid range), or

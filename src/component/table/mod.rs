@@ -446,6 +446,11 @@ impl<T: TableRow> TableState<T> {
         self.selected
     }
 
+    /// Alias for [`selected_index()`](Self::selected_index).
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Returns a reference to the currently selected row.
     ///
     /// Returns `None` if no row is selected or the table is empty.
