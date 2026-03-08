@@ -59,7 +59,7 @@ pub use item::*;
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::Component;
+use super::{Component, Disableable};
 use crate::theme::Theme;
 
 /// Section of the status bar for addressing items.
@@ -648,6 +648,16 @@ impl Component for StatusBar {
                 .with_meta("item_count", item_count.to_string());
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
         frame.render_widget(annotated, area);
+    }
+}
+
+impl Disableable for StatusBar {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
     }
 }
 

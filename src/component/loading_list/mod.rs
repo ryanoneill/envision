@@ -33,7 +33,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
-use super::{Component, Focusable};
+use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -814,6 +814,16 @@ impl<T: Clone> Focusable for LoadingList<T> {
 
     fn set_focused(state: &mut Self::State, focused: bool) {
         state.focused = focused;
+    }
+}
+
+impl<T: Clone> Disableable for LoadingList<T> {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
     }
 }
 

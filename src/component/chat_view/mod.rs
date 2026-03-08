@@ -28,7 +28,7 @@ use std::marker::PhantomData;
 
 use ratatui::prelude::*;
 
-use super::{Component, Focusable, TextAreaMessage, TextAreaOutput, TextAreaState};
+use super::{Component, Disableable, Focusable, TextAreaMessage, TextAreaOutput, TextAreaState};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
@@ -845,6 +845,16 @@ impl Focusable for ChatView {
         if focused && state.focus == Focus::Input {
             state.input.set_focused(true);
         }
+    }
+}
+
+impl Disableable for ChatView {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
     }
 }
 

@@ -26,7 +26,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::Component;
+use super::{Component, Disableable};
 use crate::theme::Theme;
 
 /// Layout style for key hints display.
@@ -562,6 +562,16 @@ impl Component for KeyHints {
                 .with_id("key_hints");
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
         frame.render_widget(annotated, area);
+    }
+}
+
+impl Disableable for KeyHints {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
     }
 }
 

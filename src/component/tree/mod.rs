@@ -24,7 +24,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Focusable};
+use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -873,6 +873,16 @@ impl<T: Clone + 'static> Focusable for Tree<T> {
 
     fn set_focused(state: &mut Self::State, focused: bool) {
         state.focused = focused;
+    }
+}
+
+impl<T: Clone + 'static> Disableable for Tree<T> {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
     }
 }
 

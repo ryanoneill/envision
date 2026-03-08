@@ -33,7 +33,7 @@ use std::time::Duration;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Gauge};
 
-use super::Component;
+use super::{Component, Disableable};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a ProgressBar.
@@ -442,6 +442,16 @@ impl Component for ProgressBar {
                 .with_value(format!("{}%", state.percentage()));
         let annotated = crate::annotation::Annotate::new(gauge, annotation);
         frame.render_widget(annotated, area);
+    }
+}
+
+impl Disableable for ProgressBar {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
     }
 }
 
