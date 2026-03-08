@@ -60,6 +60,17 @@ impl DataSeries {
     }
 
     /// Sets the color (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    /// use ratatui::style::Color;
+    ///
+    /// let series = DataSeries::new("CPU", vec![1.0, 2.0])
+    ///     .with_color(Color::Red);
+    /// assert_eq!(series.color(), Color::Red);
+    /// ```
     pub fn with_color(mut self, color: Color) -> Self {
         self.color = color;
         self
@@ -81,11 +92,32 @@ impl DataSeries {
     }
 
     /// Appends a value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let mut series = DataSeries::new("Temp", vec![20.0]);
+    /// series.push(25.0);
+    /// assert_eq!(series.len(), 2);
+    /// assert_eq!(series.values(), &[20.0, 25.0]);
+    /// ```
     pub fn push(&mut self, value: f64) {
         self.values.push(value);
     }
 
     /// Appends a value, removing the oldest if over max length.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let mut series = DataSeries::new("Temp", vec![1.0, 2.0, 3.0]);
+    /// series.push_bounded(4.0, 3);
+    /// assert_eq!(series.values(), &[2.0, 3.0, 4.0]);
+    /// ```
     pub fn push_bounded(&mut self, value: f64, max_len: usize) {
         self.values.push(value);
         while self.values.len() > max_len {
@@ -94,11 +126,29 @@ impl DataSeries {
     }
 
     /// Returns the minimum value, or 0.0 if empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("Temp", vec![15.0, 22.0, 8.0]);
+    /// assert_eq!(series.min(), 8.0);
+    /// ```
     pub fn min(&self) -> f64 {
         self.values.iter().copied().reduce(f64::min).unwrap_or(0.0)
     }
 
     /// Returns the maximum value, or 0.0 if empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("Temp", vec![15.0, 22.0, 8.0]);
+    /// assert_eq!(series.max(), 22.0);
+    /// ```
     pub fn max(&self) -> f64 {
         self.values.iter().copied().reduce(f64::max).unwrap_or(0.0)
     }
@@ -233,6 +283,17 @@ impl ChartState {
     }
 
     /// Creates a vertical bar chart state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartKind, ChartState, DataSeries};
+    ///
+    /// let state = ChartState::bar_vertical(vec![
+    ///     DataSeries::new("Sales", vec![10.0, 20.0, 30.0]),
+    /// ]);
+    /// assert_eq!(state.kind(), &ChartKind::BarVertical);
+    /// ```
     pub fn bar_vertical(series: Vec<DataSeries>) -> Self {
         Self {
             series,
@@ -251,12 +312,32 @@ impl ChartState {
     }
 
     /// Sets the title (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0])])
+    ///     .with_title("CPU Usage");
+    /// assert_eq!(state.title(), Some("CPU Usage"));
+    /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Sets the X-axis label (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0])])
+    ///     .with_x_label("Time");
+    /// assert_eq!(state.x_label(), Some("Time"));
+    /// ```
     pub fn with_x_label(mut self, label: impl Into<String>) -> Self {
         self.x_label = Some(label.into());
         self
@@ -386,11 +467,33 @@ impl ChartState {
     }
 
     /// Adds a series.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let mut state = ChartState::line(vec![]);
+    /// state.add_series(DataSeries::new("CPU", vec![50.0]));
+    /// assert_eq!(state.series_count(), 1);
+    /// ```
     pub fn add_series(&mut self, series: DataSeries) {
         self.series.push(series);
     }
 
     /// Clears all series.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let mut state = ChartState::line(vec![
+    ///     DataSeries::new("A", vec![1.0]),
+    /// ]);
+    /// state.clear_series();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn clear_series(&mut self) {
         self.series.clear();
         self.active_series = 0;

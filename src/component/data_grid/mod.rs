@@ -194,11 +194,50 @@ impl<T: TableRow> DataGridState<T> {
     }
 
     /// Returns the rows.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert_eq!(state.rows().len(), 1);
+    /// ```
     pub fn rows(&self) -> &[T] {
         &self.rows
     }
 
     /// Returns the columns.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert_eq!(state.columns().len(), 1);
+    /// assert_eq!(state.columns()[0].header(), "Name");
+    /// ```
     pub fn columns(&self) -> &[Column] {
         &self.columns
     }
@@ -269,6 +308,25 @@ impl<T: TableRow> DataGridState<T> {
     }
 
     /// Returns true if a cell is currently being edited.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert!(!state.is_editing());
+    /// ```
     pub fn is_editing(&self) -> bool {
         self.editing
     }
@@ -289,16 +347,72 @@ impl<T: TableRow> DataGridState<T> {
     }
 
     /// Returns the number of rows.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert_eq!(state.row_count(), 2);
+    /// ```
     pub fn row_count(&self) -> usize {
         self.rows.len()
     }
 
     /// Returns the number of columns.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![
+    ///         Column::new("Name", Constraint::Min(10)),
+    ///         Column::new("Value", Constraint::Min(5)),
+    ///     ],
+    /// );
+    /// assert_eq!(state.column_count(), 2);
+    /// ```
     pub fn column_count(&self) -> usize {
         self.columns.len()
     }
 
     /// Returns true if the grid has no rows.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state: DataGridState<Item> = DataGridState::default();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.rows.is_empty()
     }

@@ -259,6 +259,17 @@ impl FileBrowserState {
     }
 
     /// Sets the selection mode (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState, SelectionMode};
+    ///
+    /// let state = FileBrowserState::new("/", vec![
+    ///     FileEntry::file("a.txt", "/a.txt"),
+    /// ]).with_selection_mode(SelectionMode::Multiple);
+    /// assert_eq!(state.selection_mode(), &SelectionMode::Multiple);
+    /// ```
     pub fn with_selection_mode(mut self, mode: SelectionMode) -> Self {
         self.selection_mode = mode;
         self
@@ -301,6 +312,15 @@ impl FileBrowserState {
     // ---- Accessors ----
 
     /// Returns the current directory path.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/home/user", vec![]);
+    /// assert_eq!(state.current_path(), "/home/user");
+    /// ```
     pub fn current_path(&self) -> &str {
         &self.current_path
     }
@@ -329,6 +349,18 @@ impl FileBrowserState {
     }
 
     /// Returns the currently selected entry.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![
+    ///     FileEntry::file("readme.md", "/readme.md"),
+    /// ]);
+    /// let entry = state.selected_entry().unwrap();
+    /// assert_eq!(entry.name(), "readme.md");
+    /// ```
     pub fn selected_entry(&self) -> Option<&FileEntry> {
         self.selected_index
             .and_then(|sel| self.filtered_indices.get(sel))
@@ -362,6 +394,15 @@ impl FileBrowserState {
     }
 
     /// Returns the current filter text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![]);
+    /// assert_eq!(state.filter_text(), "");
+    /// ```
     pub fn filter_text(&self) -> &str {
         &self.filter_text
     }
@@ -382,6 +423,18 @@ impl FileBrowserState {
     }
 
     /// Returns whether hidden files are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![]);
+    /// assert!(!state.show_hidden());
+    ///
+    /// let state = FileBrowserState::new("/", vec![]).with_show_hidden(true);
+    /// assert!(state.show_hidden());
+    /// ```
     pub fn show_hidden(&self) -> bool {
         self.show_hidden
     }

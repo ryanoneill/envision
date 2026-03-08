@@ -108,12 +108,31 @@ impl ScrollableTextState {
     }
 
     /// Sets the title (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ScrollableTextState;
+    ///
+    /// let state = ScrollableTextState::new()
+    ///     .with_title("Preview");
+    /// assert_eq!(state.title(), Some("Preview"));
+    /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ScrollableTextState;
+    ///
+    /// let state = ScrollableTextState::new().with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -129,12 +148,34 @@ impl ScrollableTextState {
     /// Sets the text content.
     ///
     /// Resets the scroll offset to 0.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ScrollableTextState;
+    ///
+    /// let mut state = ScrollableTextState::new();
+    /// state.set_content("New content");
+    /// assert_eq!(state.content(), "New content");
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn set_content(&mut self, content: impl Into<String>) {
         self.content = content.into();
         self.scroll_offset = 0;
     }
 
     /// Appends text to the content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ScrollableTextState;
+    ///
+    /// let mut state = ScrollableTextState::new()
+    ///     .with_content("Hello");
+    /// state.append(", world!");
+    /// assert_eq!(state.content(), "Hello, world!");
+    /// ```
     pub fn append(&mut self, text: &str) {
         self.content.push_str(text);
     }
@@ -216,6 +257,17 @@ impl ScrollableTextState {
     }
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState};
+    ///
+    /// let mut state = ScrollableTextState::new()
+    ///     .with_content("Line 1\nLine 2\nLine 3");
+    /// let output = state.update(ScrollableTextMessage::ScrollDown);
+    /// assert_eq!(output, Some(ScrollableTextOutput::ScrollChanged(1)));
+    /// ```
     pub fn update(&mut self, msg: ScrollableTextMessage) -> Option<ScrollableTextOutput> {
         ScrollableText::update(self, msg)
     }

@@ -108,12 +108,30 @@ impl Step {
     }
 
     /// Sets the step status (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::{Step, StepStatus};
+    ///
+    /// let step = Step::new("Build").with_status(StepStatus::Completed);
+    /// assert_eq!(step.status(), &StepStatus::Completed);
+    /// ```
     pub fn with_status(mut self, status: StepStatus) -> Self {
         self.status = status;
         self
     }
 
     /// Sets the step description (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    ///
+    /// let step = Step::new("Test").with_description("Run unit tests");
+    /// assert_eq!(step.description(), Some("Run unit tests"));
+    /// ```
     pub fn with_description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
@@ -244,18 +262,51 @@ impl StepIndicatorState {
     }
 
     /// Sets the orientation (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::{Step, StepOrientation};
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A")])
+    ///     .with_orientation(StepOrientation::Vertical);
+    /// assert_eq!(state.orientation(), &StepOrientation::Vertical);
+    /// ```
     pub fn with_orientation(mut self, orientation: StepOrientation) -> Self {
         self.orientation = orientation;
         self
     }
 
     /// Sets the title (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A")])
+    ///     .with_title("Pipeline");
+    /// assert_eq!(state.title(), Some("Pipeline"));
+    /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Sets the connector string (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A")])
+    ///     .with_connector("-->");
+    /// assert_eq!(state.connector(), "-->");
+    /// ```
     pub fn with_connector(mut self, connector: impl Into<String>) -> Self {
         self.connector = connector.into();
         self
@@ -294,6 +345,20 @@ impl StepIndicatorState {
     }
 
     /// Returns the index of the currently active step, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::{Step, StepStatus};
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![
+    ///     Step::new("Build").with_status(StepStatus::Completed),
+    ///     Step::new("Test").with_status(StepStatus::Active),
+    ///     Step::new("Deploy"),
+    /// ]);
+    /// assert_eq!(state.active_step_index(), Some(1));
+    /// ```
     pub fn active_step_index(&self) -> Option<usize> {
         self.steps
             .iter()
@@ -301,6 +366,19 @@ impl StepIndicatorState {
     }
 
     /// Returns true if all steps are completed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::{Step, StepStatus};
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![
+    ///     Step::new("Build").with_status(StepStatus::Completed),
+    ///     Step::new("Test").with_status(StepStatus::Completed),
+    /// ]);
+    /// assert!(state.is_all_completed());
+    /// ```
     pub fn is_all_completed(&self) -> bool {
         !self.steps.is_empty()
             && self

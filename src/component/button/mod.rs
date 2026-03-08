@@ -80,16 +80,44 @@ impl ButtonState {
     }
 
     /// Returns the button label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ButtonState;
+    ///
+    /// let state = ButtonState::new("Submit");
+    /// assert_eq!(state.label(), "Submit");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Sets the button label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ButtonState;
+    ///
+    /// let mut state = ButtonState::new("Save");
+    /// state.set_label("Save All");
+    /// assert_eq!(state.label(), "Save All");
+    /// ```
     pub fn set_label(&mut self, label: impl Into<String>) {
         self.label = label.into();
     }
 
     /// Returns true if the button is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ButtonState;
+    ///
+    /// let state = ButtonState::new("OK");
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
@@ -97,37 +125,109 @@ impl ButtonState {
     /// Sets the disabled state.
     ///
     /// Disabled buttons do not respond to press events.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ButtonState;
+    ///
+    /// let mut state = ButtonState::new("OK");
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
 
     /// Sets the disabled state using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ButtonState;
+    ///
+    /// let state = ButtonState::new("OK").with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Returns true if the button is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ButtonState;
+    ///
+    /// let state = ButtonState::new("OK");
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ButtonState;
+    ///
+    /// let mut state = ButtonState::new("OK");
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Maps an input event to a button message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ButtonMessage, ButtonState};
+    /// use envision::input::Event;
+    ///
+    /// let mut state = ButtonState::new("OK");
+    /// state.set_focused(true);
+    /// let event = Event::key(envision::input::KeyCode::Enter);
+    /// assert_eq!(state.handle_event(&event), Some(ButtonMessage::Press));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<ButtonMessage> {
         Button::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ButtonOutput, ButtonState};
+    /// use envision::input::Event;
+    ///
+    /// let mut state = ButtonState::new("OK");
+    /// state.set_focused(true);
+    /// let event = Event::key(envision::input::KeyCode::Enter);
+    /// assert_eq!(state.dispatch_event(&event), Some(ButtonOutput::Pressed));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<ButtonOutput> {
         Button::dispatch_event(self, event)
     }
 
     /// Updates the button state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ButtonMessage, ButtonOutput, ButtonState};
+    ///
+    /// let mut state = ButtonState::new("OK");
+    /// let output = state.update(ButtonMessage::Press);
+    /// assert_eq!(output, Some(ButtonOutput::Pressed));
+    /// ```
     pub fn update(&mut self, msg: ButtonMessage) -> Option<ButtonOutput> {
         Button::update(self, msg)
     }

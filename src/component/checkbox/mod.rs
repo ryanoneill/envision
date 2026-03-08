@@ -106,11 +106,30 @@ impl CheckboxState {
     }
 
     /// Returns the checkbox label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CheckboxState;
+    ///
+    /// let state = CheckboxState::new("Accept terms");
+    /// assert_eq!(state.label(), "Accept terms");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Sets the checkbox label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CheckboxState;
+    ///
+    /// let mut state = CheckboxState::new("Accept");
+    /// state.set_label("I agree to terms");
+    /// assert_eq!(state.label(), "I agree to terms");
+    /// ```
     pub fn set_label(&mut self, label: impl Into<String>) {
         self.label = label.into();
     }
@@ -121,6 +140,16 @@ impl CheckboxState {
     }
 
     /// Sets the checked state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CheckboxState;
+    ///
+    /// let mut state = CheckboxState::new("Opt in");
+    /// state.set_checked(true);
+    /// assert!(state.is_checked());
+    /// ```
     pub fn set_checked(&mut self, checked: bool) {
         self.checked = checked;
     }
@@ -138,6 +167,15 @@ impl CheckboxState {
     }
 
     /// Sets the disabled state using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CheckboxState;
+    ///
+    /// let state = CheckboxState::new("Option").with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -154,6 +192,18 @@ impl CheckboxState {
     }
 
     /// Maps an input event to a checkbox message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{CheckboxMessage, CheckboxState};
+    /// use envision::input::Event;
+    ///
+    /// let mut state = CheckboxState::new("Opt in");
+    /// state.set_focused(true);
+    /// let event = Event::key(envision::input::KeyCode::Enter);
+    /// assert_eq!(state.handle_event(&event), Some(CheckboxMessage::Toggle));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<CheckboxMessage> {
         Checkbox::handle_event(self, event)
     }
@@ -164,6 +214,17 @@ impl CheckboxState {
     }
 
     /// Updates the checkbox state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{CheckboxMessage, CheckboxOutput, CheckboxState};
+    ///
+    /// let mut state = CheckboxState::new("Dark mode");
+    /// let output = state.update(CheckboxMessage::Toggle);
+    /// assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
+    /// assert!(state.is_checked());
+    /// ```
     pub fn update(&mut self, msg: CheckboxMessage) -> Option<CheckboxOutput> {
         Checkbox::update(self, msg)
     }
