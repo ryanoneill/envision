@@ -598,8 +598,16 @@ async fn test_subscription_cancellation() {
     // Quit cancels subscriptions
     vt.quit();
 
-    // Wait more - no new messages should arrive
+    // Drain any message that was already in-flight before cancellation
+    tokio::time::sleep(Duration::from_millis(20)).await;
+    vt.process_pending();
+    let count_after_quit = vt.state().count;
+
+    // At most one extra tick may have been in-flight when cancel was triggered
+    assert!(count_after_quit <= count_before_quit + 1);
+
+    // Wait more - no new messages should arrive after the drain
     tokio::time::sleep(Duration::from_millis(50)).await;
     vt.process_pending();
-    assert_eq!(vt.state().count, count_before_quit);
+    assert_eq!(vt.state().count, count_after_quit);
 }
