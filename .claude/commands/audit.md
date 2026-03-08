@@ -124,7 +124,8 @@ Evaluate all 25 categories below. For each category, provide specific evidence (
   - List every component with visibility management, check Toggleable implementation
   - Verify `with_*` builder methods exist on all components or none
   - Verify instance methods on all State types
-- Trust eroders: `selected()` vs `selected_item()` vs `selected_value()` for same concept, missing disabled state on interactive components, builder methods on some but not others
+- Re-export completeness: are all public types from submodules re-exported at the crate root? Compare `src/app/mod.rs` exports vs `src/lib.rs` exports.
+- Trust eroders: `selected()` vs `selected_item()` vs `selected_value()` for same concept, missing disabled state on interactive components, builder methods on some but not others, types exported from submodules but not crate root
 
 **5. Modularity and Composability**
 - Component independence: can you use one without pulling all?
@@ -134,7 +135,8 @@ Evaluate all 25 categories below. For each category, provide specific evidence (
 - Component nesting: can components contain other components naturally?
 - Overlay system: generic or hardcoded to specific types?
 - Dependency weight: how many transitive deps for minimal use?
-- Trust eroders: no feature flags (pay for 25 components to use 2), tight coupling between unrelated modules
+- Dependency leakage: do public API signatures expose types from dependencies (ratatui, crossterm, tokio) that users shouldn't need to know about?
+- Trust eroders: no feature flags (pay for 25 components to use 2), tight coupling between unrelated modules, backend types leaked into generic parameters
 
 **6. Usability and Ergonomics**
 - Import ergonomics: how many imports for typical use?
@@ -153,11 +155,12 @@ Evaluate all 25 categories below. For each category, provide specific evidence (
 - Is tokio's complexity hidden from basic use cases?
 - Terminal setup/teardown: automatic?
 - Testing setup: how much boilerplate?
+- Testing API availability: are test utilities accessible from integration tests and downstream crates, not just crate-internal tests? (Check for `#[cfg(test)]` on non-module items in `src/harness/`)
 - Specific checks:
   - `view()` signature requiring `Frame` and `Rect` from ratatui
   - State types exposing `list_state_mut()` returning ratatui internals
   - Prelude re-exporting `ratatui::prelude::*`
-- Trust eroders: needing to understand ratatui to use envision, leaked internal state types
+- Trust eroders: needing to understand ratatui to use envision, leaked internal state types, test helpers gated behind `#[cfg(test)]` instead of a feature flag
 
 **8. Type Safety and Error Handling**
 - Does the type system prevent misuse? (e.g., can you send wrong Message to wrong component?)
@@ -166,7 +169,8 @@ Evaluate all 25 categories below. For each category, provide specific evidence (
 - Panic freedom: does the library ever panic on valid input?
 - Option vs Result: appropriate use?
 - Boundary validation: are indices clamped or do they cause panics?
-- Trust eroders: no custom error types, panics on out-of-bounds, stringly-typed APIs
+- Generic parameter minimality: are type parameters hidden via aliases when users don't need them? (e.g., `Runtime<A, B>` vs `VirtualRuntime<A>`)
+- Trust eroders: no custom error types, panics on out-of-bounds, stringly-typed APIs, unnecessary generic parameters in user-facing types
 
 ---
 

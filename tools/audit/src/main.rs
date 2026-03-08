@@ -3,6 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
 
+mod api_quality;
 mod cargo_checks;
 mod code_analysis;
 mod file_stats;
@@ -31,10 +32,13 @@ fn main() {
         Some("code") => code_analysis::run(&project_root),
         Some("cargo") => cargo_checks::run(&project_root),
         Some("project") => project_analysis::run(&project_root),
+        Some("api") => api_quality::run(&project_root),
         Some("all") | None => {
             file_stats::run(&project_root);
             println!();
             code_analysis::run(&project_root);
+            println!();
+            api_quality::run(&project_root);
             println!();
             project_analysis::run(&project_root);
             println!();
@@ -119,6 +123,7 @@ fn print_usage() {
     eprintln!("Commands:");
     eprintln!("  stats    File and line count statistics");
     eprintln!("  code     Source code analysis");
+    eprintln!("  api      API quality checks (re-exports, dependency leakage, test gating)");
     eprintln!("  project  Project-level analysis (files, deps, CI, examples)");
     eprintln!("  cargo    Run cargo checks (test, clippy, doc)");
     eprintln!("  all      Run all analyses (default)");
