@@ -203,9 +203,10 @@ impl TextAreaState {
             if self.cursor_row >= self.lines.len() {
                 self.cursor_row = self.lines.len() - 1;
             }
-            // Clamp cursor column
-            let line_len = self.lines[self.cursor_row].len();
-            self.cursor_col = self.cursor_col.min(line_len);
+            // Clamp cursor column to a valid char boundary.
+            // Simply clamping to line_len is insufficient because that
+            // could leave cursor_col in the middle of a multi-byte character.
+            self.clamp_cursor_col();
             true
         } else {
             // Single line: just clear it
@@ -239,5 +240,32 @@ impl TextAreaState {
         } else {
             false
         }
+    }
+
+    /// Clamp cursor_col to a valid char boundary on the current line.
+    ///
+    /// After operations that change the current line (e.g., delete_line),
+    /// cursor_col may no longer be on a char boundary. This method finds
+    /// the nearest valid boundary at or before cursor_col.
+    fn clamp_cursor_col(&mut self) {
+        let line = &self.lines[self.cursor_row];
+        let line_len = line.len();
+
+        if self.cursor_col >= line_len {
+            self.cursor_col = line_len;
+            return;
+        }
+
+        // If already on a boundary, nothing to do
+        if line.is_char_boundary(self.cursor_col) {
+            return;
+        }
+
+        // Walk backwards to find the nearest char boundary
+        let mut col = self.cursor_col;
+        while col > 0 && !line.is_char_boundary(col) {
+            col -= 1;
+        }
+        self.cursor_col = col;
     }
 }
