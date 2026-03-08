@@ -16,7 +16,8 @@
 //! // requires real terminal
 //! #[tokio::main]
 //! async fn main() -> std::io::Result<()> {
-//!     Runtime::<MyApp>::new_terminal()?.run_terminal().await
+//!     let _final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
+//!     Ok(())
 //! }
 //! ```
 //!
