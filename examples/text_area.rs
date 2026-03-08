@@ -56,8 +56,7 @@ impl App for TextAreaApp {
         let lines = state.editor.line_count();
         let status = format!(" Ln {}, Col {} | {} lines", row + 1, col + 1, lines);
         frame.render_widget(
-            ratatui::widgets::Paragraph::new(status)
-                .style(Style::default().fg(Color::DarkGray)),
+            ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[1],
         );
     }

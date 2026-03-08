@@ -90,6 +90,22 @@ required-features = ["input-components"]
 name = "chat_app"
 required-features = ["compound-components"]
 
+[[example]]
+name = "tree"
+required-features = ["data-components"]
+
+[[example]]
+name = "dropdown"
+required-features = ["input-components"]
+
+[[example]]
+name = "text_area"
+required-features = ["input-components"]
+
+[[example]]
+name = "data_grid"
+required-features = ["compound-components"]
+
 [[bench]]
 name = "capture_backend"
 harness = false

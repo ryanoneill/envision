@@ -78,8 +78,7 @@ impl App for TreeApp {
             .unwrap_or_else(|| "None".into());
         let status = format!(" Selected: {}", selected);
         frame.render_widget(
-            ratatui::widgets::Paragraph::new(status)
-                .style(Style::default().fg(Color::DarkGray)),
+            ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[1],
         );
     }

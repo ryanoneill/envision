@@ -29,7 +29,15 @@ impl App for DropdownApp {
 
     fn init() -> (State, Command<Msg>) {
         let languages = vec![
-            "Rust", "Python", "TypeScript", "Go", "Java", "C++", "Haskell", "Elixir", "Zig",
+            "Rust",
+            "Python",
+            "TypeScript",
+            "Go",
+            "Java",
+            "C++",
+            "Haskell",
+            "Elixir",
+            "Zig",
         ];
 
         let mut language = DropdownState::new(languages).with_placeholder("Select language...");
@@ -58,8 +66,7 @@ impl App for DropdownApp {
         let selected = state.language.selected_value().unwrap_or("None");
         let status = format!(" Selected: {}", selected);
         frame.render_widget(
-            ratatui::widgets::Paragraph::new(status)
-                .style(Style::default().fg(Color::DarkGray)),
+            ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[1],
         );
     }
