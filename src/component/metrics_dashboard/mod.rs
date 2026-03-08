@@ -28,7 +28,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Sparkline};
 
-use super::{Component, Focusable};
+use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -655,6 +655,16 @@ impl Focusable for MetricsDashboard {
 
     fn set_focused(state: &mut Self::State, focused: bool) {
         state.focused = focused;
+    }
+}
+
+impl Disableable for MetricsDashboard {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
     }
 }
 

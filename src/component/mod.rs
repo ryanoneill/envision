@@ -611,6 +611,50 @@ pub trait Toggleable: Component {
     }
 }
 
+/// A component that can be disabled.
+///
+/// When disabled, a component should render in a visually distinct style
+/// (e.g., grayed out) and ignore interactive input events.
+///
+/// # Example
+///
+/// ```rust
+/// # #[cfg(feature = "input-components")]
+/// # {
+/// use envision::component::{Button, Component, Disableable, Focusable};
+///
+/// let mut state = Button::init();
+/// assert!(!Button::is_disabled(&state));
+///
+/// Button::disable(&mut state);
+/// assert!(Button::is_disabled(&state));
+///
+/// Button::enable(&mut state);
+/// assert!(!Button::is_disabled(&state));
+/// # }
+/// ```
+pub trait Disableable: Component {
+    /// Returns true if this component is currently disabled.
+    fn is_disabled(state: &Self::State) -> bool;
+
+    /// Sets the disabled state of this component.
+    fn set_disabled(state: &mut Self::State, disabled: bool);
+
+    /// Disables this component.
+    ///
+    /// Convenience method equivalent to `set_disabled(state, true)`.
+    fn disable(state: &mut Self::State) {
+        Self::set_disabled(state, true);
+    }
+
+    /// Enables this component.
+    ///
+    /// Convenience method equivalent to `set_disabled(state, false)`.
+    fn enable(state: &mut Self::State) {
+        Self::set_disabled(state, false);
+    }
+}
+
 #[cfg(test)]
 mod test_utils;
 #[cfg(test)]

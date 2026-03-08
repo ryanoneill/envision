@@ -35,8 +35,8 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{
-    Checkbox, CheckboxMessage, CheckboxState, Component, Focusable, InputField, InputFieldMessage,
-    InputFieldState, Select, SelectMessage, SelectState,
+    Checkbox, CheckboxMessage, CheckboxState, Component, Disableable, Focusable, InputField,
+    InputFieldMessage, InputFieldState, Select, SelectMessage, SelectState,
 };
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
@@ -856,6 +856,16 @@ impl Focusable for Form {
     fn set_focused(state: &mut Self::State, focused: bool) {
         state.focused = focused;
         state.sync_field_focus();
+    }
+}
+
+impl Disableable for Form {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
     }
 }
 

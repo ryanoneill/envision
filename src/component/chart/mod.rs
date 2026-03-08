@@ -24,7 +24,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Bar, BarChart, BarGroup, Block, Borders, Paragraph, Sparkline};
 
-use super::Component;
+use super::{Component, Disableable};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -780,6 +780,16 @@ fn render_bar_chart(
     }
 
     frame.render_widget(bar_chart, area);
+}
+
+impl Disableable for Chart {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
+    }
 }
 
 #[cfg(test)]

@@ -27,7 +27,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Focusable};
+use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -500,6 +500,16 @@ impl<T: Clone + Display + 'static> Focusable for Tabs<T> {
 
     fn set_focused(state: &mut Self::State, focused: bool) {
         state.focused = focused;
+    }
+}
+
+impl<T: Clone + Display + 'static> Disableable for Tabs<T> {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
     }
 }
 

@@ -30,7 +30,7 @@ mod tests;
 
 use ratatui::prelude::*;
 
-use crate::component::{Component, Focusable};
+use crate::component::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 use crate::undo::{EditKind, UndoStack};
@@ -946,5 +946,15 @@ impl Focusable for LineInput {
 
     fn set_focused(state: &mut Self::State, focused: bool) {
         state.focused = focused;
+    }
+}
+
+impl Disableable for LineInput {
+    fn is_disabled(state: &Self::State) -> bool {
+        state.disabled
+    }
+
+    fn set_disabled(state: &mut Self::State, disabled: bool) {
+        state.disabled = disabled;
     }
 }
