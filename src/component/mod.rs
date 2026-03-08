@@ -126,11 +126,11 @@ mod text_area;
 #[cfg(feature = "compound-components")]
 mod chart;
 #[cfg(feature = "compound-components")]
-pub mod file_browser;
-#[cfg(feature = "compound-components")]
 mod chat_view;
 #[cfg(feature = "compound-components")]
 mod data_grid;
+#[cfg(feature = "compound-components")]
+pub mod file_browser;
 #[cfg(feature = "compound-components")]
 mod form;
 #[cfg(feature = "compound-components")]
