@@ -186,6 +186,8 @@ mod tabs;
 
 // Overlay components
 #[cfg(feature = "overlay-components")]
+pub mod confirm_dialog;
+#[cfg(feature = "overlay-components")]
 mod dialog;
 #[cfg(feature = "overlay-components")]
 mod tooltip;
@@ -303,6 +305,11 @@ pub use router::{NavigationMode, Router, RouterMessage, RouterOutput, RouterStat
 pub use tabs::{Tabs, TabsMessage, TabsOutput, TabsState};
 
 // Overlay components
+#[cfg(feature = "overlay-components")]
+pub use confirm_dialog::{
+    ConfirmDialog, ConfirmDialogMessage, ConfirmDialogOutput, ConfirmDialogResult,
+    ConfirmDialogState,
+};
 #[cfg(feature = "overlay-components")]
 pub use dialog::{Dialog, DialogButton, DialogMessage, DialogOutput, DialogState};
 #[cfg(feature = "overlay-components")]
