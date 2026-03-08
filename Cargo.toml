@@ -106,6 +106,46 @@ required-features = ["input-components"]
 name = "data_grid"
 required-features = ["compound-components"]
 
+[[example]]
+name = "accordion"
+required-features = ["navigation-components"]
+
+[[example]]
+name = "breadcrumb"
+required-features = ["navigation-components"]
+
+[[example]]
+name = "chart"
+required-features = ["compound-components"]
+
+[[example]]
+name = "checkbox"
+required-features = ["input-components"]
+
+[[example]]
+name = "confirm_dialog"
+required-features = ["overlay-components"]
+
+[[example]]
+name = "form"
+required-features = ["compound-components"]
+
+[[example]]
+name = "key_hints"
+required-features = ["display-components"]
+
+[[example]]
+name = "loading_list"
+required-features = ["data-components"]
+
+[[example]]
+name = "log_viewer"
+required-features = ["compound-components"]
+
+[[example]]
+name = "searchable_list"
+required-features = ["compound-components"]
+
 [[bench]]
 name = "capture_backend"
 harness = false
