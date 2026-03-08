@@ -178,8 +178,9 @@ pub use component::{
 // Overlay components
 #[cfg(feature = "overlay-components")]
 pub use component::{
-    Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Tooltip, TooltipMessage,
-    TooltipOutput, TooltipPosition, TooltipState,
+    ConfirmDialog, ConfirmDialogMessage, ConfirmDialogOutput, ConfirmDialogResult,
+    ConfirmDialogState, Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Tooltip,
+    TooltipMessage, TooltipOutput, TooltipPosition, TooltipState,
 };
 pub use error::{BoxedError, EnvisionError};
 pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};

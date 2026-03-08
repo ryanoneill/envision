@@ -133,6 +133,9 @@ pub enum WidgetType {
     /// A file browser
     FileBrowser,
 
+    /// A confirm dialog
+    ConfirmDialog,
+
     /// A custom widget type
     Custom(String),
 }
@@ -169,6 +172,7 @@ impl WidgetType {
             self,
             WidgetType::Container
                 | WidgetType::Dialog
+                | WidgetType::ConfirmDialog
                 | WidgetType::Scroll
                 | WidgetType::Sidebar
                 | WidgetType::Form
@@ -394,6 +398,11 @@ impl Annotation {
     /// Creates a file browser annotation.
     pub fn file_browser(id: impl Into<String>) -> Self {
         Self::new(WidgetType::FileBrowser).with_id(id)
+    }
+
+    /// Creates a confirm dialog annotation.
+    pub fn confirm_dialog(title: impl Into<String>) -> Self {
+        Self::new(WidgetType::ConfirmDialog).with_label(title)
     }
 
     /// Creates a custom widget annotation.

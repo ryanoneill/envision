@@ -1,14 +1,16 @@
-//! Unicode-width-aware text utilities.
+//! Utility functions for TUI rendering.
 //!
-//! This module provides utility functions for working with text that may
-//! contain characters with varying display widths (e.g., CJK characters,
-//! emoji). All functions operate in terms of display columns rather than
-//! byte or character counts.
+//! This module provides utility functions for working with text and layout
+//! in TUI applications.
 //!
-//! # Functions
+//! # Text Utilities
 //!
 //! - [`truncate_to_width`]: Truncate a string to fit within a maximum display width.
 //! - [`wrapped_line_count`]: Count visual lines when text is wrapped at a given width.
+//!
+//! # Layout Utilities
+//!
+//! - [`centered_rect`]: Calculate a centered rectangle within a given area.
 //!
 //! # Example
 //!
@@ -26,6 +28,7 @@
 //! assert_eq!(wrapped_line_count("hello\nworld", 20), 2);
 //! ```
 
+use ratatui::prelude::Rect;
 use unicode_width::UnicodeWidthChar;
 
 /// Truncates a string to fit within `max_width` display columns.
@@ -159,6 +162,30 @@ pub fn wrapped_line_count(s: &str, width: usize) -> usize {
     } else {
         total_lines
     }
+}
+
+/// Calculates a centered rectangle within the given area.
+///
+/// Returns a `Rect` of the given `width` and `height` centered within `area`.
+/// The dimensions are clamped to fit within the area if they exceed it.
+///
+/// # Examples
+///
+/// ```rust
+/// use ratatui::prelude::Rect;
+/// use envision::util::centered_rect;
+///
+/// let area = Rect::new(0, 0, 80, 24);
+/// let centered = centered_rect(40, 10, area);
+/// assert_eq!(centered.x, 20);
+/// assert_eq!(centered.y, 7);
+/// assert_eq!(centered.width, 40);
+/// assert_eq!(centered.height, 10);
+/// ```
+pub fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
+    let x = area.x + (area.width.saturating_sub(width)) / 2;
+    let y = area.y + (area.height.saturating_sub(height)) / 2;
+    Rect::new(x, y, width.min(area.width), height.min(area.height))
 }
 
 #[cfg(test)]
