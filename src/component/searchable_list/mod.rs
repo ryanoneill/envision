@@ -283,15 +283,20 @@ impl<T: Clone> SearchableListState<T> {
     ///     "Banana".to_string(),
     ///     "Cherry".to_string(),
     /// ]);
-    /// state.set_selected(2);
+    /// state.set_selected(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// assert_eq!(state.selected_item(), Some(&"Cherry".to_string()));
     /// ```
-    pub fn set_selected(&mut self, index: usize) {
-        if self.filtered_indices.is_empty() {
-            return;
+    pub fn set_selected(&mut self, index: Option<usize>) {
+        match index {
+            Some(i) => {
+                if self.filtered_indices.is_empty() {
+                    return;
+                }
+                self.selected = Some(i.min(self.filtered_indices.len() - 1));
+            }
+            None => self.selected = None,
         }
-        self.selected = Some(index.min(self.filtered_indices.len() - 1));
         self.sync_list_state();
     }
 

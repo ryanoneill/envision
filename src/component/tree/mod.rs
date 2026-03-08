@@ -377,15 +377,20 @@ impl<T: Clone> TreeState<T> {
     /// root.add_child(TreeNode::new("Child 2", ()));
     ///
     /// let mut state = TreeState::new(vec![root]);
-    /// state.set_selected(2);
+    /// state.set_selected(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// ```
-    pub fn set_selected(&mut self, index: usize) {
-        if self.roots.is_empty() {
-            return;
+    pub fn set_selected(&mut self, index: Option<usize>) {
+        match index {
+            Some(i) => {
+                if self.roots.is_empty() {
+                    return;
+                }
+                let visible = self.flatten().len();
+                self.selected_index = Some(i.min(visible.saturating_sub(1)));
+            }
+            None => self.selected_index = None,
         }
-        let visible = self.flatten().len();
-        self.selected_index = Some(index.min(visible.saturating_sub(1)));
     }
 
     /// Returns true if the tree is empty.

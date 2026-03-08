@@ -62,7 +62,7 @@ fn test_set_items_resets_invalid_selection() {
         MenuItem::new("B"),
         MenuItem::new("C"),
     ]);
-    state.set_selected(2);
+    state.set_selected(Some(2));
 
     state.set_items(vec![MenuItem::new("X")]);
     assert_eq!(state.selected_index(), Some(0));
@@ -82,7 +82,7 @@ fn test_set_items_preserves_valid_selection() {
         MenuItem::new("B"),
         MenuItem::new("C"),
     ]);
-    state.set_selected(1);
+    state.set_selected(Some(1));
     state.set_items(vec![
         MenuItem::new("X"),
         MenuItem::new("Y"),
@@ -127,7 +127,7 @@ fn test_remove_item_adjusts_selection() {
         MenuItem::new("Edit"),
         MenuItem::new("View"),
     ]);
-    state.set_selected(2);
+    state.set_selected(Some(2));
 
     // Remove last item, selection should clamp
     state.remove_item(2);
@@ -157,10 +157,10 @@ fn test_selected_index() {
         MenuItem::new("C"),
     ]);
 
-    state.set_selected(1);
+    state.set_selected(Some(1));
     assert_eq!(state.selected_index(), Some(1));
 
-    state.set_selected(2);
+    state.set_selected(Some(2));
     assert_eq!(state.selected_index(), Some(2));
 }
 
@@ -168,7 +168,7 @@ fn test_selected_index() {
 fn test_selected_index_clamps() {
     let mut state = MenuState::new(vec![MenuItem::new("A"), MenuItem::new("B")]);
 
-    state.set_selected(10);
+    state.set_selected(Some(10));
     assert_eq!(state.selected_index(), Some(1));
 }
 
@@ -350,7 +350,7 @@ fn test_view_selected() {
         MenuItem::new("View"),
     ]);
     Menu::focus(&mut state);
-    state.set_selected(1);
+    state.set_selected(Some(1));
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 

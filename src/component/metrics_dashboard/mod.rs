@@ -399,14 +399,19 @@ impl MetricsDashboardState {
     ///     MetricWidget::counter("B", 0),
     ///     MetricWidget::counter("C", 0),
     /// ], 3);
-    /// state.set_selected(2);
+    /// state.set_selected(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// ```
-    pub fn set_selected(&mut self, index: usize) {
-        if self.widgets.is_empty() {
-            return;
+    pub fn set_selected(&mut self, index: Option<usize>) {
+        match index {
+            Some(i) => {
+                if self.widgets.is_empty() {
+                    return;
+                }
+                self.selected = Some(i.min(self.widgets.len() - 1));
+            }
+            None => self.selected = None,
         }
-        self.selected = Some(index.min(self.widgets.len() - 1));
     }
 
     /// Returns a reference to the selected widget.

@@ -237,15 +237,23 @@ impl<T: TableRow> DataGridState<T> {
     ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
     ///     vec![Column::new("Name", Constraint::Min(10))],
     /// );
-    /// state.set_selected(1);
+    /// state.set_selected(Some(1));
     /// assert_eq!(state.selected_index(), Some(1));
     /// ```
-    pub fn set_selected(&mut self, index: usize) {
-        if self.rows.is_empty() {
-            return;
+    pub fn set_selected(&mut self, index: Option<usize>) {
+        match index {
+            Some(i) => {
+                if self.rows.is_empty() {
+                    return;
+                }
+                self.editing = false;
+                self.selected_row = Some(i.min(self.rows.len() - 1));
+            }
+            None => {
+                self.editing = false;
+                self.selected_row = None;
+            }
         }
-        self.editing = false;
-        self.selected_row = Some(index.min(self.rows.len() - 1));
     }
 
     /// Returns the currently selected column index.

@@ -200,10 +200,13 @@ impl<T: Clone> RadioGroupState<T> {
 
     /// Sets the selected index.
     ///
-    /// If the index is out of bounds, it will be ignored.
-    pub fn set_selected(&mut self, index: usize) {
-        if index < self.options.len() {
-            self.selected = Some(index);
+    /// Pass `Some(index)` to select an option (out-of-bounds indices are
+    /// ignored), or `None` to clear the selection.
+    pub fn set_selected(&mut self, index: Option<usize>) {
+        match index {
+            Some(i) if i < self.options.len() => self.selected = Some(i),
+            Some(_) => {} // Out of bounds, ignore
+            None => self.selected = None,
         }
     }
 
