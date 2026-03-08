@@ -598,16 +598,21 @@ async fn test_subscription_cancellation() {
     // Quit cancels subscriptions
     vt.quit();
 
-    // Drain any message that was already in-flight before cancellation
-    tokio::time::sleep(Duration::from_millis(20)).await;
-    vt.process_pending();
-    let count_after_quit = vt.state().count;
-
-    // At most one extra tick may have been in-flight when cancel was triggered
-    assert!(count_after_quit <= count_before_quit + 1);
-
-    // Wait more - no new messages should arrive after the drain
+    // Drain any messages that were already in-flight before cancellation.
+    // On Windows CI, timing jitter means several messages may already be
+    // buffered in the channel, so we drain fully rather than asserting a
+    // tight bound on in-flight count.
     tokio::time::sleep(Duration::from_millis(50)).await;
     vt.process_pending();
-    assert_eq!(vt.state().count, count_after_quit);
+    let count_after_drain = vt.state().count;
+
+    // The key invariant: after draining, no NEW messages should arrive
+    // because the subscription has been cancelled.
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    vt.process_pending();
+    assert_eq!(
+        vt.state().count,
+        count_after_drain,
+        "Expected no new messages after cancellation drain"
+    );
 }

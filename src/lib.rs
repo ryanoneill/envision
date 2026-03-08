@@ -131,8 +131,9 @@ pub use app::{
     ChannelSubscription, Command, DebounceSubscription, FilterSubscription,
     IntervalImmediateBuilder, IntervalImmediateSubscription, MappedSubscription, Runtime,
     RuntimeConfig, StreamSubscription, Subscription, SubscriptionExt, TakeSubscription,
-    TerminalEventSubscription, TerminalRuntime, ThrottleSubscription, TickSubscription,
-    TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription, VirtualRuntime,
+    TerminalEventSubscription, TerminalHook, TerminalRuntime, ThrottleSubscription,
+    TickSubscription, TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription,
+    VirtualRuntime,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 // Core component traits and utilities (always available)

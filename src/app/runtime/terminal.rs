@@ -67,6 +67,11 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
         stdout.execute(EnterAlternateScreen)?;
         stdout.execute(EnableMouseCapture)?;
 
+        // Run the on_setup hook if configured
+        if let Some(ref hook) = config.on_setup {
+            hook()?;
+        }
+
         let backend = CrosstermBackend::new(stdout);
         Self::with_backend_and_config(backend, config)
     }
@@ -294,6 +299,11 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
 
     /// Cleans up terminal state.
     fn cleanup_terminal(&mut self) -> io::Result<()> {
+        // Run the on_teardown hook if configured
+        if let Some(ref hook) = self.config.on_teardown {
+            hook()?;
+        }
+
         disable_raw_mode()?;
         self.core
             .terminal
