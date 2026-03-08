@@ -1,0 +1,17 @@
+---
+source: src/component/step_indicator/tests.rs
+assertion_line: 736
+expression: display
+---
+┌──────────────────────────────────────┐
+│✓ Build                               │
+│  Compile sources                     │
+││                                     │
+│● Test                                │
+│  Run unit tests                      │
+││                                     │
+│○ Deploy                              │
+│  Push to production                  │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘

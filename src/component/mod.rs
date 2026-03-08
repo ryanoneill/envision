@@ -182,6 +182,8 @@ mod menu;
 #[cfg(feature = "navigation-components")]
 mod router;
 #[cfg(feature = "navigation-components")]
+pub mod step_indicator;
+#[cfg(feature = "navigation-components")]
 mod tabs;
 
 // Overlay components
@@ -301,6 +303,10 @@ pub use breadcrumb::{
 pub use menu::{Menu, MenuItem, MenuMessage, MenuOutput, MenuState};
 #[cfg(feature = "navigation-components")]
 pub use router::{NavigationMode, Router, RouterMessage, RouterOutput, RouterState};
+#[cfg(feature = "navigation-components")]
+pub use step_indicator::{
+    StepIndicator, StepIndicatorMessage, StepIndicatorOutput, StepIndicatorState,
+};
 #[cfg(feature = "navigation-components")]
 pub use tabs::{Tabs, TabsMessage, TabsOutput, TabsState};
 
