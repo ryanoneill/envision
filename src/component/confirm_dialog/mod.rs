@@ -1,8 +1,15 @@
 //! A confirmation dialog component with preset button configurations.
 //!
-//! `ConfirmDialog` provides a centered modal overlay with a title, message,
+//! [`ConfirmDialog`] provides a centered modal overlay with a title, message,
 //! and button configurations such as Ok, Ok/Cancel, Yes/No, and Yes/No/Cancel.
-//! It supports keyboard shortcuts for quick responses.
+//! It supports keyboard shortcuts for quick responses. State is stored in
+//! [`ConfirmDialogState`], updated via [`ConfirmDialogMessage`], and produces
+//! [`ConfirmDialogOutput`] containing a [`ConfirmDialogResult`].
+//! Button layouts are configured with [`ButtonConfig`].
+//!
+//! Implements [`Focusable`], [`Disableable`](super::Disableable), and [`Toggleable`].
+//!
+//! See also [`Dialog`](super::Dialog) for a general-purpose modal dialog.
 //!
 //! # Example
 //!

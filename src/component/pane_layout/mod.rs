@@ -1,9 +1,15 @@
 //! An N-pane layout manager with proportional sizing and focus cycling.
 //!
-//! `PaneLayout` divides a screen area into multiple panes with configurable
+//! [`PaneLayout`] divides a screen area into multiple panes with configurable
 //! proportions, min/max size constraints, and keyboard-driven focus management.
 //! The parent controls what to render in each pane — this component only manages
-//! the layout and focus.
+//! the layout and focus. State is stored in [`PaneLayoutState`], updated via
+//! [`PaneLayoutMessage`], and produces [`PaneLayoutOutput`]. Panes are configured
+//! with [`PaneConfig`].
+//!
+//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//!
+//! See also [`SplitPanel`](super::SplitPanel) for a simpler two-pane layout.
 //!
 //! # Example
 //!

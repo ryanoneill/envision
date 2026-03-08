@@ -1,7 +1,8 @@
 //! A component for displaying keyboard shortcuts.
 //!
-//! `KeyHints` provides a bar displaying keyboard shortcuts with their actions,
+//! [`KeyHints`] provides a bar displaying keyboard shortcuts with their actions,
 //! commonly used at the bottom of TUI applications to show available commands.
+//! State is stored in [`KeyHintsState`] and updated via [`KeyHintsMessage`].
 //!
 //! # Example
 //!

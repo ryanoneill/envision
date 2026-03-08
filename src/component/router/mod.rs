@@ -1,8 +1,10 @@
 //! A component for multi-screen navigation with history.
 //!
-//! `Router` provides type-safe navigation between screens with back navigation
+//! [`Router<S>`] provides type-safe navigation between screens with back navigation
 //! support. Unlike most components, Router is state-only and doesn't implement
-//! a view - the parent application renders based on the current screen.
+//! a view — the parent application renders based on the current screen. State is
+//! stored in [`RouterState<S>`], updated via [`RouterMessage<S>`], and produces
+//! [`RouterOutput<S>`].
 //!
 //! # Example
 //!

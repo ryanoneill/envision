@@ -1,8 +1,12 @@
 //! A mutually exclusive option selection component.
 //!
-//! `RadioGroup` provides a group of radio buttons where exactly one option
+//! [`RadioGroup<T>`] provides a group of radio buttons where exactly one option
 //! can be selected at a time. Unlike [`SelectableList`](super::SelectableList),
 //! navigation immediately changes the selection (traditional radio button behavior).
+//! State is stored in [`RadioGroupState<T>`], updated via [`RadioGroupMessage`],
+//! and produces [`RadioGroupOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

@@ -1,8 +1,12 @@
 //! A chat interface with message history and multi-line input.
 //!
-//! `ChatView` provides a scrollable message history display and a
+//! [`ChatView`] provides a scrollable message history display and a
 //! [`TextArea`](super::TextArea) input field. Messages can be typed
 //! as user, system, or assistant and are styled differently per role.
+//! State is stored in [`ChatViewState`], updated via [`ChatViewMessage`],
+//! and produces [`ChatViewOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

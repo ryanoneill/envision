@@ -1,7 +1,13 @@
 //! A hierarchical tree view component.
 //!
-//! `Tree` displays data in a hierarchical structure with expandable/collapsible
-//! nodes. It supports keyboard navigation and single selection.
+//! [`Tree<T>`] displays data in a hierarchical structure with expandable/collapsible
+//! nodes. It supports keyboard navigation and single selection. State is stored in
+//! [`TreeState<T>`], updated via [`TreeMessage`], and produces [`TreeOutput`].
+//! Tree data is provided via [`TreeNode<T>`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`Accordion`](super::Accordion) for a simpler collapsible panel list.
 //!
 //! # Example
 //!

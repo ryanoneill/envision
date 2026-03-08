@@ -1,7 +1,8 @@
 //! A status bar component for displaying application state.
 //!
-//! `StatusBar` provides a horizontal bar typically displayed at the bottom of the
-//! screen showing application status, mode indicators, and other information.
+//! [`StatusBar`] provides a horizontal bar typically displayed at the bottom of the
+//! screen showing application status, mode indicators, and other information. State
+//! is stored in [`StatusBarState`] and updated via [`StatusBarMessage`].
 //!
 //! # Features
 //!

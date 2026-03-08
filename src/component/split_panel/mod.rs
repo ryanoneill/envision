@@ -1,8 +1,14 @@
 //! A resizable split panel layout component.
 //!
-//! `SplitPanel` divides an area into two panes (horizontal or vertical)
+//! [`SplitPanel`] divides an area into two panes (horizontal or vertical)
 //! with a draggable split ratio. The parent controls what to render in
-//! each pane — this component only manages the layout and focus.
+//! each pane — this component only manages the layout and focus. State is
+//! stored in [`SplitPanelState`], updated via [`SplitPanelMessage`], and
+//! produces [`SplitPanelOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`PaneLayout`](super::PaneLayout) for N-pane layouts.
 //!
 //! # Example
 //!

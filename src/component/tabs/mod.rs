@@ -1,7 +1,11 @@
 //! A horizontal tab navigation component.
 //!
-//! `Tabs` provides a horizontal tab bar for switching between views or panels.
+//! [`Tabs<T>`] provides a horizontal tab bar for switching between views or panels.
 //! It supports keyboard navigation with Left/Right keys and generic tab types.
+//! State is stored in [`TabsState<T>`], updated via [`TabsMessage`], and produces
+//! [`TabsOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

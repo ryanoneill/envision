@@ -1,8 +1,12 @@
 //! A configurable dashboard of metric widgets.
 //!
-//! `MetricsDashboard` displays a grid of metric widgets, each showing a
+//! [`MetricsDashboard`] displays a grid of metric widgets, each showing a
 //! labeled value with an optional sparkline history. Supports keyboard
-//! navigation between widgets and tick-based value updates.
+//! navigation between widgets and tick-based value updates. State is stored in
+//! [`MetricsDashboardState`], updated via [`MetricsDashboardMessage`], and
+//! produces [`MetricsDashboardOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

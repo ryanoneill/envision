@@ -1,8 +1,13 @@
 //! A compound file browsing component with pluggable filesystem abstraction.
 //!
-//! `FileBrowser` provides a navigable directory listing with filtering, sorting,
+//! [`FileBrowser`] provides a navigable directory listing with filtering, sorting,
 //! and selection support. It uses a [`DirectoryProvider`] trait for filesystem
 //! access, enabling both real filesystem and in-memory/test implementations.
+//! State is stored in [`FileBrowserState`], updated via [`FileBrowserMessage`],
+//! and produces [`FileBrowserOutput`]. Entries are represented as
+//! [`FileEntry`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

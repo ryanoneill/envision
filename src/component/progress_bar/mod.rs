@@ -1,8 +1,12 @@
 //! A progress indicator component for displaying completion status.
 //!
-//! `ProgressBar` provides a visual progress indicator that shows completion
+//! [`ProgressBar`] provides a visual progress indicator that shows completion
 //! from 0% to 100%. This is a **display-only** component that does not
-//! receive keyboard focus.
+//! receive keyboard focus. State is stored in [`ProgressBarState`], updated
+//! via [`ProgressBarMessage`], and produces [`ProgressBarOutput`].
+//!
+//! See also [`Spinner`](super::Spinner) for indeterminate progress,
+//! and [`MultiProgress`](super::MultiProgress) for tracking multiple tasks.
 //!
 //! # Example
 //!

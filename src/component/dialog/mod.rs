@@ -1,8 +1,14 @@
 //! A modal dialog component with configurable buttons.
 //!
-//! `Dialog` provides a centered overlay dialog with title, message, and
-//! configurable buttons. This component implements both `Focusable` and
-//! `Toggleable` traits for focus management and visibility control.
+//! [`Dialog`] provides a centered overlay dialog with title, message, and
+//! configurable buttons. State is stored in [`DialogState`], updated via
+//! [`DialogMessage`], and produces [`DialogOutput`]. Buttons are configured
+//! with [`DialogButton`].
+//!
+//! Implements [`Focusable`], [`Disableable`], and [`Toggleable`].
+//!
+//! See also [`ConfirmDialog`](super::ConfirmDialog) for a purpose-built
+//! confirmation dialog with preset button configurations.
 //!
 //! # Example
 //!

@@ -2,7 +2,8 @@
 //!
 //! Provides line charts (sparkline with labels) and bar charts
 //! (horizontal/vertical) with data series, labels, colors, and
-//! auto-scaling axes.
+//! auto-scaling axes. State is stored in [`ChartState`] and updated via
+//! [`ChartMessage`]. Chart data is configured with [`ChartConfig`].
 //!
 //! # Example
 //!

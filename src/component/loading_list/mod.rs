@@ -1,8 +1,14 @@
 //! A list component with per-item loading and error states.
 //!
-//! `LoadingList` extends the basic list pattern with loading indicators and
+//! [`LoadingList<T>`] extends the basic list pattern with loading indicators and
 //! error states for each item. Useful for lists where items can be fetched
-//! or processed asynchronously.
+//! or processed asynchronously. State is stored in [`LoadingListState<T>`],
+//! updated via [`LoadingListMessage`], and produces [`LoadingListOutput`].
+//! Items are wrapped in [`LoadingItem<T>`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`SelectableList`](super::SelectableList) for a simpler list.
 //!
 //! # Example
 //!

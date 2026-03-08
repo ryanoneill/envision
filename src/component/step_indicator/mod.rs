@@ -1,8 +1,12 @@
 //! A pipeline/workflow visualization component showing step-by-step progress.
 //!
-//! `StepIndicator` displays a series of steps with their current status,
+//! [`StepIndicator`] displays a series of steps with their current status,
 //! connected by configurable connectors. Supports both horizontal and vertical
-//! orientations.
+//! orientations. State is stored in [`StepIndicatorState`], updated via
+//! [`StepIndicatorMessage`], and produces [`StepIndicatorOutput`]. Steps are
+//! defined with [`Step`] and have a [`StepStatus`].
+//!
+//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
 //!
 //! # Example
 //!

@@ -1,8 +1,14 @@
 //! A scrollable text display component.
 //!
-//! `ScrollableText` provides a read-only text buffer with scroll support.
+//! [`ScrollableText`] provides a read-only text buffer with scroll support.
 //! It wraps text within its display area and allows the user to scroll
-//! through content that exceeds the visible height.
+//! through content that exceeds the visible height. State is stored in
+//! [`ScrollableTextState`], updated via [`ScrollableTextMessage`], and
+//! produces [`ScrollableTextOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`StyledText`](super::StyledText) for rich text with semantic blocks.
 //!
 //! # Example
 //!

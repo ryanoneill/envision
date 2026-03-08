@@ -1,7 +1,14 @@
 //! A text input field component with cursor navigation and editing.
 //!
-//! `InputField` provides a single-line text input with cursor movement,
-//! text insertion, deletion, and selection.
+//! [`InputField`] provides a single-line text input with cursor movement,
+//! text insertion, deletion, and selection. State is stored in
+//! [`InputFieldState`], updated via [`InputFieldMessage`], and produces
+//! [`InputFieldOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`LineInput`](super::LineInput) for a multi-row wrapping input,
+//! and [`TextArea`](super::TextArea) for multi-line editing.
 //!
 //! # Example
 //!

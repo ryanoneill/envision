@@ -1,7 +1,12 @@
 //! A data table component with row selection and column sorting.
 //!
-//! `Table` provides a tabular data display with keyboard navigation,
-//! row selection, and column sorting capabilities.
+//! [`Table<T>`] provides a tabular data display with keyboard navigation,
+//! row selection, and column sorting capabilities. State is stored in
+//! [`TableState<T>`], updated via [`TableMessage`], and produces [`TableOutput`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`DataGrid`](super::DataGrid) for a table with inline cell editing.
 //!
 //! # Example
 //!

@@ -1,7 +1,12 @@
 //! A clickable button component with keyboard activation.
 //!
-//! `Button` provides a simple button that can be activated via keyboard
-//! (Enter or Space) when focused.
+//! [`Button`] provides a simple button that can be activated via keyboard
+//! (Enter or Space) when focused. State is stored in [`ButtonState`],
+//! updated via [`ButtonMessage`], and produces [`ButtonOutput`] on activation.
+//!
+//! Implements [`Focusable`] and [`Disableable`].
+//!
+//! See also [`Checkbox`](super::Checkbox) for a boolean toggle input.
 //!
 //! # Example
 //!

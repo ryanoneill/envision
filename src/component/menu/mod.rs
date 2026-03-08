@@ -1,7 +1,11 @@
 //! A horizontal menu bar component.
 //!
-//! `Menu` provides a horizontal menu bar for application commands and navigation.
-//! It supports keyboard navigation, item activation, and disabled states.
+//! [`Menu`] provides a horizontal menu bar for application commands and navigation.
+//! It supports keyboard navigation, item activation, and disabled states. State is
+//! stored in [`MenuState`], updated via [`MenuMessage`], and produces [`MenuOutput`].
+//! Items are configured with [`MenuItem`].
+//!
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

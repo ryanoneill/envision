@@ -1,8 +1,12 @@
 //! An indeterminate loading indicator component.
 //!
-//! `Spinner` provides a visual activity indicator that animates through frames
+//! [`Spinner`] provides a visual activity indicator that animates through frames
 //! to show ongoing activity. This is a **display-only** component that does not
-//! receive keyboard focus.
+//! receive keyboard focus. State is stored in [`SpinnerState`] and updated via
+//! [`SpinnerMessage`].
+//!
+//! See also [`ProgressBar`](super::ProgressBar) for determinate progress,
+//! and [`MultiProgress`](super::MultiProgress) for tracking multiple tasks.
 //!
 //! # Animation Model
 //!

@@ -1,8 +1,13 @@
 //! A dynamic form component with multiple field types.
 //!
-//! `Form` composes text inputs, checkboxes, and select fields into a
-//! navigable form. Tab/BackTab moves between fields, and submitting
-//! collects all field values.
+//! [`Form`] composes [`InputField`](super::InputField),
+//! [`Checkbox`](super::Checkbox), and [`Select`](super::Select) fields into
+//! a navigable form. Tab/BackTab moves between fields, and submitting
+//! collects all field values. State is stored in [`FormState`], updated via
+//! [`FormMessage`], and produces [`FormOutput`]. Fields are defined with
+//! [`FormField`] and [`FormFieldKind`].
+//!
+//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
 //!
 //! # Example
 //!

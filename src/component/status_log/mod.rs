@@ -1,7 +1,11 @@
 //! A component for displaying scrolling status messages.
 //!
-//! `StatusLog` provides a scrolling list of status messages with severity levels,
+//! [`StatusLog`] provides a scrolling list of status messages with severity levels,
 //! commonly used to display application status, progress updates, or log entries.
+//! State is stored in [`StatusLogState`] and updated via [`StatusLogMessage`].
+//!
+//! See also [`LogViewer`](super::LogViewer) for a searchable log viewer with
+//! severity filtering.
 //!
 //! # Example
 //!
