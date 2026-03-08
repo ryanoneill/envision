@@ -339,8 +339,10 @@ impl Component for ScrollableText {
                 }
             }
             ScrollableTextMessage::ScrollDown => {
-                // We allow scrolling freely; clamping happens in view
-                state.scroll_offset += 1;
+                // We allow scrolling freely; clamping happens in view.
+                // Use saturating_add to prevent overflow when scroll_offset
+                // is usize::MAX (e.g., after End).
+                state.scroll_offset = state.scroll_offset.saturating_add(1);
                 Some(ScrollableTextOutput::ScrollChanged(state.scroll_offset))
             }
             ScrollableTextMessage::PageUp(n) => {
@@ -353,7 +355,7 @@ impl Component for ScrollableText {
                 }
             }
             ScrollableTextMessage::PageDown(n) => {
-                state.scroll_offset += n;
+                state.scroll_offset = state.scroll_offset.saturating_add(n);
                 Some(ScrollableTextOutput::ScrollChanged(state.scroll_offset))
             }
             ScrollableTextMessage::Home => {
