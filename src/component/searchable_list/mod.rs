@@ -34,12 +34,14 @@
 //! assert!(matches!(output, Some(SearchableListOutput::Selected(_))));
 //! ```
 
+mod render;
+
 use std::fmt::Display;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph};
+use ratatui::widgets::ListState;
 
 use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
@@ -95,7 +97,7 @@ pub enum SearchableListOutput<T: Clone> {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-enum Focus {
+pub(super) enum Focus {
     /// The filter input field has focus.
     Filter,
     /// The selectable list has focus.
@@ -112,29 +114,29 @@ enum Focus {
 )]
 pub struct SearchableListState<T: Clone> {
     /// All items (unfiltered).
-    items: Vec<T>,
+    pub(super) items: Vec<T>,
     /// Indices into `items` that match the current filter.
-    filtered_indices: Vec<usize>,
+    pub(super) filtered_indices: Vec<usize>,
     /// Current filter text.
-    filter_text: String,
+    pub(super) filter_text: String,
     /// Index into `filtered_indices` for the currently selected item.
-    selected: Option<usize>,
+    pub(super) selected: Option<usize>,
     /// Ratatui list state for scroll tracking.
     #[cfg_attr(feature = "serialization", serde(skip))]
-    list_state: ListState,
+    pub(super) list_state: ListState,
     /// Which sub-component has internal focus.
-    internal_focus: Focus,
+    pub(super) internal_focus: Focus,
     /// Whether the overall component is focused.
-    focused: bool,
+    pub(super) focused: bool,
     /// Whether the component is disabled.
-    disabled: bool,
+    pub(super) disabled: bool,
     /// Placeholder text for the filter input.
-    placeholder: String,
+    pub(super) placeholder: String,
     /// Custom matcher function: `(query, item_text) -> Option<score>`.
     /// `None` means no match, `Some(score)` for ranked match (higher = better).
     /// Wrapped in `Arc` so that `SearchableListState` can derive `Clone`.
     #[cfg_attr(feature = "serialization", serde(skip))]
-    matcher: Option<Arc<MatcherFn>>,
+    pub(super) matcher: Option<Arc<MatcherFn>>,
 }
 
 impl<T: Clone> Clone for SearchableListState<T> {
@@ -238,11 +240,33 @@ impl<T: Clone> SearchableListState<T> {
     }
 
     /// Returns all items (unfiltered).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["A".to_string(), "B".to_string()]);
+    /// assert_eq!(state.items().len(), 2);
+    /// assert_eq!(state.items()[0], "A");
+    /// ```
     pub fn items(&self) -> &[T] {
         &self.items
     }
 
     /// Returns the items that match the current filter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec![
+    ///     "Apple".to_string(), "Banana".to_string(), "Cherry".to_string(),
+    /// ]);
+    /// // No filter applied, all items visible
+    /// assert_eq!(state.filtered_items().len(), 3);
+    /// ```
     pub fn filtered_items(&self) -> Vec<&T> {
         self.filtered_indices
             .iter()
@@ -251,16 +275,46 @@ impl<T: Clone> SearchableListState<T> {
     }
 
     /// Returns the number of filtered items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["A".to_string(), "B".to_string()]);
+    /// assert_eq!(state.filtered_count(), 2);
+    /// ```
     pub fn filtered_count(&self) -> usize {
         self.filtered_indices.len()
     }
 
     /// Returns the current filter text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::<String>::new(vec![]);
+    /// assert_eq!(state.filter_text(), "");
+    /// ```
     pub fn filter_text(&self) -> &str {
         &self.filter_text
     }
 
     /// Returns the currently selected index within the filtered list.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["A".to_string()]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    ///
+    /// let empty = SearchableListState::<String>::new(vec![]);
+    /// assert_eq!(empty.selected_index(), None);
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
@@ -271,6 +325,15 @@ impl<T: Clone> SearchableListState<T> {
     }
 
     /// Returns a reference to the currently selected item.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["Alpha".to_string(), "Beta".to_string()]);
+    /// assert_eq!(state.selected_item(), Some(&"Alpha".to_string()));
+    /// ```
     pub fn selected_item(&self) -> Option<&T> {
         self.selected
             .and_then(|si| self.filtered_indices.get(si))
@@ -310,21 +373,58 @@ impl<T: Clone> SearchableListState<T> {
     }
 
     /// Returns true if the filter input has focus (vs the list).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["A".to_string()]);
+    /// assert!(state.is_filter_focused()); // filter focused by default
+    /// ```
     pub fn is_filter_focused(&self) -> bool {
         self.internal_focus == Focus::Filter
     }
 
     /// Returns true if the list has focus (vs the filter).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["A".to_string()]);
+    /// assert!(!state.is_list_focused()); // filter is focused by default
+    /// ```
     pub fn is_list_focused(&self) -> bool {
         self.internal_focus == Focus::List
     }
 
     /// Returns the placeholder text for the filter input.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::<String>::new(vec![]);
+    /// assert_eq!(state.placeholder(), "Type to filter...");
+    /// ```
     pub fn placeholder(&self) -> &str {
         &self.placeholder
     }
 
     /// Sets the placeholder text for the filter input.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let mut state = SearchableListState::<String>::new(vec![]);
+    /// state.set_placeholder("Search...");
+    /// assert_eq!(state.placeholder(), "Search...");
+    /// ```
     pub fn set_placeholder(&mut self, placeholder: impl Into<String>) {
         self.placeholder = placeholder.into();
     }
@@ -381,11 +481,32 @@ impl<T: Clone> SearchableListState<T> {
     }
 
     /// Returns true if the component is empty (no items at all).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::<String>::new(vec![]);
+    /// assert!(state.is_empty());
+    ///
+    /// let state2 = SearchableListState::new(vec!["A".to_string()]);
+    /// assert!(!state2.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.items.is_empty()
     }
 
     /// Returns the total number of items (unfiltered).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["A".to_string(), "B".to_string()]);
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn len(&self) -> usize {
         self.items.len()
     }
@@ -398,48 +519,147 @@ impl<T: Clone> SearchableListState<T> {
 
 impl<T: Clone + Display + 'static> SearchableListState<T> {
     /// Sets the items, recomputing the filter and resetting selection.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let mut state = SearchableListState::new(vec!["A".to_string()]);
+    /// state.set_items(vec!["X".to_string(), "Y".to_string(), "Z".to_string()]);
+    /// assert_eq!(state.len(), 3);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn set_items(&mut self, items: Vec<T>) {
         self.items = items;
         self.refilter();
     }
 
     /// Returns true if the component is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["A".to_string()]);
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let mut state = SearchableListState::new(vec!["A".to_string()]);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the component is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["A".to_string()]);
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let mut state = SearchableListState::new(vec!["A".to_string()]);
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["A".to_string()])
+    ///     .with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Maps an input event to a searchable list message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SearchableListState, SearchableListMessage};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = SearchableListState::new(vec!["A".to_string()]);
+    /// state.set_focused(true);
+    /// let event = Event::key(KeyCode::Esc);
+    /// assert_eq!(state.handle_event(&event), Some(SearchableListMessage::FilterClear));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<SearchableListMessage> {
         SearchableList::<T>::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SearchableListState, SearchableListOutput};
+    /// use envision::input::Event;
+    ///
+    /// let mut state = SearchableListState::new(vec![
+    ///     "Apple".to_string(), "Banana".to_string(),
+    /// ]);
+    /// state.set_focused(true);
+    /// let event = Event::char('a');
+    /// let output = state.dispatch_event(&event);
+    /// assert!(matches!(output, Some(SearchableListOutput::FilterChanged(_))));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<SearchableListOutput<T>> {
         SearchableList::<T>::dispatch_event(self, event)
     }
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SearchableListState, SearchableListMessage, SearchableListOutput};
+    ///
+    /// let mut state = SearchableListState::new(vec![
+    ///     "Apple".to_string(), "Banana".to_string(), "Cherry".to_string(),
+    /// ]);
+    /// let output = state.update(SearchableListMessage::FilterChanged("an".to_string()));
+    /// assert_eq!(state.filtered_count(), 1);
+    /// assert_eq!(state.selected_item(), Some(&"Banana".to_string()));
+    /// ```
     pub fn update(&mut self, msg: SearchableListMessage) -> Option<SearchableListOutput<T>> {
         SearchableList::<T>::update(self, msg)
     }
@@ -727,93 +947,7 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
-        crate::annotation::with_registry(|reg| {
-            reg.open(
-                area,
-                crate::annotation::Annotation::new(crate::annotation::WidgetType::SearchableList)
-                    .with_id("searchable_list")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
-            );
-        });
-
-        // Split area: filter input on top (3 lines), list below
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([Constraint::Length(3), Constraint::Min(1)])
-            .split(area);
-
-        // Render filter input
-        let filter_focused = state.focused && state.internal_focus == Focus::Filter;
-        let filter_border_style = if state.disabled {
-            theme.disabled_style()
-        } else if filter_focused {
-            theme.focused_border_style()
-        } else {
-            theme.border_style()
-        };
-
-        let filter_display = if state.filter_text.is_empty() {
-            Span::styled(&state.placeholder, theme.disabled_style())
-        } else {
-            Span::styled(&state.filter_text, theme.normal_style())
-        };
-
-        let match_count = format!(" {}/{} ", state.filtered_indices.len(), state.items.len());
-        let filter_block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(filter_border_style)
-            .title(Span::styled(" Filter ", theme.normal_style()))
-            .title_bottom(Line::from(match_count).alignment(Alignment::Right));
-
-        let filter_widget = Paragraph::new(Line::from(filter_display)).block(filter_block);
-        frame.render_widget(filter_widget, chunks[0]);
-
-        // Show cursor in filter when focused
-        if filter_focused && !state.disabled {
-            let cursor_x = chunks[0].x + 1 + state.filter_text.len() as u16;
-            let cursor_y = chunks[0].y + 1;
-            frame.set_cursor_position(Position::new(cursor_x, cursor_y));
-        }
-
-        // Render filtered list
-        let list_focused = state.focused && state.internal_focus == Focus::List;
-        let list_border_style = if state.disabled {
-            theme.disabled_style()
-        } else if list_focused {
-            theme.focused_border_style()
-        } else {
-            theme.border_style()
-        };
-
-        let items: Vec<ListItem> = state
-            .filtered_indices
-            .iter()
-            .filter_map(|&i| state.items.get(i))
-            .map(|item| ListItem::new(format!("{}", item)))
-            .collect();
-
-        let highlight_style = if state.disabled {
-            theme.disabled_style()
-        } else {
-            theme.selected_highlight_style(list_focused)
-        };
-
-        let list_block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(list_border_style);
-
-        let list_widget = List::new(items)
-            .block(list_block)
-            .highlight_style(highlight_style)
-            .highlight_symbol("> ");
-
-        let mut list_state = state.list_state.clone();
-        frame.render_stateful_widget(list_widget, chunks[1], &mut list_state);
-
-        crate::annotation::with_registry(|reg| {
-            reg.close();
-        });
+        render::render_searchable_list(state, frame, area, theme);
     }
 }
 

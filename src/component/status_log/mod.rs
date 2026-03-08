@@ -24,116 +24,16 @@
 //! assert_eq!(state.len(), 4);
 //! ```
 
+pub mod entry;
+
+pub use entry::{StatusLogEntry, StatusLogLevel};
+
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
-
-/// Severity level for status log entries.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-#[cfg_attr(
-    feature = "serialization",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-pub enum StatusLogLevel {
-    /// Informational message.
-    #[default]
-    Info,
-    /// Success message.
-    Success,
-    /// Warning message.
-    Warning,
-    /// Error message.
-    Error,
-}
-
-impl StatusLogLevel {
-    /// Returns the color associated with this level.
-    pub fn color(&self) -> Color {
-        match self {
-            StatusLogLevel::Info => Color::Cyan,
-            StatusLogLevel::Success => Color::Green,
-            StatusLogLevel::Warning => Color::Yellow,
-            StatusLogLevel::Error => Color::Red,
-        }
-    }
-
-    /// Returns the prefix symbol for this level.
-    pub fn prefix(&self) -> &'static str {
-        match self {
-            StatusLogLevel::Info => "ℹ",
-            StatusLogLevel::Success => "✓",
-            StatusLogLevel::Warning => "⚠",
-            StatusLogLevel::Error => "✗",
-        }
-    }
-}
-
-/// A single status log entry.
-#[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(
-    feature = "serialization",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-pub struct StatusLogEntry {
-    /// Unique identifier.
-    id: u64,
-    /// The message content.
-    message: String,
-    /// Severity level.
-    level: StatusLogLevel,
-    /// Optional timestamp string.
-    timestamp: Option<String>,
-}
-
-impl StatusLogEntry {
-    /// Creates a new status log entry.
-    pub fn new(id: u64, message: impl Into<String>, level: StatusLogLevel) -> Self {
-        Self {
-            id,
-            message: message.into(),
-            level,
-            timestamp: None,
-        }
-    }
-
-    /// Creates a new entry with a timestamp.
-    pub fn with_timestamp(
-        id: u64,
-        message: impl Into<String>,
-        level: StatusLogLevel,
-        timestamp: impl Into<String>,
-    ) -> Self {
-        Self {
-            id,
-            message: message.into(),
-            level,
-            timestamp: Some(timestamp.into()),
-        }
-    }
-
-    /// Returns the entry ID.
-    pub fn id(&self) -> u64 {
-        self.id
-    }
-
-    /// Returns the message.
-    pub fn message(&self) -> &str {
-        &self.message
-    }
-
-    /// Returns the level.
-    pub fn level(&self) -> StatusLogLevel {
-        self.level
-    }
-
-    /// Returns the timestamp if set.
-    pub fn timestamp(&self) -> Option<&str> {
-        self.timestamp.as_deref()
-    }
-}
 
 /// Messages that can be sent to a StatusLog component.
 #[derive(Clone, Debug, PartialEq)]
@@ -276,6 +176,15 @@ impl StatusLogState {
     }
 
     /// Sets the title for the log block.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let state = StatusLogState::new().with_title("Events");
+    /// assert_eq!(state.title(), Some("Events"));
+    /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
@@ -301,21 +210,61 @@ impl StatusLogState {
     }
 
     /// Adds a success-level message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusLogState, StatusLogLevel};
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.success("Build complete");
+    /// assert_eq!(state.entries()[0].level(), StatusLogLevel::Success);
+    /// ```
     pub fn success(&mut self, message: impl Into<String>) -> u64 {
         self.push(message, StatusLogLevel::Success, None)
     }
 
     /// Adds a warning-level message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusLogState, StatusLogLevel};
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.warning("Low memory");
+    /// assert_eq!(state.entries()[0].level(), StatusLogLevel::Warning);
+    /// ```
     pub fn warning(&mut self, message: impl Into<String>) -> u64 {
         self.push(message, StatusLogLevel::Warning, None)
     }
 
     /// Adds an error-level message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusLogState, StatusLogLevel};
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.error("Connection failed");
+    /// assert_eq!(state.entries()[0].level(), StatusLogLevel::Error);
+    /// ```
     pub fn error(&mut self, message: impl Into<String>) -> u64 {
         self.push(message, StatusLogLevel::Error, None)
     }
 
     /// Adds an info-level message with timestamp.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.info_with_timestamp("Starting", "09:00:00");
+    /// assert_eq!(state.entries()[0].timestamp(), Some("09:00:00"));
+    /// ```
     pub fn info_with_timestamp(
         &mut self,
         message: impl Into<String>,
@@ -325,6 +274,16 @@ impl StatusLogState {
     }
 
     /// Adds a success-level message with timestamp.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.success_with_timestamp("Done", "09:01:00");
+    /// assert_eq!(state.entries()[0].message(), "Done");
+    /// ```
     pub fn success_with_timestamp(
         &mut self,
         message: impl Into<String>,
@@ -334,6 +293,16 @@ impl StatusLogState {
     }
 
     /// Adds a warning-level message with timestamp.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.warning_with_timestamp("Slow", "09:02:00");
+    /// assert_eq!(state.entries()[0].timestamp(), Some("09:02:00"));
+    /// ```
     pub fn warning_with_timestamp(
         &mut self,
         message: impl Into<String>,
@@ -343,6 +312,16 @@ impl StatusLogState {
     }
 
     /// Adds an error-level message with timestamp.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.error_with_timestamp("Crash", "09:03:00");
+    /// assert_eq!(state.entries()[0].message(), "Crash");
+    /// ```
     pub fn error_with_timestamp(
         &mut self,
         message: impl Into<String>,
@@ -382,21 +361,66 @@ impl StatusLogState {
     }
 
     /// Returns all entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.info("First");
+    /// state.error("Second");
+    /// assert_eq!(state.entries().len(), 2);
+    /// assert_eq!(state.entries()[0].message(), "First");
+    /// ```
     pub fn entries(&self) -> &[StatusLogEntry] {
         &self.entries
     }
 
     /// Returns entries in display order (newest first).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.info("First");
+    /// state.info("Second");
+    /// let newest: Vec<_> = state.entries_newest_first().collect();
+    /// assert_eq!(newest[0].message(), "Second");
+    /// assert_eq!(newest[1].message(), "First");
+    /// ```
     pub fn entries_newest_first(&self) -> impl Iterator<Item = &StatusLogEntry> {
         self.entries.iter().rev()
     }
 
     /// Returns the number of entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// assert_eq!(state.len(), 0);
+    /// state.info("Hello");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn len(&self) -> usize {
         self.entries.len()
     }
 
     /// Returns true if there are no entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let state = StatusLogState::new();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
     }
@@ -407,6 +431,16 @@ impl StatusLogState {
     }
 
     /// Sets the maximum number of entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.set_max_entries(10);
+    /// assert_eq!(state.max_entries(), 10);
+    /// ```
     pub fn set_max_entries(&mut self, max: usize) {
         self.max_entries = max;
     }
@@ -417,21 +451,66 @@ impl StatusLogState {
     }
 
     /// Sets whether to show timestamps.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.set_show_timestamps(true);
+    /// assert!(state.show_timestamps());
+    /// ```
     pub fn set_show_timestamps(&mut self, show: bool) {
         self.show_timestamps = show;
     }
 
     /// Returns the current scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let state = StatusLogState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll_offset
     }
 
     /// Sets the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.info("A");
+    /// state.info("B");
+    /// state.info("C");
+    /// state.set_scroll_offset(1);
+    /// assert_eq!(state.scroll_offset(), 1);
+    /// ```
     pub fn set_scroll_offset(&mut self, offset: usize) {
         self.scroll_offset = offset.min(self.entries.len().saturating_sub(1));
     }
 
     /// Removes an entry by ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// let id = state.info("Temporary");
+    /// assert_eq!(state.len(), 1);
+    /// assert!(state.remove(id));
+    /// assert_eq!(state.len(), 0);
+    /// assert!(!state.remove(id)); // Already removed
+    /// ```
     pub fn remove(&mut self, id: u64) -> bool {
         let len_before = self.entries.len();
         self.entries.retain(|e| e.id != id);
@@ -439,58 +518,183 @@ impl StatusLogState {
     }
 
     /// Clears all entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.info("A");
+    /// state.info("B");
+    /// state.clear();
+    /// assert!(state.is_empty());
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn clear(&mut self) {
         self.entries.clear();
         self.scroll_offset = 0;
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let state = StatusLogState::new().with_title("Log");
+    /// assert_eq!(state.title(), Some("Log"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.set_title(Some("Events".to_string()));
+    /// assert_eq!(state.title(), Some("Events"));
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
 
     /// Returns true if the status log is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let state = StatusLogState::new();
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the status log is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let state = StatusLogState::new();
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
 
     /// Sets the disabled state using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let state = StatusLogState::new().with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Maps an input event to a status log message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusLogState, StatusLogMessage};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.set_focused(true);
+    /// let event = Event::key(KeyCode::Up);
+    /// assert_eq!(state.handle_event(&event), Some(StatusLogMessage::ScrollUp));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<StatusLogMessage> {
         StatusLog::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = StatusLogState::new();
+    /// state.set_focused(true);
+    /// state.info("A");
+    /// state.info("B");
+    /// // Scroll down then dispatch up
+    /// state.set_scroll_offset(1);
+    /// let event = Event::key(KeyCode::Up);
+    /// state.dispatch_event(&event);
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<StatusLogOutput> {
         StatusLog::dispatch_event(self, event)
     }
 
     /// Updates the status log state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{
+    ///     StatusLogState, StatusLogMessage, StatusLogOutput, StatusLogLevel,
+    /// };
+    ///
+    /// let mut state = StatusLogState::new();
+    /// let output = state.update(StatusLogMessage::Push {
+    ///     message: "Hello".to_string(),
+    ///     level: StatusLogLevel::Info,
+    ///     timestamp: None,
+    /// });
+    /// assert!(matches!(output, Some(StatusLogOutput::Added(_))));
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn update(&mut self, msg: StatusLogMessage) -> Option<StatusLogOutput> {
         StatusLog::update(self, msg)
     }

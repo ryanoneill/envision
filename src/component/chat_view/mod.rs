@@ -25,7 +25,11 @@
 //! assert_eq!(state.messages()[2].role(), ChatRole::Assistant);
 //! ```
 
+pub mod message;
 mod render_helpers;
+
+use message::Focus;
+pub use message::{ChatMessage, ChatRole, ChatViewMessage, ChatViewOutput};
 
 use std::collections::HashMap;
 use std::marker::PhantomData;
@@ -35,184 +39,6 @@ use ratatui::prelude::*;
 use super::{Component, Disableable, Focusable, TextAreaMessage, TextAreaOutput, TextAreaState};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
-
-/// The role of a chat message sender.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(
-    feature = "serialization",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-pub enum ChatRole {
-    /// A message from the user.
-    User,
-    /// A system message (announcements, status, etc.).
-    System,
-    /// A message from an assistant or bot.
-    Assistant,
-}
-
-impl ChatRole {
-    /// Returns the display prefix for this role.
-    pub fn prefix(&self) -> &'static str {
-        match self {
-            Self::User => "You",
-            Self::System => "System",
-            Self::Assistant => "Assistant",
-        }
-    }
-
-    /// Returns the display color for this role.
-    pub fn color(&self) -> Color {
-        match self {
-            Self::User => Color::Cyan,
-            Self::System => Color::DarkGray,
-            Self::Assistant => Color::Green,
-        }
-    }
-}
-
-/// A single chat message.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ChatMessage {
-    /// The role of the sender.
-    role: ChatRole,
-    /// The message content.
-    content: String,
-    /// Optional timestamp.
-    timestamp: Option<String>,
-    /// Optional username override.
-    username: Option<String>,
-}
-
-impl ChatMessage {
-    /// Creates a new chat message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{ChatMessage, ChatRole};
-    ///
-    /// let msg = ChatMessage::new(ChatRole::User, "Hello!");
-    /// assert_eq!(msg.role(), ChatRole::User);
-    /// assert_eq!(msg.content(), "Hello!");
-    /// ```
-    pub fn new(role: ChatRole, content: impl Into<String>) -> Self {
-        Self {
-            role,
-            content: content.into(),
-            timestamp: None,
-            username: None,
-        }
-    }
-
-    /// Sets the timestamp (builder pattern).
-    pub fn with_timestamp(mut self, timestamp: impl Into<String>) -> Self {
-        self.timestamp = Some(timestamp.into());
-        self
-    }
-
-    /// Sets the username override (builder pattern).
-    pub fn with_username(mut self, username: impl Into<String>) -> Self {
-        self.username = Some(username.into());
-        self
-    }
-
-    /// Returns the role.
-    pub fn role(&self) -> ChatRole {
-        self.role
-    }
-
-    /// Returns the content.
-    pub fn content(&self) -> &str {
-        &self.content
-    }
-
-    /// Returns the timestamp.
-    pub fn timestamp(&self) -> Option<&str> {
-        self.timestamp.as_deref()
-    }
-
-    /// Returns the username (or the role's default prefix).
-    pub fn display_name(&self) -> &str {
-        self.username
-            .as_deref()
-            .unwrap_or_else(|| self.role.prefix())
-    }
-}
-
-/// Internal focus target for the chat view.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-#[cfg_attr(
-    feature = "serialization",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-enum Focus {
-    /// The message history is focused.
-    History,
-    /// The input field is focused.
-    #[default]
-    Input,
-}
-
-/// Messages that can be sent to a ChatView.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ChatViewMessage {
-    /// Type a character in the input field.
-    Input(char),
-    /// Insert a newline in the input field.
-    NewLine,
-    /// Delete the character before the cursor.
-    Backspace,
-    /// Delete the character at the cursor.
-    Delete,
-    /// Move cursor left in the input field.
-    Left,
-    /// Move cursor right in the input field.
-    Right,
-    /// Move cursor up in the input field or scroll history.
-    Up,
-    /// Move cursor down in the input field or scroll history.
-    Down,
-    /// Move cursor to start of line.
-    Home,
-    /// Move cursor to end of line.
-    End,
-    /// Submit the current input as a user message.
-    Submit,
-    /// Toggle focus between history and input.
-    ToggleFocus,
-    /// Focus the input field.
-    FocusInput,
-    /// Focus the message history.
-    FocusHistory,
-    /// Scroll history up by one line.
-    ScrollUp,
-    /// Scroll history down by one line.
-    ScrollDown,
-    /// Scroll to the top of history.
-    ScrollToTop,
-    /// Scroll to the bottom of history (newest).
-    ScrollToBottom,
-    /// Clear the input field.
-    ClearInput,
-    /// Move cursor to the start of the input.
-    InputStart,
-    /// Move cursor to the end of the input.
-    InputEnd,
-    /// Delete from cursor to end of line.
-    DeleteToEnd,
-    /// Delete from line start to cursor.
-    DeleteToStart,
-}
-
-/// Output messages from a ChatView.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ChatViewOutput {
-    /// The user submitted a message. Contains the message text.
-    Submitted(String),
-    /// The input text changed.
-    InputChanged(String),
-}
 
 /// State for a ChatView component.
 ///
@@ -293,30 +119,75 @@ impl ChatViewState {
     }
 
     /// Sets the maximum number of messages (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new().with_max_messages(50);
+    /// assert_eq!(state.max_messages(), 50);
+    /// ```
     pub fn with_max_messages(mut self, max: usize) -> Self {
         self.max_messages = max;
         self
     }
 
     /// Sets whether to show timestamps (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new().with_timestamps(true);
+    /// assert!(state.show_timestamps());
+    /// ```
     pub fn with_timestamps(mut self, show: bool) -> Self {
         self.show_timestamps = show;
         self
     }
 
     /// Sets the input area height (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new().with_input_height(5);
+    /// assert_eq!(state.input_height(), 5);
+    /// ```
     pub fn with_input_height(mut self, height: u16) -> Self {
         self.input_height = height.max(1);
         self
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new().with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Sets the input placeholder text (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new()
+    ///     .with_placeholder("Enter your message...");
+    /// ```
     pub fn with_placeholder(mut self, placeholder: impl Into<String>) -> Self {
         self.input.set_placeholder(placeholder);
         self
@@ -325,6 +196,16 @@ impl ChatViewState {
     // ---- Message manipulation ----
 
     /// Adds a message from any role.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChatViewState, ChatMessage, ChatRole};
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.push_message(ChatMessage::new(ChatRole::System, "Welcome!"));
+    /// assert_eq!(state.message_count(), 1);
+    /// ```
     pub fn push_message(&mut self, message: ChatMessage) {
         self.messages.push(message);
         while self.messages.len() > self.max_messages {
@@ -351,11 +232,31 @@ impl ChatViewState {
     }
 
     /// Adds a system message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChatViewState, ChatRole};
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.push_system("Server started");
+    /// assert_eq!(state.messages()[0].role(), ChatRole::System);
+    /// ```
     pub fn push_system(&mut self, content: impl Into<String>) {
         self.push_message(ChatMessage::new(ChatRole::System, content));
     }
 
     /// Adds an assistant message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChatViewState, ChatRole};
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.push_assistant("How can I help?");
+    /// assert_eq!(state.messages()[0].role(), ChatRole::Assistant);
+    /// ```
     pub fn push_assistant(&mut self, content: impl Into<String>) {
         self.push_message(ChatMessage::new(ChatRole::Assistant, content));
     }
@@ -388,6 +289,18 @@ impl ChatViewState {
     }
 
     /// Clears all messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.push_user("Hello");
+    /// state.push_assistant("Hi!");
+    /// state.clear_messages();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn clear_messages(&mut self) {
         self.messages.clear();
         self.scroll_offset = 0;
@@ -396,31 +309,90 @@ impl ChatViewState {
     // ---- Accessors ----
 
     /// Returns the messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.push_user("Hello");
+    /// assert_eq!(state.messages().len(), 1);
+    /// assert_eq!(state.messages()[0].content(), "Hello");
+    /// ```
     pub fn messages(&self) -> &[ChatMessage] {
         &self.messages
     }
 
     /// Returns the number of messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// assert_eq!(state.message_count(), 0);
+    /// state.push_user("Hi");
+    /// assert_eq!(state.message_count(), 1);
+    /// ```
     pub fn message_count(&self) -> usize {
         self.messages.len()
     }
 
     /// Returns true if there are no messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.messages.is_empty()
     }
 
     /// Returns the current input text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new();
+    /// assert!(state.input_value().is_empty());
+    /// ```
     pub fn input_value(&self) -> String {
         self.input.value()
     }
 
     /// Sets the input text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_input_value("Draft message");
+    /// assert_eq!(state.input_value(), "Draft message");
+    /// ```
     pub fn set_input_value(&mut self, value: impl Into<String>) {
         self.input.set_value(value);
     }
 
     /// Returns the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll_offset
     }
@@ -431,6 +403,16 @@ impl ChatViewState {
     }
 
     /// Sets the maximum number of messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_max_messages(100);
+    /// assert_eq!(state.max_messages(), 100);
+    /// ```
     pub fn set_max_messages(&mut self, max: usize) {
         self.max_messages = max;
         while self.messages.len() > self.max_messages {
@@ -444,16 +426,45 @@ impl ChatViewState {
     }
 
     /// Sets whether timestamps are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_show_timestamps(true);
+    /// assert!(state.show_timestamps());
+    /// ```
     pub fn set_show_timestamps(&mut self, show: bool) {
         self.show_timestamps = show;
     }
 
     /// Returns whether auto-scroll is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new();
+    /// assert!(state.auto_scroll()); // enabled by default
+    /// ```
     pub fn auto_scroll(&self) -> bool {
         self.auto_scroll
     }
 
     /// Sets whether auto-scroll is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_auto_scroll(false);
+    /// assert!(!state.auto_scroll());
+    /// ```
     pub fn set_auto_scroll(&mut self, auto_scroll: bool) {
         self.auto_scroll = auto_scroll;
     }
@@ -464,16 +475,44 @@ impl ChatViewState {
     }
 
     /// Sets the input area height.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_input_height(5);
+    /// assert_eq!(state.input_height(), 5);
+    /// ```
     pub fn set_input_height(&mut self, height: u16) {
         self.input_height = height.max(1);
     }
 
     /// Returns whether the input field is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new();
+    /// assert!(state.is_input_focused()); // input focused by default
+    /// ```
     pub fn is_input_focused(&self) -> bool {
         self.focus == Focus::Input
     }
 
     /// Returns whether the history is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new();
+    /// assert!(!state.is_history_focused());
+    /// ```
     pub fn is_history_focused(&self) -> bool {
         self.focus == Focus::History
     }
@@ -486,21 +525,59 @@ impl ChatViewState {
     // ---- Instance methods ----
 
     /// Returns true if the component is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new();
+    /// assert!(!state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the component is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new();
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
@@ -564,21 +641,70 @@ impl ChatViewState {
     }
 
     /// Clears all custom role styles, reverting to defaults.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChatViewState, ChatRole};
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = ChatViewState::new()
+    ///     .with_role_style(ChatRole::User, Style::default().fg(Color::Red));
+    /// state.clear_role_styles();
+    /// // Now uses default color
+    /// assert_eq!(state.role_style(&ChatRole::User), Style::default().fg(Color::Cyan));
+    /// ```
     pub fn clear_role_styles(&mut self) {
         self.role_styles = None;
     }
 
     /// Maps an input event to a chat view message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChatViewState, ChatViewMessage};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_focused(true);
+    /// let event = Event::key(KeyCode::Tab);
+    /// assert_eq!(state.handle_event(&event), Some(ChatViewMessage::ToggleFocus));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<ChatViewMessage> {
         ChatView::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChatViewState, ChatViewOutput};
+    /// use envision::input::Event;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_focused(true);
+    /// let event = Event::char('H');
+    /// let output = state.dispatch_event(&event);
+    /// assert!(matches!(output, Some(ChatViewOutput::InputChanged(_))));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<ChatViewOutput> {
         ChatView::dispatch_event(self, event)
     }
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChatViewState, ChatViewMessage, ChatViewOutput};
+    ///
+    /// let mut state = ChatViewState::new();
+    /// let output = state.update(ChatViewMessage::Input('H'));
+    /// assert!(matches!(output, Some(ChatViewOutput::InputChanged(_))));
+    /// assert_eq!(state.input_value(), "H");
+    /// ```
     pub fn update(&mut self, msg: ChatViewMessage) -> Option<ChatViewOutput> {
         ChatView::update(self, msg)
     }
