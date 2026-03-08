@@ -93,6 +93,56 @@ async fn test_channel_subscription() {
 }
 
 #[tokio::test]
+async fn test_unbounded_channel_subscription() {
+    let cancel = CancellationToken::new();
+    let (tx, rx) = mpsc::unbounded_channel();
+    let sub = Box::new(UnboundedChannelSubscription::new(rx));
+
+    let mut stream = sub.into_stream(cancel.clone());
+
+    // Send messages (unbounded send is synchronous, never blocks)
+    tx.send(TestMsg::Value(10)).unwrap();
+    tx.send(TestMsg::Value(20)).unwrap();
+
+    // Receive messages
+    let msg = stream.next().await;
+    assert_eq!(msg, Some(TestMsg::Value(10)));
+
+    let msg = stream.next().await;
+    assert_eq!(msg, Some(TestMsg::Value(20)));
+
+    // Drop sender to close channel
+    drop(tx);
+
+    // Stream should end
+    let msg = stream.next().await;
+    assert_eq!(msg, None);
+}
+
+#[tokio::test]
+async fn test_unbounded_channel_subscription_cancellation() {
+    let cancel = CancellationToken::new();
+    let (tx, rx) = mpsc::unbounded_channel();
+    let sub = Box::new(UnboundedChannelSubscription::new(rx));
+
+    let mut stream = sub.into_stream(cancel.clone());
+
+    tx.send(TestMsg::Value(1)).unwrap();
+    let msg = stream.next().await;
+    assert_eq!(msg, Some(TestMsg::Value(1)));
+
+    // Cancel the subscription
+    cancel.cancel();
+
+    // Stream should end
+    let msg = stream.next().await;
+    assert_eq!(msg, None);
+
+    // Sender still alive but stream is done
+    drop(tx);
+}
+
+#[tokio::test]
 async fn test_stream_subscription() {
     let cancel = CancellationToken::new();
     let values = vec![TestMsg::Value(1), TestMsg::Value(2), TestMsg::Value(3)];
