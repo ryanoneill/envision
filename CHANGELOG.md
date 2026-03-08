@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-03-07
+
+### Added
+
+- **Utility module** (`envision::util`): `truncate_to_width` and
+  `wrapped_line_count` with full CJK and emoji support
+- **ScrollableText component**: Read-only scrollable text display with
+  keyboard navigation, optional title, and CJK-aware wrapping
+- **TitleCard component**: Centered title display with subtitle,
+  prefix/suffix text, configurable styles, and optional border
+- **LineInput component**: Single-line text input with visual wrapping,
+  command history, undo/redo, text selection, and `max_length` constraint
+- **ChatView role styles**: `set_role_style()` / `with_role_style()` for
+  per-role color customization in ChatView
+- **Annotation wiring**: All components emit semantic annotations via
+  `Annotate` / `AnnotateContainer` when rendered inside `with_annotations()`
+- **WidgetType variants**: Added Spinner, Toast, Tooltip, Accordion,
+  Breadcrumb, LoadingList, KeyHints, MultiProgress, StatusLog, TitleCard,
+  LineInput, Dropdown, ScrollableText, Form, SplitPanel, SearchableList,
+  RadioGroup
+- **Serialization** for ScrollableText, TitleCard, and LineInput state types
+  (behind `serialization` feature flag)
+- **`with_visible()` builder** on Dialog and Tooltip
+- **ChatView snapshot tests** (7 scenarios: empty, single message,
+  multi-role, focused, disabled, custom role styles, scrolled)
+- **Compound component snapshot tests** for all 7 compound components
+  (Chart, ChatView, DataGrid, Form, LogViewer, MetricsDashboard, SplitPanel)
+- **Integration tests** for zero-size rendering of ScrollableText, TitleCard,
+  and LineInput
+- **Doc test coverage** improvements for Dropdown, TextArea, Select, Table,
+  and Column
+- **Examples**: `scrollable_text`, `title_card`, `line_input`, `chat_app`
+  (ChatView + LineInput composition)
+- **Migration guide** (`MIGRATION.md`) covering v0.1.0 through v0.5.0
+  upgrade paths
+
 ## [0.5.0] - 2026-03-02
 
 ### Added
@@ -309,7 +345,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renders to both a real terminal and CaptureBackend
   - Useful for visual debugging while testing
 
-[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/ryanoneill/envision/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/ryanoneill/envision/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/ryanoneill/envision/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/ryanoneill/envision/compare/v0.3.0...v0.4.0
