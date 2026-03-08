@@ -1,0 +1,680 @@
+//! A pipeline/workflow visualization component showing step-by-step progress.
+//!
+//! `StepIndicator` displays a series of steps with their current status,
+//! connected by configurable connectors. Supports both horizontal and vertical
+//! orientations.
+//!
+//! # Example
+//!
+//! ```rust
+//! use envision::component::{
+//!     StepIndicator, StepIndicatorMessage, StepIndicatorOutput,
+//!     StepIndicatorState, Component,
+//!     step_indicator::{Step, StepStatus},
+//! };
+//!
+//! let steps = vec![
+//!     Step::new("Build").with_status(StepStatus::Completed),
+//!     Step::new("Test").with_status(StepStatus::Active),
+//!     Step::new("Deploy").with_status(StepStatus::Pending),
+//! ];
+//! let mut state = StepIndicatorState::new(steps);
+//!
+//! // Complete the active step and activate the next
+//! StepIndicator::update(&mut state, StepIndicatorMessage::CompleteActive);
+//! StepIndicator::update(&mut state, StepIndicatorMessage::ActivateNext);
+//! ```
+
+use ratatui::prelude::*;
+use ratatui::widgets::{Block, Borders, Paragraph};
+
+use super::{Component, Focusable};
+use crate::input::{Event, KeyCode};
+use crate::theme::Theme;
+
+/// The status of a single step in a workflow.
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub enum StepStatus {
+    /// Step has not started yet.
+    Pending,
+    /// Step is currently in progress.
+    Active,
+    /// Step completed successfully.
+    Completed,
+    /// Step failed.
+    Failed,
+    /// Step was skipped.
+    Skipped,
+}
+
+impl StepStatus {
+    fn icon(&self) -> &'static str {
+        match self {
+            StepStatus::Pending => "○",
+            StepStatus::Active => "●",
+            StepStatus::Completed => "✓",
+            StepStatus::Failed => "✗",
+            StepStatus::Skipped => "⊘",
+        }
+    }
+}
+
+/// The orientation of the step indicator layout.
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub enum StepOrientation {
+    /// Steps are displayed left to right.
+    Horizontal,
+    /// Steps are displayed top to bottom.
+    Vertical,
+}
+
+/// A single step in a workflow.
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub struct Step {
+    label: String,
+    status: StepStatus,
+    description: Option<String>,
+}
+
+impl Step {
+    /// Creates a new pending step.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    ///
+    /// let step = Step::new("Build");
+    /// assert_eq!(step.label(), "Build");
+    /// ```
+    pub fn new(label: impl Into<String>) -> Self {
+        Self {
+            label: label.into(),
+            status: StepStatus::Pending,
+            description: None,
+        }
+    }
+
+    /// Sets the step status (builder pattern).
+    pub fn with_status(mut self, status: StepStatus) -> Self {
+        self.status = status;
+        self
+    }
+
+    /// Sets the step description (builder pattern).
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    /// Returns the step label.
+    pub fn label(&self) -> &str {
+        &self.label
+    }
+
+    /// Returns the step status.
+    pub fn status(&self) -> &StepStatus {
+        &self.status
+    }
+
+    /// Returns the step description, if any.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+}
+
+/// Messages that can be sent to a StepIndicator.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum StepIndicatorMessage {
+    /// Set the status of a specific step.
+    SetStatus {
+        /// The step index.
+        index: usize,
+        /// The new status.
+        status: StepStatus,
+    },
+    /// Activate the next pending step after the current active step.
+    ActivateNext,
+    /// Complete the currently active step.
+    CompleteActive,
+    /// Fail the currently active step.
+    FailActive,
+    /// Skip a specific step.
+    Skip(usize),
+    /// Reset all steps to pending.
+    Reset,
+    /// Move keyboard focus to the next step.
+    FocusNext,
+    /// Move keyboard focus to the previous step.
+    FocusPrev,
+    /// Select the currently focused step.
+    Select,
+    /// Jump focus to the first step.
+    First,
+    /// Jump focus to the last step.
+    Last,
+}
+
+/// Output messages from a StepIndicator.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum StepIndicatorOutput {
+    /// A step's status changed.
+    StatusChanged {
+        /// The step index.
+        index: usize,
+        /// The new status.
+        status: StepStatus,
+    },
+    /// All steps are completed.
+    AllCompleted,
+    /// A step was selected via keyboard.
+    Selected(usize),
+    /// Focus moved to a different step.
+    FocusChanged(usize),
+    /// All steps were reset.
+    Reset,
+}
+
+/// State for a StepIndicator component.
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub struct StepIndicatorState {
+    steps: Vec<Step>,
+    orientation: StepOrientation,
+    focused: bool,
+    disabled: bool,
+    focused_index: usize,
+    show_descriptions: bool,
+    title: Option<String>,
+    connector: String,
+}
+
+impl Default for StepIndicatorState {
+    fn default() -> Self {
+        Self {
+            steps: Vec::new(),
+            orientation: StepOrientation::Horizontal,
+            focused: false,
+            disabled: false,
+            focused_index: 0,
+            show_descriptions: false,
+            title: None,
+            connector: "───".to_string(),
+        }
+    }
+}
+
+impl StepIndicatorState {
+    /// Creates a new step indicator with the given steps.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::{Step, StepStatus};
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let steps = vec![
+    ///     Step::new("Step 1").with_status(StepStatus::Completed),
+    ///     Step::new("Step 2").with_status(StepStatus::Active),
+    ///     Step::new("Step 3"),
+    /// ];
+    /// let state = StepIndicatorState::new(steps);
+    /// assert_eq!(state.steps().len(), 3);
+    /// ```
+    pub fn new(steps: Vec<Step>) -> Self {
+        Self {
+            steps,
+            ..Self::default()
+        }
+    }
+
+    /// Sets the orientation (builder pattern).
+    pub fn with_orientation(mut self, orientation: StepOrientation) -> Self {
+        self.orientation = orientation;
+        self
+    }
+
+    /// Sets the title (builder pattern).
+    pub fn with_title(mut self, title: impl Into<String>) -> Self {
+        self.title = Some(title.into());
+        self
+    }
+
+    /// Sets the connector string (builder pattern).
+    pub fn with_connector(mut self, connector: impl Into<String>) -> Self {
+        self.connector = connector.into();
+        self
+    }
+
+    /// Sets whether descriptions are shown (builder pattern).
+    pub fn with_show_descriptions(mut self, show: bool) -> Self {
+        self.show_descriptions = show;
+        self
+    }
+
+    /// Sets the disabled state (builder pattern).
+    pub fn with_disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
+    /// Returns the steps.
+    pub fn steps(&self) -> &[Step] {
+        &self.steps
+    }
+
+    /// Returns a specific step, if it exists.
+    pub fn step(&self, index: usize) -> Option<&Step> {
+        self.steps.get(index)
+    }
+
+    /// Returns the orientation.
+    pub fn orientation(&self) -> &StepOrientation {
+        &self.orientation
+    }
+
+    /// Returns the focused step index.
+    pub fn focused_index(&self) -> usize {
+        self.focused_index
+    }
+
+    /// Returns the index of the currently active step, if any.
+    pub fn active_step_index(&self) -> Option<usize> {
+        self.steps
+            .iter()
+            .position(|s| s.status == StepStatus::Active)
+    }
+
+    /// Returns true if all steps are completed.
+    pub fn is_all_completed(&self) -> bool {
+        !self.steps.is_empty()
+            && self
+                .steps
+                .iter()
+                .all(|s| s.status == StepStatus::Completed || s.status == StepStatus::Skipped)
+    }
+
+    /// Returns true if the step indicator is focused.
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
+    /// Sets the focus state.
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    /// Returns true if the step indicator is disabled.
+    pub fn is_disabled(&self) -> bool {
+        self.disabled
+    }
+
+    /// Sets the disabled state.
+    pub fn set_disabled(&mut self, disabled: bool) {
+        self.disabled = disabled;
+    }
+
+    /// Returns the connector string.
+    pub fn connector(&self) -> &str {
+        &self.connector
+    }
+
+    /// Returns the title, if any.
+    pub fn title(&self) -> Option<&str> {
+        self.title.as_deref()
+    }
+
+    /// Returns whether descriptions are shown.
+    pub fn show_descriptions(&self) -> bool {
+        self.show_descriptions
+    }
+
+    /// Maps an input event to a message.
+    pub fn handle_event(&self, event: &Event) -> Option<StepIndicatorMessage> {
+        StepIndicator::handle_event(self, event)
+    }
+
+    /// Dispatches an event, updating state and returning any output.
+    pub fn dispatch_event(&mut self, event: &Event) -> Option<StepIndicatorOutput> {
+        StepIndicator::dispatch_event(self, event)
+    }
+
+    /// Updates the state with a message, returning any output.
+    pub fn update(&mut self, msg: StepIndicatorMessage) -> Option<StepIndicatorOutput> {
+        StepIndicator::update(self, msg)
+    }
+}
+
+/// A pipeline/workflow visualization component.
+///
+/// `StepIndicator` displays a series of steps connected by configurable
+/// connectors, with status icons and color-coded styling.
+///
+/// # Visual Format (Horizontal)
+///
+/// ```text
+/// ✓ Build ─── ● Test ─── ○ Deploy
+/// ```
+///
+/// # Visual Format (Vertical)
+///
+/// ```text
+/// ✓ Build
+/// │
+/// ● Test
+/// │
+/// ○ Deploy
+/// ```
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::{
+///     StepIndicator, StepIndicatorMessage, StepIndicatorState, Component,
+///     step_indicator::{Step, StepStatus},
+/// };
+///
+/// let steps = vec![
+///     Step::new("Build").with_status(StepStatus::Completed),
+///     Step::new("Test").with_status(StepStatus::Active),
+///     Step::new("Deploy"),
+/// ];
+/// let mut state = StepIndicatorState::new(steps);
+/// StepIndicator::update(&mut state, StepIndicatorMessage::CompleteActive);
+/// ```
+pub struct StepIndicator;
+
+impl Component for StepIndicator {
+    type State = StepIndicatorState;
+    type Message = StepIndicatorMessage;
+    type Output = StepIndicatorOutput;
+
+    fn init() -> Self::State {
+        StepIndicatorState::default()
+    }
+
+    fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+        match msg {
+            StepIndicatorMessage::SetStatus { index, status } => {
+                if let Some(step) = state.steps.get_mut(index) {
+                    step.status = status.clone();
+                    let output = StepIndicatorOutput::StatusChanged { index, status };
+                    if state.is_all_completed() {
+                        return Some(StepIndicatorOutput::AllCompleted);
+                    }
+                    return Some(output);
+                }
+                None
+            }
+            StepIndicatorMessage::ActivateNext => {
+                // Find the first pending step after the last completed/active
+                let next = state
+                    .steps
+                    .iter()
+                    .position(|s| s.status == StepStatus::Pending);
+                if let Some(index) = next {
+                    state.steps[index].status = StepStatus::Active;
+                    Some(StepIndicatorOutput::StatusChanged {
+                        index,
+                        status: StepStatus::Active,
+                    })
+                } else {
+                    None
+                }
+            }
+            StepIndicatorMessage::CompleteActive => {
+                if let Some(index) = state.active_step_index() {
+                    state.steps[index].status = StepStatus::Completed;
+                    if state.is_all_completed() {
+                        return Some(StepIndicatorOutput::AllCompleted);
+                    }
+                    Some(StepIndicatorOutput::StatusChanged {
+                        index,
+                        status: StepStatus::Completed,
+                    })
+                } else {
+                    None
+                }
+            }
+            StepIndicatorMessage::FailActive => {
+                if let Some(index) = state.active_step_index() {
+                    state.steps[index].status = StepStatus::Failed;
+                    Some(StepIndicatorOutput::StatusChanged {
+                        index,
+                        status: StepStatus::Failed,
+                    })
+                } else {
+                    None
+                }
+            }
+            StepIndicatorMessage::Skip(index) => {
+                if let Some(step) = state.steps.get_mut(index) {
+                    step.status = StepStatus::Skipped;
+                    if state.is_all_completed() {
+                        return Some(StepIndicatorOutput::AllCompleted);
+                    }
+                    Some(StepIndicatorOutput::StatusChanged {
+                        index,
+                        status: StepStatus::Skipped,
+                    })
+                } else {
+                    None
+                }
+            }
+            StepIndicatorMessage::Reset => {
+                for step in &mut state.steps {
+                    step.status = StepStatus::Pending;
+                }
+                state.focused_index = 0;
+                Some(StepIndicatorOutput::Reset)
+            }
+            StepIndicatorMessage::FocusNext => {
+                if !state.focused || state.disabled || state.steps.is_empty() {
+                    return None;
+                }
+                state.focused_index = (state.focused_index + 1) % state.steps.len();
+                Some(StepIndicatorOutput::FocusChanged(state.focused_index))
+            }
+            StepIndicatorMessage::FocusPrev => {
+                if !state.focused || state.disabled || state.steps.is_empty() {
+                    return None;
+                }
+                state.focused_index = state
+                    .focused_index
+                    .checked_sub(1)
+                    .unwrap_or(state.steps.len() - 1);
+                Some(StepIndicatorOutput::FocusChanged(state.focused_index))
+            }
+            StepIndicatorMessage::Select => {
+                if !state.focused || state.disabled || state.steps.is_empty() {
+                    return None;
+                }
+                Some(StepIndicatorOutput::Selected(state.focused_index))
+            }
+            StepIndicatorMessage::First => {
+                if !state.focused || state.disabled || state.steps.is_empty() {
+                    return None;
+                }
+                state.focused_index = 0;
+                Some(StepIndicatorOutput::FocusChanged(0))
+            }
+            StepIndicatorMessage::Last => {
+                if !state.focused || state.disabled || state.steps.is_empty() {
+                    return None;
+                }
+                state.focused_index = state.steps.len() - 1;
+                Some(StepIndicatorOutput::FocusChanged(state.focused_index))
+            }
+        }
+    }
+
+    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+        if !state.focused || state.disabled {
+            return None;
+        }
+        if let Some(key) = event.as_key() {
+            match key.code {
+                KeyCode::Left | KeyCode::Char('h') => Some(StepIndicatorMessage::FocusPrev),
+                KeyCode::Right | KeyCode::Char('l') => Some(StepIndicatorMessage::FocusNext),
+                KeyCode::Home => Some(StepIndicatorMessage::First),
+                KeyCode::End => Some(StepIndicatorMessage::Last),
+                KeyCode::Enter => Some(StepIndicatorMessage::Select),
+                _ => None,
+            }
+        } else {
+            None
+        }
+    }
+
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+        crate::annotation::with_registry(|reg| {
+            reg.register(
+                area,
+                crate::annotation::Annotation::new(crate::annotation::WidgetType::StepIndicator)
+                    .with_id("step_indicator")
+                    .with_focus(state.focused)
+                    .with_disabled(state.disabled),
+            );
+        });
+
+        let block = if let Some(title) = &state.title {
+            Block::default()
+                .title(format!(" {} ", title))
+                .borders(Borders::ALL)
+                .border_style(if state.focused {
+                    theme.focused_border_style()
+                } else {
+                    theme.border_style()
+                })
+        } else {
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(if state.focused {
+                    theme.focused_border_style()
+                } else {
+                    theme.border_style()
+                })
+        };
+
+        let inner = block.inner(area);
+        frame.render_widget(block, area);
+
+        if state.steps.is_empty() {
+            return;
+        }
+
+        match state.orientation {
+            StepOrientation::Horizontal => {
+                render_horizontal(state, frame, inner, theme);
+            }
+            StepOrientation::Vertical => {
+                render_vertical(state, frame, inner, theme);
+            }
+        }
+    }
+}
+
+impl Focusable for StepIndicator {
+    fn is_focused(state: &Self::State) -> bool {
+        state.focused
+    }
+
+    fn set_focused(state: &mut Self::State, focused: bool) {
+        state.focused = focused;
+    }
+}
+
+fn step_style(status: &StepStatus, is_focused_step: bool, theme: &Theme) -> Style {
+    let base = match status {
+        StepStatus::Completed => theme.success_style(),
+        StepStatus::Active => theme.info_style(),
+        StepStatus::Failed => theme.error_style(),
+        StepStatus::Skipped => theme.disabled_style(),
+        StepStatus::Pending => theme.normal_style(),
+    };
+    if is_focused_step {
+        base.add_modifier(Modifier::BOLD | Modifier::UNDERLINED)
+    } else {
+        base
+    }
+}
+
+fn render_horizontal(
+    state: &StepIndicatorState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+) {
+    let mut spans = Vec::new();
+
+    for (i, step) in state.steps.iter().enumerate() {
+        if i > 0 {
+            spans.push(Span::styled(
+                format!(" {} ", state.connector),
+                theme.normal_style(),
+            ));
+        }
+
+        let is_focused_step = state.focused && i == state.focused_index;
+        let style = step_style(&step.status, is_focused_step, theme);
+
+        spans.push(Span::styled(format!("{} {}", step.status.icon(), step.label), style));
+    }
+
+    let line = Line::from(spans);
+    let paragraph = Paragraph::new(line);
+    frame.render_widget(paragraph, area);
+}
+
+fn render_vertical(
+    state: &StepIndicatorState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+) {
+    let mut lines = Vec::new();
+
+    for (i, step) in state.steps.iter().enumerate() {
+        if i > 0 {
+            lines.push(Line::from(Span::styled("│", theme.normal_style())));
+        }
+
+        let is_focused_step = state.focused && i == state.focused_index;
+        let style = step_style(&step.status, is_focused_step, theme);
+
+        lines.push(Line::from(Span::styled(
+            format!("{} {}", step.status.icon(), step.label),
+            style,
+        )));
+
+        if state.show_descriptions {
+            if let Some(desc) = &step.description {
+                lines.push(Line::from(Span::styled(
+                    format!("  {}", desc),
+                    theme.normal_style(),
+                )));
+            }
+        }
+    }
+
+    let paragraph = Paragraph::new(lines);
+    frame.render_widget(paragraph, area);
+}
+
+#[cfg(test)]
+mod tests;

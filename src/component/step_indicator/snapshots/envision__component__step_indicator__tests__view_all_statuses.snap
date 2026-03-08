@@ -1,0 +1,10 @@
+---
+source: src/component/step_indicator/tests.rs
+assertion_line: 758
+expression: display
+---
+┌──────────────────────────────────────────────────────────────────────────────┐
+│✓ Done ─── ● Active ─── ✗ Failed ─── ⊘ Skipped ─── ○ Pending                  │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘

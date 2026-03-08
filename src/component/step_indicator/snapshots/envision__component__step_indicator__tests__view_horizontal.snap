@@ -1,0 +1,10 @@
+---
+source: src/component/step_indicator/tests.rs
+assertion_line: 652
+expression: display
+---
+┌──────────────────────────────────────────────────────────┐
+│✓ Build ─── ● Test ─── ○ Deploy                           │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘

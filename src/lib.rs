@@ -172,7 +172,8 @@ pub use component::{
     Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Breadcrumb,
     BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Menu, MenuItem,
     MenuMessage, MenuOutput, MenuState, NavigationMode, Router, RouterMessage, RouterOutput,
-    RouterState, Tabs, TabsMessage, TabsOutput, TabsState,
+    RouterState, StepIndicator, StepIndicatorMessage, StepIndicatorOutput, StepIndicatorState, Tabs,
+    TabsMessage, TabsOutput, TabsState,
 };
 
 // Overlay components

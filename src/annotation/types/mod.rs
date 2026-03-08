@@ -136,6 +136,9 @@ pub enum WidgetType {
     /// A confirm dialog
     ConfirmDialog,
 
+    /// A step indicator
+    StepIndicator,
+
     /// A custom widget type
     Custom(String),
 }
@@ -163,6 +166,7 @@ impl WidgetType {
                 | WidgetType::RadioGroup
                 | WidgetType::SearchableList
                 | WidgetType::FileBrowser
+                | WidgetType::StepIndicator
         )
     }
 
@@ -403,6 +407,11 @@ impl Annotation {
     /// Creates a confirm dialog annotation.
     pub fn confirm_dialog(title: impl Into<String>) -> Self {
         Self::new(WidgetType::ConfirmDialog).with_label(title)
+    }
+
+    /// Creates a step indicator annotation.
+    pub fn step_indicator(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::StepIndicator).with_id(id)
     }
 
     /// Creates a custom widget annotation.

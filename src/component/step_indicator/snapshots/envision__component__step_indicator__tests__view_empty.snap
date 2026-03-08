@@ -1,0 +1,10 @@
+---
+source: src/component/step_indicator/tests.rs
+assertion_line: 773
+expression: display
+---
+┌──────────────────────────────────────┐
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘
