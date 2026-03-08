@@ -1,0 +1,6 @@
+---
+source: src/component/pane_layout/tests.rs
+assertion_line: 758
+expression: display
+---
+

@@ -138,6 +138,8 @@ mod log_viewer;
 #[cfg(feature = "compound-components")]
 mod metrics_dashboard;
 #[cfg(feature = "compound-components")]
+pub mod pane_layout;
+#[cfg(feature = "compound-components")]
 mod searchable_list;
 #[cfg(feature = "compound-components")]
 mod split_panel;
@@ -267,6 +269,8 @@ pub use metrics_dashboard::{
     MetricKind, MetricWidget, MetricsDashboard, MetricsDashboardMessage, MetricsDashboardOutput,
     MetricsDashboardState,
 };
+#[cfg(feature = "compound-components")]
+pub use pane_layout::{PaneLayout, PaneLayoutMessage, PaneLayoutOutput, PaneLayoutState};
 #[cfg(feature = "compound-components")]
 pub use searchable_list::{
     SearchableList, SearchableListMessage, SearchableListOutput, SearchableListState,
