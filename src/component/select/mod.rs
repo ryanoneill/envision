@@ -64,7 +64,7 @@ pub enum SelectOutput {
 }
 
 /// State for a Select component.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
@@ -86,6 +86,32 @@ pub struct SelectState {
     disabled: bool,
 }
 
+impl Default for SelectState {
+    /// Creates a default empty select with `"Select..."` placeholder.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectState;
+    ///
+    /// let state = SelectState::default();
+    /// assert!(state.options().is_empty());
+    /// assert!(state.selected_index().is_none());
+    /// assert_eq!(state.placeholder(), "Select...");
+    /// ```
+    fn default() -> Self {
+        Self {
+            options: Vec::new(),
+            selected_index: None,
+            highlighted_index: 0,
+            is_open: false,
+            focused: false,
+            placeholder: String::from("Select..."),
+            disabled: false,
+        }
+    }
+}
+
 impl SelectState {
     /// Creates a new select with the given options.
     ///
@@ -101,12 +127,7 @@ impl SelectState {
     pub fn new<S: Into<String>>(options: Vec<S>) -> Self {
         Self {
             options: options.into_iter().map(|s| s.into()).collect(),
-            selected_index: None,
-            highlighted_index: 0,
-            is_open: false,
-            focused: false,
-            placeholder: String::from("Select..."),
-            disabled: false,
+            ..Self::default()
         }
     }
 
@@ -132,10 +153,7 @@ impl SelectState {
             options: options_vec,
             selected_index,
             highlighted_index: selected_index.unwrap_or(0),
-            is_open: false,
-            focused: false,
-            placeholder: String::from("Select..."),
-            disabled: false,
+            ..Self::default()
         }
     }
 

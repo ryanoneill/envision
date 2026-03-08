@@ -480,7 +480,7 @@ fn test_default_vs_new() {
     let default_state = StatusBarState::default();
     let new_state = StatusBarState::new();
 
-    // Both are empty
+    // default() and new() produce identical state
     assert_eq!(default_state.left().len(), new_state.left().len());
     assert_eq!(default_state.center().len(), new_state.center().len());
     assert_eq!(default_state.right().len(), new_state.right().len());
@@ -488,9 +488,8 @@ fn test_default_vs_new() {
     assert_eq!(default_state.is_empty(), new_state.is_empty());
     assert_eq!(default_state.len(), new_state.len());
 
-    // Default uses derive(Default), which gives empty separator
-    // new() explicitly sets separator to " | "
-    assert_eq!(default_state.separator(), "");
+    // Both use the same separator
+    assert_eq!(default_state.separator(), " | ");
     assert_eq!(new_state.separator(), " | ");
 }
 

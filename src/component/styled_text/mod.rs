@@ -91,7 +91,7 @@ pub enum StyledTextOutput {
 /// assert_eq!(state.title(), Some("Preview"));
 /// assert_eq!(state.scroll_offset(), 0);
 /// ```
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct StyledTextState {
     content: StyledContent,
     scroll_offset: usize,
@@ -99,6 +99,31 @@ pub struct StyledTextState {
     disabled: bool,
     title: Option<String>,
     show_border: bool,
+}
+
+impl Default for StyledTextState {
+    /// Creates a default styled text state with border enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let state = StyledTextState::default();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// assert!(state.show_border());
+    /// assert!(!state.is_focused());
+    /// ```
+    fn default() -> Self {
+        Self {
+            content: StyledContent::default(),
+            scroll_offset: 0,
+            focused: false,
+            disabled: false,
+            title: None,
+            show_border: true,
+        }
+    }
 }
 
 impl StyledTextState {
@@ -115,10 +140,7 @@ impl StyledTextState {
     /// assert!(!state.is_focused());
     /// ```
     pub fn new() -> Self {
-        Self {
-            show_border: true,
-            ..Self::default()
-        }
+        Self::default()
     }
 
     /// Sets the content (builder pattern).
@@ -422,7 +444,7 @@ impl Component for StyledText {
     type Output = StyledTextOutput;
 
     fn init() -> Self::State {
-        StyledTextState::new()
+        StyledTextState::default()
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
