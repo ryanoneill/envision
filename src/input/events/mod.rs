@@ -33,6 +33,15 @@ pub enum Event {
 
 impl Event {
     /// Creates a key press event for a character.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::Event;
+    ///
+    /// let event = Event::char('a');
+    /// assert!(event.is_key());
+    /// ```
     pub fn char(c: char) -> Self {
         Self::Key(KeyEvent::new(KeyCode::Char(c), KeyModifiers::NONE))
     }
@@ -43,26 +52,71 @@ impl Event {
     }
 
     /// Creates a key press event for a special key.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let event = Event::key(KeyCode::Enter);
+    /// assert!(event.is_key());
+    /// ```
     pub fn key(code: KeyCode) -> Self {
         Self::Key(KeyEvent::new(code, KeyModifiers::NONE))
     }
 
     /// Creates a key press event with modifiers.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::{Event, KeyCode, KeyModifiers};
+    ///
+    /// let event = Event::key_with(KeyCode::Char('s'), KeyModifiers::CONTROL);
+    /// assert!(event.is_key());
+    /// ```
     pub fn key_with(code: KeyCode, modifiers: KeyModifiers) -> Self {
         Self::Key(KeyEvent::new(code, modifiers))
     }
 
     /// Creates a Ctrl+key event.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::Event;
+    ///
+    /// let event = Event::ctrl('c');
+    /// assert!(event.is_key());
+    /// ```
     pub fn ctrl(c: char) -> Self {
         Self::Key(KeyEvent::new(KeyCode::Char(c), KeyModifiers::CONTROL))
     }
 
     /// Creates an Alt+key event.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::Event;
+    ///
+    /// let event = Event::alt('x');
+    /// assert!(event.is_key());
+    /// ```
     pub fn alt(c: char) -> Self {
         Self::Key(KeyEvent::new(KeyCode::Char(c), KeyModifiers::ALT))
     }
 
     /// Creates a mouse click event at the specified position.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::Event;
+    ///
+    /// let event = Event::click(10, 5);
+    /// assert!(event.is_mouse());
+    /// ```
     pub fn click(x: u16, y: u16) -> Self {
         Self::Mouse(MouseEvent {
             kind: MouseEventKind::Down(MouseButton::Left),
@@ -133,16 +187,44 @@ impl Event {
     }
 
     /// Returns true if this is a key event.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::Event;
+    ///
+    /// assert!(Event::char('a').is_key());
+    /// assert!(!Event::click(0, 0).is_key());
+    /// ```
     pub fn is_key(&self) -> bool {
         matches!(self, Event::Key(_))
     }
 
     /// Returns true if this is a mouse event.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::Event;
+    ///
+    /// assert!(Event::click(0, 0).is_mouse());
+    /// assert!(!Event::char('a').is_mouse());
+    /// ```
     pub fn is_mouse(&self) -> bool {
         matches!(self, Event::Mouse(_))
     }
 
     /// Returns the key event if this is one.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let event = Event::key(KeyCode::Enter);
+    /// assert!(event.as_key().is_some());
+    /// assert!(Event::click(0, 0).as_key().is_none());
+    /// ```
     pub fn as_key(&self) -> Option<&KeyEvent> {
         match self {
             Event::Key(e) => Some(e),
@@ -151,6 +233,16 @@ impl Event {
     }
 
     /// Returns the mouse event if this is one.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::Event;
+    ///
+    /// let event = Event::click(5, 10);
+    /// assert!(event.as_mouse().is_some());
+    /// assert!(Event::char('a').as_mouse().is_none());
+    /// ```
     pub fn as_mouse(&self) -> Option<&MouseEvent> {
         match self {
             Event::Mouse(e) => Some(e),

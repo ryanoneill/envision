@@ -51,17 +51,13 @@
 //!
 //! Events are injected programmatically and the display can be inspected.
 
-use std::io::{self, Stdout};
-use std::time::Duration;
+mod config;
+mod terminal;
+pub use config::RuntimeConfig;
 
-use crossterm::event::{
-    DisableMouseCapture, EnableMouseCapture, Event as CrosstermEvent, KeyEventKind,
-};
-use crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
-};
-use crossterm::ExecutableCommand;
-use ratatui::backend::{Backend, CrosstermBackend};
+use std::io;
+
+use ratatui::backend::Backend;
 use ratatui::Terminal;
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
@@ -72,81 +68,9 @@ use super::runtime_core::{ProcessEventResult, RuntimeCore};
 use super::subscription::{BoxedSubscription, Subscription};
 use crate::backend::CaptureBackend;
 use crate::input::{Event, EventQueue};
-use crate::overlay::{Overlay, OverlayAction, OverlayStack};
+use crate::overlay::{Overlay, OverlayStack};
 use crate::theme::Theme;
 
-/// Configuration for the runtime.
-#[derive(Clone, Debug)]
-pub struct RuntimeConfig {
-    /// How often to poll for events (default: 50ms)
-    pub tick_rate: Duration,
-
-    /// How often to render (default: 16ms for ~60fps)
-    pub frame_rate: Duration,
-
-    /// Maximum number of messages to process per tick (prevents infinite loops)
-    pub max_messages_per_tick: usize,
-
-    /// Whether to capture frame history
-    pub capture_history: bool,
-
-    /// Number of frames to keep in history
-    pub history_capacity: usize,
-
-    /// Capacity of the async message channel
-    pub message_channel_capacity: usize,
-}
-
-impl Default for RuntimeConfig {
-    fn default() -> Self {
-        Self {
-            tick_rate: Duration::from_millis(50),
-            frame_rate: Duration::from_millis(16),
-            max_messages_per_tick: 100,
-            capture_history: false,
-            history_capacity: 10,
-            message_channel_capacity: 256,
-        }
-    }
-}
-
-impl RuntimeConfig {
-    /// Creates a new runtime config with default settings.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Sets the tick rate.
-    pub fn tick_rate(mut self, rate: Duration) -> Self {
-        self.tick_rate = rate;
-        self
-    }
-
-    /// Sets the frame rate.
-    pub fn frame_rate(mut self, rate: Duration) -> Self {
-        self.frame_rate = rate;
-        self
-    }
-
-    /// Enables frame history capture.
-    pub fn with_history(mut self, capacity: usize) -> Self {
-        self.capture_history = true;
-        self.history_capacity = capacity;
-        self
-    }
-
-    /// Sets the maximum messages per tick.
-    pub fn max_messages(mut self, max: usize) -> Self {
-        self.max_messages_per_tick = max;
-        self
-    }
-
-    /// Sets the message channel capacity.
-    pub fn channel_capacity(mut self, capacity: usize) -> Self {
-        self.message_channel_capacity = capacity;
-        self
-    }
-}
 
 /// The runtime that executes a TEA application.
 ///
@@ -179,242 +103,6 @@ pub struct Runtime<A: App, B: Backend> {
 
     /// Active subscriptions as streams
     subscriptions: Vec<std::pin::Pin<Box<dyn tokio_stream::Stream<Item = A::Message> + Send>>>,
-}
-
-// =============================================================================
-// Terminal Mode - for real terminal applications
-// =============================================================================
-
-impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
-    /// Creates a new runtime connected to a real terminal.
-    ///
-    /// This sets up the terminal for TUI operation:
-    /// - Enables raw mode (input is not line-buffered)
-    /// - Enters alternate screen (preserves the original terminal content)
-    /// - Enables mouse capture
-    ///
-    /// Call `run_terminal()` to start the interactive event loop.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if enabling raw mode, entering alternate screen,
-    /// enabling mouse capture, or creating the terminal fails.
-    ///
-    /// # Example
-    ///
-    /// ```rust,ignore
-    /// // requires real terminal
-    /// #[tokio::main]
-    /// async fn main() -> std::io::Result<()> {
-    ///     Runtime::<MyApp>::new_terminal()?.run_terminal().await
-    /// }
-    /// ```
-    pub fn new_terminal() -> io::Result<Self> {
-        Self::terminal_with_config(RuntimeConfig::default())
-    }
-
-    /// Creates a terminal runtime with custom configuration.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if enabling raw mode, entering alternate screen,
-    /// enabling mouse capture, or creating the terminal fails.
-    pub fn terminal_with_config(config: RuntimeConfig) -> io::Result<Self> {
-        // Set up terminal
-        enable_raw_mode()?;
-        let mut stdout = io::stdout();
-        stdout.execute(EnterAlternateScreen)?;
-        stdout.execute(EnableMouseCapture)?;
-
-        let backend = CrosstermBackend::new(stdout);
-        Self::with_backend_and_config(backend, config)
-    }
-
-    /// Runs the interactive event loop until the application quits.
-    ///
-    /// This is the main entry point for terminal applications. It uses
-    /// `crossterm::event::EventStream` for non-blocking event reading,
-    /// and `tokio::select!` to multiplex between terminal events,
-    /// async messages, tick intervals, and render intervals.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if reading from the crossterm event stream fails,
-    /// if rendering to the terminal fails, or if terminal cleanup
-    /// (disabling raw mode, leaving alternate screen, disabling mouse
-    /// capture) fails on shutdown.
-    ///
-    /// # Example
-    ///
-    /// ```rust,ignore
-    /// // requires real terminal
-    /// #[tokio::main]
-    /// async fn main() -> std::io::Result<()> {
-    ///     Runtime::<MyApp>::new_terminal()?.run_terminal().await
-    /// }
-    /// ```
-    pub async fn run_terminal(mut self) -> io::Result<()> {
-        use futures_util::StreamExt;
-
-        #[cfg(feature = "tracing")]
-        tracing::info!("starting terminal runtime loop");
-
-        let mut tick_interval = tokio::time::interval(self.config.tick_rate);
-        let mut render_interval = tokio::time::interval(self.config.frame_rate);
-        let mut event_stream = crossterm::event::EventStream::new();
-
-        // Initial render
-        self.render()?;
-
-        let result = loop {
-            tokio::select! {
-                // Handle terminal events from crossterm
-                maybe_event = event_stream.next() => {
-                    match maybe_event {
-                        Some(Ok(event)) => {
-                            if let Some(envision_event) = Self::convert_crossterm_event(&event) {
-                                match self.core.overlay_stack.handle_event(&envision_event) {
-                                    OverlayAction::Consumed => {}
-                                    OverlayAction::KeepAndMessage(msg) => self.dispatch(msg),
-                                    OverlayAction::Dismiss => {
-                                        self.core.overlay_stack.pop();
-                                    }
-                                    OverlayAction::DismissWithMessage(msg) => {
-                                        self.core.overlay_stack.pop();
-                                        self.dispatch(msg);
-                                    }
-                                    OverlayAction::Propagate => {
-                                        if let Some(msg) =
-                                            A::handle_event_with_state(&self.core.state, &envision_event)
-                                        {
-                                            self.dispatch(msg);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        Some(Err(e)) => {
-                            break Err(e);
-                        }
-                        None => {
-                            // Event stream ended
-                            break Ok(());
-                        }
-                    }
-                }
-
-                // Handle async messages from spawned tasks
-                Some(msg) = self.message_rx.recv() => {
-                    self.dispatch(msg);
-                }
-
-                // Handle tick interval
-                _ = tick_interval.tick() => {
-                    // Process sync commands
-                    self.process_commands();
-
-                    // Process events from the queue
-                    let mut messages_processed = 0;
-                    while self.process_event() && messages_processed < self.core.max_messages_per_tick {
-                        messages_processed += 1;
-                    }
-
-                    // Handle tick
-                    if let Some(msg) = A::on_tick(&self.core.state) {
-                        self.dispatch(msg);
-                    }
-
-                    // Check if we should quit
-                    if A::should_quit(&self.core.state) {
-                        self.core.should_quit = true;
-                    }
-                }
-
-                // Handle render interval
-                _ = render_interval.tick() => {
-                    if let Err(e) = self.render() {
-                        break Err(e);
-                    }
-                }
-
-                // Handle cancellation
-                _ = self.cancel_token.cancelled() => {
-                    self.core.should_quit = true;
-                }
-            }
-
-            if self.core.should_quit {
-                break Ok(());
-            }
-        };
-
-        // Cleanup terminal - always attempt cleanup even on error
-        let cleanup_result = self.cleanup_terminal();
-
-        // Call on_exit
-        A::on_exit(&self.core.state);
-
-        // Return the first error if any
-        result.and(cleanup_result)
-    }
-
-    /// Runs the interactive terminal event loop, blocking the current thread.
-    ///
-    /// This is a convenience wrapper around [`run_terminal`](Runtime::run_terminal) for
-    /// applications that don't want to set up their own tokio runtime. It creates
-    /// a multi-threaded tokio runtime internally and blocks on the async event loop.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if creating the tokio runtime fails, or if
-    /// [`run_terminal`](Runtime::run_terminal) returns an error.
-    ///
-    /// # Example
-    ///
-    /// ```rust,ignore
-    /// // requires real terminal
-    /// fn main() -> std::io::Result<()> {
-    ///     Runtime::<MyApp>::new_terminal()?.run_terminal_blocking()
-    /// }
-    /// ```
-    pub fn run_terminal_blocking(self) -> io::Result<()> {
-        let rt = tokio::runtime::Runtime::new().map_err(io::Error::other)?;
-        rt.block_on(self.run_terminal())
-    }
-
-    /// Converts a crossterm event to our Event type.
-    fn convert_crossterm_event(event: &CrosstermEvent) -> Option<Event> {
-        match event {
-            CrosstermEvent::Key(key_event) => {
-                // Only handle key press events, not release or repeat
-                if key_event.kind == KeyEventKind::Press {
-                    Some(Event::Key(*key_event))
-                } else {
-                    None
-                }
-            }
-            CrosstermEvent::Mouse(mouse_event) => Some(Event::Mouse(*mouse_event)),
-            CrosstermEvent::Resize(width, height) => Some(Event::Resize(*width, *height)),
-            CrosstermEvent::FocusGained => Some(Event::FocusGained),
-            CrosstermEvent::FocusLost => Some(Event::FocusLost),
-            CrosstermEvent::Paste(text) => Some(Event::Paste(text.clone())),
-        }
-    }
-
-    /// Cleans up terminal state.
-    fn cleanup_terminal(&mut self) -> io::Result<()> {
-        disable_raw_mode()?;
-        self.core
-            .terminal
-            .backend_mut()
-            .execute(LeaveAlternateScreen)?;
-        self.core
-            .terminal
-            .backend_mut()
-            .execute(DisableMouseCapture)?;
-        self.core.terminal.show_cursor()?;
-        Ok(())
-    }
 }
 
 // =============================================================================
@@ -487,6 +175,28 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// Sends an event to the virtual terminal.
     ///
     /// The event is queued and will be processed on the next `tick()`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// vt.send(Event::key(KeyCode::Enter));
+    /// vt.tick()?;
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn send(&mut self, event: Event) {
         self.core.events.push(event);
     }
@@ -494,6 +204,28 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// Returns the current display content as plain text.
     ///
     /// This is what would be shown on a terminal screen.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// vt.tick()?;
+    /// let screen = vt.display();
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn display(&self) -> String {
         self.core.terminal.backend().to_string()
     }
@@ -563,11 +295,54 @@ impl<A: App, B: Backend> Runtime<A, B> {
     }
 
     /// Returns a reference to the current state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState { count: i32 }
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// let vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// assert_eq!(vt.state().count, 0);
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn state(&self) -> &A::State {
         &self.core.state
     }
 
     /// Returns a mutable reference to the state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState { count: i32 }
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// vt.state_mut().count = 42;
+    /// assert_eq!(vt.state().count, 42);
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn state_mut(&mut self) -> &mut A::State {
         &mut self.core.state
     }
@@ -700,6 +475,31 @@ impl<A: App, B: Backend> Runtime<A, B> {
     }
 
     /// Dispatches a message to update the state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState { count: i32 }
+    /// # #[derive(Clone)]
+    /// # enum MyMsg { Increment }
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> {
+    /// #         match msg { MyMsg::Increment => state.count += 1 }
+    /// #         Command::none()
+    /// #     }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// vt.dispatch(MyMsg::Increment);
+    /// assert_eq!(vt.state().count, 1);
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn dispatch(&mut self, msg: A::Message) {
         #[cfg(feature = "tracing")]
         let _span = tracing::debug_span!("dispatch").entered();
@@ -804,6 +604,28 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # Errors
     ///
     /// Returns an error if rendering to the terminal backend fails.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// vt.send(Event::key(KeyCode::Char('j')));
+    /// vt.tick()?; // processes the 'j' event and re-renders
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn tick(&mut self) -> io::Result<()> {
         #[cfg(feature = "tracing")]
         let _span = tracing::debug_span!("tick").entered();
@@ -924,6 +746,27 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # Errors
     ///
     /// Returns an error if any individual tick fails to render.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// vt.run_ticks(5)?;
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn run_ticks(&mut self, ticks: usize) -> io::Result<()> {
         for _ in 0..ticks {
             if self.core.should_quit {
@@ -1010,6 +853,30 @@ impl<A: App> Runtime<A, CaptureBackend> {
     }
 
     /// Returns true if the display contains the given text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {
+    /// #         frame.render_widget(ratatui::widgets::Paragraph::new("Hello"), frame.area());
+    /// #     }
+    /// # }
+    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// vt.tick()?;
+    /// assert!(vt.contains_text("Hello"));
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn contains_text(&self, needle: &str) -> bool {
         self.core.terminal.backend().contains_text(needle)
     }

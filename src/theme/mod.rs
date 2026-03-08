@@ -489,6 +489,15 @@ impl Theme {
     /// Returns a style for focused elements.
     ///
     /// Uses the theme's focused color for foreground.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::theme::Theme;
+    ///
+    /// let theme = Theme::nord();
+    /// let style = theme.focused_style();
+    /// ```
     pub fn focused_style(&self) -> Style {
         Style::default().fg(self.focused)
     }
@@ -539,6 +548,15 @@ impl Theme {
     }
 
     /// Returns a style for disabled elements.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::theme::Theme;
+    ///
+    /// let theme = Theme::default();
+    /// let style = theme.disabled_style();
+    /// ```
     pub fn disabled_style(&self) -> Style {
         Style::default().fg(self.disabled)
     }
@@ -552,6 +570,17 @@ impl Theme {
     ///
     /// Uses the theme's foreground and background colors so components
     /// render correctly with non-default themes (e.g., Nord).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::theme::Theme;
+    /// use ratatui::widgets::Paragraph;
+    /// use ratatui::prelude::Stylize;
+    ///
+    /// let theme = Theme::default();
+    /// let paragraph = Paragraph::new("text").style(theme.normal_style());
+    /// ```
     pub fn normal_style(&self) -> Style {
         Style::default().fg(self.foreground).bg(self.background)
     }

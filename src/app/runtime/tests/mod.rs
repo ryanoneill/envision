@@ -1,5 +1,7 @@
 mod async_tests;
 
+use std::time::Duration;
+
 use super::*;
 use ratatui::backend::CrosstermBackend;
 use ratatui::widgets::Paragraph;

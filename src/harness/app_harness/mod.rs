@@ -59,6 +59,28 @@ impl<A: App> AppHarness<A> {
     /// # Errors
     ///
     /// Returns an error if creating the virtual terminal fails.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// use envision::harness::AppHarness;
+    ///
+    /// let harness = AppHarness::<MyApp>::new(80, 24)?;
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn new(width: u16, height: u16) -> io::Result<Self> {
         let runtime = Runtime::virtual_terminal(width, height)?;
         Ok(Self { runtime })
@@ -152,6 +174,33 @@ impl<A: App> AppHarness<A> {
     ///
     /// This dispatches the message, spawns any async commands, and processes
     /// any immediately available async results.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState { count: i32 }
+    /// # #[derive(Clone)]
+    /// # enum MyMsg { Increment }
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> {
+    /// #         match msg { MyMsg::Increment => state.count += 1 }
+    /// #         Command::none()
+    /// #     }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// use envision::harness::AppHarness;
+    ///
+    /// let mut harness = AppHarness::<MyApp>::new(80, 24)?;
+    /// harness.dispatch(MyMsg::Increment);
+    /// assert_eq!(harness.state().count, 1);
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn dispatch(&mut self, msg: A::Message) {
         self.runtime.dispatch(msg);
         self.runtime.process_pending();
@@ -241,6 +290,30 @@ impl<A: App> AppHarness<A> {
     /// # Errors
     ///
     /// Returns an error if rendering to the terminal backend fails.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// use envision::harness::AppHarness;
+    ///
+    /// let mut harness = AppHarness::<MyApp>::new(80, 24)?;
+    /// harness.push_event(Event::key(KeyCode::Enter));
+    /// harness.tick()?;
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     pub fn tick(&mut self) -> io::Result<()> {
         self.runtime.tick()
     }
