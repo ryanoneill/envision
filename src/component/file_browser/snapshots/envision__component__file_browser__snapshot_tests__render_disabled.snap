@@ -1,10 +1,10 @@
 ---
-source: src/component/file_browser/tests.rs
+source: src/component/file_browser/snapshot_tests.rs
 expression: terminal.backend().to_string()
 ---
 ┌──────────────────────────────────────────────────────────┐
 │/                                                         │
-│✓ 📁  src                                                  │
+│  📁  src                                                  │
 │  📁  tests                                                │
 │  📄  Cargo.toml  1.0K                                     │
 │  📄  main.rs  512B                                        │

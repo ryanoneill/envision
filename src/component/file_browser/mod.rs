@@ -914,4 +914,6 @@ impl Focusable for FileBrowser {
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;

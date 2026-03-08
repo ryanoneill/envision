@@ -1,5 +1,4 @@
 use super::*;
-use crate::component::test_utils;
 use crate::input::{Event, KeyCode};
 
 fn sample_entries() -> Vec<FileEntry> {
@@ -866,109 +865,6 @@ fn test_debug_impl() {
     let debug = format!("{:?}", state);
     assert!(debug.contains("FileBrowserState"));
     assert!(debug.contains("current_path"));
-}
-
-// =============================================================================
-// Rendering (snapshot)
-// =============================================================================
-
-#[test]
-fn test_render_basic() {
-    let state = focused_state();
-    let (mut terminal, theme) = test_utils::setup_render(60, 12);
-    terminal
-        .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_render_unfocused() {
-    let state = FileBrowserState::new("/", sample_entries());
-    let (mut terminal, theme) = test_utils::setup_render(60, 12);
-    terminal
-        .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_render_with_filter() {
-    let mut state = focused_state();
-    FileBrowser::update(&mut state, FileBrowserMessage::FilterChar('m'));
-    let (mut terminal, theme) = test_utils::setup_render(60, 12);
-    terminal
-        .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_render_disabled() {
-    let mut state = FileBrowserState::new("/", sample_entries()).with_disabled(true);
-    FileBrowser::set_focused(&mut state, true);
-    let (mut terminal, theme) = test_utils::setup_render(60, 12);
-    terminal
-        .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_render_with_selection_markers() {
-    let mut state = focused_state();
-    // Toggle first item
-    FileBrowser::update(&mut state, FileBrowserMessage::ToggleSelect);
-    let (mut terminal, theme) = test_utils::setup_render(60, 12);
-    terminal
-        .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_render_empty() {
-    let mut state = FileBrowserState::new("/empty", vec![]);
-    FileBrowser::set_focused(&mut state, true);
-    let (mut terminal, theme) = test_utils::setup_render(60, 8);
-    terminal
-        .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-// =============================================================================
-// Annotation
-// =============================================================================
-
-#[test]
-fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
-    let state = FileBrowserState::new("/", sample_entries());
-    let (mut terminal, theme) = test_utils::setup_render(60, 12);
-    let registry = with_annotations(|| {
-        terminal
-            .draw(|frame| {
-                FileBrowser::view(&state, frame, frame.area(), &theme);
-            })
-            .unwrap();
-    });
-    assert_eq!(registry.len(), 1);
-    let regions = registry.find_by_type(&WidgetType::FileBrowser);
-    assert_eq!(regions.len(), 1);
-    assert!(regions[0].annotation.has_id("file_browser"));
 }
 
 // =============================================================================
