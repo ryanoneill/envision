@@ -804,3 +804,51 @@ fn test_annotation_emitted() {
     let regions = registry.find_by_type(&WidgetType::Accordion);
     assert_eq!(regions.len(), 1);
 }
+
+// ========== Selection Accessor Consistency Tests ==========
+
+#[test]
+fn test_selected_index_returns_some() {
+    let panels = vec![
+        AccordionPanel::new("A", "1"),
+        AccordionPanel::new("B", "2"),
+    ];
+    let state = AccordionState::new(panels);
+    assert_eq!(state.selected_index(), Some(0));
+}
+
+#[test]
+fn test_selected_index_returns_none_when_empty() {
+    let state = AccordionState::new(vec![]);
+    assert_eq!(state.selected_index(), None);
+}
+
+#[test]
+fn test_selected_alias_matches_selected_index() {
+    let panels = vec![
+        AccordionPanel::new("A", "1"),
+        AccordionPanel::new("B", "2"),
+    ];
+    let state = AccordionState::new(panels);
+    assert_eq!(state.selected(), state.selected_index());
+}
+
+#[test]
+fn test_selected_alias_returns_none_when_empty() {
+    let state = AccordionState::new(vec![]);
+    assert_eq!(state.selected(), None);
+}
+
+#[test]
+fn test_selected_index_after_focus_change() {
+    let panels = vec![
+        AccordionPanel::new("A", "1"),
+        AccordionPanel::new("B", "2"),
+        AccordionPanel::new("C", "3"),
+    ];
+    let mut state = AccordionState::new(panels);
+    state.set_focused(true);
+    Accordion::update(&mut state, AccordionMessage::Down);
+    assert_eq!(state.selected_index(), Some(1));
+    assert_eq!(state.selected(), Some(1));
+}

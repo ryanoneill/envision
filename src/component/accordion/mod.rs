@@ -256,6 +256,40 @@ impl AccordionState {
         self.panels.get(self.focused_index)
     }
 
+    /// Returns the currently focused panel index as an `Option`.
+    ///
+    /// This is a convenience alias for [`focused_index()`](Self::focused_index) that provides
+    /// a consistent `Option<usize>` return type across all selection-based components.
+    /// Returns `None` when the accordion has no panels.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{AccordionPanel, AccordionState};
+    ///
+    /// let panels = vec![
+    ///     AccordionPanel::new("Section 1", "Content 1"),
+    ///     AccordionPanel::new("Section 2", "Content 2"),
+    /// ];
+    /// let state = AccordionState::new(panels);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
+    pub fn selected_index(&self) -> Option<usize> {
+        if self.panels.is_empty() {
+            None
+        } else {
+            Some(self.focused_index)
+        }
+    }
+
+    /// Returns the currently focused panel index as an `Option`.
+    ///
+    /// This is an alias for [`selected_index()`](Self::selected_index) that provides a
+    /// consistent accessor name across all selection-based components.
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
     /// Returns the currently focused panel.
     ///
     /// This is an alias for [`focused_panel()`](Self::focused_panel) that provides a

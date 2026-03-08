@@ -319,6 +319,22 @@ impl FileBrowserState {
         self.selected_index
     }
 
+    /// Returns the selected index within the filtered list.
+    ///
+    /// This is an alias for [`selected_index()`](Self::selected_index) that provides a
+    /// consistent accessor name across all selection-based components.
+    pub fn selected(&self) -> Option<usize> {
+        self.selected_index()
+    }
+
+    /// Returns the currently selected file entry.
+    ///
+    /// This is an alias for [`selected_entry()`](Self::selected_entry) that provides a
+    /// consistent accessor name across all selection-based components.
+    pub fn selected_item(&self) -> Option<&FileEntry> {
+        self.selected_entry()
+    }
+
     /// Returns the selected paths (for multi-select mode).
     pub fn selected_paths(&self) -> &[String] {
         &self.selected_paths

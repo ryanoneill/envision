@@ -965,6 +965,33 @@ fn test_with_provider() {
 }
 
 #[test]
+fn test_selected_alias() {
+    let state = FileBrowserState::new("/", sample_entries());
+    assert_eq!(state.selected(), state.selected_index());
+    assert_eq!(state.selected(), Some(0));
+}
+
+#[test]
+fn test_selected_alias_none_when_empty() {
+    let state = FileBrowserState::new("/empty", vec![]);
+    assert_eq!(state.selected(), None);
+}
+
+#[test]
+fn test_selected_item_alias() {
+    let state = FileBrowserState::new("/", sample_entries());
+    assert_eq!(state.selected_item(), state.selected_entry());
+    let item = state.selected_item().unwrap();
+    assert!(item.is_dir());
+}
+
+#[test]
+fn test_selected_item_none_when_empty() {
+    let state = FileBrowserState::new("/empty", vec![]);
+    assert!(state.selected_item().is_none());
+}
+
+#[test]
 fn test_provider_default_separator() {
     struct TestProvider;
     impl DirectoryProvider for TestProvider {
