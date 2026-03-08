@@ -619,16 +619,19 @@ pub trait Toggleable: Component {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{Component, Disableable, Focusable, SelectableList};
+/// # #[cfg(feature = "input-components")]
+/// # {
+/// use envision::component::{Button, Component, Disableable, Focusable};
 ///
-/// let mut state = SelectableList::<String>::init();
-/// assert!(!SelectableList::<String>::is_disabled(&state));
+/// let mut state = Button::init();
+/// assert!(!Button::is_disabled(&state));
 ///
-/// SelectableList::<String>::disable(&mut state);
-/// assert!(SelectableList::<String>::is_disabled(&state));
+/// Button::disable(&mut state);
+/// assert!(Button::is_disabled(&state));
 ///
-/// SelectableList::<String>::enable(&mut state);
-/// assert!(!SelectableList::<String>::is_disabled(&state));
+/// Button::enable(&mut state);
+/// assert!(!Button::is_disabled(&state));
+/// # }
 /// ```
 pub trait Disableable: Component {
     /// Returns true if this component is currently disabled.
