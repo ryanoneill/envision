@@ -218,10 +218,7 @@ impl FileBrowserState {
     }
 
     /// Creates a new file browser with a directory provider.
-    pub fn with_provider(
-        path: impl Into<String>,
-        provider: Arc<dyn DirectoryProvider>,
-    ) -> Self {
+    pub fn with_provider(path: impl Into<String>, provider: Arc<dyn DirectoryProvider>) -> Self {
         let path_str = path.into();
         let entries = provider.list_entries(&path_str);
         let segments = compute_segments(&path_str);
@@ -575,7 +572,9 @@ impl Component for FileBrowser {
                 KeyCode::Tab => Some(FileBrowserMessage::CycleFocus),
                 KeyCode::BackTab => Some(FileBrowserMessage::CycleFocus),
                 KeyCode::Esc => Some(FileBrowserMessage::FilterClear),
-                KeyCode::Char(c) if !ctrl && c.is_alphanumeric() || c == '.' || c == '_' || c == '-' => {
+                KeyCode::Char(c)
+                    if !ctrl && c.is_alphanumeric() || c == '.' || c == '_' || c == '-' =>
+                {
                     Some(FileBrowserMessage::FilterChar(c))
                 }
                 _ => None,
@@ -719,16 +718,12 @@ impl Component for FileBrowser {
                     state.selected_index = Some(0);
                     state.list_state.select(Some(0));
                 }
-                Some(FileBrowserOutput::FilterChanged(
-                    state.filter_text.clone(),
-                ))
+                Some(FileBrowserOutput::FilterChanged(state.filter_text.clone()))
             }
             FileBrowserMessage::FilterBackspace => {
                 if state.filter_text.pop().is_some() {
                     state.sort_and_filter();
-                    Some(FileBrowserOutput::FilterChanged(
-                        state.filter_text.clone(),
-                    ))
+                    Some(FileBrowserOutput::FilterChanged(state.filter_text.clone()))
                 } else {
                     None
                 }
@@ -826,8 +821,8 @@ impl Component for FileBrowser {
         }
 
         // Layout: path bar (1 line) | filter (1 line if active) | listing
-        let has_filter = !state.filter_text.is_empty()
-            || state.internal_focus == FileBrowserFocus::Filter;
+        let has_filter =
+            !state.filter_text.is_empty() || state.internal_focus == FileBrowserFocus::Filter;
 
         let path_height = 1u16;
         let filter_height = if has_filter { 1u16 } else { 0u16 };
@@ -835,12 +830,7 @@ impl Component for FileBrowser {
 
         let path_area = Rect::new(inner.x, inner.y, inner.width, path_height);
         let filter_area = if has_filter {
-            Rect::new(
-                inner.x,
-                inner.y + path_height,
-                inner.width,
-                filter_height,
-            )
+            Rect::new(inner.x, inner.y + path_height, inner.width, filter_height)
         } else {
             Rect::ZERO
         };
@@ -858,20 +848,17 @@ impl Component for FileBrowser {
         } else {
             theme.info_style()
         };
-        frame.render_widget(
-            Paragraph::new(path_text).style(path_style),
-            path_area,
-        );
+        frame.render_widget(Paragraph::new(path_text).style(path_style), path_area);
 
         // Render filter
         if has_filter {
             let filter_display = format!("Filter: {}", state.filter_text);
-            let filter_style =
-                if state.internal_focus == FileBrowserFocus::Filter && state.focused {
-                    theme.focused_style()
-                } else {
-                    theme.normal_style()
-                };
+            let filter_style = if state.internal_focus == FileBrowserFocus::Filter && state.focused
+            {
+                theme.focused_style()
+            } else {
+                theme.normal_style()
+            };
             frame.render_widget(
                 Paragraph::new(filter_display).style(filter_style),
                 filter_area,
@@ -885,10 +872,7 @@ impl Component for FileBrowser {
             .map(|&i| {
                 let entry = &state.entries[i];
                 let icon = if entry.is_dir() { "📁" } else { "📄" };
-                let size_str = entry
-                    .size()
-                    .map(format_size)
-                    .unwrap_or_default();
+                let size_str = entry.size().map(format_size).unwrap_or_default();
                 let selected_marker = if state.selected_paths.contains(&entry.path().to_string()) {
                     "✓ "
                 } else {
@@ -897,13 +881,7 @@ impl Component for FileBrowser {
                 let text = if size_str.is_empty() {
                     format!("{}{} {}", selected_marker, icon, entry.name())
                 } else {
-                    format!(
-                        "{}{} {}  {}",
-                        selected_marker,
-                        icon,
-                        entry.name(),
-                        size_str
-                    )
+                    format!("{}{} {}  {}", selected_marker, icon, entry.name(), size_str)
                 };
                 ListItem::new(text)
             })

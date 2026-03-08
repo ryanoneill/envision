@@ -1,6 +1,6 @@
 use super::*;
 use crate::component::test_utils;
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, KeyCode};
 
 fn sample_entries() -> Vec<FileEntry> {
     vec![
@@ -47,10 +47,7 @@ fn test_new_selects_first_entry() {
 #[test]
 fn test_new_computes_path_segments() {
     let state = FileBrowserState::new("/home/user/project", sample_entries());
-    assert_eq!(
-        state.path_segments(),
-        &["/", "home", "user", "project"]
-    );
+    assert_eq!(state.path_segments(), &["/", "home", "user", "project"]);
 }
 
 #[test]
@@ -93,8 +90,7 @@ fn test_with_selection_mode() {
 
 #[test]
 fn test_with_sort_field() {
-    let state = FileBrowserState::new("/", sample_entries())
-        .with_sort_field(FileSortField::Size);
+    let state = FileBrowserState::new("/", sample_entries()).with_sort_field(FileSortField::Size);
     assert_eq!(*state.sort_field(), FileSortField::Size);
 }
 
@@ -107,8 +103,7 @@ fn test_with_sort_direction() {
 
 #[test]
 fn test_with_show_hidden() {
-    let state = FileBrowserState::new("/", sample_entries_with_hidden())
-        .with_show_hidden(true);
+    let state = FileBrowserState::new("/", sample_entries_with_hidden()).with_show_hidden(true);
     assert!(state.show_hidden());
     // All 4 entries visible when hidden shown
     assert_eq!(state.filtered_indices().len(), 4);
@@ -116,15 +111,13 @@ fn test_with_show_hidden() {
 
 #[test]
 fn test_with_disabled() {
-    let state = FileBrowserState::new("/", sample_entries())
-        .with_disabled(true);
+    let state = FileBrowserState::new("/", sample_entries()).with_disabled(true);
     assert!(state.is_disabled());
 }
 
 #[test]
 fn test_with_directories_first() {
-    let state = FileBrowserState::new("/", sample_entries())
-        .with_directories_first(false);
+    let state = FileBrowserState::new("/", sample_entries()).with_directories_first(false);
     // When not directories_first, everything sorted alphabetically
     let first = state.selected_entry().unwrap();
     assert_eq!(first.name(), "Cargo.toml");
@@ -233,8 +226,7 @@ fn test_hidden_files_excluded_by_default() {
 
 #[test]
 fn test_show_hidden_includes_all() {
-    let state = FileBrowserState::new("/", sample_entries_with_hidden())
-        .with_show_hidden(true);
+    let state = FileBrowserState::new("/", sample_entries_with_hidden()).with_show_hidden(true);
     assert_eq!(state.filtered_indices().len(), 4);
 }
 
@@ -247,7 +239,10 @@ fn test_toggle_hidden() {
 
     let initial_count = state.filtered_indices().len();
     let output = FileBrowser::update(&mut state, FileBrowserMessage::ToggleHidden);
-    assert!(matches!(output, Some(FileBrowserOutput::HiddenToggled(true))));
+    assert!(matches!(
+        output,
+        Some(FileBrowserOutput::HiddenToggled(true))
+    ));
     assert!(state.filtered_indices().len() > initial_count);
 }
 
@@ -262,7 +257,10 @@ fn test_move_down() {
 
     let output = FileBrowser::update(&mut state, FileBrowserMessage::Down);
     assert_eq!(state.selected_index(), Some(1));
-    assert!(matches!(output, Some(FileBrowserOutput::SelectionChanged(1))));
+    assert!(matches!(
+        output,
+        Some(FileBrowserOutput::SelectionChanged(1))
+    ));
 }
 
 #[test]
@@ -273,7 +271,10 @@ fn test_move_up() {
 
     let output = FileBrowser::update(&mut state, FileBrowserMessage::Up);
     assert_eq!(state.selected_index(), Some(0));
-    assert!(matches!(output, Some(FileBrowserOutput::SelectionChanged(0))));
+    assert!(matches!(
+        output,
+        Some(FileBrowserOutput::SelectionChanged(0))
+    ));
 }
 
 #[test]
@@ -305,7 +306,10 @@ fn test_first() {
 
     let output = FileBrowser::update(&mut state, FileBrowserMessage::First);
     assert_eq!(state.selected_index(), Some(0));
-    assert!(matches!(output, Some(FileBrowserOutput::SelectionChanged(0))));
+    assert!(matches!(
+        output,
+        Some(FileBrowserOutput::SelectionChanged(0))
+    ));
 }
 
 #[test]
@@ -322,7 +326,10 @@ fn test_page_down() {
     let mut state = focused_state();
     let output = FileBrowser::update(&mut state, FileBrowserMessage::PageDown(3));
     assert_eq!(state.selected_index(), Some(3));
-    assert!(matches!(output, Some(FileBrowserOutput::SelectionChanged(3))));
+    assert!(matches!(
+        output,
+        Some(FileBrowserOutput::SelectionChanged(3))
+    ));
 }
 
 #[test]
@@ -350,7 +357,10 @@ fn test_page_up_clamps_to_first() {
     FileBrowser::update(&mut state, FileBrowserMessage::Down);
     let output = FileBrowser::update(&mut state, FileBrowserMessage::PageUp(100));
     assert_eq!(state.selected_index(), Some(0));
-    assert!(matches!(output, Some(FileBrowserOutput::SelectionChanged(0))));
+    assert!(matches!(
+        output,
+        Some(FileBrowserOutput::SelectionChanged(0))
+    ));
 }
 
 // =============================================================================
@@ -389,7 +399,11 @@ fn test_enter_directory_without_provider() {
 fn test_enter_file_returns_file_selected() {
     let mut state = focused_state();
     // Navigate past directories to a file
-    let dir_count = state.filtered_entries().iter().filter(|e| e.is_dir()).count();
+    let dir_count = state
+        .filtered_entries()
+        .iter()
+        .filter(|e| e.is_dir())
+        .count();
     for _ in 0..dir_count {
         FileBrowser::update(&mut state, FileBrowserMessage::Down);
     }
@@ -496,7 +510,10 @@ fn test_toggle_select_adds_path() {
     let mut state = focused_state();
     let output = FileBrowser::update(&mut state, FileBrowserMessage::ToggleSelect);
     let entry = state.filtered_entries()[0];
-    assert!(matches!(output, Some(FileBrowserOutput::SelectionToggled(_))));
+    assert!(matches!(
+        output,
+        Some(FileBrowserOutput::SelectionToggled(_))
+    ));
     assert!(state.selected_paths().contains(&entry.path().to_string()));
 }
 
@@ -521,7 +538,10 @@ fn test_set_sort() {
     assert_eq!(*state.sort_field(), FileSortField::Size);
     assert!(matches!(
         output,
-        Some(FileBrowserOutput::SortChanged(FileSortField::Size, FileSortDirection::Ascending))
+        Some(FileBrowserOutput::SortChanged(
+            FileSortField::Size,
+            FileSortDirection::Ascending
+        ))
     ));
 }
 
@@ -532,7 +552,10 @@ fn test_toggle_sort_direction() {
     assert_eq!(*state.sort_direction(), FileSortDirection::Descending);
     assert!(matches!(
         output,
-        Some(FileBrowserOutput::SortChanged(FileSortField::Name, FileSortDirection::Descending))
+        Some(FileBrowserOutput::SortChanged(
+            FileSortField::Name,
+            FileSortDirection::Descending
+        ))
     ));
 }
 
@@ -757,14 +780,20 @@ fn test_instance_handle_event() {
 fn test_instance_dispatch_event() {
     let mut state = focused_state();
     let output = state.dispatch_event(&Event::key(KeyCode::Down));
-    assert!(matches!(output, Some(FileBrowserOutput::SelectionChanged(1))));
+    assert!(matches!(
+        output,
+        Some(FileBrowserOutput::SelectionChanged(1))
+    ));
 }
 
 #[test]
 fn test_instance_update() {
     let mut state = focused_state();
     let output = state.update(FileBrowserMessage::Down);
-    assert!(matches!(output, Some(FileBrowserOutput::SelectionChanged(1))));
+    assert!(matches!(
+        output,
+        Some(FileBrowserOutput::SelectionChanged(1))
+    ));
 }
 
 // =============================================================================
@@ -845,7 +874,7 @@ fn test_debug_impl() {
 
 #[test]
 fn test_render_basic() {
-    let mut state = focused_state();
+    let state = focused_state();
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
@@ -882,8 +911,7 @@ fn test_render_with_filter() {
 
 #[test]
 fn test_render_disabled() {
-    let mut state = FileBrowserState::new("/", sample_entries())
-        .with_disabled(true);
+    let mut state = FileBrowserState::new("/", sample_entries()).with_disabled(true);
     FileBrowser::set_focused(&mut state, true);
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
@@ -1005,9 +1033,7 @@ fn test_with_provider() {
                     FileEntry::directory("home", "/home"),
                     FileEntry::file("readme.txt", "/readme.txt"),
                 ],
-                "/home" => vec![
-                    FileEntry::directory("user", "/home/user"),
-                ],
+                "/home" => vec![FileEntry::directory("user", "/home/user")],
                 _ => vec![],
             }
         }
