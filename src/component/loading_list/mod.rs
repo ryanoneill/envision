@@ -61,11 +61,29 @@ pub enum ItemState {
 
 impl ItemState {
     /// Returns true if the item is loading.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ItemState;
+    ///
+    /// assert!(!ItemState::Ready.is_loading());
+    /// assert!(ItemState::Loading.is_loading());
+    /// ```
     pub fn is_loading(&self) -> bool {
         matches!(self, Self::Loading)
     }
 
     /// Returns true if the item has an error.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ItemState;
+    ///
+    /// assert!(!ItemState::Ready.is_error());
+    /// assert!(ItemState::Error("failed".into()).is_error());
+    /// ```
     pub fn is_error(&self) -> bool {
         matches!(self, Self::Error(_))
     }
@@ -76,6 +94,17 @@ impl ItemState {
     }
 
     /// Returns the error message if in error state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ItemState;
+    ///
+    /// let state = ItemState::Error("connection lost".into());
+    /// assert_eq!(state.error_message(), Some("connection lost"));
+    ///
+    /// assert_eq!(ItemState::Ready.error_message(), None);
+    /// ```
     pub fn error_message(&self) -> Option<&str> {
         if let Self::Error(msg) = self {
             Some(msg)
@@ -360,12 +389,32 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::<String>::new()
+    ///     .with_title("Tasks");
+    /// assert_eq!(state.title(), Some("Tasks"));
+    /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Sets whether to show loading indicators.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::<String>::new()
+    ///     .with_indicators(false);
+    /// assert!(!state.show_indicators());
+    /// ```
     pub fn with_indicators(mut self, show: bool) -> Self {
         self.show_indicators = show;
         self
@@ -453,6 +502,22 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Sets the loading state for an item.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// #[derive(Clone)]
+    /// struct Task { name: String }
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec![Task { name: "Build".to_string() }],
+    ///     |t| t.name.clone(),
+    /// );
+    /// state.set_loading(0);
+    /// assert!(state.has_loading());
+    /// ```
     pub fn set_loading(&mut self, index: usize) {
         if let Some(item) = self.items.get_mut(index) {
             item.state = ItemState::Loading;
@@ -474,6 +539,26 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Returns the number of items currently loading.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// #[derive(Clone)]
+    /// struct Task { name: String }
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec![
+    ///         Task { name: "A".to_string() },
+    ///         Task { name: "B".to_string() },
+    ///     ],
+    ///     |t| t.name.clone(),
+    /// );
+    /// state.set_loading(0);
+    /// state.set_loading(1);
+    /// assert_eq!(state.loading_count(), 2);
+    /// ```
     pub fn loading_count(&self) -> usize {
         self.items.iter().filter(|i| i.is_loading()).count()
     }

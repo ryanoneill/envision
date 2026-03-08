@@ -18,6 +18,17 @@ pub struct FileEntry {
 
 impl FileEntry {
     /// Creates a new file entry.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let entry = FileEntry::file("main.rs", "/src/main.rs");
+    /// assert_eq!(entry.name(), "main.rs");
+    /// assert_eq!(entry.path(), "/src/main.rs");
+    /// assert!(!entry.is_dir());
+    /// ```
     pub fn file(name: impl Into<String>, path: impl Into<String>) -> Self {
         let name_str = name.into();
         let ext = name_str
@@ -37,6 +48,16 @@ impl FileEntry {
     }
 
     /// Creates a new directory entry.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let entry = FileEntry::directory("src", "/src");
+    /// assert_eq!(entry.name(), "src");
+    /// assert!(entry.is_dir());
+    /// ```
     pub fn directory(name: impl Into<String>, path: impl Into<String>) -> Self {
         let name_str = name.into();
         Self {

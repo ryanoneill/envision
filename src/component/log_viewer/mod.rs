@@ -31,10 +31,11 @@
 //! assert_eq!(state.visible_entries().len(), 1);
 //! ```
 
+mod view;
+
 use std::marker::PhantomData;
 
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 use super::{
     Component, Disableable, Focusable, InputFieldMessage, InputFieldState, StatusLogEntry,
@@ -223,18 +224,45 @@ impl LogViewerState {
     }
 
     /// Sets the maximum number of entries (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new().with_max_entries(500);
+    /// assert_eq!(state.max_entries(), 500);
+    /// ```
     pub fn with_max_entries(mut self, max: usize) -> Self {
         self.max_entries = max;
         self
     }
 
     /// Sets whether to show timestamps (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new().with_timestamps(true);
+    /// assert!(state.show_timestamps());
+    /// ```
     pub fn with_timestamps(mut self, show: bool) -> Self {
         self.show_timestamps = show;
         self
     }
 
     /// Sets the title (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new().with_title("Application Log");
+    /// assert_eq!(state.title(), Some("Application Log"));
+    /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
@@ -264,6 +292,16 @@ impl LogViewerState {
     }
 
     /// Adds a success-level entry, returning its ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// let id = state.push_success("Build completed");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn push_success(&mut self, message: impl Into<String>) -> u64 {
         self.push_entry(message.into(), StatusLogLevel::Success, None)
     }
@@ -348,6 +386,18 @@ impl LogViewerState {
     }
 
     /// Removes an entry by ID. Returns true if the entry was found.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// let id = state.push_info("test");
+    /// assert_eq!(state.len(), 1);
+    /// assert!(state.remove(id));
+    /// assert!(state.is_empty());
+    /// ```
     pub fn remove(&mut self, id: u64) -> bool {
         if let Some(pos) = self.entries.iter().position(|e| e.id() == id) {
             self.entries.remove(pos);
@@ -358,6 +408,18 @@ impl LogViewerState {
     }
 
     /// Clears all entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.push_info("entry 1");
+    /// state.push_info("entry 2");
+    /// state.clear();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn clear(&mut self) {
         self.entries.clear();
         self.scroll_offset = 0;
@@ -472,6 +534,16 @@ impl LogViewerState {
     /// Returns whether the search bar is focused.
     pub fn is_search_focused(&self) -> bool {
         self.focus == Focus::Search
+    }
+
+    /// Returns the current value of the search input field.
+    pub fn search_value(&self) -> &str {
+        self.search.value()
+    }
+
+    /// Returns the cursor display position in the search field.
+    pub fn search_cursor_position(&self) -> usize {
+        self.search.cursor_display_position()
     }
 
     // ---- Filtering ----
@@ -791,13 +863,13 @@ impl Component for LogViewer {
         let log_area = chunks[2];
 
         // Render search bar
-        render_search_bar(state, frame, search_area, theme);
+        view::render_search_bar(state, frame, search_area, theme);
 
         // Render filter bar
-        render_filter_bar(state, frame, filter_area, theme);
+        view::render_filter_bar(state, frame, filter_area, theme);
 
         // Render log entries
-        render_log(state, frame, log_area, theme);
+        view::render_log(state, frame, log_area, theme);
     }
 }
 
@@ -819,170 +891,6 @@ impl Disableable for LogViewer {
     fn set_disabled(state: &mut Self::State, disabled: bool) {
         state.disabled = disabled;
     }
-}
-
-/// Renders the search bar area.
-fn render_search_bar(state: &LogViewerState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let search_style = if state.disabled {
-        theme.disabled_style()
-    } else if state.focus == Focus::Search {
-        theme.focused_style()
-    } else {
-        theme.normal_style()
-    };
-
-    let prefix = if state.search_text.is_empty() {
-        "/ Search..."
-    } else {
-        ""
-    };
-
-    let display = if state.search_text.is_empty() {
-        prefix.to_string()
-    } else {
-        format!("/ {}", state.search.value())
-    };
-
-    let paragraph = Paragraph::new(display).style(search_style);
-    frame.render_widget(paragraph, area);
-
-    // Show cursor when search is focused
-    if state.focused && state.focus == Focus::Search && !state.disabled {
-        let cursor_x = area.x + 2 + state.search.cursor_display_position() as u16;
-        if cursor_x < area.right() {
-            frame.set_cursor_position(Position::new(cursor_x, area.y));
-        }
-    }
-}
-
-/// Renders the filter bar showing which severity levels are active.
-fn render_filter_bar(state: &LogViewerState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let filter_style = if state.disabled {
-        theme.disabled_style()
-    } else {
-        theme.normal_style()
-    };
-
-    let info_marker = if state.show_info { "●" } else { "○" };
-    let success_marker = if state.show_success { "●" } else { "○" };
-    let warning_marker = if state.show_warning { "●" } else { "○" };
-    let error_marker = if state.show_error { "●" } else { "○" };
-
-    let spans = vec![
-        Span::styled(
-            format!("1:{} Info ", info_marker),
-            if state.disabled {
-                filter_style
-            } else {
-                Style::default().fg(StatusLogLevel::Info.color())
-            },
-        ),
-        Span::styled(
-            format!("2:{} Success ", success_marker),
-            if state.disabled {
-                filter_style
-            } else {
-                Style::default().fg(StatusLogLevel::Success.color())
-            },
-        ),
-        Span::styled(
-            format!("3:{} Warning ", warning_marker),
-            if state.disabled {
-                filter_style
-            } else {
-                Style::default().fg(StatusLogLevel::Warning.color())
-            },
-        ),
-        Span::styled(
-            format!("4:{} Error", error_marker),
-            if state.disabled {
-                filter_style
-            } else {
-                Style::default().fg(StatusLogLevel::Error.color())
-            },
-        ),
-    ];
-
-    let line = Line::from(spans);
-    let paragraph = Paragraph::new(line);
-    frame.render_widget(paragraph, area);
-}
-
-/// Renders the log entries area.
-fn render_log(state: &LogViewerState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let visible = state.visible_entries();
-
-    let border_style = if state.disabled {
-        theme.disabled_style()
-    } else if state.focused && state.focus == Focus::Log {
-        theme.focused_border_style()
-    } else {
-        theme.border_style()
-    };
-
-    let mut block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(border_style);
-
-    if let Some(ref title) = state.title {
-        let match_count = visible.len();
-        let total_count = state.entries.len();
-        if match_count < total_count {
-            block = block.title(format!("{} ({}/{})", title, match_count, total_count));
-        } else {
-            block = block.title(format!("{} ({})", title, total_count));
-        }
-    }
-
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
-
-    if inner.height == 0 || inner.width == 0 {
-        return;
-    }
-
-    let items: Vec<ListItem> = visible
-        .iter()
-        .skip(state.scroll_offset)
-        .take(inner.height as usize)
-        .map(|entry| {
-            let style = if state.disabled {
-                theme.disabled_style()
-            } else {
-                Style::default().fg(entry.level().color())
-            };
-
-            let mut text = String::new();
-            text.push_str(entry.level().prefix());
-            text.push(' ');
-
-            if state.show_timestamps {
-                if let Some(ts) = entry.timestamp() {
-                    text.push_str(ts);
-                    text.push(' ');
-                }
-            }
-
-            text.push_str(entry.message());
-
-            // Highlight search matches
-            if !state.search_text.is_empty() && !state.disabled {
-                let msg_lower = text.to_lowercase();
-                let search_lower = state.search_text.to_lowercase();
-                if msg_lower.contains(&search_lower) {
-                    // For simplicity, apply a highlight style to the entire line
-                    // when it contains a match
-                    let style = style.add_modifier(Modifier::BOLD);
-                    return ListItem::new(text).style(style);
-                }
-            }
-
-            ListItem::new(text).style(style)
-        })
-        .collect();
-
-    let list = List::new(items);
-    frame.render_widget(list, inner);
 }
 
 #[cfg(test)]

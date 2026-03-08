@@ -273,6 +273,19 @@ impl PaneLayoutState {
     ///
     /// The resize step controls how much each grow/shrink operation changes
     /// proportions. Defaults to 0.05 (5%).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("a"),
+    ///     PaneConfig::new("b"),
+    /// ]).with_resize_step(0.1);
+    /// assert!((state.resize_step() - 0.1).abs() < f32::EPSILON);
+    /// ```
     pub fn with_resize_step(mut self, step: f32) -> Self {
         self.resize_step = step.clamp(0.01, 0.5);
         self
@@ -344,6 +357,19 @@ impl PaneLayoutState {
     // ---- Accessors ----
 
     /// Returns the direction.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Vertical, vec![
+    ///     PaneConfig::new("top"),
+    ///     PaneConfig::new("bottom"),
+    /// ]);
+    /// assert_eq!(state.direction(), &PaneDirection::Vertical);
+    /// ```
     pub fn direction(&self) -> &PaneDirection {
         &self.direction
     }
@@ -354,6 +380,19 @@ impl PaneLayoutState {
     }
 
     /// Returns the number of panes.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("left"),
+    ///     PaneConfig::new("right"),
+    /// ]);
+    /// assert_eq!(state.pane_count(), 2);
+    /// ```
     pub fn pane_count(&self) -> usize {
         self.panes.len()
     }
@@ -364,11 +403,37 @@ impl PaneLayoutState {
     }
 
     /// Returns the focused pane ID, if panes exist.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("left"),
+    ///     PaneConfig::new("right"),
+    /// ]);
+    /// assert_eq!(state.focused_pane_id(), Some("left"));
+    /// ```
     pub fn focused_pane_id(&self) -> Option<&str> {
         self.panes.get(self.focused_pane).map(|p| p.id.as_str())
     }
 
     /// Returns a pane configuration by ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("sidebar").with_title("Files"),
+    /// ]);
+    /// let pane = state.pane("sidebar").unwrap();
+    /// assert_eq!(pane.title(), Some("Files"));
+    /// ```
     pub fn pane(&self, id: &str) -> Option<&PaneConfig> {
         self.panes.iter().find(|p| p.id == id)
     }
