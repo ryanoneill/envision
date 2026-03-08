@@ -87,6 +87,7 @@ mod runtime;
 mod runtime_core;
 mod subscription;
 mod update;
+pub mod worker;
 
 pub use command::{BoxedError, Command, CommandHandler};
 pub use model::App;
