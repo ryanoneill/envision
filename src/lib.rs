@@ -156,7 +156,7 @@ pub use component::{
 // Display components
 #[cfg(feature = "display-components")]
 pub use component::{
-    KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress,
+    format_eta, KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress,
     MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressBar, ProgressBarMessage,
     ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus, ScrollableText,
     ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section, Spinner,

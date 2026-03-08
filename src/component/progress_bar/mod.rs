@@ -28,6 +28,8 @@
 //! assert!(state.is_complete());
 //! ```
 
+use std::time::Duration;
+
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Gauge};
 
@@ -45,6 +47,10 @@ pub enum ProgressBarMessage {
     Complete,
     /// Reset progress to zero.
     Reset,
+    /// Set the estimated time of arrival.
+    SetEta(Option<Duration>),
+    /// Set the rate text (e.g., "5.2 items/sec").
+    SetRateText(Option<String>),
 }
 
 /// Output messages from a ProgressBar.
@@ -55,7 +61,7 @@ pub enum ProgressBarOutput {
 }
 
 /// State for a ProgressBar component.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
@@ -67,6 +73,31 @@ pub struct ProgressBarState {
     label: Option<String>,
     /// Whether the component is disabled.
     disabled: bool,
+    /// Whether to show percentage in the label.
+    show_percentage: bool,
+    /// Estimated time remaining in milliseconds.
+    eta_millis: Option<u64>,
+    /// Rate text (e.g., "5.2 items/sec").
+    rate_text: Option<String>,
+    /// Whether to show the ETA in the label.
+    show_eta: bool,
+    /// Whether to show the rate in the label.
+    show_rate: bool,
+}
+
+impl Default for ProgressBarState {
+    fn default() -> Self {
+        Self {
+            progress: 0.0,
+            label: None,
+            disabled: false,
+            show_percentage: true,
+            eta_millis: None,
+            rate_text: None,
+            show_eta: true,
+            show_rate: true,
+        }
+    }
 }
 
 impl ProgressBarState {
@@ -100,8 +131,7 @@ impl ProgressBarState {
     pub fn with_progress(progress: f32) -> Self {
         Self {
             progress: progress.clamp(0.0, 1.0),
-            label: None,
-            disabled: false,
+            ..Self::default()
         }
     }
 
@@ -117,9 +147,8 @@ impl ProgressBarState {
     /// ```
     pub fn with_label(label: impl Into<String>) -> Self {
         Self {
-            progress: 0.0,
             label: Some(label.into()),
-            disabled: false,
+            ..Self::default()
         }
     }
 
@@ -181,6 +210,130 @@ impl ProgressBarState {
         self.disabled = disabled;
         self
     }
+
+    /// Sets whether to show percentage in the label (builder pattern).
+    ///
+    /// Default is `true`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::new().with_show_percentage(false);
+    /// assert!(!state.show_percentage());
+    /// ```
+    pub fn with_show_percentage(mut self, show: bool) -> Self {
+        self.show_percentage = show;
+        self
+    }
+
+    /// Sets whether to show ETA in the label (builder pattern).
+    ///
+    /// Default is `true`. ETA is only shown when `eta_millis` is `Some`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::new().with_show_eta(false);
+    /// assert!(!state.show_eta());
+    /// ```
+    pub fn with_show_eta(mut self, show: bool) -> Self {
+        self.show_eta = show;
+        self
+    }
+
+    /// Sets whether to show rate text in the label (builder pattern).
+    ///
+    /// Default is `true`. Rate is only shown when `rate_text` is `Some`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::new().with_show_rate(false);
+    /// assert!(!state.show_rate());
+    /// ```
+    pub fn with_show_rate(mut self, show: bool) -> Self {
+        self.show_rate = show;
+        self
+    }
+
+    /// Returns whether the percentage is shown in the label.
+    pub fn show_percentage(&self) -> bool {
+        self.show_percentage
+    }
+
+    /// Returns whether the ETA is shown in the label.
+    pub fn show_eta(&self) -> bool {
+        self.show_eta
+    }
+
+    /// Returns whether the rate is shown in the label.
+    pub fn show_rate(&self) -> bool {
+        self.show_rate
+    }
+
+    /// Returns the ETA as a `Duration`, if set.
+    pub fn eta(&self) -> Option<Duration> {
+        self.eta_millis.map(Duration::from_millis)
+    }
+
+    /// Returns the ETA in milliseconds, if set.
+    pub fn eta_millis(&self) -> Option<u64> {
+        self.eta_millis
+    }
+
+    /// Returns the rate text, if set.
+    pub fn rate_text(&self) -> Option<&str> {
+        self.rate_text.as_deref()
+    }
+
+    /// Sets the ETA.
+    pub fn set_eta(&mut self, eta: Option<Duration>) {
+        self.eta_millis = eta.map(|d| d.as_millis() as u64);
+    }
+
+    /// Sets the rate text.
+    pub fn set_rate_text(&mut self, rate_text: Option<String>) {
+        self.rate_text = rate_text;
+    }
+}
+
+/// Formats a duration as a human-readable ETA string.
+///
+/// # Format
+///
+/// - Less than 60 seconds: `"45s"`
+/// - Less than 1 hour: `"3m 22s"`
+/// - 1 hour or more: `"1h 02m"`
+///
+/// # Example
+///
+/// ```rust
+/// use std::time::Duration;
+/// use envision::component::progress_bar::format_eta;
+///
+/// assert_eq!(format_eta(Duration::from_secs(45)), "45s");
+/// assert_eq!(format_eta(Duration::from_secs(202)), "3m 22s");
+/// assert_eq!(format_eta(Duration::from_secs(3720)), "1h 02m");
+/// ```
+pub fn format_eta(duration: Duration) -> String {
+    let total_secs = duration.as_secs();
+    if total_secs < 60 {
+        format!("{}s", total_secs)
+    } else if total_secs < 3600 {
+        let mins = total_secs / 60;
+        let secs = total_secs % 60;
+        format!("{}m {:02}s", mins, secs)
+    } else {
+        let hours = total_secs / 3600;
+        let mins = (total_secs % 3600) / 60;
+        format!("{}h {:02}m", hours, mins)
+    }
 }
 
 /// A progress indicator component.
@@ -203,6 +356,8 @@ impl ProgressBarState {
 /// - `Increment(f32)` - Add to the current progress
 /// - `Complete` - Set progress to 100%
 /// - `Reset` - Set progress to 0%
+/// - `SetEta(Option<Duration>)` - Set estimated time remaining
+/// - `SetRateText(Option<String>)` - Set rate display text
 ///
 /// # Output
 ///
@@ -249,6 +404,16 @@ impl Component for ProgressBar {
             }
             ProgressBarMessage::Reset => {
                 state.progress = 0.0;
+                state.eta_millis = None;
+                state.rate_text = None;
+                return None;
+            }
+            ProgressBarMessage::SetEta(eta) => {
+                state.eta_millis = eta.map(|d| d.as_millis() as u64);
+                return None;
+            }
+            ProgressBarMessage::SetRateText(text) => {
+                state.rate_text = text;
                 return None;
             }
         }
@@ -262,10 +427,7 @@ impl Component for ProgressBar {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
-        let label = match &state.label {
-            Some(l) => format!("{} {}%", l, state.percentage()),
-            None => format!("{}%", state.percentage()),
-        };
+        let label = build_label(state);
 
         let gauge = Gauge::default()
             .block(Block::default().borders(Borders::ALL))
@@ -281,6 +443,34 @@ impl Component for ProgressBar {
         let annotated = crate::annotation::Annotate::new(gauge, annotation);
         frame.render_widget(annotated, area);
     }
+}
+
+/// Builds the label string from the progress bar state.
+fn build_label(state: &ProgressBarState) -> String {
+    let mut parts = Vec::new();
+
+    if let Some(l) = &state.label {
+        parts.push(l.clone());
+    }
+
+    if state.show_percentage {
+        parts.push(format!("{}%", state.percentage()));
+    }
+
+    if state.show_rate {
+        if let Some(rate) = &state.rate_text {
+            parts.push(format!("[{}]", rate));
+        }
+    }
+
+    if state.show_eta {
+        if let Some(millis) = state.eta_millis {
+            let duration = Duration::from_millis(millis);
+            parts.push(format!("ETA: {}", format_eta(duration)));
+        }
+    }
+
+    parts.join(" ")
 }
 
 #[cfg(test)]

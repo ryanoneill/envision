@@ -317,6 +317,242 @@ fn test_full_workflow() {
     assert!(!state.is_complete());
 }
 
+// ETA and Rate tests
+
+#[test]
+fn test_default_show_percentage_is_true() {
+    let state = ProgressBarState::new();
+    assert!(state.show_percentage());
+}
+
+#[test]
+fn test_default_show_eta_is_true() {
+    let state = ProgressBarState::new();
+    assert!(state.show_eta());
+}
+
+#[test]
+fn test_default_show_rate_is_true() {
+    let state = ProgressBarState::new();
+    assert!(state.show_rate());
+}
+
+#[test]
+fn test_default_eta_is_none() {
+    let state = ProgressBarState::new();
+    assert!(state.eta().is_none());
+    assert!(state.eta_millis().is_none());
+}
+
+#[test]
+fn test_default_rate_text_is_none() {
+    let state = ProgressBarState::new();
+    assert!(state.rate_text().is_none());
+}
+
+#[test]
+fn test_with_show_percentage_false() {
+    let state = ProgressBarState::new().with_show_percentage(false);
+    assert!(!state.show_percentage());
+}
+
+#[test]
+fn test_with_show_eta_false() {
+    let state = ProgressBarState::new().with_show_eta(false);
+    assert!(!state.show_eta());
+}
+
+#[test]
+fn test_with_show_rate_false() {
+    let state = ProgressBarState::new().with_show_rate(false);
+    assert!(!state.show_rate());
+}
+
+#[test]
+fn test_set_eta() {
+    let mut state = ProgressBarState::new();
+    state.set_eta(Some(Duration::from_secs(120)));
+    assert_eq!(state.eta(), Some(Duration::from_millis(120_000)));
+    assert_eq!(state.eta_millis(), Some(120_000));
+
+    state.set_eta(None);
+    assert!(state.eta().is_none());
+}
+
+#[test]
+fn test_set_rate_text() {
+    let mut state = ProgressBarState::new();
+    state.set_rate_text(Some("5.2 items/sec".to_string()));
+    assert_eq!(state.rate_text(), Some("5.2 items/sec"));
+
+    state.set_rate_text(None);
+    assert!(state.rate_text().is_none());
+}
+
+#[test]
+fn test_set_eta_message() {
+    let mut state = ProgressBarState::new();
+    let output = ProgressBar::update(
+        &mut state,
+        ProgressBarMessage::SetEta(Some(Duration::from_secs(60))),
+    );
+    assert_eq!(output, None);
+    assert_eq!(state.eta_millis(), Some(60_000));
+}
+
+#[test]
+fn test_set_eta_message_none() {
+    let mut state = ProgressBarState::new();
+    state.set_eta(Some(Duration::from_secs(60)));
+    let output = ProgressBar::update(&mut state, ProgressBarMessage::SetEta(None));
+    assert_eq!(output, None);
+    assert!(state.eta().is_none());
+}
+
+#[test]
+fn test_set_rate_text_message() {
+    let mut state = ProgressBarState::new();
+    let output = ProgressBar::update(
+        &mut state,
+        ProgressBarMessage::SetRateText(Some("10 req/s".to_string())),
+    );
+    assert_eq!(output, None);
+    assert_eq!(state.rate_text(), Some("10 req/s"));
+}
+
+#[test]
+fn test_set_rate_text_message_none() {
+    let mut state = ProgressBarState::new();
+    state.set_rate_text(Some("10 req/s".to_string()));
+    let output = ProgressBar::update(&mut state, ProgressBarMessage::SetRateText(None));
+    assert_eq!(output, None);
+    assert!(state.rate_text().is_none());
+}
+
+#[test]
+fn test_reset_clears_eta_and_rate() {
+    let mut state = ProgressBarState::with_progress(0.5);
+    state.set_eta(Some(Duration::from_secs(60)));
+    state.set_rate_text(Some("5 items/sec".to_string()));
+
+    ProgressBar::update(&mut state, ProgressBarMessage::Reset);
+    assert!(state.eta().is_none());
+    assert!(state.rate_text().is_none());
+}
+
+#[test]
+fn test_format_eta_seconds() {
+    assert_eq!(format_eta(Duration::from_secs(0)), "0s");
+    assert_eq!(format_eta(Duration::from_secs(1)), "1s");
+    assert_eq!(format_eta(Duration::from_secs(45)), "45s");
+    assert_eq!(format_eta(Duration::from_secs(59)), "59s");
+}
+
+#[test]
+fn test_format_eta_minutes() {
+    assert_eq!(format_eta(Duration::from_secs(60)), "1m 00s");
+    assert_eq!(format_eta(Duration::from_secs(61)), "1m 01s");
+    assert_eq!(format_eta(Duration::from_secs(202)), "3m 22s");
+    assert_eq!(format_eta(Duration::from_secs(3599)), "59m 59s");
+}
+
+#[test]
+fn test_format_eta_hours() {
+    assert_eq!(format_eta(Duration::from_secs(3600)), "1h 00m");
+    assert_eq!(format_eta(Duration::from_secs(3720)), "1h 02m");
+    assert_eq!(format_eta(Duration::from_secs(7200)), "2h 00m");
+    assert_eq!(format_eta(Duration::from_secs(86400)), "24h 00m");
+}
+
+#[test]
+fn test_label_with_percentage_only() {
+    let state = ProgressBarState::with_progress(0.42);
+    let label = build_label(&state);
+    assert_eq!(label, "42%");
+}
+
+#[test]
+fn test_label_with_label_and_percentage() {
+    let mut state = ProgressBarState::with_label("Loading...");
+    state.set_progress(0.42);
+    let label = build_label(&state);
+    assert_eq!(label, "Loading... 42%");
+}
+
+#[test]
+fn test_label_with_rate() {
+    let mut state = ProgressBarState::with_progress(0.42);
+    state.set_rate_text(Some("5.2 items/sec".to_string()));
+    let label = build_label(&state);
+    assert_eq!(label, "42% [5.2 items/sec]");
+}
+
+#[test]
+fn test_label_with_eta() {
+    let mut state = ProgressBarState::with_progress(0.42);
+    state.set_eta(Some(Duration::from_secs(202)));
+    let label = build_label(&state);
+    assert_eq!(label, "42% ETA: 3m 22s");
+}
+
+#[test]
+fn test_label_with_all_parts() {
+    let mut state = ProgressBarState::with_label("Loading...");
+    state.set_progress(0.42);
+    state.set_rate_text(Some("5.2 items/sec".to_string()));
+    state.set_eta(Some(Duration::from_secs(202)));
+    let label = build_label(&state);
+    assert_eq!(label, "Loading... 42% [5.2 items/sec] ETA: 3m 22s");
+}
+
+#[test]
+fn test_label_hide_percentage() {
+    let mut state = ProgressBarState::with_progress(0.42).with_show_percentage(false);
+    state.set_rate_text(Some("5.2 items/sec".to_string()));
+    let label = build_label(&state);
+    assert_eq!(label, "[5.2 items/sec]");
+}
+
+#[test]
+fn test_label_hide_eta() {
+    let mut state = ProgressBarState::with_progress(0.42).with_show_eta(false);
+    state.set_eta(Some(Duration::from_secs(202)));
+    let label = build_label(&state);
+    assert_eq!(label, "42%");
+}
+
+#[test]
+fn test_label_hide_rate() {
+    let mut state = ProgressBarState::with_progress(0.42).with_show_rate(false);
+    state.set_rate_text(Some("5.2 items/sec".to_string()));
+    let label = build_label(&state);
+    assert_eq!(label, "42%");
+}
+
+#[test]
+fn test_label_empty_when_all_hidden() {
+    let state = ProgressBarState::with_progress(0.42).with_show_percentage(false);
+    let label = build_label(&state);
+    assert_eq!(label, "");
+}
+
+#[test]
+fn test_view_with_eta_and_rate() {
+    let mut state = ProgressBarState::with_label("Loading...");
+    state.set_progress(0.42);
+    state.set_rate_text(Some("5.2 items/sec".to_string()));
+    state.set_eta(Some(Duration::from_secs(202)));
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 5);
+
+    terminal
+        .draw(|frame| {
+            ProgressBar::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
 // Annotation tests
 
 #[test]
