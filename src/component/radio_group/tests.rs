@@ -55,12 +55,12 @@ fn test_selected_accessors() {
     assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.selected_item(), Some(&"A"));
 
-    state.set_selected(2);
+    state.set_selected(Some(2));
     assert_eq!(state.selected_index(), Some(2));
     assert_eq!(state.selected_item(), Some(&"C"));
 
     // Out of bounds is ignored
-    state.set_selected(100);
+    state.set_selected(Some(100));
     assert_eq!(state.selected_index(), Some(2));
 }
 
@@ -100,7 +100,7 @@ fn test_navigate_at_bounds() {
     assert_eq!(state.selected_index(), Some(0));
 
     // Go to last
-    state.set_selected(2);
+    state.set_selected(Some(2));
 
     // At last, Down returns None
     let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Down);
@@ -424,7 +424,7 @@ fn test_selected_item() {
     let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
     assert_eq!(state.selected_item(), Some(&"A"));
 
-    state.set_selected(2);
+    state.set_selected(Some(2));
     assert_eq!(state.selected_item(), Some(&"C"));
     assert_eq!(state.selected_item(), Some(&"C"));
 }
@@ -448,7 +448,7 @@ fn test_set_options_updates_options() {
 #[test]
 fn test_set_options_preserves_valid_selection() {
     let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
-    state.set_selected(1);
+    state.set_selected(Some(1));
     state.set_options(vec!["X", "Y", "Z"]);
     assert_eq!(state.selected_index(), Some(1));
 }

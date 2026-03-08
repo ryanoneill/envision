@@ -68,11 +68,11 @@ fn test_selected_empty() {
 #[test]
 fn test_set_selected() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
-    state.set_selected(2);
+    state.set_selected(Some(2));
     assert_eq!(state.selected_index(), Some(2));
 
     // Test clamping
-    state.set_selected(100);
+    state.set_selected(Some(100));
     assert_eq!(state.selected_index(), Some(2));
 }
 
@@ -629,7 +629,7 @@ fn test_set_tabs_updates_tabs() {
 #[test]
 fn test_set_tabs_preserves_valid_selection() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
-    state.set_selected(1);
+    state.set_selected(Some(1));
     state.set_tabs(vec!["X", "Y", "Z"]);
     assert_eq!(state.selected_index(), Some(1));
 }

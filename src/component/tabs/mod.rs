@@ -167,12 +167,18 @@ impl<T: Clone> TabsState<T> {
 
     /// Sets the selected tab by index.
     ///
-    /// The index is clamped to the valid range. Has no effect on empty tabs.
-    pub fn set_selected(&mut self, index: usize) {
-        if self.tabs.is_empty() {
-            self.selected = None;
-        } else {
-            self.selected = Some(index.min(self.tabs.len() - 1));
+    /// Pass `Some(index)` to select a tab (clamped to valid range), or
+    /// `None` to clear the selection.
+    pub fn set_selected(&mut self, index: Option<usize>) {
+        match index {
+            Some(i) => {
+                if self.tabs.is_empty() {
+                    self.selected = None;
+                } else {
+                    self.selected = Some(i.min(self.tabs.len() - 1));
+                }
+            }
+            None => self.selected = None,
         }
     }
 

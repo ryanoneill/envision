@@ -268,8 +268,9 @@ impl<T: Clone> SelectableListState<T> {
 
     /// Sets the selected index.
     ///
-    /// The index is clamped to the valid range. Has no effect on empty lists.
-    /// If the item at the given index is filtered out, the selection is unchanged.
+    /// Pass `Some(index)` to select an item (clamped to valid range), or
+    /// `None` to clear the selection. Has no effect on empty lists when
+    /// selecting.
     ///
     /// # Examples
     ///
@@ -277,17 +278,27 @@ impl<T: Clone> SelectableListState<T> {
     /// use envision::prelude::*;
     ///
     /// let mut state = SelectableListState::new(vec!["a", "b", "c"]);
-    /// state.set_selected(2);
+    /// state.set_selected(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// assert_eq!(state.selected_item(), Some(&"c"));
+    ///
+    /// state.set_selected(None);
+    /// assert_eq!(state.selected_index(), None);
     /// ```
-    pub fn set_selected(&mut self, index: usize) {
-        if self.items.is_empty() {
-            return;
-        }
-        let clamped = index.min(self.items.len() - 1);
-        if let Some(filtered_pos) = self.filtered_indices.iter().position(|&fi| fi == clamped) {
-            self.list_state.select(Some(filtered_pos));
+    pub fn set_selected(&mut self, index: Option<usize>) {
+        match index {
+            Some(i) => {
+                if self.items.is_empty() {
+                    return;
+                }
+                let clamped = i.min(self.items.len() - 1);
+                if let Some(filtered_pos) =
+                    self.filtered_indices.iter().position(|&fi| fi == clamped)
+                {
+                    self.list_state.select(Some(filtered_pos));
+                }
+            }
+            None => self.list_state.select(None),
         }
     }
 

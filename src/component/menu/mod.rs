@@ -242,11 +242,17 @@ impl MenuState {
 
     /// Sets the selected item index.
     ///
-    /// If the index is out of bounds, it will be clamped to the valid range.
-    /// Has no effect on an empty menu.
-    pub fn set_selected(&mut self, index: usize) {
-        if !self.items.is_empty() {
-            self.selected_index = Some(index.min(self.items.len() - 1));
+    /// Pass `Some(index)` to select an item (clamped to valid range), or
+    /// `None` to clear the selection. Has no effect on an empty menu when
+    /// selecting.
+    pub fn set_selected(&mut self, index: Option<usize>) {
+        match index {
+            Some(i) => {
+                if !self.items.is_empty() {
+                    self.selected_index = Some(i.min(self.items.len() - 1));
+                }
+            }
+            None => self.selected_index = None,
         }
     }
 
@@ -268,7 +274,7 @@ impl MenuState {
     /// assert_eq!(state.selected_index(), Some(1));
     /// ```
     pub fn with_selected(mut self, index: usize) -> Self {
-        self.set_selected(index);
+        self.set_selected(Some(index));
         self
     }
 
