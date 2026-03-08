@@ -408,3 +408,110 @@ async fn test_render_after_chained_async() {
     vt.render().unwrap();
     assert!(vt.contains_text("chain complete"));
 }
+
+// ===========================================================================
+// Tests: AppHarness async methods (test-utils feature)
+// ===========================================================================
+
+#[cfg(feature = "test-utils")]
+mod app_harness_tests {
+    use std::time::Duration;
+
+    use envision::harness::AppHarness;
+    use envision::{App, Command};
+    use ratatui::prelude::*;
+
+    struct TimedApp;
+
+    #[derive(Clone, Default)]
+    struct TimedState {
+        data: Option<String>,
+        loading: bool,
+    }
+
+    #[derive(Clone, Debug)]
+    enum TimedMsg {
+        StartLoad,
+        DataLoaded(String),
+    }
+
+    impl App for TimedApp {
+        type State = TimedState;
+        type Message = TimedMsg;
+
+        fn init() -> (Self::State, Command<Self::Message>) {
+            (TimedState::default(), Command::none())
+        }
+
+        fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+            match msg {
+                TimedMsg::StartLoad => {
+                    state.loading = true;
+                    Command::perform_async(async {
+                        tokio::time::sleep(Duration::from_millis(100)).await;
+                        Some(TimedMsg::DataLoaded("loaded".into()))
+                    })
+                }
+                TimedMsg::DataLoaded(data) => {
+                    state.loading = false;
+                    state.data = Some(data);
+                    Command::none()
+                }
+            }
+        }
+
+        fn view(state: &Self::State, frame: &mut Frame) {
+            let text = if state.loading {
+                "Loading...".to_string()
+            } else if let Some(ref data) = state.data {
+                format!("Data: {}", data)
+            } else {
+                "Idle".to_string()
+            };
+            frame.render_widget(ratatui::widgets::Paragraph::new(text), frame.area());
+        }
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn test_app_harness_advance_time() {
+        let mut harness = AppHarness::<TimedApp>::new(40, 10).unwrap();
+
+        harness.dispatch(TimedMsg::StartLoad);
+        assert!(harness.state().loading);
+        assert!(harness.state().data.is_none());
+
+        // Advance time past the 100ms sleep
+        harness.advance_time(Duration::from_millis(150)).await;
+
+        assert!(!harness.state().loading);
+        assert_eq!(harness.state().data, Some("loaded".to_string()));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn test_app_harness_wait_for() {
+        let mut harness = AppHarness::<TimedApp>::new(40, 10).unwrap();
+
+        harness.dispatch(TimedMsg::StartLoad);
+
+        let found = harness
+            .wait_for(|state| state.data.is_some(), Duration::from_secs(1))
+            .await;
+
+        assert!(found);
+        assert_eq!(harness.state().data, Some("loaded".to_string()));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn test_app_harness_wait_for_text() {
+        let mut harness = AppHarness::<TimedApp>::new(40, 10).unwrap();
+
+        harness.dispatch(TimedMsg::StartLoad);
+
+        let found = harness
+            .wait_for_text("Data: loaded", Duration::from_secs(1))
+            .await;
+
+        assert!(found);
+        assert!(harness.contains_text("Data: loaded"));
+    }
+}

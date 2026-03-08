@@ -405,11 +405,11 @@ impl<A: App> AppHarness<A> {
     }
 }
 
-// Time control methods - only available during tests with tokio test-util
-#[cfg(test)]
+// Time control methods - available during tests and with the test-utils feature
+#[cfg(any(test, feature = "test-utils"))]
 use std::time::Duration;
 
-#[cfg(test)]
+#[cfg(any(test, feature = "test-utils"))]
 impl<A: App> AppHarness<A> {
     /// Advances time by the specified duration.
     ///
