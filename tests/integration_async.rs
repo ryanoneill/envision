@@ -1,11 +1,6 @@
 #![cfg(feature = "full")]
-//! Async integration tests exercising commands, message channels, and error handling.
-//!
-//! NOTE: Subscription tests (TickSubscription, TimerSubscription, ChannelSubscription)
-//! are intentionally omitted. Subscription streams are created via `subscribe()` but
-//! are not polled by `tick()`, `process_pending()`, or `run()`. This is a known gap
-//! that requires redesigning the subscription polling mechanism. See the planned
-//! runtime API redesign for details.
+//! Async integration tests exercising commands, message channels, subscriptions,
+//! and error handling.
 
 use std::time::Duration;
 
@@ -409,7 +404,6 @@ async fn test_render_after_chained_async() {
     assert!(vt.contains_text("chain complete"));
 }
 
-// ===========================================================================
 // Tests: AppHarness async methods (test-utils feature)
 // ===========================================================================
 
@@ -514,4 +508,98 @@ mod app_harness_tests {
         assert!(found);
         assert!(harness.contains_text("Data: loaded"));
     }
+}
+
+// ===========================================================================
+// Tests: Subscriptions
+// ===========================================================================
+
+#[tokio::test]
+async fn test_tick_subscription_delivers_messages() {
+    use envision::app::TickSubscription;
+
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+
+    // Subscribe with a 10ms tick interval
+    let sub = TickSubscription::new(Duration::from_millis(10), || TickCounterMsg::Tick);
+    vt.subscribe(sub);
+
+    // Wait for several ticks to fire
+    tokio::time::sleep(Duration::from_millis(55)).await;
+    vt.process_pending();
+
+    // Should have received multiple tick messages
+    assert!(
+        vt.state().count >= 3,
+        "Expected at least 3 ticks, got {}",
+        vt.state().count
+    );
+}
+
+#[tokio::test]
+async fn test_timer_subscription_fires_once() {
+    use envision::app::TimerSubscription;
+
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+
+    let sub = TimerSubscription::after(Duration::from_millis(20), TickCounterMsg::Tick);
+    vt.subscribe(sub);
+
+    // Wait for the timer to fire
+    tokio::time::sleep(Duration::from_millis(50)).await;
+    vt.process_pending();
+
+    // Timer fires exactly once
+    assert_eq!(vt.state().count, 1);
+
+    // Wait more - should not fire again
+    tokio::time::sleep(Duration::from_millis(50)).await;
+    vt.process_pending();
+    assert_eq!(vt.state().count, 1);
+}
+
+#[tokio::test]
+async fn test_channel_subscription_forwards_messages() {
+    use tokio::sync::mpsc;
+
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+
+    let (tx, rx) = mpsc::channel::<TickCounterMsg>(10);
+    let sub = envision::app::ChannelSubscription::new(rx);
+    vt.subscribe(sub);
+
+    // Send messages through the external channel
+    tx.send(TickCounterMsg::Tick).await.unwrap();
+    tx.send(TickCounterMsg::Tick).await.unwrap();
+    tx.send(TickCounterMsg::Tick).await.unwrap();
+
+    // Wait for forwarding
+    tokio::time::sleep(Duration::from_millis(20)).await;
+    vt.process_pending();
+
+    assert_eq!(vt.state().count, 3);
+}
+
+#[tokio::test]
+async fn test_subscription_cancellation() {
+    use envision::app::TickSubscription;
+
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+
+    let sub = TickSubscription::new(Duration::from_millis(10), || TickCounterMsg::Tick);
+    vt.subscribe(sub);
+
+    // Let some ticks fire
+    tokio::time::sleep(Duration::from_millis(35)).await;
+    vt.process_pending();
+    let count_before_quit = vt.state().count;
+    assert!(count_before_quit >= 1);
+
+    // Quit cancels subscriptions
+    vt.quit();
+
+    // Wait more - no new messages should arrive
+    tokio::time::sleep(Duration::from_millis(50)).await;
+    vt.process_pending();
+    assert_eq!(vt.state().count, count_before_quit);
 }

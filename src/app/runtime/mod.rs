@@ -56,10 +56,12 @@ mod terminal;
 pub use config::RuntimeConfig;
 
 use std::io::{self, Stdout};
+use std::pin::Pin;
 
 use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::Terminal;
 use tokio::sync::mpsc;
+use tokio_stream::StreamExt;
 use tokio_util::sync::CancellationToken;
 
 use super::command::{BoxedError, CommandHandler};
@@ -99,9 +101,6 @@ pub struct Runtime<A: App, B: Backend> {
 
     /// Cancellation token for graceful shutdown
     cancel_token: CancellationToken,
-
-    /// Active subscriptions as streams
-    subscriptions: Vec<std::pin::Pin<Box<dyn tokio_stream::Stream<Item = A::Message> + Send>>>,
 }
 
 /// Alias for a runtime using the crossterm terminal backend (production).
@@ -326,7 +325,6 @@ impl<A: App, B: Backend> Runtime<A, B> {
             error_tx,
             error_rx,
             cancel_token,
-            subscriptions: Vec::new(),
         };
 
         // Spawn any async commands from init
@@ -501,18 +499,50 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
     /// Adds a subscription to the runtime.
     ///
-    /// The subscription will produce messages until it ends or the runtime shuts down.
+    /// The subscription is converted to a stream and spawned as a tokio task
+    /// that forwards messages through the runtime's message channel. Messages
+    /// are automatically picked up by `tick()`, `process_pending()`, and `run()`.
+    ///
+    /// The subscription stops when it ends naturally, when the runtime's
+    /// cancellation token is triggered, or when the message channel is closed.
     pub fn subscribe(&mut self, subscription: impl Subscription<A::Message>) {
         let stream = Box::new(subscription).into_stream(self.cancel_token.clone());
-        self.subscriptions.push(stream);
+        Self::spawn_subscription(stream, self.message_tx.clone(), self.cancel_token.clone());
     }
 
     /// Adds multiple subscriptions to the runtime.
     pub fn subscribe_all(&mut self, subscriptions: Vec<BoxedSubscription<A::Message>>) {
         for sub in subscriptions {
             let stream = sub.into_stream(self.cancel_token.clone());
-            self.subscriptions.push(stream);
+            Self::spawn_subscription(stream, self.message_tx.clone(), self.cancel_token.clone());
         }
+    }
+
+    /// Spawns a tokio task that reads from a subscription stream and forwards
+    /// messages through the message channel.
+    fn spawn_subscription(
+        stream: Pin<Box<dyn tokio_stream::Stream<Item = A::Message> + Send>>,
+        msg_tx: mpsc::Sender<A::Message>,
+        cancel: CancellationToken,
+    ) {
+        tokio::spawn(async move {
+            let mut stream = stream;
+            loop {
+                tokio::select! {
+                    item = stream.next() => {
+                        match item {
+                            Some(msg) => {
+                                if msg_tx.send(msg).await.is_err() {
+                                    break;
+                                }
+                            }
+                            None => break,
+                        }
+                    }
+                    _ = cancel.cancelled() => break,
+                }
+            }
+        });
     }
 
     /// Dispatches a message to update the state.
