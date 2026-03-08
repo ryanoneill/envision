@@ -1,4 +1,43 @@
 //! Core App trait defining the TEA application structure.
+//!
+//! # Two Construction Patterns
+//!
+//! Applications can be started in two ways, which affects whether
+//! [`App::init()`] is called:
+//!
+//! ## Standard pattern — `init()` creates the state
+//!
+//! Use [`Runtime::new_terminal()`] or [`Runtime::virtual_terminal()`].
+//! These call [`App::init()`] internally to create the initial state and
+//! any startup commands.
+//!
+//! ```rust,ignore
+//! let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+//! ```
+//!
+//! ## External state pattern — `init()` is bypassed
+//!
+//! Use [`Runtime::new_terminal_with_state()`],
+//! [`Runtime::virtual_terminal_with_state()`], or any `with_state` variant.
+//! These accept a pre-built state directly, so [`App::init()`] is **never
+//! called**. This is useful when initial state comes from external sources
+//! such as CLI arguments, config files, or databases.
+//!
+//! ```rust,ignore
+//! let state = MyState::from_config("config.toml")?;
+//! let mut vt = Runtime::<MyApp, _>::virtual_terminal_with_state(
+//!     80, 24, state, Command::none(),
+//! )?;
+//! ```
+//!
+//! Even when using `with_state` constructors, `App::init()` must still be
+//! implemented because it is a required trait method. A simple stub returning
+//! default values is sufficient.
+//!
+//! [`Runtime::new_terminal()`]: crate::app::Runtime::new_terminal
+//! [`Runtime::virtual_terminal()`]: crate::app::Runtime::virtual_terminal
+//! [`Runtime::new_terminal_with_state()`]: crate::app::Runtime::new_terminal_with_state
+//! [`Runtime::virtual_terminal_with_state()`]: crate::app::Runtime::virtual_terminal_with_state
 
 use ratatui::Frame;
 
@@ -20,6 +59,19 @@ use crate::input::Event;
 ///
 /// - `State`: Your application's state type. Derive `Clone` if you need snapshots.
 /// - `Message`: The type representing all possible events/actions.
+///
+/// # Construction
+///
+/// There are two ways to start an application, which determine whether
+/// [`init()`](App::init) is called:
+///
+/// - **Standard**: [`Runtime::new_terminal()`](crate::app::Runtime::new_terminal) and
+///   [`Runtime::virtual_terminal()`](crate::app::Runtime::virtual_terminal) call `init()`
+///   to create the initial state.
+/// - **External state**: The `with_state` constructors
+///   ([`Runtime::new_terminal_with_state()`](crate::app::Runtime::new_terminal_with_state),
+///   [`Runtime::virtual_terminal_with_state()`](crate::app::Runtime::virtual_terminal_with_state),
+///   etc.) accept a pre-built state and **skip** `init()` entirely.
 ///
 /// # Example
 ///
@@ -73,9 +125,27 @@ pub trait App: Sized {
     /// This should be an enum covering all ways the state can change.
     type Message: Clone + Send + 'static;
 
-    /// Initialize the application.
+    /// Initializes the application state and optional startup commands.
     ///
-    /// Returns the initial state and any commands to run on startup.
+    /// This is called automatically when using [`Runtime::new_terminal()`] or
+    /// [`Runtime::virtual_terminal()`]. When using the `with_state` constructors
+    /// ([`Runtime::new_terminal_with_state()`],
+    /// [`Runtime::virtual_terminal_with_state()`]), this method is **not
+    /// called** — the provided state is used directly instead.
+    ///
+    /// If you only use `with_state` constructors, this can be a simple stub:
+    ///
+    /// ```rust,ignore
+    /// fn init() -> (Self::State, Command<Self::Message>) {
+    ///     // Not called when using with_state constructors
+    ///     (MyState::default(), Command::none())
+    /// }
+    /// ```
+    ///
+    /// [`Runtime::new_terminal()`]: crate::app::Runtime::new_terminal
+    /// [`Runtime::virtual_terminal()`]: crate::app::Runtime::virtual_terminal
+    /// [`Runtime::new_terminal_with_state()`]: crate::app::Runtime::new_terminal_with_state
+    /// [`Runtime::virtual_terminal_with_state()`]: crate::app::Runtime::virtual_terminal_with_state
     fn init() -> (Self::State, Command<Self::Message>);
 
     /// Handle a message and update the state.

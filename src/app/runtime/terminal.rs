@@ -69,6 +69,8 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// This allows constructing the initial state from external sources
     /// (CLI arguments, config files, databases, etc.) and passing it directly.
+    /// [`App::init()`] is **not called** — the provided `state` and `init_cmd`
+    /// are used instead.
     ///
     /// # Errors
     ///
@@ -91,6 +93,9 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     }
 
     /// Creates a terminal runtime with a pre-built state and custom configuration.
+    ///
+    /// [`App::init()`] is **not called** — the provided `state` and `init_cmd`
+    /// are used instead.
     ///
     /// # Errors
     ///

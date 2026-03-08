@@ -215,9 +215,10 @@ impl<A: App> Runtime<A, CaptureBackend> {
 
     /// Creates a virtual terminal with a pre-built state, bypassing [`App::init()`].
     ///
-    /// This is the primary way to test or automate an application starting
-    /// from a specific state. The `init_cmd` is executed immediately; pass
-    /// [`Command::none()`] if no startup command is needed.
+    /// [`App::init()`] is **not called** — the provided `state` and `init_cmd`
+    /// are used instead. This is the primary way to test or automate an
+    /// application starting from a specific state. The `init_cmd` is executed
+    /// immediately; pass [`Command::none()`] if no startup command is needed.
     ///
     /// # Errors
     ///
@@ -260,7 +261,9 @@ impl<A: App> Runtime<A, CaptureBackend> {
 
     /// Creates a virtual terminal with a pre-built state and custom configuration.
     ///
-    /// Combines [`virtual_terminal_with_state`](Self::virtual_terminal_with_state)
+    /// [`App::init()`] is **not called** — the provided `state` and `init_cmd`
+    /// are used instead. Combines
+    /// [`virtual_terminal_with_state`](Self::virtual_terminal_with_state)
     /// with custom [`RuntimeConfig`] options.
     ///
     /// # Errors
@@ -363,8 +366,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
     /// Creates a new runtime with a pre-built state, bypassing [`App::init()`].
     ///
-    /// This is the simplest way to construct a runtime with external state.
-    /// Uses default configuration and executes the provided startup command.
+    /// [`App::init()`] is **not called** — the provided `state` and `init_cmd`
+    /// are used instead. This is the simplest way to construct a runtime with
+    /// external state. Uses default configuration and executes the provided
+    /// startup command.
     ///
     /// # Errors
     ///
@@ -393,8 +398,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
     /// Creates a new runtime with a pre-built state and startup command.
     ///
-    /// This bypasses [`App::init()`], allowing callers to construct the
-    /// initial state from external sources (CLI arguments, config files,
+    /// [`App::init()`] is **not called**. This allows callers to construct
+    /// the initial state from external sources (CLI arguments, config files,
     /// databases, etc.) and pass it directly.
     ///
     /// The `init_cmd` parameter mirrors the command returned by `init()`.
