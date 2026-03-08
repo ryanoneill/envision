@@ -130,6 +130,8 @@ mod chat_view;
 #[cfg(feature = "compound-components")]
 mod data_grid;
 #[cfg(feature = "compound-components")]
+pub mod file_browser;
+#[cfg(feature = "compound-components")]
 mod form;
 #[cfg(feature = "compound-components")]
 mod log_viewer;
@@ -246,6 +248,8 @@ pub use chat_view::{
 };
 #[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
+#[cfg(feature = "compound-components")]
+pub use file_browser::{FileBrowser, FileBrowserMessage, FileBrowserOutput, FileBrowserState};
 #[cfg(feature = "compound-components")]
 pub use form::{Form, FormField, FormFieldKind, FormMessage, FormOutput, FormState, FormValue};
 #[cfg(feature = "compound-components")]
