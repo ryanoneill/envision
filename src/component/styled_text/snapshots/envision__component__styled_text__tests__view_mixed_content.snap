@@ -1,0 +1,20 @@
+---
+source: src/component/styled_text/tests.rs
+assertion_line: 668
+expression: display
+---
+┌──────────────────────────────────────────────────────────┐
+│Document Title                                            │
+│                                                          │
+│Introduction paragraph.                                   │
+│──────────────────────────────────────────────────────────│
+│Section                                                   │
+│  * Point A                                               │
+│  * Point B                                               │
+│                                                          │
+│    example code                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘

@@ -1,0 +1,13 @@
+---
+source: src/component/styled_text/tests.rs
+assertion_line: 571
+expression: display
+---
+┌────────────────────────────────────────────────┐
+│  [rust]                                        │
+│    let x = 42;                                 │
+│    println!("{}", x);                          │
+│                                                │
+│                                                │
+│                                                │
+└────────────────────────────────────────────────┘

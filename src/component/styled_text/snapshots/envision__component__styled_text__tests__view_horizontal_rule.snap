@@ -1,0 +1,11 @@
+---
+source: src/component/styled_text/tests.rs
+assertion_line: 590
+expression: display
+---
+┌──────────────────────────────────────┐
+│Above                                 │
+│──────────────────────────────────────│
+│Below                                 │
+│                                      │
+└──────────────────────────────────────┘
