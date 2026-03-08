@@ -657,15 +657,31 @@ impl<T: Clone + 'static> Tree<T> {
     /// Renders the tree to a list of styled lines.
     fn render_lines(state: &TreeState<T>, width: u16, theme: &Theme) -> Vec<Line<'static>> {
         let flat = state.flatten();
-        let mut lines = Vec::new();
+        let mut lines = Vec::with_capacity(flat.len());
+
+        // Pre-compute indent strings to avoid per-node allocations.
+        let max_depth = flat.iter().map(|n| n.depth).max().unwrap_or(0);
+        let indents: Vec<String> = (0..=max_depth).map(|d| "  ".repeat(d)).collect();
+
+        // Pre-compute styles to avoid per-node method calls.
+        let normal_style = theme.normal_style();
+        let disabled_style = if state.disabled {
+            Some(theme.disabled_style())
+        } else {
+            None
+        };
+        let highlight_style = if !state.disabled {
+            Some(theme.selected_highlight_style(state.focused))
+        } else {
+            None
+        };
+
+        // Reusable buffer to avoid per-node String allocations.
+        let mut buf = String::with_capacity(width as usize);
 
         for (idx, node) in flat.iter().enumerate() {
             let is_selected = state.selected_index == Some(idx);
 
-            // Build the prefix with tree lines
-            let indent = "  ".repeat(node.depth);
-
-            // Expand/collapse indicator
             let indicator = if node.has_children {
                 if node.is_expanded {
                     "▼ "
@@ -676,20 +692,25 @@ impl<T: Clone + 'static> Tree<T> {
                 "  "
             };
 
-            let text = format!("{}{}{}", indent, indicator, node.label);
+            // Build padded line text in a reusable buffer.
+            buf.clear();
+            buf.push_str(&indents[node.depth]);
+            buf.push_str(indicator);
+            buf.push_str(&node.label);
+            let pad = (width as usize).saturating_sub(buf.len());
+            for _ in 0..pad {
+                buf.push(' ');
+            }
 
-            // Pad to full width for selection highlight
-            let padded = format!("{:<width$}", text, width = width as usize);
-
-            let style = if state.disabled {
-                theme.disabled_style()
+            let style = if let Some(ds) = disabled_style {
+                ds
             } else if is_selected {
-                theme.selected_highlight_style(state.focused)
+                highlight_style.unwrap()
             } else {
-                theme.normal_style()
+                normal_style
             };
 
-            lines.push(Line::from(Span::styled(padded, style)));
+            lines.push(Line::from(Span::styled(buf.clone(), style)));
         }
 
         lines
