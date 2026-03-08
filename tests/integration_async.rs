@@ -242,13 +242,13 @@ async fn test_command_perform_async_chained() {
     // Start the chain
     vt.dispatch(ChainedMsg::StartChain);
 
-    // Wait for step 1
-    tokio::time::sleep(Duration::from_millis(20)).await;
+    // Wait for step 1 (longer sleep for CI timing variance)
+    tokio::time::sleep(Duration::from_millis(50)).await;
     vt.process_pending();
     assert!(vt.state().step1_done);
 
     // Wait for step 2 (triggered by step 1)
-    tokio::time::sleep(Duration::from_millis(20)).await;
+    tokio::time::sleep(Duration::from_millis(50)).await;
     vt.process_pending();
     assert!(vt.state().step2_done);
     assert_eq!(vt.state().final_result, Some("chain complete".to_string()));

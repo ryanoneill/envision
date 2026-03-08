@@ -37,7 +37,7 @@ use std::io;
 use ratatui::layout::Position;
 use tokio_util::sync::CancellationToken;
 
-use crate::app::{App, BoxedSubscription, Runtime, RuntimeConfig, Subscription};
+use crate::app::{App, BoxedSubscription, Command, Runtime, RuntimeConfig, Subscription};
 use crate::backend::CaptureBackend;
 use crate::input::{Event, EventQueue};
 
@@ -93,6 +93,65 @@ impl<A: App> AppHarness<A> {
     /// Returns an error if creating the virtual terminal fails.
     pub fn with_config(width: u16, height: u16, config: RuntimeConfig) -> io::Result<Self> {
         let runtime = Runtime::virtual_terminal_with_config(width, height, config)?;
+        Ok(Self { runtime })
+    }
+
+    /// Creates a test harness with a pre-built state, bypassing [`App::init()`].
+    ///
+    /// This is useful for testing specific application states without
+    /// constructing them through the normal initialization path.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the virtual terminal fails.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # use envision::harness::AppHarness;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState { count: i32 }
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// let state = MyState { count: 42 };
+    /// let harness = AppHarness::<MyApp>::with_state(80, 24, state, Command::none())?;
+    /// assert_eq!(harness.state().count, 42);
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
+    pub fn with_state(
+        width: u16,
+        height: u16,
+        state: A::State,
+        init_cmd: Command<A::Message>,
+    ) -> io::Result<Self> {
+        let runtime = Runtime::virtual_terminal_with_state(width, height, state, init_cmd)?;
+        Ok(Self { runtime })
+    }
+
+    /// Creates a test harness with a pre-built state and custom configuration.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the virtual terminal fails.
+    pub fn with_state_and_config(
+        width: u16,
+        height: u16,
+        state: A::State,
+        init_cmd: Command<A::Message>,
+        config: RuntimeConfig,
+    ) -> io::Result<Self> {
+        let runtime = Runtime::virtual_terminal_with_state_and_config(
+            width, height, state, init_cmd, config,
+        )?;
         Ok(Self { runtime })
     }
 

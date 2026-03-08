@@ -16,6 +16,7 @@ use ratatui::backend::CrosstermBackend;
 
 use super::config::RuntimeConfig;
 use super::Runtime;
+use crate::app::command::Command;
 use crate::app::model::App;
 use crate::input::Event;
 use crate::overlay::OverlayAction;
@@ -67,6 +68,51 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
 
         let backend = CrosstermBackend::new(stdout);
         Self::with_backend_and_config(backend, config)
+    }
+
+    /// Creates a terminal runtime with a pre-built state, bypassing [`App::init()`].
+    ///
+    /// This allows constructing the initial state from external sources
+    /// (CLI arguments, config files, databases, etc.) and passing it directly.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if enabling raw mode, entering alternate screen,
+    /// enabling mouse capture, or creating the terminal fails.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// // requires real terminal
+    /// let state = MyState::from_config("config.toml")?;
+    /// let runtime = Runtime::<MyApp>::new_terminal_with_state(state, Command::none())?;
+    /// runtime.run_terminal().await?;
+    /// ```
+    pub fn new_terminal_with_state(
+        state: A::State,
+        init_cmd: Command<A::Message>,
+    ) -> io::Result<Self> {
+        Self::terminal_with_state_and_config(state, init_cmd, RuntimeConfig::default())
+    }
+
+    /// Creates a terminal runtime with a pre-built state and custom configuration.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if enabling raw mode, entering alternate screen,
+    /// enabling mouse capture, or creating the terminal fails.
+    pub fn terminal_with_state_and_config(
+        state: A::State,
+        init_cmd: Command<A::Message>,
+        config: RuntimeConfig,
+    ) -> io::Result<Self> {
+        enable_raw_mode()?;
+        let mut stdout = io::stdout();
+        stdout.execute(EnterAlternateScreen)?;
+        stdout.execute(EnableMouseCapture)?;
+
+        let backend = CrosstermBackend::new(stdout);
+        Self::with_backend_state_and_config(backend, state, init_cmd, config)
     }
 
     /// Runs the interactive event loop until the application quits.
