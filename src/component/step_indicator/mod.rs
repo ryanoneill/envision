@@ -614,12 +614,7 @@ fn step_style(status: &StepStatus, is_focused_step: bool, theme: &Theme) -> Styl
     }
 }
 
-fn render_horizontal(
-    state: &StepIndicatorState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-) {
+fn render_horizontal(state: &StepIndicatorState, frame: &mut Frame, area: Rect, theme: &Theme) {
     let mut spans = Vec::new();
 
     for (i, step) in state.steps.iter().enumerate() {
@@ -633,7 +628,10 @@ fn render_horizontal(
         let is_focused_step = state.focused && i == state.focused_index;
         let style = step_style(&step.status, is_focused_step, theme);
 
-        spans.push(Span::styled(format!("{} {}", step.status.icon(), step.label), style));
+        spans.push(Span::styled(
+            format!("{} {}", step.status.icon(), step.label),
+            style,
+        ));
     }
 
     let line = Line::from(spans);
@@ -641,12 +639,7 @@ fn render_horizontal(
     frame.render_widget(paragraph, area);
 }
 
-fn render_vertical(
-    state: &StepIndicatorState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-) {
+fn render_vertical(state: &StepIndicatorState, frame: &mut Frame, area: Rect, theme: &Theme) {
     let mut lines = Vec::new();
 
     for (i, step) in state.steps.iter().enumerate() {

@@ -71,8 +71,8 @@ fn test_state_default() {
 
 #[test]
 fn test_state_with_orientation() {
-    let state = StepIndicatorState::new(vec![Step::new("A")])
-        .with_orientation(StepOrientation::Vertical);
+    let state =
+        StepIndicatorState::new(vec![Step::new("A")]).with_orientation(StepOrientation::Vertical);
     assert_eq!(state.orientation(), &StepOrientation::Vertical);
 }
 
@@ -476,8 +476,8 @@ fn test_focus_next_unfocused_guard() {
 
 #[test]
 fn test_focus_next_disabled_guard() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")])
-        .with_disabled(true);
+    let mut state =
+        StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]).with_disabled(true);
     state.set_focused(true);
     let output = StepIndicator::update(&mut state, StepIndicatorMessage::FocusNext);
     assert_eq!(output, None);
@@ -660,8 +660,7 @@ fn test_view_vertical() {
         Step::new("Test").with_status(StepStatus::Active),
         Step::new("Deploy"),
     ];
-    let state = StepIndicatorState::new(steps)
-        .with_orientation(StepOrientation::Vertical);
+    let state = StepIndicatorState::new(steps).with_orientation(StepOrientation::Vertical);
 
     terminal
         .draw(|frame| {
