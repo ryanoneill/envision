@@ -93,6 +93,18 @@ pub struct ProgressItem {
 
 impl ProgressItem {
     /// Creates a new progress item.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::ProgressItem;
+    ///
+    /// let item = ProgressItem::new("dl-1", "Downloading");
+    /// assert_eq!(item.id(), "dl-1");
+    /// assert_eq!(item.label(), "Downloading");
+    /// assert_eq!(item.progress(), 0.0);
+    /// assert_eq!(item.percentage(), 0);
+    /// ```
     pub fn new(id: impl Into<String>, label: impl Into<String>) -> Self {
         Self {
             id: id.into(),
@@ -245,6 +257,15 @@ impl Default for MultiProgressState {
 
 impl MultiProgressState {
     /// Creates a new empty MultiProgress state.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn new() -> Self {
         Self::default()
     }
@@ -262,6 +283,15 @@ impl MultiProgressState {
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new().with_title("Downloads");
+    /// assert_eq!(state.title(), Some("Downloads"));
+    /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
@@ -276,6 +306,17 @@ impl MultiProgressState {
     /// Adds a new progress item.
     ///
     /// Returns true if the item was added (id was unique).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// assert!(state.add("task1", "Download file"));
+    /// assert!(!state.add("task1", "Duplicate")); // duplicate ID rejected
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn add(&mut self, id: impl Into<String>, label: impl Into<String>) -> bool {
         let id = id.into();
         if self.items.iter().any(|i| i.id == id) {
@@ -325,6 +366,22 @@ impl MultiProgressState {
     }
 
     /// Returns the overall progress (average of all items).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::{MultiProgress, MultiProgressState, MultiProgressMessage, Component};
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("a", "Task A");
+    /// state.add("b", "Task B");
+    ///
+    /// MultiProgress::update(&mut state, MultiProgressMessage::SetProgress {
+    ///     id: "a".to_string(),
+    ///     progress: 1.0,
+    /// });
+    /// assert!((state.overall_progress() - 0.5).abs() < f32::EPSILON);
+    /// ```
     pub fn overall_progress(&self) -> f32 {
         if self.items.is_empty() {
             return 0.0;
@@ -334,6 +391,17 @@ impl MultiProgressState {
     }
 
     /// Finds an item by ID.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("dl", "Download");
+    /// assert_eq!(state.find("dl").unwrap().label(), "Download");
+    /// assert!(state.find("missing").is_none());
+    /// ```
     pub fn find(&self, id: &str) -> Option<&ProgressItem> {
         self.items.iter().find(|i| i.id == id)
     }
@@ -344,6 +412,17 @@ impl MultiProgressState {
     }
 
     /// Removes an item by ID.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("task1", "Task");
+    /// assert!(state.remove("task1"));
+    /// assert!(state.is_empty());
+    /// ```
     pub fn remove(&mut self, id: &str) -> bool {
         let len_before = self.items.len();
         self.items.retain(|i| i.id != id);

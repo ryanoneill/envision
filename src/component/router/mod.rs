@@ -156,6 +156,19 @@ impl<S: Clone + PartialEq> PartialEq for RouterState<S> {
 
 impl<S: Clone + PartialEq> RouterState<S> {
     /// Creates a new router state starting at the given screen.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::RouterState;
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home, Settings }
+    ///
+    /// let state = RouterState::new(Screen::Home);
+    /// assert_eq!(state.current(), &Screen::Home);
+    /// assert!(!state.can_go_back());
+    /// ```
     pub fn new(initial: S) -> Self {
         Self {
             current: initial,
@@ -168,6 +181,18 @@ impl<S: Clone + PartialEq> RouterState<S> {
     ///
     /// When the history exceeds this limit, the oldest entries are removed.
     /// Set to 0 for unlimited history (default).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::RouterState;
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home }
+    ///
+    /// let state = RouterState::new(Screen::Home).with_max_history(5);
+    /// assert_eq!(state.max_history(), 5);
+    /// ```
     pub fn with_max_history(mut self, max: usize) -> Self {
         self.max_history = max;
         self
@@ -210,6 +235,19 @@ impl<S: Clone + PartialEq> RouterState<S> {
     }
 
     /// Checks if the current screen is the given screen.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::RouterState;
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home, Settings }
+    ///
+    /// let state = RouterState::new(Screen::Home);
+    /// assert!(state.is_at(&Screen::Home));
+    /// assert!(!state.is_at(&Screen::Settings));
+    /// ```
     pub fn is_at(&self, screen: &S) -> bool {
         &self.current == screen
     }

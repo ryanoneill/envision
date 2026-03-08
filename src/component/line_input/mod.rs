@@ -104,11 +104,31 @@ impl Default for LineInputState {
 
 impl LineInputState {
     /// Creates a new empty LineInput state.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new();
+    /// assert!(state.is_empty());
+    /// assert_eq!(state.value(), "");
+    /// ```
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Creates a new LineInput state with the given initial value.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::with_value("hello");
+    /// assert_eq!(state.value(), "hello");
+    /// assert_eq!(state.len(), 5);
+    /// ```
     pub fn with_value(value: impl Into<String>) -> Self {
         let buffer: String = value.into();
         let cursor = buffer.len();
@@ -120,6 +140,15 @@ impl LineInputState {
     }
 
     /// Sets the placeholder text (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new().with_placeholder("Type here...");
+    /// assert_eq!(state.placeholder(), "Type here...");
+    /// ```
     pub fn with_placeholder(mut self, placeholder: impl Into<String>) -> Self {
         self.placeholder = placeholder.into();
         self
@@ -132,6 +161,15 @@ impl LineInputState {
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new().with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -141,6 +179,15 @@ impl LineInputState {
     ///
     /// When set, insertions and pastes that would exceed this limit are
     /// rejected or truncated. `None` means unlimited.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new().with_max_length(100);
+    /// assert_eq!(state.max_length(), Some(100));
+    /// ```
     pub fn with_max_length(mut self, max: usize) -> Self {
         self.max_length = Some(max);
         self
@@ -149,11 +196,30 @@ impl LineInputState {
     // --- Accessors ---
 
     /// Returns the current buffer value.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::with_value("hello world");
+    /// assert_eq!(state.value(), "hello world");
+    /// ```
     pub fn value(&self) -> &str {
         &self.buffer
     }
 
     /// Sets the buffer value, moving the cursor to the end.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let mut state = LineInputState::new();
+    /// state.set_value("new text");
+    /// assert_eq!(state.value(), "new text");
+    /// ```
     pub fn set_value(&mut self, value: impl Into<String>) {
         self.buffer = value.into();
         self.cursor = self.buffer.len();
@@ -161,11 +227,32 @@ impl LineInputState {
     }
 
     /// Returns true if the buffer is empty.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let empty = LineInputState::new();
+    /// assert!(empty.is_empty());
+    ///
+    /// let non_empty = LineInputState::with_value("x");
+    /// assert!(!non_empty.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.buffer.is_empty()
     }
 
     /// Returns the number of characters in the buffer.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::with_value("café");
+    /// assert_eq!(state.len(), 4); // chars, not bytes
+    /// ```
     pub fn len(&self) -> usize {
         self.buffer.chars().count()
     }
@@ -196,6 +283,18 @@ impl LineInputState {
     }
 
     /// Returns the maximum character length, or `None` if unlimited.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new();
+    /// assert_eq!(state.max_length(), None);
+    ///
+    /// let capped = LineInputState::new().with_max_length(50);
+    /// assert_eq!(capped.max_length(), Some(50));
+    /// ```
     pub fn max_length(&self) -> Option<usize> {
         self.max_length
     }
@@ -253,6 +352,15 @@ impl LineInputState {
     }
 
     /// Returns true if there is an active selection.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new();
+    /// assert!(!state.has_selection());
+    /// ```
     pub fn has_selection(&self) -> bool {
         self.selection_anchor.is_some()
     }
@@ -303,6 +411,20 @@ impl LineInputState {
     }
 
     /// Updates state with a message (instance method).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::{LineInputState, LineInputMessage, LineInputOutput};
+    ///
+    /// let mut state = LineInputState::new();
+    /// state.update(LineInputMessage::Insert('h'));
+    /// state.update(LineInputMessage::Insert('i'));
+    /// assert_eq!(state.value(), "hi");
+    ///
+    /// let output = state.update(LineInputMessage::Submit);
+    /// assert_eq!(output, Some(LineInputOutput::Submitted("hi".into())));
+    /// ```
     pub fn update(&mut self, msg: LineInputMessage) -> Option<LineInputOutput> {
         LineInput::update(self, msg)
     }
