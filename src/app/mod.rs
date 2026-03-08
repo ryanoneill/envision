@@ -31,6 +31,30 @@
 //! - **View**: Pure function: `state → UI`
 //! - **Effect**: Side effects to execute (IO, commands, etc.)
 //!
+//! # State Initialization
+//!
+//! There are two ways to provide the initial state:
+//!
+//! - **Standard pattern**: Use [`Runtime::new_terminal()`] or
+//!   [`Runtime::virtual_terminal()`]. These call [`App::init()`] to create
+//!   the initial state and any startup commands.
+//!
+//! - **External state pattern**: Use the `with_state` constructors
+//!   ([`Runtime::new_terminal_with_state()`],
+//!   [`Runtime::virtual_terminal_with_state()`], etc.). These accept a
+//!   pre-built state directly and **do not call** [`App::init()`]. This is
+//!   useful when initial state comes from CLI arguments, config files,
+//!   databases, or test fixtures.
+//!
+//! Even when using `with_state` constructors, [`App::init()`] must still
+//! be implemented because it is a required trait method. A simple stub
+//! returning default values is sufficient.
+//!
+//! [`Runtime::new_terminal()`]: Runtime::new_terminal
+//! [`Runtime::virtual_terminal()`]: Runtime::virtual_terminal
+//! [`Runtime::new_terminal_with_state()`]: Runtime::new_terminal_with_state
+//! [`Runtime::virtual_terminal_with_state()`]: Runtime::virtual_terminal_with_state
+//!
 //! # Example
 //!
 //! ```rust
