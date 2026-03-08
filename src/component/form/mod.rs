@@ -45,7 +45,7 @@ use crate::theme::Theme;
 ///
 /// Each field has an ID for retrieval, a label for display, and a kind
 /// that determines the widget type and behavior.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FormField {
     /// Unique identifier for this field.
     id: String,
@@ -56,7 +56,7 @@ pub struct FormField {
 }
 
 /// The type of a form field.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum FormFieldKind {
     /// A text input field.
     Text,
@@ -160,7 +160,7 @@ impl FormField {
 }
 
 /// Internal representation of a field's widget state.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 enum FieldState {
     Text(InputFieldState),
     Checkbox(CheckboxState),
@@ -215,7 +215,7 @@ pub enum FormOutput {
 ///
 /// Contains the field descriptors, their widget states, focus tracking,
 /// and overall form state.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct FormState {
     /// Field descriptors (id, label, kind).
     fields: Vec<FormField>,

@@ -184,6 +184,27 @@ impl std::fmt::Debug for FileBrowserState {
     }
 }
 
+impl PartialEq for FileBrowserState {
+    fn eq(&self, other: &Self) -> bool {
+        self.current_path == other.current_path
+            && self.path_segments == other.path_segments
+            && self.entries == other.entries
+            && self.filtered_indices == other.filtered_indices
+            && self.selected_index == other.selected_index
+            && self.selected_paths == other.selected_paths
+            && self.filter_text == other.filter_text
+            && self.internal_focus == other.internal_focus
+            && self.focused == other.focused
+            && self.disabled == other.disabled
+            && self.selection_mode == other.selection_mode
+            && self.sort_field == other.sort_field
+            && self.sort_direction == other.sort_direction
+            && self.directories_first == other.directories_first
+            && self.show_hidden == other.show_hidden
+            && self.list_state.selected() == other.list_state.selected()
+    }
+}
+
 impl FileBrowserState {
     /// Creates a new file browser with initial path and entries.
     ///
