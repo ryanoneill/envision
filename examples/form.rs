@@ -56,15 +56,13 @@ impl App for FormApp {
     fn update(state: &mut State, msg: Msg) -> Command<Msg> {
         match msg {
             Msg::Form(m) => {
-                if let Some(output) = Form::update(&mut state.form, m) {
-                    if let FormOutput::Submitted(values) = output {
-                        state.submitted = true;
-                        let summary_parts: Vec<String> = values
-                            .iter()
-                            .map(|(id, val)| format!("  {}: {:?}", id, val))
-                            .collect();
-                        state.submission_summary = Some(summary_parts.join("\n"));
-                    }
+                if let Some(FormOutput::Submitted(values)) = Form::update(&mut state.form, m) {
+                    state.submitted = true;
+                    let summary_parts: Vec<String> = values
+                        .iter()
+                        .map(|(id, val)| format!("  {}: {:?}", id, val))
+                        .collect();
+                    state.submission_summary = Some(summary_parts.join("\n"));
                 }
             }
             Msg::Quit => return Command::quit(),

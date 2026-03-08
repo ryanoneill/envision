@@ -50,15 +50,15 @@ impl App for BreadcrumbApp {
     fn update(state: &mut State, msg: Msg) -> Command<Msg> {
         match msg {
             Msg::Breadcrumb(m) => {
-                if let Some(output) = Breadcrumb::update(&mut state.breadcrumb, m) {
-                    if let BreadcrumbOutput::Selected(idx) = output {
-                        if let Some(segment) = state.breadcrumb.segments().get(idx) {
-                            state.selections.push(format!(
-                                "Navigated to: {} ({})",
-                                segment.label(),
-                                segment.data().unwrap_or("no path")
-                            ));
-                        }
+                if let Some(BreadcrumbOutput::Selected(idx)) =
+                    Breadcrumb::update(&mut state.breadcrumb, m)
+                {
+                    if let Some(segment) = state.breadcrumb.segments().get(idx) {
+                        state.selections.push(format!(
+                            "Navigated to: {} ({})",
+                            segment.label(),
+                            segment.data().unwrap_or("no path")
+                        ));
                     }
                 }
             }

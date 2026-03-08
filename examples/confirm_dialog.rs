@@ -49,21 +49,21 @@ impl App for ConfirmDialogApp {
     fn update(state: &mut State, msg: Msg) -> Command<Msg> {
         match msg {
             Msg::Dialog(m) => {
-                if let Some(output) = ConfirmDialog::update(&mut state.dialog, m) {
-                    if let ConfirmDialogOutput::Confirmed(result) = output {
-                        let result_str = match result {
-                            ConfirmDialogResult::Yes => "Yes",
-                            ConfirmDialogResult::No => "No",
-                            ConfirmDialogResult::Ok => "Ok",
-                            ConfirmDialogResult::Cancel => "Cancel",
-                        };
-                        state.results.push(format!(
-                            "Dialog {}: {}",
-                            state.dialog_count + 1,
-                            result_str
-                        ));
-                        state.dialog_count += 1;
-                    }
+                if let Some(ConfirmDialogOutput::Confirmed(result)) =
+                    ConfirmDialog::update(&mut state.dialog, m)
+                {
+                    let result_str = match result {
+                        ConfirmDialogResult::Yes => "Yes",
+                        ConfirmDialogResult::No => "No",
+                        ConfirmDialogResult::Ok => "Ok",
+                        ConfirmDialogResult::Cancel => "Cancel",
+                    };
+                    state.results.push(format!(
+                        "Dialog {}: {}",
+                        state.dialog_count + 1,
+                        result_str
+                    ));
+                    state.dialog_count += 1;
                 }
             }
             Msg::ShowDeleteDialog => {

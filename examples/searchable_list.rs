@@ -61,10 +61,10 @@ impl App for SearchableListApp {
     fn update(state: &mut State, msg: Msg) -> Command<Msg> {
         match msg {
             Msg::List(m) => {
-                if let Some(output) = SearchableList::update(&mut state.list, m) {
-                    if let SearchableListOutput::Selected(item) = output {
-                        state.selections.push(item);
-                    }
+                if let Some(SearchableListOutput::Selected(item)) =
+                    SearchableList::update(&mut state.list, m)
+                {
+                    state.selections.push(item);
                 }
             }
             Msg::Quit => return Command::quit(),
