@@ -64,7 +64,7 @@ use tokio::sync::mpsc;
 use tokio_stream::StreamExt;
 use tokio_util::sync::CancellationToken;
 
-use super::command::{BoxedError, CommandHandler};
+use super::command::{BoxedError, Command, CommandHandler};
 use super::model::App;
 use super::runtime_core::{ProcessEventResult, RuntimeCore};
 use super::subscription::{BoxedSubscription, Subscription};
@@ -212,6 +212,75 @@ impl<A: App> Runtime<A, CaptureBackend> {
         Self::with_backend_and_config(backend, config)
     }
 
+    /// Creates a virtual terminal with a pre-built state, bypassing [`App::init()`].
+    ///
+    /// This is the primary way to test or automate an application starting
+    /// from a specific state. The `init_cmd` is executed immediately; pass
+    /// [`Command::none()`] if no startup command is needed.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the ratatui `Terminal` with the
+    /// capture backend fails.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState { count: i32 }
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// // Start from a specific state instead of App::init()
+    /// let state = MyState { count: 10 };
+    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal_with_state(
+    ///     80, 24, state, Command::none(),
+    /// )?;
+    /// assert_eq!(vt.state().count, 10);
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
+    pub fn virtual_terminal_with_state(
+        width: u16,
+        height: u16,
+        state: A::State,
+        init_cmd: Command<A::Message>,
+    ) -> io::Result<Self> {
+        let backend = CaptureBackend::new(width, height);
+        Self::with_backend_and_state(backend, state, init_cmd)
+    }
+
+    /// Creates a virtual terminal with a pre-built state and custom configuration.
+    ///
+    /// Combines [`virtual_terminal_with_state`](Self::virtual_terminal_with_state)
+    /// with custom [`RuntimeConfig`] options.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the ratatui `Terminal` with the
+    /// capture backend fails.
+    pub fn virtual_terminal_with_state_and_config(
+        width: u16,
+        height: u16,
+        state: A::State,
+        init_cmd: Command<A::Message>,
+        config: RuntimeConfig,
+    ) -> io::Result<Self> {
+        let backend = if config.capture_history {
+            CaptureBackend::with_history(width, height, config.history_capacity)
+        } else {
+            CaptureBackend::new(width, height)
+        };
+        Self::with_backend_state_and_config(backend, state, init_cmd, config)
+    }
+
     /// Sends an event to the virtual terminal.
     ///
     /// The event is queued and will be processed on the next `tick()`.
@@ -291,15 +360,82 @@ impl<A: App, B: Backend> Runtime<A, B> {
         Self::with_backend_and_config(backend, RuntimeConfig::default())
     }
 
+    /// Creates a new runtime with a pre-built state, bypassing [`App::init()`].
+    ///
+    /// This is the simplest way to construct a runtime with external state.
+    /// Uses default configuration and executes the provided startup command.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the ratatui `Terminal` with the
+    /// provided backend fails.
+    pub fn with_backend_and_state(
+        backend: B,
+        state: A::State,
+        init_cmd: Command<A::Message>,
+    ) -> io::Result<Self> {
+        Self::with_backend_state_and_config(backend, state, init_cmd, RuntimeConfig::default())
+    }
+
     /// Creates a new runtime with backend and config.
+    ///
+    /// Calls [`App::init()`] to obtain the initial state and startup command.
     ///
     /// # Errors
     ///
     /// Returns an error if creating the ratatui `Terminal` with the
     /// provided backend fails.
     pub fn with_backend_and_config(backend: B, config: RuntimeConfig) -> io::Result<Self> {
-        let terminal = Terminal::new(backend)?;
         let (state, init_cmd) = A::init();
+        Self::with_backend_state_and_config(backend, state, init_cmd, config)
+    }
+
+    /// Creates a new runtime with a pre-built state and startup command.
+    ///
+    /// This bypasses [`App::init()`], allowing callers to construct the
+    /// initial state from external sources (CLI arguments, config files,
+    /// databases, etc.) and pass it directly.
+    ///
+    /// The `init_cmd` parameter mirrors the command returned by `init()`.
+    /// Pass [`Command::none()`] if no startup command is needed.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the ratatui `Terminal` with the
+    /// provided backend fails.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState { count: i32 }
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// // Build state from external data instead of App::init()
+    /// let state = MyState { count: 42 };
+    /// let backend = CaptureBackend::new(80, 24);
+    /// let vt = Runtime::<MyApp, _>::with_backend_state_and_config(
+    ///     backend, state, Command::none(), RuntimeConfig::default(),
+    /// )?;
+    /// assert_eq!(vt.state().count, 42);
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
+    pub fn with_backend_state_and_config(
+        backend: B,
+        state: A::State,
+        init_cmd: Command<A::Message>,
+        config: RuntimeConfig,
+    ) -> io::Result<Self> {
+        let terminal = Terminal::new(backend)?;
 
         let (message_tx, message_rx) = mpsc::channel(config.message_channel_capacity);
         let (error_tx, error_rx) = mpsc::channel(config.message_channel_capacity);
