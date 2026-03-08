@@ -125,9 +125,12 @@ pub mod util;
 pub use adapter::{DualBackend, DualBackendBuilder};
 pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
 pub use app::{
-    App, Command, DebounceSubscription, FilterSubscription, IntervalImmediateSubscription, Runtime,
-    RuntimeConfig, Subscription, SubscriptionExt, TakeSubscription, TerminalEventSubscription,
-    ThrottleSubscription, TickSubscription, TimerSubscription,
+    batch, interval_immediate, terminal_events, tick, App, BatchSubscription, BoxedSubscription,
+    ChannelSubscription, Command, DebounceSubscription, FilterSubscription,
+    IntervalImmediateBuilder, IntervalImmediateSubscription, MappedSubscription, Runtime,
+    RuntimeConfig, StreamSubscription, Subscription, SubscriptionExt, TakeSubscription,
+    TerminalEventSubscription, ThrottleSubscription, TickSubscription, TickSubscriptionBuilder,
+    TimerSubscription,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 // Core component traits and utilities (always available)
@@ -206,7 +209,10 @@ pub mod prelude {
     pub use crate::app::{App, Command, Runtime, RuntimeConfig};
 
     // Subscriptions
-    pub use crate::app::{Subscription, SubscriptionExt, Update};
+    pub use crate::app::{
+        batch, interval_immediate, tick, BoxedSubscription, ChannelSubscription, Subscription,
+        SubscriptionExt, Update,
+    };
 
     // Input
     pub use crate::input::{Event, EventQueue, KeyCode, KeyModifiers};
