@@ -58,12 +58,20 @@ impl Snapshot {
     }
 
     /// Returns the JSON representation.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the snapshot cannot be serialized to JSON.
     #[cfg(feature = "serialization")]
     pub fn to_json(&self) -> serde_json::Result<String> {
         serde_json::to_string(self)
     }
 
     /// Returns the pretty-printed JSON representation.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the snapshot cannot be serialized to JSON.
     #[cfg(feature = "serialization")]
     pub fn to_json_pretty(&self) -> serde_json::Result<String> {
         serde_json::to_string_pretty(self)
@@ -82,12 +90,22 @@ impl Snapshot {
     }
 
     /// Writes the snapshot to a file.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if writing the formatted snapshot content to the
+    /// file system fails.
     pub fn write_to_file(&self, path: impl AsRef<Path>, format: SnapshotFormat) -> io::Result<()> {
         let content = self.format(format);
         std::fs::write(path, content)
     }
 
     /// Loads a snapshot from a JSON file.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the file cannot be read or if its contents
+    /// cannot be deserialized as a valid JSON snapshot.
     #[cfg(feature = "serialization")]
     pub fn load_from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let content = std::fs::read_to_string(path)?;
@@ -282,6 +300,12 @@ impl SnapshotTest {
     /// Asserts that a snapshot matches the stored version.
     ///
     /// If update mode is enabled, overwrites the stored version.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the snapshot directory cannot be created, if
+    /// reading or writing snapshot files fails, or if the snapshot content
+    /// does not match the stored version.
     pub fn assert(&self, name: &str, snapshot: &Snapshot) -> io::Result<()> {
         let path = self.snapshot_path(name);
 

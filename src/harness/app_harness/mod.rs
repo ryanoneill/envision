@@ -55,12 +55,20 @@ impl<A: App> AppHarness<A> {
     /// Creates a new async test harness with the given dimensions.
     ///
     /// Note: For time control, use `#[tokio::test(start_paused = true)]`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the virtual terminal fails.
     pub fn new(width: u16, height: u16) -> io::Result<Self> {
         let runtime = Runtime::virtual_terminal(width, height)?;
         Ok(Self { runtime })
     }
 
     /// Creates a new async test harness with custom configuration.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the virtual terminal fails.
     pub fn with_config(width: u16, height: u16, config: RuntimeConfig) -> io::Result<Self> {
         let runtime = Runtime::virtual_terminal_with_config(width, height, config)?;
         Ok(Self { runtime })
@@ -229,16 +237,28 @@ impl<A: App> AppHarness<A> {
     }
 
     /// Runs a single tick of the application.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if rendering to the terminal backend fails.
     pub fn tick(&mut self) -> io::Result<()> {
         self.runtime.tick()
     }
 
     /// Runs multiple ticks.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if any individual tick fails to render.
     pub fn run_ticks(&mut self, ticks: usize) -> io::Result<()> {
         self.runtime.run_ticks(ticks)
     }
 
     /// Renders the current state.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if drawing to the terminal backend fails.
     pub fn render(&mut self) -> io::Result<()> {
         self.runtime.render()
     }

@@ -195,6 +195,11 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// Call `run_terminal()` to start the interactive event loop.
     ///
+    /// # Errors
+    ///
+    /// Returns an error if enabling raw mode, entering alternate screen,
+    /// enabling mouse capture, or creating the terminal fails.
+    ///
     /// # Example
     ///
     /// ```rust,ignore
@@ -209,6 +214,11 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     }
 
     /// Creates a terminal runtime with custom configuration.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if enabling raw mode, entering alternate screen,
+    /// enabling mouse capture, or creating the terminal fails.
     pub fn terminal_with_config(config: RuntimeConfig) -> io::Result<Self> {
         // Set up terminal
         enable_raw_mode()?;
@@ -226,6 +236,13 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// `crossterm::event::EventStream` for non-blocking event reading,
     /// and `tokio::select!` to multiplex between terminal events,
     /// async messages, tick intervals, and render intervals.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if reading from the crossterm event stream fails,
+    /// if rendering to the terminal fails, or if terminal cleanup
+    /// (disabling raw mode, leaving alternate screen, disabling mouse
+    /// capture) fails on shutdown.
     ///
     /// # Example
     ///
@@ -347,6 +364,11 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// applications that don't want to set up their own tokio runtime. It creates
     /// a multi-threaded tokio runtime internally and blocks on the async event loop.
     ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the tokio runtime fails, or if
+    /// [`run_terminal`](Runtime::run_terminal) returns an error.
+    ///
     /// # Example
     ///
     /// ```rust,ignore
@@ -412,6 +434,11 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// - Automation and scripting
     /// - Testing
     ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the ratatui `Terminal` with the
+    /// capture backend fails.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -439,6 +466,11 @@ impl<A: App> Runtime<A, CaptureBackend> {
     }
 
     /// Creates a virtual terminal with custom configuration.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the ratatui `Terminal` with the
+    /// capture backend fails.
     pub fn virtual_terminal_with_config(
         width: u16,
         height: u16,
@@ -478,11 +510,21 @@ impl<A: App> Runtime<A, CaptureBackend> {
 
 impl<A: App, B: Backend> Runtime<A, B> {
     /// Creates a new runtime with the specified backend.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the ratatui `Terminal` with the
+    /// provided backend fails.
     pub fn with_backend(backend: B) -> io::Result<Self> {
         Self::with_backend_and_config(backend, RuntimeConfig::default())
     }
 
     /// Creates a new runtime with backend and config.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the ratatui `Terminal` with the
+    /// provided backend fails.
     pub fn with_backend_and_config(backend: B, config: RuntimeConfig) -> io::Result<Self> {
         let terminal = Terminal::new(backend)?;
         let (state, init_cmd) = A::init();
@@ -717,6 +759,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// Renders the current state to the terminal.
     ///
     /// Renders the main app view first, then any active overlays on top.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if drawing to the terminal backend fails.
     pub fn render(&mut self) -> io::Result<()> {
         self.core.render()
     }
@@ -754,6 +800,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// - [`process_all_events`](Runtime::process_all_events) — Drain the event queue only
     /// - [`process_event`](Runtime::process_event) — Process exactly one event
     /// - [`run_ticks`](Runtime::run_ticks) — Convenience: run N full tick cycles
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if rendering to the terminal backend fails.
     pub fn tick(&mut self) -> io::Result<()> {
         #[cfg(feature = "tracing")]
         let _span = tracing::debug_span!("tick").entered();
@@ -806,6 +856,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
     ///
     /// This is the main entry point for running a virtual terminal async loop.
     /// For terminal applications, use [`run_terminal`](Runtime::run_terminal) instead.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if rendering to the terminal backend fails.
     pub async fn run(&mut self) -> io::Result<()> {
         let mut tick_interval = tokio::time::interval(self.config.tick_rate);
         let mut render_interval = tokio::time::interval(self.config.frame_rate);
@@ -866,6 +920,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
     }
 
     /// Runs for a specified number of ticks.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if any individual tick fails to render.
     pub fn run_ticks(&mut self, ticks: usize) -> io::Result<()> {
         for _ in 0..ticks {
             if self.core.should_quit {
