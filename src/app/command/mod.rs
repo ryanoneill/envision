@@ -379,6 +379,33 @@ impl<M> Command<M> {
         Self::perform_async(future)
     }
 
+    /// Spawns an async task that does not produce a message.
+    ///
+    /// Use this for fire-and-forget operations like writing to a file,
+    /// sending a network request, or logging, where no response message
+    /// is needed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::Command;
+    ///
+    /// let cmd: Command<String> = Command::spawn(async {
+    ///     // Fire-and-forget: no message returned
+    ///     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    /// });
+    /// assert!(!cmd.is_none());
+    /// ```
+    pub fn spawn<Fut>(future: Fut) -> Self
+    where
+        Fut: Future<Output = ()> + Send + 'static,
+    {
+        Self::perform_async(async move {
+            future.await;
+            None
+        })
+    }
+
     /// Creates a command from an async operation that can fail.
     ///
     /// On success, the future returns `Ok(Some(message))` or `Ok(None)`.
