@@ -95,6 +95,11 @@ impl StyledContent {
         Self::default()
     }
 
+    /// Creates styled content from a pre-built vector of blocks.
+    pub fn from_blocks(blocks: Vec<StyledBlock>) -> Self {
+        Self { blocks }
+    }
+
     /// Adds a heading block.
     pub fn heading(mut self, level: u8, text: impl Into<String>) -> Self {
         self.blocks.push(StyledBlock::Heading {
