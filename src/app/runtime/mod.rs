@@ -15,7 +15,7 @@
 //! ```rust,ignore
 //! // requires real terminal
 //! #[tokio::main]
-//! async fn main() -> std::io::Result<()> {
+//! async fn main() -> envision::Result<()> {
 //!     let _final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
 //!     Ok(())
 //! }
@@ -47,7 +47,7 @@
 //! vt.send(Event::key(KeyCode::Char('j')));
 //! vt.tick()?;
 //! println!("{}", vt.display());
-//! # Ok::<(), std::io::Error>(())
+//! # Ok::<(), envision::EnvisionError>(())
 //! ```
 //!
 //! Events are injected programmatically and the display can be inspected.
@@ -57,7 +57,9 @@ mod terminal;
 mod virtual_terminal;
 pub use config::{RuntimeConfig, TerminalHook};
 
-use std::io::{self, Stdout};
+use std::io::Stdout;
+
+use crate::error;
 use std::pin::Pin;
 
 use ratatui::backend::{Backend, CrosstermBackend};
@@ -143,7 +145,7 @@ pub type TerminalRuntime<A> = Runtime<A, CrosstermBackend<Stdout>>;
 /// #     fn view(state: &MyState, frame: &mut Frame) {}
 /// # }
 /// let vt: VirtualRuntime<MyApp> = Runtime::virtual_terminal(80, 24)?;
-/// # Ok::<(), std::io::Error>(())
+/// # Ok::<(), envision::EnvisionError>(())
 /// ```
 pub type VirtualRuntime<A> = Runtime<A, CaptureBackend>;
 
@@ -157,7 +159,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     ///
     /// Returns an error if creating the ratatui `Terminal` with the
     /// provided backend fails.
-    pub fn with_backend(backend: B) -> io::Result<Self> {
+    pub fn with_backend(backend: B) -> error::Result<Self> {
         Self::with_backend_and_config(backend, RuntimeConfig::default())
     }
 
@@ -176,7 +178,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
         backend: B,
         state: A::State,
         init_cmd: Command<A::Message>,
-    ) -> io::Result<Self> {
+    ) -> error::Result<Self> {
         Self::with_backend_state_and_config(backend, state, init_cmd, RuntimeConfig::default())
     }
 
@@ -188,7 +190,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     ///
     /// Returns an error if creating the ratatui `Terminal` with the
     /// provided backend fails.
-    pub fn with_backend_and_config(backend: B, config: RuntimeConfig) -> io::Result<Self> {
+    pub fn with_backend_and_config(backend: B, config: RuntimeConfig) -> error::Result<Self> {
         let (state, init_cmd) = A::init();
         Self::with_backend_state_and_config(backend, state, init_cmd, config)
     }
@@ -230,14 +232,14 @@ impl<A: App, B: Backend> Runtime<A, B> {
     ///     backend, state, Command::none(), RuntimeConfig::default(),
     /// )?;
     /// assert_eq!(vt.state().count, 42);
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn with_backend_state_and_config(
         backend: B,
         state: A::State,
         init_cmd: Command<A::Message>,
         config: RuntimeConfig,
-    ) -> io::Result<Self> {
+    ) -> error::Result<Self> {
         let terminal = Terminal::new(backend)?;
 
         let (message_tx, message_rx) = mpsc::channel(config.message_channel_capacity);
@@ -292,7 +294,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # }
     /// let vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// assert_eq!(vt.state().count, 0);
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn state(&self) -> &A::State {
         &self.core.state
@@ -319,7 +321,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// vt.state_mut().count = 42;
     /// assert_eq!(vt.state().count, 42);
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn state_mut(&mut self) -> &mut A::State {
         &mut self.core.state
@@ -387,7 +389,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # let runtime = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// let error_tx = runtime.error_sender();
     /// // error_tx can be sent to async tasks to report errors
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn error_sender(&self) -> mpsc::Sender<BoxedError> {
         self.error_tx.clone()
@@ -418,7 +420,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// for error in runtime.take_errors() {
     ///     eprintln!("Async error: {}", error);
     /// }
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn take_errors(&mut self) -> Vec<BoxedError> {
         let mut errors = Vec::new();
@@ -508,7 +510,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// vt.dispatch(MyMsg::Increment);
     /// assert_eq!(vt.state().count, 1);
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn dispatch(&mut self, msg: A::Message) {
         #[cfg(feature = "tracing")]
@@ -573,7 +575,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # Errors
     ///
     /// Returns an error if drawing to the terminal backend fails.
-    pub fn render(&mut self) -> io::Result<()> {
+    pub fn render(&mut self) -> error::Result<()> {
         self.core.render()
     }
 
@@ -634,9 +636,9 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// vt.send(Event::key(KeyCode::Char('j')));
     /// vt.tick()?; // processes the 'j' event and re-renders
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
-    pub fn tick(&mut self) -> io::Result<()> {
+    pub fn tick(&mut self) -> error::Result<()> {
         #[cfg(feature = "tracing")]
         let _span = tracing::debug_span!("tick").entered();
 
@@ -692,7 +694,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # Errors
     ///
     /// Returns an error if rendering to the terminal backend fails.
-    pub async fn run(&mut self) -> io::Result<()> {
+    pub async fn run(&mut self) -> error::Result<()> {
         let mut tick_interval = tokio::time::interval(self.config.tick_rate);
         let mut render_interval = tokio::time::interval(self.config.frame_rate);
 
@@ -775,9 +777,9 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # }
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// vt.run_ticks(5)?;
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
-    pub fn run_ticks(&mut self, ticks: usize) -> io::Result<()> {
+    pub fn run_ticks(&mut self, ticks: usize) -> error::Result<()> {
         for _ in 0..ticks {
             if self.core.should_quit {
                 break;

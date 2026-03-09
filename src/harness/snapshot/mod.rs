@@ -1,7 +1,8 @@
 //! Snapshot testing support.
 
-use std::io;
 use std::path::Path;
+
+use crate::error;
 
 use crate::annotation::AnnotationRegistry;
 use crate::backend::FrameSnapshot;
@@ -95,9 +96,9 @@ impl Snapshot {
     ///
     /// Returns an error if writing the formatted snapshot content to the
     /// file system fails.
-    pub fn write_to_file(&self, path: impl AsRef<Path>, format: SnapshotFormat) -> io::Result<()> {
+    pub fn write_to_file(&self, path: impl AsRef<Path>, format: SnapshotFormat) -> error::Result<()> {
         let content = self.format(format);
-        std::fs::write(path, content)
+        Ok(std::fs::write(path, content)?)
     }
 
     /// Loads a snapshot from a JSON file.
@@ -107,9 +108,10 @@ impl Snapshot {
     /// Returns an error if the file cannot be read or if its contents
     /// cannot be deserialized as a valid JSON snapshot.
     #[cfg(feature = "serialization")]
-    pub fn load_from_file(path: impl AsRef<Path>) -> io::Result<Self> {
+    pub fn load_from_file(path: impl AsRef<Path>) -> error::Result<Self> {
         let content = std::fs::read_to_string(path)?;
-        serde_json::from_str(&content).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+        serde_json::from_str(&content)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e).into())
     }
 
     /// Compares this snapshot to another.
@@ -306,7 +308,7 @@ impl SnapshotTest {
     /// Returns an error if the snapshot directory cannot be created, if
     /// reading or writing snapshot files fails, or if the snapshot content
     /// does not match the stored version.
-    pub fn assert(&self, name: &str, snapshot: &Snapshot) -> io::Result<()> {
+    pub fn assert(&self, name: &str, snapshot: &Snapshot) -> error::Result<()> {
         let path = self.snapshot_path(name);
 
         if self.update || !path.exists() {
@@ -326,10 +328,11 @@ impl SnapshotTest {
             ));
             std::fs::write(&new_path, &actual)?;
 
-            return Err(io::Error::other(format!(
+            return Err(std::io::Error::other(format!(
                 "Snapshot '{}' differs. New snapshot written to {:?}",
                 name, new_path
-            )));
+            ))
+            .into());
         }
 
         Ok(())

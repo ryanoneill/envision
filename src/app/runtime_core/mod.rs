@@ -4,8 +4,6 @@
 //! and methods used by `Runtime`. It manages terminal, state, event queue,
 //! overlays, theme, and rendering.
 
-use std::io;
-
 use ratatui::backend::Backend;
 use ratatui::Terminal;
 
@@ -33,7 +31,7 @@ impl<A: App, B: Backend> RuntimeCore<A, B> {
     /// Renders the current state to the terminal.
     ///
     /// Renders the main app view first, then any active overlays on top.
-    pub(crate) fn render(&mut self) -> io::Result<()> {
+    pub(crate) fn render(&mut self) -> crate::error::Result<()> {
         #[cfg(feature = "tracing")]
         let _span = tracing::debug_span!("render").entered();
 

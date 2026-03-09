@@ -5,7 +5,8 @@ use std::time::Duration;
 use super::*;
 use ratatui::backend::CrosstermBackend;
 use ratatui::widgets::Paragraph;
-use std::io::{self, Stdout};
+use crate::error;
+use std::io::Stdout;
 
 struct CounterApp;
 
@@ -583,7 +584,7 @@ fn test_run_terminal_blocking_exists() {
     // Verify that run_terminal_blocking is available on the terminal runtime type.
     // We can't actually call it (requires a real terminal), but we can verify
     // the method exists by taking a function pointer to it.
-    let _: fn(Runtime<CounterApp, CrosstermBackend<Stdout>>) -> io::Result<CounterState> =
+    let _: fn(Runtime<CounterApp, CrosstermBackend<Stdout>>) -> error::Result<CounterState> =
         Runtime::<CounterApp, CrosstermBackend<Stdout>>::run_terminal_blocking;
 }
 

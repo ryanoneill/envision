@@ -14,7 +14,7 @@
 //! ```rust,ignore
 //! // requires real terminal
 //! #[tokio::main]
-//! async fn main() -> std::io::Result<()> {
+//! async fn main() -> envision::Result<()> {
 //!     let _final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
 //!     Ok(())
 //! }
@@ -24,7 +24,7 @@
 //!
 //! ```rust,ignore
 //! // requires real terminal
-//! fn main() -> std::io::Result<()> {
+//! fn main() -> envision::Result<()> {
 //!     let _final_state = Runtime::<MyApp>::new_terminal()?.run_terminal_blocking()?;
 //!     Ok(())
 //! }
@@ -55,7 +55,7 @@
 //!
 //! // Inspect the display
 //! println!("{}", vt.display());
-//! # Ok::<(), std::io::Error>(())
+//! # Ok::<(), envision::EnvisionError>(())
 //! ```
 //!
 //! The same application code works in both modes - your `App` implementation
@@ -192,7 +192,7 @@ pub use component::{
     ConfirmDialogState, Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Tooltip,
     TooltipMessage, TooltipOutput, TooltipPosition, TooltipState,
 };
-pub use error::{BoxedError, EnvisionError};
+pub use error::{BoxedError, EnvisionError, Result};
 pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
 pub use input::{Event, EventQueue};
 pub use overlay::{Overlay, OverlayAction, OverlayStack};

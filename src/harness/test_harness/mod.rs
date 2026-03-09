@@ -1,8 +1,8 @@
 //! Core test harness implementation.
 
-use std::io;
-
 use ratatui::Terminal;
+
+use crate::error;
 
 use crate::annotation::{with_annotations, AnnotationRegistry, RegionInfo, WidgetType};
 use crate::backend::CaptureBackend;
@@ -89,7 +89,7 @@ impl TestHarness {
     ///
     /// # Errors
     ///
-    /// This method currently always succeeds, but returns `io::Result`
+    /// This method currently always succeeds, but returns `Result`
     /// for API consistency with terminal rendering operations.
     ///
     /// # Example
@@ -103,9 +103,9 @@ impl TestHarness {
     ///     frame.render_widget(Paragraph::new("Hello!"), frame.area());
     /// })?;
     /// assert!(harness.contains("Hello!"));
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
-    pub fn render<F>(&mut self, f: F) -> io::Result<()>
+    pub fn render<F>(&mut self, f: F) -> error::Result<()>
     where
         F: FnOnce(&mut ratatui::Frame),
     {

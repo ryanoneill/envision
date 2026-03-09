@@ -175,6 +175,23 @@ impl From<std::io::Error> for EnvisionError {
     }
 }
 
+/// A [`Result`] type alias using [`EnvisionError`].
+///
+/// This is the standard result type returned by most Envision operations
+/// (runtime construction, rendering, ticking, etc.).
+///
+/// # Example
+///
+/// ```rust
+/// use envision::error::Result;
+///
+/// fn setup() -> Result<()> {
+///     // io::Error converts automatically via From
+///     Ok(())
+/// }
+/// ```
+pub type Result<T> = std::result::Result<T, EnvisionError>;
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -255,7 +272,7 @@ mod tests {
 
     #[test]
     fn boxed_error_alias_works() {
-        fn returns_boxed() -> Result<(), BoxedError> {
+        fn returns_boxed() -> std::result::Result<(), BoxedError> {
             Err("test error".into())
         }
         assert!(returns_boxed().is_err());
