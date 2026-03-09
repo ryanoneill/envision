@@ -157,6 +157,9 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
                     match maybe_event {
                         Some(Ok(event)) => {
                             if let Some(envision_event) = Self::convert_crossterm_event(&event) {
+                                #[cfg(feature = "tracing")]
+                                tracing::debug!(event = ?envision_event, "terminal received event");
+
                                 match self.core.overlay_stack.handle_event(&envision_event) {
                                     OverlayAction::Consumed => {}
                                     OverlayAction::KeepAndMessage(msg) => self.dispatch(msg),
@@ -189,6 +192,9 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
 
                 // Handle async messages from spawned tasks
                 Some(msg) = self.message_rx.recv() => {
+                    #[cfg(feature = "tracing")]
+                    tracing::debug!("terminal received async message");
+
                     self.dispatch(msg);
                 }
 
@@ -223,6 +229,9 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
 
                 // Handle cancellation
                 _ = self.cancel_token.cancelled() => {
+                    #[cfg(feature = "tracing")]
+                    tracing::info!("terminal received cancellation");
+
                     self.core.should_quit = true;
                 }
             }

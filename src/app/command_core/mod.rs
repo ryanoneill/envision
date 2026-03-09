@@ -44,6 +44,9 @@ impl<M> CommandHandlerCore<M> {
                 None
             }
             CommandAction::Quit => {
+                #[cfg(feature = "tracing")]
+                tracing::info!("quit command received");
+
                 self.should_quit = true;
                 None
             }

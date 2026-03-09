@@ -447,12 +447,18 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// The subscription stops when it ends naturally, when the runtime's
     /// cancellation token is triggered, or when the message channel is closed.
     pub fn subscribe(&mut self, subscription: impl Subscription<A::Message>) {
+        #[cfg(feature = "tracing")]
+        tracing::info!("registering subscription");
+
         let stream = Box::new(subscription).into_stream(self.cancel_token.clone());
         Self::spawn_subscription(stream, self.message_tx.clone(), self.cancel_token.clone());
     }
 
     /// Adds multiple subscriptions to the runtime.
     pub fn subscribe_all(&mut self, subscriptions: Vec<BoxedSubscription<A::Message>>) {
+        #[cfg(feature = "tracing")]
+        tracing::info!(count = subscriptions.len(), "registering subscriptions");
+
         for sub in subscriptions {
             let stream = sub.into_stream(self.cancel_token.clone());
             Self::spawn_subscription(stream, self.message_tx.clone(), self.cancel_token.clone());
@@ -688,6 +694,9 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
     /// Sets the quit flag and cancels all async operations.
     pub fn quit(&mut self) {
+        #[cfg(feature = "tracing")]
+        tracing::info!("runtime quit requested");
+
         self.core.should_quit = true;
         self.cancel_token.cancel();
     }
@@ -701,6 +710,9 @@ impl<A: App, B: Backend> Runtime<A, B> {
     ///
     /// Returns an error if rendering to the terminal backend fails.
     pub async fn run(&mut self) -> error::Result<()> {
+        #[cfg(feature = "tracing")]
+        tracing::info!("starting runtime event loop");
+
         let mut tick_interval = tokio::time::interval(self.config.tick_rate);
         let mut render_interval = tokio::time::interval(self.config.frame_rate);
 
@@ -711,6 +723,9 @@ impl<A: App, B: Backend> Runtime<A, B> {
             tokio::select! {
                 // Handle async messages from spawned tasks
                 Some(msg) = self.message_rx.recv() => {
+                    #[cfg(feature = "tracing")]
+                    tracing::debug!("runtime received async message");
+
                     self.dispatch(msg);
                 }
 
@@ -743,11 +758,17 @@ impl<A: App, B: Backend> Runtime<A, B> {
 
                 // Handle cancellation
                 _ = self.cancel_token.cancelled() => {
+                    #[cfg(feature = "tracing")]
+                    tracing::info!("runtime received cancellation");
+
                     self.core.should_quit = true;
                 }
             }
 
             if self.core.should_quit {
+                #[cfg(feature = "tracing")]
+                tracing::info!("runtime shutting down");
+
                 break;
             }
         }
@@ -800,6 +821,9 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// This is useful in tests with `tokio::time::pause()` to process
     /// all pending messages without running the full event loop.
     pub fn process_pending(&mut self) {
+        #[cfg(feature = "tracing")]
+        let _span = tracing::debug_span!("process_pending").entered();
+
         // Process commands
         self.process_commands();
 
