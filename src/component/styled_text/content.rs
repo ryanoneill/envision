@@ -96,6 +96,19 @@ impl StyledContent {
     }
 
     /// Creates styled content from a pre-built vector of blocks.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::{StyledContent, StyledBlock, StyledInline};
+    ///
+    /// let blocks = vec![
+    ///     StyledBlock::Heading { level: 1, text: "Title".to_string() },
+    ///     StyledBlock::Paragraph(vec![StyledInline::Plain("Hello".to_string())]),
+    /// ];
+    /// let content = StyledContent::from_blocks(blocks);
+    /// assert_eq!(content.len(), 2);
+    /// ```
     pub fn from_blocks(blocks: Vec<StyledBlock>) -> Self {
         Self { blocks }
     }
