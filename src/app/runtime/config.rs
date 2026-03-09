@@ -157,6 +157,70 @@ impl RuntimeConfig {
         self.on_teardown = Some(hook);
         self
     }
+
+    /// Sets a hook to be called after terminal setup, accepting a `FnOnce` closure.
+    ///
+    /// This is a convenience wrapper around [`on_setup`](Self::on_setup) for closures
+    /// that consume captured state. The closure runs at most once; subsequent calls
+    /// (e.g., on a cloned config) are no-ops.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use envision::RuntimeConfig;
+    ///
+    /// let config = RuntimeConfig::new()
+    ///     .on_setup_once(|| {
+    ///         // Move captured values into this closure
+    ///         eprintln!("Terminal is set up");
+    ///         Ok(())
+    ///     });
+    /// ```
+    pub fn on_setup_once<F>(self, hook: F) -> Self
+    where
+        F: FnOnce() -> std::io::Result<()> + Send + Sync + 'static,
+    {
+        let hook = std::sync::Mutex::new(Some(hook));
+        self.on_setup(Arc::new(move || {
+            if let Some(f) = hook.lock().unwrap().take() {
+                f()
+            } else {
+                Ok(())
+            }
+        }))
+    }
+
+    /// Sets a hook to be called before terminal teardown, accepting a `FnOnce` closure.
+    ///
+    /// This is a convenience wrapper around [`on_teardown`](Self::on_teardown) for closures
+    /// that consume captured state. The closure runs at most once; subsequent calls
+    /// (e.g., on a cloned config) are no-ops.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use envision::RuntimeConfig;
+    ///
+    /// let config = RuntimeConfig::new()
+    ///     .on_teardown_once(|| {
+    ///         // Move captured values into this closure
+    ///         eprintln!("Terminal is being torn down");
+    ///         Ok(())
+    ///     });
+    /// ```
+    pub fn on_teardown_once<F>(self, hook: F) -> Self
+    where
+        F: FnOnce() -> std::io::Result<()> + Send + Sync + 'static,
+    {
+        let hook = std::sync::Mutex::new(Some(hook));
+        self.on_teardown(Arc::new(move || {
+            if let Some(f) = hook.lock().unwrap().take() {
+                f()
+            } else {
+                Ok(())
+            }
+        }))
+    }
 }
 
 #[cfg(test)]
@@ -259,5 +323,124 @@ mod tests {
         let debug = format!("{:?}", config);
         assert!(debug.contains("on_setup: None"));
         assert!(debug.contains("on_teardown: None"));
+    }
+
+    #[test]
+    fn test_on_setup_once_stored() {
+        let config = RuntimeConfig::new().on_setup_once(|| Ok(()));
+        assert!(config.on_setup.is_some());
+        assert!(config.on_teardown.is_none());
+    }
+
+    #[test]
+    fn test_on_teardown_once_stored() {
+        let config = RuntimeConfig::new().on_teardown_once(|| Ok(()));
+        assert!(config.on_setup.is_none());
+        assert!(config.on_teardown.is_some());
+    }
+
+    #[test]
+    fn test_on_setup_once_callable() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+
+        let called = Arc::new(AtomicBool::new(false));
+        let flag = called.clone();
+
+        let config = RuntimeConfig::new().on_setup_once(move || {
+            flag.store(true, Ordering::SeqCst);
+            Ok(())
+        });
+
+        config.on_setup.as_ref().unwrap()().unwrap();
+        assert!(called.load(Ordering::SeqCst));
+    }
+
+    #[test]
+    fn test_on_teardown_once_callable() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+
+        let called = Arc::new(AtomicBool::new(false));
+        let flag = called.clone();
+
+        let config = RuntimeConfig::new().on_teardown_once(move || {
+            flag.store(true, Ordering::SeqCst);
+            Ok(())
+        });
+
+        config.on_teardown.as_ref().unwrap()().unwrap();
+        assert!(called.load(Ordering::SeqCst));
+    }
+
+    #[test]
+    fn test_on_setup_once_runs_only_once() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let call_count = Arc::new(AtomicUsize::new(0));
+        let counter = call_count.clone();
+
+        let config = RuntimeConfig::new().on_setup_once(move || {
+            counter.fetch_add(1, Ordering::SeqCst);
+            Ok(())
+        });
+
+        let hook = config.on_setup.as_ref().unwrap();
+        hook().unwrap();
+        hook().unwrap();
+        hook().unwrap();
+
+        assert_eq!(call_count.load(Ordering::SeqCst), 1);
+    }
+
+    #[test]
+    fn test_on_setup_once_with_consuming_capture() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+
+        let dropped = Arc::new(AtomicBool::new(false));
+
+        struct Guard {
+            flag: Arc<AtomicBool>,
+        }
+
+        impl Drop for Guard {
+            fn drop(&mut self) {
+                self.flag.store(true, Ordering::SeqCst);
+            }
+        }
+
+        let guard = Guard {
+            flag: dropped.clone(),
+        };
+
+        let config = RuntimeConfig::new().on_setup_once(move || {
+            drop(guard);
+            Ok(())
+        });
+
+        assert!(!dropped.load(Ordering::SeqCst));
+        config.on_setup.as_ref().unwrap()().unwrap();
+        assert!(dropped.load(Ordering::SeqCst));
+    }
+
+    #[test]
+    fn test_cloned_config_once_hook_runs_on_first_only() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let call_count = Arc::new(AtomicUsize::new(0));
+        let counter = call_count.clone();
+
+        let config = RuntimeConfig::new().on_setup_once(move || {
+            counter.fetch_add(1, Ordering::SeqCst);
+            Ok(())
+        });
+
+        let cloned = config.clone();
+
+        // Call on original - should run the FnOnce
+        config.on_setup.as_ref().unwrap()().unwrap();
+        assert_eq!(call_count.load(Ordering::SeqCst), 1);
+
+        // Call on clone - shares the same Arc, so FnOnce is already consumed
+        cloned.on_setup.as_ref().unwrap()().unwrap();
+        assert_eq!(call_count.load(Ordering::SeqCst), 1);
     }
 }
