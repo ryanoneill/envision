@@ -128,14 +128,16 @@ pub mod util;
 // Re-export commonly used types
 pub use adapter::{DualBackend, DualBackendBuilder};
 pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
+#[cfg(feature = "serialization")]
+pub use app::load_state;
 pub use app::{
     batch, interval_immediate, terminal_events, tick, App, BatchSubscription, BoxedSubscription,
-    ChannelSubscription, Command, DebounceSubscription, FilterSubscription,
-    IntervalImmediateBuilder, IntervalImmediateSubscription, MappedSubscription, Runtime,
-    RuntimeConfig, StreamSubscription, Subscription, SubscriptionExt, TakeSubscription,
+    ChannelSubscription, Command, CommandHandler, DebounceSubscription, FilterSubscription,
+    FnUpdate, IntervalImmediateBuilder, IntervalImmediateSubscription, MappedSubscription, Runtime,
+    RuntimeConfig, StateExt, StreamSubscription, Subscription, SubscriptionExt, TakeSubscription,
     TerminalEventSubscription, TerminalHook, TerminalRuntime, ThrottleSubscription,
     TickSubscription, TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription,
-    VirtualRuntime,
+    Update, UpdateResult, VirtualRuntime,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 // Core component traits and utilities (always available)
