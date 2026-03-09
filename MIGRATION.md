@@ -1,5 +1,89 @@
 # Migration Guide
 
+## v0.6.0 to v0.7.0
+
+### Breaking Changes
+
+#### 1. Lifecycle Hook Error Type Widened
+
+`TerminalHook` now returns `envision::Result<()>` instead of `io::Result<()>`.
+This affects the `on_setup`, `on_teardown`, `on_setup_once`, and
+`on_teardown_once` methods on `RuntimeConfig`.
+
+```rust
+// Before (v0.6.0)
+use std::io;
+
+let config = RuntimeConfig::default()
+    .on_setup_once(|| -> io::Result<()> {
+        // setup logic
+        Ok(())
+    });
+
+// After (v0.7.0)
+let config = RuntimeConfig::default()
+    .on_setup_once(|| -> envision::Result<()> {
+        // setup logic
+        Ok(())
+    });
+```
+
+Since `EnvisionError` implements `From<io::Error>`, existing hooks that only
+produce `io::Error` continue to compile with the `?` operator. The change
+primarily affects explicit return type annotations and error matching.
+
+If your hooks use explicit `io::Result<()>` return types, update them to
+`envision::Result<()>`. If they use `Ok(())` with implicit return types, no
+change is needed.
+
+#### 2. SearchableList Matcher Requires `Send + Sync`
+
+The `MatcherFn` type used by `SearchableList::with_matcher()` now requires
+`Send + Sync` bounds. This ensures matcher closures are safe to use across
+async boundaries.
+
+```rust
+// Before (v0.6.0) -- non-Send closures worked
+let local_data = Rc::new(vec!["data"]);
+state.set_matcher(move |query, item| {
+    // closure capturing Rc (not Send)
+    Some(0)
+});
+
+// After (v0.7.0) -- closures must be Send + Sync
+let shared_data = Arc::new(vec!["data"]);
+state.set_matcher(move |query, item| {
+    // closure capturing Arc (Send + Sync)
+    Some(0)
+});
+```
+
+Most closures that capture only owned types (`String`, `Vec`, `Arc`, etc.)
+already satisfy `Send + Sync`. Only closures capturing `Rc`, `Cell`,
+`RefCell`, or other non-thread-safe types need adjustment.
+
+### New Features (Non-Breaking)
+
+- **ChatView markdown rendering**: Enable with `with_markdown(true)` when the
+  `markdown` feature is active. Supports headings, bold, italic, code blocks,
+  lists, and more.
+
+- **`Command::spawn()`**: Fire-and-forget async tasks that don't produce
+  messages.
+
+- **Command inspection**: `is_none()`, `is_quit()`, `is_batch()`, `is_async()`
+  for testing command types without executing them.
+
+- **`App::init()` default**: Applications using `with_state` constructors no
+  longer need to implement `init()`.
+
+- **`EnvisionError::Other`**: Catch-all error variant for arbitrary errors.
+
+- **`LineInputState::visual_rows_at_width()`**: Calculate visual row count for
+  dynamic layout sizing.
+
+---
+
 ## v0.5.0 to v0.6.0
 
 ### Breaking Changes

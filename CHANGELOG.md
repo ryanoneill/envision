@@ -7,6 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-03-09
+
+### Added
+
+- **ChatView markdown rendering**: Parse and render markdown in chat messages
+  when the `markdown` feature is enabled. Supports headings, bold, italic,
+  strikethrough, inline code, fenced code blocks, bullet/numbered lists,
+  horizontal rules, and links. Role-specific colors are preserved through
+  the rendering pipeline via `StyledContent::render_lines_styled()`.
+  - `ChatViewState::with_markdown()` / `set_markdown_enabled()` /
+    `markdown_enabled()` for opt-in markdown support
+  - `StyledContent::from_blocks()` constructor for pre-built block vectors
+  - `StyledContent::render_lines_styled()` for caller-provided base style
+
+- **`Command::spawn()`** for fire-and-forget async tasks that don't produce
+  messages. Useful for logging, analytics, or background cleanup.
+
+- **Command inspection methods** for testing: `is_none()`, `is_quit()`,
+  `is_batch()`, `is_async()` allow tests to verify command types without
+  executing them.
+
+- **`App::init()` default implementation** — `init()` now has a default that
+  panics with a descriptive message. Applications using `with_state`
+  constructors no longer need to implement `init()`.
+
+- **`EnvisionError::Other(BoxedError)` variant** — catch-all error variant
+  for wrapping arbitrary errors that don't fit the structured categories.
+  Includes `EnvisionError::other()` convenience constructor.
+
+- **`LineInputState::visual_rows_at_width()`** — calculates the number of
+  visual rows a line input would occupy at a given width, useful for
+  dynamic layout sizing.
+
+- **Tracing instrumentation widened** — `tracing` spans now cover runtime
+  event loops, command handler task spawning, subscription registration,
+  and async message processing (previously limited to `dispatch_event`
+  and `view`).
+
+- **Standalone examples** for components that previously lacked them:
+  `confirm_dialog`, `file_browser`, `pane_layout`, `step_indicator`,
+  `styled_text`. Five existing examples converted to interactive terminal
+  mode.
+
+- **`FileBrowserState` Debug impl** expanded to include all fields.
+
+- **CompactString rationale** documented in `EnhancedCell` module docs,
+  explaining the inline-storage optimization for terminal cell buffers.
+
+### Changed
+
+- **Breaking**: `TerminalHook` type widened from
+  `Arc<dyn Fn() -> io::Result<()> + Send + Sync>` to
+  `Arc<dyn Fn() -> envision::Result<()> + Send + Sync>`. Lifecycle hooks
+  (`on_setup`, `on_teardown`, `on_setup_once`, `on_teardown_once`) now
+  accept and return `envision::Result` instead of `io::Result`.
+  See `MIGRATION.md` for upgrade guide.
+
+- **Breaking**: `SearchableList` matcher function type (`MatcherFn`) now
+  requires `Send + Sync` bounds. Closures passed to `with_matcher()` must
+  be thread-safe.
+
+- ChatView component implementation extracted to `component_impl.rs`
+  submodule to stay within the 1000-line file limit.
+
+### Fixed
+
+- Clippy `io_other_error` lint compatibility with Rust 1.94.
+- Re-export gaps for subscription types and runtime aliases from crate root.
+
 ## [0.6.0] - 2026-03-08
 
 ### Added
@@ -417,7 +486,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renders to both a real terminal and CaptureBackend
   - Useful for visual debugging while testing
 
-[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/ryanoneill/envision/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/ryanoneill/envision/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/ryanoneill/envision/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/ryanoneill/envision/compare/v0.4.0...v0.4.1

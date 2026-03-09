@@ -10,7 +10,7 @@ A [ratatui](https://github.com/ratatui/ratatui) framework for collaborative TUI 
 
 ## Features
 
-- **Component Library** - 37 ready-to-use UI components following TEA pattern
+- **Component Library** - 42 ready-to-use UI components following TEA pattern
 - **Headless Testing** - Render your TUI without a terminal using `CaptureBackend`
 - **TEA Architecture** - The Elm Architecture pattern with `App`, `Runtime`, and `Command`
 - **Async Runtime** - Full async support with subscriptions, timers, and async commands
@@ -154,44 +154,48 @@ cargo run --example component_showcase
 
 ## Components
 
-Envision provides a comprehensive library of reusable UI components, all following the TEA (The Elm Architecture) pattern with `Component`, `Focusable`, and `Toggleable` traits.
+Envision provides a comprehensive library of 42 reusable UI components, all following the TEA (The Elm Architecture) pattern with `Component`, `Focusable`, `Disableable`, and `Toggleable` traits.
 
 ### Input Components
 
 | Component | Description |
 |-----------|-------------|
+| `Button` | Clickable button with keyboard activation |
+| `Checkbox` | Toggleable checkbox with label |
+| `Dropdown` | Searchable/filterable select with type-to-filter |
 | `InputField` | Single-line text input with cursor navigation |
 | `LineInput` | Single-line input with visual wrapping, history, undo/redo |
-| `TextArea` | Multi-line text editor with scrolling |
-| `Checkbox` | Toggleable checkbox with label |
 | `RadioGroup` | Single-selection radio button group |
 | `Select` | Dropdown selection widget |
-| `Dropdown` | Searchable/filterable select with type-to-filter |
+| `TextArea` | Multi-line text editor with scrolling |
 
 ### Display Components
 
 | Component | Description |
 |-----------|-------------|
-| `ProgressBar` | Visual progress indicator with percentage |
+| `KeyHints` | Keyboard shortcut display bar |
 | `MultiProgress` | Concurrent progress indicators for batch operations |
-| `Spinner` | Animated loading indicator (multiple styles) |
+| `ProgressBar` | Visual progress indicator with percentage |
 | `ScrollableText` | Scrollable read-only text display with CJK support |
+| `Spinner` | Animated loading indicator (multiple styles) |
+| `StatusBar` | Application status bar with sections, timers, counters |
+| `StatusLog` | Scrolling status messages with severity levels |
+| `StepIndicator` | Multi-step workflow progress display |
+| `StyledText` | Rich text display with inline styling |
 | `TitleCard` | Centered title display with subtitle and prefix/suffix |
 | `Toast` | Non-modal notification system with auto-dismiss |
 | `Tooltip` | Contextual information overlay |
-| `StatusBar` | Application status bar with sections, timers, counters |
-| `StatusLog` | Scrolling status messages with severity levels |
 
 ### Navigation Components
 
 | Component | Description |
 |-----------|-------------|
-| `Tabs` | Horizontal tab navigation |
-| `Menu` | Keyboard-navigable menu with shortcuts |
-| `Breadcrumb` | Navigation breadcrumb trail |
-| `Router` | Multi-screen navigation with history |
-| `Tree` | Hierarchical tree view with expand/collapse |
 | `Accordion` | Collapsible panel container |
+| `Breadcrumb` | Navigation breadcrumb trail |
+| `Menu` | Keyboard-navigable menu with shortcuts |
+| `Router` | Multi-screen navigation with history |
+| `Tabs` | Horizontal tab navigation |
+| `Tree` | Hierarchical tree view with expand/collapse |
 
 ### Data Components
 
@@ -205,18 +209,21 @@ Envision provides a comprehensive library of reusable UI components, all followi
 
 | Component | Description |
 |-----------|-------------|
+| `ConfirmDialog` | Preset confirmation dialog with Yes/No buttons |
 | `Dialog` | Modal dialog overlay with buttons |
 
 ### Compound Components
 
 | Component | Description |
 |-----------|-------------|
-| `ChatView` | Chat interface with message history and input |
+| `ChatView` | Chat interface with message history and markdown rendering |
 | `Chart` | Data visualization with line and bar charts |
 | `DataGrid` | Editable data table with cell navigation |
+| `FileBrowser` | File system browser with pluggable backend |
 | `Form` | Multi-field form with validation |
 | `LogViewer` | Filterable log display with search |
 | `MetricsDashboard` | Dashboard with charts, counters, and gauges |
+| `PaneLayout` | Resizable split-pane layouts with configurable proportions |
 | `SearchableList` | Filterable list with search input |
 | `SplitPanel` | Resizable dual-panel layout |
 
@@ -224,9 +231,7 @@ Envision provides a comprehensive library of reusable UI components, all followi
 
 | Component | Description |
 |-----------|-------------|
-| `Button` | Clickable button with keyboard activation |
 | `FocusManager` | Keyboard focus coordination |
-| `KeyHints` | Keyboard shortcut display bar |
 
 ### Component Example
 
@@ -272,7 +277,7 @@ Envision follows The Elm Architecture (TEA) pattern:
 
 | Module | Description |
 |--------|-------------|
-| `component` | 37 reusable UI components with `Component`, `Focusable`, `Toggleable` traits |
+| `component` | 42 reusable UI components with `Component`, `Focusable`, `Toggleable` traits |
 | `backend` | `CaptureBackend` for headless rendering |
 | `app` | TEA architecture: `App`, `Runtime`, `Command`, subscriptions |
 | `harness` | `TestHarness` and `AppHarness` for testing |
