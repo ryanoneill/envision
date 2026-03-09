@@ -505,6 +505,155 @@ async fn test_handler_multiple_async() {
 }
 
 // =========================================================================
+// Spawn (fire-and-forget) tests
+// =========================================================================
+
+#[test]
+fn test_command_spawn_is_not_none() {
+    let cmd: Command<TestMsg> = Command::spawn(async {});
+    assert!(!cmd.is_none());
+}
+
+#[test]
+fn test_command_spawn_collects_as_async() {
+    let mut handler: CommandHandler<TestMsg> = CommandHandler::new();
+    handler.execute(Command::spawn(async {}));
+
+    // No sync messages produced
+    assert!(handler.take_messages().is_empty());
+
+    // The spawned future is collected as an async future
+    assert!(handler.has_pending_futures());
+    assert_eq!(handler.pending_future_count(), 1);
+}
+
+#[tokio::test]
+async fn test_command_spawn_produces_no_message() {
+    let mut handler: CommandHandler<TestMsg> = CommandHandler::new();
+    let (msg_tx, mut msg_rx) = mpsc::channel(10);
+    let (err_tx, _err_rx) = mpsc::channel(10);
+    let cancel = CancellationToken::new();
+
+    handler.execute(Command::spawn(async {
+        // Fire-and-forget work
+        let _ = 1 + 1;
+    }));
+
+    handler.spawn_pending(msg_tx, err_tx, cancel);
+
+    // Give the task time to complete
+    tokio::time::sleep(Duration::from_millis(10)).await;
+
+    // No message should be received
+    assert!(msg_rx.try_recv().is_err());
+}
+
+#[tokio::test]
+async fn test_command_spawn_executes_side_effect() {
+    use std::sync::Arc;
+    use std::sync::atomic::{AtomicBool, Ordering};
+
+    let executed = Arc::new(AtomicBool::new(false));
+    let executed_clone = executed.clone();
+
+    let mut handler: CommandHandler<TestMsg> = CommandHandler::new();
+    let (msg_tx, _msg_rx) = mpsc::channel(10);
+    let (err_tx, _err_rx) = mpsc::channel(10);
+    let cancel = CancellationToken::new();
+
+    handler.execute(Command::spawn(async move {
+        executed_clone.store(true, Ordering::SeqCst);
+    }));
+
+    handler.spawn_pending(msg_tx, err_tx, cancel);
+
+    // Give the task time to complete
+    tokio::time::sleep(Duration::from_millis(50)).await;
+
+    assert!(executed.load(Ordering::SeqCst));
+}
+
+#[test]
+fn test_command_spawn_combine_with_message() {
+    let cmd = Command::combine([
+        Command::message(TestMsg::A),
+        Command::spawn(async {}),
+        Command::message(TestMsg::B),
+    ]);
+
+    let mut handler = CommandHandler::new();
+    handler.execute(cmd);
+
+    // Sync messages are processed immediately
+    let messages = handler.take_messages();
+    assert_eq!(messages, vec![TestMsg::A, TestMsg::B]);
+
+    // Spawn future is collected
+    assert!(handler.has_pending_futures());
+    assert_eq!(handler.pending_future_count(), 1);
+}
+
+#[test]
+fn test_command_spawn_and() {
+    let cmd = Command::message(TestMsg::A)
+        .and(Command::spawn(async {}))
+        .and(Command::quit());
+
+    let mut handler = CommandHandler::new();
+    handler.execute(cmd);
+
+    let messages = handler.take_messages();
+    assert_eq!(messages, vec![TestMsg::A]);
+    assert!(handler.should_quit());
+    assert!(handler.has_pending_futures());
+}
+
+#[test]
+fn test_command_spawn_map() {
+    #[derive(Clone, Debug, PartialEq)]
+    enum OuterMsg {
+        Inner(TestMsg),
+    }
+
+    let cmd: Command<TestMsg> = Command::spawn(async {});
+    let mapped: Command<OuterMsg> = cmd.map(OuterMsg::Inner);
+
+    // Mapped spawn command should still exist
+    assert!(!mapped.is_none());
+}
+
+#[tokio::test]
+async fn test_command_spawn_respects_cancellation() {
+    use std::sync::Arc;
+    use std::sync::atomic::{AtomicBool, Ordering};
+
+    let reached = Arc::new(AtomicBool::new(false));
+    let reached_clone = reached.clone();
+
+    let mut handler: CommandHandler<TestMsg> = CommandHandler::new();
+    let (msg_tx, _msg_rx) = mpsc::channel(10);
+    let (err_tx, _err_rx) = mpsc::channel(10);
+    let cancel = CancellationToken::new();
+
+    handler.execute(Command::spawn(async move {
+        // Long-running task that should be cancelled
+        tokio::time::sleep(Duration::from_secs(10)).await;
+        reached_clone.store(true, Ordering::SeqCst);
+    }));
+
+    handler.spawn_pending(msg_tx, err_tx, cancel.clone());
+
+    // Cancel immediately
+    cancel.cancel();
+
+    // Give task time to notice cancellation
+    tokio::time::sleep(Duration::from_millis(10)).await;
+
+    // The side effect after the sleep should not have been reached
+    assert!(!reached.load(Ordering::SeqCst));
+}
+
+// =========================================================================
 // Overlay tests
 // =========================================================================
 
