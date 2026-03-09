@@ -343,7 +343,7 @@ Follow these steps in order to migrate your project.
 
 ```toml
 [dependencies]
-envision = "0.5"
+envision = "0.6"
 ```
 
 All features are enabled by default. To customize, see the Feature Flags
@@ -480,7 +480,7 @@ and faster compile times. All are enabled by default via the `full` feature.
 
 ```toml
 [dependencies]
-envision = "0.5"
+envision = "0.6"
 ```
 
 **Opt out of serialization:**
@@ -632,7 +632,7 @@ let state = SelectState::new(options).with_placeholder("Select...");
 
 ### Quick Migration Checklist
 
-- [ ] Update `Cargo.toml` to `envision = "0.5"`
+- [ ] Update `Cargo.toml` to `envision = "0.6"`
 - [ ] Replace `AsyncRuntime` / sync `Runtime` with unified `Runtime`
 - [ ] Rename `Runtime::terminal()` to `Runtime::new_terminal()`
 - [ ] Rename `runtime.inner_terminal()` to `runtime.terminal()`
