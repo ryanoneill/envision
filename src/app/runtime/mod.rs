@@ -147,7 +147,6 @@ pub type TerminalRuntime<A> = Runtime<A, CrosstermBackend<Stdout>>;
 /// ```
 pub type VirtualRuntime<A> = Runtime<A, CaptureBackend>;
 
-
 // Common methods for all backends
 // =============================================================================
 
