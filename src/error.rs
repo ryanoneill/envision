@@ -70,6 +70,22 @@ pub enum EnvisionError {
         /// Details about the subscription failure.
         detail: String,
     },
+
+    /// A catch-all variant for wrapping arbitrary errors.
+    ///
+    /// Use this when an error does not fit into the other structured
+    /// categories. It wraps any error that implements
+    /// `std::error::Error + Send + Sync + 'static`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::error::EnvisionError;
+    ///
+    /// let err = EnvisionError::other("something went wrong");
+    /// assert_eq!(err.to_string(), "other error: something went wrong");
+    /// ```
+    Other(BoxedError),
 }
 
 impl EnvisionError {
@@ -132,6 +148,29 @@ impl EnvisionError {
             detail: detail.into(),
         }
     }
+
+    /// Creates an `Other` error from any error type.
+    ///
+    /// This is a convenience constructor that wraps an arbitrary error
+    /// into the [`Other`](EnvisionError::Other) variant, avoiding the
+    /// need for manual `.map_err()` calls.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::error::EnvisionError;
+    ///
+    /// let err = EnvisionError::other("something went wrong");
+    /// assert_eq!(err.to_string(), "other error: something went wrong");
+    ///
+    /// // Works with any error type
+    /// let io_err = std::io::Error::other("disk full");
+    /// let err = EnvisionError::other(io_err);
+    /// assert!(err.to_string().contains("disk full"));
+    /// ```
+    pub fn other(err: impl Into<BoxedError>) -> Self {
+        EnvisionError::Other(err.into())
+    }
 }
 
 impl fmt::Display for EnvisionError {
@@ -154,6 +193,7 @@ impl fmt::Display for EnvisionError {
                     subscription_type, detail
                 )
             }
+            EnvisionError::Other(err) => write!(f, "other error: {}", err),
         }
     }
 }
@@ -162,6 +202,7 @@ impl std::error::Error for EnvisionError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             EnvisionError::Io(err) => Some(err),
+            EnvisionError::Other(err) => Some(err.as_ref()),
             EnvisionError::Render { .. }
             | EnvisionError::Config { .. }
             | EnvisionError::Subscription { .. } => None,
@@ -315,5 +356,59 @@ mod tests {
             }
             _ => panic!("expected Subscription variant"),
         }
+    }
+
+    #[test]
+    fn other_from_string_error() {
+        let err = EnvisionError::Other("something went wrong".into());
+        assert!(matches!(err, EnvisionError::Other(_)));
+    }
+
+    #[test]
+    fn other_from_custom_error_type() {
+        #[derive(Debug)]
+        struct CustomError;
+
+        impl fmt::Display for CustomError {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "custom error occurred")
+            }
+        }
+
+        impl std::error::Error for CustomError {}
+
+        let err = EnvisionError::Other(Box::new(CustomError));
+        assert!(matches!(err, EnvisionError::Other(_)));
+        assert_eq!(err.to_string(), "other error: custom error occurred");
+    }
+
+    #[test]
+    fn other_error_display() {
+        let err = EnvisionError::Other("unexpected failure".into());
+        assert_eq!(err.to_string(), "other error: unexpected failure");
+    }
+
+    #[test]
+    fn other_error_source() {
+        let io_err = std::io::Error::other("inner error");
+        let err = EnvisionError::Other(Box::new(io_err));
+        let source = std::error::Error::source(&err);
+        assert!(source.is_some());
+        assert_eq!(source.unwrap().to_string(), "inner error");
+    }
+
+    #[test]
+    fn other_convenience_constructor() {
+        let err = EnvisionError::other("convenience test");
+        assert!(matches!(err, EnvisionError::Other(_)));
+        assert_eq!(err.to_string(), "other error: convenience test");
+    }
+
+    #[test]
+    fn other_convenience_constructor_with_io_error() {
+        let io_err = std::io::Error::other("disk full");
+        let err = EnvisionError::other(io_err);
+        assert!(matches!(err, EnvisionError::Other(_)));
+        assert!(err.to_string().contains("disk full"));
     }
 }
