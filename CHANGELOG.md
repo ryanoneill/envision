@@ -7,41 +7,113 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.0] - 2026-03-07
+## [0.6.0] - 2026-03-08
 
 ### Added
 
-- **Utility module** (`envision::util`): `truncate_to_width` and
-  `wrapped_line_count` with full CJK and emoji support
-- **ScrollableText component**: Read-only scrollable text display with
-  keyboard navigation, optional title, and CJK-aware wrapping
-- **TitleCard component**: Centered title display with subtitle,
-  prefix/suffix text, configurable styles, and optional border
-- **LineInput component**: Single-line text input with visual wrapping,
-  command history, undo/redo, text selection, and `max_length` constraint
-- **ChatView role styles**: `set_role_style()` / `with_role_style()` for
-  per-role color customization in ChatView
-- **Annotation wiring**: All components emit semantic annotations via
-  `Annotate` / `AnnotateContainer` when rendered inside `with_annotations()`
-- **WidgetType variants**: Added Spinner, Toast, Tooltip, Accordion,
-  Breadcrumb, LoadingList, KeyHints, MultiProgress, StatusLog, TitleCard,
-  LineInput, Dropdown, ScrollableText, Form, SplitPanel, SearchableList,
-  RadioGroup
+- **New components**:
+  - **ScrollableText**: Read-only scrollable text display with keyboard
+    navigation, optional title, and CJK-aware wrapping
+  - **TitleCard**: Centered title display with subtitle, prefix/suffix text,
+    configurable styles, and optional border
+  - **LineInput**: Single-line text input with visual wrapping, command
+    history, undo/redo, text selection, and `max_length` constraint
+  - **StepIndicator**: Navigation component showing progress through
+    multi-step workflows
+  - **StyledText**: Display component for rich text with inline styling
+  - **ConfirmDialog**: Preset confirmation dialog with Yes/No buttons
+  - **PaneLayout**: Compound component for resizable split-pane layouts
+  - **FileBrowser**: Compound component with pluggable filesystem backend
+
+- **Runtime and lifecycle**:
+  - **`EnvisionError` custom error type** with `Io`, `Render`, `Config`,
+    `Subscription` variants — all public API methods now return
+    `envision::Result<T>` instead of `std::io::Result<T>`
+  - **`Command::request_cancel_token()`** for cooperative shutdown — allows
+    applications to obtain the runtime's `CancellationToken` for cancelling
+    background tasks
+  - **`VirtualRuntime<A>` and `TerminalRuntime<A>` type aliases** — hide the
+    backend generic parameter from user code
+  - **`with_state` constructors** on Runtime — bypass `App::init()` with
+    pre-built state for CLI-style configuration
+  - **`run_terminal()` returns final state** — access application state after
+    the TUI exits
+  - **`RuntimeConfig` lifecycle hooks** — `on_setup` / `on_teardown` and
+    `on_setup_once` / `on_teardown_once` for terminal setup/cleanup
+  - **`UnboundedChannelSubscription`** for non-blocking message forwarding
+    from external producers
+  - **Subscription polling fix** — subscriptions now spawn forwarding tasks
+    instead of storing unpolled streams
+  - **Component tracing** — `dispatch_event` emits tracing spans when the
+    `tracing` feature is enabled
+
+- **Traits and API improvements**:
+  - **`Disableable` trait** implemented on all 34 components with
+    `is_disabled()` / `set_disabled()` / `with_disabled()` convenience methods
+  - **`selected()` getter** as alias for `selected_index()` on all selection
+    components
+  - **`set_selected(Option<usize>)` standardized** across all components
+  - **ChatView role styles**: `set_role_style()` / `with_role_style()` for
+    per-role color customization
+  - **ProgressBar ETA and rate display** with `set_eta()` / `set_rate()`
+  - **`with_visible()` builder** on Dialog and Tooltip
+  - **`Default` implementations** for SelectState, StatusBarState,
+    StyledTextState
+  - **`PartialEq`** on FormState and FileBrowserState
+  - **`# Errors` doc sections** on all `Result`-returning public functions
+
+- **Annotation system**:
+  - All components emit semantic annotations via `Annotate` /
+    `AnnotateContainer` when rendered inside `with_annotations()`
+  - New `WidgetType` variants: Spinner, Toast, Tooltip, Accordion,
+    Breadcrumb, LoadingList, KeyHints, MultiProgress, StatusLog, TitleCard,
+    LineInput, Dropdown, ScrollableText, Form, SplitPanel, SearchableList,
+    RadioGroup
+
+- **Testing infrastructure**:
+  - **`test-utils` feature flag** — makes `AppHarness` async methods
+    (`advance_time`, `wait_for`, etc.) available to integration tests and
+    downstream crates
+  - Integration, stress, and async test suites
+  - Property-based testing expanded to cover 10 additional components
+  - ChatView snapshot tests (7 scenarios)
+  - Compound component snapshot tests for all compound components
+  - Doc test coverage improvements across ~20 components
+  - Cross-references between related types in documentation
+
+- **Re-exports**: All subscription types and functions now re-exported from
+  crate root (`envision::ChannelSubscription`, `envision::tick`, etc.)
+
 - **Serialization** for ScrollableText, TitleCard, and LineInput state types
   (behind `serialization` feature flag)
-- **`with_visible()` builder** on Dialog and Tooltip
-- **ChatView snapshot tests** (7 scenarios: empty, single message,
-  multi-role, focused, disabled, custom role styles, scrolled)
-- **Compound component snapshot tests** for all 7 compound components
-  (Chart, ChatView, DataGrid, Form, LogViewer, MetricsDashboard, SplitPanel)
-- **Integration tests** for zero-size rendering of ScrollableText, TitleCard,
-  and LineInput
-- **Doc test coverage** improvements for Dropdown, TextArea, Select, Table,
-  and Column
-- **Examples**: `scrollable_text`, `title_card`, `line_input`, `chat_app`
-  (ChatView + LineInput composition)
-- **Migration guide** (`MIGRATION.md`) covering v0.1.0 through v0.5.0
+
+- **Worker module** for background task abstraction
+
+- **Examples**: `scrollable_text`, `title_card`, `line_input`, `chat_app`,
+  `production_app`, `step_indicator`, `styled_text`, `confirm_dialog`,
+  `pane_layout`, `file_browser`, `tree`, `dropdown`, `text_area`,
+  `data_grid`, plus 10 additional component examples
+
+- **Migration guide** (`MIGRATION.md`) covering v0.1.0 through v0.6.0
   upgrade paths
+
+- **Audit tool** (`tools/audit/`) for automated library quality assessment
+
+### Changed
+
+- **Breaking**: All public API methods return `envision::Result<T>` instead
+  of `std::io::Result<T>` — see `MIGRATION.md` for upgrade guide
+- Runtime module split into submodules for maintainability
+- `view()` allocations reduced in Tree and SelectableList
+- Files exceeding 1000-line limit split into submodules (TextArea,
+  FileBrowser tests)
+
+### Fixed
+
+- Clipboard heap corruption on Windows via process-global singleton
+- `on_setup` hook not called in `terminal_with_state_and_config`
+- Overflow in ScrollableText and char boundary bug in TextArea
+- Production example updated to use `on_setup_once` / `on_teardown_once`
 
 ## [0.5.0] - 2026-03-02
 

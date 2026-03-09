@@ -240,7 +240,7 @@ let mut state = ButtonState::new("Submit");
 Button::update(&mut state, ButtonMessage::Press);
 
 // Focus management
-Button::focus(&mut state);
+Button::set_focused(&mut state, true);
 assert!(Button::is_focused(&state));
 ```
 
