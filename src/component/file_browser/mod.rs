@@ -190,7 +190,10 @@ impl std::fmt::Debug for FileBrowserState {
             .field("directories_first", &self.directories_first)
             .field("show_hidden", &self.show_hidden)
             .field("list_state", &self.list_state)
-            .field("provider", &self.provider.as_ref().map(|_| "<DirectoryProvider>"))
+            .field(
+                "provider",
+                &self.provider.as_ref().map(|_| "<DirectoryProvider>"),
+            )
             .finish()
     }
 }
