@@ -774,7 +774,8 @@ fn test_is_overlay_pop_returns_false_for_quit() {
 
 #[test]
 fn test_is_overlay_pop_detects_pop_in_combined_command() {
-    let cmd: Command<TestMsg> = Command::combine([Command::message(TestMsg::A), Command::pop_overlay()]);
+    let cmd: Command<TestMsg> =
+        Command::combine([Command::message(TestMsg::A), Command::pop_overlay()]);
     assert!(cmd.is_overlay_pop());
 }
 
