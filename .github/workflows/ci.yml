@@ -13,6 +13,8 @@ env:
 jobs:
   test:
     name: Test (${{ matrix.os }}, ${{ matrix.rust }})
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -58,6 +60,8 @@ jobs:
 
   no-default-features:
     name: No Default Features
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -86,6 +90,8 @@ jobs:
 
   clippy:
     name: Clippy
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -127,6 +133,8 @@ jobs:
 
   coverage:
     name: Coverage
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -162,6 +170,8 @@ jobs:
 
   docs:
     name: Documentation
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -208,6 +218,7 @@ jobs:
     permissions:
       pull-requests: read
     outputs:
+      src: ${{ steps.filter.outputs.src }}
       backend: ${{ steps.filter.outputs.backend }}
       runtime: ${{ steps.filter.outputs.runtime }}
       component-view: ${{ steps.filter.outputs.component-view }}
@@ -218,6 +229,14 @@ jobs:
         id: filter
         with:
           filters: |
+            src:
+              - 'src/**'
+              - 'tests/**'
+              - 'benches/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'build.rs'
+              - 'examples/**'
             backend:
               - 'src/backend/**'
               - 'benches/capture_backend.rs'
@@ -446,8 +465,8 @@ jobs:
 
   deploy-docs:
     name: Deploy Documentation
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: docs
+    needs: [changes, docs]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.src == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
