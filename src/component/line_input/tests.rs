@@ -886,3 +886,34 @@ fn test_annotation_emitted() {
     assert!(!regions[0].annotation.focused);
     assert!(!regions[0].annotation.disabled);
 }
+
+#[test]
+fn visual_rows_at_width_empty() {
+    let state = LineInputState::new();
+    assert_eq!(state.visual_rows_at_width(10), 1);
+    assert_eq!(state.visual_rows_at_width(0), 1);
+}
+
+#[test]
+fn visual_rows_at_width_fits_single_row() {
+    let state = LineInputState::with_value("Hello");
+    assert_eq!(state.visual_rows_at_width(10), 1);
+    assert_eq!(state.visual_rows_at_width(5), 1);
+}
+
+#[test]
+fn visual_rows_at_width_wraps() {
+    let state = LineInputState::with_value("Hello, world!");
+    // 13 chars at width 7 → 2 rows
+    assert_eq!(state.visual_rows_at_width(7), 2);
+    // 13 chars at width 5 → 3 rows
+    assert_eq!(state.visual_rows_at_width(5), 3);
+}
+
+#[test]
+fn visual_rows_at_width_cjk() {
+    // Each CJK character takes 2 columns
+    let state = LineInputState::with_value("世界你好");
+    // 4 CJK chars = 8 columns, width 4 → 2 rows (2 chars per row)
+    assert_eq!(state.visual_rows_at_width(4), 2);
+}
