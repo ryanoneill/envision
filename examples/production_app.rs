@@ -6,7 +6,7 @@
 //! 1. **CLI-style configuration** — Build initial state from external config
 //! 2. **`with_state` construction** — Bypass `App::init()` with pre-built state
 //! 3. **External channel subscription** — Receive progress from a background worker
-//! 4. **Lifecycle hooks** — `on_setup` / `on_teardown` for logging configuration
+//! 4. **Lifecycle hooks** — `on_setup_once` / `on_teardown_once` for logging configuration
 //! 5. **Background work** — Tokio task simulating file processing with progress
 //! 6. **Final state extraction** — Access state after `run_terminal()` returns
 //!
@@ -19,7 +19,6 @@
 //!
 //! Run with: `cargo run --example production_app --features full`
 
-use std::sync::Arc;
 use std::time::Duration;
 
 use envision::app::UnboundedChannelSubscription;
@@ -286,20 +285,23 @@ async fn main() -> std::io::Result<()> {
 
     // ── 4. Configure runtime with lifecycle hooks ───────────────────────
     //
-    // on_setup runs *after* the terminal enters raw/alternate-screen mode.
+    // on_setup_once runs *after* the terminal enters raw/alternate-screen mode.
     // In a real app you would redirect stderr to a log file here.
     //
-    // on_teardown runs *before* the terminal is restored. Flush logs, etc.
+    // on_teardown_once runs *before* the terminal is restored. Flush logs, etc.
+    //
+    // The `_once` variants accept FnOnce closures, which is the natural choice
+    // for one-shot setup/teardown that may capture owned resources.
     let runtime_config = RuntimeConfig::new()
-        .on_setup(Arc::new(|| {
+        .on_setup_once(|| {
             // Example: redirect stderr or initialise a tracing subscriber.
             // For this demo we simply do nothing.
             Ok(())
-        }))
-        .on_teardown(Arc::new(|| {
+        })
+        .on_teardown_once(|| {
             // Example: flush any buffered log output.
             Ok(())
-        }));
+        });
 
     // ── 5. Create the runtime with pre-built state (bypass App::init) ──
     let mut runtime = TerminalRuntime::<ProcessorApp>::terminal_with_state_and_config(
