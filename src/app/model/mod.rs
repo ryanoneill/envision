@@ -30,9 +30,9 @@
 //! )?;
 //! ```
 //!
-//! Even when using `with_state` constructors, `App::init()` must still be
-//! implemented because it is a required trait method. A simple stub returning
-//! default values is sufficient.
+//! When using `with_state` constructors, `App::init()` does **not** need to
+//! be implemented — the default implementation will panic if called, which
+//! is safe because `with_state` constructors never call it.
 //!
 //! [`Runtime::new_terminal()`]: crate::app::Runtime::new_terminal
 //! [`Runtime::virtual_terminal()`]: crate::app::Runtime::virtual_terminal
@@ -71,9 +71,12 @@ use crate::input::Event;
 /// - **External state**: The `with_state` constructors
 ///   ([`Runtime::new_terminal_with_state()`](crate::app::Runtime::new_terminal_with_state),
 ///   [`Runtime::virtual_terminal_with_state()`](crate::app::Runtime::virtual_terminal_with_state),
-///   etc.) accept a pre-built state and **skip** `init()` entirely.
+///   etc.) accept a pre-built state and **skip** `init()` entirely. In this
+///   case, `init()` does not need to be implemented.
 ///
-/// # Example
+/// # Examples
+///
+/// ## Standard pattern — implementing `init()`
 ///
 /// ```rust
 /// use envision::app::{App, Command};
@@ -113,6 +116,44 @@ use crate::input::Event;
 ///     }
 /// }
 /// ```
+///
+/// ## External state pattern — omitting `init()`
+///
+/// When using `with_state` constructors, `init()` can be omitted:
+///
+/// ```rust
+/// use envision::app::{App, Command};
+/// use ratatui::Frame;
+///
+/// struct ExternalApp;
+///
+/// struct ExternalState {
+///     config_value: String,
+/// }
+///
+/// #[derive(Clone)]
+/// enum ExternalMsg {
+///     Update(String),
+/// }
+///
+/// impl App for ExternalApp {
+///     type State = ExternalState;
+///     type Message = ExternalMsg;
+///
+///     // init() is not implemented — this app uses with_state constructors
+///
+///     fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+///         match msg {
+///             ExternalMsg::Update(v) => state.config_value = v,
+///         }
+///         Command::none()
+///     }
+///
+///     fn view(state: &Self::State, frame: &mut Frame) {
+///         // Render UI
+///     }
+/// }
+/// ```
 pub trait App: Sized {
     /// The application state type.
     ///
@@ -133,20 +174,26 @@ pub trait App: Sized {
     /// [`Runtime::virtual_terminal_with_state()`]), this method is **not
     /// called** — the provided state is used directly instead.
     ///
-    /// If you only use `with_state` constructors, this can be a simple stub:
+    /// # Default Implementation
     ///
-    /// ```rust,ignore
-    /// fn init() -> (Self::State, Command<Self::Message>) {
-    ///     // Not called when using with_state constructors
-    ///     (MyState::default(), Command::none())
-    /// }
-    /// ```
+    /// The default implementation panics with a descriptive message. This
+    /// allows applications that exclusively use `with_state` constructors
+    /// to omit `init()` entirely, since it will never be called. If you
+    /// use [`Runtime::new_terminal()`] or [`Runtime::virtual_terminal()`],
+    /// you **must** override this method to provide valid initial state.
     ///
     /// [`Runtime::new_terminal()`]: crate::app::Runtime::new_terminal
     /// [`Runtime::virtual_terminal()`]: crate::app::Runtime::virtual_terminal
     /// [`Runtime::new_terminal_with_state()`]: crate::app::Runtime::new_terminal_with_state
     /// [`Runtime::virtual_terminal_with_state()`]: crate::app::Runtime::virtual_terminal_with_state
-    fn init() -> (Self::State, Command<Self::Message>);
+    fn init() -> (Self::State, Command<Self::Message>) {
+        panic!(
+            "App::init() is not implemented. \
+             Override this method when using Runtime::new_terminal() or \
+             Runtime::virtual_terminal(). When using with_state constructors, \
+             this method is never called and can be left unimplemented."
+        );
+    }
 
     /// Handle a message and update the state.
     ///

@@ -131,16 +131,7 @@ impl App for ProcessorApp {
     type State = ProcessorState;
     type Message = ProcessorMsg;
 
-    /// Stub init — we use `with_state` instead, so this is never called.
-    fn init() -> (Self::State, Command<Self::Message>) {
-        // Provide a valid fallback in case someone constructs the runtime
-        // without `with_state`. The real entrypoint builds state from config.
-        let stub_config = AppConfig {
-            files: Vec::new(),
-            output_dir: String::new(),
-        };
-        (ProcessorState::from_config(&stub_config), Command::none())
-    }
+    // init() is not implemented — this app uses with_state constructors
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
         match msg {

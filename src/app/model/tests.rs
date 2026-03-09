@@ -282,3 +282,52 @@ fn test_handle_event_with_state_default_delegation() {
     let msg = CustomApp::handle_event_with_state(&state, &event);
     assert!(matches!(msg, Some(CustomMsg::KeyPressed('a'))));
 }
+
+// Test that App::init() can be omitted when using with_state constructors
+struct WithStateApp;
+
+struct WithStateState {
+    config_value: String,
+}
+
+#[derive(Clone)]
+enum WithStateMsg {
+    Update(String),
+}
+
+impl App for WithStateApp {
+    type State = WithStateState;
+    type Message = WithStateMsg;
+
+    // init() deliberately omitted — uses the default panic implementation
+
+    fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+        match msg {
+            WithStateMsg::Update(v) => state.config_value = v,
+        }
+        Command::none()
+    }
+
+    fn view(_state: &Self::State, _frame: &mut Frame) {}
+}
+
+#[test]
+fn test_with_state_app_compiles_without_init() {
+    // Verify that an App impl without init() compiles and works correctly
+    // when state is constructed externally (as with_state constructors do).
+    let mut state = WithStateState {
+        config_value: "from_config".into(),
+    };
+    assert_eq!(state.config_value, "from_config");
+
+    WithStateApp::update(&mut state, WithStateMsg::Update("updated".into()));
+    assert_eq!(state.config_value, "updated");
+}
+
+#[test]
+#[should_panic(expected = "App::init() is not implemented")]
+fn test_default_init_panics_with_helpful_message() {
+    // The default init() should panic with a descriptive message
+    // when called on an App that hasn't overridden it.
+    let _ = WithStateApp::init();
+}
