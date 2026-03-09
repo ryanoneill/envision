@@ -954,6 +954,34 @@ fn test_format_message_uses_base_style() {
     assert_eq!(content_span.style, custom_style);
 }
 
+#[cfg(feature = "markdown")]
+#[test]
+fn test_markdown_format_message_uses_role_style() {
+    let msg = ChatMessage::new(ChatRole::Assistant, "**bold** and plain");
+    let role_style = Style::default().fg(Color::Green);
+    let state = ChatViewState::new()
+        .with_markdown(true)
+        .with_role_style(ChatRole::Assistant, role_style);
+    let theme = crate::theme::Theme::default();
+    let lines = super::render_helpers::format_message(&msg, &state, 40, &theme);
+    // Header uses role style with bold modifier
+    let (header, _) = &lines[0];
+    let header_span = &header.spans[0]; // "Assistant:" span
+    assert_eq!(header_span.style, role_style.add_modifier(Modifier::BOLD));
+    // Content lines use role style as base
+    // Line 1: indent + "bold" (bold) + " and " (plain) + ...
+    let (content, _) = &lines[1];
+    // First span is the 2-space indent
+    assert_eq!(content.spans[0].content.as_ref(), "  ");
+    // Second span is "bold" with role_style + BOLD modifier
+    assert_eq!(
+        content.spans[1].style,
+        role_style.add_modifier(Modifier::BOLD)
+    );
+    // Third span is " and plain" with role_style (plain text)
+    assert_eq!(content.spans[2].style, role_style);
+}
+
 #[test]
 fn test_render_with_custom_role_styles() {
     let mut state = ChatViewState::new()

@@ -209,15 +209,36 @@ impl StyledContent {
 
     /// Renders this content into ratatui `Line` objects for display.
     pub(crate) fn render_lines(&self, width: u16, theme: &Theme) -> Vec<RatLine<'static>> {
+        self.render_lines_styled(width, theme, theme.normal_style())
+    }
+
+    /// Renders this content using a caller-provided base style for inline text.
+    ///
+    /// `base_style` replaces `theme.normal_style()` for paragraphs, list item
+    /// text, bold, italic, underline, strikethrough, and colored inlines.
+    /// Headings, code blocks, horizontal rules, and inline code retain their
+    /// semantic theme styles.
+    pub(crate) fn render_lines_styled(
+        &self,
+        width: u16,
+        theme: &Theme,
+        base_style: Style,
+    ) -> Vec<RatLine<'static>> {
         let mut lines = Vec::new();
         for block in &self.blocks {
-            render_block(block, width, theme, &mut lines);
+            render_block(block, width, theme, base_style, &mut lines);
         }
         lines
     }
 }
 
-fn render_block(block: &StyledBlock, width: u16, theme: &Theme, lines: &mut Vec<RatLine<'static>>) {
+fn render_block(
+    block: &StyledBlock,
+    width: u16,
+    theme: &Theme,
+    base_style: Style,
+    lines: &mut Vec<RatLine<'static>>,
+) {
     match block {
         StyledBlock::Heading { level, text } => {
             let style = match level {
@@ -225,20 +246,18 @@ fn render_block(block: &StyledBlock, width: u16, theme: &Theme, lines: &mut Vec<
                     .focused_style()
                     .add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
                 2 => theme.info_style().add_modifier(Modifier::BOLD),
-                _ => theme
-                    .normal_style()
-                    .add_modifier(Modifier::BOLD | Modifier::ITALIC),
+                _ => base_style.add_modifier(Modifier::BOLD | Modifier::ITALIC),
             };
             lines.push(RatLine::from(RatSpan::styled(text.clone(), style)));
         }
         StyledBlock::Paragraph(inlines) => {
-            render_paragraph(inlines, width, theme, lines);
+            render_paragraph(inlines, theme, base_style, lines);
         }
         StyledBlock::BulletList(items) => {
             for item in items {
-                let mut spans = vec![RatSpan::styled("  * ", theme.normal_style())];
+                let mut spans = vec![RatSpan::styled("  * ", base_style)];
                 for inline in item {
-                    spans.push(render_inline(inline, theme));
+                    spans.push(render_inline(inline, theme, base_style));
                 }
                 lines.push(RatLine::from(spans));
             }
@@ -246,9 +265,9 @@ fn render_block(block: &StyledBlock, width: u16, theme: &Theme, lines: &mut Vec<
         StyledBlock::NumberedList(items) => {
             for (i, item) in items.iter().enumerate() {
                 let prefix = format!("  {}. ", i + 1);
-                let mut spans = vec![RatSpan::styled(prefix, theme.normal_style())];
+                let mut spans = vec![RatSpan::styled(prefix, base_style)];
                 for inline in item {
-                    spans.push(render_inline(inline, theme));
+                    spans.push(render_inline(inline, theme, base_style));
                 }
                 lines.push(RatLine::from(spans));
             }
@@ -263,14 +282,14 @@ fn render_block(block: &StyledBlock, width: u16, theme: &Theme, lines: &mut Vec<
             for line in content.lines() {
                 lines.push(RatLine::from(RatSpan::styled(
                     format!("    {}", line),
-                    theme.normal_style(),
+                    base_style,
                 )));
             }
             // Handle empty code blocks
             if content.is_empty() {
                 lines.push(RatLine::from(RatSpan::styled(
                     "    ".to_string(),
-                    theme.normal_style(),
+                    base_style,
                 )));
             }
         }
@@ -289,35 +308,26 @@ fn render_block(block: &StyledBlock, width: u16, theme: &Theme, lines: &mut Vec<
 
 fn render_paragraph(
     inlines: &[StyledInline],
-    _width: u16,
     theme: &Theme,
+    base_style: Style,
     lines: &mut Vec<RatLine<'static>>,
 ) {
-    let spans: Vec<RatSpan<'static>> = inlines.iter().map(|i| render_inline(i, theme)).collect();
+    let spans: Vec<RatSpan<'static>> = inlines
+        .iter()
+        .map(|i| render_inline(i, theme, base_style))
+        .collect();
     lines.push(RatLine::from(spans));
 }
 
-fn render_inline(inline: &StyledInline, theme: &Theme) -> RatSpan<'static> {
+fn render_inline(inline: &StyledInline, theme: &Theme, base_style: Style) -> RatSpan<'static> {
     match inline {
-        StyledInline::Plain(text) => RatSpan::styled(text.clone(), theme.normal_style()),
-        StyledInline::Bold(text) => RatSpan::styled(
+        // Code and Colored use theme-specific styles; everything else uses base_style
+        StyledInline::Code(text) => RatSpan::styled(
             text.clone(),
-            theme.normal_style().add_modifier(Modifier::BOLD),
-        ),
-        StyledInline::Italic(text) => RatSpan::styled(
-            text.clone(),
-            theme.normal_style().add_modifier(Modifier::ITALIC),
-        ),
-        StyledInline::Underline(text) => RatSpan::styled(
-            text.clone(),
-            theme.normal_style().add_modifier(Modifier::UNDERLINED),
-        ),
-        StyledInline::Strikethrough(text) => RatSpan::styled(
-            text.clone(),
-            theme.normal_style().add_modifier(Modifier::CROSSED_OUT),
+            theme.info_style().add_modifier(Modifier::BOLD),
         ),
         StyledInline::Colored { text, fg, bg } => {
-            let mut style = theme.normal_style();
+            let mut style = base_style;
             if let Some(fg) = fg {
                 style = style.fg(*fg);
             }
@@ -326,9 +336,38 @@ fn render_inline(inline: &StyledInline, theme: &Theme) -> RatSpan<'static> {
             }
             RatSpan::styled(text.clone(), style)
         }
-        StyledInline::Code(text) => RatSpan::styled(
-            text.clone(),
-            theme.info_style().add_modifier(Modifier::BOLD),
-        ),
+        other => render_inline_styled(other, base_style),
+    }
+}
+
+/// Renders an inline element using a given base style (no theme needed).
+fn render_inline_styled(inline: &StyledInline, base_style: Style) -> RatSpan<'static> {
+    match inline {
+        StyledInline::Plain(text) => RatSpan::styled(text.clone(), base_style),
+        StyledInline::Bold(text) => {
+            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::BOLD))
+        }
+        StyledInline::Italic(text) => {
+            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::ITALIC))
+        }
+        StyledInline::Underline(text) => {
+            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::UNDERLINED))
+        }
+        StyledInline::Strikethrough(text) => {
+            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::CROSSED_OUT))
+        }
+        StyledInline::Colored { text, fg, bg } => {
+            let mut style = base_style;
+            if let Some(fg) = fg {
+                style = style.fg(*fg);
+            }
+            if let Some(bg) = bg {
+                style = style.bg(*bg);
+            }
+            RatSpan::styled(text.clone(), style)
+        }
+        StyledInline::Code(text) => {
+            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::BOLD))
+        }
     }
 }
