@@ -108,6 +108,166 @@ impl<M> Command<M> {
         self.actions.is_empty()
     }
 
+    /// Returns true if this command contains a quit action.
+    ///
+    /// This is useful in tests to verify that an `update()` function
+    /// returns a quit command in response to specific messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd: Command<String> = Command::quit();
+    /// assert!(cmd.is_quit());
+    /// assert!(!cmd.is_none());
+    ///
+    /// let cmd: Command<String> = Command::none();
+    /// assert!(!cmd.is_quit());
+    /// ```
+    pub fn is_quit(&self) -> bool {
+        self.actions
+            .iter()
+            .any(|a| matches!(a, CommandAction::Quit))
+    }
+
+    /// Returns true if this command contains a message action.
+    ///
+    /// This is useful in tests to verify that an `update()` function
+    /// produces a follow-up message command.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd = Command::message("hello".to_string());
+    /// assert!(cmd.is_message());
+    ///
+    /// let cmd: Command<String> = Command::quit();
+    /// assert!(!cmd.is_message());
+    /// ```
+    pub fn is_message(&self) -> bool {
+        self.actions
+            .iter()
+            .any(|a| matches!(a, CommandAction::Message(_)))
+    }
+
+    /// Returns true if this command contains a batch action.
+    ///
+    /// This is useful in tests to verify that an `update()` function
+    /// dispatches multiple messages at once.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd = Command::batch(vec!["a".to_string(), "b".to_string()]);
+    /// assert!(cmd.is_batch());
+    ///
+    /// let cmd = Command::message("hello".to_string());
+    /// assert!(!cmd.is_batch());
+    /// ```
+    pub fn is_batch(&self) -> bool {
+        self.actions
+            .iter()
+            .any(|a| matches!(a, CommandAction::Batch(_)))
+    }
+
+    /// Returns true if this command contains an async action.
+    ///
+    /// This matches both regular async commands (from [`perform_async`](Command::perform_async))
+    /// and fallible async commands (from [`try_perform_async`](Command::try_perform_async)).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd: Command<String> = Command::perform_async(async {
+    ///     Some("loaded".to_string())
+    /// });
+    /// assert!(cmd.is_async());
+    ///
+    /// let cmd: Command<String> = Command::message("hello".to_string());
+    /// assert!(!cmd.is_async());
+    /// ```
+    pub fn is_async(&self) -> bool {
+        self.actions
+            .iter()
+            .any(|a| matches!(a, CommandAction::Async(_) | CommandAction::AsyncFallible(_)))
+    }
+
+    /// Returns true if this command contains a push overlay action.
+    ///
+    /// This is useful in tests to verify that an `update()` function
+    /// opens an overlay (e.g., a dialog or modal).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd: Command<String> = Command::pop_overlay();
+    /// assert!(!cmd.is_overlay_push());
+    ///
+    /// let cmd: Command<String> = Command::none();
+    /// assert!(!cmd.is_overlay_push());
+    /// ```
+    pub fn is_overlay_push(&self) -> bool {
+        self.actions
+            .iter()
+            .any(|a| matches!(a, CommandAction::PushOverlay(_)))
+    }
+
+    /// Returns true if this command contains a pop overlay action.
+    ///
+    /// This is useful in tests to verify that an `update()` function
+    /// closes the topmost overlay.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// let cmd: Command<String> = Command::pop_overlay();
+    /// assert!(cmd.is_overlay_pop());
+    /// assert!(!cmd.is_none());
+    ///
+    /// let cmd: Command<String> = Command::quit();
+    /// assert!(!cmd.is_overlay_pop());
+    /// ```
+    pub fn is_overlay_pop(&self) -> bool {
+        self.actions
+            .iter()
+            .any(|a| matches!(a, CommandAction::PopOverlay))
+    }
+
+    /// Returns the number of actions in this command.
+    ///
+    /// A command can contain multiple actions when created with
+    /// [`combine`](Command::combine) or [`and`](Command::and).
+    /// An empty command ([`none`](Command::none)) has zero actions.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    ///
+    /// assert_eq!(Command::<String>::none().action_count(), 0);
+    /// assert_eq!(Command::message("hello".to_string()).action_count(), 1);
+    ///
+    /// let combined: Command<String> = Command::combine(vec![
+    ///     Command::message("a".to_string()),
+    ///     Command::quit(),
+    /// ]);
+    /// assert_eq!(combined.action_count(), 2);
+    /// ```
+    pub fn action_count(&self) -> usize {
+        self.actions.len()
+    }
+
     /// Creates a command that dispatches a single message.
     ///
     /// # Example
