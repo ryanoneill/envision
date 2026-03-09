@@ -1,4 +1,9 @@
 //! Enhanced cell type that captures more information than ratatui's Cell.
+//!
+//! Uses [`CompactString`] for cell symbols to avoid heap allocation for typical
+//! single-character cells. At 80×24, a terminal has 1,920 cells per frame;
+//! `CompactString` stores up to 24 bytes inline, eliminating thousands of
+//! small allocations per render cycle.
 
 use compact_str::CompactString;
 use ratatui::style::{Color, Modifier, Style};
