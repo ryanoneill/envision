@@ -3,6 +3,8 @@
 use std::io;
 
 use ratatui::backend::{Backend, ClearType, WindowSize};
+
+use crate::error;
 use ratatui::buffer::Cell;
 use ratatui::layout::{Position, Size};
 
@@ -70,7 +72,7 @@ impl<P: Backend> DualBackend<P> {
     /// # Errors
     ///
     /// Returns an error if querying the primary backend's terminal size fails.
-    pub fn with_auto_capture(primary: P) -> io::Result<Self> {
+    pub fn with_auto_capture(primary: P) -> error::Result<Self> {
         let size = primary.size()?;
         let capture = CaptureBackend::new(size.width, size.height);
         Ok(Self {
@@ -263,7 +265,7 @@ impl<P: Backend> DualBackendBuilder<P> {
     ///
     /// Returns an error if querying the primary backend's terminal size fails
     /// when no explicit capture size has been set.
-    pub fn build(self) -> io::Result<DualBackend<P>> {
+    pub fn build(self) -> error::Result<DualBackend<P>> {
         let size = self.primary.size()?;
         let width = self.width.unwrap_or(size.width);
         let height = self.height.unwrap_or(size.height);

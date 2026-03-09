@@ -29,12 +29,12 @@
 //!
 //! let mut harness = AppHarness::<MyApp>::new(80, 24)?;
 //! harness.tick()?;
-//! # Ok::<(), std::io::Error>(())
+//! # Ok::<(), envision::EnvisionError>(())
 //! ```
 
-use std::io;
-
 use ratatui::layout::Position;
+
+use crate::error;
 use tokio_util::sync::CancellationToken;
 
 use crate::app::{App, BoxedSubscription, Command, Runtime, RuntimeConfig, Subscription};
@@ -79,9 +79,9 @@ impl<A: App> AppHarness<A> {
     /// use envision::harness::AppHarness;
     ///
     /// let harness = AppHarness::<MyApp>::new(80, 24)?;
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
-    pub fn new(width: u16, height: u16) -> io::Result<Self> {
+    pub fn new(width: u16, height: u16) -> error::Result<Self> {
         let runtime = Runtime::virtual_terminal(width, height)?;
         Ok(Self { runtime })
     }
@@ -91,7 +91,7 @@ impl<A: App> AppHarness<A> {
     /// # Errors
     ///
     /// Returns an error if creating the virtual terminal fails.
-    pub fn with_config(width: u16, height: u16, config: RuntimeConfig) -> io::Result<Self> {
+    pub fn with_config(width: u16, height: u16, config: RuntimeConfig) -> error::Result<Self> {
         let runtime = Runtime::virtual_terminal_with_config(width, height, config)?;
         Ok(Self { runtime })
     }
@@ -125,14 +125,14 @@ impl<A: App> AppHarness<A> {
     /// let state = MyState { count: 42 };
     /// let harness = AppHarness::<MyApp>::with_state(80, 24, state, Command::none())?;
     /// assert_eq!(harness.state().count, 42);
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn with_state(
         width: u16,
         height: u16,
         state: A::State,
         init_cmd: Command<A::Message>,
-    ) -> io::Result<Self> {
+    ) -> error::Result<Self> {
         let runtime = Runtime::virtual_terminal_with_state(width, height, state, init_cmd)?;
         Ok(Self { runtime })
     }
@@ -148,7 +148,7 @@ impl<A: App> AppHarness<A> {
         state: A::State,
         init_cmd: Command<A::Message>,
         config: RuntimeConfig,
-    ) -> io::Result<Self> {
+    ) -> error::Result<Self> {
         let runtime = Runtime::virtual_terminal_with_state_and_config(
             width, height, state, init_cmd, config,
         )?;
@@ -201,7 +201,7 @@ impl<A: App> AppHarness<A> {
     /// let harness = AppHarness::<MyApp>::new(80, 24)?;
     /// let cell = harness.cell_at(5, 3);
     /// assert!(cell.is_some());
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
         self.runtime.backend().cell(x, y)
@@ -258,7 +258,7 @@ impl<A: App> AppHarness<A> {
     /// let mut harness = AppHarness::<MyApp>::new(80, 24)?;
     /// harness.dispatch(MyMsg::Increment);
     /// assert_eq!(harness.state().count, 1);
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn dispatch(&mut self, msg: A::Message) {
         self.runtime.dispatch(msg);
@@ -371,9 +371,9 @@ impl<A: App> AppHarness<A> {
     /// let mut harness = AppHarness::<MyApp>::new(80, 24)?;
     /// harness.push_event(Event::key(KeyCode::Enter));
     /// harness.tick()?;
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
-    pub fn tick(&mut self) -> io::Result<()> {
+    pub fn tick(&mut self) -> error::Result<()> {
         self.runtime.tick()
     }
 
@@ -382,7 +382,7 @@ impl<A: App> AppHarness<A> {
     /// # Errors
     ///
     /// Returns an error if any individual tick fails to render.
-    pub fn run_ticks(&mut self, ticks: usize) -> io::Result<()> {
+    pub fn run_ticks(&mut self, ticks: usize) -> error::Result<()> {
         self.runtime.run_ticks(ticks)
     }
 
@@ -391,7 +391,7 @@ impl<A: App> AppHarness<A> {
     /// # Errors
     ///
     /// Returns an error if drawing to the terminal backend fails.
-    pub fn render(&mut self) -> io::Result<()> {
+    pub fn render(&mut self) -> error::Result<()> {
         self.runtime.render()
     }
 

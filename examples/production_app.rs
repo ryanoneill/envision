@@ -273,7 +273,7 @@ impl App for ProcessorApp {
 // =============================================================================
 
 #[tokio::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> envision::Result<()> {
     // ── 1. Parse configuration ──────────────────────────────────────────
     let config = AppConfig::from_simulated_args();
 

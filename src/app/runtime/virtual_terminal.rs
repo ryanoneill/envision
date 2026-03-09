@@ -4,7 +4,7 @@
 //! capture backend, useful for programmatic control (AI agents, automation,
 //! testing).
 
-use std::io;
+use crate::error;
 
 use super::config::RuntimeConfig;
 use super::Runtime;
@@ -54,9 +54,9 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// vt.send(Event::key(KeyCode::Char('j')));
     /// vt.tick()?;
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
-    pub fn virtual_terminal(width: u16, height: u16) -> io::Result<Self> {
+    pub fn virtual_terminal(width: u16, height: u16) -> error::Result<Self> {
         let backend = CaptureBackend::new(width, height);
         Self::with_backend(backend)
     }
@@ -71,7 +71,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
         width: u16,
         height: u16,
         config: RuntimeConfig,
-    ) -> io::Result<Self> {
+    ) -> error::Result<Self> {
         let backend = if config.capture_history {
             CaptureBackend::with_history(width, height, config.history_capacity)
         } else {
@@ -114,14 +114,14 @@ impl<A: App> Runtime<A, CaptureBackend> {
     ///     80, 24, state, Command::none(),
     /// )?;
     /// assert_eq!(vt.state().count, 10);
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn virtual_terminal_with_state(
         width: u16,
         height: u16,
         state: A::State,
         init_cmd: Command<A::Message>,
-    ) -> io::Result<Self> {
+    ) -> error::Result<Self> {
         let backend = CaptureBackend::new(width, height);
         Self::with_backend_and_state(backend, state, init_cmd)
     }
@@ -143,7 +143,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
         state: A::State,
         init_cmd: Command<A::Message>,
         config: RuntimeConfig,
-    ) -> io::Result<Self> {
+    ) -> error::Result<Self> {
         let backend = if config.capture_history {
             CaptureBackend::with_history(width, height, config.history_capacity)
         } else {
@@ -175,7 +175,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// vt.send(Event::key(KeyCode::Enter));
     /// vt.tick()?;
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn send(&mut self, event: Event) {
         self.core.events.push(event);
@@ -204,7 +204,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// vt.tick()?;
     /// let screen = vt.display();
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn display(&self) -> String {
         self.core.terminal.backend().to_string()
@@ -240,7 +240,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// # }
     /// # let vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// let cell = vt.cell_at(5, 3);
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn cell_at(&self, x: u16, y: u16) -> Option<&crate::backend::EnhancedCell> {
         self.core.terminal.backend().cell(x, y)
@@ -271,7 +271,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
     /// vt.tick()?;
     /// assert!(vt.contains_text("Hello"));
-    /// # Ok::<(), std::io::Error>(())
+    /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn contains_text(&self, needle: &str) -> bool {
         self.core.terminal.backend().contains_text(needle)

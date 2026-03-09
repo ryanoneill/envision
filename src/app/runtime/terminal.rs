@@ -5,6 +5,8 @@
 
 use std::io::{self, Stdout};
 
+use crate::error;
+
 use crossterm::event::{
     DisableMouseCapture, EnableMouseCapture, Event as CrosstermEvent, KeyEventKind,
 };
@@ -45,12 +47,12 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// ```rust,ignore
     /// // requires real terminal
     /// #[tokio::main]
-    /// async fn main() -> std::io::Result<()> {
+    /// async fn main() -> envision::Result<()> {
     ///     let _final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
     ///     Ok(())
     /// }
     /// ```
-    pub fn new_terminal() -> io::Result<Self> {
+    pub fn new_terminal() -> error::Result<Self> {
         Self::terminal_with_config(RuntimeConfig::default())
     }
 
@@ -60,7 +62,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// Returns an error if enabling raw mode, entering alternate screen,
     /// enabling mouse capture, or creating the terminal fails.
-    pub fn terminal_with_config(config: RuntimeConfig) -> io::Result<Self> {
+    pub fn terminal_with_config(config: RuntimeConfig) -> error::Result<Self> {
         let backend = Self::setup_terminal(&config)?;
         Self::with_backend_and_config(backend, config)
     }
@@ -88,7 +90,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     pub fn new_terminal_with_state(
         state: A::State,
         init_cmd: Command<A::Message>,
-    ) -> io::Result<Self> {
+    ) -> error::Result<Self> {
         Self::terminal_with_state_and_config(state, init_cmd, RuntimeConfig::default())
     }
 
@@ -105,7 +107,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
         state: A::State,
         init_cmd: Command<A::Message>,
         config: RuntimeConfig,
-    ) -> io::Result<Self> {
+    ) -> error::Result<Self> {
         let backend = Self::setup_terminal(&config)?;
         Self::with_backend_state_and_config(backend, state, init_cmd, config)
     }
@@ -129,13 +131,13 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// ```rust,ignore
     /// // requires real terminal
     /// #[tokio::main]
-    /// async fn main() -> std::io::Result<()> {
+    /// async fn main() -> envision::Result<()> {
     ///     let final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
     ///     println!("Final count: {}", final_state.count);
     ///     Ok(())
     /// }
     /// ```
-    pub async fn run_terminal(mut self) -> io::Result<A::State> {
+    pub async fn run_terminal(mut self) -> error::Result<A::State> {
         use futures_util::StreamExt;
 
         #[cfg(feature = "tracing")]
@@ -176,7 +178,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
                             }
                         }
                         Some(Err(e)) => {
-                            break Err(e);
+                            break Err(e.into());
                         }
                         None => {
                             // Event stream ended
@@ -256,13 +258,13 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// ```rust,ignore
     /// // requires real terminal
-    /// fn main() -> std::io::Result<()> {
+    /// fn main() -> envision::Result<()> {
     ///     let final_state = Runtime::<MyApp>::new_terminal()?.run_terminal_blocking()?;
     ///     println!("Final count: {}", final_state.count);
     ///     Ok(())
     /// }
     /// ```
-    pub fn run_terminal_blocking(self) -> io::Result<A::State> {
+    pub fn run_terminal_blocking(self) -> error::Result<A::State> {
         let rt = tokio::runtime::Runtime::new().map_err(io::Error::other)?;
         rt.block_on(self.run_terminal())
     }
@@ -275,7 +277,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// - Enters alternate screen
     /// - Enables mouse capture
     /// - Runs the `on_setup` hook if configured
-    fn setup_terminal(config: &RuntimeConfig) -> io::Result<CrosstermBackend<Stdout>> {
+    fn setup_terminal(config: &RuntimeConfig) -> error::Result<CrosstermBackend<Stdout>> {
         enable_raw_mode()?;
         let mut stdout = io::stdout();
         stdout.execute(EnterAlternateScreen)?;
@@ -309,7 +311,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     }
 
     /// Cleans up terminal state.
-    fn cleanup_terminal(&mut self) -> io::Result<()> {
+    fn cleanup_terminal(&mut self) -> error::Result<()> {
         // Run the on_teardown hook if configured
         if let Some(ref hook) = self.config.on_teardown {
             hook()?;

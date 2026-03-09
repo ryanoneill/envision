@@ -1,5 +1,70 @@
 # Migration Guide
 
+## v0.5.0 to v0.6.0
+
+### Breaking Changes
+
+#### 1. `io::Result` Replaced with `envision::Result`
+
+All public API methods that previously returned `std::io::Result<T>` now return
+`envision::Result<T>` (an alias for `Result<T, EnvisionError>`). This provides
+structured error variants (`Io`, `Render`, `Config`, `Subscription`) instead of
+a flat `io::Error`.
+
+Since `EnvisionError` implements `From<std::io::Error>`, existing `?` usage
+continues to work. The main change is in return types and error matching.
+
+**Affected types:**
+- `Runtime` — all constructors and `tick()`, `run()`, `run_ticks()`, `render()`, `run_terminal()`, `run_terminal_blocking()`
+- `AppHarness` — all constructors and `tick()`, `run_ticks()`, `render()`
+- `TestHarness` — `render()`
+- `Snapshot` — `write_to_file()`, `load_from_file()`
+- `SnapshotTest` — `assert()`
+- `DualBackend` — `with_auto_capture()`
+- `DualBackendBuilder` — `build()`
+
+```rust
+// Before (v0.5.0)
+fn main() -> std::io::Result<()> {
+    let mut rt = Runtime::<MyApp>::new_terminal()?;
+    // ...
+    Ok(())
+}
+
+// After (v0.6.0)
+fn main() -> envision::Result<()> {
+    let mut rt = Runtime::<MyApp>::new_terminal()?;
+    // ...
+    Ok(())
+}
+```
+
+**Error matching:**
+
+```rust
+// Before (v0.5.0)
+match result {
+    Err(e) if e.kind() == io::ErrorKind::NotFound => { /* ... */ }
+    _ => {}
+}
+
+// After (v0.6.0)
+match result {
+    Err(EnvisionError::Io(e)) if e.kind() == io::ErrorKind::NotFound => { /* ... */ }
+    Err(EnvisionError::Render { component, detail }) => { /* ... */ }
+    Err(EnvisionError::Config { field, reason }) => { /* ... */ }
+    _ => {}
+}
+```
+
+### Migration Steps
+
+1. Replace `std::io::Result<()>` with `envision::Result<()>` in your `main()` and any functions that call envision APIs
+2. If you were matching on `io::Error` variants, wrap the match with `EnvisionError::Io(_)`
+3. `EnvisionError` is re-exported from `envision::EnvisionError` and `envision::prelude::*` — no additional imports needed
+
+---
+
 ## v0.4.x to v0.5.0
 
 This guide covers all breaking changes, new required patterns, and migration
