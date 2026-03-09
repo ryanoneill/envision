@@ -1,7 +1,16 @@
-//! ConfirmDialog example -- modal confirmation with button navigation.
+//! ConfirmDialog example -- interactive modal confirmation with button navigation.
 //!
-//! Demonstrates the ConfirmDialog overlay component with Yes/No buttons,
-//! keyboard navigation, and result handling.
+//! Demonstrates the ConfirmDialog overlay component with Yes/No and Ok/Cancel
+//! button configurations, keyboard navigation between buttons, and result handling.
+//! Shows how to layer a modal dialog over background content and route events
+//! conditionally based on dialog visibility.
+//!
+//! Controls:
+//!   d           Show "Delete File?" dialog (Yes/No)
+//!   s           Show "Save Changes?" dialog (Ok/Cancel)
+//!   Left/Right  Navigate between dialog buttons
+//!   Enter       Confirm selected button
+//!   Esc/q       Quit (when no dialog is open)
 //!
 //! Run with: cargo run --example confirm_dialog --features overlay-components
 
@@ -90,12 +99,14 @@ impl App for ConfirmDialogApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        // Background content
-        let log_lines: Vec<Line> = state
-            .results
-            .iter()
-            .map(|s| Line::from(format!("  {}", s)))
-            .collect();
+        // Background content showing dialog results
+        let mut log_lines: Vec<Line> = vec![Line::from(
+            "  Press 'd' for a delete dialog, 's' for a save dialog.",
+        )];
+        log_lines.push(Line::from(""));
+        for result in &state.results {
+            log_lines.push(Line::from(format!("  {}", result)));
+        }
         let log = ratatui::widgets::Paragraph::new(log_lines).block(
             ratatui::widgets::Block::default()
                 .borders(ratatui::widgets::Borders::ALL)
@@ -108,7 +119,7 @@ impl App for ConfirmDialogApp {
             ConfirmDialog::view(&state.dialog, frame, area, &theme);
         }
 
-        let status = " d: delete dialog, s: save dialog, q: quit";
+        let status = " d: delete dialog | s: save dialog | q: quit";
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[1],
@@ -134,43 +145,10 @@ impl App for ConfirmDialogApp {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<ConfirmDialogApp, _>::virtual_terminal(60, 18)?;
-
-    println!("=== ConfirmDialog Example ===\n");
-
-    // Initial render (no dialog visible)
-    vt.tick()?;
-    println!("Initial state (no dialog):");
-    println!("{}\n", vt.display());
-
-    // Show delete dialog
-    vt.dispatch(Msg::ShowDeleteDialog);
-    vt.tick()?;
-    println!("After showing delete dialog:");
-    println!("{}\n", vt.display());
-
-    // Select "Yes"
-    vt.dispatch(Msg::Dialog(ConfirmDialogMessage::SelectResult(
-        ConfirmDialogResult::Yes,
-    )));
-    vt.tick()?;
-    println!("After confirming Yes:");
-    println!("{}\n", vt.display());
-
-    // Show save dialog
-    vt.dispatch(Msg::ShowSaveDialog);
-    vt.tick()?;
-    println!("After showing save dialog:");
-    println!("{}\n", vt.display());
-
-    // Select "Cancel"
-    vt.dispatch(Msg::Dialog(ConfirmDialogMessage::SelectResult(
-        ConfirmDialogResult::Cancel,
-    )));
-    vt.tick()?;
-    println!("After cancelling:");
-    println!("{}\n", vt.display());
-
+#[tokio::main]
+async fn main() -> envision::Result<()> {
+    let _final_state = TerminalRuntime::<ConfirmDialogApp>::new_terminal()?
+        .run_terminal()
+        .await?;
     Ok(())
 }

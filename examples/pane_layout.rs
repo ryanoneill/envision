@@ -1,7 +1,16 @@
-//! PaneLayout example -- N-pane layout with proportional sizing.
+//! PaneLayout example -- interactive N-pane layout with proportional sizing.
 //!
-//! Demonstrates the PaneLayout component for managing multiple panes
-//! with configurable proportions, focus cycling, and resize operations.
+//! Demonstrates the PaneLayout compound component for managing multiple panes
+//! with configurable proportions, focus cycling, and resize operations. Shows
+//! a three-pane IDE-style layout with a sidebar, editor, and terminal.
+//!
+//! Controls:
+//!   Tab         Cycle focus to the next pane
+//!   Shift+Tab   Cycle focus to the previous pane
+//!   Ctrl+Right  Grow the focused pane
+//!   Ctrl+Left   Shrink the focused pane
+//!   r           Reset proportions to defaults
+//!   q/Esc       Quit
 //!
 //! Run with: cargo run --example pane_layout --features compound-components
 
@@ -71,9 +80,9 @@ impl App for PaneLayoutApp {
         // Render content in each pane
         let rects = state.layout.layout(chunks[0]);
         let pane_contents = [
-            "src/\n  main.rs\n  lib.rs\n  utils.rs",
-            "fn main() {\n    println!(\n      \"Hello\"\n    );\n}",
-            "$ cargo build\n  Compiling...\n  Finished",
+            "src/\n  main.rs\n  lib.rs\n  utils.rs\n  config.rs",
+            "fn main() {\n    let config = Config::load();\n    println!(\n      \"Hello, {}!\",\n      config.name\n    );\n}",
+            "$ cargo build\n  Compiling envision v0.6.0\n  Finished dev [unoptimized + debuginfo]\n$ _",
         ];
 
         for (i, rect) in rects.iter().enumerate() {
@@ -87,7 +96,7 @@ impl App for PaneLayoutApp {
 
         let focused_id = state.layout.focused_pane_id().unwrap_or("none").to_string();
         let status = format!(
-            " Focus: {} | Panes: {} | Tab: cycle, Ctrl+Arrows: resize, q: quit",
+            " Focus: {} | Panes: {} | Tab: cycle | Ctrl+Arrows: resize | r: reset | q: quit",
             focused_id,
             state.layout.pane_count()
         );
@@ -99,48 +108,22 @@ impl App for PaneLayoutApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if matches!(key.code, KeyCode::Char('q') | KeyCode::Esc) {
-                return Some(Msg::Quit);
+            match key.code {
+                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
+                KeyCode::Char('r') => {
+                    return Some(Msg::Layout(PaneLayoutMessage::ResetProportions))
+                }
+                _ => {}
             }
         }
         state.layout.handle_event(event).map(Msg::Layout)
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<PaneLayoutApp, _>::virtual_terminal(80, 14)?;
-
-    println!("=== PaneLayout Example ===\n");
-
-    // Initial render: three panes
-    vt.tick()?;
-    println!("Initial state (sidebar focused):");
-    println!("{}\n", vt.display());
-
-    // Cycle focus to editor pane
-    vt.dispatch(Msg::Layout(PaneLayoutMessage::FocusNext));
-    vt.tick()?;
-    println!("After Tab (editor focused):");
-    println!("{}\n", vt.display());
-
-    // Cycle focus to terminal pane
-    vt.dispatch(Msg::Layout(PaneLayoutMessage::FocusNext));
-    vt.tick()?;
-    println!("After Tab (terminal focused):");
-    println!("{}\n", vt.display());
-
-    // Grow the focused pane (terminal)
-    vt.dispatch(Msg::Layout(PaneLayoutMessage::GrowFocused));
-    vt.dispatch(Msg::Layout(PaneLayoutMessage::GrowFocused));
-    vt.tick()?;
-    println!("After growing terminal pane:");
-    println!("{}\n", vt.display());
-
-    // Reset proportions
-    vt.dispatch(Msg::Layout(PaneLayoutMessage::ResetProportions));
-    vt.tick()?;
-    println!("After resetting proportions:");
-    println!("{}\n", vt.display());
-
+#[tokio::main]
+async fn main() -> envision::Result<()> {
+    let _final_state = TerminalRuntime::<PaneLayoutApp>::new_terminal()?
+        .run_terminal()
+        .await?;
     Ok(())
 }

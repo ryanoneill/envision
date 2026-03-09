@@ -194,6 +194,46 @@ required-features = ["overlay-components"]
 name = "production_app"
 required-features = ["full"]
 
+[[example]]
+name = "dialog"
+required-features = ["overlay-components"]
+
+[[example]]
+name = "menu"
+required-features = ["navigation-components"]
+
+[[example]]
+name = "radio_group"
+required-features = ["input-components"]
+
+[[example]]
+name = "selectable_list"
+required-features = ["data-components"]
+
+[[example]]
+name = "spinner"
+required-features = ["display-components"]
+
+[[example]]
+name = "table"
+required-features = ["data-components"]
+
+[[example]]
+name = "tabs"
+required-features = ["navigation-components"]
+
+[[example]]
+name = "toast"
+required-features = ["display-components"]
+
+[[example]]
+name = "metrics_dashboard"
+required-features = ["compound-components"]
+
+[[example]]
+name = "progress_bar"
+required-features = ["display-components"]
+
 [[bench]]
 name = "capture_backend"
 harness = false

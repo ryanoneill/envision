@@ -1,8 +1,17 @@
-//! StepIndicator example -- pipeline/workflow visualization.
+//! StepIndicator example -- interactive pipeline/workflow visualization.
 //!
-//! Demonstrates the StepIndicator component for showing step-by-step
-//! progress through a build pipeline with completion, failure, and
-//! skip states.
+//! Demonstrates the StepIndicator component for showing step-by-step progress
+//! through a CI pipeline. Supports completing, failing, skipping, and resetting
+//! steps with keyboard shortcuts, plus navigation between steps.
+//!
+//! Controls:
+//!   Left/Right  Navigate between steps (keyboard focus)
+//!   c           Complete the active step
+//!   n           Activate the next pending step
+//!   f           Fail the active step
+//!   s           Skip the active step
+//!   r           Reset all steps to pending
+//!   q/Esc       Quit
 //!
 //! Run with: cargo run --example step_indicator --features navigation-components
 
@@ -21,7 +30,31 @@ struct State {
 #[derive(Clone, Debug)]
 enum Msg {
     Step(StepIndicatorMessage),
+    ResetPipeline,
     Quit,
+}
+
+fn build_steps() -> Vec<step_indicator::Step> {
+    vec![
+        step_indicator::Step::new("Checkout")
+            .with_status(step_indicator::StepStatus::Completed)
+            .with_description("Clone repository"),
+        step_indicator::Step::new("Build")
+            .with_status(step_indicator::StepStatus::Active)
+            .with_description("Compile sources"),
+        step_indicator::Step::new("Test").with_description("Run test suite"),
+        step_indicator::Step::new("Lint").with_description("Check formatting"),
+        step_indicator::Step::new("Deploy").with_description("Push to production"),
+    ]
+}
+
+fn build_pipeline() -> StepIndicatorState {
+    let mut pipeline = StepIndicatorState::new(build_steps())
+        .with_title("CI Pipeline")
+        .with_orientation(step_indicator::StepOrientation::Horizontal);
+
+    pipeline.set_focused(true);
+    pipeline
 }
 
 impl App for StepIndicatorApp {
@@ -29,24 +62,7 @@ impl App for StepIndicatorApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let steps = vec![
-            step_indicator::Step::new("Checkout")
-                .with_status(step_indicator::StepStatus::Completed)
-                .with_description("Clone repository"),
-            step_indicator::Step::new("Build")
-                .with_status(step_indicator::StepStatus::Active)
-                .with_description("Compile sources"),
-            step_indicator::Step::new("Test").with_description("Run test suite"),
-            step_indicator::Step::new("Lint").with_description("Check formatting"),
-            step_indicator::Step::new("Deploy").with_description("Push to production"),
-        ];
-
-        let mut pipeline = StepIndicatorState::new(steps)
-            .with_title("CI Pipeline")
-            .with_orientation(step_indicator::StepOrientation::Horizontal);
-
-        pipeline.set_focused(true);
-
+        let pipeline = build_pipeline();
         (State { pipeline }, Command::none())
     }
 
@@ -54,6 +70,9 @@ impl App for StepIndicatorApp {
         match msg {
             Msg::Step(m) => {
                 StepIndicator::update(&mut state.pipeline, m);
+            }
+            Msg::ResetPipeline => {
+                state.pipeline = build_pipeline();
             }
             Msg::Quit => return Command::quit(),
         }
@@ -63,77 +82,73 @@ impl App for StepIndicatorApp {
     fn view(state: &State, frame: &mut Frame) {
         let theme = Theme::default();
         let area = frame.area();
-        let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
+        let chunks = Layout::vertical([
+            Constraint::Min(0),
+            Constraint::Length(3),
+            Constraint::Length(1),
+        ])
+        .split(area);
 
         StepIndicator::view(&state.pipeline, frame, chunks[0], &theme);
 
+        // Info panel
         let active = state
             .pipeline
             .active_step_index()
-            .map(|i| {
-                state
-                    .pipeline
-                    .step(i)
-                    .map(|s| s.label().to_string())
-                    .unwrap_or_default()
-            })
+            .and_then(|i| state.pipeline.step(i).map(|s| s.label().to_string()))
             .unwrap_or_else(|| "None".into());
-        let status = format!(
-            " Active: {} | All done: {} | Left/Right: navigate, q: quit",
+        let completed = state
+            .pipeline
+            .steps()
+            .iter()
+            .filter(|s| *s.status() == step_indicator::StepStatus::Completed)
+            .count();
+        let total = state.pipeline.steps().len();
+        let info = format!(
+            "  Active: {} | Progress: {}/{} | All done: {}",
             active,
+            completed,
+            total,
             state.pipeline.is_all_completed()
         );
+        let info_widget = ratatui::widgets::Paragraph::new(info).block(
+            ratatui::widgets::Block::default()
+                .borders(ratatui::widgets::Borders::ALL)
+                .title("Pipeline Status"),
+        );
+        frame.render_widget(info_widget, chunks[1]);
+
+        let status = " c: complete | n: next | f: fail | s: skip | r: reset | q: quit";
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
-            chunks[1],
+            chunks[2],
         );
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if matches!(key.code, KeyCode::Char('q') | KeyCode::Esc) {
-                return Some(Msg::Quit);
+            match key.code {
+                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
+                KeyCode::Char('c') => return Some(Msg::Step(StepIndicatorMessage::CompleteActive)),
+                KeyCode::Char('n') => return Some(Msg::Step(StepIndicatorMessage::ActivateNext)),
+                KeyCode::Char('f') => return Some(Msg::Step(StepIndicatorMessage::FailActive)),
+                KeyCode::Char('s') => {
+                    if let Some(idx) = state.pipeline.active_step_index() {
+                        return Some(Msg::Step(StepIndicatorMessage::Skip(idx)));
+                    }
+                }
+                KeyCode::Char('r') => return Some(Msg::ResetPipeline),
+                _ => {}
             }
         }
         state.pipeline.handle_event(event).map(Msg::Step)
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<StepIndicatorApp, _>::virtual_terminal(70, 5)?;
-
-    println!("=== StepIndicator Example ===\n");
-
-    // Initial render: pipeline with Build active
-    vt.tick()?;
-    println!("Initial state (Build active):");
-    println!("{}\n", vt.display());
-
-    // Complete the Build step
-    vt.dispatch(Msg::Step(StepIndicatorMessage::CompleteActive));
-    vt.tick()?;
-    println!("After completing Build:");
-    println!("{}\n", vt.display());
-
-    // Activate and complete Test
-    vt.dispatch(Msg::Step(StepIndicatorMessage::ActivateNext));
-    vt.dispatch(Msg::Step(StepIndicatorMessage::CompleteActive));
-    vt.tick()?;
-    println!("After completing Test:");
-    println!("{}\n", vt.display());
-
-    // Skip Lint and activate Deploy
-    vt.dispatch(Msg::Step(StepIndicatorMessage::Skip(3)));
-    vt.dispatch(Msg::Step(StepIndicatorMessage::ActivateNext));
-    vt.tick()?;
-    println!("After skipping Lint and activating Deploy:");
-    println!("{}\n", vt.display());
-
-    // Complete Deploy
-    vt.dispatch(Msg::Step(StepIndicatorMessage::CompleteActive));
-    vt.tick()?;
-    println!("All steps complete:");
-    println!("{}\n", vt.display());
-
+#[tokio::main]
+async fn main() -> envision::Result<()> {
+    let _final_state = TerminalRuntime::<StepIndicatorApp>::new_terminal()?
+        .run_terminal()
+        .await?;
     Ok(())
 }
