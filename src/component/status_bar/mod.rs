@@ -174,7 +174,7 @@ pub enum StatusBarMessage {
 }
 
 /// State for a StatusBar component.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
@@ -194,6 +194,33 @@ pub struct StatusBarState {
     disabled: bool,
 }
 
+impl Default for StatusBarState {
+    /// Creates a default empty status bar with `" | "` separator and
+    /// `DarkGray` background.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarState;
+    ///
+    /// let state = StatusBarState::default();
+    /// assert!(state.left().is_empty());
+    /// assert!(state.center().is_empty());
+    /// assert!(state.right().is_empty());
+    /// assert_eq!(state.separator(), " | ");
+    /// ```
+    fn default() -> Self {
+        Self {
+            left: Vec::new(),
+            center: Vec::new(),
+            right: Vec::new(),
+            separator: " | ".to_string(),
+            background: Color::DarkGray,
+            disabled: false,
+        }
+    }
+}
+
 impl StatusBarState {
     /// Creates a new empty status bar.
     ///
@@ -208,14 +235,7 @@ impl StatusBarState {
     /// assert!(state.right().is_empty());
     /// ```
     pub fn new() -> Self {
-        Self {
-            left: Vec::new(),
-            center: Vec::new(),
-            right: Vec::new(),
-            separator: " | ".to_string(),
-            background: Color::DarkGray,
-            disabled: false,
-        }
+        Self::default()
     }
 
     /// Creates a status bar with a custom separator.
@@ -231,7 +251,7 @@ impl StatusBarState {
     pub fn with_separator(separator: impl Into<String>) -> Self {
         Self {
             separator: separator.into(),
-            ..Self::new()
+            ..Self::default()
         }
     }
 

@@ -504,8 +504,7 @@ fn test_init_returns_empty_state() {
     assert!(state.is_empty());
     assert_eq!(state.len(), 0);
     assert!(!state.is_disabled());
-    // init() uses Default, which gives an empty separator
-    assert_eq!(state.separator(), "");
+    assert_eq!(state.separator(), " | ");
 }
 
 // Annotation tests
