@@ -96,7 +96,11 @@ impl Snapshot {
     ///
     /// Returns an error if writing the formatted snapshot content to the
     /// file system fails.
-    pub fn write_to_file(&self, path: impl AsRef<Path>, format: SnapshotFormat) -> error::Result<()> {
+    pub fn write_to_file(
+        &self,
+        path: impl AsRef<Path>,
+        format: SnapshotFormat,
+    ) -> error::Result<()> {
         let content = self.format(format);
         Ok(std::fs::write(path, content)?)
     }
