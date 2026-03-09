@@ -50,9 +50,7 @@ impl App for StyledTextApp {
             .bullet_list(vec![
                 vec![
                     styled_text::StyledInline::Bold("Component System".to_string()),
-                    styled_text::StyledInline::Plain(
-                        " - 25+ composable components".to_string(),
-                    ),
+                    styled_text::StyledInline::Plain(" - 25+ composable components".to_string()),
                 ],
                 vec![
                     styled_text::StyledInline::Bold("Theme Support".to_string()),

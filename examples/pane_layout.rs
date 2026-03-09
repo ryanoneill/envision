@@ -94,11 +94,7 @@ impl App for PaneLayoutApp {
             }
         }
 
-        let focused_id = state
-            .layout
-            .focused_pane_id()
-            .unwrap_or("none")
-            .to_string();
+        let focused_id = state.layout.focused_pane_id().unwrap_or("none").to_string();
         let status = format!(
             " Focus: {} | Panes: {} | Tab: cycle | Ctrl+Arrows: resize | r: reset | q: quit",
             focused_id,

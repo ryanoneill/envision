@@ -118,8 +118,7 @@ impl App for StepIndicatorApp {
         );
         frame.render_widget(info_widget, chunks[1]);
 
-        let status =
-            " c: complete | n: next | f: fail | s: skip | r: reset | q: quit";
+        let status = " c: complete | n: next | f: fail | s: skip | r: reset | q: quit";
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[2],
@@ -130,12 +129,8 @@ impl App for StepIndicatorApp {
         if let Some(key) = event.as_key() {
             match key.code {
                 KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
-                KeyCode::Char('c') => {
-                    return Some(Msg::Step(StepIndicatorMessage::CompleteActive))
-                }
-                KeyCode::Char('n') => {
-                    return Some(Msg::Step(StepIndicatorMessage::ActivateNext))
-                }
+                KeyCode::Char('c') => return Some(Msg::Step(StepIndicatorMessage::CompleteActive)),
+                KeyCode::Char('n') => return Some(Msg::Step(StepIndicatorMessage::ActivateNext)),
                 KeyCode::Char('f') => return Some(Msg::Step(StepIndicatorMessage::FailActive)),
                 KeyCode::Char('s') => {
                     if let Some(idx) = state.pipeline.active_step_index() {
