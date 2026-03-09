@@ -49,7 +49,7 @@ use crate::theme::Theme;
 
 /// A matcher function that takes `(query, item_text)` and returns
 /// `None` for no match or `Some(score)` for a ranked match (higher = better).
-type MatcherFn = dyn Fn(&str, &str) -> Option<i64>;
+type MatcherFn = dyn Fn(&str, &str) -> Option<i64> + Send + Sync;
 
 /// Messages that can be sent to a SearchableList.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -475,7 +475,7 @@ impl<T: Clone> SearchableListState<T> {
     ///     }
     /// });
     /// ```
-    pub fn with_matcher(mut self, matcher: impl Fn(&str, &str) -> Option<i64> + 'static) -> Self {
+    pub fn with_matcher(mut self, matcher: impl Fn(&str, &str) -> Option<i64> + Send + Sync + 'static) -> Self {
         self.matcher = Some(Arc::new(matcher));
         self
     }
