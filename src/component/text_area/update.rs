@@ -7,7 +7,7 @@ use crate::undo::EditKind;
 use super::{TextAreaMessage, TextAreaOutput, TextAreaState};
 
 #[cfg(feature = "clipboard")]
-use super::system_clipboard_set;
+use crate::clipboard::system_clipboard_set;
 
 impl TextAreaState {
     /// Applies a message to the textarea state, returning any output.
