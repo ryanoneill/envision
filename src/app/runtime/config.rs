@@ -4,11 +4,20 @@ use std::fmt;
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::error;
+
 /// A hook callback invoked during terminal lifecycle events.
 ///
 /// Called after terminal setup and before terminal teardown respectively.
 /// Return `Ok(())` to continue normally, or `Err` to propagate the error.
-pub type TerminalHook = Arc<dyn Fn() -> std::io::Result<()> + Send + Sync>;
+///
+/// The hook uses [`crate::Result`] (i.e. `Result<(), EnvisionError>`) so
+/// that hooks can return any error kind the framework understands — I/O,
+/// configuration, render, subscription, or (once available) arbitrary
+/// boxed errors via `EnvisionError::Other`. Existing hooks that return
+/// `std::io::Result` can convert with the `?` operator because
+/// `From<io::Error>` is implemented for `EnvisionError`.
+pub type TerminalHook = Arc<dyn Fn() -> error::Result<()> + Send + Sync>;
 
 /// Configuration for the runtime.
 #[derive(Clone)]
@@ -178,7 +187,7 @@ impl RuntimeConfig {
     /// ```
     pub fn on_setup_once<F>(self, hook: F) -> Self
     where
-        F: FnOnce() -> std::io::Result<()> + Send + Sync + 'static,
+        F: FnOnce() -> error::Result<()> + Send + Sync + 'static,
     {
         let hook = std::sync::Mutex::new(Some(hook));
         self.on_setup(Arc::new(move || {
@@ -210,7 +219,7 @@ impl RuntimeConfig {
     /// ```
     pub fn on_teardown_once<F>(self, hook: F) -> Self
     where
-        F: FnOnce() -> std::io::Result<()> + Send + Sync + 'static,
+        F: FnOnce() -> error::Result<()> + Send + Sync + 'static,
     {
         let hook = std::sync::Mutex::new(Some(hook));
         self.on_teardown(Arc::new(move || {
@@ -286,12 +295,26 @@ mod tests {
 
     #[test]
     fn test_hook_error_propagation() {
-        let config =
-            RuntimeConfig::new().on_setup(Arc::new(|| Err(std::io::Error::other("setup failed"))));
+        let config = RuntimeConfig::new().on_setup(Arc::new(|| {
+            Err(crate::EnvisionError::config("hook", "setup failed"))
+        }));
 
         let result = config.on_setup.as_ref().unwrap()();
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("setup failed"));
+    }
+
+    #[test]
+    fn test_hook_io_error_converts_via_question_mark() {
+        let config = RuntimeConfig::new().on_setup(Arc::new(|| {
+            let io_result: std::io::Result<()> = Err(std::io::Error::other("io failed"));
+            io_result?;
+            Ok(())
+        }));
+
+        let result = config.on_setup.as_ref().unwrap()();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("io failed"));
     }
 
     #[test]
