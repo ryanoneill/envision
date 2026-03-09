@@ -164,7 +164,7 @@ impl EnvisionError {
     /// assert_eq!(err.to_string(), "other error: something went wrong");
     ///
     /// // Works with any error type
-    /// let io_err = std::io::Error::new(std::io::ErrorKind::Other, "disk full");
+    /// let io_err = std::io::Error::other("disk full");
     /// let err = EnvisionError::other(io_err);
     /// assert!(err.to_string().contains("disk full"));
     /// ```
@@ -390,7 +390,7 @@ mod tests {
 
     #[test]
     fn other_error_source() {
-        let io_err = std::io::Error::new(std::io::ErrorKind::Other, "inner error");
+        let io_err = std::io::Error::other("inner error");
         let err = EnvisionError::Other(Box::new(io_err));
         let source = std::error::Error::source(&err);
         assert!(source.is_some());
@@ -406,7 +406,7 @@ mod tests {
 
     #[test]
     fn other_convenience_constructor_with_io_error() {
-        let io_err = std::io::Error::new(std::io::ErrorKind::Other, "disk full");
+        let io_err = std::io::Error::other("disk full");
         let err = EnvisionError::other(io_err);
         assert!(matches!(err, EnvisionError::Other(_)));
         assert!(err.to_string().contains("disk full"));
