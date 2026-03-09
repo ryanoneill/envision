@@ -75,9 +75,7 @@ impl App for InitCmdApp {
     type State = InitCmdState;
     type Message = InitCmdMsg;
 
-    fn init() -> (Self::State, Command<Self::Message>) {
-        (InitCmdState::default(), Command::none())
-    }
+    // init() omitted — this app only uses with_state constructors
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
         match msg {
