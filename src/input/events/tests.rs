@@ -374,3 +374,37 @@ fn test_mouse_event_builder_default() {
     assert_eq!(event.row, 0);
     assert!(matches!(event.kind, MouseEventKind::Moved));
 }
+
+// -------------------------------------------------------------------------
+// Event::kind_name
+// -------------------------------------------------------------------------
+
+#[test]
+fn test_kind_name_key() {
+    assert_eq!(Event::char('a').kind_name(), "Key");
+    assert_eq!(Event::key(KeyCode::Enter).kind_name(), "Key");
+    assert_eq!(Event::ctrl('c').kind_name(), "Key");
+}
+
+#[test]
+fn test_kind_name_mouse() {
+    assert_eq!(Event::click(0, 0).kind_name(), "Mouse");
+    assert_eq!(Event::mouse_move(5, 5).kind_name(), "Mouse");
+    assert_eq!(Event::scroll_up(0, 0).kind_name(), "Mouse");
+}
+
+#[test]
+fn test_kind_name_resize() {
+    assert_eq!(Event::Resize(80, 24).kind_name(), "Resize");
+}
+
+#[test]
+fn test_kind_name_focus() {
+    assert_eq!(Event::FocusGained.kind_name(), "FocusGained");
+    assert_eq!(Event::FocusLost.kind_name(), "FocusLost");
+}
+
+#[test]
+fn test_kind_name_paste() {
+    assert_eq!(Event::Paste("hello".to_string()).kind_name(), "Paste");
+}

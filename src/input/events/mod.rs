@@ -249,6 +249,33 @@ impl Event {
             _ => None,
         }
     }
+
+    /// Returns a short string identifying the event variant.
+    ///
+    /// This is useful for logging and tracing. It returns the variant
+    /// name (e.g., `"Key"`, `"Mouse"`, `"Resize"`) without the inner data.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// assert_eq!(Event::char('a').kind_name(), "Key");
+    /// assert_eq!(Event::click(0, 0).kind_name(), "Mouse");
+    /// assert_eq!(Event::Resize(80, 24).kind_name(), "Resize");
+    /// assert_eq!(Event::FocusGained.kind_name(), "FocusGained");
+    /// assert_eq!(Event::FocusLost.kind_name(), "FocusLost");
+    /// ```
+    pub fn kind_name(&self) -> &'static str {
+        match self {
+            Event::Key(_) => "Key",
+            Event::Mouse(_) => "Mouse",
+            Event::Resize(_, _) => "Resize",
+            Event::FocusGained => "FocusGained",
+            Event::FocusLost => "FocusLost",
+            Event::Paste(_) => "Paste",
+        }
+    }
 }
 
 impl From<KeyEvent> for Event {
