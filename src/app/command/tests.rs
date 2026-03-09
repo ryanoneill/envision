@@ -591,6 +591,21 @@ mod overlay_tests {
     }
 
     #[test]
+    fn test_is_overlay_push_returns_true_for_push_command() {
+        let cmd: Command<TestMsg> = Command::push_overlay(TestOverlay);
+        assert!(cmd.is_overlay_push());
+    }
+
+    #[test]
+    fn test_is_overlay_push_detects_push_in_combined_command() {
+        let cmd: Command<TestMsg> = Command::combine([
+            Command::message(TestMsg::A),
+            Command::push_overlay(TestOverlay),
+        ]);
+        assert!(cmd.is_overlay_push());
+    }
+
+    #[test]
     fn test_command_map_pop_overlay_preserved() {
         #[derive(Clone, Debug, PartialEq)]
         enum OuterMsg {
@@ -603,4 +618,215 @@ mod overlay_tests {
         // PopOverlay passes through map
         assert!(!mapped.is_none());
     }
+}
+
+// =========================================================================
+// Inspection method tests
+// =========================================================================
+
+#[test]
+fn test_is_quit_returns_true_for_quit_command() {
+    let cmd: Command<TestMsg> = Command::quit();
+    assert!(cmd.is_quit());
+}
+
+#[test]
+fn test_is_quit_returns_false_for_none() {
+    let cmd: Command<TestMsg> = Command::none();
+    assert!(!cmd.is_quit());
+}
+
+#[test]
+fn test_is_quit_returns_false_for_message() {
+    let cmd = Command::message(TestMsg::A);
+    assert!(!cmd.is_quit());
+}
+
+#[test]
+fn test_is_quit_detects_quit_in_combined_command() {
+    let cmd = Command::combine([Command::message(TestMsg::A), Command::quit()]);
+    assert!(cmd.is_quit());
+}
+
+#[test]
+fn test_is_message_returns_true_for_message_command() {
+    let cmd = Command::message(TestMsg::A);
+    assert!(cmd.is_message());
+}
+
+#[test]
+fn test_is_message_returns_false_for_none() {
+    let cmd: Command<TestMsg> = Command::none();
+    assert!(!cmd.is_message());
+}
+
+#[test]
+fn test_is_message_returns_false_for_quit() {
+    let cmd: Command<TestMsg> = Command::quit();
+    assert!(!cmd.is_message());
+}
+
+#[test]
+fn test_is_message_detects_message_in_combined_command() {
+    let cmd = Command::combine([Command::quit(), Command::message(TestMsg::A)]);
+    assert!(cmd.is_message());
+}
+
+#[test]
+fn test_is_batch_returns_true_for_batch_command() {
+    let cmd = Command::batch([TestMsg::A, TestMsg::B]);
+    assert!(cmd.is_batch());
+}
+
+#[test]
+fn test_is_batch_returns_false_for_none() {
+    let cmd: Command<TestMsg> = Command::none();
+    assert!(!cmd.is_batch());
+}
+
+#[test]
+fn test_is_batch_returns_false_for_message() {
+    let cmd = Command::message(TestMsg::A);
+    assert!(!cmd.is_batch());
+}
+
+#[test]
+fn test_is_batch_returns_false_for_empty_batch() {
+    // Empty batch produces Command::none()
+    let cmd: Command<TestMsg> = Command::batch(Vec::new());
+    assert!(!cmd.is_batch());
+}
+
+#[test]
+fn test_is_batch_detects_batch_in_combined_command() {
+    let cmd = Command::combine([
+        Command::message(TestMsg::A),
+        Command::batch([TestMsg::B, TestMsg::C]),
+    ]);
+    assert!(cmd.is_batch());
+}
+
+#[test]
+fn test_is_async_returns_true_for_async_command() {
+    let cmd: Command<TestMsg> = Command::perform_async(async { Some(TestMsg::A) });
+    assert!(cmd.is_async());
+}
+
+#[test]
+fn test_is_async_returns_true_for_fallible_async_command() {
+    let cmd: Command<TestMsg> =
+        Command::try_perform_async(async { Ok::<_, std::io::Error>(42) }, |n| {
+            Some(TestMsg::Value(n))
+        });
+    assert!(cmd.is_async());
+}
+
+#[test]
+fn test_is_async_returns_false_for_none() {
+    let cmd: Command<TestMsg> = Command::none();
+    assert!(!cmd.is_async());
+}
+
+#[test]
+fn test_is_async_returns_false_for_message() {
+    let cmd = Command::message(TestMsg::A);
+    assert!(!cmd.is_async());
+}
+
+#[test]
+fn test_is_async_detects_async_in_combined_command() {
+    let cmd = Command::combine([
+        Command::message(TestMsg::A),
+        Command::perform_async(async { Some(TestMsg::B) }),
+    ]);
+    assert!(cmd.is_async());
+}
+
+#[test]
+fn test_is_overlay_push_returns_false_for_none() {
+    let cmd: Command<TestMsg> = Command::none();
+    assert!(!cmd.is_overlay_push());
+}
+
+#[test]
+fn test_is_overlay_push_returns_false_for_pop() {
+    let cmd: Command<TestMsg> = Command::pop_overlay();
+    assert!(!cmd.is_overlay_push());
+}
+
+#[test]
+fn test_is_overlay_pop_returns_true_for_pop_command() {
+    let cmd: Command<TestMsg> = Command::pop_overlay();
+    assert!(cmd.is_overlay_pop());
+}
+
+#[test]
+fn test_is_overlay_pop_returns_false_for_none() {
+    let cmd: Command<TestMsg> = Command::none();
+    assert!(!cmd.is_overlay_pop());
+}
+
+#[test]
+fn test_is_overlay_pop_returns_false_for_quit() {
+    let cmd: Command<TestMsg> = Command::quit();
+    assert!(!cmd.is_overlay_pop());
+}
+
+#[test]
+fn test_is_overlay_pop_detects_pop_in_combined_command() {
+    let cmd: Command<TestMsg> = Command::combine([Command::message(TestMsg::A), Command::pop_overlay()]);
+    assert!(cmd.is_overlay_pop());
+}
+
+#[test]
+fn test_action_count_zero_for_none() {
+    let cmd: Command<TestMsg> = Command::none();
+    assert_eq!(cmd.action_count(), 0);
+}
+
+#[test]
+fn test_action_count_one_for_single_action() {
+    let cmd = Command::message(TestMsg::A);
+    assert_eq!(cmd.action_count(), 1);
+
+    let cmd: Command<TestMsg> = Command::quit();
+    assert_eq!(cmd.action_count(), 1);
+
+    let cmd: Command<TestMsg> = Command::pop_overlay();
+    assert_eq!(cmd.action_count(), 1);
+}
+
+#[test]
+fn test_action_count_for_combined_commands() {
+    let cmd = Command::combine([
+        Command::message(TestMsg::A),
+        Command::quit(),
+        Command::pop_overlay(),
+    ]);
+    assert_eq!(cmd.action_count(), 3);
+}
+
+#[test]
+fn test_action_count_for_and_commands() {
+    let cmd = Command::message(TestMsg::A)
+        .and(Command::quit())
+        .and(Command::message(TestMsg::B));
+    assert_eq!(cmd.action_count(), 3);
+}
+
+#[test]
+fn test_multiple_inspections_on_combined_command() {
+    let cmd = Command::combine([
+        Command::message(TestMsg::A),
+        Command::quit(),
+        Command::pop_overlay(),
+    ]);
+    assert!(cmd.is_message());
+    assert!(cmd.is_quit());
+    assert!(cmd.is_overlay_pop());
+    assert!(!cmd.is_batch());
+    assert!(!cmd.is_async());
+    assert!(!cmd.is_overlay_push());
+    assert!(!cmd.is_none());
+    assert_eq!(cmd.action_count(), 3);
 }
