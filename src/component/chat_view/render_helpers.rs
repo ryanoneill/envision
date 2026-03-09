@@ -162,9 +162,9 @@ fn format_message_markdown(
         return result;
     }
 
-    // Render styled content using the theme, accounting for 2-char indent
+    // Render styled content with role color as the base style
     let content_width = width.saturating_sub(2).max(1) as u16;
-    let rendered_lines = styled.render_lines(content_width, theme);
+    let rendered_lines = styled.render_lines_styled(content_width, theme, base_style);
 
     // Indent each rendered line by 2 spaces for visual nesting under the header
     for line in rendered_lines {
