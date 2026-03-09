@@ -8,6 +8,7 @@ use std::future::Future;
 use std::pin::Pin;
 
 use crate::overlay::Overlay;
+use tokio_util::sync::CancellationToken;
 
 /// A command that can produce messages or perform side effects.
 ///
@@ -50,6 +51,9 @@ pub(crate) enum CommandAction<M> {
 
     /// Pop the topmost overlay
     PopOverlay,
+
+    /// Request the runtime's cancellation token
+    RequestCancelToken(Box<dyn FnOnce(CancellationToken) -> M + Send + 'static>),
 }
 
 impl<M> Command<M> {
@@ -277,6 +281,40 @@ impl<M> Command<M> {
         }
     }
 
+    /// Creates a command that requests the runtime's cancellation token.
+    ///
+    /// When processed, the runtime calls the provided function with its
+    /// [`CancellationToken`] and dispatches the resulting message. This
+    /// lets you store the token in your application state and pass it to
+    /// background workers for cooperative shutdown.
+    ///
+    /// The token is cancelled when the runtime begins shutting down
+    /// (via [`Command::quit()`], [`App::should_quit()`](crate::App::should_quit),
+    /// or [`Runtime::quit()`](crate::Runtime::quit)).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::Command;
+    /// use tokio_util::sync::CancellationToken;
+    ///
+    /// #[derive(Clone)]
+    /// enum Msg {
+    ///     GotCancelToken(CancellationToken),
+    /// }
+    ///
+    /// // In App::init():
+    /// let cmd: Command<Msg> = Command::request_cancel_token(Msg::GotCancelToken);
+    /// ```
+    pub fn request_cancel_token<F>(f: F) -> Self
+    where
+        F: FnOnce(CancellationToken) -> M + Send + 'static,
+    {
+        Self {
+            actions: vec![CommandAction::RequestCancelToken(Box::new(f))],
+        }
+    }
+
     /// Creates a command that saves application state to a JSON file.
     ///
     /// Serializes the state to JSON synchronously, then writes the file
@@ -399,6 +437,12 @@ impl<M> Command<M> {
                 }
                 CommandAction::PushOverlay(_) => None,
                 CommandAction::PopOverlay => Some(CommandAction::PopOverlay),
+                CommandAction::RequestCancelToken(cb) => {
+                    let f = f.clone();
+                    Some(CommandAction::RequestCancelToken(Box::new(move |token| {
+                        f(cb(token))
+                    })))
+                }
             })
             .collect();
 
@@ -421,6 +465,9 @@ pub type BoxedFuture<M> = Pin<Box<dyn Future<Output = Option<M>> + Send + 'stati
 pub type BoxedFallibleFuture<M> =
     Pin<Box<dyn Future<Output = AsyncFallibleResult<M>> + Send + 'static>>;
 
+/// A boxed callback that accepts a cancellation token and produces a message.
+pub(crate) type CancelTokenCallback<M> = Box<dyn FnOnce(CancellationToken) -> M + Send + 'static>;
+
 /// Handles execution of commands.
 ///
 /// This handler processes sync actions immediately and collects async futures
@@ -429,6 +476,7 @@ pub struct CommandHandler<M> {
     core: super::command_core::CommandHandlerCore<M>,
     pending_futures: Vec<BoxedFuture<M>>,
     pending_fallible_futures: Vec<BoxedFallibleFuture<M>>,
+    pending_cancel_token_requests: Vec<CancelTokenCallback<M>>,
 }
 
 impl<M: Send + 'static> CommandHandler<M> {
@@ -438,6 +486,7 @@ impl<M: Send + 'static> CommandHandler<M> {
             core: super::command_core::CommandHandlerCore::new(),
             pending_futures: Vec::new(),
             pending_fallible_futures: Vec::new(),
+            pending_cancel_token_requests: Vec::new(),
         }
     }
 
@@ -458,7 +507,10 @@ impl<M: Send + 'static> CommandHandler<M> {
                     CommandAction::AsyncFallible(fut) => {
                         self.pending_fallible_futures.push(fut);
                     }
-                    _ => unreachable!("execute_action only returns async actions"),
+                    CommandAction::RequestCancelToken(cb) => {
+                        self.pending_cancel_token_requests.push(cb);
+                    }
+                    _ => unreachable!("execute_action only returns async or cancel-token actions"),
                 }
             }
         }
@@ -549,6 +601,11 @@ impl<M: Send + 'static> CommandHandler<M> {
     /// Takes the count of pending overlay pops and resets the counter.
     pub fn take_overlay_pops(&mut self) -> usize {
         self.core.take_overlay_pops()
+    }
+
+    /// Takes all pending cancel token request callbacks.
+    pub(crate) fn take_cancel_token_requests(&mut self) -> Vec<CancelTokenCallback<M>> {
+        std::mem::take(&mut self.pending_cancel_token_requests)
     }
 
     /// Returns true if any async futures are pending.

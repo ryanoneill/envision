@@ -61,9 +61,9 @@ impl<M> CommandHandlerCore<M> {
                 self.pending_overlay_pops += 1;
                 None
             }
-            async_action @ (CommandAction::Async(_) | CommandAction::AsyncFallible(_)) => {
-                Some(async_action)
-            }
+            async_action @ (CommandAction::Async(_)
+            | CommandAction::AsyncFallible(_)
+            | CommandAction::RequestCancelToken(_)) => Some(async_action),
         }
     }
 

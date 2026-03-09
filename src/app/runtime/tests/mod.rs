@@ -200,6 +200,51 @@ fn test_runtime_cancellation_token() {
 }
 
 #[test]
+fn test_command_request_cancel_token() {
+    // Use an app that stores the cancel token via init command
+    struct TokenApp;
+    #[derive(Default)]
+    struct TokenState {
+        token: Option<tokio_util::sync::CancellationToken>,
+    }
+    #[derive(Clone)]
+    enum TokenMsg {
+        GotToken(tokio_util::sync::CancellationToken),
+    }
+    impl crate::app::App for TokenApp {
+        type State = TokenState;
+        type Message = TokenMsg;
+        fn init() -> (TokenState, Command<TokenMsg>) {
+            (
+                TokenState::default(),
+                Command::request_cancel_token(TokenMsg::GotToken),
+            )
+        }
+        fn update(state: &mut TokenState, msg: TokenMsg) -> Command<TokenMsg> {
+            match msg {
+                TokenMsg::GotToken(token) => state.token = Some(token),
+            }
+            Command::none()
+        }
+        fn view(_state: &TokenState, _frame: &mut ratatui::Frame) {}
+    }
+
+    let mut runtime: Runtime<TokenApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    runtime.tick().unwrap();
+
+    // The cancel token should now be stored in state
+    assert!(runtime.state().token.is_some());
+    let stored_token = runtime.state().token.as_ref().unwrap().clone();
+
+    // It should not be cancelled yet
+    assert!(!stored_token.is_cancelled());
+
+    // After quitting, the stored token should be cancelled
+    runtime.quit();
+    assert!(stored_token.is_cancelled());
+}
+
+#[test]
 fn test_runtime_message_sender() {
     let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
     let _sender = runtime.message_sender();
