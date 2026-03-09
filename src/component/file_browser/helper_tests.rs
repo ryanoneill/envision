@@ -89,6 +89,47 @@ fn test_debug_impl() {
     let debug = format!("{:?}", state);
     assert!(debug.contains("FileBrowserState"));
     assert!(debug.contains("current_path"));
+    assert!(debug.contains("path_segments"));
+    assert!(debug.contains("entries"));
+    assert!(debug.contains("filtered_indices"));
+    assert!(debug.contains("selected_index"));
+    assert!(debug.contains("selected_paths"));
+    assert!(debug.contains("filter_text"));
+    assert!(debug.contains("internal_focus"));
+    assert!(debug.contains("focused"));
+    assert!(debug.contains("disabled"));
+    assert!(debug.contains("selection_mode"));
+    assert!(debug.contains("sort_field"));
+    assert!(debug.contains("sort_direction"));
+    assert!(debug.contains("directories_first"));
+    assert!(debug.contains("show_hidden"));
+    assert!(debug.contains("list_state"));
+    assert!(debug.contains("provider"));
+}
+
+#[test]
+fn test_debug_impl_with_provider() {
+    struct TestProvider;
+    impl DirectoryProvider for TestProvider {
+        fn list_entries(&self, _path: &str) -> Vec<FileEntry> {
+            vec![]
+        }
+        fn parent_path(&self, _path: &str) -> Option<String> {
+            None
+        }
+    }
+
+    let provider = Arc::new(TestProvider);
+    let state = FileBrowserState::with_provider("/", provider);
+    let debug = format!("{:?}", state);
+    assert!(debug.contains("<DirectoryProvider>"));
+}
+
+#[test]
+fn test_debug_impl_without_provider() {
+    let state = FileBrowserState::new("/", vec![]);
+    let debug = format!("{:?}", state);
+    assert!(debug.contains("provider: None"));
 }
 
 // =============================================================================
