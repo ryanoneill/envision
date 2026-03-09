@@ -475,7 +475,10 @@ impl<T: Clone> SearchableListState<T> {
     ///     }
     /// });
     /// ```
-    pub fn with_matcher(mut self, matcher: impl Fn(&str, &str) -> Option<i64> + Send + Sync + 'static) -> Self {
+    pub fn with_matcher(
+        mut self,
+        matcher: impl Fn(&str, &str) -> Option<i64> + Send + Sync + 'static,
+    ) -> Self {
         self.matcher = Some(Arc::new(matcher));
         self
     }
