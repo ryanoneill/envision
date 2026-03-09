@@ -938,3 +938,9 @@ fn test_annotation_emitted() {
     assert_eq!(regions.len(), 1);
     assert!(regions[0].annotation.has_id("searchable_list"));
 }
+
+#[test]
+fn searchable_list_state_is_send_and_sync() {
+    fn assert_send_sync<T: Send + Sync>() {}
+    assert_send_sync::<SearchableListState<String>>();
+}
