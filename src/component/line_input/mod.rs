@@ -293,6 +293,26 @@ impl LineInputState {
         self.last_display_width
     }
 
+    /// Returns the number of visual rows the buffer would occupy at the
+    /// given display width.
+    ///
+    /// This is useful for dynamic-height layouts where a parent container
+    /// needs to allocate the correct number of rows for the input.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::with_value("Hello, world!");
+    /// assert_eq!(state.visual_rows_at_width(20), 1);
+    /// assert_eq!(state.visual_rows_at_width(7), 2);
+    /// assert_eq!(state.visual_rows_at_width(5), 3);
+    /// ```
+    pub fn visual_rows_at_width(&self, width: usize) -> usize {
+        chunk_buffer(&self.buffer, width).len()
+    }
+
     /// Returns the maximum character length, or `None` if unlimited.
     ///
     /// # Example
