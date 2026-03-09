@@ -175,17 +175,25 @@ impl std::fmt::Debug for FileBrowserState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("FileBrowserState")
             .field("current_path", &self.current_path)
-            .field("entries", &self.entries.len())
-            .field("filtered_indices", &self.filtered_indices.len())
+            .field("path_segments", &self.path_segments)
+            .field("entries", &self.entries)
+            .field("filtered_indices", &self.filtered_indices)
             .field("selected_index", &self.selected_index)
+            .field("selected_paths", &self.selected_paths)
             .field("filter_text", &self.filter_text)
+            .field("internal_focus", &self.internal_focus)
             .field("focused", &self.focused)
             .field("disabled", &self.disabled)
             .field("selection_mode", &self.selection_mode)
             .field("sort_field", &self.sort_field)
             .field("sort_direction", &self.sort_direction)
+            .field("directories_first", &self.directories_first)
             .field("show_hidden", &self.show_hidden)
-            .field("provider", &self.provider.as_ref().map(|_| "..."))
+            .field("list_state", &self.list_state)
+            .field(
+                "provider",
+                &self.provider.as_ref().map(|_| "<DirectoryProvider>"),
+            )
             .finish()
     }
 }
