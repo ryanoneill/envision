@@ -556,6 +556,12 @@ impl<A: App, B: Backend> Runtime<A, B> {
         for _ in 0..self.commands.take_overlay_pops() {
             self.core.overlay_stack.pop();
         }
+
+        // Process cancel token requests
+        for cb in self.commands.take_cancel_token_requests() {
+            let msg = cb(self.cancel_token.clone());
+            self.dispatch(msg);
+        }
     }
 
     /// Processes messages received from async tasks.
