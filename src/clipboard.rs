@@ -1,26 +1,35 @@
 //! System clipboard integration.
 //!
-//! Provides thread-safe clipboard access using a thread-local cached context.
-//! This avoids repeated COM initialization/teardown on Windows, which can cause
-//! heap corruption (`STATUS_HEAP_CORRUPTION`) when multiple threads access the
-//! clipboard concurrently (e.g., during parallel test execution).
+//! Provides thread-safe clipboard access using a process-global singleton.
+//! On Windows, `arboard::Clipboard::new()` initializes COM. When multiple
+//! threads call `Clipboard::new()` concurrently (e.g., during parallel test
+//! execution), the concurrent COM initialization can corrupt the heap,
+//! causing `STATUS_HEAP_CORRUPTION` (0xc0000374).
+//!
+//! This module solves the problem by creating exactly one `Clipboard`
+//! instance for the entire process, serializing all access through a `Mutex`.
+//! Clipboard operations are infrequent (only on user copy/cut/paste), so
+//! the serialization has no practical performance impact.
 
-use std::cell::RefCell;
+use std::sync::{Mutex, OnceLock};
 
-thread_local! {
-    static CLIPBOARD: RefCell<Option<arboard::Clipboard>> =
-        RefCell::new(arboard::Clipboard::new().ok());
-}
+/// Process-global clipboard singleton.
+///
+/// `OnceLock` ensures `Clipboard::new()` is called exactly once.
+/// `Mutex` serializes all subsequent access.
+static CLIPBOARD: OnceLock<Mutex<Option<arboard::Clipboard>>> = OnceLock::new();
 
-/// Runs a closure with access to the thread-local clipboard context.
+/// Runs a closure with access to the global clipboard context.
 ///
 /// Returns `None` if the clipboard is unavailable (headless environments,
-/// CI, SSH sessions without a clipboard provider).
+/// CI, SSH sessions without a clipboard provider) or if the mutex is poisoned.
 fn with_clipboard<F, R>(f: F) -> Option<R>
 where
     F: FnOnce(&mut arboard::Clipboard) -> R,
 {
-    CLIPBOARD.with(|cb| cb.borrow_mut().as_mut().map(f))
+    let mutex = CLIPBOARD.get_or_init(|| Mutex::new(arboard::Clipboard::new().ok()));
+    let mut guard = mutex.lock().ok()?;
+    guard.as_mut().map(f)
 }
 
 /// Attempt to write text to the system clipboard.
@@ -77,9 +86,7 @@ mod tests {
 
     #[test]
     fn test_repeated_access_same_thread() {
-        // The root cause of STATUS_HEAP_CORRUPTION was repeated Clipboard::new()
-        // calls. This test verifies that repeated access on the same thread
-        // reuses the cached context without issues.
+        // Verify that repeated access reuses the singleton without issues.
         for _ in 0..100 {
             system_clipboard_set("repeated");
             let _ = system_clipboard_get();
