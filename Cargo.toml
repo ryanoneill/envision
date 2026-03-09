@@ -24,6 +24,7 @@ full = [
     "overlay-components",
     "compound-components",
     "clipboard",
+    "markdown",
 ]
 
 # Component groups
@@ -37,6 +38,7 @@ compound-components = ["input-components", "data-components", "display-component
 serialization = ["dep:serde", "dep:serde_json", "compact_str/serde", "ratatui/serde"]
 tracing = ["dep:tracing"]
 clipboard = ["dep:arboard"]
+markdown = ["dep:pulldown-cmark"]
 
 # Expose AppHarness async test utilities (advance_time, wait_for, etc.)
 # for integration tests and downstream crates. Not included in default or full.
@@ -49,6 +51,7 @@ serde = { version = "1.0", features = ["derive"], optional = true }
 serde_json = { version = "1.0", optional = true }
 tracing = { version = "0.1", optional = true }
 arboard = { version = "3", optional = true }
+pulldown-cmark = { version = "0.12", optional = true, default-features = false }
 unicode-width = "0.2"
 compact_str = "0.8"
 tokio = { version = "1", features = ["sync", "rt", "rt-multi-thread", "macros", "time", "fs"] }

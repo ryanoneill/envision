@@ -35,10 +35,7 @@ pub(super) fn render_history(state: &ChatViewState, frame: &mut Frame, area: Rec
     let display_lines: Vec<(Line, ChatRole)> = state
         .messages
         .iter()
-        .flat_map(|msg| {
-            let base_style = state.role_style(&msg.role());
-            format_message(msg, state.show_timestamps, inner.width as usize, base_style)
-        })
+        .flat_map(|msg| format_message(msg, state, inner.width as usize, theme))
         .collect();
 
     let total_lines = display_lines.len();
@@ -66,16 +63,35 @@ pub(super) fn render_history(state: &ChatViewState, frame: &mut Frame, area: Rec
 }
 
 /// Formats a chat message into display lines.
+///
+/// When markdown rendering is enabled (via `ChatViewState::markdown_enabled`)
+/// and the `markdown` feature is active, message content is parsed as markdown
+/// and rendered with rich formatting. Otherwise, content is rendered as plain text.
 pub(super) fn format_message(
     msg: &ChatMessage,
+    state: &ChatViewState,
+    width: usize,
+    theme: &Theme,
+) -> Vec<(Line<'static>, ChatRole)> {
+    let base_style = state.role_style(&msg.role());
+
+    #[cfg(feature = "markdown")]
+    if state.markdown_enabled {
+        return format_message_markdown(msg, state.show_timestamps, width, base_style, theme);
+    }
+
+    format_message_plain(msg, state.show_timestamps, base_style)
+}
+
+/// Plain text message formatting (original behavior).
+fn format_message_plain(
+    msg: &ChatMessage,
     show_timestamps: bool,
-    _width: usize,
     base_style: Style,
-) -> Vec<(Line<'_>, ChatRole)> {
+) -> Vec<(Line<'static>, ChatRole)> {
     let mut result = Vec::new();
     let role = msg.role();
-    let style = base_style;
-    let bold_style = style.add_modifier(Modifier::BOLD);
+    let bold_style = base_style.add_modifier(Modifier::BOLD);
 
     // Header line: [timestamp] Username:
     let mut header_spans = Vec::new();
@@ -95,12 +111,66 @@ pub(super) fn format_message(
 
     // Content lines
     for line in msg.content().lines() {
-        result.push((Line::from(Span::styled(format!("  {}", line), style)), role));
+        result.push((
+            Line::from(Span::styled(format!("  {}", line), base_style)),
+            role,
+        ));
     }
 
     // Handle empty content
     if msg.content().is_empty() {
-        result.push((Line::from(Span::styled("  ", style)), role));
+        result.push((Line::from(Span::styled("  ", base_style)), role));
+    }
+
+    result
+}
+
+/// Markdown message formatting using StyledContent rendering.
+#[cfg(feature = "markdown")]
+fn format_message_markdown(
+    msg: &ChatMessage,
+    show_timestamps: bool,
+    width: usize,
+    base_style: Style,
+    theme: &Theme,
+) -> Vec<(Line<'static>, ChatRole)> {
+    let mut result = Vec::new();
+    let role = msg.role();
+    let bold_style = base_style.add_modifier(Modifier::BOLD);
+
+    // Header line: [timestamp] Username:
+    let mut header_spans = Vec::new();
+
+    if show_timestamps {
+        if let Some(ts) = msg.timestamp() {
+            header_spans.push(Span::styled(
+                format!("[{}] ", ts),
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
+    }
+
+    header_spans.push(Span::styled(format!("{}:", msg.display_name()), bold_style));
+
+    result.push((Line::from(header_spans), role));
+
+    // Parse content as markdown and render through StyledContent
+    let styled = super::markdown::parse_markdown(msg.content());
+
+    if styled.is_empty() {
+        result.push((Line::from(Span::styled("  ", base_style)), role));
+        return result;
+    }
+
+    // Render styled content using the theme, accounting for 2-char indent
+    let content_width = width.saturating_sub(2).max(1) as u16;
+    let rendered_lines = styled.render_lines(content_width, theme);
+
+    // Indent each rendered line by 2 spaces for visual nesting under the header
+    for line in rendered_lines {
+        let mut spans: Vec<Span<'static>> = vec![Span::raw("  ")];
+        spans.extend(line.spans);
+        result.push((Line::from(spans), role));
     }
 
     result

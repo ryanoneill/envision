@@ -1,5 +1,6 @@
 use super::*;
 use crate::component::test_utils;
+use crate::component::Focusable;
 
 fn focused_state() -> ChatViewState {
     let mut state = ChatViewState::new();
