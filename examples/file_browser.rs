@@ -1,7 +1,18 @@
-//! FileBrowser example -- navigable directory listing with filtering.
+//! FileBrowser example -- interactive navigable directory listing with filtering.
 //!
-//! Demonstrates the FileBrowser component with a virtual filesystem,
-//! showing directory navigation, filtering, and selection.
+//! Demonstrates the FileBrowser compound component with a virtual filesystem,
+//! showing directory navigation, entry filtering, selection, and hidden file
+//! toggling. The browser uses in-memory file entries rather than the real
+//! filesystem so the example is self-contained.
+//!
+//! Controls:
+//!   Up/Down     Navigate entries
+//!   Enter       Open selected directory / select file
+//!   Backspace   Navigate to parent directory
+//!   h           Toggle hidden files
+//!   /           Start typing a filter
+//!   Esc         Clear filter (if active) or quit
+//!   q           Quit (when filter is empty)
 //!
 //! Run with: cargo run --example file_browser --features compound-components
 
@@ -32,7 +43,9 @@ impl App for FileBrowserApp {
             file_browser::FileEntry::directory("src", "/project/src"),
             file_browser::FileEntry::directory("tests", "/project/tests"),
             file_browser::FileEntry::directory("docs", "/project/docs"),
+            file_browser::FileEntry::directory("examples", "/project/examples"),
             file_browser::FileEntry::file("Cargo.toml", "/project/Cargo.toml").with_size(1250),
+            file_browser::FileEntry::file("Cargo.lock", "/project/Cargo.lock").with_size(48_200),
             file_browser::FileEntry::file("README.md", "/project/README.md").with_size(4096),
             file_browser::FileEntry::file(".gitignore", "/project/.gitignore").with_size(128),
             file_browser::FileEntry::file("LICENSE", "/project/LICENSE").with_size(1060),
@@ -74,7 +87,7 @@ impl App for FileBrowserApp {
             format!(" | Filter: {}", filter)
         };
         let status = format!(
-            " Selected: {} | Entries: {}{}",
+            " Selected: {} | Entries: {}{} | q: quit",
             selected,
             state.browser.filtered_entries().len(),
             filter_display
@@ -97,41 +110,10 @@ impl App for FileBrowserApp {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<FileBrowserApp, _>::virtual_terminal(50, 16)?;
-
-    println!("=== FileBrowser Example ===\n");
-
-    // Initial render: project root listing
-    vt.tick()?;
-    println!("Initial state (project root):");
-    println!("{}\n", vt.display());
-
-    // Navigate down to select different entries
-    vt.dispatch(Msg::Browser(FileBrowserMessage::Down));
-    vt.dispatch(Msg::Browser(FileBrowserMessage::Down));
-    vt.dispatch(Msg::Browser(FileBrowserMessage::Down));
-    vt.tick()?;
-    println!("After navigating down 3 times:");
-    println!("{}\n", vt.display());
-
-    // Type a filter to narrow results
-    vt.dispatch(Msg::Browser(FileBrowserMessage::FilterChar('r')));
-    vt.tick()?;
-    println!("After typing filter 'r':");
-    println!("{}\n", vt.display());
-
-    // Clear filter
-    vt.dispatch(Msg::Browser(FileBrowserMessage::FilterClear));
-    vt.tick()?;
-    println!("After clearing filter:");
-    println!("{}\n", vt.display());
-
-    // Toggle hidden files
-    vt.dispatch(Msg::Browser(FileBrowserMessage::ToggleHidden));
-    vt.tick()?;
-    println!("After toggling hidden files (now hidden):");
-    println!("{}\n", vt.display());
-
+#[tokio::main]
+async fn main() -> envision::Result<()> {
+    let _final_state = TerminalRuntime::<FileBrowserApp>::new_terminal()?
+        .run_terminal()
+        .await?;
     Ok(())
 }
