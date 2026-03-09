@@ -56,6 +56,27 @@ pub(crate) enum CommandAction<M> {
     RequestCancelToken(Box<dyn FnOnce(CancellationToken) -> M + Send + 'static>),
 }
 
+impl<M> CommandAction<M> {
+    /// Returns a human-readable name for this action kind.
+    ///
+    /// Used for tracing instrumentation to identify which type of command
+    /// action is being executed.
+    #[cfg(feature = "tracing")]
+    pub(crate) fn kind_name(&self) -> &'static str {
+        match self {
+            CommandAction::Message(_) => "message",
+            CommandAction::Batch(_) => "batch",
+            CommandAction::Quit => "quit",
+            CommandAction::Callback(_) => "callback",
+            CommandAction::Async(_) => "async",
+            CommandAction::AsyncFallible(_) => "async_fallible",
+            CommandAction::PushOverlay(_) => "push_overlay",
+            CommandAction::PopOverlay => "pop_overlay",
+            CommandAction::RequestCancelToken(_) => "request_cancel_token",
+        }
+    }
+}
+
 impl<M> Command<M> {
     /// Creates an empty command (no-op).
     ///
@@ -497,7 +518,7 @@ impl<M: Send + 'static> CommandHandler<M> {
     pub fn execute(&mut self, command: Command<M>) {
         for action in command.into_actions() {
             #[cfg(feature = "tracing")]
-            tracing::trace!("executing command action");
+            tracing::debug!(action = action.kind_name(), "executing command action");
 
             if let Some(async_action) = self.core.execute_action(action) {
                 match async_action {

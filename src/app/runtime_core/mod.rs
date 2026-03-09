@@ -57,6 +57,9 @@ impl<A: App, B: Backend> RuntimeCore<A, B> {
     /// since dispatch logic differs between sync and async runtimes.
     pub(crate) fn process_event(&mut self) -> ProcessEventResult<A::Message> {
         if let Some(event) = self.events.pop() {
+            #[cfg(feature = "tracing")]
+            tracing::debug!(event = ?event, "processing event from queue");
+
             match self.overlay_stack.handle_event(&event) {
                 OverlayAction::Consumed => ProcessEventResult::Consumed,
                 OverlayAction::KeepAndMessage(msg) => ProcessEventResult::Dispatch(msg),
