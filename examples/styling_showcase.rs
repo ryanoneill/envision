@@ -4,7 +4,7 @@
 //! letting you switch between all 6 built-in themes to see how each one renders.
 //!
 //! Controls:
-//!   T           Cycle through themes (Default → Nord → Dracula → Solarized → Gruvbox → Catppuccin)
+//!   Ctrl+T      Cycle through themes (Default → Nord → Dracula → Solarized → Gruvbox → Catppuccin)
 //!   Tab         Switch between Style Palette and Rich Text panels
 //!   Up/k        Scroll up (in Rich Text panel)
 //!   Down/j      Scroll down (in Rich Text panel)
@@ -12,7 +12,7 @@
 //!   Page Down   Scroll down one page
 //!   Home        Jump to top
 //!   End         Jump to bottom
-//!   q/Esc       Quit
+//!   Esc         Quit
 //!
 //! Run with: cargo run --example styling_showcase --features full
 
@@ -313,9 +313,11 @@ impl App for StylingShowcaseApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
+            if key.code == KeyCode::Char('t') && key.modifiers.contains(KeyModifiers::CONTROL) {
+                return Some(Msg::CycleTheme);
+            }
             match key.code {
-                KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => return Some(Msg::Quit),
-                KeyCode::Char('t') | KeyCode::Char('T') => return Some(Msg::CycleTheme),
+                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
                 KeyCode::Tab => return Some(Msg::TogglePanel),
                 _ => {}
             }
@@ -467,7 +469,7 @@ fn render_style_palette(_state: &State, frame: &mut Frame, area: Rect, theme: &T
 
 fn render_footer(frame: &mut Frame, area: Rect, theme: &Theme) {
     let footer = Paragraph::new(Line::from(vec![
-        Span::styled("[T]", theme.info_style()),
+        Span::styled("[Ctrl+T]", theme.info_style()),
         Span::styled(" Theme  ", theme.normal_style()),
         Span::styled("[Tab]", theme.info_style()),
         Span::styled(" Panel  ", theme.normal_style()),
@@ -475,7 +477,7 @@ fn render_footer(frame: &mut Frame, area: Rect, theme: &Theme) {
         Span::styled(" Scroll  ", theme.normal_style()),
         Span::styled("[PgUp/PgDn]", theme.info_style()),
         Span::styled(" Page  ", theme.normal_style()),
-        Span::styled("[q]", theme.error_style()),
+        Span::styled("[Esc]", theme.error_style()),
         Span::styled(" Quit", theme.normal_style()),
     ]))
     .alignment(Alignment::Center)

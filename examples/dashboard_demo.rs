@@ -5,14 +5,14 @@
 //! and notifications.
 //!
 //! Controls:
-//!   T           Cycle through themes
+//!   Ctrl+T      Cycle through themes
 //!   Space       Start/restart simulated build tasks
 //!   1           Add info toast
 //!   2           Add success toast
 //!   3           Add warning toast
 //!   4           Add error toast
 //!   Up/Down     Scroll status log
-//!   q/Esc       Quit
+//!   Esc         Quit
 //!
 //! Run with: cargo run --example dashboard_demo --features full
 
@@ -365,11 +365,11 @@ impl App for DashboardApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
+            if key.code == KeyCode::Char('t') && key.modifiers.contains(KeyModifiers::CONTROL) {
+                return Some(Msg::CycleTheme);
+            }
             match key.code {
-                KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => {
-                    return Some(Msg::Quit);
-                }
-                KeyCode::Char('t') | KeyCode::Char('T') => return Some(Msg::CycleTheme),
+                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
                 KeyCode::Char(' ') => return Some(Msg::StartBuild),
                 KeyCode::Char('1') => return Some(Msg::AddToast(ToastLevel::Info)),
                 KeyCode::Char('2') => return Some(Msg::AddToast(ToastLevel::Success)),
@@ -461,7 +461,7 @@ fn render_header(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
 
 fn render_key_hints(frame: &mut Frame, area: Rect, theme: &Theme) {
     let hints = Paragraph::new(Line::from(vec![
-        Span::styled("[T]", theme.info_style()),
+        Span::styled("[Ctrl+T]", theme.info_style()),
         Span::raw(" Theme  "),
         Span::styled("[Space]", theme.info_style()),
         Span::raw(" Build  "),
@@ -469,7 +469,7 @@ fn render_key_hints(frame: &mut Frame, area: Rect, theme: &Theme) {
         Span::raw(" Toasts  "),
         Span::styled("[Up/Dn]", theme.info_style()),
         Span::raw(" Scroll  "),
-        Span::styled("[q]", theme.error_style()),
+        Span::styled("[Esc]", theme.error_style()),
         Span::raw(" Quit"),
     ]))
     .alignment(Alignment::Center)

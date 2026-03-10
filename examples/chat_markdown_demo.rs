@@ -7,10 +7,10 @@
 //! Controls:
 //!   Enter       Submit message (rendered as markdown if enabled)
 //!   Ctrl+M      Toggle markdown rendering on/off
-//!   T           Cycle through themes
-//!   Up/Down     Scroll chat history (when not typing)
+//!   Ctrl+T      Cycle through themes
+//!   PgUp/PgDn   Scroll chat history
 //!   Ctrl+U      Clear input line
-//!   q (Ctrl+Q)  Quit (Esc also quits)
+//!   Esc         Quit
 //!
 //! Run with: cargo run --example chat_markdown_demo --features "compound-components,markdown"
 
@@ -151,11 +151,12 @@ impl Default for State {
         chat.push_assistant_with_timestamp(
             "Exactly! You can mix formatting freely. Try typing a message below \
              with markdown syntax. Toggle markdown with **Ctrl+M** to see the difference.\n\n\
-             Press **T** to cycle through themes and see how role styles change.",
+             Press **Ctrl+T** to cycle through themes and see how role styles change.",
             "09:04",
         );
 
-        let input = LineInputState::new().with_placeholder("Type a markdown message...");
+        let mut input = LineInputState::new().with_placeholder("Type a markdown message...");
+        input.set_focused(true);
 
         Self {
             active_theme: ActiveTheme::default(),
@@ -301,9 +302,9 @@ impl App for ChatMarkdownApp {
             Span::raw(" Send  "),
             Span::styled("[Ctrl+M]", theme.info_style()),
             Span::raw(" Toggle MD  "),
-            Span::styled("[T]", theme.info_style()),
+            Span::styled("[Ctrl+T]", theme.info_style()),
             Span::raw(" Theme  "),
-            Span::styled("[Up/Dn]", theme.info_style()),
+            Span::styled("[PgUp/Dn]", theme.info_style()),
             Span::raw(" Scroll  "),
             Span::styled("[Esc]", theme.error_style()),
             Span::raw(" Quit"),
