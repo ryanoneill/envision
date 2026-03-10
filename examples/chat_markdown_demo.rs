@@ -1,22 +1,21 @@
 //! Chat Markdown Demo — interactive chat with markdown rendering and role styles.
 //!
 //! This demo exercises ChatView's markdown rendering, custom role styles per theme,
-//! and the LineInput component for message composition. Pre-populated with markdown
-//! content to showcase heading, bold, italic, code, and list rendering.
+//! and the TextArea component for multi-line message composition. Pre-populated with
+//! markdown content to showcase heading, bold, italic, code, and list rendering.
 //!
 //! Controls:
-//!   Enter       Submit message (rendered as markdown if enabled)
-//!   Ctrl+M      Toggle markdown rendering on/off
-//!   Ctrl+T      Cycle through themes
-//!   PgUp/PgDn   Scroll chat history
-//!   Ctrl+U      Clear input line
-//!   Esc         Quit
+//!   Enter         New line in input
+//!   Shift+Enter   Submit message (rendered as markdown if enabled)
+//!   Ctrl+M        Toggle markdown rendering on/off
+//!   Ctrl+T        Cycle through themes
+//!   PgUp/PgDn     Scroll chat history
+//!   Esc           Quit
 //!
 //! Run with: cargo run --example chat_markdown_demo --features "compound-components,markdown"
 
 use envision::component::{
-    ChatView, ChatViewState, Component, LineInput, LineInputMessage, LineInputOutput,
-    LineInputState,
+    ChatView, ChatViewState, Component, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
 };
 use envision::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
@@ -79,7 +78,7 @@ impl ActiveTheme {
 struct State {
     active_theme: ActiveTheme,
     chat: ChatViewState,
-    input: LineInputState,
+    input: TextAreaState,
 }
 
 fn apply_role_styles(chat: &mut ChatViewState, theme: &Theme) {
@@ -148,7 +147,7 @@ impl Default for State {
             "09:04",
         );
 
-        let mut input = LineInputState::new().with_placeholder("Type a markdown message...");
+        let mut input = TextAreaState::with_placeholder("Type a markdown message...");
         input.set_focused(true);
 
         Self {
@@ -165,8 +164,9 @@ impl Default for State {
 
 #[derive(Clone, Debug)]
 enum Msg {
-    Input(LineInputMessage),
-    InputOutput(LineInputOutput),
+    Input(TextAreaMessage),
+    InputOutput(TextAreaOutput),
+    SubmitInput,
     CycleTheme,
     ToggleMarkdown,
     ScrollUp,
@@ -191,15 +191,14 @@ impl App for ChatMarkdownApp {
     fn update(state: &mut State, msg: Msg) -> Command<Msg> {
         match msg {
             Msg::Input(m) => {
-                if let Some(output) = LineInput::update(&mut state.input, m) {
+                if let Some(output) = TextArea::update(&mut state.input, m) {
                     return Self::update(state, Msg::InputOutput(output));
                 }
             }
             Msg::InputOutput(output) => match output {
-                LineInputOutput::Submitted(text) => {
+                TextAreaOutput::Submitted(text) => {
                     if !text.trim().is_empty() {
                         state.chat.push_user(&text);
-                        // Echo back with a markdown-aware response
                         let response = format!(
                             "You said:\n\n> {}\n\n*Message received and rendered with markdown {}.*",
                             text.lines().collect::<Vec<_>>().join("\n> "),
@@ -212,8 +211,25 @@ impl App for ChatMarkdownApp {
                         state.chat.push_assistant(&response);
                     }
                 }
-                LineInputOutput::Changed(_) | LineInputOutput::Copied(_) => {}
+                TextAreaOutput::Changed(_) | TextAreaOutput::Copied(_) => {}
             },
+            Msg::SubmitInput => {
+                let text = state.input.value();
+                if !text.trim().is_empty() {
+                    state.chat.push_user(&text);
+                    let response = format!(
+                        "You said:\n\n> {}\n\n*Message received and rendered with markdown {}.*",
+                        text.lines().collect::<Vec<_>>().join("\n> "),
+                        if state.chat.markdown_enabled() {
+                            "**enabled**"
+                        } else {
+                            "disabled"
+                        }
+                    );
+                    state.chat.push_assistant(&response);
+                }
+                state.input.set_value("");
+            }
             Msg::CycleTheme => {
                 state.active_theme = state.active_theme.next();
                 let theme = state.active_theme.theme();
@@ -252,7 +268,7 @@ impl App for ChatMarkdownApp {
         let chunks = Layout::vertical([
             Constraint::Length(3), // Header
             Constraint::Min(6),    // Chat messages
-            Constraint::Length(3), // Input
+            Constraint::Length(5), // Input (multi-line)
             Constraint::Length(1), // Status bar
         ])
         .split(area);
@@ -286,13 +302,15 @@ impl App for ChatMarkdownApp {
         // Chat messages
         ChatView::view(&state.chat, frame, chunks[1], &theme);
 
-        // Input
-        LineInput::view(&state.input, frame, chunks[2], &theme);
+        // Input (multi-line)
+        TextArea::view(&state.input, frame, chunks[2], &theme);
 
         // Status bar
         let status = Paragraph::new(Line::from(vec![
-            Span::styled("[Enter]", theme.info_style()),
+            Span::styled("[Shift+Enter]", theme.info_style()),
             Span::raw(" Send  "),
+            Span::styled("[Enter]", theme.info_style()),
+            Span::raw(" New Line  "),
             Span::styled("[Ctrl+M]", theme.info_style()),
             Span::raw(" Toggle MD  "),
             Span::styled("[Ctrl+T]", theme.info_style()),
@@ -309,6 +327,10 @@ impl App for ChatMarkdownApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
+            // Shift+Enter submits the message
+            if key.code == KeyCode::Enter && key.modifiers.contains(KeyModifiers::SHIFT) {
+                return Some(Msg::SubmitInput);
+            }
             // Ctrl+M toggles markdown
             if key.code == KeyCode::Char('m') && key.modifiers.contains(KeyModifiers::CONTROL) {
                 return Some(Msg::ToggleMarkdown);
@@ -320,7 +342,7 @@ impl App for ChatMarkdownApp {
             if key.code == KeyCode::Char('q') && key.modifiers.contains(KeyModifiers::CONTROL) {
                 return Some(Msg::Quit);
             }
-            // T for theme cycling (only when not in the middle of typing)
+            // Ctrl+T for theme cycling
             if key.code == KeyCode::Char('t') && key.modifiers.contains(KeyModifiers::CONTROL) {
                 return Some(Msg::CycleTheme);
             }
@@ -332,7 +354,7 @@ impl App for ChatMarkdownApp {
                 return Some(Msg::ScrollDown);
             }
         }
-        // Delegate to input
+        // Delegate to TextArea (Enter → newline happens here)
         state.input.handle_event(event).map(Msg::Input)
     }
 }
