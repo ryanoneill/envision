@@ -6,7 +6,7 @@
 //!
 //! Controls:
 //!   Enter       Submit message (rendered as markdown if enabled)
-//!   Alt+Enter   New line in input
+//!   Ctrl+N      New line in input
 //!   Ctrl+M      Toggle markdown rendering on/off
 //!   Ctrl+T      Cycle through themes
 //!   PgUp/PgDn   Scroll chat history
@@ -309,7 +309,7 @@ impl App for ChatMarkdownApp {
         let status = Paragraph::new(Line::from(vec![
             Span::styled("Enter", theme.info_style()),
             Span::raw(" Send "),
-            Span::styled("Alt+Enter", theme.info_style()),
+            Span::styled("^N", theme.info_style()),
             Span::raw(" Newline "),
             Span::styled("^M", theme.info_style()),
             Span::raw(" MD "),
@@ -327,11 +327,11 @@ impl App for ChatMarkdownApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            // Enter submits the message; Alt+Enter inserts a newline
+            // Ctrl+N inserts a newline; Enter submits the message
+            if key.code == KeyCode::Char('n') && key.modifiers.contains(KeyModifiers::CONTROL) {
+                return Some(Msg::Input(TextAreaMessage::NewLine));
+            }
             if key.code == KeyCode::Enter {
-                if key.modifiers.contains(KeyModifiers::ALT) {
-                    return Some(Msg::Input(TextAreaMessage::NewLine));
-                }
                 return Some(Msg::SubmitInput);
             }
             // Ctrl+M toggles markdown
