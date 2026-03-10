@@ -237,6 +237,18 @@ required-features = ["compound-components"]
 name = "progress_bar"
 required-features = ["display-components"]
 
+[[example]]
+name = "styling_showcase"
+required-features = ["full"]
+
+[[example]]
+name = "chat_markdown_demo"
+required-features = ["compound-components", "markdown"]
+
+[[example]]
+name = "dashboard_demo"
+required-features = ["full"]
+
 [[bench]]
 name = "capture_backend"
 harness = false
