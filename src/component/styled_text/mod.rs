@@ -38,7 +38,7 @@ pub mod content;
 pub use content::{StyledBlock, StyledContent, StyledInline};
 
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, Paragraph};
+use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
 use super::{Component, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
@@ -558,13 +558,15 @@ impl Component for StyledText {
         }
 
         let rendered_lines = state.content.render_lines(inner.width, theme);
-        let total_lines = rendered_lines.len();
+        let total_visual_rows = visual_row_count(&rendered_lines, inner.width as usize);
         let visible_lines = inner.height as usize;
-        let max_scroll = total_lines.saturating_sub(visible_lines);
+        let max_scroll = total_visual_rows.saturating_sub(visible_lines);
         let effective_scroll = state.scroll_offset.min(max_scroll);
 
         let text = Text::from(rendered_lines);
-        let paragraph = Paragraph::new(text).scroll((effective_scroll as u16, 0));
+        let paragraph = Paragraph::new(text)
+            .wrap(Wrap { trim: false })
+            .scroll((effective_scroll as u16, 0));
 
         frame.render_widget(paragraph, render_area);
     }
@@ -578,6 +580,25 @@ impl Focusable for StyledText {
     fn set_focused(state: &mut Self::State, focused: bool) {
         state.focused = focused;
     }
+}
+
+/// Counts the total visual rows that a set of rendered lines will occupy
+/// when word-wrapped at the given width.
+fn visual_row_count(lines: &[Line<'static>], width: usize) -> usize {
+    if width == 0 {
+        return lines.len();
+    }
+    lines
+        .iter()
+        .map(|line| {
+            let line_width = line.width();
+            if line_width == 0 {
+                1
+            } else {
+                line_width.div_ceil(width)
+            }
+        })
+        .sum()
 }
 
 #[cfg(test)]
