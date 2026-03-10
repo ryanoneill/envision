@@ -255,7 +255,7 @@ fn render_block(
         }
         StyledBlock::BulletList(items) => {
             for item in items {
-                let mut spans = vec![RatSpan::styled("  * ", base_style)];
+                let mut spans = vec![RatSpan::styled("  • ", base_style)];
                 for inline in item {
                     spans.push(render_inline(inline, theme, base_style));
                 }

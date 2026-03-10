@@ -1,13 +1,13 @@
 ---
 source: src/component/styled_text/tests.rs
-assertion_line: 534
+assertion_line: 532
 expression: display
 ---
 ┌────────────────────────────────────────────────┐
 │Items                                           │
-│  * First item                                  │
-│  * Second item                                 │
-│  * Bold item                                   │
+│  • First item                                  │
+│  • Second item                                 │
+│  • Bold item                                   │
 │                                                │
 │                                                │
 └────────────────────────────────────────────────┘
