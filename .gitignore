@@ -1,3 +1,5 @@
 /target
 /coverage
 *.proptest-regressions
+tools/audit/target/
+.claude/worktrees/
