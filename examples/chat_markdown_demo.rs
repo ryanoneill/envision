@@ -87,7 +87,7 @@ fn apply_role_styles(chat: &mut ChatViewState, theme: &Theme) {
     // automatically adds BOLD on top, so don't include BOLD here — otherwise
     // markdown **bold** text becomes indistinguishable from plain text.
     chat.set_role_style(ChatRole::User, Style::default().fg(theme.primary));
-    chat.set_role_style(ChatRole::Assistant, Style::default().fg(theme.success));
+    chat.set_role_style(ChatRole::Assistant, Style::default().fg(theme.foreground));
     chat.set_role_style(
         ChatRole::System,
         Style::default()
