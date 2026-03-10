@@ -83,18 +83,11 @@ struct State {
 }
 
 fn apply_role_styles(chat: &mut ChatViewState, theme: &Theme) {
-    chat.set_role_style(
-        ChatRole::User,
-        Style::default()
-            .fg(theme.primary)
-            .add_modifier(Modifier::BOLD),
-    );
-    chat.set_role_style(
-        ChatRole::Assistant,
-        Style::default()
-            .fg(theme.success)
-            .add_modifier(Modifier::BOLD),
-    );
+    // Role styles set the base content style. The header (username) line
+    // automatically adds BOLD on top, so don't include BOLD here — otherwise
+    // markdown **bold** text becomes indistinguishable from plain text.
+    chat.set_role_style(ChatRole::User, Style::default().fg(theme.primary));
+    chat.set_role_style(ChatRole::Assistant, Style::default().fg(theme.success));
     chat.set_role_style(
         ChatRole::System,
         Style::default()
