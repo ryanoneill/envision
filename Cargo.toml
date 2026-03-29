@@ -162,6 +162,10 @@ name = "confirm_dialog"
 required-features = ["overlay-components"]
 
 [[example]]
+name = "event_stream"
+required-features = ["compound-components"]
+
+[[example]]
 name = "form"
 required-features = ["compound-components"]
 

@@ -1,0 +1,24 @@
+---
+source: src/component/event_stream/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+┌ Event Stream (0 events) ─────────────────────────────────────────────────────┐
+│Time         Lvl   Source     Message                                         │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+Filter: [/]  Level: ALL  Auto: ON
