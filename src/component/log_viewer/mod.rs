@@ -42,6 +42,7 @@ use super::{
     StatusLogLevel,
 };
 use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 /// Internal focus target for the log viewer.
@@ -144,8 +145,8 @@ pub struct LogViewerState {
     search: InputFieldState,
     /// The current search text (cached for filtering).
     search_text: String,
-    /// Scroll offset for the visible log.
-    scroll_offset: usize,
+    /// Scroll state for the visible log.
+    scroll: ScrollState,
     /// Severity filter toggles (true = show).
     show_info: bool,
     /// Whether to show success entries.
@@ -174,7 +175,7 @@ impl Default for LogViewerState {
             max_entries: 1000,
             search: InputFieldState::new(),
             search_text: String::new(),
-            scroll_offset: 0,
+            scroll: ScrollState::default(),
             show_info: true,
             show_success: true,
             show_warning: true,
@@ -194,7 +195,7 @@ impl PartialEq for LogViewerState {
             && self.next_id == other.next_id
             && self.max_entries == other.max_entries
             && self.search_text == other.search_text
-            && self.scroll_offset == other.scroll_offset
+            && self.scroll == other.scroll
             && self.show_info == other.show_info
             && self.show_success == other.show_success
             && self.show_warning == other.show_warning
@@ -422,7 +423,7 @@ impl LogViewerState {
     /// ```
     pub fn clear(&mut self) {
         self.entries.clear();
-        self.scroll_offset = 0;
+        self.scroll.set_offset(0);
     }
 
     // ---- Accessors ----
@@ -462,13 +463,15 @@ impl LogViewerState {
 
     /// Returns the scroll offset.
     pub fn scroll_offset(&self) -> usize {
-        self.scroll_offset
+        self.scroll.offset()
     }
 
     /// Sets the scroll offset.
     pub fn set_scroll_offset(&mut self, offset: usize) {
-        let max = self.visible_entries().len().saturating_sub(1);
-        self.scroll_offset = offset.min(max);
+        let len = self.visible_entries().len();
+        self.scroll.set_content_length(len);
+        self.scroll.set_viewport_height(1.min(len));
+        self.scroll.set_offset(offset);
     }
 
     /// Returns whether timestamps are shown.
@@ -715,25 +718,31 @@ impl Component for LogViewer {
 
         match msg {
             LogViewerMessage::ScrollUp => {
-                if state.scroll_offset > 0 {
-                    state.scroll_offset -= 1;
-                }
+                let len = state.visible_entries().len();
+                state.scroll.set_content_length(len);
+                state.scroll.set_viewport_height(1.min(len));
+                state.scroll.scroll_up();
                 None
             }
             LogViewerMessage::ScrollDown => {
-                let max = state.visible_entries().len().saturating_sub(1);
-                if state.scroll_offset < max {
-                    state.scroll_offset += 1;
-                }
+                let len = state.visible_entries().len();
+                state.scroll.set_content_length(len);
+                state.scroll.set_viewport_height(1.min(len));
+                state.scroll.scroll_down();
                 None
             }
             LogViewerMessage::ScrollToTop => {
-                state.scroll_offset = 0;
+                let len = state.visible_entries().len();
+                state.scroll.set_content_length(len);
+                state.scroll.set_viewport_height(1.min(len));
+                state.scroll.scroll_to_start();
                 None
             }
             LogViewerMessage::ScrollToBottom => {
-                let max = state.visible_entries().len().saturating_sub(1);
-                state.scroll_offset = max;
+                let len = state.visible_entries().len();
+                state.scroll.set_content_length(len);
+                state.scroll.set_viewport_height(1.min(len));
+                state.scroll.scroll_to_end();
                 None
             }
             LogViewerMessage::FocusSearch => {
@@ -749,19 +758,19 @@ impl Component for LogViewer {
             LogViewerMessage::SearchInput(c) => {
                 state.search.update(InputFieldMessage::Insert(c));
                 state.search_text = state.search.value().to_string();
-                state.scroll_offset = 0;
+                state.scroll.set_offset(0);
                 Some(LogViewerOutput::SearchChanged(state.search_text.clone()))
             }
             LogViewerMessage::SearchBackspace => {
                 state.search.update(InputFieldMessage::Backspace);
                 state.search_text = state.search.value().to_string();
-                state.scroll_offset = 0;
+                state.scroll.set_offset(0);
                 Some(LogViewerOutput::SearchChanged(state.search_text.clone()))
             }
             LogViewerMessage::SearchDelete => {
                 state.search.update(InputFieldMessage::Delete);
                 state.search_text = state.search.value().to_string();
-                state.scroll_offset = 0;
+                state.scroll.set_offset(0);
                 Some(LogViewerOutput::SearchChanged(state.search_text.clone()))
             }
             LogViewerMessage::SearchLeft => {
@@ -783,29 +792,29 @@ impl Component for LogViewer {
             LogViewerMessage::ClearSearch => {
                 state.search.update(InputFieldMessage::Clear);
                 state.search_text.clear();
-                state.scroll_offset = 0;
+                state.scroll.set_offset(0);
                 state.focus = Focus::Log;
                 state.search.set_focused(false);
                 Some(LogViewerOutput::SearchChanged(String::new()))
             }
             LogViewerMessage::ToggleInfo => {
                 state.show_info = !state.show_info;
-                state.scroll_offset = 0;
+                state.scroll.set_offset(0);
                 Some(LogViewerOutput::FilterChanged)
             }
             LogViewerMessage::ToggleSuccess => {
                 state.show_success = !state.show_success;
-                state.scroll_offset = 0;
+                state.scroll.set_offset(0);
                 Some(LogViewerOutput::FilterChanged)
             }
             LogViewerMessage::ToggleWarning => {
                 state.show_warning = !state.show_warning;
-                state.scroll_offset = 0;
+                state.scroll.set_offset(0);
                 Some(LogViewerOutput::FilterChanged)
             }
             LogViewerMessage::ToggleError => {
                 state.show_error = !state.show_error;
-                state.scroll_offset = 0;
+                state.scroll.set_offset(0);
                 Some(LogViewerOutput::FilterChanged)
             }
             LogViewerMessage::Push {

@@ -168,4 +168,16 @@ pub(super) fn render_log(state: &LogViewerState, frame: &mut Frame, area: Rect, 
 
     let list = List::new(items);
     frame.render_widget(list, inner);
+
+    // Render scrollbar if content exceeds viewport
+    if visible.len() > inner.height as usize {
+        let mut bar_scroll = crate::scroll::ScrollState::new(visible.len());
+        bar_scroll.set_viewport_height(inner.height as usize);
+        bar_scroll.set_offset(
+            state
+                .scroll_offset()
+                .min(visible.len().saturating_sub(inner.height as usize)),
+        );
+        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+    }
 }
