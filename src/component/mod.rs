@@ -265,7 +265,9 @@ pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 
 // Compound components
 #[cfg(feature = "compound-components")]
-pub use chart::{Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries};
+pub use chart::{
+    Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, ThresholdLine,
+};
 #[cfg(feature = "compound-components")]
 pub use chat_view::{
     ChatMessage, ChatRole, ChatView, ChatViewMessage, ChatViewOutput, ChatViewState,

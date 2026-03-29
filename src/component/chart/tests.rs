@@ -131,6 +131,20 @@ fn test_bar_horizontal() {
 }
 
 #[test]
+fn test_area_chart() {
+    let state = ChartState::area(sample_series());
+    assert_eq!(state.kind(), &ChartKind::Area);
+    assert_eq!(state.series_count(), 2);
+}
+
+#[test]
+fn test_scatter_chart() {
+    let state = ChartState::scatter(sample_series());
+    assert_eq!(state.kind(), &ChartKind::Scatter);
+    assert_eq!(state.series_count(), 2);
+}
+
+#[test]
 fn test_default() {
     let state = ChartState::default();
     assert!(state.is_empty());
@@ -139,6 +153,9 @@ fn test_default() {
     assert_eq!(state.bar_width(), 3);
     assert_eq!(state.bar_gap(), 1);
     assert!(state.show_legend());
+    assert!(state.thresholds().is_empty());
+    assert_eq!(state.y_min(), None);
+    assert_eq!(state.y_max(), None);
 }
 
 #[test]
@@ -357,34 +374,34 @@ fn test_backtab_maps_to_prev() {
 }
 
 // =============================================================================
-// Sparkline data conversion
+// Sparkline data conversion (delegated to render module, tested there too)
 // =============================================================================
 
 #[test]
 fn test_series_to_sparkline_data() {
     let s = DataSeries::new("Test", vec![0.0, 50.0, 100.0]);
-    let data = series_to_sparkline_data(&s, 50);
+    let data = render::series_to_sparkline_data(&s, 50);
     assert_eq!(data, vec![0, 50, 100]);
 }
 
 #[test]
 fn test_series_to_sparkline_data_constant() {
     let s = DataSeries::new("Test", vec![5.0, 5.0, 5.0]);
-    let data = series_to_sparkline_data(&s, 50);
+    let data = render::series_to_sparkline_data(&s, 50);
     assert_eq!(data, vec![50, 50, 50]);
 }
 
 #[test]
 fn test_series_to_sparkline_data_bounded() {
     let s = DataSeries::new("Test", vec![1.0, 2.0, 3.0, 4.0, 5.0]);
-    let data = series_to_sparkline_data(&s, 3);
+    let data = render::series_to_sparkline_data(&s, 3);
     assert_eq!(data.len(), 3); // Only last 3 points
 }
 
 #[test]
 fn test_series_to_sparkline_data_empty() {
     let s = DataSeries::new("Test", vec![]);
-    let data = series_to_sparkline_data(&s, 50);
+    let data = render::series_to_sparkline_data(&s, 50);
     assert!(data.is_empty());
 }
 
