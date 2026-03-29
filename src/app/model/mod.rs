@@ -11,8 +11,22 @@
 //! These call [`App::init()`] internally to create the initial state and
 //! any startup commands.
 //!
-//! ```rust,ignore
+//! ```rust
+//! # use envision::prelude::*;
+//! # struct MyApp;
+//! # #[derive(Default, Clone)]
+//! # struct MyState;
+//! # #[derive(Clone)]
+//! # enum MyMsg {}
+//! # impl App for MyApp {
+//! #     type State = MyState;
+//! #     type Message = MyMsg;
+//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+//! #     fn view(state: &MyState, frame: &mut Frame) {}
+//! # }
 //! let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+//! # Ok::<(), envision::EnvisionError>(())
 //! ```
 //!
 //! ## External state pattern — `init()` is bypassed
@@ -23,11 +37,25 @@
 //! called**. This is useful when initial state comes from external sources
 //! such as CLI arguments, config files, or databases.
 //!
-//! ```rust,ignore
-//! let state = MyState::from_config("config.toml")?;
+//! ```rust
+//! # use envision::prelude::*;
+//! # struct MyApp;
+//! # #[derive(Default, Clone)]
+//! # struct MyState;
+//! # #[derive(Clone)]
+//! # enum MyMsg {}
+//! # impl App for MyApp {
+//! #     type State = MyState;
+//! #     type Message = MyMsg;
+//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+//! #     fn view(state: &MyState, frame: &mut Frame) {}
+//! # }
+//! let state = MyState::default();
 //! let mut vt = Runtime::<MyApp, _>::virtual_terminal_with_state(
 //!     80, 24, state, Command::none(),
 //! )?;
+//! # Ok::<(), envision::EnvisionError>(())
 //! ```
 //!
 //! When using `with_state` constructors, `App::init()` does **not** need to

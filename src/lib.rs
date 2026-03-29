@@ -11,21 +11,45 @@
 //!
 //! ### Terminal Mode - For Interactive Use
 //!
-//! ```rust,ignore
-//! // requires real terminal
+//! ```rust,no_run
+//! # use envision::prelude::*;
+//! # struct MyApp;
+//! # #[derive(Default, Clone)]
+//! # struct MyState;
+//! # #[derive(Clone)]
+//! # enum MyMsg {}
+//! # impl App for MyApp {
+//! #     type State = MyState;
+//! #     type Message = MyMsg;
+//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+//! #     fn view(state: &MyState, frame: &mut Frame) {}
+//! # }
 //! #[tokio::main]
 //! async fn main() -> envision::Result<()> {
-//!     let _final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
+//!     let _final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal().await?;
 //!     Ok(())
 //! }
 //! ```
 //!
 //! Or without your own tokio runtime:
 //!
-//! ```rust,ignore
-//! // requires real terminal
+//! ```rust,no_run
+//! # use envision::prelude::*;
+//! # struct MyApp;
+//! # #[derive(Default, Clone)]
+//! # struct MyState;
+//! # #[derive(Clone)]
+//! # enum MyMsg {}
+//! # impl App for MyApp {
+//! #     type State = MyState;
+//! #     type Message = MyMsg;
+//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+//! #     fn view(state: &MyState, frame: &mut Frame) {}
+//! # }
 //! fn main() -> envision::Result<()> {
-//!     let _final_state = Runtime::<MyApp>::new_terminal()?.run_terminal_blocking()?;
+//!     let _final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal_blocking()?;
 //!     Ok(())
 //! }
 //! ```

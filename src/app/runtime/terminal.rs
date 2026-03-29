@@ -44,11 +44,23 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// # Example
     ///
-    /// ```rust,ignore
-    /// // requires real terminal
+    /// ```rust,no_run
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
     /// #[tokio::main]
     /// async fn main() -> envision::Result<()> {
-    ///     let _final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
+    ///     let _final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal().await?;
     ///     Ok(())
     /// }
     /// ```
@@ -81,11 +93,27 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// # Example
     ///
-    /// ```rust,ignore
-    /// // requires real terminal
-    /// let state = MyState::from_config("config.toml")?;
-    /// let runtime = Runtime::<MyApp>::new_terminal_with_state(state, Command::none())?;
+    /// ```rust,no_run
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState;
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
+    /// # #[tokio::main]
+    /// # async fn main() -> envision::Result<()> {
+    /// let state = MyState::default();
+    /// let runtime = Runtime::<MyApp, _>::new_terminal_with_state(state, Command::none())?;
     /// runtime.run_terminal().await?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn new_terminal_with_state(
         state: A::State,
@@ -128,11 +156,23 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// # Example
     ///
-    /// ```rust,ignore
-    /// // requires real terminal
+    /// ```rust,no_run
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState { count: u32 }
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState { count: 0 }, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
     /// #[tokio::main]
     /// async fn main() -> envision::Result<()> {
-    ///     let final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
+    ///     let final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal().await?;
     ///     println!("Final count: {}", final_state.count);
     ///     Ok(())
     /// }
@@ -265,10 +305,22 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     ///
     /// # Example
     ///
-    /// ```rust,ignore
-    /// // requires real terminal
+    /// ```rust,no_run
+    /// # use envision::prelude::*;
+    /// # struct MyApp;
+    /// # #[derive(Default, Clone)]
+    /// # struct MyState { count: u32 }
+    /// # #[derive(Clone)]
+    /// # enum MyMsg {}
+    /// # impl App for MyApp {
+    /// #     type State = MyState;
+    /// #     type Message = MyMsg;
+    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState { count: 0 }, Command::none()) }
+    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+    /// #     fn view(state: &MyState, frame: &mut Frame) {}
+    /// # }
     /// fn main() -> envision::Result<()> {
-    ///     let final_state = Runtime::<MyApp>::new_terminal()?.run_terminal_blocking()?;
+    ///     let final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal_blocking()?;
     ///     println!("Final count: {}", final_state.count);
     ///     Ok(())
     /// }

@@ -12,11 +12,23 @@
 //!
 //! For running applications in a real terminal:
 //!
-//! ```rust,ignore
-//! // requires real terminal
+//! ```rust,no_run
+//! # use envision::prelude::*;
+//! # struct MyApp;
+//! # #[derive(Default, Clone)]
+//! # struct MyState;
+//! # #[derive(Clone)]
+//! # enum MyMsg {}
+//! # impl App for MyApp {
+//! #     type State = MyState;
+//! #     type Message = MyMsg;
+//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+//! #     fn view(state: &MyState, frame: &mut Frame) {}
+//! # }
 //! #[tokio::main]
 //! async fn main() -> envision::Result<()> {
-//!     let _final_state = Runtime::<MyApp>::new_terminal()?.run_terminal().await?;
+//!     let _final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal().await?;
 //!     Ok(())
 //! }
 //! ```
@@ -115,9 +127,23 @@ pub struct Runtime<A: App, B: Backend> {
 ///
 /// # Example
 ///
-/// ```rust,ignore
-/// // requires real terminal
+/// ```rust,no_run
+/// # use envision::prelude::*;
+/// # use envision::TerminalRuntime;
+/// # struct MyApp;
+/// # #[derive(Default, Clone)]
+/// # struct MyState;
+/// # #[derive(Clone)]
+/// # enum MyMsg {}
+/// # impl App for MyApp {
+/// #     type State = MyState;
+/// #     type Message = MyMsg;
+/// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+/// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
+/// #     fn view(state: &MyState, frame: &mut Frame) {}
+/// # }
 /// let runtime: TerminalRuntime<MyApp> = Runtime::new_terminal()?;
+/// # Ok::<(), envision::EnvisionError>(())
 /// ```
 pub type TerminalRuntime<A> = Runtime<A, CrosstermBackend<Stdout>>;
 
