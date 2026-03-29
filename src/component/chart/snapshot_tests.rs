@@ -9,7 +9,7 @@ fn sample_series() -> Vec<DataSeries> {
 }
 
 // =============================================================================
-// Snapshot tests
+// Snapshot tests (existing)
 // =============================================================================
 
 #[test]
@@ -88,6 +88,101 @@ fn test_snapshot_single_series() {
         "Memory",
         vec![40.0, 55.0, 60.0, 45.0, 70.0, 65.0],
     )]);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+// =============================================================================
+// New chart type snapshots
+// =============================================================================
+
+#[test]
+fn test_snapshot_area_chart() {
+    let state = ChartState::area(vec![DataSeries::new(
+        "CPU",
+        vec![45.0, 52.0, 48.0, 65.0, 72.0, 58.0, 61.0],
+    )])
+    .with_title("CPU Usage (Area)");
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_snapshot_scatter_chart() {
+    let state = ChartState::scatter(vec![DataSeries::new(
+        "Latency",
+        vec![50.0, 120.0, 80.0, 200.0, 90.0, 150.0, 110.0],
+    )])
+    .with_title("Request Latency (Scatter)");
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_snapshot_area_chart_with_thresholds() {
+    let state = ChartState::area(vec![DataSeries::new(
+        "CPU",
+        vec![45.0, 52.0, 80.0, 92.0, 72.0, 85.0],
+    )])
+    .with_title("CPU with Thresholds")
+    .with_threshold(90.0, "Warning", Color::Yellow)
+    .with_threshold(95.0, "Critical", Color::Red);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_snapshot_area_chart_with_y_range() {
+    let state = ChartState::area(vec![DataSeries::new(
+        "CPU",
+        vec![45.0, 52.0, 48.0, 65.0, 72.0],
+    )])
+    .with_title("CPU (0-100 range)")
+    .with_y_range(0.0, 100.0);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_snapshot_multi_series_area() {
+    let state = ChartState::area(sample_series()).with_title("Multi-Series Area");
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}
+
+#[test]
+fn test_snapshot_multi_series_scatter() {
+    let state = ChartState::scatter(sample_series()).with_title("Multi-Series Scatter");
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {

@@ -1,0 +1,6 @@
+---
+source: src/component/switch/tests.rs
+assertion_line: 362
+expression: terminal.backend().to_string()
+---
+( ) OFF
