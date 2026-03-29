@@ -1,0 +1,20 @@
+---
+source: src/component/canvas/tests.rs
+assertion_line: 611
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘
