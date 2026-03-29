@@ -153,6 +153,8 @@ pub mod pane_layout;
 mod searchable_list;
 #[cfg(feature = "compound-components")]
 mod split_panel;
+#[cfg(feature = "compound-components")]
+mod timeline;
 
 // Data components
 #[cfg(feature = "data-components")]
@@ -342,6 +344,11 @@ pub use searchable_list::{
 #[cfg(feature = "compound-components")]
 pub use split_panel::{
     SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput, SplitPanelState,
+};
+#[cfg(feature = "compound-components")]
+pub use timeline::{
+    SelectedType, Timeline, TimelineEvent, TimelineMessage, TimelineOutput, TimelineSpan,
+    TimelineState,
 };
 
 #[cfg(feature = "display-components")]

@@ -290,6 +290,10 @@ name = "tabs"
 required-features = ["navigation-components"]
 
 [[example]]
+name = "timeline"
+required-features = ["compound-components"]
+
+[[example]]
 name = "toast"
 required-features = ["display-components"]
 
