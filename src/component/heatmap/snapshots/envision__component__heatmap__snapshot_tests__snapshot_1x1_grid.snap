@@ -1,0 +1,10 @@
+---
+source: src/component/heatmap/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────┐
+│                  │
+│                  │
+│                  │
+│                  │
+└──────────────────┘

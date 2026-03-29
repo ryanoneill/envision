@@ -138,6 +138,8 @@ pub mod file_browser;
 #[cfg(feature = "compound-components")]
 mod form;
 #[cfg(feature = "compound-components")]
+mod heatmap;
+#[cfg(feature = "compound-components")]
 mod log_viewer;
 #[cfg(feature = "compound-components")]
 mod metrics_dashboard;
@@ -306,6 +308,10 @@ pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
 pub use file_browser::{FileBrowser, FileBrowserMessage, FileBrowserOutput, FileBrowserState};
 #[cfg(feature = "compound-components")]
 pub use form::{Form, FormField, FormFieldKind, FormMessage, FormOutput, FormState, FormValue};
+#[cfg(feature = "compound-components")]
+pub use heatmap::{
+    value_to_color, Heatmap, HeatmapColorScale, HeatmapMessage, HeatmapOutput, HeatmapState,
+};
 #[cfg(feature = "compound-components")]
 pub use log_viewer::{LogViewer, LogViewerMessage, LogViewerOutput, LogViewerState};
 #[cfg(feature = "compound-components")]
