@@ -6,7 +6,7 @@
 //! similar visualizations. State is stored in [`TreemapState`], updated via
 //! [`TreemapMessage`], and produces [`TreemapOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
