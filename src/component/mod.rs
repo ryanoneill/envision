@@ -120,6 +120,8 @@ mod radio_group;
 #[cfg(feature = "input-components")]
 mod select;
 #[cfg(feature = "input-components")]
+mod switch;
+#[cfg(feature = "input-components")]
 mod text_area;
 
 // Compound components
@@ -155,6 +157,8 @@ mod table;
 mod tree;
 
 // Display components
+#[cfg(feature = "display-components")]
+mod canvas;
 #[cfg(feature = "display-components")]
 mod collapsible;
 #[cfg(feature = "display-components")]
@@ -223,6 +227,8 @@ pub use radio_group::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGrou
 #[cfg(feature = "input-components")]
 pub use select::{Select, SelectMessage, SelectOutput, SelectState};
 #[cfg(feature = "input-components")]
+pub use switch::{Switch, SwitchMessage, SwitchOutput, SwitchState};
+#[cfg(feature = "input-components")]
 pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
 
 // Data components
@@ -241,6 +247,8 @@ pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRo
 pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 
 // Display components
+#[cfg(feature = "display-components")]
+pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
 #[cfg(feature = "display-components")]
 pub use collapsible::{Collapsible, CollapsibleMessage, CollapsibleOutput, CollapsibleState};
 #[cfg(feature = "display-components")]
@@ -265,7 +273,9 @@ pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 
 // Compound components
 #[cfg(feature = "compound-components")]
-pub use chart::{Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries};
+pub use chart::{
+    Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, ThresholdLine,
+};
 #[cfg(feature = "compound-components")]
 pub use chat_view::{
     ChatMessage, ChatRole, ChatView, ChatViewMessage, ChatViewOutput, ChatViewState,

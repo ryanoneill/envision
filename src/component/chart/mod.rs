@@ -1,9 +1,9 @@
 //! Chart components for data visualization.
 //!
-//! Provides line charts (sparkline with labels) and bar charts
-//! (horizontal/vertical) with data series, labels, colors, and
-//! auto-scaling axes. State is stored in [`ChartState`] and updated via
-//! [`ChartMessage`]. Chart data is configured with [`ChartConfig`].
+//! Provides line charts (sparkline with labels), bar charts
+//! (horizontal/vertical), area charts, and scatter plots with data series,
+//! labels, colors, threshold lines, manual scaling, and auto-scaling axes.
+//! State is stored in [`ChartState`] and updated via [`ChartMessage`].
 //!
 //! # Example
 //!
@@ -23,11 +23,13 @@
 use std::marker::PhantomData;
 
 use ratatui::prelude::*;
-use ratatui::widgets::{Bar, BarChart, BarGroup, Block, Borders, Paragraph, Sparkline};
+use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, Disableable};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
+
+mod render;
 
 /// A named data series with values and styling.
 #[derive(Clone, Debug, PartialEq)]
@@ -194,15 +196,73 @@ pub enum ChartKind {
     BarVertical,
     /// A horizontal bar chart.
     BarHorizontal,
+    /// A filled line chart (area chart) using shared axes.
+    Area,
+    /// A scatter plot with individual data points.
+    Scatter,
+}
+
+/// A horizontal threshold/reference line rendered on area and scatter charts.
+///
+/// Threshold lines are drawn as horizontal lines spanning the full chart width
+/// at a specified y-value, useful for marking targets, SLOs, or limits.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::ThresholdLine;
+/// use ratatui::style::Color;
+///
+/// let threshold = ThresholdLine::new(95.0, "SLO Target", Color::Yellow);
+/// assert_eq!(threshold.value, 95.0);
+/// assert_eq!(threshold.label, "SLO Target");
+/// assert_eq!(threshold.color, Color::Yellow);
+/// ```
+#[derive(Clone, Debug, PartialEq)]
+pub struct ThresholdLine {
+    /// The y-value for this threshold.
+    pub value: f64,
+    /// Label for the threshold (e.g., "SLO target").
+    pub label: String,
+    /// Color for the threshold line.
+    pub color: Color,
+}
+
+impl ThresholdLine {
+    /// Creates a new threshold line.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ThresholdLine;
+    /// use ratatui::style::Color;
+    ///
+    /// let t = ThresholdLine::new(100.0, "Max", Color::Red);
+    /// assert_eq!(t.value, 100.0);
+    /// assert_eq!(t.label, "Max");
+    /// ```
+    pub fn new(value: f64, label: impl Into<String>, color: Color) -> Self {
+        Self {
+            value,
+            label: label.into(),
+            color,
+        }
+    }
 }
 
 /// Messages that can be sent to a Chart.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ChartMessage {
     /// Cycle to the next series (for multi-series line charts).
     NextSeries,
     /// Cycle to the previous series.
     PrevSeries,
+    /// Set threshold lines, replacing any existing ones.
+    SetThresholds(Vec<ThresholdLine>),
+    /// Add a single threshold line.
+    AddThreshold(ThresholdLine),
+    /// Set the manual Y-axis range. `None` values fall back to auto-scaling.
+    SetYRange(Option<f64>, Option<f64>),
 }
 
 /// Output messages from a Chart.
@@ -218,29 +278,35 @@ pub enum ChartOutput {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ChartState {
     /// The data series to display.
-    series: Vec<DataSeries>,
+    pub(crate) series: Vec<DataSeries>,
     /// The chart kind.
-    kind: ChartKind,
+    pub(crate) kind: ChartKind,
     /// Index of the active (highlighted) series.
-    active_series: usize,
+    pub(crate) active_series: usize,
     /// Optional title.
-    title: Option<String>,
+    pub(crate) title: Option<String>,
     /// X-axis label.
-    x_label: Option<String>,
+    pub(crate) x_label: Option<String>,
     /// Y-axis label.
-    y_label: Option<String>,
+    pub(crate) y_label: Option<String>,
     /// Whether to show the legend.
-    show_legend: bool,
+    pub(crate) show_legend: bool,
     /// Maximum data points to display (for line charts).
-    max_display_points: usize,
+    pub(crate) max_display_points: usize,
     /// Bar width for bar charts.
-    bar_width: u16,
+    pub(crate) bar_width: u16,
     /// Bar gap for bar charts.
-    bar_gap: u16,
+    pub(crate) bar_gap: u16,
     /// Whether the component is focused.
-    focused: bool,
+    pub(crate) focused: bool,
     /// Whether the component is disabled.
-    disabled: bool,
+    pub(crate) disabled: bool,
+    /// Horizontal threshold/reference lines.
+    pub(crate) thresholds: Vec<ThresholdLine>,
+    /// Manual Y-axis minimum (None = auto from data).
+    pub(crate) y_min: Option<f64>,
+    /// Manual Y-axis maximum (None = auto from data).
+    pub(crate) y_max: Option<f64>,
 }
 
 impl Default for ChartState {
@@ -258,6 +324,9 @@ impl Default for ChartState {
             bar_gap: 1,
             focused: false,
             disabled: false,
+            thresholds: Vec::new(),
+            y_min: None,
+            y_max: None,
         }
     }
 }
@@ -308,6 +377,50 @@ impl ChartState {
         Self {
             series,
             kind: ChartKind::BarHorizontal,
+            ..Default::default()
+        }
+    }
+
+    /// Creates an area chart state with the given series.
+    ///
+    /// Area charts render as filled line charts using shared axes.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartKind, ChartState, DataSeries};
+    ///
+    /// let state = ChartState::area(vec![
+    ///     DataSeries::new("CPU", vec![45.0, 52.0, 48.0]),
+    /// ]);
+    /// assert_eq!(state.kind(), &ChartKind::Area);
+    /// ```
+    pub fn area(series: Vec<DataSeries>) -> Self {
+        Self {
+            series,
+            kind: ChartKind::Area,
+            ..Default::default()
+        }
+    }
+
+    /// Creates a scatter plot state with the given series.
+    ///
+    /// Scatter plots render individual data points without connecting lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartKind, ChartState, DataSeries};
+    ///
+    /// let state = ChartState::scatter(vec![
+    ///     DataSeries::new("Points", vec![10.0, 25.0, 15.0, 30.0]),
+    /// ]);
+    /// assert_eq!(state.kind(), &ChartKind::Scatter);
+    /// ```
+    pub fn scatter(series: Vec<DataSeries>) -> Self {
+        Self {
+            series,
+            kind: ChartKind::Scatter,
             ..Default::default()
         }
     }
@@ -377,6 +490,44 @@ impl ChartState {
     /// Sets the disabled state (builder pattern).
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
+        self
+    }
+
+    /// Adds a threshold line (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let state = ChartState::area(vec![DataSeries::new("CPU", vec![50.0])])
+    ///     .with_threshold(95.0, "SLO", Color::Yellow);
+    /// assert_eq!(state.thresholds().len(), 1);
+    /// ```
+    pub fn with_threshold(mut self, value: f64, label: impl Into<String>, color: Color) -> Self {
+        self.thresholds
+            .push(ThresholdLine::new(value, label, color));
+        self
+    }
+
+    /// Sets the manual Y-axis range (builder pattern).
+    ///
+    /// Values outside this range will be clipped by the chart widget.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::area(vec![DataSeries::new("CPU", vec![50.0])])
+    ///     .with_y_range(0.0, 100.0);
+    /// assert_eq!(state.y_min(), Some(0.0));
+    /// assert_eq!(state.y_max(), Some(100.0));
+    /// ```
+    pub fn with_y_range(mut self, min: f64, max: f64) -> Self {
+        self.y_min = Some(min);
+        self.y_max = Some(max);
         self
     }
 
@@ -467,6 +618,21 @@ impl ChartState {
         self.series.is_empty()
     }
 
+    /// Returns the threshold lines.
+    pub fn thresholds(&self) -> &[ThresholdLine] {
+        &self.thresholds
+    }
+
+    /// Returns the manual Y-axis minimum, if set.
+    pub fn y_min(&self) -> Option<f64> {
+        self.y_min
+    }
+
+    /// Returns the manual Y-axis maximum, if set.
+    pub fn y_max(&self) -> Option<f64> {
+        self.y_max
+    }
+
     /// Adds a series.
     ///
     /// # Example
@@ -500,6 +666,58 @@ impl ChartState {
         self.active_series = 0;
     }
 
+    /// Adds a threshold line.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries, ThresholdLine};
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = ChartState::area(vec![DataSeries::new("CPU", vec![50.0])]);
+    /// state.add_threshold(ThresholdLine::new(90.0, "Warning", Color::Yellow));
+    /// assert_eq!(state.thresholds().len(), 1);
+    /// ```
+    pub fn add_threshold(&mut self, threshold: ThresholdLine) {
+        self.thresholds.push(threshold);
+    }
+
+    /// Clears all threshold lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = ChartState::area(vec![DataSeries::new("CPU", vec![50.0])])
+    ///     .with_threshold(90.0, "Warning", Color::Yellow);
+    /// state.clear_thresholds();
+    /// assert!(state.thresholds().is_empty());
+    /// ```
+    pub fn clear_thresholds(&mut self) {
+        self.thresholds.clear();
+    }
+
+    /// Sets the manual Y-axis range.
+    ///
+    /// Pass `None` for either bound to fall back to auto-scaling from data.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let mut state = ChartState::area(vec![DataSeries::new("CPU", vec![50.0])]);
+    /// state.set_y_range(Some(0.0), Some(100.0));
+    /// assert_eq!(state.y_min(), Some(0.0));
+    /// assert_eq!(state.y_max(), Some(100.0));
+    /// ```
+    pub fn set_y_range(&mut self, min: Option<f64>, max: Option<f64>) {
+        self.y_min = min;
+        self.y_max = max;
+    }
+
     /// Computes the global min value across all series.
     pub fn global_min(&self) -> f64 {
         self.series
@@ -516,6 +734,40 @@ impl ChartState {
             .map(|s| s.max())
             .reduce(f64::max)
             .unwrap_or(0.0)
+    }
+
+    /// Computes the effective minimum for the Y-axis, considering manual override.
+    ///
+    /// If `y_min` is set, uses that value. Otherwise auto-scales from data,
+    /// also considering threshold line values.
+    pub fn effective_min(&self) -> f64 {
+        self.y_min.unwrap_or_else(|| {
+            let data_min = self.global_min();
+            let threshold_min = self
+                .thresholds
+                .iter()
+                .map(|t| t.value)
+                .reduce(f64::min)
+                .unwrap_or(data_min);
+            f64::min(data_min, threshold_min)
+        })
+    }
+
+    /// Computes the effective maximum for the Y-axis, considering manual override.
+    ///
+    /// If `y_max` is set, uses that value. Otherwise auto-scales from data,
+    /// also considering threshold line values.
+    pub fn effective_max(&self) -> f64 {
+        self.y_max.unwrap_or_else(|| {
+            let data_max = self.global_max();
+            let threshold_max = self
+                .thresholds
+                .iter()
+                .map(|t| t.value)
+                .reduce(f64::max)
+                .unwrap_or(data_max);
+            f64::max(data_max, threshold_max)
+        })
     }
 
     // ---- Instance methods ----
@@ -558,8 +810,9 @@ impl ChartState {
 
 /// A chart component for data visualization.
 ///
-/// Supports line charts (sparkline-style), vertical bar charts, and
-/// horizontal bar charts with multiple data series.
+/// Supports line charts (sparkline-style), vertical bar charts, horizontal
+/// bar charts, area charts (filled line), and scatter plots with multiple
+/// data series, threshold lines, and manual Y-axis scaling.
 ///
 /// # Key Bindings
 ///
@@ -591,24 +844,42 @@ impl Component for Chart {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.series.is_empty() {
-            return None;
-        }
-
-        let len = state.series.len();
-
         match msg {
-            ChartMessage::NextSeries => {
-                state.active_series = (state.active_series + 1) % len;
-                Some(ChartOutput::ActiveSeriesChanged(state.active_series))
+            ChartMessage::SetThresholds(thresholds) => {
+                state.thresholds = thresholds;
+                None
             }
-            ChartMessage::PrevSeries => {
-                state.active_series = if state.active_series == 0 {
-                    len - 1
-                } else {
-                    state.active_series - 1
-                };
-                Some(ChartOutput::ActiveSeriesChanged(state.active_series))
+            ChartMessage::AddThreshold(threshold) => {
+                state.thresholds.push(threshold);
+                None
+            }
+            ChartMessage::SetYRange(min, max) => {
+                state.y_min = min;
+                state.y_max = max;
+                None
+            }
+            ChartMessage::NextSeries | ChartMessage::PrevSeries => {
+                if state.disabled || state.series.is_empty() {
+                    return None;
+                }
+
+                let len = state.series.len();
+
+                match msg {
+                    ChartMessage::NextSeries => {
+                        state.active_series = (state.active_series + 1) % len;
+                        Some(ChartOutput::ActiveSeriesChanged(state.active_series))
+                    }
+                    ChartMessage::PrevSeries => {
+                        state.active_series = if state.active_series == 0 {
+                            len - 1
+                        } else {
+                            state.active_series - 1
+                        };
+                        Some(ChartOutput::ActiveSeriesChanged(state.active_series))
+                    }
+                    _ => unreachable!(),
+                }
             }
         }
     }
@@ -671,7 +942,7 @@ impl Component for Chart {
 
             // Render legend
             if legend_height > 0 {
-                render_legend(state, frame, chunks[1]);
+                render::render_legend(state, frame, chunks[1]);
             }
 
             // Render x-axis label
@@ -690,200 +961,18 @@ impl Component for Chart {
         };
 
         match state.kind {
-            ChartKind::Line => render_line_chart(state, frame, chart_area, theme),
-            ChartKind::BarVertical => render_bar_chart(state, frame, chart_area, theme, false),
-            ChartKind::BarHorizontal => render_bar_chart(state, frame, chart_area, theme, true),
-        }
-    }
-}
-
-/// Renders the legend showing series labels and colors.
-fn render_legend(state: &ChartState, frame: &mut Frame, area: Rect) {
-    let spans: Vec<Span> = state
-        .series
-        .iter()
-        .enumerate()
-        .flat_map(|(i, s)| {
-            let marker = if i == state.active_series {
-                "●"
-            } else {
-                "○"
-            };
-            let separator = if i < state.series.len() - 1 { "  " } else { "" };
-            vec![Span::styled(
-                format!("{} {}{}", marker, s.label(), separator),
-                Style::default().fg(s.color()),
-            )]
-        })
-        .collect();
-
-    let line = Line::from(spans);
-    let paragraph = Paragraph::new(line).alignment(Alignment::Center);
-    frame.render_widget(paragraph, area);
-}
-
-/// Renders a line chart using sparkline.
-fn render_line_chart(state: &ChartState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    if state.series.is_empty() {
-        return;
-    }
-
-    // Show y-axis labels on the left
-    let y_label_width = if state.y_label.is_some() { 8u16 } else { 0 };
-
-    let (y_area, chart_area) = if y_label_width > 0 {
-        let chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([Constraint::Length(y_label_width), Constraint::Min(1)])
-            .split(area);
-        (Some(chunks[0]), chunks[1])
-    } else {
-        (None, area)
-    };
-
-    // Render y-axis min/max labels
-    if let Some(y_area) = y_area {
-        let global_max = state.global_max();
-        let global_min = state.global_min();
-        let max_text = format!("{:.1}", global_max);
-        let min_text = format!("{:.1}", global_min);
-
-        if y_area.height >= 2 {
-            let p_max = Paragraph::new(max_text)
-                .style(Style::default().fg(Color::DarkGray))
-                .alignment(Alignment::Right);
-            frame.render_widget(p_max, Rect::new(y_area.x, y_area.y, y_area.width, 1));
-
-            let p_min = Paragraph::new(min_text)
-                .style(Style::default().fg(Color::DarkGray))
-                .alignment(Alignment::Right);
-            frame.render_widget(
-                p_min,
-                Rect::new(y_area.x, y_area.y + y_area.height - 1, y_area.width, 1),
-            );
-        }
-    }
-
-    // For multi-series, stack sparklines vertically
-    if state.series.len() == 1 || chart_area.height < 2 {
-        // Single series: full area sparkline
-        let series = &state.series[state.active_series];
-        let data = series_to_sparkline_data(series, state.max_display_points);
-        let style = if state.disabled {
-            theme.disabled_style()
-        } else {
-            Style::default().fg(series.color())
-        };
-        let sparkline = Sparkline::default().data(&data).style(style);
-        frame.render_widget(sparkline, chart_area);
-    } else {
-        // Multi-series: divide height
-        let count = state.series.len() as u16;
-        let constraints: Vec<Constraint> = (0..count)
-            .map(|_| Constraint::Ratio(1, count as u32))
-            .collect();
-
-        let areas = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(constraints)
-            .split(chart_area);
-
-        for (i, series) in state.series.iter().enumerate() {
-            if let Some(sparkline_area) = areas.get(i) {
-                let data = series_to_sparkline_data(series, state.max_display_points);
-                let style = if state.disabled {
-                    theme.disabled_style()
-                } else if i == state.active_series {
-                    Style::default()
-                        .fg(series.color())
-                        .add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default().fg(series.color())
-                };
-                let sparkline = Sparkline::default().data(&data).style(style);
-                frame.render_widget(sparkline, *sparkline_area);
+            ChartKind::Line => render::render_line_chart(state, frame, chart_area, theme),
+            ChartKind::BarVertical => {
+                render::render_bar_chart(state, frame, chart_area, theme, false)
+            }
+            ChartKind::BarHorizontal => {
+                render::render_bar_chart(state, frame, chart_area, theme, true)
+            }
+            ChartKind::Area | ChartKind::Scatter => {
+                render::render_shared_axis_chart(state, frame, chart_area, theme)
             }
         }
     }
-}
-
-/// Converts a data series to sparkline-compatible u64 data.
-fn series_to_sparkline_data(series: &DataSeries, max_points: usize) -> Vec<u64> {
-    let values = if series.values.len() > max_points {
-        &series.values[series.values.len() - max_points..]
-    } else {
-        &series.values
-    };
-
-    if values.is_empty() {
-        return Vec::new();
-    }
-
-    let min = values.iter().copied().reduce(f64::min).unwrap_or(0.0);
-    let max = values.iter().copied().reduce(f64::max).unwrap_or(0.0);
-    let range = max - min;
-
-    if range == 0.0 {
-        return values.iter().map(|_| 50).collect();
-    }
-
-    values
-        .iter()
-        .map(|v| ((v - min) / range * 100.0) as u64)
-        .collect()
-}
-
-/// Renders a bar chart.
-fn render_bar_chart(
-    state: &ChartState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    horizontal: bool,
-) {
-    if state.series.is_empty() {
-        return;
-    }
-
-    // For bar charts, use the first series (or active series)
-    let series = &state.series[state.active_series];
-    if series.is_empty() {
-        return;
-    }
-
-    let style = if state.disabled {
-        theme.disabled_style()
-    } else {
-        Style::default().fg(series.color())
-    };
-
-    // Create bars from the series values
-    let bars: Vec<Bar> = series
-        .values
-        .iter()
-        .enumerate()
-        .map(|(i, &v)| {
-            let label = format!("{}", i + 1);
-            Bar::default()
-                .value(v.max(0.0) as u64)
-                .label(Line::from(label))
-                .style(style)
-        })
-        .collect();
-
-    let group = BarGroup::default().bars(&bars);
-
-    let mut bar_chart = BarChart::default()
-        .data(group)
-        .bar_width(state.bar_width)
-        .bar_gap(state.bar_gap)
-        .bar_style(style);
-
-    if horizontal {
-        bar_chart = bar_chart.direction(Direction::Horizontal);
-    }
-
-    frame.render_widget(bar_chart, area);
 }
 
 impl Disableable for Chart {
@@ -896,6 +985,8 @@ impl Disableable for Chart {
     }
 }
 
+#[cfg(test)]
+mod enhancement_tests;
 #[cfg(test)]
 mod snapshot_tests;
 #[cfg(test)]

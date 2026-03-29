@@ -122,7 +122,15 @@ name = "breadcrumb"
 required-features = ["navigation-components"]
 
 [[example]]
+name = "canvas"
+required-features = ["display-components"]
+
+[[example]]
 name = "chart"
+required-features = ["compound-components"]
+
+[[example]]
+name = "chart_enhanced"
 required-features = ["compound-components"]
 
 [[example]]
@@ -132,6 +140,10 @@ required-features = ["input-components"]
 [[example]]
 name = "collapsible"
 required-features = ["display-components"]
+
+[[example]]
+name = "switch"
+required-features = ["input-components"]
 
 [[example]]
 name = "confirm_dialog"
