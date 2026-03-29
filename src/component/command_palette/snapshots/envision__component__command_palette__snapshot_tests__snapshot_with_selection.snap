@@ -1,0 +1,16 @@
+---
+source: src/component/command_palette/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+                                                            
+                                                            
+            ┌ Command Palette ─────────────────┐            
+            │> Type to search...               │            
+            ────────────────────────────────────            
+            │  Open File                 Ctrl+O│            
+            │  Save File                 Ctrl+S│            
+            │▸ Close Tab               Ctrl+W  │            
+            │  Open Settings                   │            
+            │  Quit Application          Ctrl+Q│            
+            │                                  │            
+            └──────────────────────────────────┘

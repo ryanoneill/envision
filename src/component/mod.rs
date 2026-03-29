@@ -198,6 +198,8 @@ mod accordion;
 #[cfg(feature = "navigation-components")]
 mod breadcrumb;
 #[cfg(feature = "navigation-components")]
+pub mod command_palette;
+#[cfg(feature = "navigation-components")]
 mod menu;
 #[cfg(feature = "navigation-components")]
 mod router;
@@ -342,6 +344,10 @@ pub use accordion::{Accordion, AccordionMessage, AccordionOutput, AccordionPanel
 #[cfg(feature = "navigation-components")]
 pub use breadcrumb::{
     Breadcrumb, BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState,
+};
+#[cfg(feature = "navigation-components")]
+pub use command_palette::{
+    CommandPalette, CommandPaletteMessage, CommandPaletteOutput, CommandPaletteState, PaletteItem,
 };
 #[cfg(feature = "navigation-components")]
 pub use menu::{Menu, MenuItem, MenuMessage, MenuOutput, MenuState};

@@ -212,8 +212,9 @@ pub use component::{
 #[cfg(feature = "navigation-components")]
 pub use component::{
     Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Breadcrumb,
-    BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Menu, MenuItem,
-    MenuMessage, MenuOutput, MenuState, NavigationMode, Router, RouterMessage, RouterOutput,
+    BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, CommandPalette,
+    CommandPaletteMessage, CommandPaletteOutput, CommandPaletteState, Menu, MenuItem, MenuMessage,
+    MenuOutput, MenuState, NavigationMode, PaletteItem, Router, RouterMessage, RouterOutput,
     RouterState, StepIndicator, StepIndicatorMessage, StepIndicatorOutput, StepIndicatorState,
     Tabs, TabsMessage, TabsOutput, TabsState,
 };
