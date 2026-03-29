@@ -1,0 +1,24 @@
+---
+source: src/component/event_stream/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+┌ Event Stream (4 events, showing 2) ──────────────────────────────────────────┐
+│Time         Lvl   Source     Message                                         │
+│1000.0       INF   api        Request received path=/users                    │
+│1003.0       ERR   api        Timeout ms=5000                                 │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+Filter: [api]  Level: ALL  Auto: ON

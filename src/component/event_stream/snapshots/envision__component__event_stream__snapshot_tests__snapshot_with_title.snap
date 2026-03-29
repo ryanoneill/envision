@@ -1,0 +1,24 @@
+---
+source: src/component/event_stream/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+┌ System Events (3 events) ────────────────────────────────────────────────────┐
+│Time         Lvl   Source     Message                                         │
+│0.0          INF   -          Started successfully                            │
+│0.0          WRN   -          High memory usage                               │
+│0.0          ERR   -          Failed to connect                               │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+Filter: [/]  Level: ALL  Auto: ON

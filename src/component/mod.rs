@@ -136,6 +136,8 @@ mod chat_view;
 #[cfg(feature = "compound-components")]
 mod data_grid;
 #[cfg(feature = "compound-components")]
+mod event_stream;
+#[cfg(feature = "compound-components")]
 pub mod file_browser;
 #[cfg(feature = "compound-components")]
 mod flame_graph;
@@ -322,6 +324,10 @@ pub use chat_view::{
 };
 #[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
+#[cfg(feature = "compound-components")]
+pub use event_stream::{
+    EventLevel, EventStream, EventStreamMessage, EventStreamOutput, EventStreamState, StreamEvent,
+};
 #[cfg(feature = "compound-components")]
 pub use file_browser::{FileBrowser, FileBrowserMessage, FileBrowserOutput, FileBrowserState};
 #[cfg(feature = "compound-components")]
