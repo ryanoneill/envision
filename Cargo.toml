@@ -198,6 +198,10 @@ name = "loading_list"
 required-features = ["data-components"]
 
 [[example]]
+name = "log_correlation"
+required-features = ["compound-components"]
+
+[[example]]
 name = "log_viewer"
 required-features = ["compound-components"]
 
