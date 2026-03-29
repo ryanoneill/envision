@@ -130,6 +130,8 @@ mod text_area;
 
 // Compound components
 #[cfg(feature = "compound-components")]
+mod alert_panel;
+#[cfg(feature = "compound-components")]
 mod chart;
 #[cfg(feature = "compound-components")]
 mod chat_view;
@@ -310,6 +312,11 @@ pub use sparkline::{
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};
 
 // Compound components
+#[cfg(feature = "compound-components")]
+pub use alert_panel::{
+    AlertMetric, AlertPanel, AlertPanelMessage, AlertPanelOutput, AlertPanelState, AlertState,
+    AlertThreshold,
+};
 #[cfg(feature = "compound-components")]
 pub use chart::{
     Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, ThresholdLine,
