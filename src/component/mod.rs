@@ -162,6 +162,8 @@ mod canvas;
 #[cfg(feature = "display-components")]
 mod gauge;
 #[cfg(feature = "display-components")]
+mod help_panel;
+#[cfg(feature = "display-components")]
 mod key_hints;
 #[cfg(feature = "display-components")]
 mod multi_progress;
@@ -249,6 +251,8 @@ pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
 #[cfg(feature = "display-components")]
 pub use gauge::{Gauge, GaugeMessage, GaugeOutput, GaugeState, GaugeVariant, ThresholdZone};
+#[cfg(feature = "display-components")]
+pub use help_panel::{HelpPanel, HelpPanelMessage, HelpPanelState, KeyBinding, KeyBindingGroup};
 #[cfg(feature = "display-components")]
 pub use key_hints::{KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState};
 #[cfg(feature = "display-components")]
