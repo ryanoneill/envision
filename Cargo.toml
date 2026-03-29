@@ -138,6 +138,10 @@ name = "form"
 required-features = ["compound-components"]
 
 [[example]]
+name = "gauge"
+required-features = ["display-components"]
+
+[[example]]
 name = "key_hints"
 required-features = ["display-components"]
 

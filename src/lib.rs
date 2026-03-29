@@ -191,15 +191,16 @@ pub use component::{
 // Display components
 #[cfg(feature = "display-components")]
 pub use component::{
-    format_eta, KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress,
-    MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressBar, ProgressBarMessage,
-    ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus, ScrollableText,
-    ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section, Sparkline,
-    SparklineDirection, SparklineMessage, SparklineOutput, SparklineState, Spinner, SpinnerMessage,
-    SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage,
-    StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage,
-    StatusLogOutput, StatusLogState, StyledText, StyledTextMessage, StyledTextOutput,
-    StyledTextState, TitleCard, TitleCardMessage, TitleCardState, Toast, ToastItem, ToastLevel,
+    format_eta, Gauge, GaugeMessage, GaugeOutput, GaugeState, GaugeVariant, KeyHint, KeyHints,
+    KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress, MultiProgressMessage,
+    MultiProgressOutput, MultiProgressState, ProgressBar, ProgressBarMessage, ProgressBarOutput,
+    ProgressBarState, ProgressItem, ProgressItemStatus, ScrollableText, ScrollableTextMessage,
+    ScrollableTextOutput, ScrollableTextState, Section, Sparkline, SparklineDirection,
+    SparklineMessage, SparklineOutput, SparklineState, Spinner, SpinnerMessage, SpinnerState,
+    SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarState,
+    StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput,
+    StatusLogState, StyledText, StyledTextMessage, StyledTextOutput, StyledTextState,
+    ThresholdZone, TitleCard, TitleCardMessage, TitleCardState, Toast, ToastItem, ToastLevel,
     ToastMessage, ToastOutput, ToastState,
 };
 

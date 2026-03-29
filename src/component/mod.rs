@@ -156,6 +156,8 @@ mod tree;
 
 // Display components
 #[cfg(feature = "display-components")]
+mod gauge;
+#[cfg(feature = "display-components")]
 mod key_hints;
 #[cfg(feature = "display-components")]
 mod multi_progress;
@@ -237,6 +239,8 @@ pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRo
 pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 
 // Display components
+#[cfg(feature = "display-components")]
+pub use gauge::{Gauge, GaugeMessage, GaugeOutput, GaugeState, GaugeVariant, ThresholdZone};
 #[cfg(feature = "display-components")]
 pub use key_hints::{KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState};
 #[cfg(feature = "display-components")]
