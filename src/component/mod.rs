@@ -140,6 +140,7 @@ mod data_grid;
 #[cfg(feature = "compound-components")]
 pub mod dependency_graph;
 
+#[cfg(feature = "compound-components")]
 pub mod diff_viewer;
 #[cfg(feature = "compound-components")]
 mod event_stream;
