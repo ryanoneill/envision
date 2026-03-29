@@ -152,6 +152,8 @@ pub mod pane_layout;
 #[cfg(feature = "compound-components")]
 mod searchable_list;
 #[cfg(feature = "compound-components")]
+mod span_tree;
+#[cfg(feature = "compound-components")]
 mod split_panel;
 
 // Data components
@@ -339,6 +341,8 @@ pub use pane_layout::{PaneLayout, PaneLayoutMessage, PaneLayoutOutput, PaneLayou
 pub use searchable_list::{
     SearchableList, SearchableListMessage, SearchableListOutput, SearchableListState,
 };
+#[cfg(feature = "compound-components")]
+pub use span_tree::{FlatSpan, SpanNode, SpanTree, SpanTreeMessage, SpanTreeOutput, SpanTreeState};
 #[cfg(feature = "compound-components")]
 pub use split_panel::{
     SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput, SplitPanelState,

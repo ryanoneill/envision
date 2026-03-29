@@ -274,6 +274,10 @@ name = "slider"
 required-features = ["input-components"]
 
 [[example]]
+name = "span_tree"
+required-features = ["compound-components"]
+
+[[example]]
 name = "sparkline"
 required-features = ["display-components"]
 

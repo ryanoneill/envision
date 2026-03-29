@@ -169,6 +169,9 @@ pub enum WidgetType {
     /// A big text display
     BigText,
 
+    /// A span tree / trace timeline
+    SpanTree,
+
     /// A custom widget type
     Custom(String),
 }
@@ -200,6 +203,7 @@ impl WidgetType {
                 | WidgetType::Paginator
                 | WidgetType::Switch
                 | WidgetType::CommandPalette
+                | WidgetType::SpanTree
         )
     }
 
@@ -495,6 +499,11 @@ impl Annotation {
     /// Creates a big text annotation.
     pub fn big_text(id: impl Into<String>) -> Self {
         Self::new(WidgetType::BigText).with_id(id)
+    }
+
+    /// Creates a span tree annotation.
+    pub fn span_tree(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::SpanTree).with_id(id)
     }
 
     /// Creates a custom widget annotation.
