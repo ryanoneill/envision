@@ -218,6 +218,10 @@ name = "production_app"
 required-features = ["full"]
 
 [[example]]
+name = "divider"
+required-features = ["display-components"]
+
+[[example]]
 name = "dialog"
 required-features = ["overlay-components"]
 

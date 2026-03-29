@@ -148,6 +148,9 @@ pub enum WidgetType {
     /// A sparkline data trend display
     Sparkline,
 
+    /// A divider/separator line
+    Divider,
+
     /// A canvas drawing surface
     Canvas,
 
@@ -445,6 +448,11 @@ impl Annotation {
     /// Creates a sparkline annotation.
     pub fn sparkline(id: impl Into<String>) -> Self {
         Self::new(WidgetType::Sparkline).with_id(id)
+    }
+
+    /// Creates a divider annotation.
+    pub fn divider(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Divider).with_id(id)
     }
 
     /// Creates a canvas annotation.

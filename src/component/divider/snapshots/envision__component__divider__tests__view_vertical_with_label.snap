@@ -1,0 +1,9 @@
+---
+source: src/component/divider/tests.rs
+expression: terminal.backend().to_string()
+---
+│    
+│    
+X    
+│    
+│
