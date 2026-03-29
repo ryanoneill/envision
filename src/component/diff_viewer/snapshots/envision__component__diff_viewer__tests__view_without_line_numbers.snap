@@ -1,0 +1,16 @@
+---
+source: src/component/diff_viewer/tests.rs
+expression: terminal.backend().to_string()
+---
+┌ Diff (+3, -2) ───────────────────────────────────────────┐
+│@@ -1,5 +1,6 @@                                           │
+│ fn main() {                                              │
+│-    println!("hello");                                   │
+│-    return;                                              │
+│+    println!("world");                                   │
+│+    eprintln!("debug");                                  │
+│+    return Ok(());                                       │
+│ }                                                        │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘

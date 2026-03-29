@@ -138,6 +138,8 @@ mod chat_view;
 #[cfg(feature = "compound-components")]
 mod data_grid;
 #[cfg(feature = "compound-components")]
+pub mod diff_viewer;
+#[cfg(feature = "compound-components")]
 mod event_stream;
 #[cfg(feature = "compound-components")]
 pub mod file_browser;
@@ -331,6 +333,11 @@ pub use chat_view::{
 };
 #[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
+#[cfg(feature = "compound-components")]
+pub use diff_viewer::{
+    DiffHunk, DiffLine, DiffLineType, DiffMode, DiffViewer, DiffViewerMessage, DiffViewerOutput,
+    DiffViewerState,
+};
 #[cfg(feature = "compound-components")]
 pub use event_stream::{
     EventLevel, EventStream, EventStreamMessage, EventStreamOutput, EventStreamState, StreamEvent,

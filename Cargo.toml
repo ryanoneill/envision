@@ -122,6 +122,10 @@ name = "data_grid"
 required-features = ["compound-components"]
 
 [[example]]
+name = "diff_viewer"
+required-features = ["compound-components"]
+
+[[example]]
 name = "accordion"
 required-features = ["navigation-components"]
 

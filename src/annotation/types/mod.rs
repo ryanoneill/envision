@@ -172,6 +172,9 @@ pub enum WidgetType {
     /// A span tree / trace timeline
     SpanTree,
 
+    /// A diff viewer
+    DiffViewer,
+
     /// A custom widget type
     Custom(String),
 }
@@ -504,6 +507,11 @@ impl Annotation {
     /// Creates a span tree annotation.
     pub fn span_tree(id: impl Into<String>) -> Self {
         Self::new(WidgetType::SpanTree).with_id(id)
+    }
+
+    /// Creates a diff viewer annotation.
+    pub fn diff_viewer(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::DiffViewer).with_id(id)
     }
 
     /// Creates a custom widget annotation.
