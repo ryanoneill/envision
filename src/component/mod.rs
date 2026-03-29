@@ -164,6 +164,8 @@ pub mod progress_bar;
 #[cfg(feature = "display-components")]
 mod scrollable_text;
 #[cfg(feature = "display-components")]
+mod sparkline;
+#[cfg(feature = "display-components")]
 mod spinner;
 #[cfg(feature = "display-components")]
 mod status_bar;
@@ -245,6 +247,10 @@ pub use multi_progress::{
 #[cfg(feature = "display-components")]
 pub use progress_bar::{
     format_eta, ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState,
+};
+#[cfg(feature = "display-components")]
+pub use sparkline::{
+    Sparkline, SparklineDirection, SparklineMessage, SparklineOutput, SparklineState,
 };
 #[cfg(feature = "display-components")]
 pub use spinner::{Spinner, SpinnerMessage, SpinnerState, SpinnerStyle};

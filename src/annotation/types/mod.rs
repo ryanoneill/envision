@@ -145,6 +145,9 @@ pub enum WidgetType {
     /// A pane layout manager
     PaneLayout,
 
+    /// A sparkline data trend display
+    Sparkline,
+
     /// A custom widget type
     Custom(String),
 }
@@ -428,6 +431,11 @@ impl Annotation {
     /// Creates a pane layout annotation.
     pub fn pane_layout(id: impl Into<String>) -> Self {
         Self::new(WidgetType::PaneLayout).with_id(id)
+    }
+
+    /// Creates a sparkline annotation.
+    pub fn sparkline(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Sparkline).with_id(id)
     }
 
     /// Creates a custom widget annotation.

@@ -194,12 +194,13 @@ pub use component::{
     format_eta, KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress,
     MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressBar, ProgressBarMessage,
     ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus, ScrollableText,
-    ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section, Spinner,
-    SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
-    StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
-    StatusLogMessage, StatusLogOutput, StatusLogState, StyledText, StyledTextMessage,
-    StyledTextOutput, StyledTextState, TitleCard, TitleCardMessage, TitleCardState, Toast,
-    ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
+    ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section, Sparkline,
+    SparklineDirection, SparklineMessage, SparklineOutput, SparklineState, Spinner, SpinnerMessage,
+    SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage,
+    StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage,
+    StatusLogOutput, StatusLogState, StyledText, StyledTextMessage, StyledTextOutput,
+    StyledTextState, TitleCard, TitleCardMessage, TitleCardState, Toast, ToastItem, ToastLevel,
+    ToastMessage, ToastOutput, ToastState,
 };
 
 // Navigation components
