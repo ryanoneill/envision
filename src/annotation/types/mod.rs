@@ -159,6 +159,10 @@ pub enum WidgetType {
 
     /// A toggle switch
     Switch,
+
+    /// A big text display
+    BigText,
+
     /// A custom widget type
     Custom(String),
 }
@@ -468,6 +472,11 @@ impl Annotation {
     /// Creates a switch annotation.
     pub fn switch(id: impl Into<String>) -> Self {
         Self::new(WidgetType::Switch).with_id(id)
+    }
+
+    /// Creates a big text annotation.
+    pub fn big_text(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::BigText).with_id(id)
     }
 
     /// Creates a custom widget annotation.
