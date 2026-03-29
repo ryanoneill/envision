@@ -128,7 +128,7 @@ impl RuntimeConfig {
     ///
     /// # Example
     ///
-    /// ```rust,ignore
+    /// ```rust
     /// use std::sync::Arc;
     /// use envision::RuntimeConfig;
     ///
@@ -152,7 +152,7 @@ impl RuntimeConfig {
     ///
     /// # Example
     ///
-    /// ```rust,ignore
+    /// ```rust
     /// use std::sync::Arc;
     /// use envision::RuntimeConfig;
     ///
@@ -175,7 +175,7 @@ impl RuntimeConfig {
     ///
     /// # Example
     ///
-    /// ```rust,ignore
+    /// ```rust
     /// use envision::RuntimeConfig;
     ///
     /// let config = RuntimeConfig::new()
@@ -207,7 +207,7 @@ impl RuntimeConfig {
     ///
     /// # Example
     ///
-    /// ```rust,ignore
+    /// ```rust
     /// use envision::RuntimeConfig;
     ///
     /// let config = RuntimeConfig::new()
