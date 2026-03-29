@@ -32,6 +32,7 @@ use ratatui::widgets::{Block, Borders, List, ListItem, ListState};
 
 use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode};
+use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 /// Messages that can be sent to a SelectableList.
@@ -82,6 +83,8 @@ pub struct SelectableListState<T: Clone> {
     disabled: bool,
     filter_text: String,
     filtered_indices: Vec<usize>,
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    scroll: ScrollState,
 }
 
 impl<T: Clone + PartialEq> PartialEq for SelectableListState<T> {
@@ -103,6 +106,7 @@ impl<T: Clone> Default for SelectableListState<T> {
             disabled: false,
             filter_text: String::new(),
             filtered_indices: Vec::new(),
+            scroll: ScrollState::default(),
         }
     }
 }
@@ -137,6 +141,7 @@ impl<T: Clone> SelectableListState<T> {
     /// ```
     pub fn with_items(items: Vec<T>) -> Self {
         let filtered_indices: Vec<usize> = (0..items.len()).collect();
+        let scroll = ScrollState::new(filtered_indices.len());
         let mut state = Self {
             items,
             list_state: ListState::default(),
@@ -144,6 +149,7 @@ impl<T: Clone> SelectableListState<T> {
             disabled: false,
             filter_text: String::new(),
             filtered_indices,
+            scroll,
         };
         if !state.items.is_empty() {
             state.list_state.select(Some(0));
@@ -205,6 +211,7 @@ impl<T: Clone> SelectableListState<T> {
         self.items = items;
         self.filter_text.clear();
         self.filtered_indices = (0..self.items.len()).collect();
+        self.scroll.set_content_length(self.filtered_indices.len());
         if self.filtered_indices.is_empty() {
             self.list_state.select(None);
         } else {
@@ -454,6 +461,8 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
                 .collect();
         }
 
+        self.scroll.set_content_length(self.filtered_indices.len());
+
         // Try to preserve the previously selected item
         if let Some(prev_idx) = previously_selected {
             if let Some(new_pos) = self.filtered_indices.iter().position(|&i| i == prev_idx) {
@@ -632,14 +641,25 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             theme.selected_highlight_style(state.focused)
         };
 
+        let block = Block::default().borders(Borders::ALL);
+        let inner = block.inner(area);
+
         let list = List::new(items)
-            .block(Block::default().borders(Borders::ALL))
+            .block(block)
             .highlight_style(highlight_style)
             .highlight_symbol("> ");
 
         // We need to clone the state for rendering since StatefulWidget needs &mut
         let mut list_state = state.list_state.clone();
         frame.render_stateful_widget(list, area, &mut list_state);
+
+        // Render scrollbar when content exceeds viewport
+        if state.filtered_indices.len() > inner.height as usize {
+            let mut bar_scroll = ScrollState::new(state.filtered_indices.len());
+            bar_scroll.set_viewport_height(inner.height as usize);
+            bar_scroll.set_offset(list_state.offset());
+            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        }
     }
 }
 
