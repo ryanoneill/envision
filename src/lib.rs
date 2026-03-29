@@ -193,7 +193,8 @@ pub use component::{
 pub use component::{
     format_eta, Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState, Divider,
     DividerMessage, DividerOrientation, DividerState, Gauge, GaugeMessage, GaugeOutput, GaugeState,
-    GaugeVariant, KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress,
+    GaugeVariant, HelpPanel, HelpPanelMessage, HelpPanelState, KeyBinding, KeyBindingGroup,
+    KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress,
     MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressBar, ProgressBarMessage,
     ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus, ScrollableText,
     ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section, Sparkline,
