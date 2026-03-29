@@ -1,0 +1,9 @@
+---
+source: src/component/calendar/tests.rs
+expression: terminal.backend().to_string()
+---
+┌ March 2┐
+│ Su  Mo │
+│  1   2 │
+│  8   9 │
+└────────┘

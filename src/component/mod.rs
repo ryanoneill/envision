@@ -160,6 +160,8 @@ mod tree;
 
 // Display components
 #[cfg(feature = "display-components")]
+mod calendar;
+#[cfg(feature = "display-components")]
 mod canvas;
 #[cfg(feature = "display-components")]
 mod collapsible;
@@ -255,6 +257,8 @@ pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRo
 pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 
 // Display components
+#[cfg(feature = "display-components")]
+pub use calendar::{Calendar, CalendarMessage, CalendarOutput, CalendarState};
 #[cfg(feature = "display-components")]
 pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
 #[cfg(feature = "display-components")]
