@@ -160,6 +160,8 @@ mod tree;
 
 // Display components
 #[cfg(feature = "display-components")]
+mod big_text;
+#[cfg(feature = "display-components")]
 mod calendar;
 #[cfg(feature = "display-components")]
 mod canvas;
@@ -175,6 +177,8 @@ mod help_panel;
 mod key_hints;
 #[cfg(feature = "display-components")]
 mod multi_progress;
+#[cfg(feature = "display-components")]
+mod paginator;
 #[cfg(feature = "display-components")]
 pub mod progress_bar;
 #[cfg(feature = "display-components")]
@@ -258,6 +262,8 @@ pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 
 // Display components
 #[cfg(feature = "display-components")]
+pub use big_text::{big_char, big_char_width, BigText, BigTextMessage, BigTextState};
+#[cfg(feature = "display-components")]
 pub use calendar::{Calendar, CalendarMessage, CalendarOutput, CalendarState};
 #[cfg(feature = "display-components")]
 pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
@@ -276,6 +282,8 @@ pub use multi_progress::{
     MultiProgress, MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressItem,
     ProgressItemStatus,
 };
+#[cfg(feature = "display-components")]
+pub use paginator::{Paginator, PaginatorMessage, PaginatorOutput, PaginatorState, PaginatorStyle};
 #[cfg(feature = "display-components")]
 pub use progress_bar::{
     format_eta, ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState,

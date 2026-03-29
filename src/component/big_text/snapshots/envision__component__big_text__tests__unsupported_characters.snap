@@ -1,0 +1,8 @@
+---
+source: src/component/big_text/tests.rs
+expression: terminal.backend().to_string()
+---
+                                        
+               ▀▀▀ ▀▀▀ ▀▀▀              
+                ▀   ▀   ▀               
+                ▀   ▀   ▀

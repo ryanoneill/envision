@@ -70,6 +70,10 @@ proptest = "~1.8"
 tokio-test = "0.4"
 
 [[example]]
+name = "big_text"
+required-features = ["display-components"]
+
+[[example]]
 name = "themed_app"
 required-features = ["input-components", "data-components", "display-components"]
 
@@ -187,6 +191,10 @@ required-features = ["compound-components"]
 
 [[example]]
 name = "multi_progress"
+required-features = ["display-components"]
+
+[[example]]
+name = "paginator"
 required-features = ["display-components"]
 
 [[example]]
