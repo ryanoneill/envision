@@ -32,6 +32,7 @@ use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
 use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 /// Messages that can be sent to a ScrollableText.
@@ -71,8 +72,8 @@ pub enum ScrollableTextOutput {
 pub struct ScrollableTextState {
     /// The text content.
     content: String,
-    /// Current scroll offset (in wrapped lines).
-    scroll_offset: usize,
+    /// Scroll state tracking offset and providing scrollbar support.
+    scroll: ScrollState,
     /// Whether the component is focused.
     focused: bool,
     /// Whether the component is disabled.
@@ -110,6 +111,8 @@ impl ScrollableTextState {
     /// ```
     pub fn with_content(mut self, content: impl Into<String>) -> Self {
         self.content = content.into();
+        self.scroll
+            .set_content_length(self.content.lines().count().max(1));
         self
     }
 
@@ -167,7 +170,7 @@ impl ScrollableTextState {
     /// ```
     pub fn set_content(&mut self, content: impl Into<String>) {
         self.content = content.into();
-        self.scroll_offset = 0;
+        self.scroll = ScrollState::new(self.content.lines().count().max(1));
     }
 
     /// Appends text to the content.
@@ -200,14 +203,16 @@ impl ScrollableTextState {
 
     /// Returns the current scroll offset.
     pub fn scroll_offset(&self) -> usize {
-        self.scroll_offset
+        self.scroll.offset()
     }
 
     /// Sets the scroll offset.
     ///
-    /// The offset is not clamped here; it will be clamped during rendering.
+    /// The offset is clamped to the valid range based on the current
+    /// content length estimate. The precise clamping to wrapped line
+    /// count happens during rendering.
     pub fn set_scroll_offset(&mut self, offset: usize) {
-        self.scroll_offset = offset;
+        self.scroll.set_offset(offset);
     }
 
     /// Returns the number of visual lines the content would occupy
@@ -331,49 +336,50 @@ impl Component for ScrollableText {
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
         match msg {
             ScrollableTextMessage::ScrollUp => {
-                if state.scroll_offset > 0 {
-                    state.scroll_offset -= 1;
-                    Some(ScrollableTextOutput::ScrollChanged(state.scroll_offset))
+                if state.scroll.scroll_up() {
+                    Some(ScrollableTextOutput::ScrollChanged(state.scroll.offset()))
                 } else {
                     None
                 }
             }
             ScrollableTextMessage::ScrollDown => {
-                // We allow scrolling freely; clamping happens in view.
-                // Use saturating_add to prevent overflow when scroll_offset
-                // is usize::MAX (e.g., after End).
-                state.scroll_offset = state.scroll_offset.saturating_add(1);
-                Some(ScrollableTextOutput::ScrollChanged(state.scroll_offset))
+                if state.scroll.scroll_down() {
+                    Some(ScrollableTextOutput::ScrollChanged(state.scroll.offset()))
+                } else {
+                    None
+                }
             }
             ScrollableTextMessage::PageUp(n) => {
-                let old = state.scroll_offset;
-                state.scroll_offset = state.scroll_offset.saturating_sub(n);
-                if state.scroll_offset != old {
-                    Some(ScrollableTextOutput::ScrollChanged(state.scroll_offset))
+                if state.scroll.page_up(n) {
+                    Some(ScrollableTextOutput::ScrollChanged(state.scroll.offset()))
                 } else {
                     None
                 }
             }
             ScrollableTextMessage::PageDown(n) => {
-                state.scroll_offset = state.scroll_offset.saturating_add(n);
-                Some(ScrollableTextOutput::ScrollChanged(state.scroll_offset))
+                if state.scroll.page_down(n) {
+                    Some(ScrollableTextOutput::ScrollChanged(state.scroll.offset()))
+                } else {
+                    None
+                }
             }
             ScrollableTextMessage::Home => {
-                if state.scroll_offset > 0 {
-                    state.scroll_offset = 0;
+                if state.scroll.scroll_to_start() {
                     Some(ScrollableTextOutput::ScrollChanged(0))
                 } else {
                     None
                 }
             }
             ScrollableTextMessage::End => {
-                // Set to a large value; view will clamp
-                state.scroll_offset = usize::MAX;
-                Some(ScrollableTextOutput::ScrollChanged(state.scroll_offset))
+                if state.scroll.scroll_to_end() {
+                    Some(ScrollableTextOutput::ScrollChanged(state.scroll.offset()))
+                } else {
+                    None
+                }
             }
             ScrollableTextMessage::SetContent(content) => {
                 state.content = content;
-                state.scroll_offset = 0;
+                state.scroll = ScrollState::new(state.content.lines().count().max(1));
                 None
             }
         }
@@ -420,11 +426,11 @@ impl Component for ScrollableText {
             return;
         }
 
-        // Clamp scroll offset to valid range
+        // Compute scroll dimensions and clamp offset
         let total_lines = state.line_count(inner.width as usize);
         let visible_lines = inner.height as usize;
         let max_scroll = total_lines.saturating_sub(visible_lines);
-        let effective_scroll = state.scroll_offset.min(max_scroll);
+        let effective_scroll = state.scroll.offset().min(max_scroll);
 
         let paragraph = Paragraph::new(state.content.as_str())
             .style(text_style)
@@ -432,6 +438,14 @@ impl Component for ScrollableText {
             .scroll((effective_scroll as u16, 0));
 
         frame.render_widget(paragraph, inner);
+
+        // Render scrollbar when content exceeds viewport
+        if total_lines > visible_lines {
+            let mut bar_scroll = ScrollState::new(total_lines);
+            bar_scroll.set_viewport_height(visible_lines);
+            bar_scroll.set_offset(effective_scroll);
+            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        }
     }
 }
 
