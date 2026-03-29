@@ -163,6 +163,8 @@ mod span_tree;
 mod split_panel;
 #[cfg(feature = "compound-components")]
 mod timeline;
+#[cfg(feature = "compound-components")]
+pub mod treemap;
 
 // Data components
 #[cfg(feature = "data-components")]
@@ -373,6 +375,8 @@ pub use timeline::{
     SelectedType, Timeline, TimelineEvent, TimelineMessage, TimelineOutput, TimelineSpan,
     TimelineState,
 };
+#[cfg(feature = "compound-components")]
+pub use treemap::{Treemap, TreemapMessage, TreemapNode, TreemapOutput, TreemapState};
 
 #[cfg(feature = "display-components")]
 pub use scrollable_text::{

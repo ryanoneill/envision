@@ -310,6 +310,10 @@ name = "timeline"
 required-features = ["compound-components"]
 
 [[example]]
+name = "treemap"
+required-features = ["compound-components"]
+
+[[example]]
 name = "toast"
 required-features = ["display-components"]
 
