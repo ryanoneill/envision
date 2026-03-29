@@ -164,6 +164,8 @@ mod tree;
 #[cfg(feature = "display-components")]
 mod big_text;
 #[cfg(feature = "display-components")]
+mod calendar;
+#[cfg(feature = "display-components")]
 mod canvas;
 #[cfg(feature = "display-components")]
 mod collapsible;
@@ -267,6 +269,8 @@ pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 // Display components
 #[cfg(feature = "display-components")]
 pub use big_text::{big_char, big_char_width, BigText, BigTextMessage, BigTextState};
+#[cfg(feature = "display-components")]
+pub use calendar::{Calendar, CalendarMessage, CalendarOutput, CalendarState};
 #[cfg(feature = "display-components")]
 pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
 #[cfg(feature = "display-components")]
