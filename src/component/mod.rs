@@ -236,6 +236,8 @@ mod router;
 #[cfg(feature = "navigation-components")]
 pub mod step_indicator;
 #[cfg(feature = "navigation-components")]
+mod tab_bar;
+#[cfg(feature = "navigation-components")]
 mod tabs;
 
 // Overlay components
@@ -440,6 +442,8 @@ pub use router::{NavigationMode, Router, RouterMessage, RouterOutput, RouterStat
 pub use step_indicator::{
     StepIndicator, StepIndicatorMessage, StepIndicatorOutput, StepIndicatorState,
 };
+#[cfg(feature = "navigation-components")]
+pub use tab_bar::{Tab, TabBar, TabBarMessage, TabBarOutput, TabBarState};
 #[cfg(feature = "navigation-components")]
 pub use tabs::{Tabs, TabsMessage, TabsOutput, TabsState};
 
