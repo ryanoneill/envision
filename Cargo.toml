@@ -186,6 +186,10 @@ name = "multi_progress"
 required-features = ["display-components"]
 
 [[example]]
+name = "number_input"
+required-features = ["input-components"]
+
+[[example]]
 name = "pane_layout"
 required-features = ["compound-components"]
 

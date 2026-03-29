@@ -1,0 +1,7 @@
+---
+source: src/component/number_input/view_tests.rs
+expression: terminal.backend().to_string()
+---
+┌────────────────────────────┐
+│                     Qty: 42│
+└────────────────────────────┘
