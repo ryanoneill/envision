@@ -190,6 +190,10 @@ name = "multi_progress"
 required-features = ["display-components"]
 
 [[example]]
+name = "paginator"
+required-features = ["display-components"]
+
+[[example]]
 name = "pane_layout"
 required-features = ["compound-components"]
 

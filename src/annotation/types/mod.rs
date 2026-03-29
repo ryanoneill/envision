@@ -154,6 +154,9 @@ pub enum WidgetType {
     /// A canvas drawing surface
     Canvas,
 
+    /// A paginator navigation indicator
+    Paginator,
+
     /// A help panel display
     HelpPanel,
 
@@ -191,6 +194,7 @@ impl WidgetType {
                 | WidgetType::SearchableList
                 | WidgetType::FileBrowser
                 | WidgetType::StepIndicator
+                | WidgetType::Paginator
                 | WidgetType::Switch
         )
     }
@@ -462,6 +466,11 @@ impl Annotation {
     /// Creates a canvas annotation.
     pub fn canvas(id: impl Into<String>) -> Self {
         Self::new(WidgetType::Canvas).with_id(id)
+    }
+
+    /// Creates a paginator annotation.
+    pub fn paginator(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Paginator).with_id(id)
     }
 
     /// Creates a help panel annotation.
