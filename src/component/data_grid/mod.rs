@@ -49,6 +49,7 @@ use super::{
     Column, Component, Disableable, Focusable, InputFieldMessage, InputFieldState, TableRow,
 };
 use crate::input::{Event, KeyCode};
+use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 /// Messages that can be sent to a DataGrid.
@@ -127,6 +128,8 @@ pub struct DataGridState<T: TableRow> {
     focused: bool,
     /// Whether the component is disabled.
     disabled: bool,
+    /// Scroll state for scrollbar rendering.
+    scroll: ScrollState,
 }
 
 impl<T: TableRow + PartialEq> PartialEq for DataGridState<T> {
@@ -153,6 +156,7 @@ impl<T: TableRow> Default for DataGridState<T> {
             original_value: String::new(),
             focused: false,
             disabled: false,
+            scroll: ScrollState::default(),
         }
     }
 }
@@ -183,6 +187,7 @@ impl<T: TableRow> DataGridState<T> {
     /// ```
     pub fn new(rows: Vec<T>, columns: Vec<Column>) -> Self {
         let selected_row = if rows.is_empty() { None } else { Some(0) };
+        let scroll = ScrollState::new(rows.len());
         Self {
             rows,
             columns,
@@ -193,6 +198,7 @@ impl<T: TableRow> DataGridState<T> {
             original_value: String::new(),
             focused: false,
             disabled: false,
+            scroll,
         }
     }
 
@@ -424,6 +430,7 @@ impl<T: TableRow> DataGridState<T> {
     pub fn set_rows(&mut self, rows: Vec<T>) {
         self.editing = false;
         self.rows = rows;
+        self.scroll.set_content_length(self.rows.len());
         if self.rows.is_empty() {
             self.selected_row = None;
         } else {
@@ -768,6 +775,17 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         let mut table_state = ratatui::widgets::TableState::default();
         table_state.select(state.selected_row);
         frame.render_stateful_widget(table, area, &mut table_state);
+
+        // Render scrollbar by mirroring the offset from ratatui's TableState
+        let inner = area.inner(Margin::new(1, 1));
+        // Viewport for data rows: inner height minus header row (1) and bottom margin (1)
+        let data_viewport = (inner.height as usize).saturating_sub(2);
+        if data_viewport > 0 && state.rows.len() > data_viewport {
+            let mut bar_scroll = ScrollState::new(state.rows.len());
+            bar_scroll.set_viewport_height(data_viewport);
+            bar_scroll.set_offset(table_state.offset());
+            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        }
 
         // Show cursor when editing
         if state.editing && state.focused {
