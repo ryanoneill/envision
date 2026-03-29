@@ -1,0 +1,6 @@
+---
+source: src/component/collapsible/tests.rs
+assertion_line: 706
+expression: terminal.backend().to_string()
+---
+▾ Details

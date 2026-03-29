@@ -138,6 +138,10 @@ name = "checkbox"
 required-features = ["input-components"]
 
 [[example]]
+name = "collapsible"
+required-features = ["display-components"]
+
+[[example]]
 name = "switch"
 required-features = ["input-components"]
 
@@ -222,6 +226,10 @@ name = "production_app"
 required-features = ["full"]
 
 [[example]]
+name = "divider"
+required-features = ["display-components"]
+
+[[example]]
 name = "dialog"
 required-features = ["overlay-components"]
 
@@ -236,6 +244,10 @@ required-features = ["input-components"]
 [[example]]
 name = "selectable_list"
 required-features = ["data-components"]
+
+[[example]]
+name = "slider"
+required-features = ["input-components"]
 
 [[example]]
 name = "sparkline"

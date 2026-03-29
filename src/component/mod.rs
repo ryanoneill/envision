@@ -120,6 +120,8 @@ mod radio_group;
 #[cfg(feature = "input-components")]
 mod select;
 #[cfg(feature = "input-components")]
+mod slider;
+#[cfg(feature = "input-components")]
 mod switch;
 #[cfg(feature = "input-components")]
 mod text_area;
@@ -159,6 +161,10 @@ mod tree;
 // Display components
 #[cfg(feature = "display-components")]
 mod canvas;
+#[cfg(feature = "display-components")]
+mod collapsible;
+#[cfg(feature = "display-components")]
+mod divider;
 #[cfg(feature = "display-components")]
 mod gauge;
 #[cfg(feature = "display-components")]
@@ -229,6 +235,8 @@ pub use radio_group::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGrou
 #[cfg(feature = "input-components")]
 pub use select::{Select, SelectMessage, SelectOutput, SelectState};
 #[cfg(feature = "input-components")]
+pub use slider::{Slider, SliderMessage, SliderOrientation, SliderOutput, SliderState};
+#[cfg(feature = "input-components")]
 pub use switch::{Switch, SwitchMessage, SwitchOutput, SwitchState};
 #[cfg(feature = "input-components")]
 pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
@@ -251,6 +259,10 @@ pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 // Display components
 #[cfg(feature = "display-components")]
 pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
+#[cfg(feature = "display-components")]
+pub use collapsible::{Collapsible, CollapsibleMessage, CollapsibleOutput, CollapsibleState};
+#[cfg(feature = "display-components")]
+pub use divider::{Divider, DividerMessage, DividerOrientation, DividerState};
 #[cfg(feature = "display-components")]
 pub use gauge::{Gauge, GaugeMessage, GaugeOutput, GaugeState, GaugeVariant, ThresholdZone};
 #[cfg(feature = "display-components")]
