@@ -1,0 +1,6 @@
+---
+source: src/component/slider/tests.rs
+expression: terminal.backend().to_string()
+---
+50                                      
+████████████████████░░░░░░░░░░░░░░░░░░░░
