@@ -126,6 +126,10 @@ name = "breadcrumb"
 required-features = ["navigation-components"]
 
 [[example]]
+name = "command_palette"
+required-features = ["navigation-components"]
+
+[[example]]
 name = "canvas"
 required-features = ["display-components"]
 
