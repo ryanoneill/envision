@@ -231,8 +231,8 @@ impl NumberInputState {
     /// ```rust
     /// use envision::component::NumberInputState;
     ///
-    /// let state = NumberInputState::new(3.14159).with_precision(2);
-    /// assert_eq!(state.format_value(), "3.14");
+    /// let state = NumberInputState::new(3.75).with_precision(2);
+    /// assert_eq!(state.format_value(), "3.75");
     /// ```
     pub fn with_precision(mut self, precision: usize) -> Self {
         self.precision = precision;
@@ -365,8 +365,8 @@ impl NumberInputState {
     /// let state = NumberInputState::new(42.0);
     /// assert_eq!(state.format_value(), "42");
     ///
-    /// let state = NumberInputState::new(3.14159).with_precision(2);
-    /// assert_eq!(state.format_value(), "3.14");
+    /// let state = NumberInputState::new(3.75).with_precision(2);
+    /// assert_eq!(state.format_value(), "3.75");
     /// ```
     pub fn format_value(&self) -> String {
         format!("{:.prec$}", self.value, prec = self.precision)

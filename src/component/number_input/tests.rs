@@ -100,9 +100,9 @@ fn test_with_step() {
 
 #[test]
 fn test_with_precision() {
-    let state = NumberInputState::new(3.14159).with_precision(2);
+    let state = NumberInputState::new(3.75).with_precision(2);
     assert_eq!(state.precision(), 2);
-    assert_eq!(state.format_value(), "3.14");
+    assert_eq!(state.format_value(), "3.75");
 }
 
 #[test]
@@ -282,10 +282,10 @@ fn test_start_edit() {
 
 #[test]
 fn test_start_edit_with_precision() {
-    let mut state = NumberInputState::new(3.14159).with_precision(2);
+    let mut state = NumberInputState::new(3.75).with_precision(2);
     let output = NumberInput::update(&mut state, NumberInputMessage::StartEdit);
     assert_eq!(output, Some(NumberInputOutput::EditStarted));
-    assert_eq!(state.edit_buffer(), "3.14");
+    assert_eq!(state.edit_buffer(), "3.75");
 }
 
 #[test]
@@ -388,10 +388,10 @@ fn test_confirm_edit_valid() {
 fn test_confirm_edit_valid_float() {
     let mut state = NumberInputState::new(0.0).with_precision(2);
     NumberInput::update(&mut state, NumberInputMessage::StartEdit);
-    state.edit_buffer = "3.14".to_string();
+    state.edit_buffer = "3.75".to_string();
     let output = NumberInput::update(&mut state, NumberInputMessage::ConfirmEdit);
-    assert_eq!(output, Some(NumberInputOutput::EditConfirmed(3.14)));
-    assert_eq!(state.value(), 3.14);
+    assert_eq!(output, Some(NumberInputOutput::EditConfirmed(3.75)));
+    assert_eq!(state.value(), 3.75);
 }
 
 #[test]
@@ -466,8 +466,8 @@ fn test_format_value_precision_zero() {
 
 #[test]
 fn test_format_value_precision_two() {
-    let state = NumberInputState::new(3.14159).with_precision(2);
-    assert_eq!(state.format_value(), "3.14");
+    let state = NumberInputState::new(3.75).with_precision(2);
+    assert_eq!(state.format_value(), "3.75");
 }
 
 #[test]

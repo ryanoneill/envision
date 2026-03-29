@@ -109,7 +109,7 @@ fn test_view_negative_value() {
 
 #[test]
 fn test_view_float_precision() {
-    let state = NumberInputState::new(3.14159).with_precision(2);
+    let state = NumberInputState::new(3.75).with_precision(2);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
 
     terminal

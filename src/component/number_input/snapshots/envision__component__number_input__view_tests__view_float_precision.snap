@@ -3,5 +3,5 @@ source: src/component/number_input/view_tests.rs
 expression: terminal.backend().to_string()
 ---
 ┌────────────────────────────┐
-│                        3.14│
+│                        3.75│
 └────────────────────────────┘
