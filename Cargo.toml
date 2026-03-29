@@ -342,6 +342,10 @@ name = "styling_showcase"
 required-features = ["full"]
 
 [[example]]
+name = "markdown_renderer"
+required-features = ["markdown"]
+
+[[example]]
 name = "chat_markdown_demo"
 required-features = ["compound-components", "markdown"]
 

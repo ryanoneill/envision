@@ -246,6 +246,10 @@ mod dialog;
 #[cfg(feature = "overlay-components")]
 mod tooltip;
 
+// Markdown components
+#[cfg(feature = "markdown")]
+pub mod markdown_renderer;
+
 // Always available
 mod focus_manager;
 
@@ -453,6 +457,10 @@ pub use confirm_dialog::{
 pub use dialog::{Dialog, DialogButton, DialogMessage, DialogOutput, DialogState};
 #[cfg(feature = "overlay-components")]
 pub use tooltip::{Tooltip, TooltipMessage, TooltipOutput, TooltipPosition, TooltipState};
+
+// Markdown components
+#[cfg(feature = "markdown")]
+pub use markdown_renderer::{MarkdownRenderer, MarkdownRendererMessage, MarkdownRendererState};
 
 // Always available
 pub use focus_manager::FocusManager;
