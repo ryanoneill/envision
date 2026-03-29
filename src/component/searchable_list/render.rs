@@ -6,6 +6,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 use super::{Focus, SearchableListState};
+use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 /// Renders the searchable list component.
@@ -91,6 +92,8 @@ pub(super) fn render_searchable_list<T: Clone + Display>(
         .borders(Borders::ALL)
         .border_style(list_border_style);
 
+    let list_inner = list_block.inner(chunks[1]);
+
     let list_widget = List::new(items)
         .block(list_block)
         .highlight_style(highlight_style)
@@ -98,6 +101,14 @@ pub(super) fn render_searchable_list<T: Clone + Display>(
 
     let mut list_state = state.list_state.clone();
     frame.render_stateful_widget(list_widget, chunks[1], &mut list_state);
+
+    // Render scrollbar when content exceeds viewport
+    if state.filtered_indices.len() > list_inner.height as usize {
+        let mut bar_scroll = ScrollState::new(state.filtered_indices.len());
+        bar_scroll.set_viewport_height(list_inner.height as usize);
+        bar_scroll.set_offset(list_state.offset());
+        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, chunks[1], theme);
+    }
 
     crate::annotation::with_registry(|reg| {
         reg.close();

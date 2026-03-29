@@ -45,6 +45,7 @@ use ratatui::widgets::ListState;
 
 use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 /// A matcher function that takes `(query, item_text)` and returns
@@ -124,6 +125,9 @@ pub struct SearchableListState<T: Clone> {
     /// Ratatui list state for scroll tracking.
     #[cfg_attr(feature = "serialization", serde(skip))]
     pub(super) list_state: ListState,
+    /// Scroll state for scrollbar rendering.
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    pub(super) scroll: ScrollState,
     /// Which sub-component has internal focus.
     pub(super) internal_focus: Focus,
     /// Whether the overall component is focused.
@@ -147,6 +151,7 @@ impl<T: Clone> Clone for SearchableListState<T> {
             filter_text: self.filter_text.clone(),
             selected: self.selected,
             list_state: self.list_state.clone(),
+            scroll: self.scroll.clone(),
             internal_focus: self.internal_focus.clone(),
             focused: self.focused,
             disabled: self.disabled,
@@ -195,6 +200,7 @@ impl<T: Clone> Default for SearchableListState<T> {
             filter_text: String::new(),
             selected: None,
             list_state: ListState::default(),
+            scroll: ScrollState::default(),
             internal_focus: Focus::Filter,
             focused: false,
             disabled: false,
@@ -225,12 +231,14 @@ impl<T: Clone> SearchableListState<T> {
         let selected = if items.is_empty() { None } else { Some(0) };
         let mut list_state = ListState::default();
         list_state.select(selected);
+        let scroll = ScrollState::new(filtered_indices.len());
         Self {
             items,
             filtered_indices,
             filter_text: String::new(),
             selected,
             list_state,
+            scroll,
             internal_focus: Focus::Filter,
             focused: false,
             disabled: false,
@@ -698,6 +706,8 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
                 .map(|(i, _)| i)
                 .collect();
         };
+
+        self.scroll.set_content_length(self.filtered_indices.len());
 
         // Reset selection to first filtered item
         if self.filtered_indices.is_empty() {

@@ -41,6 +41,7 @@ use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode};
+use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 /// Loading state of an individual item.
@@ -283,6 +284,9 @@ pub struct LoadingListState<T: Clone> {
     title: Option<String>,
     /// Whether to show loading indicators.
     show_indicators: bool,
+    /// Scroll state for virtual scrolling and scrollbar rendering.
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    scroll: ScrollState,
 }
 
 impl<T: Clone + PartialEq> PartialEq for LoadingListState<T> {
@@ -307,6 +311,7 @@ impl<T: Clone> Default for LoadingListState<T> {
             spinner_frame: 0,
             title: None,
             show_indicators: true,
+            scroll: ScrollState::default(),
         }
     }
 }
@@ -339,13 +344,15 @@ impl<T: Clone> LoadingListState<T> {
     where
         F: Fn(&T) -> String,
     {
-        let list_items = items
+        let list_items: Vec<LoadingListItem<T>> = items
             .into_iter()
             .map(|data| {
                 let label = label_fn(&data);
                 LoadingListItem::new(data, label)
             })
             .collect();
+
+        let scroll = ScrollState::new(list_items.len());
 
         Self {
             items: list_items,
@@ -355,6 +362,7 @@ impl<T: Clone> LoadingListState<T> {
             spinner_frame: 0,
             title: None,
             show_indicators: true,
+            scroll,
         }
     }
 
@@ -607,6 +615,7 @@ impl<T: Clone> LoadingListState<T> {
     pub fn clear(&mut self) {
         self.items.clear();
         self.selected = None;
+        self.scroll.set_content_length(0);
     }
 }
 
@@ -696,6 +705,7 @@ impl<T: Clone> Component for LoadingList<T> {
                     .map(|(i, data)| LoadingListItem::new(data, format!("Item {}", i + 1)))
                     .collect();
                 state.selected = None;
+                state.scroll.set_content_length(state.items.len());
                 None
             }
 
@@ -761,6 +771,7 @@ impl<T: Clone> Component for LoadingList<T> {
                 };
 
                 state.selected = Some(new_index);
+                state.scroll.ensure_visible(new_index);
                 Some(LoadingListOutput::SelectionChanged(new_index))
             }
 
@@ -776,6 +787,7 @@ impl<T: Clone> Component for LoadingList<T> {
                 };
 
                 state.selected = Some(new_index);
+                state.scroll.ensure_visible(new_index);
                 Some(LoadingListOutput::SelectionChanged(new_index))
             }
 
@@ -785,6 +797,7 @@ impl<T: Clone> Component for LoadingList<T> {
                 }
 
                 state.selected = Some(0);
+                state.scroll.ensure_visible(0);
                 Some(LoadingListOutput::SelectionChanged(0))
             }
 
@@ -795,6 +808,7 @@ impl<T: Clone> Component for LoadingList<T> {
 
                 let last = state.items.len() - 1;
                 state.selected = Some(last);
+                state.scroll.ensure_visible(last);
                 Some(LoadingListOutput::SelectionChanged(last))
             }
 
@@ -858,12 +872,20 @@ impl<T: Clone> Component for LoadingList<T> {
             return;
         }
 
-        let items: Vec<ListItem> = state
-            .items
+        // Construct a local ScrollState for virtual scrolling and scrollbar
+        let mut bar_scroll = ScrollState::new(state.items.len());
+        bar_scroll.set_viewport_height(inner.height as usize);
+        if let Some(sel) = state.selected {
+            bar_scroll.ensure_visible(sel);
+        }
+        let range = bar_scroll.visible_range();
+
+        let items: Vec<ListItem> = state.items[range.clone()]
             .iter()
             .enumerate()
-            .map(|(idx, item)| {
-                let is_selected = state.selected == Some(idx);
+            .map(|(view_idx, item)| {
+                let actual_idx = range.start + view_idx;
+                let is_selected = state.selected == Some(actual_idx);
                 let select_marker = if is_selected { "▸" } else { " " };
 
                 let content = if state.show_indicators {
@@ -895,6 +917,9 @@ impl<T: Clone> Component for LoadingList<T> {
 
         let list = List::new(items);
         frame.render_widget(list, inner);
+
+        // Render scrollbar when content exceeds viewport
+        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
     }
 }
 
