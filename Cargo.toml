@@ -130,6 +130,10 @@ name = "checkbox"
 required-features = ["input-components"]
 
 [[example]]
+name = "collapsible"
+required-features = ["display-components"]
+
+[[example]]
 name = "confirm_dialog"
 required-features = ["overlay-components"]
 
