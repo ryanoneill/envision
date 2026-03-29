@@ -155,6 +155,8 @@ mod searchable_list;
 mod span_tree;
 #[cfg(feature = "compound-components")]
 mod split_panel;
+#[cfg(feature = "compound-components")]
+mod timeline;
 
 // Data components
 #[cfg(feature = "data-components")]
@@ -346,6 +348,11 @@ pub use span_tree::{FlatSpan, SpanNode, SpanTree, SpanTreeMessage, SpanTreeOutpu
 #[cfg(feature = "compound-components")]
 pub use split_panel::{
     SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput, SplitPanelState,
+};
+#[cfg(feature = "compound-components")]
+pub use timeline::{
+    SelectedType, Timeline, TimelineEvent, TimelineMessage, TimelineOutput, TimelineSpan,
+    TimelineState,
 };
 
 #[cfg(feature = "display-components")]
