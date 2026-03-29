@@ -1,0 +1,14 @@
+---
+source: src/component/terminal_output/tests.rs
+expression: terminal.backend().to_string()
+---
+┌────────────────────────────────────────────────┐
+│                                                │
+│                                                │
+│                                                │
+│                                                │
+│                                                │
+│                                                │
+│                                                │
+│ 0 lines | Auto-scroll                          │
+└────────────────────────────────────────────────┘

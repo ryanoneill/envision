@@ -218,6 +218,8 @@ mod status_log;
 #[cfg(feature = "display-components")]
 pub mod styled_text;
 #[cfg(feature = "display-components")]
+pub mod terminal_output;
+#[cfg(feature = "display-components")]
 mod title_card;
 #[cfg(feature = "display-components")]
 mod toast;
@@ -416,6 +418,11 @@ pub use status_log::{
 };
 #[cfg(feature = "display-components")]
 pub use styled_text::{StyledText, StyledTextMessage, StyledTextOutput, StyledTextState};
+#[cfg(feature = "display-components")]
+pub use terminal_output::{
+    parse_ansi, AnsiSegment, TerminalOutput, TerminalOutputMessage, TerminalOutputOutput,
+    TerminalOutputState,
+};
 #[cfg(feature = "display-components")]
 pub use title_card::{TitleCard, TitleCardMessage, TitleCardState};
 #[cfg(feature = "display-components")]

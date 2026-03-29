@@ -318,6 +318,10 @@ name = "tabs"
 required-features = ["navigation-components"]
 
 [[example]]
+name = "terminal_output"
+required-features = ["display-components"]
+
+[[example]]
 name = "timeline"
 required-features = ["compound-components"]
 

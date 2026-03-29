@@ -1,0 +1,14 @@
+---
+source: src/component/terminal_output/tests.rs
+expression: terminal.backend().to_string()
+---
+┌────────────────────────────────────────────────┐
+│1 Line content 1                                │
+│2 Line content 2                                │
+│3 Line content 3                                │
+│4 Line content 4                                │
+│5 Line content 5                                │
+│                                                │
+│                                                │
+│ 5 lines | Ln 1                                 │
+└────────────────────────────────────────────────┘
