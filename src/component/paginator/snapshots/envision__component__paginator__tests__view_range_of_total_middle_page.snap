@@ -1,0 +1,5 @@
+---
+source: src/component/paginator/tests.rs
+expression: terminal.backend().to_string()
+---
+        Showing 201-300 of 2,847

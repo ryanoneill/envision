@@ -154,6 +154,9 @@ pub enum WidgetType {
     /// A canvas drawing surface
     Canvas,
 
+    /// A paginator navigation indicator
+    Paginator,
+
     /// A help panel display
     HelpPanel,
 
@@ -162,6 +165,10 @@ pub enum WidgetType {
 
     /// A command palette overlay
     CommandPalette,
+
+    /// A big text display
+    BigText,
+
     /// A custom widget type
     Custom(String),
 }
@@ -190,6 +197,7 @@ impl WidgetType {
                 | WidgetType::SearchableList
                 | WidgetType::FileBrowser
                 | WidgetType::StepIndicator
+                | WidgetType::Paginator
                 | WidgetType::Switch
                 | WidgetType::CommandPalette
         )
@@ -464,6 +472,11 @@ impl Annotation {
         Self::new(WidgetType::Canvas).with_id(id)
     }
 
+    /// Creates a paginator annotation.
+    pub fn paginator(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Paginator).with_id(id)
+    }
+
     /// Creates a help panel annotation.
     pub fn help_panel(id: impl Into<String>) -> Self {
         Self::new(WidgetType::HelpPanel).with_id(id)
@@ -477,6 +490,11 @@ impl Annotation {
     /// Creates a command palette annotation.
     pub fn command_palette(id: impl Into<String>) -> Self {
         Self::new(WidgetType::CommandPalette).with_id(id)
+    }
+
+    /// Creates a big text annotation.
+    pub fn big_text(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::BigText).with_id(id)
     }
 
     /// Creates a custom widget annotation.
