@@ -116,6 +116,8 @@ mod input_field;
 #[cfg(feature = "input-components")]
 mod line_input;
 #[cfg(feature = "input-components")]
+mod number_input;
+#[cfg(feature = "input-components")]
 mod radio_group;
 #[cfg(feature = "input-components")]
 mod select;
@@ -140,6 +142,8 @@ mod form;
 #[cfg(feature = "compound-components")]
 mod heatmap;
 #[cfg(feature = "compound-components")]
+mod histogram;
+#[cfg(feature = "compound-components")]
 mod log_viewer;
 #[cfg(feature = "compound-components")]
 mod metrics_dashboard;
@@ -163,6 +167,8 @@ mod tree;
 // Display components
 #[cfg(feature = "display-components")]
 mod big_text;
+#[cfg(feature = "display-components")]
+mod calendar;
 #[cfg(feature = "display-components")]
 mod canvas;
 #[cfg(feature = "display-components")]
@@ -204,6 +210,8 @@ mod accordion;
 #[cfg(feature = "navigation-components")]
 mod breadcrumb;
 #[cfg(feature = "navigation-components")]
+pub mod command_palette;
+#[cfg(feature = "navigation-components")]
 mod menu;
 #[cfg(feature = "navigation-components")]
 mod router;
@@ -235,6 +243,8 @@ pub use input_field::{InputField, InputFieldMessage, InputFieldOutput, InputFiel
 #[cfg(feature = "input-components")]
 pub use line_input::{LineInput, LineInputMessage, LineInputOutput, LineInputState};
 #[cfg(feature = "input-components")]
+pub use number_input::{NumberInput, NumberInputMessage, NumberInputOutput, NumberInputState};
+#[cfg(feature = "input-components")]
 pub use radio_group::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState};
 #[cfg(feature = "input-components")]
 pub use select::{Select, SelectMessage, SelectOutput, SelectState};
@@ -263,6 +273,8 @@ pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 // Display components
 #[cfg(feature = "display-components")]
 pub use big_text::{big_char, big_char_width, BigText, BigTextMessage, BigTextState};
+#[cfg(feature = "display-components")]
+pub use calendar::{Calendar, CalendarMessage, CalendarOutput, CalendarState};
 #[cfg(feature = "display-components")]
 pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
 #[cfg(feature = "display-components")]
@@ -313,6 +325,8 @@ pub use heatmap::{
     value_to_color, Heatmap, HeatmapColorScale, HeatmapMessage, HeatmapOutput, HeatmapState,
 };
 #[cfg(feature = "compound-components")]
+pub use histogram::{Histogram, HistogramMessage, HistogramState};
+#[cfg(feature = "compound-components")]
 pub use log_viewer::{LogViewer, LogViewerMessage, LogViewerOutput, LogViewerState};
 #[cfg(feature = "compound-components")]
 pub use metrics_dashboard::{
@@ -356,6 +370,10 @@ pub use accordion::{Accordion, AccordionMessage, AccordionOutput, AccordionPanel
 #[cfg(feature = "navigation-components")]
 pub use breadcrumb::{
     Breadcrumb, BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState,
+};
+#[cfg(feature = "navigation-components")]
+pub use command_palette::{
+    CommandPalette, CommandPaletteMessage, CommandPaletteOutput, CommandPaletteState, PaletteItem,
 };
 #[cfg(feature = "navigation-components")]
 pub use menu::{Menu, MenuItem, MenuMessage, MenuOutput, MenuState};

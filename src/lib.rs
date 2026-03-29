@@ -174,10 +174,11 @@ pub use component::{
     Button, ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
     CheckboxState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, InputField,
     InputFieldMessage, InputFieldOutput, InputFieldState, LineInput, LineInputMessage,
-    LineInputOutput, LineInputState, RadioGroup, RadioGroupMessage, RadioGroupOutput,
-    RadioGroupState, Select, SelectMessage, SelectOutput, SelectState, Slider, SliderMessage,
-    SliderOrientation, SliderOutput, SliderState, Switch, SwitchMessage, SwitchOutput, SwitchState,
-    TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
+    LineInputOutput, LineInputState, NumberInput, NumberInputMessage, NumberInputOutput,
+    NumberInputState, RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState, Select,
+    SelectMessage, SelectOutput, SelectState, Slider, SliderMessage, SliderOrientation,
+    SliderOutput, SliderState, Switch, SwitchMessage, SwitchOutput, SwitchState, TextArea,
+    TextAreaMessage, TextAreaOutput, TextAreaState,
 };
 
 // Data components
@@ -192,30 +193,31 @@ pub use component::{
 // Display components
 #[cfg(feature = "display-components")]
 pub use component::{
-    big_char, big_char_width, format_eta, BigText, BigTextMessage, BigTextState, Canvas,
-    CanvasMarker, CanvasMessage, CanvasShape, CanvasState, Collapsible, CollapsibleMessage,
-    CollapsibleOutput, CollapsibleState, Divider, DividerMessage, DividerOrientation, DividerState,
-    Gauge, GaugeMessage, GaugeOutput, GaugeState, GaugeVariant, HelpPanel, HelpPanelMessage,
-    HelpPanelState, KeyBinding, KeyBindingGroup, KeyHint, KeyHints, KeyHintsLayout,
-    KeyHintsMessage, KeyHintsState, MultiProgress, MultiProgressMessage, MultiProgressOutput,
-    MultiProgressState, Paginator, PaginatorMessage, PaginatorOutput, PaginatorState,
-    PaginatorStyle, ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState,
-    ProgressItem, ProgressItemStatus, ScrollableText, ScrollableTextMessage, ScrollableTextOutput,
-    ScrollableTextState, Section, Sparkline, SparklineDirection, SparklineMessage, SparklineOutput,
-    SparklineState, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem,
-    StatusBarItemContent, StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog,
-    StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState, StyledText,
-    StyledTextMessage, StyledTextOutput, StyledTextState, ThresholdZone, TitleCard,
-    TitleCardMessage, TitleCardState, Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput,
-    ToastState,
+    big_char, big_char_width, format_eta, BigText, BigTextMessage, BigTextState, Calendar,
+    CalendarMessage, CalendarOutput, CalendarState, Canvas, CanvasMarker, CanvasMessage,
+    CanvasShape, CanvasState, Collapsible, CollapsibleMessage, CollapsibleOutput, CollapsibleState,
+    Divider, DividerMessage, DividerOrientation, DividerState, Gauge, GaugeMessage, GaugeOutput,
+    GaugeState, GaugeVariant, HelpPanel, HelpPanelMessage, HelpPanelState, KeyBinding,
+    KeyBindingGroup, KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState,
+    MultiProgress, MultiProgressMessage, MultiProgressOutput, MultiProgressState, Paginator,
+    PaginatorMessage, PaginatorOutput, PaginatorState, PaginatorStyle, ProgressBar,
+    ProgressBarMessage, ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus,
+    ScrollableText, ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section,
+    Sparkline, SparklineDirection, SparklineMessage, SparklineOutput, SparklineState, Spinner,
+    SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
+    StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
+    StatusLogMessage, StatusLogOutput, StatusLogState, StyledText, StyledTextMessage,
+    StyledTextOutput, StyledTextState, ThresholdZone, TitleCard, TitleCardMessage, TitleCardState,
+    Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
 };
 
 // Navigation components
 #[cfg(feature = "navigation-components")]
 pub use component::{
     Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Breadcrumb,
-    BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Menu, MenuItem,
-    MenuMessage, MenuOutput, MenuState, NavigationMode, Router, RouterMessage, RouterOutput,
+    BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, CommandPalette,
+    CommandPaletteMessage, CommandPaletteOutput, CommandPaletteState, Menu, MenuItem, MenuMessage,
+    MenuOutput, MenuState, NavigationMode, PaletteItem, Router, RouterMessage, RouterOutput,
     RouterState, StepIndicator, StepIndicatorMessage, StepIndicatorOutput, StepIndicatorState,
     Tabs, TabsMessage, TabsOutput, TabsState,
 };

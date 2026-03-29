@@ -1,0 +1,12 @@
+---
+source: src/component/command_palette/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+                                                            
+                                                            
+                                                            
+            ┌ Command Palette ─────────────────┐            
+            │> xyzxyz                          │            
+            ────────────────────────────────────            
+            │  No matches                      │            
+            └──────────────────────────────────┘

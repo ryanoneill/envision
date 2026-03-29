@@ -163,6 +163,9 @@ pub enum WidgetType {
     /// A toggle switch
     Switch,
 
+    /// A command palette overlay
+    CommandPalette,
+
     /// A big text display
     BigText,
 
@@ -196,6 +199,7 @@ impl WidgetType {
                 | WidgetType::StepIndicator
                 | WidgetType::Paginator
                 | WidgetType::Switch
+                | WidgetType::CommandPalette
         )
     }
 
@@ -481,6 +485,11 @@ impl Annotation {
     /// Creates a switch annotation.
     pub fn switch(id: impl Into<String>) -> Self {
         Self::new(WidgetType::Switch).with_id(id)
+    }
+
+    /// Creates a command palette annotation.
+    pub fn command_palette(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::CommandPalette).with_id(id)
     }
 
     /// Creates a big text annotation.
