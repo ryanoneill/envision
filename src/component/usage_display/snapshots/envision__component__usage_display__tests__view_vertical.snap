@@ -1,0 +1,9 @@
+---
+source: src/component/usage_display/tests.rs
+expression: terminal.backend().to_string()
+---
+┌────────────────────────────┐
+│CPU: 45%                    │
+│Memory: 3.2 GB              │
+│Disk: 120 GB                │
+└────────────────────────────┘
