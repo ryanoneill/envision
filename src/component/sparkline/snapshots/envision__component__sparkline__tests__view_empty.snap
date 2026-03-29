@@ -1,0 +1,6 @@
+---
+source: src/component/sparkline/tests.rs
+assertion_line: 380
+expression: terminal.backend().to_string()
+---
+
