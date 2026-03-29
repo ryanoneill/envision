@@ -174,6 +174,8 @@ mod key_hints;
 #[cfg(feature = "display-components")]
 mod multi_progress;
 #[cfg(feature = "display-components")]
+mod paginator;
+#[cfg(feature = "display-components")]
 pub mod progress_bar;
 #[cfg(feature = "display-components")]
 mod scrollable_text;
@@ -272,6 +274,8 @@ pub use multi_progress::{
     MultiProgress, MultiProgressMessage, MultiProgressOutput, MultiProgressState, ProgressItem,
     ProgressItemStatus,
 };
+#[cfg(feature = "display-components")]
+pub use paginator::{Paginator, PaginatorMessage, PaginatorOutput, PaginatorState, PaginatorStyle};
 #[cfg(feature = "display-components")]
 pub use progress_bar::{
     format_eta, ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState,
