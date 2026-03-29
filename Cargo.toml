@@ -126,6 +126,10 @@ name = "chart"
 required-features = ["compound-components"]
 
 [[example]]
+name = "chart_enhanced"
+required-features = ["compound-components"]
+
+[[example]]
 name = "checkbox"
 required-features = ["input-components"]
 
