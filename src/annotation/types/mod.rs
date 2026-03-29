@@ -151,6 +151,9 @@ pub enum WidgetType {
     /// A canvas drawing surface
     Canvas,
 
+    /// A help panel display
+    HelpPanel,
+
     /// A custom widget type
     Custom(String),
 }
@@ -444,6 +447,11 @@ impl Annotation {
     /// Creates a canvas annotation.
     pub fn canvas(id: impl Into<String>) -> Self {
         Self::new(WidgetType::Canvas).with_id(id)
+    }
+
+    /// Creates a help panel annotation.
+    pub fn help_panel(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::HelpPanel).with_id(id)
     }
 
     /// Creates a custom widget annotation.

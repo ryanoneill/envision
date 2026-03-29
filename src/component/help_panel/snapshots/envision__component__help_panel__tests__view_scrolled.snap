@@ -1,0 +1,15 @@
+---
+source: src/component/help_panel/tests.rs
+assertion_line: 624
+expression: terminal.backend().to_string()
+---
+┌ Help ────────────────────────────────┐
+│ Down/j  Move down                    ▲
+│ PgUp    Page up                      ║
+│ PgDn    Page down                    ║
+│                                      █
+│ Actions                              █
+│ ───────                              █
+│ Enter   Select item                  █
+│ Space   Toggle                       ▼
+└──────────────────────────────────────┘
