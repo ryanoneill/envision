@@ -156,6 +156,8 @@ mod tree;
 
 // Display components
 #[cfg(feature = "display-components")]
+mod divider;
+#[cfg(feature = "display-components")]
 mod gauge;
 #[cfg(feature = "display-components")]
 mod key_hints;
@@ -239,6 +241,8 @@ pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRo
 pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 
 // Display components
+#[cfg(feature = "display-components")]
+pub use divider::{Divider, DividerMessage, DividerOrientation, DividerState};
 #[cfg(feature = "display-components")]
 pub use gauge::{Gauge, GaugeMessage, GaugeOutput, GaugeState, GaugeVariant, ThresholdZone};
 #[cfg(feature = "display-components")]
