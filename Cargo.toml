@@ -138,6 +138,10 @@ name = "checkbox"
 required-features = ["input-components"]
 
 [[example]]
+name = "switch"
+required-features = ["input-components"]
+
+[[example]]
 name = "confirm_dialog"
 required-features = ["overlay-components"]
 
@@ -147,6 +151,10 @@ required-features = ["compound-components"]
 
 [[example]]
 name = "gauge"
+required-features = ["display-components"]
+
+[[example]]
+name = "help_panel"
 required-features = ["display-components"]
 
 [[example]]
