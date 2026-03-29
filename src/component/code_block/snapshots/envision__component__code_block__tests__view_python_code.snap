@@ -1,0 +1,12 @@
+---
+source: src/component/code_block/tests.rs
+expression: terminal.backend().to_string()
+---
+┌ greet.py ────────────────────────────────────────────────┐
+│    1  def greet(name):                                   │
+│    2      # Print greeting                               │
+│    3      print(f"Hello, {name}!")                       │
+│                                                          │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
