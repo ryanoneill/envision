@@ -1,0 +1,14 @@
+---
+source: src/component/flame_graph/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                         No data                          │
+│                                                          │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘

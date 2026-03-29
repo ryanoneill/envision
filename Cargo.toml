@@ -202,6 +202,10 @@ name = "file_browser"
 required-features = ["compound-components"]
 
 [[example]]
+name = "flame_graph"
+required-features = ["compound-components"]
+
+[[example]]
 name = "multi_progress"
 required-features = ["display-components"]
 
