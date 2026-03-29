@@ -160,6 +160,8 @@ mod tree;
 
 // Display components
 #[cfg(feature = "display-components")]
+mod big_text;
+#[cfg(feature = "display-components")]
 mod canvas;
 #[cfg(feature = "display-components")]
 mod collapsible;
@@ -257,6 +259,8 @@ pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRo
 pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 
 // Display components
+#[cfg(feature = "display-components")]
+pub use big_text::{big_char, big_char_width, BigText, BigTextMessage, BigTextState};
 #[cfg(feature = "display-components")]
 pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
 #[cfg(feature = "display-components")]

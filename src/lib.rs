@@ -192,21 +192,22 @@ pub use component::{
 // Display components
 #[cfg(feature = "display-components")]
 pub use component::{
-    format_eta, Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState, Collapsible,
-    CollapsibleMessage, CollapsibleOutput, CollapsibleState, Divider, DividerMessage,
-    DividerOrientation, DividerState, Gauge, GaugeMessage, GaugeOutput, GaugeState, GaugeVariant,
-    HelpPanel, HelpPanelMessage, HelpPanelState, KeyBinding, KeyBindingGroup, KeyHint, KeyHints,
-    KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress, MultiProgressMessage,
-    MultiProgressOutput, MultiProgressState, Paginator, PaginatorMessage, PaginatorOutput,
-    PaginatorState, PaginatorStyle, ProgressBar, ProgressBarMessage, ProgressBarOutput,
-    ProgressBarState, ProgressItem, ProgressItemStatus, ScrollableText, ScrollableTextMessage,
-    ScrollableTextOutput, ScrollableTextState, Section, Sparkline, SparklineDirection,
-    SparklineMessage, SparklineOutput, SparklineState, Spinner, SpinnerMessage, SpinnerState,
-    SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarState,
-    StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput,
-    StatusLogState, StyledText, StyledTextMessage, StyledTextOutput, StyledTextState,
-    ThresholdZone, TitleCard, TitleCardMessage, TitleCardState, Toast, ToastItem, ToastLevel,
-    ToastMessage, ToastOutput, ToastState,
+    big_char, big_char_width, format_eta, BigText, BigTextMessage, BigTextState, Canvas,
+    CanvasMarker, CanvasMessage, CanvasShape, CanvasState, Collapsible, CollapsibleMessage,
+    CollapsibleOutput, CollapsibleState, Divider, DividerMessage, DividerOrientation, DividerState,
+    Gauge, GaugeMessage, GaugeOutput, GaugeState, GaugeVariant, HelpPanel, HelpPanelMessage,
+    HelpPanelState, KeyBinding, KeyBindingGroup, KeyHint, KeyHints, KeyHintsLayout,
+    KeyHintsMessage, KeyHintsState, MultiProgress, MultiProgressMessage, MultiProgressOutput,
+    MultiProgressState, Paginator, PaginatorMessage, PaginatorOutput, PaginatorState,
+    PaginatorStyle, ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState,
+    ProgressItem, ProgressItemStatus, ScrollableText, ScrollableTextMessage, ScrollableTextOutput,
+    ScrollableTextState, Section, Sparkline, SparklineDirection, SparklineMessage, SparklineOutput,
+    SparklineState, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem,
+    StatusBarItemContent, StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog,
+    StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState, StyledText,
+    StyledTextMessage, StyledTextOutput, StyledTextState, ThresholdZone, TitleCard,
+    TitleCardMessage, TitleCardState, Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput,
+    ToastState,
 };
 
 // Navigation components

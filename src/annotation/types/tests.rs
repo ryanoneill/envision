@@ -259,6 +259,7 @@ fn test_widget_type_interactive_all() {
     assert!(!WidgetType::ScrollableText.is_interactive());
     assert!(!WidgetType::Form.is_interactive());
     assert!(!WidgetType::SplitPanel.is_interactive());
+    assert!(!WidgetType::BigText.is_interactive());
 }
 
 #[test]
