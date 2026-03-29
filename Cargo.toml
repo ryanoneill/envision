@@ -130,6 +130,10 @@ name = "calendar"
 required-features = ["display-components"]
 
 [[example]]
+name = "command_palette"
+required-features = ["navigation-components"]
+
+[[example]]
 name = "canvas"
 required-features = ["display-components"]
 
@@ -192,6 +196,10 @@ required-features = ["compound-components"]
 [[example]]
 name = "multi_progress"
 required-features = ["display-components"]
+
+[[example]]
+name = "number_input"
+required-features = ["input-components"]
 
 [[example]]
 name = "paginator"

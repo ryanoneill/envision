@@ -1,0 +1,15 @@
+---
+source: src/component/command_palette/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+                                                            
+                                                            
+            ┌ Command Palette ─────────────────┐            
+            │> o                               │            
+            ────────────────────────────────────            
+            │▸ Open Settings                   │            
+            │  Open File                 Ctrl+O│            
+            │  Close Tab                 Ctrl+W│            
+            │  Quit Application          Ctrl+Q│            
+            │                                  │            
+            └──────────────────────────────────┘

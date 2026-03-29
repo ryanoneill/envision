@@ -174,10 +174,11 @@ pub use component::{
     Button, ButtonMessage, ButtonOutput, ButtonState, Checkbox, CheckboxMessage, CheckboxOutput,
     CheckboxState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, InputField,
     InputFieldMessage, InputFieldOutput, InputFieldState, LineInput, LineInputMessage,
-    LineInputOutput, LineInputState, RadioGroup, RadioGroupMessage, RadioGroupOutput,
-    RadioGroupState, Select, SelectMessage, SelectOutput, SelectState, Slider, SliderMessage,
-    SliderOrientation, SliderOutput, SliderState, Switch, SwitchMessage, SwitchOutput, SwitchState,
-    TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
+    LineInputOutput, LineInputState, NumberInput, NumberInputMessage, NumberInputOutput,
+    NumberInputState, RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState, Select,
+    SelectMessage, SelectOutput, SelectState, Slider, SliderMessage, SliderOrientation,
+    SliderOutput, SliderState, Switch, SwitchMessage, SwitchOutput, SwitchState, TextArea,
+    TextAreaMessage, TextAreaOutput, TextAreaState,
 };
 
 // Data components
@@ -214,8 +215,9 @@ pub use component::{
 #[cfg(feature = "navigation-components")]
 pub use component::{
     Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Breadcrumb,
-    BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Menu, MenuItem,
-    MenuMessage, MenuOutput, MenuState, NavigationMode, Router, RouterMessage, RouterOutput,
+    BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, CommandPalette,
+    CommandPaletteMessage, CommandPaletteOutput, CommandPaletteState, Menu, MenuItem, MenuMessage,
+    MenuOutput, MenuState, NavigationMode, PaletteItem, Router, RouterMessage, RouterOutput,
     RouterState, StepIndicator, StepIndicatorMessage, StepIndicatorOutput, StepIndicatorState,
     Tabs, TabsMessage, TabsOutput, TabsState,
 };
