@@ -135,10 +135,11 @@ fn test_scroll_up_at_top() {
 #[test]
 fn test_page_up() {
     let mut state = content_state();
-    state.set_scroll_offset(15);
-    let output = ScrollableText::update(&mut state, ScrollableTextMessage::PageUp(10));
-    assert_eq!(state.scroll_offset(), 5);
-    assert_eq!(output, Some(ScrollableTextOutput::ScrollChanged(5)));
+    // content_state has 10 lines; set offset to 9 (max for 10-line content)
+    state.set_scroll_offset(9);
+    let output = ScrollableText::update(&mut state, ScrollableTextMessage::PageUp(5));
+    assert_eq!(state.scroll_offset(), 4);
+    assert_eq!(output, Some(ScrollableTextOutput::ScrollChanged(4)));
 }
 
 #[test]
@@ -176,9 +177,11 @@ fn test_home_already_at_top() {
 #[test]
 fn test_end() {
     let mut state = content_state();
+    // content_state has 10 lines; End scrolls to max_offset (content_length - viewport_height).
+    // With content_length=10 and viewport_height=0 (no render yet), max_offset=10.
     let output = ScrollableText::update(&mut state, ScrollableTextMessage::End);
     assert!(output.is_some());
-    assert_eq!(state.scroll_offset(), usize::MAX);
+    assert_eq!(state.scroll_offset(), 10);
 }
 
 #[test]
