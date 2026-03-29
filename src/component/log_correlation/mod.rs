@@ -9,7 +9,7 @@
 //! State is stored in [`LogCorrelationState`], updated via
 //! [`LogCorrelationMessage`], and produces [`LogCorrelationOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
