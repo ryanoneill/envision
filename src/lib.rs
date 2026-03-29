@@ -143,6 +143,7 @@ pub mod harness;
 pub mod input;
 pub mod layout;
 pub mod overlay;
+pub mod scroll;
 pub mod style;
 pub mod theme;
 #[cfg(feature = "input-components")]
@@ -222,6 +223,7 @@ pub use error::{BoxedError, EnvisionError, Result};
 pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
 pub use input::{Event, EventQueue};
 pub use overlay::{Overlay, OverlayAction, OverlayStack};
+pub use scroll::{render_scrollbar, render_scrollbar_inside_border, ScrollState};
 pub use theme::Theme;
 
 /// Prelude module for convenient imports.
@@ -253,6 +255,9 @@ pub mod prelude {
 
     // Theme
     pub use crate::theme::Theme;
+
+    // Scroll infrastructure
+    pub use crate::scroll::ScrollState;
 
     // All component types (the primary user-facing API)
     pub use crate::component::*;
