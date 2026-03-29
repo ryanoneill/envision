@@ -8,7 +8,7 @@
 //! State is stored in [`DependencyGraphState`], updated via
 //! [`DependencyGraphMessage`], and produces [`DependencyGraphOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
