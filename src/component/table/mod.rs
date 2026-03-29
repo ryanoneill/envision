@@ -67,6 +67,7 @@ use ratatui::widgets::{Block, Borders, Cell, Row};
 
 use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode};
+use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 /// State for a Table component.
@@ -86,6 +87,8 @@ pub struct TableState<T: TableRow> {
     focused: bool,
     disabled: bool,
     filter_text: String,
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    scroll: ScrollState,
 }
 
 impl<T: TableRow + PartialEq> PartialEq for TableState<T> {
@@ -112,6 +115,7 @@ impl<T: TableRow> Default for TableState<T> {
             focused: false,
             disabled: false,
             filter_text: String::new(),
+            scroll: ScrollState::default(),
         }
     }
 }
@@ -146,6 +150,7 @@ impl<T: TableRow> TableState<T> {
     pub fn new(rows: Vec<T>, columns: Vec<Column>) -> Self {
         let display_order: Vec<usize> = (0..rows.len()).collect();
         let selected = if rows.is_empty() { None } else { Some(0) };
+        let scroll = ScrollState::new(display_order.len());
         Self {
             rows,
             columns,
@@ -155,6 +160,7 @@ impl<T: TableRow> TableState<T> {
             focused: false,
             disabled: false,
             filter_text: String::new(),
+            scroll,
         }
     }
 
@@ -168,6 +174,7 @@ impl<T: TableRow> TableState<T> {
         } else {
             Some(selected.min(rows.len() - 1))
         };
+        let scroll = ScrollState::new(display_order.len());
         Self {
             rows,
             columns,
@@ -177,6 +184,7 @@ impl<T: TableRow> TableState<T> {
             focused: false,
             disabled: false,
             filter_text: String::new(),
+            scroll,
         }
     }
 
@@ -301,6 +309,7 @@ impl<T: TableRow> TableState<T> {
         self.filter_text.clear();
         self.display_order = (0..self.rows.len()).collect();
         self.sort = None;
+        self.scroll.set_content_length(self.display_order.len());
 
         if self.rows.is_empty() {
             self.selected = None;
@@ -445,6 +454,8 @@ impl<T: TableRow> TableState<T> {
                 }
             });
         }
+
+        self.scroll.set_content_length(self.display_order.len());
 
         // Preserve selection
         if let Some(orig) = selected_original {
@@ -769,6 +780,17 @@ impl<T: TableRow + 'static> Component for Table<T> {
         let mut table_state = ratatui::widgets::TableState::default();
         table_state.select(state.selected);
         frame.render_stateful_widget(table, area, &mut table_state);
+
+        // Render scrollbar by mirroring the offset from ratatui's TableState
+        let inner = area.inner(Margin::new(1, 1));
+        // Viewport for data rows: inner height minus header row (1) and bottom margin (1)
+        let data_viewport = (inner.height as usize).saturating_sub(2);
+        if data_viewport > 0 && state.display_order.len() > data_viewport {
+            let mut bar_scroll = ScrollState::new(state.display_order.len());
+            bar_scroll.set_viewport_height(data_viewport);
+            bar_scroll.set_offset(table_state.offset());
+            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        }
     }
 }
 

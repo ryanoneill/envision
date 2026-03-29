@@ -32,6 +32,7 @@ use ratatui::widgets::Paragraph;
 
 use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode};
+use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 mod traversal;
@@ -233,6 +234,9 @@ pub struct TreeState<T> {
     disabled: bool,
     /// Current filter text for searching nodes by label.
     filter_text: String,
+    /// Scroll state for scrollbar rendering.
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    scroll: ScrollState,
 }
 
 impl<T: Clone + PartialEq> PartialEq for TreeState<T> {
@@ -276,6 +280,7 @@ impl<T: Clone> TreeState<T> {
             focused: false,
             disabled: false,
             filter_text: String::new(),
+            scroll: ScrollState::default(),
         }
     }
 
@@ -347,6 +352,7 @@ impl<T: Clone> TreeState<T> {
         self.roots = roots;
         self.filter_text.clear();
         self.selected_index = if self.roots.is_empty() { None } else { Some(0) };
+        self.scroll.set_content_length(self.flatten().len());
     }
 
     /// Returns the currently selected index in the flattened view.
@@ -466,6 +472,7 @@ impl<T: Clone> TreeState<T> {
         for root in &mut self.roots {
             Self::expand_all_recursive(root);
         }
+        self.scroll.set_content_length(self.flatten().len());
     }
 
     /// Collapses all nodes in the tree.
@@ -487,6 +494,7 @@ impl<T: Clone> TreeState<T> {
         }
         // Reset selection to ensure it's still valid
         self.selected_index = if self.roots.is_empty() { None } else { Some(0) };
+        self.scroll.set_content_length(self.flatten().len());
     }
 
     /// Returns the number of visible nodes.
@@ -524,6 +532,7 @@ impl<T: Clone> TreeState<T> {
         let prev_path = self.selected_path();
         self.filter_text = text.to_string();
         self.revalidate_selection(prev_path);
+        self.scroll.set_content_length(self.flatten().len());
     }
 
     /// Clears the filter, showing all nodes with their original expanded state.
@@ -531,6 +540,7 @@ impl<T: Clone> TreeState<T> {
         let prev_path = self.selected_path();
         self.filter_text.clear();
         self.revalidate_selection(prev_path);
+        self.scroll.set_content_length(self.flatten().len());
     }
 }
 
@@ -777,6 +787,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
                         let path = node_info.path.clone();
                         if let Some(node) = state.get_node_mut(&path) {
                             node.expand();
+                            state.scroll.set_content_length(state.flatten().len());
                             return Some(TreeOutput::Expanded(path));
                         }
                     }
@@ -794,6 +805,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
                             if selected >= new_flat.len() {
                                 state.selected_index = Some(new_flat.len().saturating_sub(1));
                             }
+                            state.scroll.set_content_length(new_flat.len());
                             return Some(TreeOutput::Collapsed(path));
                         }
                     }
@@ -813,8 +825,10 @@ impl<T: Clone + 'static> Component for Tree<T> {
                                 if selected >= new_flat.len() {
                                     state.selected_index = Some(new_flat.len().saturating_sub(1));
                                 }
+                                state.scroll.set_content_length(new_flat.len());
                                 return Some(TreeOutput::Collapsed(path));
                             } else {
+                                state.scroll.set_content_length(state.flatten().len());
                                 return Some(TreeOutput::Expanded(path));
                             }
                         }
@@ -827,10 +841,12 @@ impl<T: Clone + 'static> Component for Tree<T> {
                 .map(|node_info| TreeOutput::Selected(node_info.path.clone())),
             TreeMessage::ExpandAll => {
                 state.expand_all();
+                // scroll content length already updated by expand_all()
                 None
             }
             TreeMessage::CollapseAll => {
                 state.collapse_all();
+                // scroll content length already updated by collapse_all()
                 None
             }
             TreeMessage::SetFilter(_) | TreeMessage::ClearFilter => {
@@ -859,8 +875,24 @@ impl<T: Clone + 'static> Component for Tree<T> {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
-        let lines = Self::render_lines(state, area.width, theme);
-        let text = Text::from(lines);
+        let all_lines = Self::render_lines(state, area.width, theme);
+        let viewport_height = area.height as usize;
+
+        // Use a local ScrollState for scrollbar rendering and virtual scrolling
+        let mut bar_scroll = ScrollState::new(all_lines.len());
+        bar_scroll.set_viewport_height(viewport_height);
+        if let Some(idx) = state.selected_index {
+            bar_scroll.ensure_visible(idx);
+        }
+
+        let range = bar_scroll.visible_range();
+        let visible_lines: Vec<Line<'static>> = all_lines
+            .into_iter()
+            .skip(range.start)
+            .take(range.len())
+            .collect();
+
+        let text = Text::from(visible_lines);
         let paragraph = Paragraph::new(text);
 
         let annotation = crate::annotation::Annotation::new(crate::annotation::WidgetType::Tree)
@@ -869,6 +901,9 @@ impl<T: Clone + 'static> Component for Tree<T> {
             .with_disabled(state.disabled);
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
         frame.render_widget(annotated, area);
+
+        // Render scrollbar if content exceeds viewport
+        crate::scroll::render_scrollbar(&bar_scroll, frame, area, theme);
     }
 }
 
