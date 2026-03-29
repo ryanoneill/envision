@@ -170,6 +170,10 @@ name = "gauge"
 required-features = ["display-components"]
 
 [[example]]
+name = "histogram"
+required-features = ["compound-components"]
+
+[[example]]
 name = "help_panel"
 required-features = ["display-components"]
 
