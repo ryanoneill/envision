@@ -174,29 +174,28 @@ impl Component for ChatView {
                 None
             }
             ChatViewMessage::ScrollUp => {
-                if state.scroll_offset > 0 {
-                    state.scroll_offset -= 1;
-                    state.auto_scroll = false;
-                }
+                state.scroll.set_content_length(state.messages.len());
+                state.scroll.scroll_up();
+                state.auto_scroll = false;
                 None
             }
             ChatViewMessage::ScrollDown => {
-                let max = state.messages.len().saturating_sub(1);
-                if state.scroll_offset < max {
-                    state.scroll_offset += 1;
-                    if state.scroll_offset >= max {
-                        state.auto_scroll = true;
-                    }
+                state.scroll.set_content_length(state.messages.len());
+                state.scroll.scroll_down();
+                if state.scroll.at_end() {
+                    state.auto_scroll = true;
                 }
                 None
             }
             ChatViewMessage::ScrollToTop => {
-                state.scroll_offset = 0;
+                state.scroll.set_content_length(state.messages.len());
+                state.scroll.scroll_to_start();
                 state.auto_scroll = false;
                 None
             }
             ChatViewMessage::ScrollToBottom => {
-                state.scroll_to_bottom();
+                state.scroll.set_content_length(state.messages.len());
+                state.scroll.scroll_to_end();
                 state.auto_scroll = true;
                 None
             }
