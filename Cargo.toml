@@ -238,6 +238,10 @@ name = "selectable_list"
 required-features = ["data-components"]
 
 [[example]]
+name = "slider"
+required-features = ["input-components"]
+
+[[example]]
 name = "sparkline"
 required-features = ["display-components"]
 

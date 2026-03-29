@@ -120,6 +120,8 @@ mod radio_group;
 #[cfg(feature = "input-components")]
 mod select;
 #[cfg(feature = "input-components")]
+mod slider;
+#[cfg(feature = "input-components")]
 mod switch;
 #[cfg(feature = "input-components")]
 mod text_area;
@@ -228,6 +230,8 @@ pub use line_input::{LineInput, LineInputMessage, LineInputOutput, LineInputStat
 pub use radio_group::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState};
 #[cfg(feature = "input-components")]
 pub use select::{Select, SelectMessage, SelectOutput, SelectState};
+#[cfg(feature = "input-components")]
+pub use slider::{Slider, SliderMessage, SliderOrientation, SliderOutput, SliderState};
 #[cfg(feature = "input-components")]
 pub use switch::{Switch, SwitchMessage, SwitchOutput, SwitchState};
 #[cfg(feature = "input-components")]

@@ -175,8 +175,9 @@ pub use component::{
     CheckboxState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, InputField,
     InputFieldMessage, InputFieldOutput, InputFieldState, LineInput, LineInputMessage,
     LineInputOutput, LineInputState, RadioGroup, RadioGroupMessage, RadioGroupOutput,
-    RadioGroupState, Select, SelectMessage, SelectOutput, SelectState, Switch, SwitchMessage,
-    SwitchOutput, SwitchState, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
+    RadioGroupState, Select, SelectMessage, SelectOutput, SelectState, Slider, SliderMessage,
+    SliderOrientation, SliderOutput, SliderState, Switch, SwitchMessage, SwitchOutput, SwitchState,
+    TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
 };
 
 // Data components
