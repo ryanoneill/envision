@@ -41,6 +41,7 @@ use ratatui::prelude::*;
 
 use super::{Component, TextAreaState};
 use crate::input::Event;
+use crate::scroll::ScrollState;
 
 /// State for a ChatView component.
 ///
@@ -51,8 +52,8 @@ pub struct ChatViewState {
     messages: Vec<ChatMessage>,
     /// The text input area.
     input: TextAreaState,
-    /// Scroll offset for the message history.
-    scroll_offset: usize,
+    /// Scroll state for the message history.
+    scroll: ScrollState,
     /// Whether to auto-scroll to bottom on new messages.
     auto_scroll: bool,
     /// Maximum number of messages to keep.
@@ -78,7 +79,7 @@ impl Default for ChatViewState {
         Self {
             messages: Vec::new(),
             input: TextAreaState::with_placeholder("Type a message..."),
-            scroll_offset: 0,
+            scroll: ScrollState::default(),
             auto_scroll: true,
             max_messages: 1000,
             focus: Focus::Input,
@@ -95,7 +96,7 @@ impl Default for ChatViewState {
 impl PartialEq for ChatViewState {
     fn eq(&self, other: &Self) -> bool {
         self.messages == other.messages
-            && self.scroll_offset == other.scroll_offset
+            && self.scroll == other.scroll
             && self.auto_scroll == other.auto_scroll
             && self.max_messages == other.max_messages
             && self.focus == other.focus
@@ -217,6 +218,7 @@ impl ChatViewState {
         while self.messages.len() > self.max_messages {
             self.messages.remove(0);
         }
+        self.scroll.set_content_length(self.messages.len());
         if self.auto_scroll {
             self.scroll_to_bottom();
         }
@@ -309,7 +311,7 @@ impl ChatViewState {
     /// ```
     pub fn clear_messages(&mut self) {
         self.messages.clear();
-        self.scroll_offset = 0;
+        self.scroll = ScrollState::default();
     }
 
     // ---- Accessors ----
@@ -400,7 +402,7 @@ impl ChatViewState {
     /// assert_eq!(state.scroll_offset(), 0);
     /// ```
     pub fn scroll_offset(&self) -> usize {
-        self.scroll_offset
+        self.scroll.offset()
     }
 
     /// Returns the maximum number of messages.
@@ -525,7 +527,8 @@ impl ChatViewState {
 
     /// Scrolls the message history to the bottom (newest).
     fn scroll_to_bottom(&mut self) {
-        self.scroll_offset = self.messages.len().saturating_sub(1);
+        self.scroll.set_content_length(self.messages.len());
+        self.scroll.scroll_to_end();
     }
 
     // ---- Instance methods ----

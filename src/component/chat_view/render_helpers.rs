@@ -47,7 +47,7 @@ pub(super) fn render_history(state: &ChatViewState, frame: &mut Frame, area: Rec
         total_lines.saturating_sub(visible_lines)
     } else {
         // Approximate: each message is roughly 2+ lines
-        let estimated_line = state.scroll_offset.saturating_mul(2);
+        let estimated_line = state.scroll.offset().saturating_mul(2);
         estimated_line.min(total_lines.saturating_sub(visible_lines))
     };
 
@@ -60,6 +60,14 @@ pub(super) fn render_history(state: &ChatViewState, frame: &mut Frame, area: Rec
 
     let list = List::new(items);
     frame.render_widget(list, inner);
+
+    // Render scrollbar when content exceeds viewport
+    if total_lines > visible_lines {
+        let mut bar_scroll = crate::scroll::ScrollState::new(total_lines);
+        bar_scroll.set_viewport_height(visible_lines);
+        bar_scroll.set_offset(line_offset);
+        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+    }
 }
 
 /// Formats a chat message into display lines.

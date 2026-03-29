@@ -369,8 +369,8 @@ fn test_focus_history() {
 #[test]
 fn test_scroll_down() {
     let mut state = state_with_messages();
-    state.auto_scroll = false;
-    state.scroll_offset = 0;
+    state.set_auto_scroll(false);
+    state.scroll.set_offset(0);
     ChatView::update(&mut state, ChatViewMessage::ScrollDown);
     assert_eq!(state.scroll_offset(), 1);
 }
@@ -378,8 +378,9 @@ fn test_scroll_down() {
 #[test]
 fn test_scroll_up() {
     let mut state = state_with_messages();
-    state.auto_scroll = false;
-    state.scroll_offset = 2;
+    state.set_auto_scroll(false);
+    state.scroll.set_content_length(state.messages().len());
+    state.scroll.set_offset(2);
     ChatView::update(&mut state, ChatViewMessage::ScrollUp);
     assert_eq!(state.scroll_offset(), 1);
 }
@@ -387,7 +388,7 @@ fn test_scroll_up() {
 #[test]
 fn test_scroll_up_at_top() {
     let mut state = state_with_messages();
-    state.scroll_offset = 0;
+    state.scroll.set_offset(0);
     ChatView::update(&mut state, ChatViewMessage::ScrollUp);
     assert_eq!(state.scroll_offset(), 0);
 }
@@ -395,7 +396,8 @@ fn test_scroll_up_at_top() {
 #[test]
 fn test_scroll_to_top() {
     let mut state = state_with_messages();
-    state.scroll_offset = 2;
+    state.scroll.set_content_length(state.messages().len());
+    state.scroll.set_offset(2);
     ChatView::update(&mut state, ChatViewMessage::ScrollToTop);
     assert_eq!(state.scroll_offset(), 0);
     assert!(!state.auto_scroll());
@@ -404,10 +406,10 @@ fn test_scroll_to_top() {
 #[test]
 fn test_scroll_to_bottom() {
     let mut state = state_with_messages();
-    state.auto_scroll = false;
-    state.scroll_offset = 0;
+    state.set_auto_scroll(false);
+    state.scroll.set_offset(0);
     ChatView::update(&mut state, ChatViewMessage::ScrollToBottom);
-    assert_eq!(state.scroll_offset(), 2);
+    assert!(state.scroll.at_end());
     assert!(state.auto_scroll());
 }
 
