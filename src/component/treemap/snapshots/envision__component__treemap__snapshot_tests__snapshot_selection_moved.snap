@@ -1,0 +1,14 @@
+---
+source: src/component/treemap/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│     first        second      third   │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│Selected: second — 30.0 (30.0%)       │
+└──────────────────────────────────────┘

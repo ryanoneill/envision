@@ -139,6 +139,8 @@ mod chat_view;
 mod data_grid;
 #[cfg(feature = "compound-components")]
 pub mod dependency_graph;
+
+pub mod diff_viewer;
 #[cfg(feature = "compound-components")]
 mod event_stream;
 #[cfg(feature = "compound-components")]
@@ -151,6 +153,8 @@ mod form;
 mod heatmap;
 #[cfg(feature = "compound-components")]
 mod histogram;
+#[cfg(feature = "compound-components")]
+mod log_correlation;
 #[cfg(feature = "compound-components")]
 mod log_viewer;
 #[cfg(feature = "compound-components")]
@@ -165,6 +169,8 @@ mod span_tree;
 mod split_panel;
 #[cfg(feature = "compound-components")]
 mod timeline;
+#[cfg(feature = "compound-components")]
+pub mod treemap;
 
 // Data components
 #[cfg(feature = "data-components")]
@@ -341,6 +347,11 @@ pub use dependency_graph::{
     NodeStatus,
 };
 #[cfg(feature = "compound-components")]
+pub use diff_viewer::{
+    DiffHunk, DiffLine, DiffLineType, DiffMode, DiffViewer, DiffViewerMessage, DiffViewerOutput,
+    DiffViewerState,
+};
+#[cfg(feature = "compound-components")]
 pub use event_stream::{
     EventLevel, EventStream, EventStreamMessage, EventStreamOutput, EventStreamState, StreamEvent,
 };
@@ -358,6 +369,11 @@ pub use heatmap::{
 };
 #[cfg(feature = "compound-components")]
 pub use histogram::{Histogram, HistogramMessage, HistogramState};
+#[cfg(feature = "compound-components")]
+pub use log_correlation::{
+    CorrelationEntry, CorrelationLevel, LogCorrelation, LogCorrelationMessage,
+    LogCorrelationOutput, LogCorrelationState, LogStream,
+};
 #[cfg(feature = "compound-components")]
 pub use log_viewer::{LogViewer, LogViewerMessage, LogViewerOutput, LogViewerState};
 #[cfg(feature = "compound-components")]
@@ -382,6 +398,8 @@ pub use timeline::{
     SelectedType, Timeline, TimelineEvent, TimelineMessage, TimelineOutput, TimelineSpan,
     TimelineState,
 };
+#[cfg(feature = "compound-components")]
+pub use treemap::{Treemap, TreemapMessage, TreemapNode, TreemapOutput, TreemapState};
 
 #[cfg(feature = "display-components")]
 pub use scrollable_text::{

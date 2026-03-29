@@ -126,6 +126,10 @@ name = "dependency_graph"
 required-features = ["compound-components"]
 
 [[example]]
+name = "diff_viewer"
+required-features = ["compound-components"]
+
+[[example]]
 name = "accordion"
 required-features = ["navigation-components"]
 
@@ -200,6 +204,10 @@ required-features = ["display-components"]
 [[example]]
 name = "loading_list"
 required-features = ["data-components"]
+
+[[example]]
+name = "log_correlation"
+required-features = ["compound-components"]
 
 [[example]]
 name = "log_viewer"
@@ -311,6 +319,10 @@ required-features = ["navigation-components"]
 
 [[example]]
 name = "timeline"
+required-features = ["compound-components"]
+
+[[example]]
+name = "treemap"
 required-features = ["compound-components"]
 
 [[example]]
