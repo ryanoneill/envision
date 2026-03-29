@@ -138,6 +138,8 @@ mod chat_view;
 #[cfg(feature = "compound-components")]
 mod data_grid;
 #[cfg(feature = "compound-components")]
+pub mod dependency_graph;
+
 pub mod diff_viewer;
 #[cfg(feature = "compound-components")]
 mod event_stream;
@@ -337,6 +339,13 @@ pub use chat_view::{
 };
 #[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
+#[cfg(feature = "compound-components")]
+pub use dependency_graph::{
+    layout::LayoutEdge as DependencyGraphLayoutEdge,
+    layout::LayoutNode as DependencyGraphLayoutNode, DependencyGraph, DependencyGraphMessage,
+    DependencyGraphOutput, DependencyGraphState, GraphEdge, GraphNode, GraphOrientation,
+    NodeStatus,
+};
 #[cfg(feature = "compound-components")]
 pub use diff_viewer::{
     DiffHunk, DiffLine, DiffLineType, DiffMode, DiffViewer, DiffViewerMessage, DiffViewerOutput,
