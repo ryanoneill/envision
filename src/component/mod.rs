@@ -138,6 +138,8 @@ mod chat_view;
 #[cfg(feature = "compound-components")]
 mod data_grid;
 #[cfg(feature = "compound-components")]
+pub mod dependency_graph;
+#[cfg(feature = "compound-components")]
 mod event_stream;
 #[cfg(feature = "compound-components")]
 pub mod file_browser;
@@ -331,6 +333,13 @@ pub use chat_view::{
 };
 #[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
+#[cfg(feature = "compound-components")]
+pub use dependency_graph::{
+    layout::LayoutEdge as DependencyGraphLayoutEdge,
+    layout::LayoutNode as DependencyGraphLayoutNode, DependencyGraph, DependencyGraphMessage,
+    DependencyGraphOutput, DependencyGraphState, GraphEdge, GraphNode, GraphOrientation,
+    NodeStatus,
+};
 #[cfg(feature = "compound-components")]
 pub use event_stream::{
     EventLevel, EventStream, EventStreamMessage, EventStreamOutput, EventStreamState, StreamEvent,
