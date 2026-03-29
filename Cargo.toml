@@ -138,6 +138,10 @@ name = "checkbox"
 required-features = ["input-components"]
 
 [[example]]
+name = "collapsible"
+required-features = ["display-components"]
+
+[[example]]
 name = "switch"
 required-features = ["input-components"]
 

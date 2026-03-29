@@ -1,0 +1,10 @@
+---
+source: src/component/collapsible/tests.rs
+expression: terminal.backend().to_string()
+---
+▾ Details                               
+│                                       
+│                                       
+│                                       
+│                                       
+└───────────────────────────────────────

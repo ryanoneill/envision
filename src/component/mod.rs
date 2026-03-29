@@ -162,6 +162,8 @@ mod tree;
 #[cfg(feature = "display-components")]
 mod canvas;
 #[cfg(feature = "display-components")]
+mod collapsible;
+#[cfg(feature = "display-components")]
 mod divider;
 #[cfg(feature = "display-components")]
 mod gauge;
@@ -255,6 +257,8 @@ pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 // Display components
 #[cfg(feature = "display-components")]
 pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
+#[cfg(feature = "display-components")]
+pub use collapsible::{Collapsible, CollapsibleMessage, CollapsibleOutput, CollapsibleState};
 #[cfg(feature = "display-components")]
 pub use divider::{Divider, DividerMessage, DividerOrientation, DividerState};
 #[cfg(feature = "display-components")]
