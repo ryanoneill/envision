@@ -152,6 +152,8 @@ mod heatmap;
 #[cfg(feature = "compound-components")]
 mod histogram;
 #[cfg(feature = "compound-components")]
+mod log_correlation;
+#[cfg(feature = "compound-components")]
 mod log_viewer;
 #[cfg(feature = "compound-components")]
 mod metrics_dashboard;
@@ -358,6 +360,11 @@ pub use heatmap::{
 };
 #[cfg(feature = "compound-components")]
 pub use histogram::{Histogram, HistogramMessage, HistogramState};
+#[cfg(feature = "compound-components")]
+pub use log_correlation::{
+    CorrelationEntry, CorrelationLevel, LogCorrelation, LogCorrelationMessage,
+    LogCorrelationOutput, LogCorrelationState, LogStream,
+};
 #[cfg(feature = "compound-components")]
 pub use log_viewer::{LogViewer, LogViewerMessage, LogViewerOutput, LogViewerState};
 #[cfg(feature = "compound-components")]

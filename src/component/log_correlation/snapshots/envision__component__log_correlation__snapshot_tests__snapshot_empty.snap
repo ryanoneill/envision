@@ -1,0 +1,24 @@
+---
+source: src/component/log_correlation/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                             No streams configured                            │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+ Active: None  Sync: ON
