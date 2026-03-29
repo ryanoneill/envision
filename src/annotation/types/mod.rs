@@ -151,6 +151,9 @@ pub enum WidgetType {
     /// A canvas drawing surface
     Canvas,
 
+    /// A toggle switch
+    Switch,
+
     /// A custom widget type
     Custom(String),
 }
@@ -179,6 +182,7 @@ impl WidgetType {
                 | WidgetType::SearchableList
                 | WidgetType::FileBrowser
                 | WidgetType::StepIndicator
+                | WidgetType::Switch
         )
     }
 
@@ -444,6 +448,11 @@ impl Annotation {
     /// Creates a canvas annotation.
     pub fn canvas(id: impl Into<String>) -> Self {
         Self::new(WidgetType::Canvas).with_id(id)
+    }
+
+    /// Creates a switch annotation.
+    pub fn switch(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Switch).with_id(id)
     }
 
     /// Creates a custom widget annotation.
