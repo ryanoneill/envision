@@ -175,8 +175,8 @@ pub use component::{
     CheckboxState, Dropdown, DropdownMessage, DropdownOutput, DropdownState, InputField,
     InputFieldMessage, InputFieldOutput, InputFieldState, LineInput, LineInputMessage,
     LineInputOutput, LineInputState, RadioGroup, RadioGroupMessage, RadioGroupOutput,
-    RadioGroupState, Select, SelectMessage, SelectOutput, SelectState, TextArea, TextAreaMessage,
-    TextAreaOutput, TextAreaState,
+    RadioGroupState, Select, SelectMessage, SelectOutput, SelectState, Switch, SwitchMessage,
+    SwitchOutput, SwitchState, TextArea, TextAreaMessage, TextAreaOutput, TextAreaState,
 };
 
 // Data components
@@ -192,9 +192,10 @@ pub use component::{
 #[cfg(feature = "display-components")]
 pub use component::{
     format_eta, Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState, Gauge, GaugeMessage,
-    GaugeOutput, GaugeState, GaugeVariant, KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage,
-    KeyHintsState, MultiProgress, MultiProgressMessage, MultiProgressOutput, MultiProgressState,
-    Paginator, PaginatorMessage, PaginatorOutput, PaginatorState, PaginatorStyle, ProgressBar,
+    GaugeOutput, GaugeState, GaugeVariant, HelpPanel, HelpPanelMessage, HelpPanelState, KeyBinding,
+    KeyBindingGroup, KeyHint, KeyHints, KeyHintsLayout, KeyHintsMessage, KeyHintsState,
+    MultiProgress, MultiProgressMessage, MultiProgressOutput, MultiProgressState, Paginator,
+    PaginatorMessage, PaginatorOutput, PaginatorState, PaginatorStyle, ProgressBar,
     ProgressBarMessage, ProgressBarOutput, ProgressBarState, ProgressItem, ProgressItemStatus,
     ScrollableText, ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section,
     Sparkline, SparklineDirection, SparklineMessage, SparklineOutput, SparklineState, Spinner,

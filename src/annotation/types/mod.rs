@@ -154,6 +154,12 @@ pub enum WidgetType {
     /// A paginator navigation indicator
     Paginator,
 
+    /// A help panel display
+    HelpPanel,
+
+    /// A toggle switch
+    Switch,
+
     /// A custom widget type
     Custom(String),
 }
@@ -183,6 +189,7 @@ impl WidgetType {
                 | WidgetType::FileBrowser
                 | WidgetType::StepIndicator
                 | WidgetType::Paginator
+                | WidgetType::Switch
         )
     }
 
@@ -453,6 +460,16 @@ impl Annotation {
     /// Creates a paginator annotation.
     pub fn paginator(id: impl Into<String>) -> Self {
         Self::new(WidgetType::Paginator).with_id(id)
+    }
+
+    /// Creates a help panel annotation.
+    pub fn help_panel(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::HelpPanel).with_id(id)
+    }
+
+    /// Creates a switch annotation.
+    pub fn switch(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::Switch).with_id(id)
     }
 
     /// Creates a custom widget annotation.
