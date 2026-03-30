@@ -944,4 +944,6 @@ impl<T: Clone> Disableable for LoadingList<T> {
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;

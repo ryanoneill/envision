@@ -770,4 +770,6 @@ impl Disableable for MultiProgress {
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;

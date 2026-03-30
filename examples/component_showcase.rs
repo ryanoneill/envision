@@ -1,4 +1,4 @@
-//! Component Showcase - Demonstrating 12+ Envision components in a single application.
+//! Component Showcase - Demonstrating 18+ Envision components in a single application.
 //!
 //! This example shows how to compose multiple components together into a cohesive
 //! application using The Elm Architecture (TEA) pattern. It demonstrates:
@@ -24,14 +24,24 @@
 //! - Spinner (loading animation)
 //! - Toast (notification popups)
 //! - Dialog (modal confirmation)
+//! - Sparkline (compact data trend)
+//! - Gauge (visual measurement)
+//! - Heatmap (2D color grid)
+//! - Timeline (event/span visualization)
+//! - CommandPalette (fuzzy finder)
+//! - CodeBlock (syntax highlighting)
 //!
-//! Run with: `cargo run --example component_showcase`
+//! Run with: `cargo run --example component_showcase --features full`
 
+use envision::component::code_block::highlight::Language;
 use envision::component::{
-    ButtonState, CheckboxState, Column, Component, Dialog, DialogMessage, DialogOutput,
-    DialogState, FocusManager, InputFieldState, MenuItem, MenuOutput, MenuState, ProgressBarState,
-    RadioGroupState, SelectableListState, Spinner, SpinnerMessage, SpinnerState, Table,
-    TableOutput, TableRow, TableState, Tabs, TabsState, Toast, ToastMessage, ToastState,
+    ButtonState, CheckboxState, CodeBlock, CodeBlockState, Column, CommandPalette,
+    CommandPaletteState, Component, Dialog, DialogMessage, DialogOutput, DialogState, FocusManager,
+    Gauge, GaugeState, GaugeVariant, Heatmap, HeatmapState, InputFieldState, MenuItem, MenuOutput,
+    MenuState, PaletteItem, ProgressBarState, RadioGroupState, SelectableListState, Sparkline,
+    SparklineState, Spinner, SpinnerMessage, SpinnerState, Table, TableOutput, TableRow,
+    TableState, Tabs, TabsState, Timeline, TimelineEvent, TimelineSpan, TimelineState, Toast,
+    ToastMessage, ToastState,
 };
 use envision::prelude::*;
 use ratatui::layout::{Alignment, Constraint, Layout};
@@ -53,6 +63,10 @@ enum FocusId {
     List,
     Table,
     Progress,
+    Heatmap,
+    Timeline,
+    CommandPalette,
+    CodeBlock,
 }
 
 // ---------------------------------------------------------------------------
@@ -83,6 +97,7 @@ enum Panel {
     Form,
     Data,
     Status,
+    Viz,
 }
 
 impl std::fmt::Display for Panel {
@@ -91,6 +106,7 @@ impl std::fmt::Display for Panel {
             Panel::Form => write!(f, "Form"),
             Panel::Data => write!(f, "Data"),
             Panel::Status => write!(f, "Status"),
+            Panel::Viz => write!(f, "Viz"),
         }
     }
 }
@@ -117,6 +133,14 @@ struct State {
     spinner: SpinnerState,
     toast: ToastState,
 
+    // Viz panel
+    sparkline: SparklineState,
+    gauge: GaugeState,
+    heatmap: HeatmapState,
+    timeline: TimelineState,
+    command_palette: CommandPaletteState,
+    code_block: CodeBlockState,
+
     // Dialog overlay
     dialog: DialogState,
 
@@ -136,10 +160,14 @@ impl Default for State {
             FocusId::List,
             FocusId::Table,
             FocusId::Progress,
+            FocusId::Heatmap,
+            FocusId::Timeline,
+            FocusId::CommandPalette,
+            FocusId::CodeBlock,
         ]);
         focus.focus(&FocusId::Tabs);
 
-        let tabs = TabsState::new(vec![Panel::Form, Panel::Data, Panel::Status]);
+        let tabs = TabsState::new(vec![Panel::Form, Panel::Data, Panel::Status, Panel::Viz]);
 
         let menu = MenuState::new(vec![
             MenuItem::new("File"),
@@ -204,6 +232,64 @@ impl Default for State {
 
         let toast = ToastState::with_max_visible(3);
 
+        // Viz panel components
+        let sparkline =
+            SparklineState::with_data(vec![2, 5, 8, 12, 7, 4, 9, 15, 11, 6, 3, 8, 10, 14, 9, 5])
+                .with_title("Request Rate");
+
+        let gauge = GaugeState::new(73.0, 100.0)
+            .with_label("CPU Usage")
+            .with_units("%")
+            .with_variant(GaugeVariant::Full);
+
+        let heatmap = HeatmapState::with_data(vec![
+            vec![1.0, 3.0, 5.0, 2.0, 7.0],
+            vec![4.0, 6.0, 2.0, 8.0, 3.0],
+            vec![2.0, 1.0, 9.0, 4.0, 6.0],
+        ])
+        .with_row_labels(vec!["Mon".into(), "Tue".into(), "Wed".into()])
+        .with_col_labels(vec![
+            "00:00".into(),
+            "06:00".into(),
+            "12:00".into(),
+            "18:00".into(),
+            "24:00".into(),
+        ])
+        .with_title("Error Rate by Day/Hour");
+
+        let timeline = TimelineState::new()
+            .with_events(vec![
+                TimelineEvent::new("e1", 100.0, "Deploy v2.1"),
+                TimelineEvent::new("e2", 450.0, "Alert fired"),
+                TimelineEvent::new("e3", 800.0, "Resolved"),
+            ])
+            .with_spans(vec![
+                TimelineSpan::new("s1", 100.0, 300.0, "Build"),
+                TimelineSpan::new("s2", 300.0, 700.0, "Test"),
+                TimelineSpan::new("s3", 700.0, 900.0, "Deploy"),
+            ])
+            .with_view_range(0.0, 1000.0)
+            .with_title("CI/CD Pipeline");
+
+        let command_palette = CommandPaletteState::new(vec![
+            PaletteItem::new("open", "Open File"),
+            PaletteItem::new("save", "Save File"),
+            PaletteItem::new("quit", "Quit Application"),
+            PaletteItem::new("find", "Find in Files"),
+            PaletteItem::new("replace", "Find and Replace"),
+            PaletteItem::new("settings", "Open Settings"),
+        ])
+        .with_title("Command Palette")
+        .with_visible(true);
+
+        let code_block = CodeBlockState::new()
+            .with_code(
+                "fn main() {\n    let data = vec![1, 2, 3];\n    for item in &data {\n        println!(\"{item}\");\n    }\n}",
+            )
+            .with_language(Language::Rust)
+            .with_line_numbers(true)
+            .with_title("Example Code");
+
         let dialog = DialogState::confirm("Confirm Submission", "Submit the form?");
 
         Self {
@@ -219,6 +305,12 @@ impl Default for State {
             progress,
             spinner,
             toast,
+            sparkline,
+            gauge,
+            heatmap,
+            timeline,
+            command_palette,
+            code_block,
             dialog,
             submission_count: 0,
         }
@@ -327,6 +419,18 @@ impl App for ShowcaseApp {
                         // Progress bar isn't interactive via keyboard;
                         // could extend to handle +/- keys here.
                     }
+                    Some(FocusId::Heatmap) => {
+                        state.heatmap.dispatch_event(&event);
+                    }
+                    Some(FocusId::Timeline) => {
+                        state.timeline.dispatch_event(&event);
+                    }
+                    Some(FocusId::CommandPalette) => {
+                        state.command_palette.dispatch_event(&event);
+                    }
+                    Some(FocusId::CodeBlock) => {
+                        state.code_block.dispatch_event(&event);
+                    }
                     None => {}
                 }
             }
@@ -366,6 +470,7 @@ impl App for ShowcaseApp {
             Some(Panel::Form) => render_form_panel(state, frame, content_area, &theme),
             Some(Panel::Data) => render_data_panel(state, frame, content_area, &theme),
             Some(Panel::Status) => render_status_panel(state, frame, content_area, &theme),
+            Some(Panel::Viz) => render_viz_panel(state, frame, content_area, &theme),
             None => {}
         }
 
@@ -514,6 +619,42 @@ fn render_status_panel(state: &State, frame: &mut Frame, area: Rect, theme: &The
     Toast::view(&state.toast, frame, chunks[2], theme);
 }
 
+fn render_viz_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(theme.border_style())
+        .title("Visualization Panel");
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    // Top row: Sparkline + Gauge | Bottom row: Heatmap + Timeline + CodeBlock
+    let rows = Layout::vertical([
+        Constraint::Length(5), // Sparkline + Gauge
+        Constraint::Length(7), // Heatmap
+        Constraint::Length(8), // Timeline
+        Constraint::Min(6),    // CommandPalette + CodeBlock
+    ])
+    .split(inner);
+
+    // Row 1: Sparkline (left) + Gauge (right)
+    let top_cols =
+        Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).split(rows[0]);
+    Sparkline::view(&state.sparkline, frame, top_cols[0], theme);
+    Gauge::view(&state.gauge, frame, top_cols[1], theme);
+
+    // Row 2: Heatmap (full width)
+    Heatmap::view(&state.heatmap, frame, rows[1], theme);
+
+    // Row 3: Timeline (full width)
+    Timeline::view(&state.timeline, frame, rows[2], theme);
+
+    // Row 4: CommandPalette (left) + CodeBlock (right)
+    let bottom_cols =
+        Layout::horizontal([Constraint::Percentage(40), Constraint::Percentage(60)]).split(rows[3]);
+    CommandPalette::view(&state.command_palette, frame, bottom_cols[0], theme);
+    CodeBlock::view(&state.code_block, frame, bottom_cols[1], theme);
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -535,6 +676,16 @@ fn sync_focus(state: &mut State) {
         .set_focused(focused == Some(FocusId::SubmitButton));
     state.list.set_focused(focused == Some(FocusId::List));
     state.table.set_focused(focused == Some(FocusId::Table));
+    state.heatmap.set_focused(focused == Some(FocusId::Heatmap));
+    state
+        .timeline
+        .set_focused(focused == Some(FocusId::Timeline));
+    state
+        .command_palette
+        .set_focused(focused == Some(FocusId::CommandPalette));
+    state
+        .code_block
+        .set_focused(focused == Some(FocusId::CodeBlock));
 }
 
 /// Creates a centered rectangle for dialog overlays.
@@ -549,10 +700,10 @@ fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
 // ---------------------------------------------------------------------------
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<ShowcaseApp, _>::virtual_terminal(80, 30)?;
+    let mut vt = Runtime::<ShowcaseApp, _>::virtual_terminal(80, 40)?;
 
     println!("=== Component Showcase ===\n");
-    println!("Demonstrating 12 Envision components with simplified event routing.\n");
+    println!("Demonstrating 18 Envision components with simplified event routing.\n");
 
     // Initial render (Form panel)
     vt.tick()?;
@@ -645,11 +796,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("--- After Submission (toast notification) ---");
     println!("{}\n", vt.display_ansi());
 
+    // Switch to Viz panel to show new components
+    vt.dispatch(Msg::FocusNext); // -> List
+    vt.dispatch(Msg::FocusNext); // -> Table
+    vt.dispatch(Msg::FocusNext); // -> Progress
+    vt.dispatch(Msg::FocusNext); // -> Heatmap
+    vt.dispatch(Msg::FocusNext); // -> Timeline
+    vt.dispatch(Msg::FocusNext); // -> CommandPalette
+    vt.dispatch(Msg::FocusNext); // -> CodeBlock
+    vt.dispatch(Msg::FocusNext); // -> Menu (wraps)
+    vt.dispatch(Msg::FocusNext); // -> Tabs
+                                 // Navigate right three times to reach Viz tab
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Right,
+    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Right,
+    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(
+        crossterm::event::KeyCode::Right,
+    )));
+    vt.tick()?;
+    println!("--- Viz Panel (Sparkline, Gauge, Heatmap, Timeline, CommandPalette, CodeBlock) ---");
+    println!("{}\n", vt.display_ansi());
+
     println!("=== Showcase Complete ===");
     println!("This example demonstrated Menu, Tabs, InputField, Checkbox,");
     println!("RadioGroup, Button, SelectableList, Table, ProgressBar,");
-    println!("Spinner, Toast, and Dialog components working together.");
-    println!("\nKey improvements shown:");
+    println!("Spinner, Toast, Dialog, Sparkline, Gauge, Heatmap,");
+    println!("Timeline, CommandPalette, and CodeBlock components working together.");
+    println!("\nKey patterns shown:");
     println!("  - Msg enum: 6 variants (was 30+)");
     println!("  - sync_focus: no turbofish needed");
     println!("  - dispatch_event: routes events to focused component directly");

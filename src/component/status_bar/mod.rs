@@ -683,4 +683,6 @@ impl Disableable for StatusBar {
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;
