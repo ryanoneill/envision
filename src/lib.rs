@@ -208,7 +208,8 @@ pub use component::{
     StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
     StatusLogMessage, StatusLogOutput, StatusLogState, StyledText, StyledTextMessage,
     StyledTextOutput, StyledTextState, ThresholdZone, TitleCard, TitleCardMessage, TitleCardState,
-    Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
+    Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, UsageDisplay,
+    UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric,
 };
 
 // Navigation components

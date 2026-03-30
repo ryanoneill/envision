@@ -330,6 +330,10 @@ name = "toast"
 required-features = ["display-components"]
 
 [[example]]
+name = "usage_display"
+required-features = ["display-components"]
+
+[[example]]
 name = "metrics_dashboard"
 required-features = ["compound-components"]
 

@@ -222,6 +222,8 @@ pub mod styled_text;
 mod title_card;
 #[cfg(feature = "display-components")]
 mod toast;
+#[cfg(feature = "display-components")]
+mod usage_display;
 
 // Navigation components
 #[cfg(feature = "navigation-components")]
@@ -421,6 +423,10 @@ pub use styled_text::{StyledText, StyledTextMessage, StyledTextOutput, StyledTex
 pub use title_card::{TitleCard, TitleCardMessage, TitleCardState};
 #[cfg(feature = "display-components")]
 pub use toast::{Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState};
+#[cfg(feature = "display-components")]
+pub use usage_display::{
+    UsageDisplay, UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric,
+};
 
 // Navigation components
 #[cfg(feature = "navigation-components")]
