@@ -163,3 +163,21 @@ fn test_view_unfocused() {
 
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn test_view_multi_column_sort_indicators() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    // Sort by name ascending (primary), then add value ascending (secondary)
+    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::AddSort(1));
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+
+    terminal
+        .draw(|frame| {
+            Table::<TestRow>::view(&state, frame, frame.area(), &theme);
+        })
+        .unwrap();
+
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

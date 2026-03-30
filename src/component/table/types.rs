@@ -1,5 +1,8 @@
 //! Types for the table component.
 
+use std::cmp::Ordering;
+use std::sync::Arc;
+
 use ratatui::layout::Constraint;
 
 /// Trait for types that can be displayed as table rows.
@@ -51,7 +54,29 @@ pub trait TableRow: Clone {
 /// assert_eq!(col.header(), "Name");
 /// assert!(col.is_sortable());
 /// ```
-#[derive(Clone, Debug, PartialEq)]
+/// A type alias for custom sort comparator functions.
+///
+/// Comparators receive two string cell values and return an [`Ordering`].
+/// Use [`numeric_comparator`] or [`date_comparator`] for common cases,
+/// or provide your own closure.
+pub type SortComparator = Arc<dyn Fn(&str, &str) -> Ordering + Send + Sync>;
+
+/// Column definition for a table.
+///
+/// Columns define the header text, width, whether the column
+/// is sortable, and an optional custom sort comparator.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::Column;
+/// use ratatui::layout::Constraint;
+///
+/// let col = Column::new("Name", Constraint::Length(20)).sortable();
+/// assert_eq!(col.header(), "Name");
+/// assert!(col.is_sortable());
+/// ```
+#[derive(Clone)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
@@ -61,6 +86,34 @@ pub struct Column {
     #[cfg_attr(feature = "serialization", serde(skip))]
     width: Constraint,
     sortable: bool,
+    editable: bool,
+    visible: bool,
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    comparator: Option<SortComparator>,
+}
+
+impl std::fmt::Debug for Column {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Column")
+            .field("header", &self.header)
+            .field("width", &self.width)
+            .field("sortable", &self.sortable)
+            .field("editable", &self.editable)
+            .field("visible", &self.visible)
+            .field("comparator", &self.comparator.as_ref().map(|_| ".."))
+            .finish()
+    }
+}
+
+impl PartialEq for Column {
+    fn eq(&self, other: &Self) -> bool {
+        self.header == other.header
+            && self.width == other.width
+            && self.sortable == other.sortable
+            && self.editable == other.editable
+            && self.visible == other.visible
+        // comparator is not compared (function equality is not meaningful)
+    }
 }
 
 impl Column {
@@ -83,6 +136,9 @@ impl Column {
             header: header.into(),
             width,
             sortable: false,
+            editable: true,
+            visible: true,
+            comparator: None,
         }
     }
 
@@ -165,6 +221,166 @@ impl Column {
     pub fn is_sortable(&self) -> bool {
         self.sortable
     }
+
+    /// Sets whether this column is editable (builder pattern).
+    ///
+    /// Columns are editable by default. Set to `false` to make a column
+    /// read-only in a `DataGrid`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("ID", Constraint::Length(10)).with_editable(false);
+    /// assert!(!col.is_editable());
+    /// ```
+    pub fn with_editable(mut self, editable: bool) -> Self {
+        self.editable = editable;
+        self
+    }
+
+    /// Returns whether this column is editable.
+    ///
+    /// Defaults to `true`.
+    pub fn is_editable(&self) -> bool {
+        self.editable
+    }
+
+    /// Sets whether this column is visible (builder pattern).
+    ///
+    /// Columns are visible by default. Set to `false` to hide a column
+    /// from rendering while preserving its data.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("Internal", Constraint::Length(10)).with_visible(false);
+    /// assert!(!col.is_visible());
+    /// ```
+    pub fn with_visible(mut self, visible: bool) -> Self {
+        self.visible = visible;
+        self
+    }
+
+    /// Returns whether this column is visible.
+    ///
+    /// Defaults to `true`.
+    pub fn is_visible(&self) -> bool {
+        self.visible
+    }
+
+    /// Sets a custom sort comparator for this column.
+    ///
+    /// The comparator receives two cell values as `&str` and returns an
+    /// [`Ordering`]. When sorting, this comparator is used instead of
+    /// the default lexicographic comparison.
+    ///
+    /// Setting a comparator also makes the column sortable.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, numeric_comparator};
+    ///
+    /// let col = Column::fixed("Price", 10)
+    ///     .with_comparator(numeric_comparator());
+    /// assert!(col.is_sortable());
+    /// assert!(col.comparator().is_some());
+    /// ```
+    pub fn with_comparator(mut self, comparator: SortComparator) -> Self {
+        self.comparator = Some(comparator);
+        self.sortable = true;
+        self
+    }
+
+    /// Returns the custom comparator for this column, if any.
+    pub fn comparator(&self) -> Option<&SortComparator> {
+        self.comparator.as_ref()
+    }
+
+    /// Sets the width of this column (builder method).
+    ///
+    /// This is useful for column resizing operations.
+    pub fn set_width(&mut self, width: Constraint) {
+        self.width = width;
+    }
+}
+
+/// Returns a comparator that sorts cell values as numbers.
+///
+/// Values that cannot be parsed as `f64` sort after valid numbers.
+/// Two unparseable values are compared lexicographically.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::numeric_comparator;
+/// use std::cmp::Ordering;
+///
+/// let cmp = numeric_comparator();
+/// assert_eq!(cmp("2", "10"), Ordering::Less);
+/// assert_eq!(cmp("10", "2"), Ordering::Greater);
+/// assert_eq!(cmp("abc", "10"), Ordering::Greater);
+/// ```
+pub fn numeric_comparator() -> SortComparator {
+    Arc::new(|a: &str, b: &str| {
+        let pa = a.parse::<f64>();
+        let pb = b.parse::<f64>();
+        match (pa, pb) {
+            (Ok(va), Ok(vb)) => va.partial_cmp(&vb).unwrap_or(Ordering::Equal),
+            (Ok(_), Err(_)) => Ordering::Less,
+            (Err(_), Ok(_)) => Ordering::Greater,
+            (Err(_), Err(_)) => a.cmp(b),
+        }
+    })
+}
+
+/// Returns a comparator that sorts cell values as dates in `YYYY-MM-DD` format.
+///
+/// Values that do not match the `YYYY-MM-DD` pattern sort after valid dates.
+/// Two unparseable values are compared lexicographically.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::date_comparator;
+/// use std::cmp::Ordering;
+///
+/// let cmp = date_comparator();
+/// assert_eq!(cmp("2024-01-15", "2024-02-01"), Ordering::Less);
+/// assert_eq!(cmp("2024-02-01", "2024-01-15"), Ordering::Greater);
+/// ```
+pub fn date_comparator() -> SortComparator {
+    Arc::new(|a: &str, b: &str| {
+        let pa = parse_date(a);
+        let pb = parse_date(b);
+        match (pa, pb) {
+            (Some(va), Some(vb)) => va.cmp(&vb),
+            (Some(_), None) => Ordering::Less,
+            (None, Some(_)) => Ordering::Greater,
+            (None, None) => a.cmp(b),
+        }
+    })
+}
+
+/// Parses a `YYYY-MM-DD` date string into a comparable tuple.
+fn parse_date(s: &str) -> Option<(i32, u32, u32)> {
+    let parts: Vec<&str> = s.split('-').collect();
+    if parts.len() != 3 {
+        return None;
+    }
+    let year = parts[0].parse::<i32>().ok()?;
+    let month = parts[1].parse::<u32>().ok()?;
+    let day = parts[2].parse::<u32>().ok()?;
+    if !(1..=12).contains(&month) || !(1..=31).contains(&day) {
+        return None;
+    }
+    Some((year, month, day))
 }
 
 /// Sort direction for table columns.
@@ -217,14 +433,26 @@ pub enum TableMessage {
     PageDown(usize),
     /// Confirm the current selection.
     Select,
-    /// Sort by the given column index.
+    /// Sort by the given column index (primary sort).
     ///
-    /// If already sorted by this column, toggles direction.
+    /// If already the primary sort column, toggles direction.
     /// If sorted ascending, becomes descending.
     /// If sorted descending, clears the sort.
+    /// If a different column, replaces all sorts with this column ascending.
     SortBy(usize),
-    /// Clear the current sort, returning to original order.
+    /// Add a column to the sort stack as a tiebreaker.
+    ///
+    /// If the column is already in the sort stack, toggles its direction.
+    /// If not present, adds it as the lowest-priority sort.
+    AddSort(usize),
+    /// Clear all sorts, returning to original order.
     ClearSort,
+    /// Increase the width of the column at the given index.
+    IncreaseColumnWidth(usize),
+    /// Decrease the width of the column at the given index.
+    ///
+    /// The width will not go below the minimum of 3 characters.
+    DecreaseColumnWidth(usize),
     /// Set the filter text for searching rows.
     SetFilter(String),
     /// Clear the filter text.
@@ -249,4 +477,11 @@ pub enum TableOutput<T: Clone> {
     SortCleared,
     /// The filter text changed.
     FilterChanged(String),
+    /// A column was resized.
+    ColumnResized {
+        /// The column that was resized.
+        column: usize,
+        /// The new width of the column.
+        width: u16,
+    },
 }

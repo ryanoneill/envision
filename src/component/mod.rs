@@ -303,7 +303,10 @@ pub use selectable_list::{
     SelectableList, SelectableListMessage, SelectableListOutput, SelectableListState,
 };
 #[cfg(feature = "data-components")]
-pub use table::{Column, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState};
+pub use table::{
+    date_comparator, numeric_comparator, Column, SortComparator, SortDirection, Table,
+    TableMessage, TableOutput, TableRow, TableState,
+};
 #[cfg(feature = "data-components")]
 pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 
