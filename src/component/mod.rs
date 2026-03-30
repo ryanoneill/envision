@@ -132,6 +132,8 @@ mod text_area;
 #[cfg(feature = "compound-components")]
 mod alert_panel;
 #[cfg(feature = "compound-components")]
+mod box_plot;
+#[cfg(feature = "compound-components")]
 mod chart;
 #[cfg(feature = "compound-components")]
 mod chat_view;
@@ -210,6 +212,8 @@ mod multi_progress;
 mod paginator;
 #[cfg(feature = "display-components")]
 pub mod progress_bar;
+#[cfg(feature = "display-components")]
+mod scroll_view;
 #[cfg(feature = "display-components")]
 mod scrollable_text;
 #[cfg(feature = "display-components")]
@@ -350,6 +354,8 @@ pub use alert_panel::{
     AlertThreshold,
 };
 #[cfg(feature = "compound-components")]
+pub use box_plot::{BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation, BoxPlotState};
+#[cfg(feature = "compound-components")]
 pub use chart::{
     Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, ThresholdLine,
 };
@@ -426,6 +432,8 @@ pub use timeline::{
 #[cfg(feature = "compound-components")]
 pub use treemap::{Treemap, TreemapMessage, TreemapNode, TreemapOutput, TreemapState};
 
+#[cfg(feature = "display-components")]
+pub use scroll_view::{ScrollView, ScrollViewMessage, ScrollViewState};
 #[cfg(feature = "display-components")]
 pub use scrollable_text::{
     ScrollableText, ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState,

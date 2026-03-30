@@ -78,6 +78,10 @@ name = "big_text"
 required-features = ["display-components"]
 
 [[example]]
+name = "box_plot"
+required-features = ["compound-components"]
+
+[[example]]
 name = "themed_app"
 required-features = ["input-components", "data-components", "display-components"]
 
@@ -88,6 +92,10 @@ required-features = ["full"]
 [[example]]
 name = "component_showcase"
 required-features = ["full"]
+
+[[example]]
+name = "scroll_view"
+required-features = ["display-components"]
 
 [[example]]
 name = "scrollable_text"
@@ -372,6 +380,22 @@ required-features = ["compound-components", "markdown"]
 [[example]]
 name = "dashboard_demo"
 required-features = ["full"]
+
+[[example]]
+name = "button"
+required-features = ["input-components"]
+
+[[example]]
+name = "input_field"
+required-features = ["input-components"]
+
+[[example]]
+name = "select"
+required-features = ["input-components"]
+
+[[example]]
+name = "chat_view"
+required-features = ["compound-components"]
 
 [[bench]]
 name = "capture_backend"

@@ -956,3 +956,5 @@ impl Disableable for Calendar {
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod view_tests;

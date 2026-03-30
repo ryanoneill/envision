@@ -8,7 +8,7 @@
 //! State is stored in [`SpanTreeState`], updated via [`SpanTreeMessage`],
 //! and produces [`SpanTreeOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

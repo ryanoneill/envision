@@ -794,6 +794,8 @@ impl ChatViewState {
 pub struct ChatView(PhantomData<()>);
 
 #[cfg(test)]
+mod scroll_tests;
+#[cfg(test)]
 mod snapshot_tests;
 #[cfg(test)]
 mod tests;

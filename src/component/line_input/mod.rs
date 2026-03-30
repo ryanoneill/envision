@@ -16,7 +16,7 @@
 //! State is stored in [`LineInputState`], updated via [`LineInputMessage`],
 //! and produces [`LineInputOutput`].
 //!
-//! Implements [`Focusable`](super::Focusable) and [`Disableable`](super::Disableable).
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`InputField`](super::InputField) for a simpler single-line input,
 //! and [`TextArea`](super::TextArea) for multi-line editing.
