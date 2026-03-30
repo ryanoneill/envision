@@ -374,6 +374,23 @@ impl PaneLayoutState {
     /// Computes the layout rectangles for each pane within the given area.
     ///
     /// Respects min/max size constraints. Returns one `Rect` per pane.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    /// use ratatui::prelude::Rect;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Vertical, vec![
+    ///     PaneConfig::new("top").with_proportion(0.5),
+    ///     PaneConfig::new("bottom").with_proportion(0.5),
+    /// ]);
+    /// let rects = state.layout(Rect::new(0, 0, 80, 40));
+    /// assert_eq!(rects.len(), 2);
+    /// assert_eq!(rects[0].height, 20);
+    /// assert_eq!(rects[1].height, 20);
+    /// ```
     pub fn layout(&self, area: Rect) -> Vec<Rect> {
         if self.panes.is_empty() {
             return vec![];
@@ -554,26 +571,91 @@ impl PaneLayoutState {
     }
 
     /// Returns the resize step.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("a"),
+    ///     PaneConfig::new("b"),
+    /// ]);
+    /// assert!((state.resize_step() - 0.05).abs() < f32::EPSILON); // default
+    /// ```
     pub fn resize_step(&self) -> f32 {
         self.resize_step
     }
 
     /// Returns true if the component is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("a"),
+    /// ]);
+    /// assert!(!state.is_focused());
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("a"),
+    /// ]);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the component is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("a"),
+    /// ]).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("a"),
+    /// ]);
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
@@ -581,16 +663,69 @@ impl PaneLayoutState {
     // ---- Instance methods ----
 
     /// Maps an input event to a pane layout message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::{PaneLayoutState, PaneLayoutMessage};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("left"),
+    ///     PaneConfig::new("right"),
+    /// ]);
+    /// state.set_focused(true);
+    ///
+    /// let msg = state.handle_event(&Event::key(KeyCode::Tab));
+    /// assert_eq!(msg, Some(PaneLayoutMessage::FocusNext));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<PaneLayoutMessage> {
         PaneLayout::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::{PaneLayoutState, PaneLayoutOutput};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("left"),
+    ///     PaneConfig::new("right"),
+    /// ]);
+    /// state.set_focused(true);
+    ///
+    /// let output = state.dispatch_event(&Event::key(KeyCode::Tab));
+    /// assert_eq!(output, Some(PaneLayoutOutput::FocusChanged {
+    ///     pane_id: "right".to_string(),
+    ///     index: 1,
+    /// }));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<PaneLayoutOutput> {
         PaneLayout::dispatch_event(self, event)
     }
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::{PaneLayoutState, PaneLayoutMessage, PaneLayoutOutput};
+    ///
+    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("left"),
+    ///     PaneConfig::new("right"),
+    /// ]);
+    /// state.set_focused(true);
+    ///
+    /// let output = state.update(PaneLayoutMessage::FocusNext);
+    /// assert_eq!(state.focused_pane_id(), Some("right"));
+    /// ```
     pub fn update(&mut self, msg: PaneLayoutMessage) -> Option<PaneLayoutOutput> {
         PaneLayout::update(self, msg)
     }

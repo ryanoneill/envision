@@ -482,6 +482,19 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Returns all items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::with_items(
+    ///     vec!["alpha".to_string(), "beta".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// assert_eq!(state.items().len(), 2);
+    /// assert_eq!(state.items()[0].label(), "alpha");
+    /// ```
     pub fn items(&self) -> &[LoadingListItem<T>] {
         &self.items
     }
@@ -492,16 +505,49 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Returns the number of items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::with_items(
+    ///     vec!["a".to_string(), "b".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn len(&self) -> usize {
         self.items.len()
     }
 
     /// Returns true if there are no items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::<String>::new();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.items.is_empty()
     }
 
     /// Returns the selected index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::with_items(
+    ///     vec!["a".to_string()],
+    ///     |s| s.clone(),
+    /// ).with_selected(0);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
@@ -670,16 +716,44 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::<String>::new().with_title("Tasks");
+    /// assert_eq!(state.title(), Some("Tasks"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::<String>::new();
+    /// state.set_title(Some("Downloads".to_string()));
+    /// assert_eq!(state.title(), Some("Downloads"));
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
 
     /// Returns whether indicators are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::<String>::new();
+    /// assert!(state.show_indicators()); // enabled by default
+    /// ```
     pub fn show_indicators(&self) -> bool {
         self.show_indicators
     }
@@ -695,6 +769,20 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Clears all items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["a".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// assert_eq!(state.len(), 1);
+    /// state.clear();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn clear(&mut self) {
         self.items.clear();
         self.selected = None;
