@@ -16,6 +16,10 @@
 /// assert_eq!(state, AlertState::Ok);
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum AlertState {
     /// Value is within acceptable range.
     #[default]
@@ -56,6 +60,10 @@ impl std::fmt::Display for AlertState {
 /// assert_eq!(threshold.critical, 90.0);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct AlertThreshold {
     /// Value at or above which Warning triggers.
     pub warning: f64,
@@ -101,6 +109,10 @@ impl AlertThreshold {
 /// assert_eq!(metric.display_value(), "45.0%");
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct AlertMetric {
     /// Unique identifier.
     pub(super) id: String,

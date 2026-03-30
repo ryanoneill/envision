@@ -49,6 +49,10 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a CodeBlock.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum CodeBlockMessage {
     /// Scroll up by one line.
     ScrollUp,
@@ -81,6 +85,10 @@ pub enum CodeBlockMessage {
 /// Contains the source code, language selection, scroll position, and
 /// display options.
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct CodeBlockState {
     /// The source code content.
     pub(crate) code: String,

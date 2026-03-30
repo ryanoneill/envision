@@ -1,7 +1,8 @@
 //! LogViewer example -- searchable log viewer with severity filtering.
 //!
 //! Demonstrates the LogViewer compound component with log entries at
-//! different severity levels, filtering by level, and text search.
+//! different severity levels, filtering by level, text search, regex
+//! search, follow mode, and search history.
 //!
 //! Run with: cargo run --example log_viewer --features compound-components
 
@@ -73,9 +74,15 @@ impl App for LogViewerApp {
         LogViewer::view(&state.viewer, frame, chunks[0], &theme);
 
         let visible = state.viewer.visible_entries().len();
+        let follow = if state.viewer.follow() { "ON" } else { "OFF" };
+        let regex = if state.viewer.use_regex() {
+            "ON"
+        } else {
+            "OFF"
+        };
         let status = format!(
-            " {} entries | /: search, 1-4: toggle levels, Up/Down: scroll, q: quit",
-            visible
+            " {} entries | follow:{} regex:{} | /: search, f: follow, 1-4: levels, q: quit",
+            visible, follow, regex
         );
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
@@ -100,15 +107,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initial render: all log entries visible
     vt.tick()?;
-    println!("Initial state (all entries visible):");
+    println!("Initial state (all entries visible, follow mode ON):");
     println!("{}\n", vt.display());
 
-    // Scroll down
+    // Scroll down (disables follow)
     vt.dispatch(Msg::Viewer(LogViewerMessage::ScrollDown));
     vt.dispatch(Msg::Viewer(LogViewerMessage::ScrollDown));
     vt.dispatch(Msg::Viewer(LogViewerMessage::ScrollDown));
     vt.tick()?;
-    println!("After scrolling down:");
+    println!("After scrolling down (follow mode OFF):");
+    println!("{}\n", vt.display());
+
+    // Toggle follow back on
+    vt.dispatch(Msg::Viewer(LogViewerMessage::ToggleFollow));
+    vt.tick()?;
+    println!("After toggling follow mode back ON:");
     println!("{}\n", vt.display());
 
     // Filter to errors only

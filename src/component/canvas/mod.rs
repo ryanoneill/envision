@@ -63,6 +63,10 @@ use crate::theme::Theme;
 /// };
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum CanvasShape {
     /// A line between two points.
     Line {
@@ -138,6 +142,10 @@ pub enum CanvasShape {
 /// assert_eq!(marker, CanvasMarker::Braille);
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum CanvasMarker {
     /// Unicode dot character marker.
     Dot,
@@ -183,6 +191,10 @@ impl CanvasMarker {
 /// assert!(state.shapes().is_empty());
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum CanvasMessage {
     /// Add a shape to the canvas.
     AddShape(CanvasShape),
@@ -224,6 +236,10 @@ pub enum CanvasMessage {
 /// assert_eq!(state.y_bounds(), [0.0, 100.0]);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct CanvasState {
     /// The shapes to draw on the canvas.
     shapes: Vec<CanvasShape>,

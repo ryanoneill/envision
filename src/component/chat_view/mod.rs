@@ -47,10 +47,15 @@ use crate::scroll::ScrollState;
 ///
 /// Contains the message history, input field, and scroll state.
 #[derive(Clone, Debug)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ChatViewState {
     /// Message history.
     messages: Vec<ChatMessage>,
     /// The text input area.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     input: TextAreaState,
     /// Scroll state for the message history.
     scroll: ScrollState,

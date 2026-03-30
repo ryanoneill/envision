@@ -54,6 +54,10 @@ mod render;
 /// assert_eq!(data.outliers(), &[0.5, 70.0, 85.0]);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct BoxPlotData {
     /// The label for this dataset.
     label: String,
@@ -271,6 +275,10 @@ impl BoxPlotData {
 
 /// Orientation of the box plot rendering.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum BoxPlotOrientation {
     /// Vertical box plots (values on Y axis, datasets on X axis).
     Vertical,
@@ -280,6 +288,10 @@ pub enum BoxPlotOrientation {
 
 /// Messages that can be sent to a BoxPlot.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum BoxPlotMessage {
     /// Select the next dataset.
     NextDataset,
@@ -317,6 +329,10 @@ pub enum BoxPlotMessage {
 /// assert!(state.show_outliers());
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct BoxPlotState {
     /// The box plot datasets to display.
     datasets: Vec<BoxPlotData>,

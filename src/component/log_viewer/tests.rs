@@ -633,7 +633,7 @@ fn test_search_mode_enter() {
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
         LogViewer::handle_event(&state, &Event::key(KeyCode::Enter)),
-        Some(LogViewerMessage::FocusLog)
+        Some(LogViewerMessage::ConfirmSearch)
     );
 }
 
