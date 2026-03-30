@@ -7,6 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-30
+
+### Added
+
+- **32 new components** bringing the total from 42 to 74:
+  - **Data Visualization**: Sparkline, Gauge, Canvas, Histogram, Heatmap,
+    BoxPlot, Treemap
+  - **Observability**: Timeline, SpanTree, FlameGraph, EventStream,
+    AlertPanel, LogCorrelation, DependencyGraph
+  - **General Purpose**: Switch, HelpPanel, Divider, Collapsible, Slider,
+    Paginator, NumberInput, BigText, Calendar, CommandPalette, ScrollView
+  - **Claude Code Suite**: CodeBlock (syntax highlighting), TerminalOutput
+    (ANSI colors), MarkdownRenderer, ConversationView, TabBar, UsageDisplay
+
+- **Virtual scrolling infrastructure**: `ScrollState` struct with
+  `visible_range()`, `ensure_visible()`, and `render_scrollbar()`.
+  Retrofitted into all 9 scrollable components (ScrollableText, LogViewer,
+  ChatView, SelectableList, Table, LoadingList, DataGrid, SearchableList,
+  Tree) with scrollbar indicators.
+
+- **Enhanced Chart**: Area charts, scatter plots, threshold/reference lines,
+  manual Y-axis scaling via `with_y_range()`, shared axes for multi-series.
+
+- **Enhanced LogViewer**: Regex search (behind `regex` feature flag),
+  follow mode with auto-scroll, search history with deduplication.
+
+- **Enhanced Table**: Multi-column sort with priority indicators, custom
+  sort comparators (`numeric_comparator()`, `date_comparator()`), column
+  resizing via keyboard.
+
+- **Enhanced MetricsDashboard**: Configurable warning/critical thresholds
+  per widget, units display, visual gauge bars, comparison/delta display.
+
+- **Enhanced DataGrid**: Read-only columns via `Column::with_editable()`,
+  column hiding via `HideColumn`/`ShowColumn`/`ToggleColumn` messages,
+  navigation skips hidden columns.
+
+- **Enhanced TextArea**: Line number display, text search with match
+  navigation (StartSearch, NextMatch, PrevMatch, ClearSearch).
+
+- **Serialization expanded** to most component State types behind the
+  `serialization` feature flag.
+
+- **Integration tests** for all new components (30 tests covering full
+  event→message→update→view cycle).
+
+- **87 examples** covering most components with progressive complexity.
+
+- **`regex` feature flag** for LogViewer regex search support (included
+  in `full`).
+
+- **`test_utils::setup_render()`** now public via the `test-utils` feature
+  flag for downstream crate testing.
+
+### Changed
+
+- **Compound components re-exported from crate root**: All 23 compound
+  components now accessible via `envision::ComponentName` (previously
+  required `envision::component::ComponentName`).
+
+- Component files exceeding 1000 lines split into submodules: tab_bar,
+  table, loading_list, chart, integration tests.
+
+- Builder methods added to button, checkbox, data_grid, event_stream
+  for consistency.
+
+- Doc test coverage improved from 51.9% to ~60% with 150+ new doc tests.
+
+- Snapshot test coverage expanded to all components.
+
 ## [0.7.0] - 2026-03-09
 
 ### Added
@@ -486,7 +556,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renders to both a real terminal and CaptureBackend
   - Useful for visual debugging while testing
 
-[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/ryanoneill/envision/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/ryanoneill/envision/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/ryanoneill/envision/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/ryanoneill/envision/compare/v0.4.1...v0.5.0
