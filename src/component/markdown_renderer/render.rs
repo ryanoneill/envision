@@ -1,7 +1,7 @@
 //! Markdown-to-[`Line`] rendering using pulldown-cmark.
 //!
 //! This module parses a markdown string and produces a `Vec<Line<'static>>`
-//! suitable for rendering in a ratatui [`Paragraph`].
+//! suitable for rendering in a ratatui `Paragraph`.
 //!
 //! Supported markdown features:
 //! - Headings (bold, with `#` prefix indicators)
