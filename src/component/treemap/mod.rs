@@ -535,6 +535,21 @@ impl TreemapState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreemapState;
+    ///
+    /// let mut state = TreemapState::default();
+    /// state.set_title("Disk Usage");
+    /// assert_eq!(state.title(), Some("Disk Usage"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns whether labels are shown.
     pub fn show_labels(&self) -> bool {
         self.show_labels

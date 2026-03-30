@@ -333,6 +333,21 @@ impl HistogramState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    ///
+    /// let mut state = HistogramState::new();
+    /// state.set_title("Response Times");
+    /// assert_eq!(state.title(), Some("Response Times"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns the x-axis label.
     pub fn x_label(&self) -> Option<&str> {
         self.x_label.as_deref()

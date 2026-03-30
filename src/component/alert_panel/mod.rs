@@ -367,6 +367,21 @@ impl AlertPanelState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AlertPanelState;
+    ///
+    /// let mut state = AlertPanelState::new();
+    /// state.set_title("System Alerts");
+    /// assert_eq!(state.title(), Some("System Alerts"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns whether sparklines are shown.
     ///
     /// # Example

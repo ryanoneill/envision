@@ -396,6 +396,38 @@ impl DiffViewerState {
 
     // ---- Public accessors ----
 
+    /// Returns the title, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new().with_title("My Diff");
+    /// assert_eq!(state.title(), Some("My Diff"));
+    ///
+    /// let state2 = DiffViewerState::new();
+    /// assert_eq!(state2.title(), None);
+    /// ```
+    pub fn title(&self) -> Option<&str> {
+        self.title.as_deref()
+    }
+
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let mut state = DiffViewerState::new();
+    /// state.set_title("Code Review");
+    /// assert_eq!(state.title(), Some("Code Review"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns a reference to the diff hunks.
     pub fn hunks(&self) -> &[DiffHunk] {
         &self.hunks

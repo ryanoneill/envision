@@ -417,6 +417,21 @@ impl FlameGraphState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::FlameGraphState;
+    ///
+    /// let mut state = FlameGraphState::new();
+    /// state.set_title("CPU Profile");
+    /// assert_eq!(state.title(), Some("CPU Profile"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns true if the component is focused.
     ///
     /// # Example

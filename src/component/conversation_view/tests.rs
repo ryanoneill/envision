@@ -208,6 +208,25 @@ fn test_message_blocks_mut() {
 }
 
 #[test]
+fn test_message_set_blocks() {
+    let mut msg = ConversationMessage::new(ConversationRole::User, "Hello");
+    msg.set_blocks(vec![
+        MessageBlock::text("Replaced"),
+        MessageBlock::code("x = 1", Some("py")),
+    ]);
+    assert_eq!(msg.blocks().len(), 2);
+    assert!(msg.blocks()[0].is_text());
+    assert!(msg.blocks()[1].is_code());
+}
+
+#[test]
+fn test_message_set_blocks_empty() {
+    let mut msg = ConversationMessage::new(ConversationRole::User, "Hello");
+    msg.set_blocks(vec![]);
+    assert!(msg.blocks().is_empty());
+}
+
+#[test]
 fn test_message_text_content() {
     let msg = ConversationMessage::with_blocks(
         ConversationRole::User,
@@ -401,6 +420,25 @@ fn test_last_message_mut() {
 fn test_last_message_mut_empty() {
     let mut state = ConversationViewState::new();
     assert!(state.last_message_mut().is_none());
+}
+
+#[test]
+fn test_messages_mut() {
+    let mut state = ConversationViewState::new();
+    state.push_user("Hello");
+    state.push_assistant("Hi");
+    state.push_system("System msg");
+    state
+        .messages_mut()
+        .retain(|m| m.role() == ConversationRole::User);
+    assert_eq!(state.message_count(), 1);
+    assert_eq!(state.messages()[0].role(), ConversationRole::User);
+}
+
+#[test]
+fn test_messages_mut_empty() {
+    let mut state = ConversationViewState::new();
+    assert!(state.messages_mut().is_empty());
 }
 
 // =============================================================================

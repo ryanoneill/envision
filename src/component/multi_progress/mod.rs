@@ -229,6 +229,8 @@ pub enum MultiProgressMessage {
     Remove(String),
     /// Clear all items.
     Clear,
+    /// Select the currently focused item.
+    Select,
     /// Scroll up.
     ScrollUp,
     /// Scroll down.
@@ -252,6 +254,8 @@ pub enum MultiProgressOutput {
     Removed(String),
     /// All items were cleared.
     Cleared,
+    /// An item was selected (Enter pressed on item at this index).
+    Selected(usize),
 }
 
 /// State for the MultiProgress component.
@@ -884,6 +888,14 @@ impl Component for MultiProgress {
                 }
             }
 
+            MultiProgressMessage::Select => {
+                if !state.items.is_empty() {
+                    let index = state.scroll_offset.min(state.items.len().saturating_sub(1));
+                    return Some(MultiProgressOutput::Selected(index));
+                }
+                None
+            }
+
             MultiProgressMessage::ScrollUp => {
                 if state.scroll_offset > 0 {
                     state.scroll_offset -= 1;
@@ -918,6 +930,7 @@ impl Component for MultiProgress {
             match key.code {
                 KeyCode::Up | KeyCode::Char('k') => Some(MultiProgressMessage::ScrollUp),
                 KeyCode::Down | KeyCode::Char('j') => Some(MultiProgressMessage::ScrollDown),
+                KeyCode::Enter => Some(MultiProgressMessage::Select),
                 _ => None,
             }
         } else {

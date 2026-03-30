@@ -183,6 +183,21 @@ impl PaneConfig {
         self.title.as_deref()
     }
 
+    /// Sets the pane title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let mut pane = PaneConfig::new("sidebar");
+    /// pane.set_title("Files");
+    /// assert_eq!(pane.title(), Some("Files"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns the pane proportion.
     pub fn proportion(&self) -> f32 {
         self.proportion

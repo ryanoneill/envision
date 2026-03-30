@@ -437,6 +437,21 @@ impl TimelineState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TimelineState;
+    ///
+    /// let mut state = TimelineState::new();
+    /// state.set_title("Request Timeline");
+    /// assert_eq!(state.title(), Some("Request Timeline"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns whether labels are shown.
     pub fn show_labels(&self) -> bool {
         self.show_labels

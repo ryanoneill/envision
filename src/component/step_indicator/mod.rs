@@ -421,6 +421,22 @@ impl StepIndicatorState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StepIndicatorState;
+    /// use envision::component::step_indicator::Step;
+    ///
+    /// let mut state = StepIndicatorState::new(vec![Step::new("Step 1")]);
+    /// state.set_title("Progress");
+    /// assert_eq!(state.title(), Some("Progress"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns whether descriptions are shown.
     pub fn show_descriptions(&self) -> bool {
         self.show_descriptions

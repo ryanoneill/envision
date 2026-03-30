@@ -350,6 +350,21 @@ impl SparklineState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SparklineState;
+    ///
+    /// let mut state = SparklineState::new();
+    /// state.set_title("CPU Usage");
+    /// assert_eq!(state.title(), Some("CPU Usage"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns the render direction.
     pub fn direction(&self) -> &SparklineDirection {
         &self.direction

@@ -340,8 +340,35 @@ impl ConversationMessage {
     }
 
     /// Returns a mutable reference to the content blocks.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationMessage, ConversationRole, MessageBlock};
+    ///
+    /// let mut msg = ConversationMessage::new(ConversationRole::User, "Hello");
+    /// msg.blocks_mut().push(MessageBlock::text(" world"));
+    /// assert_eq!(msg.blocks().len(), 2);
+    /// ```
     pub fn blocks_mut(&mut self) -> &mut Vec<MessageBlock> {
         &mut self.blocks
+    }
+
+    /// Replace all blocks in this message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationMessage, ConversationRole, MessageBlock};
+    ///
+    /// let mut msg = ConversationMessage::new(ConversationRole::User, "Hello");
+    /// msg.set_blocks(vec![MessageBlock::text("Replaced"), MessageBlock::code("x = 1", Some("py"))]);
+    /// assert_eq!(msg.blocks().len(), 2);
+    /// assert!(msg.blocks()[0].is_text());
+    /// assert!(msg.blocks()[1].is_code());
+    /// ```
+    pub fn set_blocks(&mut self, blocks: Vec<MessageBlock>) {
+        self.blocks = blocks;
     }
 
     /// Returns the timestamp if set.
