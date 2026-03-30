@@ -274,6 +274,16 @@ impl Column {
         self.visible
     }
 
+    /// Sets column visibility.
+    pub fn set_visible(&mut self, visible: bool) {
+        self.visible = visible;
+    }
+
+    /// Sets whether this column is editable.
+    pub fn set_editable(&mut self, editable: bool) {
+        self.editable = editable;
+    }
+
     /// Sets a custom sort comparator for this column.
     ///
     /// The comparator receives two cell values as `&str` and returns an
