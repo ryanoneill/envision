@@ -791,4 +791,6 @@ impl Disableable for BoxPlot {
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;
