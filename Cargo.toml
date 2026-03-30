@@ -78,6 +78,10 @@ name = "big_text"
 required-features = ["display-components"]
 
 [[example]]
+name = "box_plot"
+required-features = ["compound-components"]
+
+[[example]]
 name = "themed_app"
 required-features = ["input-components", "data-components", "display-components"]
 
