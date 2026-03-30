@@ -7,7 +7,7 @@
 //! State is stored in [`LogViewerState`], updated via [`LogViewerMessage`],
 //! and produces [`LogViewerOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

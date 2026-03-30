@@ -34,6 +34,18 @@ pub(super) fn render_flame_graph(
         return;
     }
 
+    crate::annotation::with_registry(|reg| {
+        reg.register(
+            area,
+            crate::annotation::Annotation::new(crate::annotation::WidgetType::Custom(
+                "FlameGraph".to_string(),
+            ))
+            .with_id("flame_graph")
+            .with_focus(state.focused)
+            .with_disabled(state.disabled),
+        );
+    });
+
     let view_root = match state.current_view_root() {
         Some(r) => r,
         None => {

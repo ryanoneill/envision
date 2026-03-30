@@ -64,6 +64,18 @@ pub(super) fn render_dependency_graph(
         return;
     }
 
+    crate::annotation::with_registry(|reg| {
+        reg.register(
+            area,
+            crate::annotation::Annotation::new(crate::annotation::WidgetType::Custom(
+                "DependencyGraph".to_string(),
+            ))
+            .with_id("dependency_graph")
+            .with_focus(state.focused)
+            .with_disabled(state.disabled),
+        );
+    });
+
     if state.nodes.is_empty() {
         render_empty_state(state, frame, inner, theme);
         return;

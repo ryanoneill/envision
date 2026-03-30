@@ -7,7 +7,7 @@
 //! [`FormMessage`], and produces [`FormOutput`]. Fields are defined with
 //! [`FormField`] and [`FormFieldKind`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
