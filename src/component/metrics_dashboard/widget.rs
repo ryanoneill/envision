@@ -5,6 +5,10 @@
 
 /// The kind of metric a widget displays.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum MetricKind {
     /// A numeric counter value.
     Counter {
@@ -32,6 +36,10 @@ pub enum MetricKind {
 
 /// A single metric widget in the dashboard.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct MetricWidget {
     /// The display label.
     pub(super) label: String,

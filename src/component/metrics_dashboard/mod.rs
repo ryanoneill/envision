@@ -42,6 +42,10 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a MetricsDashboard.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum MetricsDashboardMessage {
     /// Move selection left.
     Left,
@@ -61,6 +65,10 @@ pub enum MetricsDashboardMessage {
 
 /// Output messages from a MetricsDashboard.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum MetricsDashboardOutput {
     /// The selected widget changed.
     SelectionChanged(usize),
@@ -72,6 +80,10 @@ pub enum MetricsDashboardOutput {
 ///
 /// Contains the grid of widgets and navigation state.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct MetricsDashboardState {
     /// The metric widgets.
     widgets: Vec<MetricWidget>,
