@@ -426,6 +426,7 @@ dependencies = [
  "proptest",
  "pulldown-cmark",
  "ratatui",
+ "regex",
  "serde",
  "serde_json",
  "tempfile",
