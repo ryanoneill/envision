@@ -193,6 +193,8 @@ mod calendar;
 #[cfg(feature = "display-components")]
 mod canvas;
 #[cfg(feature = "display-components")]
+pub mod code_block;
+#[cfg(feature = "display-components")]
 mod collapsible;
 #[cfg(feature = "display-components")]
 mod divider;
@@ -304,6 +306,8 @@ pub use big_text::{big_char, big_char_width, BigText, BigTextMessage, BigTextSta
 pub use calendar::{Calendar, CalendarMessage, CalendarOutput, CalendarState};
 #[cfg(feature = "display-components")]
 pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
+#[cfg(feature = "display-components")]
+pub use code_block::{CodeBlock, CodeBlockMessage, CodeBlockState};
 #[cfg(feature = "display-components")]
 pub use collapsible::{Collapsible, CollapsibleMessage, CollapsibleOutput, CollapsibleState};
 #[cfg(feature = "display-components")]

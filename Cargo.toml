@@ -106,6 +106,10 @@ name = "chat_app"
 required-features = ["compound-components"]
 
 [[example]]
+name = "code_block"
+required-features = ["display-components"]
+
+[[example]]
 name = "conversation_view"
 required-features = ["compound-components"]
 

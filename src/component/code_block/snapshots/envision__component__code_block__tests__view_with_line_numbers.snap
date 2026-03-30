@@ -1,0 +1,14 @@
+---
+source: src/component/code_block/tests.rs
+expression: terminal.backend().to_string()
+---
+┌ Rust ──────────────────────────────────────────┐
+│    1  fn main() {                              │
+│    2      println!("Hello!");                  │
+│    3  }                                        │
+│                                                │
+│                                                │
+│                                                │
+│                                                │
+│                                                │
+└────────────────────────────────────────────────┘
