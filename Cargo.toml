@@ -90,6 +90,10 @@ name = "component_showcase"
 required-features = ["full"]
 
 [[example]]
+name = "scroll_view"
+required-features = ["display-components"]
+
+[[example]]
 name = "scrollable_text"
 required-features = ["display-components"]
 
