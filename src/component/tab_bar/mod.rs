@@ -109,64 +109,185 @@ impl Tab {
     }
 
     /// Sets whether the tab is closable (builder).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let tab = Tab::new("t1", "File").with_closable(true);
+    /// assert!(tab.closable());
+    /// ```
     pub fn with_closable(mut self, closable: bool) -> Self {
         self.closable = closable;
         self
     }
 
     /// Sets whether the tab is modified (builder).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let tab = Tab::new("t1", "File").with_modified(true);
+    /// assert!(tab.modified());
+    /// ```
     pub fn with_modified(mut self, modified: bool) -> Self {
         self.modified = modified;
         self
     }
 
     /// Sets an icon for the tab (builder).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let tab = Tab::new("t1", "File").with_icon("R");
+    /// assert_eq!(tab.icon(), Some("R"));
+    /// ```
     pub fn with_icon(mut self, icon: impl Into<String>) -> Self {
         self.icon = Some(icon.into());
         self
     }
 
     /// Returns the tab's unique identifier.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let tab = Tab::new("editor-1", "main.rs");
+    /// assert_eq!(tab.id(), "editor-1");
+    /// ```
     pub fn id(&self) -> &str {
         &self.id
     }
 
     /// Returns the tab's display label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let tab = Tab::new("t1", "Overview");
+    /// assert_eq!(tab.label(), "Overview");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Returns whether the tab is closable.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let tab = Tab::new("t1", "File");
+    /// assert!(!tab.closable());
+    ///
+    /// let tab = Tab::new("t1", "File").with_closable(true);
+    /// assert!(tab.closable());
+    /// ```
     pub fn closable(&self) -> bool {
         self.closable
     }
 
     /// Returns whether the tab has unsaved modifications.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let tab = Tab::new("t1", "File").with_modified(true);
+    /// assert!(tab.modified());
+    /// ```
     pub fn modified(&self) -> bool {
         self.modified
     }
 
     /// Returns the tab's icon, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let tab = Tab::new("t1", "File");
+    /// assert_eq!(tab.icon(), None);
+    ///
+    /// let tab = Tab::new("t1", "File").with_icon("R");
+    /// assert_eq!(tab.icon(), Some("R"));
+    /// ```
     pub fn icon(&self) -> Option<&str> {
         self.icon.as_deref()
     }
 
     /// Sets the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let mut tab = Tab::new("t1", "Old Name");
+    /// tab.set_label("New Name");
+    /// assert_eq!(tab.label(), "New Name");
+    /// ```
     pub fn set_label(&mut self, label: impl Into<String>) {
         self.label = label.into();
     }
 
     /// Sets the closable flag.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let mut tab = Tab::new("t1", "File");
+    /// tab.set_closable(true);
+    /// assert!(tab.closable());
+    /// ```
     pub fn set_closable(&mut self, closable: bool) {
         self.closable = closable;
     }
 
     /// Sets the modified flag.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let mut tab = Tab::new("t1", "File");
+    /// tab.set_modified(true);
+    /// assert!(tab.modified());
+    /// ```
     pub fn set_modified(&mut self, modified: bool) {
         self.modified = modified;
     }
 
     /// Sets the icon.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Tab;
+    ///
+    /// let mut tab = Tab::new("t1", "File");
+    /// tab.set_icon(Some("R".to_string()));
+    /// assert_eq!(tab.icon(), Some("R"));
+    ///
+    /// tab.set_icon(None);
+    /// assert_eq!(tab.icon(), None);
+    /// ```
     pub fn set_icon(&mut self, icon: Option<String>) {
         self.icon = icon;
     }
@@ -385,42 +506,123 @@ impl TabBarState {
     // -- Accessors -----------------------------------------------------------
 
     /// Returns the tabs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let state = TabBarState::new(vec![
+    ///     Tab::new("a", "Alpha"),
+    ///     Tab::new("b", "Beta"),
+    /// ]);
+    /// assert_eq!(state.tabs().len(), 2);
+    /// assert_eq!(state.tabs()[0].label(), "Alpha");
+    /// ```
     pub fn tabs(&self) -> &[Tab] {
         &self.tabs
     }
 
     /// Returns a mutable reference to the tabs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![Tab::new("a", "Alpha")]);
+    /// state.tabs_mut()[0].set_label("Renamed");
+    /// assert_eq!(state.tabs()[0].label(), "Renamed");
+    /// ```
     pub fn tabs_mut(&mut self) -> &mut [Tab] {
         &mut self.tabs
     }
 
     /// Returns the currently active tab index, or `None` if empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let state = TabBarState::new(vec![Tab::new("a", "A"), Tab::new("b", "B")]);
+    /// assert_eq!(state.active_index(), Some(0));
+    ///
+    /// let empty = TabBarState::new(vec![]);
+    /// assert_eq!(empty.active_index(), None);
+    /// ```
     pub fn active_index(&self) -> Option<usize> {
         self.active
     }
 
     /// Returns the currently active tab, or `None` if empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let state = TabBarState::new(vec![Tab::new("a", "Alpha")]);
+    /// assert_eq!(state.active_tab().unwrap().label(), "Alpha");
+    /// ```
     pub fn active_tab(&self) -> Option<&Tab> {
         self.tabs.get(self.active?)
     }
 
     /// Returns a mutable reference to the active tab.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![Tab::new("a", "Alpha")]);
+    /// state.active_tab_mut().unwrap().set_modified(true);
+    /// assert!(state.active_tab().unwrap().modified());
+    /// ```
     pub fn active_tab_mut(&mut self) -> Option<&mut Tab> {
         let idx = self.active?;
         self.tabs.get_mut(idx)
     }
 
     /// Returns the number of tabs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let state = TabBarState::new(vec![Tab::new("a", "A"), Tab::new("b", "B")]);
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn len(&self) -> usize {
         self.tabs.len()
     }
 
     /// Returns true if there are no tabs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TabBarState;
+    ///
+    /// let state = TabBarState::new(vec![]);
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.tabs.is_empty()
     }
 
     /// Returns the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let state = TabBarState::new(vec![Tab::new("a", "A")]);
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll_offset
     }
@@ -445,6 +647,22 @@ impl TabBarState {
     /// Sets the active tab by index.
     ///
     /// `None` clears the selection. `Some(i)` is clamped to the valid range.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![
+    ///     Tab::new("a", "A"),
+    ///     Tab::new("b", "B"),
+    /// ]);
+    /// state.set_active(Some(1));
+    /// assert_eq!(state.active_index(), Some(1));
+    ///
+    /// state.set_active(None);
+    /// assert_eq!(state.active_index(), None);
+    /// ```
     pub fn set_active(&mut self, index: Option<usize>) {
         match index {
             Some(i) if !self.tabs.is_empty() => {
@@ -455,11 +673,31 @@ impl TabBarState {
     }
 
     /// Sets the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
+    /// state.set_scroll_offset(5);
+    /// assert_eq!(state.scroll_offset(), 5);
+    /// ```
     pub fn set_scroll_offset(&mut self, offset: usize) {
         self.scroll_offset = offset;
     }
 
     /// Sets the max tab width.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
+    /// state.set_max_tab_width(Some(15));
+    /// assert_eq!(state.max_tab_width(), Some(15));
+    /// ```
     pub fn set_max_tab_width(&mut self, max: Option<usize>) {
         self.max_tab_width = max;
     }
@@ -475,6 +713,17 @@ impl TabBarState {
     }
 
     /// Replaces all tabs, clamping or clearing the active index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
+    /// state.set_tabs(vec![Tab::new("x", "X"), Tab::new("y", "Y")]);
+    /// assert_eq!(state.len(), 2);
+    /// assert_eq!(state.tabs()[0].label(), "X");
+    /// ```
     pub fn set_tabs(&mut self, tabs: Vec<Tab>) {
         self.tabs = tabs;
         if self.tabs.is_empty() {
@@ -488,6 +737,22 @@ impl TabBarState {
     }
 
     /// Returns a tab by its id, if present.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let state = TabBarState::new(vec![
+    ///     Tab::new("file1", "main.rs"),
+    ///     Tab::new("file2", "lib.rs"),
+    /// ]);
+    /// let (index, tab) = state.find_tab_by_id("file2").unwrap();
+    /// assert_eq!(index, 1);
+    /// assert_eq!(tab.label(), "lib.rs");
+    ///
+    /// assert!(state.find_tab_by_id("missing").is_none());
+    /// ```
     pub fn find_tab_by_id(&self, id: &str) -> Option<(usize, &Tab)> {
         self.tabs.iter().enumerate().find(|(_, t)| t.id() == id)
     }
@@ -495,16 +760,59 @@ impl TabBarState {
     // -- Instance methods that delegate to component -------------------------
 
     /// Maps an input event to a tab bar message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState, TabBarMessage};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
+    /// state.set_focused(true);
+    ///
+    /// let msg = state.handle_event(&Event::key(KeyCode::Right));
+    /// assert_eq!(msg, Some(TabBarMessage::NextTab));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<TabBarMessage> {
         TabBar::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState, TabBarOutput};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = TabBarState::new(vec![
+    ///     Tab::new("a", "A"),
+    ///     Tab::new("b", "B"),
+    /// ]);
+    /// state.set_focused(true);
+    ///
+    /// let output = state.dispatch_event(&Event::key(KeyCode::Right));
+    /// assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<TabBarOutput> {
         TabBar::dispatch_event(self, event)
     }
 
     /// Updates the tab bar state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState, TabBarMessage, TabBarOutput};
+    ///
+    /// let mut state = TabBarState::new(vec![
+    ///     Tab::new("a", "A"),
+    ///     Tab::new("b", "B"),
+    /// ]);
+    /// let output = state.update(TabBarMessage::NextTab);
+    /// assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
+    /// assert_eq!(state.active_index(), Some(1));
+    /// ```
     pub fn update(&mut self, msg: TabBarMessage) -> Option<TabBarOutput> {
         TabBar::update(self, msg)
     }

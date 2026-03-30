@@ -290,6 +290,17 @@ impl FileBrowserState {
     }
 
     /// Sets the sort field (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState, FileSortField};
+    ///
+    /// let state = FileBrowserState::new("/", vec![
+    ///     FileEntry::file("a.txt", "/a.txt"),
+    /// ]).with_sort_field(FileSortField::Size);
+    /// assert_eq!(state.sort_field(), &FileSortField::Size);
+    /// ```
     pub fn with_sort_field(mut self, field: FileSortField) -> Self {
         self.sort_field = field;
         self.sort_and_filter();
@@ -297,6 +308,17 @@ impl FileBrowserState {
     }
 
     /// Sets the sort direction (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState, FileSortDirection};
+    ///
+    /// let state = FileBrowserState::new("/", vec![
+    ///     FileEntry::file("a.txt", "/a.txt"),
+    /// ]).with_sort_direction(FileSortDirection::Descending);
+    /// assert_eq!(state.sort_direction(), &FileSortDirection::Descending);
+    /// ```
     pub fn with_sort_direction(mut self, direction: FileSortDirection) -> Self {
         self.sort_direction = direction;
         self.sort_and_filter();
@@ -340,6 +362,15 @@ impl FileBrowserState {
     }
 
     /// Returns the path segments for breadcrumb display.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/home/user", vec![]);
+    /// assert_eq!(state.path_segments(), &["/", "home", "user"]);
+    /// ```
     pub fn path_segments(&self) -> &[String] {
         &self.path_segments
     }
@@ -355,6 +386,18 @@ impl FileBrowserState {
     }
 
     /// Returns the filtered entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![
+    ///     FileEntry::file("readme.md", "/readme.md"),
+    ///     FileEntry::directory("src", "/src"),
+    /// ]);
+    /// assert_eq!(state.filtered_entries().len(), 2);
+    /// ```
     pub fn filtered_entries(&self) -> Vec<&FileEntry> {
         self.filtered_indices
             .iter()
@@ -403,6 +446,15 @@ impl FileBrowserState {
     }
 
     /// Returns the selected paths (for multi-select mode).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![]);
+    /// assert!(state.selected_paths().is_empty());
+    /// ```
     pub fn selected_paths(&self) -> &[String] {
         &self.selected_paths
     }

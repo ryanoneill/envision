@@ -89,6 +89,16 @@ pub struct PaneConfig {
 
 impl PaneConfig {
     /// Creates a new pane with default proportion (equal share).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let pane = PaneConfig::new("sidebar");
+    /// assert_eq!(pane.id(), "sidebar");
+    /// assert_eq!(pane.title(), None);
+    /// ```
     pub fn new(id: impl Into<String>) -> Self {
         Self {
             id: id.into(),
@@ -100,6 +110,15 @@ impl PaneConfig {
     }
 
     /// Sets the title (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let pane = PaneConfig::new("sidebar").with_title("Files");
+    /// assert_eq!(pane.title(), Some("Files"));
+    /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
@@ -108,12 +127,30 @@ impl PaneConfig {
     /// Sets the proportion (builder pattern).
     ///
     /// Proportions are normalized relative to other panes' proportions.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let pane = PaneConfig::new("main").with_proportion(0.7);
+    /// assert!((pane.proportion() - 0.7).abs() < f32::EPSILON);
+    /// ```
     pub fn with_proportion(mut self, proportion: f32) -> Self {
         self.proportion = proportion.max(0.0);
         self
     }
 
     /// Sets the minimum size in cells (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let pane = PaneConfig::new("sidebar").with_min_size(20);
+    /// assert_eq!(pane.min_size(), 20);
+    /// ```
     pub fn with_min_size(mut self, min_size: u16) -> Self {
         self.min_size = min_size.max(1);
         self
@@ -122,6 +159,15 @@ impl PaneConfig {
     /// Sets the maximum size in cells (builder pattern).
     ///
     /// A value of 0 means no maximum.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let pane = PaneConfig::new("sidebar").with_max_size(60);
+    /// assert_eq!(pane.max_size(), 60);
+    /// ```
     pub fn with_max_size(mut self, max_size: u16) -> Self {
         self.max_size = max_size;
         self
@@ -259,6 +305,20 @@ impl PaneLayoutState {
     /// Creates a new pane layout with the given direction and panes.
     ///
     /// Pane proportions are automatically normalized to sum to 1.0.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("left"),
+    ///     PaneConfig::new("right"),
+    /// ]);
+    /// assert_eq!(state.pane_count(), 2);
+    /// assert_eq!(state.focused_pane_id(), Some("left"));
+    /// ```
     pub fn new(direction: PaneDirection, panes: Vec<PaneConfig>) -> Self {
         let mut state = Self {
             direction,
@@ -292,6 +352,18 @@ impl PaneLayoutState {
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("a"),
+    /// ]).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -348,6 +420,22 @@ impl PaneLayoutState {
     }
 
     /// Returns the area for a specific pane by ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    /// use ratatui::prelude::Rect;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("left").with_proportion(0.5),
+    ///     PaneConfig::new("right").with_proportion(0.5),
+    /// ]);
+    /// let area = Rect::new(0, 0, 80, 24);
+    /// let left_area = state.pane_area(area, "left").unwrap();
+    /// assert_eq!(left_area.width, 40);
+    /// ```
     pub fn pane_area(&self, area: Rect, pane_id: &str) -> Option<Rect> {
         let index = self.panes.iter().position(|p| p.id == pane_id)?;
         let rects = self.layout(area);
@@ -375,6 +463,20 @@ impl PaneLayoutState {
     }
 
     /// Returns the pane configurations.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("left").with_title("Left"),
+    ///     PaneConfig::new("right").with_title("Right"),
+    /// ]);
+    /// assert_eq!(state.panes().len(), 2);
+    /// assert_eq!(state.panes()[0].title(), Some("Left"));
+    /// ```
     pub fn panes(&self) -> &[PaneConfig] {
         &self.panes
     }
@@ -398,6 +500,19 @@ impl PaneLayoutState {
     }
 
     /// Returns the focused pane index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
+    /// use envision::component::PaneLayoutState;
+    ///
+    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
+    ///     PaneConfig::new("left"),
+    ///     PaneConfig::new("right"),
+    /// ]);
+    /// assert_eq!(state.focused_pane_index(), 0);
+    /// ```
     pub fn focused_pane_index(&self) -> usize {
         self.focused_pane
     }

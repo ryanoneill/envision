@@ -119,11 +119,29 @@ impl ProgressItem {
     }
 
     /// Returns the item ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressItem;
+    ///
+    /// let item = ProgressItem::new("task-1", "Download");
+    /// assert_eq!(item.id(), "task-1");
+    /// ```
     pub fn id(&self) -> &str {
         &self.id
     }
 
     /// Returns the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressItem;
+    ///
+    /// let item = ProgressItem::new("t1", "Uploading");
+    /// assert_eq!(item.label(), "Uploading");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
@@ -134,11 +152,29 @@ impl ProgressItem {
     }
 
     /// Returns the status.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ProgressItem, ProgressItemStatus};
+    ///
+    /// let item = ProgressItem::new("t1", "Task");
+    /// assert_eq!(item.status(), ProgressItemStatus::Pending);
+    /// ```
     pub fn status(&self) -> ProgressItemStatus {
         self.status
     }
 
     /// Returns the optional message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressItem;
+    ///
+    /// let item = ProgressItem::new("t1", "Task");
+    /// assert_eq!(item.message(), None);
+    /// ```
     pub fn message(&self) -> Option<&str> {
         self.message.as_deref()
     }
@@ -274,12 +310,30 @@ impl MultiProgressState {
     }
 
     /// Sets the maximum number of visible items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new().with_max_visible(5);
+    /// assert_eq!(state.max_visible(), 5);
+    /// ```
     pub fn with_max_visible(mut self, max: usize) -> Self {
         self.max_visible = max;
         self
     }
 
     /// Sets whether to auto-remove completed items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new().with_auto_remove(true);
+    /// assert!(state.auto_remove_completed());
+    /// ```
     pub fn with_auto_remove(mut self, auto_remove: bool) -> Self {
         self.auto_remove_completed = auto_remove;
         self
@@ -301,6 +355,15 @@ impl MultiProgressState {
     }
 
     /// Sets whether to show percentages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new().with_percentages(false);
+    /// assert!(!state.show_percentages());
+    /// ```
     pub fn with_percentages(mut self, show: bool) -> Self {
         self.show_percentages = show;
         self
@@ -330,11 +393,33 @@ impl MultiProgressState {
     }
 
     /// Returns all items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("t1", "Task 1");
+    /// assert_eq!(state.items().len(), 1);
+    /// assert_eq!(state.items()[0].label(), "Task 1");
+    /// ```
     pub fn items(&self) -> &[ProgressItem] {
         &self.items
     }
 
     /// Returns the number of items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// assert_eq!(state.len(), 0);
+    /// state.add("t1", "Task");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn len(&self) -> usize {
         self.items.len()
     }
@@ -345,6 +430,18 @@ impl MultiProgressState {
     }
 
     /// Returns the number of completed items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MultiProgress, MultiProgressState, MultiProgressMessage, Component};
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("t1", "Task 1");
+    /// state.add("t2", "Task 2");
+    /// MultiProgress::update(&mut state, MultiProgressMessage::Complete("t1".to_string()));
+    /// assert_eq!(state.completed_count(), 1);
+    /// ```
     pub fn completed_count(&self) -> usize {
         self.items
             .iter()
@@ -353,6 +450,20 @@ impl MultiProgressState {
     }
 
     /// Returns the number of failed items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MultiProgress, MultiProgressState, MultiProgressMessage, Component};
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("t1", "Task 1");
+    /// MultiProgress::update(&mut state, MultiProgressMessage::Fail {
+    ///     id: "t1".to_string(),
+    ///     message: Some("timeout".to_string()),
+    /// });
+    /// assert_eq!(state.failed_count(), 1);
+    /// ```
     pub fn failed_count(&self) -> usize {
         self.items
             .iter()
@@ -361,6 +472,20 @@ impl MultiProgressState {
     }
 
     /// Returns the number of active items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MultiProgress, MultiProgressState, MultiProgressMessage, Component};
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("t1", "Task 1");
+    /// MultiProgress::update(&mut state, MultiProgressMessage::SetProgress {
+    ///     id: "t1".to_string(),
+    ///     progress: 0.5,
+    /// });
+    /// assert_eq!(state.active_count(), 1);
+    /// ```
     pub fn active_count(&self) -> usize {
         self.items
             .iter()
@@ -410,6 +535,17 @@ impl MultiProgressState {
     }
 
     /// Finds a mutable item by ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("dl", "Download");
+    /// assert!(state.find_mut("dl").is_some());
+    /// assert!(state.find_mut("missing").is_none());
+    /// ```
     pub fn find_mut(&mut self, id: &str) -> Option<&mut ProgressItem> {
         self.items.iter_mut().find(|i| i.id == id)
     }
@@ -433,12 +569,32 @@ impl MultiProgressState {
     }
 
     /// Clears all items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("t1", "Task");
+    /// state.clear();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn clear(&mut self) {
         self.items.clear();
         self.scroll_offset = 0;
     }
 
     /// Returns the maximum visible items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new();
+    /// assert_eq!(state.max_visible(), 8); // default
+    /// ```
     pub fn max_visible(&self) -> usize {
         self.max_visible
     }
@@ -509,6 +665,15 @@ impl MultiProgressState {
     }
 
     /// Sets the disabled state using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new().with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
