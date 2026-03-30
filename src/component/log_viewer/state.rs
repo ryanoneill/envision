@@ -430,11 +430,31 @@ impl LogViewerState {
     }
 
     /// Returns the number of entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.push_info("first");
+    /// state.push_error("second");
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn len(&self) -> usize {
         self.entries.len()
     }
 
     /// Returns true if there are no entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
     }
@@ -477,6 +497,15 @@ impl LogViewerState {
     }
 
     /// Returns the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
     }
@@ -490,21 +519,62 @@ impl LogViewerState {
     }
 
     /// Returns whether timestamps are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert!(!state.show_timestamps()); // disabled by default
+    ///
+    /// let state = LogViewerState::new().with_timestamps(true);
+    /// assert!(state.show_timestamps());
+    /// ```
     pub fn show_timestamps(&self) -> bool {
         self.show_timestamps
     }
 
     /// Sets whether timestamps are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.set_show_timestamps(true);
+    /// assert!(state.show_timestamps());
+    /// ```
     pub fn set_show_timestamps(&mut self, show: bool) {
         self.show_timestamps = show;
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new().with_title("System Log");
+    /// assert_eq!(state.title(), Some("System Log"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.set_title(Some("Error Log".to_string()));
+    /// assert_eq!(state.title(), Some("Error Log"));
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
@@ -524,36 +594,103 @@ impl LogViewerState {
     }
 
     /// Returns true if success entries are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert!(state.show_success()); // enabled by default
+    /// ```
     pub fn show_success(&self) -> bool {
         self.show_success
     }
 
     /// Returns true if warning entries are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert!(state.show_warning()); // enabled by default
+    /// ```
     pub fn show_warning(&self) -> bool {
         self.show_warning
     }
 
     /// Returns true if error entries are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert!(state.show_error()); // enabled by default
+    /// ```
     pub fn show_error(&self) -> bool {
         self.show_error
     }
 
     /// Sets the info filter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.set_show_info(false);
+    /// assert!(!state.show_info());
+    /// ```
     pub fn set_show_info(&mut self, show: bool) {
         self.show_info = show;
     }
 
     /// Sets the success filter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.set_show_success(false);
+    /// assert!(!state.show_success());
+    /// ```
     pub fn set_show_success(&mut self, show: bool) {
         self.show_success = show;
     }
 
     /// Sets the warning filter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.set_show_warning(false);
+    /// assert!(!state.show_warning());
+    /// ```
     pub fn set_show_warning(&mut self, show: bool) {
         self.show_warning = show;
     }
 
     /// Sets the error filter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.set_show_error(false);
+    /// assert!(!state.show_error());
+    /// ```
     pub fn set_show_error(&mut self, show: bool) {
         self.show_error = show;
     }

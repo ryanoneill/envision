@@ -425,6 +425,15 @@ impl MultiProgressState {
     }
 
     /// Returns true if there are no items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.items.is_empty()
     }
@@ -605,41 +614,119 @@ impl MultiProgressState {
     }
 
     /// Returns the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll_offset
     }
 
     /// Sets the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("t1", "Task 1");
+    /// state.add("t2", "Task 2");
+    /// state.set_scroll_offset(1);
+    /// assert_eq!(state.scroll_offset(), 1);
+    /// ```
     pub fn set_scroll_offset(&mut self, offset: usize) {
         self.scroll_offset = offset.min(self.items.len().saturating_sub(1));
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new().with_title("Downloads");
+    /// assert_eq!(state.title(), Some("Downloads"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.set_title(Some("Tasks".to_string()));
+    /// assert_eq!(state.title(), Some("Tasks"));
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
 
     /// Returns whether percentages are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new();
+    /// assert!(state.show_percentages()); // enabled by default
+    /// ```
     pub fn show_percentages(&self) -> bool {
         self.show_percentages
     }
 
     /// Sets whether to show percentages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.set_show_percentages(false);
+    /// assert!(!state.show_percentages());
+    /// ```
     pub fn set_show_percentages(&mut self, show: bool) {
         self.show_percentages = show;
     }
 
     /// Returns whether auto-remove is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let state = MultiProgressState::new();
+    /// assert!(!state.auto_remove_completed()); // disabled by default
+    /// ```
     pub fn auto_remove_completed(&self) -> bool {
         self.auto_remove_completed
     }
 
     /// Sets whether to auto-remove completed items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.set_auto_remove_completed(true);
+    /// assert!(state.auto_remove_completed());
+    /// ```
     pub fn set_auto_remove_completed(&mut self, auto_remove: bool) {
         self.auto_remove_completed = auto_remove;
     }

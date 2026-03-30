@@ -628,16 +628,52 @@ impl TabBarState {
     }
 
     /// Returns the maximum tab width, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let state = TabBarState::new(vec![Tab::new("a", "A")]);
+    /// assert_eq!(state.max_tab_width(), None);
+    ///
+    /// let state = state.with_max_tab_width(Some(20));
+    /// assert_eq!(state.max_tab_width(), Some(20));
+    /// ```
     pub fn max_tab_width(&self) -> Option<usize> {
         self.max_tab_width
     }
 
     /// Returns whether the component is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let state = TabBarState::new(vec![Tab::new("a", "A")]);
+    /// assert!(!state.is_disabled());
+    ///
+    /// let state = state.with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Returns whether the component is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
+    /// assert!(!state.is_focused());
+    ///
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
@@ -703,11 +739,31 @@ impl TabBarState {
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
 
     /// Sets the focused state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
+    /// state.set_focused(true);
+    /// assert!(state.is_focused());
+    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
