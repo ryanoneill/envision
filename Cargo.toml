@@ -318,6 +318,10 @@ name = "table"
 required-features = ["data-components"]
 
 [[example]]
+name = "tab_bar"
+required-features = ["navigation-components"]
+
+[[example]]
 name = "tabs"
 required-features = ["navigation-components"]
 
