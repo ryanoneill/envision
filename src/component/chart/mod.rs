@@ -33,6 +33,10 @@ mod render;
 
 /// A named data series with values and styling.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct DataSeries {
     /// The series label.
     label: String,
@@ -189,6 +193,10 @@ impl DataSeries {
 
 /// The kind of chart to display.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ChartKind {
     /// A line chart (sparkline-style).
     Line,
@@ -219,6 +227,10 @@ pub enum ChartKind {
 /// assert_eq!(threshold.color, Color::Yellow);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ThresholdLine {
     /// The y-value for this threshold.
     pub value: f64,
@@ -252,6 +264,10 @@ impl ThresholdLine {
 
 /// Messages that can be sent to a Chart.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ChartMessage {
     /// Cycle to the next series (for multi-series line charts).
     NextSeries,
@@ -267,6 +283,10 @@ pub enum ChartMessage {
 
 /// Output messages from a Chart.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ChartOutput {
     /// The active series changed.
     ActiveSeriesChanged(usize),
@@ -276,6 +296,10 @@ pub enum ChartOutput {
 ///
 /// Contains the data series, chart kind, and display options.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ChartState {
     /// The data series to display.
     pub(crate) series: Vec<DataSeries>,

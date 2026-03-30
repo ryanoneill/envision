@@ -60,6 +60,10 @@ pub use types::{SelectedType, TimelineEvent, TimelineMessage, TimelineOutput, Ti
 /// assert_eq!(state.spans().len(), 1);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct TimelineState {
     /// Point events.
     pub(crate) events: Vec<TimelineEvent>,

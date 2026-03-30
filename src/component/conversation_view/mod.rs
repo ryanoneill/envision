@@ -52,6 +52,10 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a ConversationView.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ConversationViewMessage {
     /// Scroll up by one line.
     ScrollUp,
@@ -71,6 +75,10 @@ pub enum ConversationViewMessage {
 
 /// Output messages from a ConversationView.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ConversationViewOutput {
     /// The scroll position changed.
     ScrollChanged {
@@ -83,6 +91,10 @@ pub enum ConversationViewOutput {
 ///
 /// Contains the message history, scroll state, and display configuration.
 #[derive(Clone, Debug)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ConversationViewState {
     /// Message history.
     pub(super) messages: Vec<ConversationMessage>,

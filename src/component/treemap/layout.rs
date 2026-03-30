@@ -34,6 +34,10 @@ use super::TreemapNode;
 /// assert_eq!(rect.depth, 0);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct LayoutRect {
     /// X position (column).
     pub x: u16,

@@ -25,6 +25,10 @@ use ratatui::style::Color;
 /// assert_eq!(node.children().len(), 1);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct SpanNode {
     /// Unique identifier.
     pub(super) id: String,
@@ -196,6 +200,10 @@ impl SpanNode {
 /// Created by [`super::SpanTreeState::flatten`], this provides all the
 /// information needed to render a single row in the span tree.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct FlatSpan {
     /// The span's unique identifier.
     pub(super) id: String,

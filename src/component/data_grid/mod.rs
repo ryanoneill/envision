@@ -54,6 +54,10 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a DataGrid.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum DataGridMessage {
     /// Move selection up by one row.
     Up,
@@ -85,6 +89,10 @@ pub enum DataGridMessage {
 
 /// Output messages from a DataGrid.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum DataGridOutput<T: Clone> {
     /// A cell was edited. Contains the row index, column index, and new value.
     CellEdited {
@@ -109,6 +117,10 @@ pub enum DataGridOutput<T: Clone> {
 ///
 /// Contains the table data, column cursor, and inline editor state.
 #[derive(Clone, Debug)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct DataGridState<T: TableRow> {
     /// The rows of data.
     rows: Vec<T>,
@@ -121,6 +133,7 @@ pub struct DataGridState<T: TableRow> {
     /// Whether the cell editor is active.
     editing: bool,
     /// The inline editor state.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     editor: InputFieldState,
     /// Value before editing started (for cancel).
     original_value: String,
@@ -129,6 +142,7 @@ pub struct DataGridState<T: TableRow> {
     /// Whether the component is disabled.
     disabled: bool,
     /// Scroll state for scrollbar rendering.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     scroll: ScrollState,
 }
 

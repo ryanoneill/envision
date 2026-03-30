@@ -13,6 +13,10 @@ use super::{GraphEdge, GraphNode, GraphOrientation};
 
 /// A positioned node in the computed layout.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct LayoutNode {
     /// The node id.
     pub id: String,
@@ -28,6 +32,10 @@ pub struct LayoutNode {
 
 /// A positioned edge in the computed layout.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct LayoutEdge {
     /// X position of the edge start point.
     pub from_x: u16,

@@ -40,6 +40,10 @@ use crate::theme::Theme;
 /// assert_eq!(state.title(), Some("Latency Distribution"));
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct HistogramState {
     /// Raw data points.
     data: Vec<f64>,
@@ -505,6 +509,10 @@ impl HistogramState {
 
 /// Messages that can be sent to a Histogram.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum HistogramMessage {
     /// Replace all data points.
     SetData(Vec<f64>),

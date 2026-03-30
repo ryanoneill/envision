@@ -43,6 +43,10 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a [`MarkdownRenderer`].
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum MarkdownRendererMessage {
     /// Scroll up by one line.
     ScrollUp,
@@ -80,6 +84,10 @@ pub enum MarkdownRendererMessage {
 /// assert!(!state.is_focused());
 /// ```
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct MarkdownRendererState {
     /// The markdown source text.
     source: String,

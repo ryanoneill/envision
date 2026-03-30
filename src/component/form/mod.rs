@@ -60,6 +60,10 @@ enum FieldState {
 
 /// Messages that can be sent to a Form.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum FormMessage {
     /// Move focus to the next field.
     FocusNext,
@@ -95,6 +99,10 @@ pub enum FormMessage {
 
 /// Output messages from a Form.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum FormOutput {
     /// The form was submitted. Contains field ID-value pairs.
     Submitted(Vec<(String, FormValue)>),
@@ -107,10 +115,15 @@ pub enum FormOutput {
 /// Contains the field descriptors, their widget states, focus tracking,
 /// and overall form state.
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct FormState {
     /// Field descriptors (id, label, kind).
     fields: Vec<FormField>,
     /// Widget states corresponding to each field.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     states: Vec<FieldState>,
     /// Index of the currently focused field.
     focused_index: usize,
