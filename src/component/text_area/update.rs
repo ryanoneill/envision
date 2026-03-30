@@ -306,6 +306,30 @@ impl TextAreaState {
                     None
                 }
             }
+            TextAreaMessage::StartSearch => {
+                self.start_search();
+                None
+            }
+            TextAreaMessage::SetSearchQuery(query) => {
+                self.set_search_query(query);
+                None
+            }
+            TextAreaMessage::NextMatch => {
+                self.next_match();
+                None
+            }
+            TextAreaMessage::PrevMatch => {
+                self.prev_match();
+                None
+            }
+            TextAreaMessage::ClearSearch => {
+                self.clear_search();
+                None
+            }
+            TextAreaMessage::ToggleLineNumbers => {
+                self.show_line_numbers = !self.show_line_numbers;
+                None
+            }
         }
     }
 }

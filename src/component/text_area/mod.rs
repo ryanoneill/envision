@@ -41,6 +41,7 @@ use crate::undo::UndoStack;
 use crate::clipboard::system_clipboard_get;
 
 mod cursor;
+mod search;
 mod selection;
 mod update;
 
@@ -134,6 +135,22 @@ pub enum TextAreaMessage {
     Undo,
     /// Redo the last undone edit.
     Redo,
+
+    // Search
+    /// Start search mode.
+    StartSearch,
+    /// Set the search query and recompute matches.
+    SetSearchQuery(String),
+    /// Jump to next search match.
+    NextMatch,
+    /// Jump to previous search match.
+    PrevMatch,
+    /// Clear search and exit search mode.
+    ClearSearch,
+
+    // Display
+    /// Toggle line number display.
+    ToggleLineNumbers,
 }
 
 /// Output messages from a TextArea.
@@ -176,6 +193,14 @@ pub struct TextAreaState {
     /// Undo/redo history stack.
     #[cfg_attr(feature = "serialization", serde(skip))]
     undo_stack: UndoStack<TextAreaSnapshot>,
+    /// Whether to show line numbers.
+    show_line_numbers: bool,
+    /// Current search query (None = not searching).
+    search_query: Option<String>,
+    /// List of search matches as (line, byte_col) pairs.
+    search_matches: Vec<(usize, usize)>,
+    /// Index of the current match within search_matches.
+    current_match: usize,
 }
 
 impl Default for TextAreaState {
@@ -191,6 +216,10 @@ impl Default for TextAreaState {
             selection_anchor: None,
             clipboard: String::new(),
             undo_stack: UndoStack::default(),
+            show_line_numbers: false,
+            search_query: None,
+            search_matches: Vec::new(),
+            current_match: 0,
         }
     }
 }
@@ -246,6 +275,10 @@ impl TextAreaState {
             selection_anchor: None,
             clipboard: String::new(),
             undo_stack: UndoStack::default(),
+            show_line_numbers: false,
+            search_query: None,
+            search_matches: Vec::new(),
+            current_match: 0,
         }
     }
 
@@ -478,6 +511,31 @@ impl TextAreaState {
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
+    }
+
+    /// Sets whether line numbers are shown (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TextAreaState;
+    ///
+    /// let state = TextAreaState::new().with_line_numbers(true);
+    /// assert!(state.show_line_numbers());
+    /// ```
+    pub fn with_line_numbers(mut self, show: bool) -> Self {
+        self.show_line_numbers = show;
+        self
+    }
+
+    /// Returns whether line numbers are shown.
+    pub fn show_line_numbers(&self) -> bool {
+        self.show_line_numbers
+    }
+
+    /// Sets whether line numbers are shown.
+    pub fn set_show_line_numbers(&mut self, show: bool) {
+        self.show_line_numbers = show;
     }
 
     /// Maps an input event to a textarea message.
