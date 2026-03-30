@@ -790,4 +790,6 @@ impl Disableable for ConversationView {
 #[cfg(test)]
 mod render_tests;
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;

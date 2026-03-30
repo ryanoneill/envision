@@ -1,0 +1,9 @@
+---
+source: src/component/tree/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+▼ Documents                             
+    readme.md                           
+    guide.md                            
+▶ Projects                              
+  Downloads

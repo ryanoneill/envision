@@ -90,6 +90,15 @@ impl ItemState {
     }
 
     /// Returns true if the item is ready.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ItemState;
+    ///
+    /// assert!(ItemState::Ready.is_ready());
+    /// assert!(!ItemState::Loading.is_ready());
+    /// ```
     pub fn is_ready(&self) -> bool {
         matches!(self, Self::Ready)
     }
@@ -161,6 +170,16 @@ impl<T: Clone + PartialEq> PartialEq for LoadingListItem<T> {
 
 impl<T: Clone> LoadingListItem<T> {
     /// Creates a new item.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListItem;
+    ///
+    /// let item = LoadingListItem::new("data", "Label");
+    /// assert_eq!(item.label(), "Label");
+    /// assert!(item.is_ready());
+    /// ```
     pub fn new(data: T, label: impl Into<String>) -> Self {
         Self {
             data,
@@ -170,6 +189,15 @@ impl<T: Clone> LoadingListItem<T> {
     }
 
     /// Returns the underlying data.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListItem;
+    ///
+    /// let item = LoadingListItem::new(42, "Answer");
+    /// assert_eq!(*item.data(), 42);
+    /// ```
     pub fn data(&self) -> &T {
         &self.data
     }
@@ -318,6 +346,16 @@ impl<T: Clone> Default for LoadingListState<T> {
 
 impl<T: Clone> LoadingListState<T> {
     /// Creates a new empty LoadingList state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::<String>::new();
+    /// assert!(state.is_empty());
+    /// assert_eq!(state.len(), 0);
+    /// ```
     pub fn new() -> Self {
         Self::default()
     }
@@ -429,6 +467,15 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Sets the disabled state using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::<String>::new().with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -572,6 +619,25 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Returns the number of items with errors.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// #[derive(Clone)]
+    /// struct Task { name: String }
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec![
+    ///         Task { name: "A".to_string() },
+    ///         Task { name: "B".to_string() },
+    ///     ],
+    ///     |t| t.name.clone(),
+    /// );
+    /// state.set_error(0, "failed");
+    /// assert_eq!(state.error_count(), 1);
+    /// ```
     pub fn error_count(&self) -> usize {
         self.items.iter().filter(|i| i.is_error()).count()
     }
@@ -582,6 +648,23 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Returns true if any item has an error.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// #[derive(Clone)]
+    /// struct Task { name: String }
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec![Task { name: "Build".to_string() }],
+    ///     |t| t.name.clone(),
+    /// );
+    /// assert!(!state.has_errors());
+    /// state.set_error(0, "Failed to build");
+    /// assert!(state.has_errors());
+    /// ```
     pub fn has_errors(&self) -> bool {
         self.items.iter().any(|i| i.is_error())
     }
@@ -943,5 +1026,7 @@ impl<T: Clone> Disableable for LoadingList<T> {
     }
 }
 
+#[cfg(test)]
+mod snapshot_tests;
 #[cfg(test)]
 mod tests;

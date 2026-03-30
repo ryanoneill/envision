@@ -7,7 +7,7 @@
 //! State is stored in [`FlameGraphState`], updated via [`FlameGraphMessage`],
 //! and produces [`FlameGraphOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

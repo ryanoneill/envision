@@ -67,6 +67,17 @@ impl Column {
     /// Creates a new column with the given header and width.
     ///
     /// The column is not sortable by default.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("Name", Constraint::Length(20));
+    /// assert_eq!(col.header(), "Name");
+    /// assert!(!col.is_sortable());
+    /// ```
     pub fn new(header: impl Into<String>, width: Constraint) -> Self {
         Self {
             header: header.into(),
@@ -79,6 +90,16 @@ impl Column {
     ///
     /// Sortable columns can be sorted by clicking/selecting the header
     /// or using `TableMessage::SortBy`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("Name", Constraint::Length(20)).sortable();
+    /// assert!(col.is_sortable());
+    /// ```
     pub fn sortable(mut self) -> Self {
         self.sortable = true;
         self
@@ -162,6 +183,15 @@ pub enum SortDirection {
 
 impl SortDirection {
     /// Returns the opposite sort direction.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SortDirection;
+    ///
+    /// assert_eq!(SortDirection::Ascending.toggle(), SortDirection::Descending);
+    /// assert_eq!(SortDirection::Descending.toggle(), SortDirection::Ascending);
+    /// ```
     pub fn toggle(self) -> Self {
         match self {
             SortDirection::Ascending => SortDirection::Descending,

@@ -202,16 +202,16 @@ pub use component::{
     KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress, MultiProgressMessage,
     MultiProgressOutput, MultiProgressState, Paginator, PaginatorMessage, PaginatorOutput,
     PaginatorState, PaginatorStyle, ProgressBar, ProgressBarMessage, ProgressBarOutput,
-    ProgressBarState, ProgressItem, ProgressItemStatus, ScrollableText, ScrollableTextMessage,
-    ScrollableTextOutput, ScrollableTextState, Section, Sparkline, SparklineDirection,
-    SparklineMessage, SparklineOutput, SparklineState, Spinner, SpinnerMessage, SpinnerState,
-    SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarState,
-    StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput,
-    StatusLogState, StyledText, StyledTextMessage, StyledTextOutput, StyledTextState,
-    TerminalOutput, TerminalOutputMessage, TerminalOutputOutput, TerminalOutputState,
-    ThresholdZone, TitleCard, TitleCardMessage, TitleCardState, Toast, ToastItem, ToastLevel,
-    ToastMessage, ToastOutput, ToastState, UsageDisplay, UsageDisplayMessage, UsageDisplayState,
-    UsageLayout, UsageMetric,
+    ProgressBarState, ProgressItem, ProgressItemStatus, ScrollView, ScrollViewMessage,
+    ScrollViewState, ScrollableText, ScrollableTextMessage, ScrollableTextOutput,
+    ScrollableTextState, Section, Sparkline, SparklineDirection, SparklineMessage, SparklineOutput,
+    SparklineState, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem,
+    StatusBarItemContent, StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog,
+    StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState, StyledText,
+    StyledTextMessage, StyledTextOutput, StyledTextState, TerminalOutput, TerminalOutputMessage,
+    TerminalOutputOutput, TerminalOutputState, ThresholdZone, TitleCard, TitleCardMessage,
+    TitleCardState, Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
+    UsageDisplay, UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric,
 };
 
 // Navigation components
@@ -223,6 +223,34 @@ pub use component::{
     MenuOutput, MenuState, NavigationMode, PaletteItem, Router, RouterMessage, RouterOutput,
     RouterState, StepIndicator, StepIndicatorMessage, StepIndicatorOutput, StepIndicatorState, Tab,
     TabBar, TabBarMessage, TabBarOutput, TabBarState, Tabs, TabsMessage, TabsOutput, TabsState,
+};
+
+// Compound components
+#[cfg(feature = "compound-components")]
+pub use component::{
+    AlertMetric, AlertPanel, AlertPanelMessage, AlertPanelOutput, AlertPanelState, AlertState,
+    AlertThreshold, BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation, BoxPlotState, Chart,
+    ChartKind, ChartMessage, ChartOutput, ChartState, ChatMessage, ChatRole, ChatView,
+    ChatViewMessage, ChatViewOutput, ChatViewState, ConversationMessage, ConversationRole,
+    ConversationView, ConversationViewMessage, ConversationViewOutput, ConversationViewState,
+    DataGrid, DataGridMessage, DataGridOutput, DataGridState, DataSeries, DependencyGraph,
+    DependencyGraphMessage, DependencyGraphOutput, DependencyGraphState, DiffHunk, DiffLine,
+    DiffLineType, DiffMode, DiffViewer, DiffViewerMessage, DiffViewerOutput, DiffViewerState,
+    EventLevel, EventStream, EventStreamMessage, EventStreamOutput, EventStreamState, FileBrowser,
+    FileBrowserMessage, FileBrowserOutput, FileBrowserState, FlameGraph, FlameGraphMessage,
+    FlameGraphOutput, FlameGraphState, FlameNode, Form, FormField, FormFieldKind, FormMessage,
+    FormOutput, FormState, FormValue, GraphEdge, GraphNode, GraphOrientation, Heatmap,
+    HeatmapColorScale, HeatmapMessage, HeatmapOutput, HeatmapState, Histogram, HistogramMessage,
+    HistogramState, LogCorrelation, LogCorrelationMessage, LogCorrelationOutput,
+    LogCorrelationState, LogStream, LogViewer, LogViewerMessage, LogViewerOutput, LogViewerState,
+    MessageBlock, MetricKind, MetricWidget, MetricsDashboard, MetricsDashboardMessage,
+    MetricsDashboardOutput, MetricsDashboardState, NodeStatus, PaneLayout, PaneLayoutMessage,
+    PaneLayoutOutput, PaneLayoutState, SearchableList, SearchableListMessage, SearchableListOutput,
+    SearchableListState, SelectedType, SpanNode, SpanTree, SpanTreeMessage, SpanTreeOutput,
+    SpanTreeState, SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput,
+    SplitPanelState, StreamEvent, ThresholdLine, Timeline, TimelineEvent, TimelineMessage,
+    TimelineOutput, TimelineSpan, TimelineState, Treemap, TreemapMessage, TreemapNode,
+    TreemapOutput, TreemapState,
 };
 
 // Overlay components

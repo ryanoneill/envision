@@ -6,7 +6,7 @@
 //! visualizations. State is stored in [`HeatmapState`], updated via
 //! [`HeatmapMessage`], and produces [`HeatmapOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

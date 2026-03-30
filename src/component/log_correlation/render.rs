@@ -207,15 +207,25 @@ fn render_single_stream(
     }
 
     // Apply scroll offset
+    let total_lines = lines.len();
+    let viewport_height = inner.height as usize;
     let offset = state.scroll_offset();
     let visible_lines: Vec<Line<'_>> = lines
         .into_iter()
         .skip(offset)
-        .take(inner.height as usize)
+        .take(viewport_height)
         .collect();
 
     let paragraph = Paragraph::new(visible_lines);
     frame.render_widget(paragraph, inner);
+
+    // Render scrollbar if content exceeds viewport
+    if total_lines > viewport_height {
+        let mut bar_scroll = crate::scroll::ScrollState::new(total_lines);
+        bar_scroll.set_viewport_height(viewport_height);
+        bar_scroll.set_offset(offset);
+        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+    }
 }
 
 /// Formats a single entry for display.

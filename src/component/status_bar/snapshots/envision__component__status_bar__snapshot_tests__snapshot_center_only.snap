@@ -1,0 +1,5 @@
+---
+source: src/component/status_bar/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+                        filename.rs

@@ -928,4 +928,6 @@ impl<T: Clone + 'static> Disableable for Tree<T> {
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;

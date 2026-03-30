@@ -7,7 +7,7 @@
 //! State is stored in [`TimelineState`], updated via [`TimelineMessage`],
 //! and produces [`TimelineOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
+//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
