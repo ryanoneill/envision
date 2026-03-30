@@ -207,15 +207,10 @@ pub use component::{
     SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
     StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
     StatusLogMessage, StatusLogOutput, StatusLogState, StyledText, StyledTextMessage,
-<<<<<<< HEAD
     StyledTextOutput, StyledTextState, TerminalOutput, TerminalOutputMessage, TerminalOutputOutput,
     TerminalOutputState, ThresholdZone, TitleCard, TitleCardMessage, TitleCardState, Toast,
-    ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
-=======
-    StyledTextOutput, StyledTextState, ThresholdZone, TitleCard, TitleCardMessage, TitleCardState,
-    Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, UsageDisplay,
+    ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, UsageDisplay,
     UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric,
->>>>>>> origin/main
 };
 
 // Navigation components
