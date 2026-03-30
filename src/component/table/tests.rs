@@ -932,3 +932,6 @@ fn test_annotation_emitted() {
     let regions = registry.find_by_type(&WidgetType::Table);
     assert_eq!(regions.len(), 1);
 }
+
+// NOTE: Multi-column sort, comparator, and resize tests are in
+// multi_sort_tests.rs and resize_tests.rs respectively.

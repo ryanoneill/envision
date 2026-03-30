@@ -58,7 +58,10 @@
 
 mod types;
 
-pub use types::{Column, SortDirection, TableMessage, TableOutput, TableRow};
+pub use types::{
+    date_comparator, numeric_comparator, Column, SortComparator, SortDirection, TableMessage,
+    TableOutput, TableRow,
+};
 
 use std::marker::PhantomData;
 
@@ -66,9 +69,12 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Cell, Row};
 
 use super::{Component, Disableable, Focusable};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
+
+/// Minimum column width in characters for column resizing.
+const MIN_COLUMN_WIDTH: u16 = 3;
 
 /// State for a Table component.
 ///
@@ -82,7 +88,7 @@ pub struct TableState<T: TableRow> {
     rows: Vec<T>,
     columns: Vec<Column>,
     selected: Option<usize>,
-    sort: Option<(usize, SortDirection)>,
+    sort_columns: Vec<(usize, SortDirection)>,
     display_order: Vec<usize>,
     focused: bool,
     disabled: bool,
@@ -96,7 +102,7 @@ impl<T: TableRow + PartialEq> PartialEq for TableState<T> {
         self.rows == other.rows
             && self.columns == other.columns
             && self.selected == other.selected
-            && self.sort == other.sort
+            && self.sort_columns == other.sort_columns
             && self.display_order == other.display_order
             && self.focused == other.focused
             && self.disabled == other.disabled
@@ -110,7 +116,7 @@ impl<T: TableRow> Default for TableState<T> {
             rows: Vec::new(),
             columns: Vec::new(),
             selected: None,
-            sort: None,
+            sort_columns: Vec::new(),
             display_order: Vec::new(),
             focused: false,
             disabled: false,
@@ -155,7 +161,7 @@ impl<T: TableRow> TableState<T> {
             rows,
             columns,
             selected,
-            sort: None,
+            sort_columns: Vec::new(),
             display_order,
             focused: false,
             disabled: false,
@@ -179,7 +185,7 @@ impl<T: TableRow> TableState<T> {
             rows,
             columns,
             selected,
-            sort: None,
+            sort_columns: Vec::new(),
             display_order,
             focused: false,
             disabled: false,
@@ -283,11 +289,20 @@ impl<T: TableRow> TableState<T> {
         self.selected_row()
     }
 
-    /// Returns the current sort configuration.
+    /// Returns the primary (highest-priority) sort column and direction.
     ///
-    /// Returns `None` if no sort is applied.
+    /// Returns `None` if no sort is applied. For multi-column sort,
+    /// use [`sort_columns()`](Self::sort_columns).
     pub fn sort(&self) -> Option<(usize, SortDirection)> {
-        self.sort
+        self.sort_columns.first().copied()
+    }
+
+    /// Returns all sort columns in priority order.
+    ///
+    /// The first element is the primary sort, the second is the
+    /// first tiebreaker, and so on.
+    pub fn sort_columns(&self) -> &[(usize, SortDirection)] {
+        &self.sort_columns
     }
 
     /// Returns the number of rows.
@@ -308,7 +323,7 @@ impl<T: TableRow> TableState<T> {
         self.rows = rows;
         self.filter_text.clear();
         self.display_order = (0..self.rows.len()).collect();
-        self.sort = None;
+        self.sort_columns.clear();
         self.scroll.set_content_length(self.display_order.len());
 
         if self.rows.is_empty() {
@@ -442,16 +457,38 @@ impl<T: TableRow> TableState<T> {
                 .collect();
         }
 
-        // Sort
-        if let Some((col, direction)) = self.sort {
+        // Multi-column sort
+        if !self.sort_columns.is_empty() {
+            let columns = &self.columns;
+            let sort_spec: Vec<(usize, SortDirection)> = self.sort_columns.clone();
             self.display_order.sort_by(|&a, &b| {
                 let cells_a = self.rows[a].cells();
                 let cells_b = self.rows[b].cells();
-                let cmp = cells_a.get(col).cmp(&cells_b.get(col));
-                match direction {
-                    SortDirection::Ascending => cmp,
-                    SortDirection::Descending => cmp.reverse(),
+                for &(col, direction) in &sort_spec {
+                    let val_a = cells_a.get(col).map(|s| s.as_str());
+                    let val_b = cells_b.get(col).map(|s| s.as_str());
+                    let cmp = match (val_a, val_b) {
+                        (Some(a_str), Some(b_str)) => {
+                            if let Some(comparator) = columns.get(col).and_then(|c| c.comparator())
+                            {
+                                comparator(a_str, b_str)
+                            } else {
+                                a_str.cmp(b_str)
+                            }
+                        }
+                        (Some(_), None) => std::cmp::Ordering::Less,
+                        (None, Some(_)) => std::cmp::Ordering::Greater,
+                        (None, None) => std::cmp::Ordering::Equal,
+                    };
+                    let ordered = match direction {
+                        SortDirection::Ascending => cmp,
+                        SortDirection::Descending => cmp.reverse(),
+                    };
+                    if ordered != std::cmp::Ordering::Equal {
+                        return ordered;
+                    }
                 }
+                std::cmp::Ordering::Equal
             });
         }
 
@@ -647,31 +684,95 @@ impl<T: TableRow + 'static> Component for Table<T> {
                         return None;
                     }
 
-                    // Toggle sort: None -> Asc -> Desc -> None
-                    let new_sort = match state.sort {
+                    // If this column is already the primary sort, toggle direction
+                    // If primary ascending -> descending
+                    // If primary descending -> clear all
+                    // Otherwise, replace all sorts with this column ascending
+                    let primary = state.sort_columns.first().copied();
+                    match primary {
                         Some((c, SortDirection::Ascending)) if c == col => {
-                            Some((col, SortDirection::Descending))
+                            state.sort_columns = vec![(col, SortDirection::Descending)];
+                            state.rebuild_display_order();
+                            return Some(TableOutput::Sorted {
+                                column: col,
+                                direction: SortDirection::Descending,
+                            });
                         }
-                        Some((c, SortDirection::Descending)) if c == col => None,
-                        _ => Some((col, SortDirection::Ascending)),
-                    };
+                        Some((c, SortDirection::Descending)) if c == col => {
+                            state.sort_columns.clear();
+                            state.rebuild_display_order();
+                            return Some(TableOutput::SortCleared);
+                        }
+                        _ => {
+                            state.sort_columns = vec![(col, SortDirection::Ascending)];
+                            state.rebuild_display_order();
+                            return Some(TableOutput::Sorted {
+                                column: col,
+                                direction: SortDirection::Ascending,
+                            });
+                        }
+                    }
+                }
+            }
+            TableMessage::AddSort(col) => {
+                // Check if column exists and is sortable
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
 
-                    state.sort = new_sort;
+                    // If the column is already in the sort stack, toggle its direction
+                    if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
+                        let (_, dir) = state.sort_columns[pos];
+                        let new_dir = dir.toggle();
+                        state.sort_columns[pos] = (col, new_dir);
+                        state.rebuild_display_order();
+                        return Some(TableOutput::Sorted {
+                            column: col,
+                            direction: new_dir,
+                        });
+                    }
+
+                    // Otherwise, add it as a new tiebreaker
+                    state.sort_columns.push((col, SortDirection::Ascending));
                     state.rebuild_display_order();
-
-                    return match new_sort {
-                        Some((column, direction)) => {
-                            Some(TableOutput::Sorted { column, direction })
-                        }
-                        None => Some(TableOutput::SortCleared),
-                    };
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: SortDirection::Ascending,
+                    });
                 }
             }
             TableMessage::ClearSort => {
-                if state.sort.is_some() {
-                    state.sort = None;
+                if !state.sort_columns.is_empty() {
+                    state.sort_columns.clear();
                     state.rebuild_display_order();
                     return Some(TableOutput::SortCleared);
+                }
+            }
+            TableMessage::IncreaseColumnWidth(col) => {
+                if let Some(column) = state.columns.get_mut(col) {
+                    if let Constraint::Length(w) = column.width() {
+                        let new_width = w.saturating_add(1);
+                        column.set_width(Constraint::Length(new_width));
+                        return Some(TableOutput::ColumnResized {
+                            column: col,
+                            width: new_width,
+                        });
+                    }
+                }
+            }
+            TableMessage::DecreaseColumnWidth(col) => {
+                if let Some(column) = state.columns.get_mut(col) {
+                    if let Constraint::Length(w) = column.width() {
+                        let new_width = w.saturating_sub(1).max(MIN_COLUMN_WIDTH);
+                        if new_width != w {
+                            column.set_width(Constraint::Length(new_width));
+                            return Some(TableOutput::ColumnResized {
+                                column: col,
+                                width: new_width,
+                            });
+                        }
+                    }
                 }
             }
             TableMessage::SetFilter(_) | TableMessage::ClearFilter => {
@@ -687,12 +788,29 @@ impl<T: TableRow + 'static> Component for Table<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
+            let has_shift = key.modifiers.contains(KeyModifiers::SHIFT);
             match key.code {
                 KeyCode::Up | KeyCode::Char('k') => Some(TableMessage::Up),
                 KeyCode::Down | KeyCode::Char('j') => Some(TableMessage::Down),
                 KeyCode::Home => Some(TableMessage::First),
                 KeyCode::End => Some(TableMessage::Last),
+                KeyCode::Enter if has_shift => {
+                    // Shift+Enter adds the current primary sort column to the sort stack
+                    // This is a no-op if there's no selection context for a column
+                    None
+                }
                 KeyCode::Enter => Some(TableMessage::Select),
+                KeyCode::Char('+') => {
+                    // Increase the width of the currently selected column
+                    // Uses the primary sort column index, or column 0 if no sort
+                    let col = state.sort_columns.first().map(|&(c, _)| c).unwrap_or(0);
+                    Some(TableMessage::IncreaseColumnWidth(col))
+                }
+                KeyCode::Char('-') => {
+                    // Decrease the width of the currently selected column
+                    let col = state.sort_columns.first().map(|&(c, _)| c).unwrap_or(0);
+                    Some(TableMessage::DecreaseColumnWidth(col))
+                }
                 _ => None,
             }
         } else {
@@ -718,12 +836,21 @@ impl<T: TableRow + 'static> Component for Table<T> {
             .enumerate()
             .map(|(i, col)| {
                 let mut text = col.header().to_string();
-                if let Some((sort_col, dir)) = state.sort {
-                    if sort_col == i {
-                        text.push_str(match dir {
-                            SortDirection::Ascending => " ↑",
-                            SortDirection::Descending => " ↓",
-                        });
+                if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == i) {
+                    let (_, dir) = state.sort_columns[pos];
+                    let arrow = match dir {
+                        SortDirection::Ascending => "↑",
+                        SortDirection::Descending => "↓",
+                    };
+                    if state.sort_columns.len() == 1 {
+                        // Single sort: just show arrow (backward compatible)
+                        text.push(' ');
+                        text.push_str(arrow);
+                    } else {
+                        // Multi-sort: show arrow with priority number
+                        text.push(' ');
+                        text.push_str(arrow);
+                        text.push_str(&(pos + 1).to_string());
                     }
                 }
                 Cell::from(text)
@@ -816,6 +943,10 @@ impl<T: TableRow + 'static> Disableable for Table<T> {
 
 #[cfg(test)]
 mod filter_tests;
+#[cfg(test)]
+mod multi_sort_tests;
+#[cfg(test)]
+mod resize_tests;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
