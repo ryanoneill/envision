@@ -1,3 +1,5 @@
+//! Test utilities for component rendering tests.
+
 use crate::backend::CaptureBackend;
 use crate::theme::Theme;
 use ratatui::Terminal;

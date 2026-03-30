@@ -86,6 +86,8 @@ pub struct Column {
     #[cfg_attr(feature = "serialization", serde(skip))]
     width: Constraint,
     sortable: bool,
+    editable: bool,
+    visible: bool,
     #[cfg_attr(feature = "serialization", serde(skip))]
     comparator: Option<SortComparator>,
 }
@@ -96,6 +98,8 @@ impl std::fmt::Debug for Column {
             .field("header", &self.header)
             .field("width", &self.width)
             .field("sortable", &self.sortable)
+            .field("editable", &self.editable)
+            .field("visible", &self.visible)
             .field("comparator", &self.comparator.as_ref().map(|_| ".."))
             .finish()
     }
@@ -103,7 +107,11 @@ impl std::fmt::Debug for Column {
 
 impl PartialEq for Column {
     fn eq(&self, other: &Self) -> bool {
-        self.header == other.header && self.width == other.width && self.sortable == other.sortable
+        self.header == other.header
+            && self.width == other.width
+            && self.sortable == other.sortable
+            && self.editable == other.editable
+            && self.visible == other.visible
         // comparator is not compared (function equality is not meaningful)
     }
 }
@@ -128,6 +136,8 @@ impl Column {
             header: header.into(),
             width,
             sortable: false,
+            editable: true,
+            visible: true,
             comparator: None,
         }
     }
@@ -210,6 +220,58 @@ impl Column {
     /// Returns whether this column is sortable.
     pub fn is_sortable(&self) -> bool {
         self.sortable
+    }
+
+    /// Sets whether this column is editable (builder pattern).
+    ///
+    /// Columns are editable by default. Set to `false` to make a column
+    /// read-only in a [`DataGrid`](super::DataGrid).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("ID", Constraint::Length(10)).with_editable(false);
+    /// assert!(!col.is_editable());
+    /// ```
+    pub fn with_editable(mut self, editable: bool) -> Self {
+        self.editable = editable;
+        self
+    }
+
+    /// Returns whether this column is editable.
+    ///
+    /// Defaults to `true`.
+    pub fn is_editable(&self) -> bool {
+        self.editable
+    }
+
+    /// Sets whether this column is visible (builder pattern).
+    ///
+    /// Columns are visible by default. Set to `false` to hide a column
+    /// from rendering while preserving its data.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("Internal", Constraint::Length(10)).with_visible(false);
+    /// assert!(!col.is_visible());
+    /// ```
+    pub fn with_visible(mut self, visible: bool) -> Self {
+        self.visible = visible;
+        self
+    }
+
+    /// Returns whether this column is visible.
+    ///
+    /// Defaults to `true`.
+    pub fn is_visible(&self) -> bool {
+        self.visible
     }
 
     /// Sets a custom sort comparator for this column.
