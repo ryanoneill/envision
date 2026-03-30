@@ -1,10 +1,9 @@
 ---
 source: src/component/log_viewer/snapshot_tests.rs
-assertion_line: 98
 expression: terminal.backend().to_string()
 ---
 / con                                                                 
-1:● Info 2:● Success 3:● Warning 4:● Error                            
+1:● Info 2:● Success 3:● Warning 4:● Error FOLLOW                     
 ┌────────────────────────────────────────────────────────────────────┐
 │✗ Connection timeout                                                │
 │✓ Connected to database                                             │

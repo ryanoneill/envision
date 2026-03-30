@@ -19,10 +19,17 @@ pub(super) fn render_search_bar(
         theme.normal_style()
     };
 
+    // Build the search prefix with regex indicator
+    let prefix = if state.use_regex() { "/r " } else { "/ " };
+
     let display = if state.search_text().is_empty() {
-        "/ Search...".to_string()
+        if state.use_regex() {
+            "/r Search (regex)...".to_string()
+        } else {
+            "/ Search...".to_string()
+        }
     } else {
-        format!("/ {}", state.search_value())
+        format!("{}{}", prefix, state.search_value())
     };
 
     let paragraph = Paragraph::new(display).style(search_style);
@@ -30,7 +37,8 @@ pub(super) fn render_search_bar(
 
     // Show cursor when search is focused
     if state.is_focused() && state.is_search_focused() && !state.is_disabled() {
-        let cursor_x = area.x + 2 + state.search_cursor_position() as u16;
+        let prefix_len = prefix.len() as u16;
+        let cursor_x = area.x + prefix_len + state.search_cursor_position() as u16;
         if cursor_x < area.right() {
             frame.set_cursor_position(Position::new(cursor_x, area.y));
         }
@@ -54,6 +62,8 @@ pub(super) fn render_filter_bar(
     let success_marker = if state.show_success() { "●" } else { "○" };
     let warning_marker = if state.show_warning() { "●" } else { "○" };
     let error_marker = if state.show_error() { "●" } else { "○" };
+
+    let follow_indicator = if state.follow() { " FOLLOW" } else { "" };
 
     let spans = vec![
         Span::styled(
@@ -86,6 +96,16 @@ pub(super) fn render_filter_bar(
                 filter_style
             } else {
                 Style::default().fg(StatusLogLevel::Error.color())
+            },
+        ),
+        Span::styled(
+            follow_indicator,
+            if state.is_disabled() {
+                filter_style
+            } else {
+                Style::default()
+                    .fg(Color::Green)
+                    .add_modifier(Modifier::BOLD)
             },
         ),
     ];
@@ -154,9 +174,30 @@ pub(super) fn render_log(state: &LogViewerState, frame: &mut Frame, area: Rect, 
 
             // Highlight search matches
             if !state.search_text().is_empty() && !state.is_disabled() {
-                let msg_lower = text.to_lowercase();
-                let search_lower = state.search_text().to_lowercase();
-                if msg_lower.contains(&search_lower) {
+                let is_match = {
+                    #[cfg(feature = "regex")]
+                    {
+                        if state.use_regex() {
+                            regex::RegexBuilder::new(state.search_text())
+                                .case_insensitive(true)
+                                .build()
+                                .map(|re| re.is_match(&text))
+                                .unwrap_or_else(|_| {
+                                    text.to_lowercase()
+                                        .contains(&state.search_text().to_lowercase())
+                                })
+                        } else {
+                            text.to_lowercase()
+                                .contains(&state.search_text().to_lowercase())
+                        }
+                    }
+                    #[cfg(not(feature = "regex"))]
+                    {
+                        text.to_lowercase()
+                            .contains(&state.search_text().to_lowercase())
+                    }
+                };
+                if is_match {
                     let style = style.add_modifier(Modifier::BOLD);
                     return ListItem::new(text).style(style);
                 }

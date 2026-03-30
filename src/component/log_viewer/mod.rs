@@ -4,6 +4,11 @@
 //! [`InputField`](super::InputField) search bar and severity-level toggle
 //! filters. Press `/` to focus the search bar, `Escape` to clear and return
 //! to the log, and `1`-`4` to toggle Info/Success/Warning/Error filters.
+//!
+//! Features include follow mode for auto-scrolling to new entries, regex
+//! search (when the `regex` feature is enabled), and search history
+//! navigation with Up/Down arrow keys.
+//!
 //! State is stored in [`LogViewerState`], updated via [`LogViewerMessage`],
 //! and produces [`LogViewerOutput`].
 //!
@@ -31,6 +36,7 @@
 //! assert_eq!(state.visible_entries().len(), 1);
 //! ```
 
+mod state;
 mod view;
 
 use std::marker::PhantomData;
@@ -42,8 +48,9 @@ use super::{
     StatusLogLevel,
 };
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::scroll::ScrollState;
 use crate::theme::Theme;
+
+pub use state::LogViewerState;
 
 /// Internal focus target for the log viewer.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -61,10 +68,6 @@ enum Focus {
 
 /// Messages that can be sent to a LogViewer.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(
-    feature = "serialization",
-    derive(serde::Serialize, serde::Deserialize)
-)]
 pub enum LogViewerMessage {
     /// Scroll the log up by one line.
     ScrollUp,
@@ -115,14 +118,20 @@ pub enum LogViewerMessage {
     Clear,
     /// Remove a specific entry by ID.
     Remove(u64),
+    /// Toggle follow mode (auto-scroll to bottom on new entries).
+    ToggleFollow,
+    /// Toggle regex search mode.
+    ToggleRegex,
+    /// Confirm search and save to history.
+    ConfirmSearch,
+    /// Navigate to previous search history entry.
+    SearchHistoryUp,
+    /// Navigate to next search history entry.
+    SearchHistoryDown,
 }
 
 /// Output messages from a LogViewer.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(
-    feature = "serialization",
-    derive(serde::Serialize, serde::Deserialize)
-)]
 pub enum LogViewerOutput {
     /// A log entry was added.
     Added(u64),
@@ -136,610 +145,27 @@ pub enum LogViewerOutput {
     SearchChanged(String),
     /// A filter toggle changed.
     FilterChanged,
-}
-
-/// State for a LogViewer component.
-///
-/// Contains the log entries, search state, and severity filter toggles.
-#[derive(Clone, Debug)]
-#[cfg_attr(
-    feature = "serialization",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-pub struct LogViewerState {
-    /// All log entries in insertion order.
-    entries: Vec<StatusLogEntry>,
-    /// Next entry ID counter.
-    next_id: u64,
-    /// Maximum number of entries to keep.
-    max_entries: usize,
-    /// The search input field state.
-    #[cfg_attr(feature = "serialization", serde(skip))]
-    search: InputFieldState,
-    /// The current search text (cached for filtering).
-    search_text: String,
-    /// Scroll state for the visible log.
-    scroll: ScrollState,
-    /// Severity filter toggles (true = show).
-    show_info: bool,
-    /// Whether to show success entries.
-    show_success: bool,
-    /// Whether to show warning entries.
-    show_warning: bool,
-    /// Whether to show error entries.
-    show_error: bool,
-    /// Whether to show timestamps.
-    show_timestamps: bool,
-    /// Optional title for the log block.
-    title: Option<String>,
-    /// Internal focus state.
-    focus: Focus,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
-}
-
-impl Default for LogViewerState {
-    fn default() -> Self {
-        Self {
-            entries: Vec::new(),
-            next_id: 0,
-            max_entries: 1000,
-            search: InputFieldState::new(),
-            search_text: String::new(),
-            scroll: ScrollState::default(),
-            show_info: true,
-            show_success: true,
-            show_warning: true,
-            show_error: true,
-            show_timestamps: false,
-            title: None,
-            focus: Focus::Log,
-            focused: false,
-            disabled: false,
-        }
-    }
-}
-
-impl PartialEq for LogViewerState {
-    fn eq(&self, other: &Self) -> bool {
-        self.entries == other.entries
-            && self.next_id == other.next_id
-            && self.max_entries == other.max_entries
-            && self.search_text == other.search_text
-            && self.scroll == other.scroll
-            && self.show_info == other.show_info
-            && self.show_success == other.show_success
-            && self.show_warning == other.show_warning
-            && self.show_error == other.show_error
-            && self.show_timestamps == other.show_timestamps
-            && self.title == other.title
-            && self.focus == other.focus
-            && self.focused == other.focused
-            && self.disabled == other.disabled
-    }
-}
-
-impl LogViewerState {
-    /// Creates a new empty log viewer state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let state = LogViewerState::new();
-    /// assert!(state.is_empty());
-    /// assert_eq!(state.max_entries(), 1000);
-    /// ```
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Sets the maximum number of entries (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let state = LogViewerState::new().with_max_entries(500);
-    /// assert_eq!(state.max_entries(), 500);
-    /// ```
-    pub fn with_max_entries(mut self, max: usize) -> Self {
-        self.max_entries = max;
-        self
-    }
-
-    /// Sets whether to show timestamps (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let state = LogViewerState::new().with_timestamps(true);
-    /// assert!(state.show_timestamps());
-    /// ```
-    pub fn with_timestamps(mut self, show: bool) -> Self {
-        self.show_timestamps = show;
-        self
-    }
-
-    /// Sets the title (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let state = LogViewerState::new().with_title("Application Log");
-    /// assert_eq!(state.title(), Some("Application Log"));
-    /// ```
-    pub fn with_title(mut self, title: impl Into<String>) -> Self {
-        self.title = Some(title.into());
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let state = LogViewerState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    // ---- Entry manipulation ----
-
-    /// Adds an info-level entry, returning its ID.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let mut state = LogViewerState::new();
-    /// let id = state.push_info("Server started");
-    /// assert_eq!(state.len(), 1);
-    /// ```
-    pub fn push_info(&mut self, message: impl Into<String>) -> u64 {
-        self.push_entry(message.into(), StatusLogLevel::Info, None)
-    }
-
-    /// Adds a success-level entry, returning its ID.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let mut state = LogViewerState::new();
-    /// let id = state.push_success("Build completed");
-    /// assert_eq!(state.len(), 1);
-    /// ```
-    pub fn push_success(&mut self, message: impl Into<String>) -> u64 {
-        self.push_entry(message.into(), StatusLogLevel::Success, None)
-    }
-
-    /// Adds a warning-level entry, returning its ID.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let mut state = LogViewerState::new();
-    /// let id = state.push_warning("Disk space low");
-    /// assert_eq!(state.len(), 1);
-    /// ```
-    pub fn push_warning(&mut self, message: impl Into<String>) -> u64 {
-        self.push_entry(message.into(), StatusLogLevel::Warning, None)
-    }
-
-    /// Adds an error-level entry, returning its ID.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let mut state = LogViewerState::new();
-    /// let id = state.push_error("Connection refused");
-    /// assert_eq!(state.len(), 1);
-    /// ```
-    pub fn push_error(&mut self, message: impl Into<String>) -> u64 {
-        self.push_entry(message.into(), StatusLogLevel::Error, None)
-    }
-
-    /// Adds an info-level entry with a timestamp, returning its ID.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let mut state = LogViewerState::new().with_timestamps(true);
-    /// let id = state.push_info_with_timestamp("Server started", "12:00:00");
-    /// assert_eq!(state.len(), 1);
-    /// ```
-    pub fn push_info_with_timestamp(
-        &mut self,
-        message: impl Into<String>,
-        timestamp: impl Into<String>,
-    ) -> u64 {
-        self.push_entry(message.into(), StatusLogLevel::Info, Some(timestamp.into()))
-    }
-
-    /// Adds a success-level entry with a timestamp, returning its ID.
-    pub fn push_success_with_timestamp(
-        &mut self,
-        message: impl Into<String>,
-        timestamp: impl Into<String>,
-    ) -> u64 {
-        self.push_entry(
-            message.into(),
-            StatusLogLevel::Success,
-            Some(timestamp.into()),
-        )
-    }
-
-    /// Adds a warning-level entry with a timestamp, returning its ID.
-    pub fn push_warning_with_timestamp(
-        &mut self,
-        message: impl Into<String>,
-        timestamp: impl Into<String>,
-    ) -> u64 {
-        self.push_entry(
-            message.into(),
-            StatusLogLevel::Warning,
-            Some(timestamp.into()),
-        )
-    }
-
-    /// Adds an error-level entry with a timestamp, returning its ID.
-    pub fn push_error_with_timestamp(
-        &mut self,
-        message: impl Into<String>,
-        timestamp: impl Into<String>,
-    ) -> u64 {
-        self.push_entry(
-            message.into(),
-            StatusLogLevel::Error,
-            Some(timestamp.into()),
-        )
-    }
-
-    /// Internal method to add an entry.
-    fn push_entry(
-        &mut self,
-        message: String,
-        level: StatusLogLevel,
-        timestamp: Option<String>,
-    ) -> u64 {
-        let id = self.next_id;
-        self.next_id += 1;
-        let entry = match timestamp {
-            Some(ts) => StatusLogEntry::with_timestamp(id, message, level, ts),
-            None => StatusLogEntry::new(id, message, level),
-        };
-        self.entries.push(entry);
-        // Evict oldest if over limit
-        while self.entries.len() > self.max_entries {
-            self.entries.remove(0);
-        }
-        id
-    }
-
-    /// Removes an entry by ID. Returns true if the entry was found.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let mut state = LogViewerState::new();
-    /// let id = state.push_info("test");
-    /// assert_eq!(state.len(), 1);
-    /// assert!(state.remove(id));
-    /// assert!(state.is_empty());
-    /// ```
-    pub fn remove(&mut self, id: u64) -> bool {
-        if let Some(pos) = self.entries.iter().position(|e| e.id() == id) {
-            self.entries.remove(pos);
-            true
-        } else {
-            false
-        }
-    }
-
-    /// Clears all entries.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let mut state = LogViewerState::new();
-    /// state.push_info("entry 1");
-    /// state.push_info("entry 2");
-    /// state.clear();
-    /// assert!(state.is_empty());
-    /// ```
-    pub fn clear(&mut self) {
-        self.entries.clear();
-        self.scroll.set_offset(0);
-    }
-
-    // ---- Accessors ----
-
-    /// Returns all entries in insertion order.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let mut state = LogViewerState::new();
-    /// state.push_info("first");
-    /// state.push_error("second");
-    /// assert_eq!(state.entries().len(), 2);
-    /// ```
-    pub fn entries(&self) -> &[StatusLogEntry] {
-        &self.entries
-    }
-
-    /// Returns the number of entries.
-    pub fn len(&self) -> usize {
-        self.entries.len()
-    }
-
-    /// Returns true if there are no entries.
-    pub fn is_empty(&self) -> bool {
-        self.entries.is_empty()
-    }
-
-    /// Returns the maximum number of entries.
-    pub fn max_entries(&self) -> usize {
-        self.max_entries
-    }
-
-    /// Sets the maximum number of entries.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let mut state = LogViewerState::new();
-    /// state.set_max_entries(200);
-    /// assert_eq!(state.max_entries(), 200);
-    /// ```
-    pub fn set_max_entries(&mut self, max: usize) {
-        self.max_entries = max;
-        while self.entries.len() > self.max_entries {
-            self.entries.remove(0);
-        }
-    }
-
-    /// Returns the current search text.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let state = LogViewerState::new();
-    /// assert_eq!(state.search_text(), "");
-    /// ```
-    pub fn search_text(&self) -> &str {
-        &self.search_text
-    }
-
-    /// Returns the scroll offset.
-    pub fn scroll_offset(&self) -> usize {
-        self.scroll.offset()
-    }
-
-    /// Sets the scroll offset.
-    pub fn set_scroll_offset(&mut self, offset: usize) {
-        let len = self.visible_entries().len();
-        self.scroll.set_content_length(len);
-        self.scroll.set_viewport_height(1.min(len));
-        self.scroll.set_offset(offset);
-    }
-
-    /// Returns whether timestamps are shown.
-    pub fn show_timestamps(&self) -> bool {
-        self.show_timestamps
-    }
-
-    /// Sets whether timestamps are shown.
-    pub fn set_show_timestamps(&mut self, show: bool) {
-        self.show_timestamps = show;
-    }
-
-    /// Returns the title.
-    pub fn title(&self) -> Option<&str> {
-        self.title.as_deref()
-    }
-
-    /// Sets the title.
-    pub fn set_title(&mut self, title: Option<String>) {
-        self.title = title;
-    }
-
-    /// Returns true if info entries are shown.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let state = LogViewerState::new();
-    /// assert!(state.show_info());
-    /// ```
-    pub fn show_info(&self) -> bool {
-        self.show_info
-    }
-
-    /// Returns true if success entries are shown.
-    pub fn show_success(&self) -> bool {
-        self.show_success
-    }
-
-    /// Returns true if warning entries are shown.
-    pub fn show_warning(&self) -> bool {
-        self.show_warning
-    }
-
-    /// Returns true if error entries are shown.
-    pub fn show_error(&self) -> bool {
-        self.show_error
-    }
-
-    /// Sets the info filter.
-    pub fn set_show_info(&mut self, show: bool) {
-        self.show_info = show;
-    }
-
-    /// Sets the success filter.
-    pub fn set_show_success(&mut self, show: bool) {
-        self.show_success = show;
-    }
-
-    /// Sets the warning filter.
-    pub fn set_show_warning(&mut self, show: bool) {
-        self.show_warning = show;
-    }
-
-    /// Sets the error filter.
-    pub fn set_show_error(&mut self, show: bool) {
-        self.show_error = show;
-    }
-
-    /// Returns whether the search bar is focused.
-    pub fn is_search_focused(&self) -> bool {
-        self.focus == Focus::Search
-    }
-
-    /// Returns the current value of the search input field.
-    pub fn search_value(&self) -> &str {
-        self.search.value()
-    }
-
-    /// Returns the cursor display position in the search field.
-    pub fn search_cursor_position(&self) -> usize {
-        self.search.cursor_display_position()
-    }
-
-    // ---- Filtering ----
-
-    /// Returns the entries that match the current filters and search text.
-    ///
-    /// Entries are returned newest-first.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let mut state = LogViewerState::new();
-    /// state.push_info("hello world");
-    /// state.push_error("connection failed");
-    /// state.push_info("hello again");
-    ///
-    /// assert_eq!(state.visible_entries().len(), 3);
-    /// ```
-    pub fn visible_entries(&self) -> Vec<&StatusLogEntry> {
-        self.entries
-            .iter()
-            .rev()
-            .filter(|entry| self.matches_filters(entry))
-            .collect()
-    }
-
-    /// Returns true if an entry passes both the level filter and search filter.
-    fn matches_filters(&self, entry: &StatusLogEntry) -> bool {
-        // Level filter
-        let level_ok = match entry.level() {
-            StatusLogLevel::Info => self.show_info,
-            StatusLogLevel::Success => self.show_success,
-            StatusLogLevel::Warning => self.show_warning,
-            StatusLogLevel::Error => self.show_error,
-        };
-
-        if !level_ok {
-            return false;
-        }
-
-        // Search text filter (case-insensitive)
-        if self.search_text.is_empty() {
-            return true;
-        }
-
-        let search_lower = self.search_text.to_lowercase();
-        entry.message().to_lowercase().contains(&search_lower)
-    }
-
-    // ---- Instance methods ----
-
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a log viewer message.
-    pub fn handle_event(&self, event: &Event) -> Option<LogViewerMessage> {
-        LogViewer::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<LogViewerOutput> {
-        LogViewer::dispatch_event(self, event)
-    }
-
-    /// Updates the state with a message, returning any output.
-    pub fn update(&mut self, msg: LogViewerMessage) -> Option<LogViewerOutput> {
-        LogViewer::update(self, msg)
-    }
+    /// Follow mode was toggled.
+    FollowToggled(bool),
+    /// Regex mode was toggled.
+    RegexToggled(bool),
 }
 
 /// A searchable log viewer with severity filtering.
 ///
 /// Composes a log display with a search input field and severity-level
 /// toggle filters. The search is case-insensitive and matches against
-/// entry messages.
+/// entry messages. Supports follow mode for auto-scrolling, regex search
+/// (with the `regex` feature), and search history.
 ///
 /// # Key Bindings (Log Mode)
 ///
-/// - `Up` / `k` — Scroll up
-/// - `Down` / `j` — Scroll down
+/// - `Up` / `k` — Scroll up (disables follow mode)
+/// - `Down` / `j` — Scroll down (disables follow mode)
 /// - `Home` — Scroll to top (newest)
 /// - `End` — Scroll to bottom (oldest)
 /// - `/` — Focus search bar
+/// - `f` — Toggle follow mode
 /// - `1` — Toggle Info filter
 /// - `2` — Toggle Success filter
 /// - `3` — Toggle Warning filter
@@ -748,7 +174,10 @@ impl LogViewerState {
 /// # Key Bindings (Search Mode)
 ///
 /// - `Escape` — Clear search and return to log
-/// - `Enter` — Return to log (keep search text)
+/// - `Enter` — Confirm search (save to history) and return to log
+/// - `Up` — Previous search history entry
+/// - `Down` — Next search history entry
+/// - `Ctrl+r` — Toggle regex search mode
 /// - Standard text editing keys
 pub struct LogViewer(PhantomData<()>);
 
@@ -775,6 +204,7 @@ impl Component for LogViewer {
                 KeyCode::Home => Some(LogViewerMessage::ScrollToTop),
                 KeyCode::End => Some(LogViewerMessage::ScrollToBottom),
                 KeyCode::Char('/') => Some(LogViewerMessage::FocusSearch),
+                KeyCode::Char('f') => Some(LogViewerMessage::ToggleFollow),
                 KeyCode::Char('1') => Some(LogViewerMessage::ToggleInfo),
                 KeyCode::Char('2') => Some(LogViewerMessage::ToggleSuccess),
                 KeyCode::Char('3') => Some(LogViewerMessage::ToggleWarning),
@@ -783,10 +213,15 @@ impl Component for LogViewer {
             },
             Focus::Search => match key.code {
                 KeyCode::Esc => Some(LogViewerMessage::ClearSearch),
-                KeyCode::Enter => Some(LogViewerMessage::FocusLog),
+                KeyCode::Enter => Some(LogViewerMessage::ConfirmSearch),
+                KeyCode::Up => Some(LogViewerMessage::SearchHistoryUp),
+                KeyCode::Down => Some(LogViewerMessage::SearchHistoryDown),
                 KeyCode::Char(c) => {
                     if key.modifiers.contains(KeyModifiers::CONTROL) {
-                        None
+                        match c {
+                            'r' => Some(LogViewerMessage::ToggleRegex),
+                            _ => None,
+                        }
                     } else {
                         Some(LogViewerMessage::SearchInput(c))
                     }
@@ -809,6 +244,7 @@ impl Component for LogViewer {
 
         match msg {
             LogViewerMessage::ScrollUp => {
+                state.follow = false;
                 let len = state.visible_entries().len();
                 state.scroll.set_content_length(len);
                 state.scroll.set_viewport_height(1.min(len));
@@ -816,6 +252,7 @@ impl Component for LogViewer {
                 None
             }
             LogViewerMessage::ScrollDown => {
+                state.follow = false;
                 let len = state.visible_entries().len();
                 state.scroll.set_content_length(len);
                 state.scroll.set_viewport_height(1.min(len));
@@ -844,6 +281,7 @@ impl Component for LogViewer {
             LogViewerMessage::FocusLog => {
                 state.focus = Focus::Log;
                 state.search.set_focused(false);
+                state.history_index = None;
                 None
             }
             LogViewerMessage::SearchInput(c) => {
@@ -886,6 +324,7 @@ impl Component for LogViewer {
                 state.scroll.set_offset(0);
                 state.focus = Focus::Log;
                 state.search.set_focused(false);
+                state.history_index = None;
                 Some(LogViewerOutput::SearchChanged(String::new()))
             }
             LogViewerMessage::ToggleInfo => {
@@ -914,9 +353,9 @@ impl Component for LogViewer {
                 timestamp,
             } => {
                 let id = state.push_entry(message, level, timestamp);
-                // Check if eviction happened
-                if state.entries.len() > state.max_entries {
-                    // Already evicted in push_entry
+                // Auto-scroll to top (newest) when follow mode is enabled
+                if state.follow {
+                    state.scroll.set_offset(0);
                 }
                 Some(LogViewerOutput::Added(id))
             }
@@ -929,6 +368,83 @@ impl Component for LogViewer {
                     Some(LogViewerOutput::Removed(id))
                 } else {
                     None
+                }
+            }
+            LogViewerMessage::ToggleFollow => {
+                state.follow = !state.follow;
+                if state.follow {
+                    // When enabling follow, scroll to top (newest)
+                    state.scroll.set_offset(0);
+                }
+                Some(LogViewerOutput::FollowToggled(state.follow))
+            }
+            LogViewerMessage::ToggleRegex => {
+                state.use_regex = !state.use_regex;
+                state.scroll.set_offset(0);
+                Some(LogViewerOutput::RegexToggled(state.use_regex))
+            }
+            LogViewerMessage::ConfirmSearch => {
+                // Save non-empty search text to history
+                if !state.search_text.is_empty() {
+                    // Remove duplicate if it already exists in history
+                    state.search_history.retain(|h| h != &state.search_text);
+                    state.search_history.push(state.search_text.clone());
+                    // Enforce max history size
+                    while state.search_history.len() > state.max_history {
+                        state.search_history.remove(0);
+                    }
+                }
+                state.history_index = None;
+                state.focus = Focus::Log;
+                state.search.set_focused(false);
+                None
+            }
+            LogViewerMessage::SearchHistoryUp => {
+                if state.search_history.is_empty() {
+                    return None;
+                }
+                let new_index = match state.history_index {
+                    None => state.search_history.len().saturating_sub(1),
+                    Some(idx) => idx.saturating_sub(1),
+                };
+                state.history_index = Some(new_index);
+                let text = state.search_history[new_index].clone();
+                // Update the search field with the history entry
+                state.search.update(InputFieldMessage::Clear);
+                for c in text.chars() {
+                    state.search.update(InputFieldMessage::Insert(c));
+                }
+                state.search_text = text;
+                state.scroll.set_offset(0);
+                Some(LogViewerOutput::SearchChanged(state.search_text.clone()))
+            }
+            LogViewerMessage::SearchHistoryDown => {
+                if state.search_history.is_empty() {
+                    return None;
+                }
+                match state.history_index {
+                    None => None,
+                    Some(idx) => {
+                        if idx + 1 >= state.search_history.len() {
+                            // Past the end of history, clear to empty
+                            state.history_index = None;
+                            state.search.update(InputFieldMessage::Clear);
+                            state.search_text.clear();
+                            state.scroll.set_offset(0);
+                            Some(LogViewerOutput::SearchChanged(String::new()))
+                        } else {
+                            let new_index = idx + 1;
+                            state.history_index = Some(new_index);
+                            let text = state.search_history[new_index].clone();
+                            state.search.update(InputFieldMessage::Clear);
+                            for c in text.chars() {
+                                state.search.update(InputFieldMessage::Insert(c));
+                            }
+                            state.search_text = text;
+                            state.scroll.set_offset(0);
+                            Some(LogViewerOutput::SearchChanged(state.search_text.clone()))
+                        }
+                    }
                 }
             }
         }
@@ -993,6 +509,8 @@ impl Disableable for LogViewer {
     }
 }
 
+#[cfg(test)]
+mod enhancement_tests;
 #[cfg(test)]
 mod snapshot_tests;
 #[cfg(test)]
