@@ -41,6 +41,10 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a ScrollView.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ScrollViewMessage {
     /// Scroll up by one line.
     ScrollUp,
