@@ -144,6 +144,21 @@ impl ButtonState {
         self.disabled = disabled;
     }
 
+    /// Sets the button label using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ButtonState;
+    ///
+    /// let state = ButtonState::new("Save").with_label("Save All");
+    /// assert_eq!(state.label(), "Save All");
+    /// ```
+    pub fn with_label(mut self, label: impl Into<String>) -> Self {
+        self.label = label.into();
+        self
+    }
+
     /// Sets the disabled state using builder pattern.
     ///
     /// # Example

@@ -218,6 +218,23 @@ impl EventStreamState {
         self
     }
 
+    /// Sets whether auto-scroll is enabled (builder pattern).
+    ///
+    /// When enabled, the view automatically scrolls to show new events.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new().with_auto_scroll(false);
+    /// assert!(!state.auto_scroll());
+    /// ```
+    pub fn with_auto_scroll(mut self, auto_scroll: bool) -> Self {
+        self.auto_scroll = auto_scroll;
+        self
+    }
+
     /// Sets the disabled state (builder pattern).
     ///
     /// # Example
