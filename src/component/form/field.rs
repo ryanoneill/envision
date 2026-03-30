@@ -8,6 +8,10 @@
 /// Each field has an ID for retrieval, a label for display, and a kind
 /// that determines the widget type and behavior.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct FormField {
     /// Unique identifier for this field.
     pub(super) id: String,
@@ -19,6 +23,10 @@ pub struct FormField {
 
 /// The type of a form field.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum FormFieldKind {
     /// A text input field.
     Text,
@@ -32,6 +40,10 @@ pub enum FormFieldKind {
 
 /// A collected value from a form field.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum FormValue {
     /// Text from a text input field.
     Text(String),

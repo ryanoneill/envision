@@ -61,6 +61,10 @@ enum Focus {
 
 /// Messages that can be sent to a LogViewer.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum LogViewerMessage {
     /// Scroll the log up by one line.
     ScrollUp,
@@ -115,6 +119,10 @@ pub enum LogViewerMessage {
 
 /// Output messages from a LogViewer.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum LogViewerOutput {
     /// A log entry was added.
     Added(u64),
@@ -134,6 +142,10 @@ pub enum LogViewerOutput {
 ///
 /// Contains the log entries, search state, and severity filter toggles.
 #[derive(Clone, Debug)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct LogViewerState {
     /// All log entries in insertion order.
     entries: Vec<StatusLogEntry>,
@@ -142,6 +154,7 @@ pub struct LogViewerState {
     /// Maximum number of entries to keep.
     max_entries: usize,
     /// The search input field state.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     search: InputFieldState,
     /// The current search text (cached for filtering).
     search_text: String,

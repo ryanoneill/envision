@@ -64,6 +64,10 @@ pub use types::{GraphEdge, GraphNode, GraphOrientation, NodeStatus};
 /// assert_eq!(state.selected(), Some(0));
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum DependencyGraphMessage {
     /// Replace all nodes.
     SetNodes(Vec<GraphNode>),
@@ -108,6 +112,10 @@ pub enum DependencyGraphMessage {
 /// assert!(matches!(output, Some(DependencyGraphOutput::NodeSelected(_))));
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum DependencyGraphOutput {
     /// A node was selected.
     NodeSelected(String),
@@ -145,6 +153,10 @@ pub enum DependencyGraphOutput {
 /// assert_eq!(state.title(), Some("Service Topology"));
 /// ```
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct DependencyGraphState {
     /// All nodes in the graph.
     pub(crate) nodes: Vec<GraphNode>,

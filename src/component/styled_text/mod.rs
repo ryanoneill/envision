@@ -65,6 +65,10 @@ pub enum StyledTextMessage {
 
 /// Output messages from a StyledText component.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum StyledTextOutput {
     /// The scroll position changed.
     ScrollChanged(usize),
@@ -92,7 +96,12 @@ pub enum StyledTextOutput {
 /// assert_eq!(state.scroll_offset(), 0);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct StyledTextState {
+    #[cfg_attr(feature = "serialization", serde(skip))]
     content: StyledContent,
     scroll_offset: usize,
     focused: bool,

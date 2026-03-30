@@ -23,6 +23,10 @@ use ratatui::prelude::*;
 /// assert_eq!(event.color, Color::Green);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct TimelineEvent {
     /// Unique identifier.
     pub id: String,
@@ -96,6 +100,10 @@ impl TimelineEvent {
 /// assert_eq!(span.lane, 1);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct TimelineSpan {
     /// Unique identifier.
     pub id: String,
@@ -198,6 +206,10 @@ impl TimelineSpan {
 /// assert_eq!(default, SelectedType::Event);
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum SelectedType {
     /// A point event is selected.
     #[default]
@@ -222,6 +234,10 @@ pub enum SelectedType {
 /// assert_eq!(state.events().len(), 1);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum TimelineMessage {
     /// Add a point event.
     AddEvent(TimelineEvent),
@@ -260,6 +276,10 @@ pub enum TimelineMessage {
 /// assert_eq!(output, TimelineOutput::EventSelected("e1".into()));
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum TimelineOutput {
     /// An event was selected (carries event id).
     EventSelected(String),

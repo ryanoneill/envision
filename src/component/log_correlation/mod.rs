@@ -233,6 +233,10 @@ const TIMESTAMP_TOLERANCE: f64 = 0.1;
 
 /// Messages that can be sent to a LogCorrelation component.
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum LogCorrelationMessage {
     /// Add a new log stream.
     AddStream(LogStream),
@@ -279,6 +283,10 @@ pub enum LogCorrelationMessage {
 
 /// Output messages from a LogCorrelation component.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum LogCorrelationOutput {
     /// The active stream changed.
     StreamFocused(usize),
@@ -307,6 +315,10 @@ pub(crate) struct AlignedRow {
 /// Contains the log streams, scroll position, active stream index,
 /// and configuration for synchronized scrolling.
 #[derive(Clone, Debug)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct LogCorrelationState {
     /// The log streams.
     streams: Vec<LogStream>,

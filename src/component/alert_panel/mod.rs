@@ -70,6 +70,10 @@ use crate::theme::Theme;
 /// assert!(output.is_some());
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum AlertPanelMessage {
     /// Update a metric's value by id.
     UpdateMetric {
@@ -113,6 +117,10 @@ pub enum AlertPanelMessage {
 /// assert!(matches!(output, AlertPanelOutput::StateChanged { .. }));
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum AlertPanelOutput {
     /// A metric changed alert state.
     StateChanged {
@@ -150,6 +158,10 @@ pub enum AlertPanelOutput {
 /// assert_eq!(state.ok_count(), 1);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct AlertPanelState {
     /// The alert metrics.
     metrics: Vec<AlertMetric>,

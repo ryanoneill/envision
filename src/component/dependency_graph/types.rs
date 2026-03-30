@@ -15,6 +15,10 @@ use ratatui::prelude::*;
 /// assert_eq!(status, NodeStatus::Healthy);
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum NodeStatus {
     /// The node is operating normally.
     #[default]
@@ -38,6 +42,10 @@ pub enum NodeStatus {
 /// assert_eq!(orientation, GraphOrientation::LeftToRight);
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum GraphOrientation {
     /// Layers flow from left to right.
     #[default]
@@ -66,6 +74,10 @@ pub enum GraphOrientation {
 /// assert_eq!(node.metadata.len(), 1);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct GraphNode {
     /// Unique identifier for the node.
     pub id: String,
@@ -166,6 +178,10 @@ impl GraphNode {
 /// assert_eq!(edge.label, Some("HTTP".to_string()));
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct GraphEdge {
     /// Source node id.
     pub from: String,
