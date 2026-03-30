@@ -208,6 +208,7 @@ pub use component::{
     SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarState,
     StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput,
     StatusLogState, StyledText, StyledTextMessage, StyledTextOutput, StyledTextState,
+    TerminalOutput, TerminalOutputMessage, TerminalOutputOutput, TerminalOutputState,
     ThresholdZone, TitleCard, TitleCardMessage, TitleCardState, Toast, ToastItem, ToastLevel,
     ToastMessage, ToastOutput, ToastState, UsageDisplay, UsageDisplayMessage, UsageDisplayState,
     UsageLayout, UsageMetric,

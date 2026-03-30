@@ -1,0 +1,12 @@
+---
+source: src/component/terminal_output/tests.rs
+expression: terminal.backend().to_string()
+---
+┌────────────────────────────────────────────────┐
+│Starting build...                               │
+│                                                │
+│                                                │
+│                                                │
+│                                                │
+│ Running | 1 lines | Ln 1                       │
+└────────────────────────────────────────────────┘

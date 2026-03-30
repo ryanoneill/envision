@@ -1,0 +1,14 @@
+---
+source: src/component/terminal_output/tests.rs
+expression: terminal.backend().to_string()
+---
+┌────────────────────────────────────────────────┐
+│   Compiling envision v0.7.0                    │
+│    Finished in 2.5s                            │
+│error[E0308]: mismatched types                  │
+│                                                │
+│                                                │
+│                                                │
+│                                                │
+│ 3 lines | Ln 1                                 │
+└────────────────────────────────────────────────┘

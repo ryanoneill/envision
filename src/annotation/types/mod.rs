@@ -175,6 +175,9 @@ pub enum WidgetType {
     /// A diff viewer
     DiffViewer,
 
+    /// A terminal output display
+    TerminalOutput,
+
     /// A custom widget type
     Custom(String),
 }
@@ -512,6 +515,11 @@ impl Annotation {
     /// Creates a diff viewer annotation.
     pub fn diff_viewer(id: impl Into<String>) -> Self {
         Self::new(WidgetType::DiffViewer).with_id(id)
+    }
+
+    /// Creates a terminal output annotation.
+    pub fn terminal_output(id: impl Into<String>) -> Self {
+        Self::new(WidgetType::TerminalOutput).with_id(id)
     }
 
     /// Creates a custom widget annotation.
