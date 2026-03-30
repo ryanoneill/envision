@@ -136,6 +136,8 @@ mod chart;
 #[cfg(feature = "compound-components")]
 mod chat_view;
 #[cfg(feature = "compound-components")]
+mod conversation_view;
+#[cfg(feature = "compound-components")]
 mod data_grid;
 #[cfg(feature = "compound-components")]
 pub mod dependency_graph;
@@ -224,6 +226,8 @@ pub mod terminal_output;
 mod title_card;
 #[cfg(feature = "display-components")]
 mod toast;
+#[cfg(feature = "display-components")]
+mod usage_display;
 
 // Navigation components
 #[cfg(feature = "navigation-components")]
@@ -238,6 +242,8 @@ mod menu;
 mod router;
 #[cfg(feature = "navigation-components")]
 pub mod step_indicator;
+#[cfg(feature = "navigation-components")]
+mod tab_bar;
 #[cfg(feature = "navigation-components")]
 mod tabs;
 
@@ -341,6 +347,11 @@ pub use chat_view::{
     ChatMessage, ChatRole, ChatView, ChatViewMessage, ChatViewOutput, ChatViewState,
 };
 #[cfg(feature = "compound-components")]
+pub use conversation_view::{
+    ConversationMessage, ConversationRole, ConversationView, ConversationViewMessage,
+    ConversationViewOutput, ConversationViewState, MessageBlock,
+};
+#[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
 #[cfg(feature = "compound-components")]
 pub use dependency_graph::{
@@ -428,6 +439,10 @@ pub use terminal_output::{
 pub use title_card::{TitleCard, TitleCardMessage, TitleCardState};
 #[cfg(feature = "display-components")]
 pub use toast::{Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState};
+#[cfg(feature = "display-components")]
+pub use usage_display::{
+    UsageDisplay, UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric,
+};
 
 // Navigation components
 #[cfg(feature = "navigation-components")]
@@ -448,6 +463,8 @@ pub use router::{NavigationMode, Router, RouterMessage, RouterOutput, RouterStat
 pub use step_indicator::{
     StepIndicator, StepIndicatorMessage, StepIndicatorOutput, StepIndicatorState,
 };
+#[cfg(feature = "navigation-components")]
+pub use tab_bar::{Tab, TabBar, TabBarMessage, TabBarOutput, TabBarState};
 #[cfg(feature = "navigation-components")]
 pub use tabs::{Tabs, TabsMessage, TabsOutput, TabsState};
 

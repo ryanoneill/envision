@@ -207,9 +207,15 @@ pub use component::{
     SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
     StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
     StatusLogMessage, StatusLogOutput, StatusLogState, StyledText, StyledTextMessage,
+<<<<<<< HEAD
     StyledTextOutput, StyledTextState, TerminalOutput, TerminalOutputMessage, TerminalOutputOutput,
     TerminalOutputState, ThresholdZone, TitleCard, TitleCardMessage, TitleCardState, Toast,
     ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
+=======
+    StyledTextOutput, StyledTextState, ThresholdZone, TitleCard, TitleCardMessage, TitleCardState,
+    Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, UsageDisplay,
+    UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric,
+>>>>>>> origin/main
 };
 
 // Navigation components
@@ -219,8 +225,8 @@ pub use component::{
     BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, CommandPalette,
     CommandPaletteMessage, CommandPaletteOutput, CommandPaletteState, Menu, MenuItem, MenuMessage,
     MenuOutput, MenuState, NavigationMode, PaletteItem, Router, RouterMessage, RouterOutput,
-    RouterState, StepIndicator, StepIndicatorMessage, StepIndicatorOutput, StepIndicatorState,
-    Tabs, TabsMessage, TabsOutput, TabsState,
+    RouterState, StepIndicator, StepIndicatorMessage, StepIndicatorOutput, StepIndicatorState, Tab,
+    TabBar, TabBarMessage, TabBarOutput, TabBarState, Tabs, TabsMessage, TabsOutput, TabsState,
 };
 
 // Overlay components

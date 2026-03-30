@@ -1,0 +1,5 @@
+---
+source: src/component/tab_bar/tests.rs
+expression: terminal.backend().to_string()
+---
+ Alpha  Beta  Gamma
