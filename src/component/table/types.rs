@@ -225,7 +225,7 @@ impl Column {
     /// Sets whether this column is editable (builder pattern).
     ///
     /// Columns are editable by default. Set to `false` to make a column
-    /// read-only in a [`DataGrid`](super::DataGrid).
+    /// read-only in a `DataGrid`.
     ///
     /// # Example
     ///
