@@ -106,6 +106,10 @@ name = "chat_app"
 required-features = ["compound-components"]
 
 [[example]]
+name = "conversation_view"
+required-features = ["compound-components"]
+
+[[example]]
 name = "tree"
 required-features = ["data-components"]
 
@@ -314,6 +318,10 @@ name = "table"
 required-features = ["data-components"]
 
 [[example]]
+name = "tab_bar"
+required-features = ["navigation-components"]
+
+[[example]]
 name = "tabs"
 required-features = ["navigation-components"]
 
@@ -327,6 +335,10 @@ required-features = ["compound-components"]
 
 [[example]]
 name = "toast"
+required-features = ["display-components"]
+
+[[example]]
+name = "usage_display"
 required-features = ["display-components"]
 
 [[example]]
