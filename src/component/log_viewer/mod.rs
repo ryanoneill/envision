@@ -270,6 +270,15 @@ impl LogViewerState {
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new().with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -308,16 +317,46 @@ impl LogViewerState {
     }
 
     /// Adds a warning-level entry, returning its ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// let id = state.push_warning("Disk space low");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn push_warning(&mut self, message: impl Into<String>) -> u64 {
         self.push_entry(message.into(), StatusLogLevel::Warning, None)
     }
 
     /// Adds an error-level entry, returning its ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// let id = state.push_error("Connection refused");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn push_error(&mut self, message: impl Into<String>) -> u64 {
         self.push_entry(message.into(), StatusLogLevel::Error, None)
     }
 
     /// Adds an info-level entry with a timestamp, returning its ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new().with_timestamps(true);
+    /// let id = state.push_info_with_timestamp("Server started", "12:00:00");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn push_info_with_timestamp(
         &mut self,
         message: impl Into<String>,
@@ -429,6 +468,17 @@ impl LogViewerState {
     // ---- Accessors ----
 
     /// Returns all entries in insertion order.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.push_info("first");
+    /// state.push_error("second");
+    /// assert_eq!(state.entries().len(), 2);
+    /// ```
     pub fn entries(&self) -> &[StatusLogEntry] {
         &self.entries
     }
@@ -449,6 +499,16 @@ impl LogViewerState {
     }
 
     /// Sets the maximum number of entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.set_max_entries(200);
+    /// assert_eq!(state.max_entries(), 200);
+    /// ```
     pub fn set_max_entries(&mut self, max: usize) {
         self.max_entries = max;
         while self.entries.len() > self.max_entries {
@@ -457,6 +517,15 @@ impl LogViewerState {
     }
 
     /// Returns the current search text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert_eq!(state.search_text(), "");
+    /// ```
     pub fn search_text(&self) -> &str {
         &self.search_text
     }
@@ -495,6 +564,15 @@ impl LogViewerState {
     }
 
     /// Returns true if info entries are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert!(state.show_info());
+    /// ```
     pub fn show_info(&self) -> bool {
         self.show_info
     }

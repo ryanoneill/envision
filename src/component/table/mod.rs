@@ -286,11 +286,52 @@ impl<T: TableRow> TableState<T> {
     /// Returns the current sort configuration.
     ///
     /// Returns `None` if no sort is applied.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, Table, TableRow, TableState, TableMessage, SortDirection, Component};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = TableState::new(
+    ///     vec![Item { name: "B".into() }, Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Length(10)).sortable()],
+    /// );
+    /// assert_eq!(state.sort(), None);
+    ///
+    /// Table::<Item>::update(&mut state, TableMessage::SortBy(0));
+    /// assert_eq!(state.sort(), Some((0, SortDirection::Ascending)));
+    /// ```
     pub fn sort(&self) -> Option<(usize, SortDirection)> {
         self.sort
     }
 
     /// Returns the number of rows.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = TableState::new(
+    ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
+    ///     vec![Column::new("Name", Constraint::Length(10))],
+    /// );
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn len(&self) -> usize {
         self.rows.len()
     }
@@ -394,11 +435,53 @@ impl<T: TableRow> TableState<T> {
     }
 
     /// Returns the current filter text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = TableState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Length(10))],
+    /// );
+    /// assert_eq!(state.filter_text(), "");
+    /// state.set_filter_text("A");
+    /// assert_eq!(state.filter_text(), "A");
+    /// ```
     pub fn filter_text(&self) -> &str {
         &self.filter_text
     }
 
     /// Returns the number of rows visible after filtering.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = TableState::new(
+    ///     vec![Item { name: "Alice".into() }, Item { name: "Bob".into() }],
+    ///     vec![Column::new("Name", Constraint::Length(10))],
+    /// );
+    /// assert_eq!(state.visible_count(), 2);
+    /// state.set_filter_text("Alice");
+    /// assert_eq!(state.visible_count(), 1);
+    /// ```
     pub fn visible_count(&self) -> usize {
         self.display_order.len()
     }

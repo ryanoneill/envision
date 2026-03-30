@@ -193,6 +193,16 @@ impl SplitPanelState {
     }
 
     /// Sets the orientation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SplitPanelState, SplitOrientation};
+    ///
+    /// let mut state = SplitPanelState::new(SplitOrientation::Vertical);
+    /// state.set_orientation(SplitOrientation::Horizontal);
+    /// assert_eq!(state.orientation(), &SplitOrientation::Horizontal);
+    /// ```
     pub fn set_orientation(&mut self, orientation: SplitOrientation) {
         self.orientation = orientation;
     }
@@ -206,11 +216,31 @@ impl SplitPanelState {
     }
 
     /// Sets the split ratio, clamped to `[min_ratio, max_ratio]`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SplitPanelState, SplitOrientation};
+    ///
+    /// let mut state = SplitPanelState::new(SplitOrientation::Vertical);
+    /// state.set_ratio(0.7);
+    /// assert!((state.ratio() - 0.7).abs() < f32::EPSILON);
+    /// ```
     pub fn set_ratio(&mut self, ratio: f32) {
         self.ratio = ratio.clamp(self.min_ratio, self.max_ratio);
     }
 
     /// Returns true if the first pane has focus.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SplitPanelState, SplitOrientation};
+    ///
+    /// let state = SplitPanelState::new(SplitOrientation::Vertical);
+    /// assert!(state.is_first_pane_focused());
+    /// assert!(!state.is_second_pane_focused());
+    /// ```
     pub fn is_first_pane_focused(&self) -> bool {
         self.focused_pane == Pane::First
     }
@@ -279,6 +309,15 @@ impl SplitPanelState {
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SplitPanelState, SplitOrientation};
+    ///
+    /// let state = SplitPanelState::new(SplitOrientation::Vertical).with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -302,6 +341,18 @@ impl SplitPanelState {
     /// Computes the layout areas for the two panes.
     ///
     /// Returns `(first_pane_area, second_pane_area)`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SplitPanelState, SplitOrientation};
+    /// use ratatui::prelude::Rect;
+    ///
+    /// let state = SplitPanelState::new(SplitOrientation::Vertical);
+    /// let area = Rect::new(0, 0, 80, 24);
+    /// let (first, second) = state.layout(area);
+    /// assert_eq!(first.width + second.width, 80);
+    /// ```
     pub fn layout(&self, area: Rect) -> (Rect, Rect) {
         let direction = match self.orientation {
             SplitOrientation::Vertical => Direction::Horizontal,

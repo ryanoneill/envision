@@ -371,6 +371,20 @@ impl TerminalOutputState {
     }
 
     /// Returns all output lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let mut state = TerminalOutputState::new();
+    /// state.push_line("line 1");
+    /// state.push_line("line 2");
+    /// assert_eq!(state.lines(), &["line 1", "line 2"]);
+    /// # }
+    /// ```
     pub fn lines(&self) -> &[String] {
         &self.lines
     }
@@ -400,6 +414,19 @@ impl TerminalOutputState {
     }
 
     /// Sets the maximum number of lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let mut state = TerminalOutputState::new();
+    /// state.set_max_lines(500);
+    /// assert_eq!(state.max_lines(), 500);
+    /// # }
+    /// ```
     pub fn set_max_lines(&mut self, max: usize) {
         self.max_lines = max;
         self.enforce_max_lines();
@@ -436,11 +463,41 @@ impl TerminalOutputState {
     }
 
     /// Returns the exit code, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let mut state = TerminalOutputState::new();
+    /// assert_eq!(state.exit_code(), None);
+    /// state.set_exit_code(Some(0));
+    /// assert_eq!(state.exit_code(), Some(0));
+    /// # }
+    /// ```
     pub fn exit_code(&self) -> Option<i32> {
         self.exit_code
     }
 
     /// Sets the exit code.
+    ///
+    /// Setting an exit code also sets `running` to `false`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let mut state = TerminalOutputState::new().with_running(true);
+    /// state.set_exit_code(Some(0));
+    /// assert_eq!(state.exit_code(), Some(0));
+    /// assert!(!state.running());
+    /// # }
+    /// ```
     pub fn set_exit_code(&mut self, code: Option<i32>) {
         self.exit_code = code;
         if code.is_some() {
@@ -449,6 +506,21 @@ impl TerminalOutputState {
     }
 
     /// Returns whether the process is running.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let state = TerminalOutputState::new();
+    /// assert!(!state.running());
+    ///
+    /// let state = TerminalOutputState::new().with_running(true);
+    /// assert!(state.running());
+    /// # }
+    /// ```
     pub fn running(&self) -> bool {
         self.running
     }

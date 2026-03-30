@@ -72,12 +72,30 @@ impl FileEntry {
     }
 
     /// Sets the file size (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let entry = FileEntry::file("data.bin", "/data.bin").with_size(1024);
+    /// assert_eq!(entry.size(), Some(1024));
+    /// ```
     pub fn with_size(mut self, size: u64) -> Self {
         self.size = Some(size);
         self
     }
 
     /// Sets the modification timestamp (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let entry = FileEntry::file("data.bin", "/data.bin").with_modified(1700000000);
+    /// assert_eq!(entry.modified(), Some(1700000000));
+    /// ```
     pub fn with_modified(mut self, modified: u64) -> Self {
         self.modified = Some(modified);
         self
@@ -109,11 +127,35 @@ impl FileEntry {
     }
 
     /// Returns the file extension, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let entry = FileEntry::file("main.rs", "/main.rs");
+    /// assert_eq!(entry.extension(), Some("rs"));
+    ///
+    /// let dir = FileEntry::directory("src", "/src");
+    /// assert_eq!(dir.extension(), None);
+    /// ```
     pub fn extension(&self) -> Option<&str> {
         self.extension.as_deref()
     }
 
     /// Returns true if this is a hidden entry.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let hidden = FileEntry::file(".gitignore", "/.gitignore");
+    /// assert!(hidden.is_hidden());
+    ///
+    /// let visible = FileEntry::file("README.md", "/README.md");
+    /// assert!(!visible.is_hidden());
+    /// ```
     pub fn is_hidden(&self) -> bool {
         self.hidden
     }

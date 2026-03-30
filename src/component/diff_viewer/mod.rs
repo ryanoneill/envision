@@ -310,12 +310,28 @@ impl DiffViewerState {
     }
 
     /// Sets the number of context lines for compute_diff (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new().with_context_lines(5);
+    /// ```
     pub fn with_context_lines(mut self, lines: usize) -> Self {
         self.context_lines = lines;
         self
     }
 
     /// Sets whether to show line numbers (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new().with_show_line_numbers(false);
+    /// ```
     pub fn with_show_line_numbers(mut self, show: bool) -> Self {
         self.show_line_numbers = show;
         self
@@ -336,18 +352,43 @@ impl DiffViewerState {
     }
 
     /// Sets the label for the old file (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new().with_old_label("original.rs");
+    /// ```
     pub fn with_old_label(mut self, label: impl Into<String>) -> Self {
         self.old_label = Some(label.into());
         self
     }
 
     /// Sets the label for the new file (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new().with_new_label("modified.rs");
+    /// ```
     pub fn with_new_label(mut self, label: impl Into<String>) -> Self {
         self.new_label = Some(label.into());
         self
     }
 
     /// Sets the disabled state (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new().with_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -371,11 +412,29 @@ impl DiffViewerState {
     }
 
     /// Returns the total number of displayable lines across all hunks.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::from_texts("old line", "new line");
+    /// assert!(state.total_lines() > 0);
+    /// ```
     pub fn total_lines(&self) -> usize {
         count_total_lines(&self.hunks)
     }
 
     /// Returns the count of added lines across all hunks.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::from_texts("old", "new\nextra");
+    /// assert!(state.added_count() >= 1);
+    /// ```
     pub fn added_count(&self) -> usize {
         self.hunks
             .iter()
@@ -385,6 +444,15 @@ impl DiffViewerState {
     }
 
     /// Returns the count of removed lines across all hunks.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::from_texts("old\nextra", "new");
+    /// assert!(state.removed_count() >= 1);
+    /// ```
     pub fn removed_count(&self) -> usize {
         self.hunks
             .iter()
@@ -394,11 +462,32 @@ impl DiffViewerState {
     }
 
     /// Returns the count of changed lines (added + removed).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::from_texts("old line", "new line");
+    /// assert_eq!(state.changed_count(), state.added_count() + state.removed_count());
+    /// ```
     pub fn changed_count(&self) -> usize {
         self.added_count() + self.removed_count()
     }
 
     /// Returns the display mode.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DiffViewerState, DiffMode};
+    ///
+    /// let state = DiffViewerState::new();
+    /// assert_eq!(state.mode(), &DiffMode::Unified);
+    ///
+    /// let state = DiffViewerState::new().with_mode(DiffMode::SideBySide);
+    /// assert_eq!(state.mode(), &DiffMode::SideBySide);
+    /// ```
     pub fn mode(&self) -> &DiffMode {
         &self.mode
     }
