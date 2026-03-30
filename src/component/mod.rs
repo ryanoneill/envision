@@ -132,6 +132,8 @@ mod text_area;
 #[cfg(feature = "compound-components")]
 mod alert_panel;
 #[cfg(feature = "compound-components")]
+mod box_plot;
+#[cfg(feature = "compound-components")]
 mod chart;
 #[cfg(feature = "compound-components")]
 mod chat_view;
@@ -348,6 +350,8 @@ pub use alert_panel::{
     AlertMetric, AlertPanel, AlertPanelMessage, AlertPanelOutput, AlertPanelState, AlertState,
     AlertThreshold,
 };
+#[cfg(feature = "compound-components")]
+pub use box_plot::{BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation, BoxPlotState};
 #[cfg(feature = "compound-components")]
 pub use chart::{
     Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, ThresholdLine,
