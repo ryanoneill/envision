@@ -461,55 +461,7 @@ impl<T: TableRow + 'static> DataGridState<T> {
         self.disabled = disabled;
     }
 
-    /// Sets the initially selected row index (builder pattern).
-    ///
-    /// The index is clamped to the valid range. Has no effect on empty grids.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
-    /// use ratatui::layout::Constraint;
-    ///
-    /// #[derive(Clone)]
-    /// struct Item { name: String }
-    /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
-    /// }
-    ///
-    /// let state = DataGridState::new(
-    ///     vec![Item { name: "A".into() }, Item { name: "B".into() }, Item { name: "C".into() }],
-    ///     vec![Column::new("Name", Constraint::Min(10))],
-    /// ).with_selected(2);
-    /// assert_eq!(state.selected_index(), Some(2));
-    /// ```
-    pub fn with_selected(mut self, index: usize) -> Self {
-        if !self.rows.is_empty() {
-            self.selected_row = Some(index.min(self.rows.len() - 1));
-        }
-        self
-    }
-
     /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
-    /// use ratatui::layout::Constraint;
-    ///
-    /// #[derive(Clone)]
-    /// struct Item { name: String }
-    /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
-    /// }
-    ///
-    /// let state = DataGridState::new(
-    ///     vec![Item { name: "A".into() }],
-    ///     vec![Column::new("Name", Constraint::Min(10))],
-    /// ).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
