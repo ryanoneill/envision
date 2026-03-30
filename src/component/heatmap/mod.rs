@@ -52,6 +52,10 @@ mod render;
 /// assert_ne!(custom, HeatmapColorScale::GreenToRed);
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum HeatmapColorScale {
     /// Green (low) to Red (high), passing through yellow.
     #[default]
@@ -79,6 +83,10 @@ pub enum HeatmapColorScale {
 /// assert_eq!(state.selected(), Some((1, 0)));
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum HeatmapMessage {
     /// Replace all data.
     SetData(Vec<Vec<f64>>),
@@ -136,6 +144,10 @@ pub enum HeatmapMessage {
 /// );
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum HeatmapOutput {
     /// A cell was selected/confirmed with Enter.
     CellSelected {
@@ -170,6 +182,10 @@ pub enum HeatmapOutput {
 /// assert_eq!(state.get(0, 0), Some(0.0));
 /// ```
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct HeatmapState {
     /// 2D grid of values (rows x columns).
     data: Vec<Vec<f64>>,

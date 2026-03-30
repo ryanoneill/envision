@@ -63,6 +63,10 @@ impl ChatRole {
 
 /// A single chat message.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ChatMessage {
     /// The role of the sender.
     pub(super) role: ChatRole,
@@ -205,6 +209,10 @@ pub(crate) enum Focus {
 
 /// Messages that can be sent to a ChatView.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ChatViewMessage {
     /// Type a character in the input field.
     Input(char),
@@ -256,6 +264,10 @@ pub enum ChatViewMessage {
 
 /// Output messages from a ChatView.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum ChatViewOutput {
     /// The user submitted a message. Contains the message text.
     Submitted(String),

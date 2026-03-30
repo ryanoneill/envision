@@ -64,6 +64,10 @@ pub use layout::{squarified_layout, LayoutRect};
 /// assert_eq!(parent.total_value(), 50.0);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct TreemapNode {
     /// Display label.
     pub label: String,
@@ -217,6 +221,10 @@ impl TreemapNode {
 /// state.update(TreemapMessage::SelectNext);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum TreemapMessage {
     /// Set the root node.
     SetRoot(TreemapNode),
@@ -267,6 +275,10 @@ pub enum TreemapMessage {
 /// );
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum TreemapOutput {
     /// A node was confirmed/selected.
     NodeSelected {
@@ -301,6 +313,10 @@ pub enum TreemapOutput {
 /// assert_eq!(state.title(), Some("Disk Usage"));
 /// ```
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct TreemapState {
     /// The root node of the tree.
     root: Option<TreemapNode>,

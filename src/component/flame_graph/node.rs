@@ -25,6 +25,10 @@ use ratatui::style::Color;
 /// assert_eq!(node.children().len(), 2);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct FlameNode {
     /// Display label (function name, service, etc.).
     pub(crate) label: String,

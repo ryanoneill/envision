@@ -24,6 +24,10 @@ use crate::scroll::ScrollState;
 /// assert_eq!(state.event_count(), 2);
 /// ```
 #[derive(Clone, Debug)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct EventStreamState {
     /// All events in insertion order.
     pub(super) events: Vec<StreamEvent>,
@@ -54,6 +58,7 @@ pub struct EventStreamState {
     /// Internal focus state.
     pub(super) focus: Focus,
     /// The search input field state.
+    #[cfg_attr(feature = "serialization", serde(skip))]
     pub(super) search: InputFieldState,
     /// Whether the component is focused.
     pub(super) focused: bool,

@@ -236,6 +236,10 @@ impl MessageBlock {
 /// timestamp, and a streaming flag to indicate whether the message is
 /// still being received.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ConversationMessage {
     /// The role of the message sender.
     pub(super) role: ConversationRole,

@@ -59,6 +59,10 @@ pub use node::FlameNode;
 /// FlameGraph::update(&mut state, FlameGraphMessage::SelectDown);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum FlameGraphMessage {
     /// Set the root frame.
     SetRoot(FlameNode),
@@ -102,6 +106,10 @@ pub enum FlameGraphMessage {
 /// assert!(matches!(output, Some(FlameGraphOutput::FrameSelected { .. })));
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum FlameGraphOutput {
     /// A frame was selected.
     FrameSelected {
@@ -137,6 +145,10 @@ pub enum FlameGraphOutput {
 /// assert_eq!(state.selected_index(), 0);
 /// ```
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct FlameGraphState {
     /// The root frame.
     root: Option<FlameNode>,

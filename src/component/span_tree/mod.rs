@@ -59,6 +59,10 @@ pub use types::{FlatSpan, SpanNode};
 /// SpanTree::update(&mut state, SpanTreeMessage::SelectDown);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum SpanTreeMessage {
     /// Replace all root spans.
     SetRoots(Vec<SpanNode>),
@@ -98,6 +102,10 @@ pub enum SpanTreeMessage {
 /// assert_eq!(output, Some(SpanTreeOutput::Collapsed("r".into())));
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub enum SpanTreeOutput {
     /// A span was selected. Contains the span id.
     Selected(String),
@@ -127,6 +135,10 @@ pub enum SpanTreeOutput {
 /// assert_eq!(state.selected_index(), Some(0));
 /// ```
 #[derive(Clone, Debug)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct SpanTreeState {
     /// Root spans.
     roots: Vec<SpanNode>,
