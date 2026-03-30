@@ -11,7 +11,7 @@
 //! # Supported Languages
 //!
 //! Rust, Python, JavaScript, TypeScript, Go, Shell, JSON, YAML, TOML,
-//! SQL, and Plain text. See [`Language`](highlight::Language).
+//! SQL, and Plain text. See [`Language`].
 //!
 //! # Example
 //!
