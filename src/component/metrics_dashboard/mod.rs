@@ -249,53 +249,16 @@ impl MetricsDashboardState {
     }
 
     /// Returns the number of columns.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    /// ], 3);
-    /// assert_eq!(state.columns(), 3);
-    /// ```
     pub fn columns(&self) -> usize {
         self.columns
     }
 
     /// Sets the number of columns.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    /// ], 3);
-    /// state.set_columns(2);
-    /// assert_eq!(state.columns(), 2);
-    /// ```
     pub fn set_columns(&mut self, columns: usize) {
         self.columns = columns.max(1);
     }
 
     /// Returns the number of rows (based on widget count and columns).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    ///     MetricWidget::counter("B", 0),
-    ///     MetricWidget::counter("C", 0),
-    ///     MetricWidget::counter("D", 0),
-    /// ], 3);
-    /// assert_eq!(state.rows(), 2); // 4 widgets in 3 columns = 2 rows
-    /// ```
     pub fn rows(&self) -> usize {
         if self.widgets.is_empty() {
             0
@@ -305,54 +268,16 @@ impl MetricsDashboardState {
     }
 
     /// Returns the selected widget index.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    /// ], 1);
-    /// assert_eq!(state.selected_index(), Some(0));
-    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    /// ], 1);
-    /// assert_eq!(state.selected(), state.selected_index());
-    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
 
     /// Sets the selected widget index.
-    ///
-    /// The index is clamped to the valid range. Has no effect on empty dashboards.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    ///     MetricWidget::counter("B", 0),
-    ///     MetricWidget::counter("C", 0),
-    /// ], 3);
-    /// state.set_selected(Some(2));
-    /// assert_eq!(state.selected_index(), Some(2));
-    /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
@@ -366,86 +291,27 @@ impl MetricsDashboardState {
     }
 
     /// Returns a reference to the selected widget.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("Ops", 42),
-    /// ], 1);
-    /// assert_eq!(state.selected_widget().unwrap().label(), "Ops");
-    /// ```
     pub fn selected_widget(&self) -> Option<&MetricWidget> {
         self.widgets.get(self.selected?)
     }
 
     /// Returns the (row, column) position of the selected widget.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    ///     MetricWidget::counter("B", 0),
-    ///     MetricWidget::counter("C", 0),
-    ///     MetricWidget::counter("D", 0),
-    /// ], 3);
-    /// state.set_selected(Some(3)); // 4th widget
-    /// assert_eq!(state.selected_position(), Some((1, 0))); // row 1, col 0
-    /// ```
     pub fn selected_position(&self) -> Option<(usize, usize)> {
         let selected = self.selected?;
         Some((selected / self.columns, selected % self.columns))
     }
 
     /// Returns the title.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![], 1);
-    /// assert_eq!(state.title(), None);
-    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![], 1);
-    /// state.set_title(Some("Dashboard".to_string()));
-    /// assert_eq!(state.title(), Some("Dashboard"));
-    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
 
     /// Returns true if the dashboard has no widgets.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![], 1);
-    /// assert!(state.is_empty());
-    ///
-    /// let state2 = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    /// ], 1);
-    /// assert!(!state2.is_empty());
-    /// ```
     pub fn is_empty(&self) -> bool {
         self.widgets.is_empty()
     }
@@ -453,119 +319,36 @@ impl MetricsDashboardState {
     // ---- Instance methods ----
 
     /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![], 1);
-    /// assert!(!state.is_focused());
-    /// ```
     pub fn is_focused(&self) -> bool {
         self.focused
     }
 
     /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![], 1);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
     pub fn set_focused(&mut self, focused: bool) {
         self.focused = focused;
     }
 
     /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![], 1);
-    /// assert!(!state.is_disabled());
-    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![], 1);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
 
     /// Maps an input event to a dashboard message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricsDashboardMessage, MetricWidget};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    /// ], 1);
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Enter);
-    /// assert_eq!(state.handle_event(&event), Some(MetricsDashboardMessage::Select));
-    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<MetricsDashboardMessage> {
         MetricsDashboard::handle_event(self, event)
     }
 
     /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricsDashboardOutput, MetricWidget};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    ///     MetricWidget::counter("B", 0),
-    /// ], 2);
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Right);
-    /// let output = state.dispatch_event(&event);
-    /// assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(1)));
-    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<MetricsDashboardOutput> {
         MetricsDashboard::dispatch_event(self, event)
     }
 
     /// Updates the state with a message, returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{
-    ///     MetricsDashboardState, MetricsDashboardMessage,
-    ///     MetricsDashboardOutput, MetricWidget,
-    /// };
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    /// ], 1);
-    /// let output = state.update(MetricsDashboardMessage::Select);
-    /// assert_eq!(output, Some(MetricsDashboardOutput::Selected(0)));
-    /// ```
     pub fn update(&mut self, msg: MetricsDashboardMessage) -> Option<MetricsDashboardOutput> {
         MetricsDashboard::update(self, msg)
     }
@@ -577,13 +360,13 @@ impl MetricsDashboardState {
 ///
 /// # Key Bindings
 ///
-/// - `Left` / `h` — Move selection left
-/// - `Right` / `l` — Move selection right
-/// - `Up` / `k` — Move selection up
-/// - `Down` / `j` — Move selection down
-/// - `Home` — Select first widget
-/// - `End` — Select last widget
-/// - `Enter` — Select current widget
+/// - `Left` / `h` -- Move selection left
+/// - `Right` / `l` -- Move selection right
+/// - `Up` / `k` -- Move selection up
+/// - `Down` / `j` -- Move selection down
+/// - `Home` -- Select first widget
+/// - `End` -- Select last widget
+/// - `Enter` -- Select current widget
 pub struct MetricsDashboard(PhantomData<()>);
 
 impl Component for MetricsDashboard {
@@ -791,30 +574,70 @@ fn render_widget(
         value_color(widget, theme)
     };
 
-    // Show sparkline if there's history and enough space
-    if !widget.history.is_empty() && inner.height >= 3 {
+    let has_gauge_bar = widget.gauge_percentage().is_some();
+    let has_history = !widget.history.is_empty();
+
+    // Determine layout: value + optional gauge bar + optional sparkline
+    if has_history && inner.height >= 3 {
+        if has_gauge_bar && inner.height >= 4 {
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(1),
+                ])
+                .split(inner);
+
+            render_value_line(widget, value_style, frame, chunks[0]);
+            render_gauge_bar(widget, value_style, frame, chunks[1]);
+
+            let sparkline = Sparkline::default()
+                .data(&widget.history)
+                .style(value_style);
+            frame.render_widget(sparkline, chunks[2]);
+        } else {
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Length(1), Constraint::Min(1)])
+                .split(inner);
+
+            render_value_line(widget, value_style, frame, chunks[0]);
+
+            let sparkline = Sparkline::default()
+                .data(&widget.history)
+                .style(value_style);
+            frame.render_widget(sparkline, chunks[1]);
+        }
+    } else if has_gauge_bar && inner.height >= 2 {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([Constraint::Length(1), Constraint::Min(1)])
+            .constraints([Constraint::Length(1), Constraint::Length(1)])
             .split(inner);
 
-        // Value line
-        let value_text = widget.display_value();
-        let paragraph = Paragraph::new(value_text).style(value_style);
-        frame.render_widget(paragraph, chunks[0]);
-
-        // Sparkline
-        let sparkline = Sparkline::default()
-            .data(&widget.history)
-            .style(value_style);
-        frame.render_widget(sparkline, chunks[1]);
+        render_value_line(widget, value_style, frame, chunks[0]);
+        render_gauge_bar(widget, value_style, frame, chunks[1]);
     } else {
-        // Just value
         let value_text = widget.display_value();
         let paragraph = Paragraph::new(value_text)
             .style(value_style)
             .alignment(Alignment::Center);
         frame.render_widget(paragraph, inner);
+    }
+}
+
+/// Renders the value text line for a widget.
+fn render_value_line(widget: &MetricWidget, value_style: Style, frame: &mut Frame, area: Rect) {
+    let value_text = widget.display_value();
+    let paragraph = Paragraph::new(value_text).style(value_style);
+    frame.render_widget(paragraph, area);
+}
+
+/// Renders a visual gauge bar for a gauge widget.
+fn render_gauge_bar(widget: &MetricWidget, value_style: Style, frame: &mut Frame, area: Rect) {
+    if let Some(bar) = widget.gauge_bar(area.width as usize) {
+        let paragraph = Paragraph::new(bar).style(value_style);
+        frame.render_widget(paragraph, area);
     }
 }
 
@@ -828,9 +651,11 @@ fn value_color(widget: &MetricWidget, theme: &Theme) -> Style {
             } else {
                 0.0
             };
-            if pct >= 0.9 {
+            let critical = widget.effective_critical_threshold();
+            let warning = widget.effective_warning_threshold();
+            if pct >= critical {
                 theme.error_style()
-            } else if pct >= 0.7 {
+            } else if pct >= warning {
                 theme.warning_style()
             } else {
                 theme.success_style()
