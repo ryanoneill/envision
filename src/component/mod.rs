@@ -136,6 +136,8 @@ mod chart;
 #[cfg(feature = "compound-components")]
 mod chat_view;
 #[cfg(feature = "compound-components")]
+mod conversation_view;
+#[cfg(feature = "compound-components")]
 mod data_grid;
 #[cfg(feature = "compound-components")]
 pub mod dependency_graph;
@@ -339,6 +341,11 @@ pub use chart::{
 #[cfg(feature = "compound-components")]
 pub use chat_view::{
     ChatMessage, ChatRole, ChatView, ChatViewMessage, ChatViewOutput, ChatViewState,
+};
+#[cfg(feature = "compound-components")]
+pub use conversation_view::{
+    ConversationMessage, ConversationRole, ConversationView, ConversationViewMessage,
+    ConversationViewOutput, ConversationViewState, MessageBlock,
 };
 #[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
