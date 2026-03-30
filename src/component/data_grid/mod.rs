@@ -85,6 +85,12 @@ pub enum DataGridMessage {
     Home,
     /// Move cursor to the end of the cell while editing.
     End,
+    /// Hide a column by index.
+    HideColumn(usize),
+    /// Show a column by index.
+    ShowColumn(usize),
+    /// Toggle column visibility by index.
+    ToggleColumn(usize),
 }
 
 /// Output messages from a DataGrid.
@@ -111,6 +117,10 @@ pub enum DataGridOutput<T: Clone> {
     ColumnChanged(usize),
     /// An edit was cancelled.
     EditCancelled,
+    /// A column was hidden.
+    ColumnHidden(usize),
+    /// A column was shown.
+    ColumnShown(usize),
 }
 
 /// State for a DataGrid component.
@@ -673,26 +683,70 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                     }
                 }
                 DataGridMessage::Left => {
-                    if col_count > 0 && state.selected_column > 0 {
-                        state.selected_column -= 1;
-                        Some(DataGridOutput::ColumnChanged(state.selected_column))
-                    } else {
-                        None
+                    // Skip hidden columns when navigating left
+                    let mut new_col = state.selected_column;
+                    while new_col > 0 {
+                        new_col -= 1;
+                        if state.columns.get(new_col).is_some_and(|c| c.is_visible()) {
+                            state.selected_column = new_col;
+                            return Some(DataGridOutput::ColumnChanged(new_col));
+                        }
                     }
+                    None
                 }
                 DataGridMessage::Right => {
-                    if col_count > 0 && state.selected_column < col_count - 1 {
-                        state.selected_column += 1;
-                        Some(DataGridOutput::ColumnChanged(state.selected_column))
-                    } else {
-                        None
+                    // Skip hidden columns when navigating right
+                    let mut new_col = state.selected_column;
+                    while new_col < col_count.saturating_sub(1) {
+                        new_col += 1;
+                        if state.columns.get(new_col).is_some_and(|c| c.is_visible()) {
+                            state.selected_column = new_col;
+                            return Some(DataGridOutput::ColumnChanged(new_col));
+                        }
                     }
+                    None
                 }
                 DataGridMessage::Enter => {
-                    state.start_editing();
+                    // Only allow editing if the current column is editable
+                    if state
+                        .columns
+                        .get(state.selected_column)
+                        .is_some_and(|c| c.is_editable())
+                    {
+                        state.start_editing();
+                    }
                     None
                 }
                 DataGridMessage::Cancel => None,
+                DataGridMessage::HideColumn(idx) => {
+                    if let Some(col) = state.columns.get_mut(idx) {
+                        col.set_visible(false);
+                        Some(DataGridOutput::ColumnHidden(idx))
+                    } else {
+                        None
+                    }
+                }
+                DataGridMessage::ShowColumn(idx) => {
+                    if let Some(col) = state.columns.get_mut(idx) {
+                        col.set_visible(true);
+                        Some(DataGridOutput::ColumnShown(idx))
+                    } else {
+                        None
+                    }
+                }
+                DataGridMessage::ToggleColumn(idx) => {
+                    if let Some(col) = state.columns.get_mut(idx) {
+                        let was_visible = col.is_visible();
+                        col.set_visible(!was_visible);
+                        if was_visible {
+                            Some(DataGridOutput::ColumnHidden(idx))
+                        } else {
+                            Some(DataGridOutput::ColumnShown(idx))
+                        }
+                    } else {
+                        None
+                    }
+                }
                 _ => None,
             }
         }
@@ -712,7 +766,17 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
             );
         });
 
-        let widths: Vec<Constraint> = state.columns.iter().map(|c| c.width()).collect();
+        let widths: Vec<Constraint> = state
+            .columns
+            .iter()
+            .map(|c| {
+                if c.is_visible() {
+                    c.width()
+                } else {
+                    Constraint::Length(0)
+                }
+            })
+            .collect();
 
         // Build header row
         let headers: Vec<String> = state
