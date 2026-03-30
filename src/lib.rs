@@ -232,6 +232,10 @@ pub use component::{
     ConfirmDialogState, Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Tooltip,
     TooltipMessage, TooltipOutput, TooltipPosition, TooltipState,
 };
+// Markdown components
+#[cfg(feature = "markdown")]
+pub use component::{MarkdownRenderer, MarkdownRendererMessage, MarkdownRendererState};
+
 pub use error::{BoxedError, EnvisionError, Result};
 pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
 pub use input::{Event, EventQueue};

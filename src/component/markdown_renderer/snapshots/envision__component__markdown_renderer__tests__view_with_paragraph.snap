@@ -1,0 +1,14 @@
+---
+source: src/component/markdown_renderer/tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│Hello, world! This is a test. Line    │
+│three.                                │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘
