@@ -1,0 +1,14 @@
+---
+source: src/component/scroll_view/tests.rs
+expression: terminal.backend().to_string()
+---
+┌──────────────────────────────────────┐
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘

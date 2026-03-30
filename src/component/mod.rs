@@ -211,6 +211,8 @@ mod paginator;
 #[cfg(feature = "display-components")]
 pub mod progress_bar;
 #[cfg(feature = "display-components")]
+mod scroll_view;
+#[cfg(feature = "display-components")]
 mod scrollable_text;
 #[cfg(feature = "display-components")]
 mod sparkline;
@@ -423,6 +425,8 @@ pub use timeline::{
 #[cfg(feature = "compound-components")]
 pub use treemap::{Treemap, TreemapMessage, TreemapNode, TreemapOutput, TreemapState};
 
+#[cfg(feature = "display-components")]
+pub use scroll_view::{ScrollView, ScrollViewMessage, ScrollViewState};
 #[cfg(feature = "display-components")]
 pub use scrollable_text::{
     ScrollableText, ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState,
