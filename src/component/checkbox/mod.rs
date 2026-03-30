@@ -171,6 +171,36 @@ impl CheckboxState {
         self.disabled = disabled;
     }
 
+    /// Sets the checkbox label using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CheckboxState;
+    ///
+    /// let state = CheckboxState::new("Accept").with_label("Accept all terms");
+    /// assert_eq!(state.label(), "Accept all terms");
+    /// ```
+    pub fn with_label(mut self, label: impl Into<String>) -> Self {
+        self.label = label.into();
+        self
+    }
+
+    /// Sets the checked state using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CheckboxState;
+    ///
+    /// let state = CheckboxState::new("Dark mode").with_checked(true);
+    /// assert!(state.is_checked());
+    /// ```
+    pub fn with_checked(mut self, checked: bool) -> Self {
+        self.checked = checked;
+        self
+    }
+
     /// Sets the disabled state using builder pattern.
     ///
     /// # Example
