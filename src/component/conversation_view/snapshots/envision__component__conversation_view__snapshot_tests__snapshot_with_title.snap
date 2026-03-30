@@ -1,0 +1,24 @@
+---
+source: src/component/conversation_view/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+┌Session 1─────────────────────────────────────────────────┐
+│● User                                                    │
+│  Hello!                                                  │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘

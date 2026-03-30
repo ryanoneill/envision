@@ -401,4 +401,6 @@ impl<S: Clone + PartialEq + Default> Component for Router<S> {
 }
 
 #[cfg(test)]
+mod snapshot_tests;
+#[cfg(test)]
 mod tests;
