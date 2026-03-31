@@ -185,6 +185,22 @@ impl LogStream {
         self
     }
 
+    /// Sets the header color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogStream;
+    /// use ratatui::prelude::Color;
+    ///
+    /// let mut stream = LogStream::new("API");
+    /// stream.set_color(Color::Cyan);
+    /// assert_eq!(stream.color, Color::Cyan);
+    /// ```
+    pub fn set_color(&mut self, color: Color) {
+        self.color = color;
+    }
+
     /// Appends an entry to the stream (builder pattern).
     ///
     /// # Example

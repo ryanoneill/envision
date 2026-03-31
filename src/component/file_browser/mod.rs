@@ -505,6 +505,21 @@ impl FileBrowserState {
         self.show_hidden
     }
 
+    /// Sets whether hidden files are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::FileBrowserState;
+    ///
+    /// let mut state = FileBrowserState::new("/", vec![]);
+    /// state.set_show_hidden(true);
+    /// assert!(state.show_hidden());
+    /// ```
+    pub fn set_show_hidden(&mut self, show: bool) {
+        self.show_hidden = show;
+    }
+
     /// Returns which sub-area of the file browser currently has internal focus.
     pub(crate) fn internal_focus(&self) -> &FileBrowserFocus {
         &self.internal_focus

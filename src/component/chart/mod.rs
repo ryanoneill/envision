@@ -475,9 +475,39 @@ impl ChartState {
         self.show_legend
     }
 
+    /// Sets whether to show the legend.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChartState;
+    ///
+    /// let mut state = ChartState::line(vec![]);
+    /// state.set_show_legend(true);
+    /// assert!(state.show_legend());
+    /// ```
+    pub fn set_show_legend(&mut self, show: bool) {
+        self.show_legend = show;
+    }
+
     /// Returns the maximum display points.
     pub fn max_display_points(&self) -> usize {
         self.max_display_points
+    }
+
+    /// Sets the maximum display points for line charts.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChartState;
+    ///
+    /// let mut state = ChartState::line(vec![]);
+    /// state.set_max_display_points(200);
+    /// assert_eq!(state.max_display_points(), 200);
+    /// ```
+    pub fn set_max_display_points(&mut self, max: usize) {
+        self.max_display_points = max;
     }
 
     /// Returns the bar width.
@@ -485,9 +515,39 @@ impl ChartState {
         self.bar_width
     }
 
+    /// Sets the bar width.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChartState;
+    ///
+    /// let mut state = ChartState::bar_vertical(vec![]);
+    /// state.set_bar_width(3);
+    /// assert_eq!(state.bar_width(), 3);
+    /// ```
+    pub fn set_bar_width(&mut self, width: u16) {
+        self.bar_width = width.max(1);
+    }
+
     /// Returns the bar gap.
     pub fn bar_gap(&self) -> u16 {
         self.bar_gap
+    }
+
+    /// Sets the bar gap.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChartState;
+    ///
+    /// let mut state = ChartState::bar_vertical(vec![]);
+    /// state.set_bar_gap(2);
+    /// assert_eq!(state.bar_gap(), 2);
+    /// ```
+    pub fn set_bar_gap(&mut self, gap: u16) {
+        self.bar_gap = gap;
     }
 
     /// Returns the number of series.

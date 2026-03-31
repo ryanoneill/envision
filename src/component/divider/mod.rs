@@ -297,6 +297,22 @@ impl DividerState {
         self.label = label;
     }
 
+    /// Sets the color override.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DividerState;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = DividerState::new();
+    /// state.set_color(Some(Color::Red));
+    /// assert_eq!(state.color(), Some(Color::Red));
+    /// ```
+    pub fn set_color(&mut self, color: Option<Color>) {
+        self.color = color;
+    }
+
     /// Sets the orientation.
     ///
     /// # Example

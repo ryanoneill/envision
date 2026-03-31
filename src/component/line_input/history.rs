@@ -124,6 +124,21 @@ impl History {
         self.entries.len()
     }
 
+    /// Returns the maximum number of entries.
+    pub fn max_entries(&self) -> usize {
+        self.max_entries
+    }
+
+    /// Sets the maximum number of entries.
+    ///
+    /// If the current count exceeds the new maximum, oldest entries are removed.
+    pub fn set_max_entries(&mut self, max: usize) {
+        self.max_entries = max;
+        while self.entries.len() > self.max_entries {
+            self.entries.remove(0);
+        }
+    }
+
     /// Returns the history entries.
     pub fn entries(&self) -> &[String] {
         &self.entries

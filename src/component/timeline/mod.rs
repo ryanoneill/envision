@@ -457,6 +457,21 @@ impl TimelineState {
         self.show_labels
     }
 
+    /// Sets whether labels are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TimelineState;
+    ///
+    /// let mut state = TimelineState::new();
+    /// state.set_show_labels(false);
+    /// assert!(!state.show_labels());
+    /// ```
+    pub fn set_show_labels(&mut self, show: bool) {
+        self.show_labels = show;
+    }
+
     /// Returns the effective lane count (auto-computed if not set).
     pub fn effective_lane_count(&self) -> usize {
         if self.lane_count > 0 {

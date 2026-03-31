@@ -121,6 +121,22 @@ impl TreemapNode {
         self
     }
 
+    /// Sets the color for this node.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreemapNode;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut node = TreemapNode::new("data", 100.0);
+    /// node.set_color(Color::Red);
+    /// assert_eq!(node.color, Color::Red);
+    /// ```
+    pub fn set_color(&mut self, color: Color) {
+        self.color = color;
+    }
+
     /// Adds a single child node (builder pattern).
     ///
     /// # Example
@@ -555,9 +571,39 @@ impl TreemapState {
         self.show_labels
     }
 
+    /// Sets whether labels are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreemapState, TreemapNode};
+    ///
+    /// let mut state = TreemapState::new();
+    /// state.set_show_labels(false);
+    /// assert!(!state.show_labels());
+    /// ```
+    pub fn set_show_labels(&mut self, show: bool) {
+        self.show_labels = show;
+    }
+
     /// Returns whether values are shown.
     pub fn show_values(&self) -> bool {
         self.show_values
+    }
+
+    /// Sets whether values are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreemapState, TreemapNode};
+    ///
+    /// let mut state = TreemapState::new();
+    /// state.set_show_values(true);
+    /// assert!(state.show_values());
+    /// ```
+    pub fn set_show_values(&mut self, show: bool) {
+        self.show_values = show;
     }
 
     /// Returns the selected child index at the current zoom level.

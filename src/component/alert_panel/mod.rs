@@ -410,6 +410,36 @@ impl AlertPanelState {
         self.show_thresholds
     }
 
+    /// Sets whether sparklines are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AlertPanelState;
+    ///
+    /// let mut state = AlertPanelState::new();
+    /// state.set_show_sparklines(false);
+    /// assert!(!state.show_sparklines());
+    /// ```
+    pub fn set_show_sparklines(&mut self, show: bool) {
+        self.show_sparklines = show;
+    }
+
+    /// Sets whether threshold values are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AlertPanelState;
+    ///
+    /// let mut state = AlertPanelState::new();
+    /// state.set_show_thresholds(true);
+    /// assert!(state.show_thresholds());
+    /// ```
+    pub fn set_show_thresholds(&mut self, show: bool) {
+        self.show_thresholds = show;
+    }
+
     /// Returns true if the panel is focused.
     ///
     /// # Example

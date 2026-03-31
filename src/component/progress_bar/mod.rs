@@ -281,6 +281,51 @@ impl ProgressBarState {
         self.show_rate
     }
 
+    /// Sets whether the percentage is shown in the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_show_percentage(true);
+    /// assert!(state.show_percentage());
+    /// ```
+    pub fn set_show_percentage(&mut self, show: bool) {
+        self.show_percentage = show;
+    }
+
+    /// Sets whether the ETA is shown in the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_show_eta(true);
+    /// assert!(state.show_eta());
+    /// ```
+    pub fn set_show_eta(&mut self, show: bool) {
+        self.show_eta = show;
+    }
+
+    /// Sets whether the rate is shown in the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_show_rate(true);
+    /// assert!(state.show_rate());
+    /// ```
+    pub fn set_show_rate(&mut self, show: bool) {
+        self.show_rate = show;
+    }
+
     /// Returns the ETA as a `Duration`, if set.
     pub fn eta(&self) -> Option<Duration> {
         self.eta_millis.map(Duration::from_millis)

@@ -363,9 +363,40 @@ impl HistogramState {
         self.color
     }
 
+    /// Sets the bar color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = HistogramState::new();
+    /// state.set_color(Some(Color::Blue));
+    /// assert_eq!(state.color(), Some(Color::Blue));
+    /// ```
+    pub fn set_color(&mut self, color: Option<Color>) {
+        self.color = color;
+    }
+
     /// Returns whether count labels are shown on bars.
     pub fn show_counts(&self) -> bool {
         self.show_counts
+    }
+
+    /// Sets whether count labels are shown on bars.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    ///
+    /// let mut state = HistogramState::new();
+    /// state.set_show_counts(true);
+    /// assert!(state.show_counts());
+    /// ```
+    pub fn set_show_counts(&mut self, show: bool) {
+        self.show_counts = show;
     }
 
     /// Returns the effective minimum value.

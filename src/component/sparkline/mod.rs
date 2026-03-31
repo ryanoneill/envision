@@ -375,9 +375,40 @@ impl SparklineState {
         self.max_display_points
     }
 
+    /// Sets the maximum number of display points.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SparklineState;
+    ///
+    /// let mut state = SparklineState::new();
+    /// state.set_max_display_points(Some(100));
+    /// assert_eq!(state.max_display_points(), Some(100));
+    /// ```
+    pub fn set_max_display_points(&mut self, max: Option<usize>) {
+        self.max_display_points = max;
+    }
+
     /// Returns the color override, if set.
     pub fn color(&self) -> Option<Color> {
         self.color
+    }
+
+    /// Sets the color override.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SparklineState;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = SparklineState::new();
+    /// state.set_color(Some(Color::Green));
+    /// assert_eq!(state.color(), Some(Color::Green));
+    /// ```
+    pub fn set_color(&mut self, color: Option<Color>) {
+        self.color = color;
     }
 
     /// Returns true if the sparkline is disabled.

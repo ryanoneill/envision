@@ -446,6 +446,21 @@ impl CommandPaletteState {
         &self.placeholder
     }
 
+    /// Sets the placeholder text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{CommandPaletteState, PaletteItem};
+    ///
+    /// let mut state = CommandPaletteState::new(vec![]);
+    /// state.set_placeholder("Search commands...");
+    /// assert_eq!(state.placeholder(), "Search commands...");
+    /// ```
+    pub fn set_placeholder(&mut self, placeholder: impl Into<String>) {
+        self.placeholder = placeholder.into();
+    }
+
     /// Returns the maximum number of visible items.
     ///
     /// # Example
@@ -458,6 +473,21 @@ impl CommandPaletteState {
     /// ```
     pub fn max_visible(&self) -> usize {
         self.max_visible
+    }
+
+    /// Sets the maximum number of visible items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{CommandPaletteState, PaletteItem};
+    ///
+    /// let mut state = CommandPaletteState::new(vec![]);
+    /// state.set_max_visible(20);
+    /// assert_eq!(state.max_visible(), 20);
+    /// ```
+    pub fn set_max_visible(&mut self, max_visible: usize) {
+        self.max_visible = max_visible;
     }
 
     /// Returns the number of items matching the current query.

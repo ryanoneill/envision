@@ -335,6 +335,21 @@ impl NumberInputState {
         self.placeholder.as_deref()
     }
 
+    /// Sets the placeholder text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::NumberInputState;
+    ///
+    /// let mut state = NumberInputState::new(0.0);
+    /// state.set_placeholder("Enter a number...");
+    /// assert_eq!(state.placeholder(), Some("Enter a number..."));
+    /// ```
+    pub fn set_placeholder(&mut self, placeholder: impl Into<String>) {
+        self.placeholder = Some(placeholder.into());
+    }
+
     /// Returns the step size.
     pub fn step(&self) -> f64 {
         self.step

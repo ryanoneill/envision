@@ -357,6 +357,37 @@ impl LineInputState {
         self.disabled = disabled;
     }
 
+    /// Returns the maximum number of history entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new().with_max_history(50);
+    /// assert_eq!(state.max_history(), 50);
+    /// ```
+    pub fn max_history(&self) -> usize {
+        self.history.max_entries()
+    }
+
+    /// Sets the maximum number of history entries.
+    ///
+    /// If the current count exceeds the new maximum, oldest entries are removed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let mut state = LineInputState::new();
+    /// state.set_max_history(50);
+    /// assert_eq!(state.max_history(), 50);
+    /// ```
+    pub fn set_max_history(&mut self, max: usize) {
+        self.history.set_max_entries(max);
+    }
+
     /// Returns the history entries.
     pub fn history_entries(&self) -> &[String] {
         self.history.entries()
