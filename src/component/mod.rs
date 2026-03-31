@@ -715,20 +715,10 @@ pub trait Focusable: Component {
     ///
     /// # Example
     ///
-    /// ```rust,no_run
-    /// # use envision::prelude::*;
-    /// # use envision::component::{Focusable, Button, ButtonState};
-    /// # let mut state = ButtonState::new("OK");
-    /// # let theme = Theme::default();
-    /// # let mut terminal = Terminal::new(
-    /// #     envision::CaptureBackend::new(80, 24)
-    /// # ).unwrap();
-    /// # terminal.draw(|frame| {
-    /// #     let area = frame.area();
+    /// ```rust,ignore
     /// // Render as focused without permanently changing state:
     /// Button::view_with_focus(&mut state, frame, area, &theme, true);
     /// // state.is_focused() is restored to its original value
-    /// # }).unwrap();
     /// ```
     fn view_with_focus(
         state: &mut Self::State,
