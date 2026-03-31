@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-03-30
+
+### Breaking
+
+- **`#[non_exhaustive]` on all Output enums**: All 56 component Output
+  enums are now `#[non_exhaustive]`. Match expressions on Output types
+  must include a `_ => {}` wildcard arm. This prevents future variant
+  additions from being semver-breaking.
+
+- **`MultiProgressOutput::Selected(usize)`**: New variant emitted when
+  Enter is pressed on a focused item. Code exhaustively matching on
+  `MultiProgressOutput` will need updating.
+
+### Added
+
+- **`Focusable::view_with_focus()`**: Render with focus temporarily
+  overridden without cloning state. Requires `&mut State`; intended for
+  testing and non-TEA contexts.
+
+- **`Disableable::view_with_disabled()`**: Same pattern for disabled state.
+
+- **Safe mutation APIs**: `update_item()`, `push_item()`, `remove_item()`
+  on SelectableList and SearchableList that maintain filter indices.
+  `update_tab()` on TabBar, `update_root()` on Tree,
+  `update_last_message()` and `update_message()` on ConversationView.
+  All no-op on out-of-bounds indices instead of panicking.
+
+- **Tier 1 `_mut()` accessors**: Direct mutable collection access on
+  simple data containers (Timeline, Histogram, Heatmap, HelpPanel,
+  AlertPanel, DependencyGraph, SpanTree, FlameGraph, EventStream).
+
+- **`ConversationMessage::set_blocks()`** and **`blocks_mut()`** for
+  streaming LLM output — update blocks in place without rebuilding.
+
+- **`MultiProgressState::selected()`**, **`selected_item()`**,
+  **`set_selected()`**: Proper selection tracking independent of
+  scroll viewport.
+
+- **50+ missing setters**: `set_placeholder()`, `set_max_*()`,
+  `set_color()`, `set_show_*()`, `set_orientation()`, `set_title()`
+  on 26 components.
+
+### Changed
+
+- **`MultiProgress` selection model**: Up/Down now moves a dedicated
+  `selected` index (with viewport tracking) instead of scroll_offset.
+  `Selected(usize)` emits the actual selected item index.
+
+- **`update_item()` refilters**: SelectableList and SearchableList
+  `update_item()` now re-applies the active filter after mutation,
+  maintaining filtered_indices consistency.
+
+- **`set_max_*` eviction adjusts scroll**: All `set_max_events()`,
+  `set_max_messages()`, `set_max_entries()`, `set_max_lines()` methods
+  now update scroll state after evicting items.
+
+### Removed
+
+- **`ConversationViewState::messages_mut()`**: Replaced by safe
+  `update_message()` and `update_last_message()` which preserve
+  scroll position and collapsed block state.
+
+### Fixed
+
+- **StatusLog `set_max_entries()`** now evicts oldest entries when
+  reducing capacity (was a no-op before).
+
 ## [0.8.0] - 2026-03-30
 
 ### Added
@@ -556,7 +623,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renders to both a real terminal and CaptureBackend
   - Useful for visual debugging while testing
 
-[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/ryanoneill/envision/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/ryanoneill/envision/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/ryanoneill/envision/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/ryanoneill/envision/compare/v0.5.0...v0.6.0
