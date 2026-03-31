@@ -332,6 +332,8 @@ impl HelpPanelState {
     ///     ]);
     /// assert_eq!(state.groups_mut().len(), 1);
     /// ```
+    /// **Note**: After modifying the collection, the scrollbar may be inaccurate
+    /// until the next render. Prefer dedicated methods (e.g., `push_event()`) when available.
     pub fn groups_mut(&mut self) -> &mut Vec<KeyBindingGroup> {
         &mut self.groups
     }

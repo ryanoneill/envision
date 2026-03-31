@@ -152,6 +152,7 @@ impl Eq for DiffViewerMessage {}
 
 /// Output messages from a DiffViewer.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum DiffViewerOutput {
     /// The current hunk index changed.
     HunkChanged(usize),

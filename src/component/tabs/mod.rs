@@ -54,6 +54,7 @@ pub enum TabsMessage {
 
 /// Output messages from a Tabs component.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum TabsOutput<T: Clone> {
     /// The selected tab changed.
     Selected(T),

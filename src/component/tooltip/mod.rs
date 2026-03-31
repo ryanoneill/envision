@@ -80,6 +80,7 @@ pub enum TooltipMessage {
 
 /// Output messages from a Tooltip component.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum TooltipOutput {
     /// Tooltip was shown.
     Shown,

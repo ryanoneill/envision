@@ -106,6 +106,7 @@ pub enum SpanTreeMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
+#[non_exhaustive]
 pub enum SpanTreeOutput {
     /// A span was selected. Contains the span id.
     Selected(String),
@@ -308,6 +309,8 @@ impl SpanTreeState {
     /// state.roots_mut()[0].set_color(Color::Red);
     /// assert_eq!(state.roots()[0].color(), Color::Red);
     /// ```
+    /// **Note**: After modifying the collection, the scrollbar may be inaccurate
+    /// until the next render. Prefer dedicated methods (e.g., `push_event()`) when available.
     pub fn roots_mut(&mut self) -> &mut Vec<SpanNode> {
         &mut self.roots
     }

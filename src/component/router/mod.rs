@@ -88,6 +88,7 @@ pub enum RouterMessage<S: Clone + PartialEq> {
 
 /// Output messages from the Router component.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum RouterOutput<S: Clone + PartialEq> {
     /// Screen changed (from, to).
     ScreenChanged {

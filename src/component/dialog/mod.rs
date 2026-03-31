@@ -107,6 +107,7 @@ pub enum DialogMessage {
 
 /// Output messages from a Dialog component.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum DialogOutput {
     /// A button was pressed (returns the button id).
     ButtonPressed(String),

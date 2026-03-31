@@ -74,6 +74,7 @@ pub enum SplitPanelMessage {
 
 /// Output messages from a SplitPanel.
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum SplitPanelOutput {
     /// Focus changed to the first pane.
     FocusedFirst,

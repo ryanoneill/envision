@@ -59,6 +59,7 @@ pub enum ProgressBarMessage {
 
 /// Output messages from a ProgressBar.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum ProgressBarOutput {
     /// Progress reached 100%.
     Completed,

@@ -73,6 +73,7 @@ pub enum SliderMessage {
 
 /// Output messages from a Slider.
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum SliderOutput {
     /// The slider value changed. Contains the new value.
     ValueChanged(f64),

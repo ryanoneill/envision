@@ -401,6 +401,8 @@ impl EventStreamState {
     /// state.events_mut().retain(|e| e.level == EventLevel::Warning);
     /// assert_eq!(state.event_count(), 1);
     /// ```
+    /// **Note**: After modifying the collection, the scrollbar may be inaccurate
+    /// until the next render. Prefer dedicated methods (e.g., `push_event()`) when available.
     pub fn events_mut(&mut self) -> &mut Vec<StreamEvent> {
         &mut self.events
     }

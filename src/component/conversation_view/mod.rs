@@ -79,6 +79,7 @@ pub enum ConversationViewMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
+#[non_exhaustive]
 pub enum ConversationViewOutput {
     /// The scroll position changed.
     ScrollChanged {

@@ -54,6 +54,7 @@ pub enum RadioGroupMessage {
 
 /// Output messages from a RadioGroup.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum RadioGroupOutput<T: Clone> {
     /// The selection changed to a new value.
     Selected(T),

@@ -243,6 +243,7 @@ pub enum MultiProgressMessage {
 
 /// Output messages from MultiProgress.
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum MultiProgressOutput {
     /// An item was added.
     Added(String),
@@ -271,6 +272,8 @@ pub struct MultiProgressState {
     max_visible: usize,
     /// Scroll offset.
     scroll_offset: usize,
+    /// Currently selected item index.
+    selected: Option<usize>,
     /// Whether to auto-remove completed items.
     auto_remove_completed: bool,
     /// Whether the component is focused.
@@ -289,6 +292,7 @@ impl Default for MultiProgressState {
             items: Vec::new(),
             max_visible: 8,
             scroll_offset: 0,
+            selected: None,
             auto_remove_completed: false,
             focused: false,
             disabled: false,
@@ -393,6 +397,9 @@ impl MultiProgressState {
             return false;
         }
         self.items.push(ProgressItem::new(id, label));
+        if self.selected.is_none() {
+            self.selected = Some(0);
+        }
         true
     }
 
@@ -629,6 +636,21 @@ impl MultiProgressState {
     /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll_offset
+    }
+
+    /// Returns the currently selected item index.
+    pub fn selected(&self) -> Option<usize> {
+        self.selected
+    }
+
+    /// Returns a reference to the currently selected item.
+    pub fn selected_item(&self) -> Option<&ProgressItem> {
+        self.selected.and_then(|i| self.items.get(i))
+    }
+
+    /// Sets the selected item index. Clamped to valid range.
+    pub fn set_selected(&mut self, index: Option<usize>) {
+        self.selected = index.map(|i| i.min(self.items.len().saturating_sub(1)));
     }
 
     /// Sets the scroll offset.
@@ -889,34 +911,59 @@ impl Component for MultiProgress {
             }
 
             MultiProgressMessage::Select => {
-                if !state.items.is_empty() {
-                    let index = state.scroll_offset.min(state.items.len().saturating_sub(1));
-                    return Some(MultiProgressOutput::Selected(index));
+                if let Some(index) = state.selected {
+                    if index < state.items.len() {
+                        return Some(MultiProgressOutput::Selected(index));
+                    }
                 }
                 None
             }
 
             MultiProgressMessage::ScrollUp => {
-                if state.scroll_offset > 0 {
-                    state.scroll_offset -= 1;
+                let current = state.selected.unwrap_or(0);
+                if current > 0 {
+                    state.selected = Some(current - 1);
+                    // Adjust scroll to keep selection visible
+                    if state.selected.unwrap_or(0) < state.scroll_offset {
+                        state.scroll_offset = state.selected.unwrap_or(0);
+                    }
                 }
                 None
             }
 
             MultiProgressMessage::ScrollDown => {
-                if state.scroll_offset < state.items.len().saturating_sub(1) {
-                    state.scroll_offset += 1;
+                let current = state.selected.unwrap_or(0);
+                let max = state.items.len().saturating_sub(1);
+                if current < max {
+                    state.selected = Some(current + 1);
+                    // Adjust scroll to keep selection visible
+                    let sel = state.selected.unwrap_or(0);
+                    if sel >= state.scroll_offset + state.max_visible {
+                        state.scroll_offset =
+                            sel.saturating_sub(state.max_visible.saturating_sub(1));
+                    }
                 }
                 None
             }
 
             MultiProgressMessage::ScrollToTop => {
+                state.selected = if state.items.is_empty() {
+                    None
+                } else {
+                    Some(0)
+                };
                 state.scroll_offset = 0;
                 None
             }
 
             MultiProgressMessage::ScrollToBottom => {
-                state.scroll_offset = state.items.len().saturating_sub(1);
+                let last = state.items.len().saturating_sub(1);
+                state.selected = if state.items.is_empty() {
+                    None
+                } else {
+                    Some(last)
+                };
+                state.scroll_offset = state.items.len().saturating_sub(state.max_visible);
                 None
             }
         }

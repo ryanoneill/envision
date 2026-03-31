@@ -120,6 +120,7 @@ pub enum EventStreamMessage {
 
 /// Output messages from an EventStream.
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum EventStreamOutput {
     /// An event was added (includes event ID).
     EventAdded(u64),

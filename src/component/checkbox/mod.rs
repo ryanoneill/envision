@@ -48,6 +48,7 @@ pub enum CheckboxMessage {
 
 /// Output messages from a Checkbox.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum CheckboxOutput {
     /// The checkbox was toggled. Contains the new checked state.
     Toggled(bool),
