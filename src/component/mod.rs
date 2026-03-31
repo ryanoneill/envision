@@ -709,9 +709,16 @@ pub trait Focusable: Component {
 
     /// Renders the component with focus temporarily overridden.
     ///
-    /// This avoids the need to clone state just to change the focus flag
-    /// before rendering. The focus state is set before rendering and
-    /// restored after, using `&mut State`.
+    /// Temporarily sets the focus flag, renders, and restores it. Useful
+    /// in testing and non-TEA contexts where you have `&mut State`.
+    ///
+    /// # TEA note
+    ///
+    /// In standard TEA, `App::view()` receives `&State` (immutable), so
+    /// this method **cannot** be called from within a TEA view function.
+    /// Instead, set focus during the update phase (e.g., in response to
+    /// focus-change events) where you have `&mut State`. The view function
+    /// will then read the correct focus state automatically.
     ///
     /// # Panics
     ///
@@ -721,7 +728,7 @@ pub trait Focusable: Component {
     /// # Example
     ///
     /// ```rust,ignore
-    /// // Render as focused without permanently changing state:
+    /// // In tests or non-TEA code where you have &mut State:
     /// Button::view_with_focus(&mut state, frame, area, &theme, true);
     /// // state.is_focused() is restored to its original value
     /// ```
@@ -867,9 +874,15 @@ pub trait Disableable: Component {
 
     /// Renders the component with the disabled state temporarily overridden.
     ///
-    /// This avoids the need to clone state just to change the disabled flag
-    /// before rendering. The disabled state is set before rendering and
-    /// restored after, using `&mut State`.
+    /// Temporarily sets the disabled flag, renders, and restores it. Useful
+    /// in testing and non-TEA contexts where you have `&mut State`.
+    ///
+    /// # TEA note
+    ///
+    /// In standard TEA, `App::view()` receives `&State` (immutable), so
+    /// this method **cannot** be called from within a TEA view function.
+    /// Instead, set the disabled state during the update phase where you
+    /// have `&mut State`.
     ///
     /// # Panics
     ///
@@ -877,7 +890,7 @@ pub trait Disableable: Component {
     /// This is generally not a concern since panics in view indicate a bug.
     ///
     /// ```rust,ignore
-    /// // Render as disabled without permanently changing state:
+    /// // In tests or non-TEA code where you have &mut State:
     /// Button::view_with_disabled(&mut state, frame, area, &theme, true);
     /// ```
     fn view_with_disabled(
