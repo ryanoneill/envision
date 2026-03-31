@@ -653,7 +653,12 @@ impl MultiProgressState {
         self.selected = index.map(|i| i.min(self.items.len().saturating_sub(1)));
     }
 
-    /// Sets the scroll offset.
+    /// Sets the viewport scroll offset.
+    ///
+    /// This controls which items are visible in the viewport, independent
+    /// of which item is selected. Use [`set_selected`](Self::set_selected)
+    /// to change the highlighted item. Keyboard navigation (Up/Down)
+    /// adjusts both selection and scroll together.
     ///
     /// # Example
     ///
