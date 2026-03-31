@@ -539,6 +539,30 @@ impl TabBarState {
         self.focused = focused;
     }
 
+    /// Updates a tab at the given index via a closure.
+    ///
+    /// No-ops if the index is out of bounds. This is safe because
+    /// it does not change the number of tabs or their positions,
+    /// so the active index remains valid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![
+    ///     Tab::new("a", "Alpha"),
+    ///     Tab::new("b", "Beta"),
+    /// ]);
+    /// state.update_tab(1, |tab| tab.set_modified(true));
+    /// assert!(state.tabs()[1].modified());
+    /// ```
+    pub fn update_tab(&mut self, index: usize, f: impl FnOnce(&mut Tab)) {
+        if let Some(tab) = self.tabs.get_mut(index) {
+            f(tab);
+        }
+    }
+
     /// Replaces all tabs, clamping or clearing the active index.
     ///
     /// # Example

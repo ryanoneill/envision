@@ -403,6 +403,24 @@ impl HeatmapState {
         &self.data
     }
 
+    /// Returns a mutable reference to the 2D data grid.
+    ///
+    /// This is safe because the heatmap has no derived indices or
+    /// filter state; color mapping is computed on each render.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HeatmapState;
+    ///
+    /// let mut state = HeatmapState::with_data(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
+    /// state.data_mut()[0][1] = 10.0;
+    /// assert_eq!(state.get(0, 1), Some(10.0));
+    /// ```
+    pub fn data_mut(&mut self) -> &mut Vec<Vec<f64>> {
+        &mut self.data
+    }
+
     /// Returns the number of rows.
     ///
     /// # Example

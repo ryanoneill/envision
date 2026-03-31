@@ -383,6 +383,28 @@ impl EventStreamState {
         &self.events
     }
 
+    /// Returns a mutable reference to the events.
+    ///
+    /// After modifying the events through this reference, the scroll
+    /// content length should be updated. Call
+    /// [`set_auto_scroll`](Self::set_auto_scroll) or push a new event
+    /// to trigger a scroll recalculation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{EventLevel, EventStreamState};
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.push_event(EventLevel::Info, "hello");
+    /// state.push_event(EventLevel::Warning, "warn");
+    /// state.events_mut().retain(|e| e.level == EventLevel::Warning);
+    /// assert_eq!(state.event_count(), 1);
+    /// ```
+    pub fn events_mut(&mut self) -> &mut Vec<StreamEvent> {
+        &mut self.events
+    }
+
     /// Returns the total number of events.
     ///
     /// # Example

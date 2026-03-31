@@ -350,6 +350,59 @@ impl ConversationViewState {
         self.messages.last_mut()
     }
 
+    /// Updates the last message via a closure.
+    ///
+    /// No-ops if the conversation is empty. This provides a safe way
+    /// to modify a streaming message without exposing the internal
+    /// vector.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{
+    ///     ConversationViewState, ConversationMessage, ConversationRole, MessageBlock,
+    /// };
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.push_assistant("Thinking...");
+    /// state.update_last_message(|msg| {
+    ///     msg.push_block(MessageBlock::code("let x = 1;", Some("rust")));
+    /// });
+    /// assert_eq!(state.messages()[0].blocks().len(), 2);
+    /// ```
+    pub fn update_last_message(&mut self, f: impl FnOnce(&mut ConversationMessage)) {
+        if let Some(msg) = self.messages.last_mut() {
+            f(msg);
+        }
+    }
+
+    /// Updates a message at the given index via a closure.
+    ///
+    /// No-ops if the index is out of bounds. This is safe because it
+    /// does not change the number of messages, so scroll state
+    /// remains valid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{
+    ///     ConversationViewState, ConversationMessage, ConversationRole, MessageBlock,
+    /// };
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.push_user("Hello");
+    /// state.push_assistant("Hi there");
+    /// state.update_message(1, |msg| {
+    ///     msg.push_block(MessageBlock::text(" - updated"));
+    /// });
+    /// assert_eq!(state.messages()[1].blocks().len(), 2);
+    /// ```
+    pub fn update_message(&mut self, index: usize, f: impl FnOnce(&mut ConversationMessage)) {
+        if let Some(msg) = self.messages.get_mut(index) {
+            f(msg);
+        }
+    }
+
     /// Clears all messages.
     ///
     /// # Example

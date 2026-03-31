@@ -361,9 +361,86 @@ impl<T: Clone> SelectableListState<T> {
     pub fn visible_count(&self) -> usize {
         self.filtered_indices.len()
     }
+
+    /// Updates an item at the given index via a closure.
+    ///
+    /// No-ops if the index is out of bounds. This is safe because it
+    /// does not change the number of items or their positions, so
+    /// filter indices and selection remain valid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectableListState;
+    ///
+    /// let mut state = SelectableListState::new(vec!["apple".to_string(), "banana".to_string()]);
+    /// state.update_item(0, |item| *item = "APPLE".to_string());
+    /// assert_eq!(state.items()[0], "APPLE");
+    /// ```
+    pub fn update_item(&mut self, index: usize, f: impl FnOnce(&mut T)) {
+        if let Some(item) = self.items.get_mut(index) {
+            f(item);
+        }
+    }
 }
 
 impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
+    /// Pushes an item and updates filter indices.
+    ///
+    /// The new item is appended to the end of the list. If a filter is
+    /// active, the item is checked against it and only added to the
+    /// visible set if it matches.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectableListState;
+    ///
+    /// let mut state = SelectableListState::new(vec!["apple".to_string()]);
+    /// state.push_item("banana".to_string());
+    /// assert_eq!(state.len(), 2);
+    /// assert_eq!(state.items()[1], "banana");
+    /// ```
+    pub fn push_item(&mut self, item: T) {
+        self.items.push(item);
+        self.apply_filter();
+    }
+
+    /// Removes an item by index and updates filter indices and selection.
+    ///
+    /// Returns the removed item, or `None` if the index is out of bounds.
+    /// Selection is adjusted to remain valid after removal.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectableListState;
+    ///
+    /// let mut state = SelectableListState::new(vec![
+    ///     "apple".to_string(), "banana".to_string(), "cherry".to_string(),
+    /// ]);
+    /// let removed = state.remove_item(1);
+    /// assert_eq!(removed, Some("banana".to_string()));
+    /// assert_eq!(state.len(), 2);
+    /// assert_eq!(state.items(), &["apple".to_string(), "cherry".to_string()]);
+    /// ```
+    pub fn remove_item(&mut self, index: usize) -> Option<T> {
+        if index >= self.items.len() {
+            return None;
+        }
+        let item = self.items.remove(index);
+        // Adjust selection if needed
+        if let Some(sel) = self.list_state.selected() {
+            if let Some(&orig_idx) = self.filtered_indices.get(sel) {
+                if orig_idx >= self.items.len() {
+                    // Selected item was at or past the end; will be fixed by apply_filter
+                }
+            }
+        }
+        self.apply_filter();
+        Some(item)
+    }
+
     /// Returns true if the selectable list is focused.
     ///
     /// # Examples

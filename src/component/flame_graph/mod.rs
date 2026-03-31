@@ -250,6 +250,29 @@ impl FlameGraphState {
         self.root.as_ref()
     }
 
+    /// Returns a mutable reference to the root frame, if any.
+    ///
+    /// This is safe because the flame node tree is simple data.
+    /// The zoom stack references nodes by label, so mutating node
+    /// values or children does not corrupt navigation state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FlameGraphState, FlameNode};
+    /// use ratatui::style::Color;
+    ///
+    /// let root = FlameNode::new("main()", 500);
+    /// let mut state = FlameGraphState::with_root(root);
+    /// if let Some(r) = state.root_mut() {
+    ///     *r = r.clone().with_color(Color::Red);
+    /// }
+    /// assert!(state.root().is_some());
+    /// ```
+    pub fn root_mut(&mut self) -> Option<&mut FlameNode> {
+        self.root.as_mut()
+    }
+
     /// Sets the root frame.
     ///
     /// Resets zoom and selection state.

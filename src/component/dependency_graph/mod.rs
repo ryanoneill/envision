@@ -304,6 +304,26 @@ impl DependencyGraphState {
         &self.nodes
     }
 
+    /// Returns a mutable reference to all nodes.
+    ///
+    /// This is safe because nodes are simple data containers.
+    /// Selection is index-based and edges reference nodes by id,
+    /// not by position.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DependencyGraphState, GraphNode, NodeStatus};
+    ///
+    /// let mut state = DependencyGraphState::new()
+    ///     .with_node(GraphNode::new("api", "API Gateway"));
+    /// state.nodes_mut()[0].status = NodeStatus::Degraded;
+    /// assert_eq!(state.nodes()[0].status, NodeStatus::Degraded);
+    /// ```
+    pub fn nodes_mut(&mut self) -> &mut Vec<GraphNode> {
+        &mut self.nodes
+    }
+
     /// Returns all edges.
     ///
     /// # Example
@@ -316,6 +336,27 @@ impl DependencyGraphState {
     /// ```
     pub fn edges(&self) -> &[GraphEdge] {
         &self.edges
+    }
+
+    /// Returns a mutable reference to all edges.
+    ///
+    /// This is safe because edges are simple data containers with
+    /// no derived indices or filter state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DependencyGraphState, GraphNode, GraphEdge};
+    ///
+    /// let mut state = DependencyGraphState::new()
+    ///     .with_node(GraphNode::new("a", "A"))
+    ///     .with_node(GraphNode::new("b", "B"))
+    ///     .with_edge(GraphEdge::new("a", "b").with_label("calls"));
+    /// state.edges_mut()[0] = GraphEdge::new("a", "b").with_label("depends on");
+    /// assert_eq!(state.edges()[0].label.as_deref(), Some("depends on"));
+    /// ```
+    pub fn edges_mut(&mut self) -> &mut Vec<GraphEdge> {
+        &mut self.edges
     }
 
     /// Returns the selected node index.

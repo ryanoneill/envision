@@ -333,6 +333,30 @@ impl<T: Clone> TreeState<T> {
         &mut self.roots
     }
 
+    /// Updates a root node at the given index via a closure.
+    ///
+    /// No-ops if the index is out of bounds. This is safe because it
+    /// does not change the number of root nodes or their positions,
+    /// so selection and filter state remain valid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreeState, TreeNode};
+    ///
+    /// let mut state = TreeState::new(vec![
+    ///     TreeNode::new("Root 1", 1),
+    ///     TreeNode::new("Root 2", 2),
+    /// ]);
+    /// state.update_root(0, |root| root.set_label("Updated Root"));
+    /// assert_eq!(state.roots()[0].label(), "Updated Root");
+    /// ```
+    pub fn update_root(&mut self, index: usize, f: impl FnOnce(&mut TreeNode<T>)) {
+        if let Some(root) = self.roots.get_mut(index) {
+            f(root);
+        }
+    }
+
     /// Sets the root nodes.
     ///
     /// Resets selection to the first node, or `None` if the new roots are empty.
