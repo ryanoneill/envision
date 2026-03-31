@@ -477,8 +477,9 @@ impl LogViewerState {
     /// ```
     pub fn set_max_entries(&mut self, max: usize) {
         self.max_entries = max;
-        while self.entries.len() > self.max_entries {
-            self.entries.remove(0);
+        if self.entries.len() > max {
+            let excess = self.entries.len() - max;
+            self.entries.drain(..excess);
         }
     }
 
@@ -746,8 +747,9 @@ impl LogViewerState {
     /// Sets the maximum search history size.
     pub fn set_max_history(&mut self, max: usize) {
         self.max_history = max;
-        while self.search_history.len() > self.max_history {
-            self.search_history.remove(0);
+        if self.search_history.len() > max {
+            let excess = self.search_history.len() - max;
+            self.search_history.drain(..excess);
         }
     }
 

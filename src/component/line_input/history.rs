@@ -134,8 +134,9 @@ impl History {
     /// If the current count exceeds the new maximum, oldest entries are removed.
     pub fn set_max_entries(&mut self, max: usize) {
         self.max_entries = max;
-        while self.entries.len() > self.max_entries {
-            self.entries.remove(0);
+        if self.entries.len() > max {
+            let excess = self.entries.len() - max;
+            self.entries.drain(..excess);
         }
     }
 
@@ -262,5 +263,32 @@ mod tests {
         assert!(h.is_browsing());
         h.exit_browse();
         assert!(!h.is_browsing());
+    }
+
+    #[test]
+    fn test_set_max_entries_evicts_oldest() {
+        let mut h = History::new(10);
+        h.push("a".to_string());
+        h.push("b".to_string());
+        h.push("c".to_string());
+        h.push("d".to_string());
+        h.push("e".to_string());
+        assert_eq!(h.count(), 5);
+
+        h.set_max_entries(2);
+        assert_eq!(h.count(), 2);
+        assert_eq!(h.entries()[0], "d");
+        assert_eq!(h.entries()[1], "e");
+    }
+
+    #[test]
+    fn test_set_max_entries_no_eviction_when_under_limit() {
+        let mut h = History::new(10);
+        h.push("a".to_string());
+        h.push("b".to_string());
+        assert_eq!(h.count(), 2);
+
+        h.set_max_entries(10);
+        assert_eq!(h.count(), 2);
     }
 }

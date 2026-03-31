@@ -432,6 +432,9 @@ impl StatusLogState {
 
     /// Sets the maximum number of entries.
     ///
+    /// If the current count exceeds the new maximum, the oldest entries are
+    /// removed to bring the count within the limit.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -443,6 +446,10 @@ impl StatusLogState {
     /// ```
     pub fn set_max_entries(&mut self, max: usize) {
         self.max_entries = max;
+        if self.entries.len() > max {
+            let excess = self.entries.len() - max;
+            self.entries.drain(..excess);
+        }
     }
 
     /// Returns whether timestamps are shown.

@@ -203,6 +203,17 @@ fn test_set_max_messages() {
     assert_eq!(state.messages()[0].content(), "b");
 }
 
+#[test]
+fn test_set_max_messages_no_eviction_when_under_limit() {
+    let mut state = ChatViewState::new();
+    state.push_user("a");
+    state.push_user("b");
+    assert_eq!(state.message_count(), 2);
+
+    state.set_max_messages(10);
+    assert_eq!(state.message_count(), 2);
+}
+
 // =============================================================================
 // Input editing
 // =============================================================================

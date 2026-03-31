@@ -184,6 +184,45 @@ fn test_set_max_entries_evicts() {
     assert_eq!(state.entries()[0].message(), "b");
 }
 
+#[test]
+fn test_set_max_entries_no_eviction_when_under_limit() {
+    let mut state = LogViewerState::new();
+    state.push_info("a");
+    state.push_info("b");
+    assert_eq!(state.len(), 2);
+
+    state.set_max_entries(10);
+    assert_eq!(state.len(), 2);
+}
+
+#[test]
+fn test_set_max_history_evicts_oldest() {
+    let mut state = LogViewerState::new();
+    state.search_history = vec![
+        "a".to_string(),
+        "b".to_string(),
+        "c".to_string(),
+        "d".to_string(),
+        "e".to_string(),
+    ];
+    assert_eq!(state.search_history().len(), 5);
+
+    state.set_max_history(2);
+    assert_eq!(state.search_history().len(), 2);
+    assert_eq!(state.search_history()[0], "d");
+    assert_eq!(state.search_history()[1], "e");
+}
+
+#[test]
+fn test_set_max_history_no_eviction_when_under_limit() {
+    let mut state = LogViewerState::new();
+    state.search_history = vec!["a".to_string(), "b".to_string()];
+    assert_eq!(state.search_history().len(), 2);
+
+    state.set_max_history(10);
+    assert_eq!(state.search_history().len(), 2);
+}
+
 // =============================================================================
 // Filtering
 // =============================================================================

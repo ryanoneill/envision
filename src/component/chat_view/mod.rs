@@ -458,8 +458,9 @@ impl ChatViewState {
     /// ```
     pub fn set_max_messages(&mut self, max: usize) {
         self.max_messages = max;
-        while self.messages.len() > self.max_messages {
-            self.messages.remove(0);
+        if self.messages.len() > max {
+            let excess = self.messages.len() - max;
+            self.messages.drain(..excess);
         }
     }
 

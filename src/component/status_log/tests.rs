@@ -194,6 +194,34 @@ fn test_set_max_entries() {
     assert_eq!(state.max_entries(), 10);
 }
 
+#[test]
+fn test_set_max_entries_evicts_oldest() {
+    let mut state = StatusLogState::new();
+    state.info("a");
+    state.info("b");
+    state.info("c");
+    state.info("d");
+    state.info("e");
+    assert_eq!(state.len(), 5);
+
+    state.set_max_entries(2);
+    assert_eq!(state.len(), 2);
+    // Oldest entries removed, newest kept
+    assert_eq!(state.entries()[0].message(), "d");
+    assert_eq!(state.entries()[1].message(), "e");
+}
+
+#[test]
+fn test_set_max_entries_no_eviction_when_under_limit() {
+    let mut state = StatusLogState::new();
+    state.info("a");
+    state.info("b");
+    assert_eq!(state.len(), 2);
+
+    state.set_max_entries(10);
+    assert_eq!(state.len(), 2);
+}
+
 // ========================================
 // Accessor Tests
 // ========================================

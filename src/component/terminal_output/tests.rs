@@ -772,3 +772,30 @@ fn test_annotation_focused() {
     assert_eq!(regions.len(), 1);
     assert!(regions[0].annotation.focused);
 }
+
+#[test]
+fn test_set_max_lines_evicts_oldest() {
+    let mut state = TerminalOutputState::new();
+    state.push_line("a");
+    state.push_line("b");
+    state.push_line("c");
+    state.push_line("d");
+    state.push_line("e");
+    assert_eq!(state.line_count(), 5);
+
+    state.set_max_lines(2);
+    assert_eq!(state.line_count(), 2);
+    assert_eq!(state.lines()[0], "d");
+    assert_eq!(state.lines()[1], "e");
+}
+
+#[test]
+fn test_set_max_lines_no_eviction_when_under_limit() {
+    let mut state = TerminalOutputState::new();
+    state.push_line("a");
+    state.push_line("b");
+    assert_eq!(state.line_count(), 2);
+
+    state.set_max_lines(10);
+    assert_eq!(state.line_count(), 2);
+}
