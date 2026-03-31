@@ -45,6 +45,7 @@ pub enum ButtonMessage {
 
 /// Output messages from a Button.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum ButtonOutput {
     /// The button was pressed.
     Pressed,

@@ -295,6 +295,7 @@ pub enum TreemapMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
+#[non_exhaustive]
 pub enum TreemapOutput {
     /// A node was confirmed/selected.
     NodeSelected {

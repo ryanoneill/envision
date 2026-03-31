@@ -69,6 +69,7 @@ impl App for ChatApp {
                     }
                 }
                 LineInputOutput::Changed(_) | LineInputOutput::Copied(_) => {}
+                _ => {}
             },
             Msg::Quit => return Command::quit(),
         }

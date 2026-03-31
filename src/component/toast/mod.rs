@@ -127,6 +127,7 @@ pub enum ToastMessage {
 
 /// Output messages from a Toast component.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum ToastOutput {
     /// A toast was added (returns ID).
     Added(u64),

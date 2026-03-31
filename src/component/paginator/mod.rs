@@ -97,6 +97,7 @@ pub enum PaginatorMessage {
 
 /// Output messages from a Paginator.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum PaginatorOutput {
     /// The current page changed. Contains the new page index (0-indexed).
     PageChanged(usize),

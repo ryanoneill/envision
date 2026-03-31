@@ -55,6 +55,7 @@ use crate::theme::Theme;
 
 /// Messages that can be sent to a TerminalOutput component.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum TerminalOutputMessage {
     /// Push a new line of output.
     PushLine(String),
@@ -86,6 +87,7 @@ pub enum TerminalOutputMessage {
 
 /// Output messages from a TerminalOutput component.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum TerminalOutputOutput {
     /// The scroll position changed.
     ScrollChanged(usize),

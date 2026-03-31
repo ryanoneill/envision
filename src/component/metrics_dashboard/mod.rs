@@ -69,6 +69,7 @@ pub enum MetricsDashboardMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
+#[non_exhaustive]
 pub enum MetricsDashboardOutput {
     /// The selected widget changed.
     SelectionChanged(usize),

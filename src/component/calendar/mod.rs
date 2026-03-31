@@ -179,6 +179,7 @@ pub enum CalendarMessage {
 
 /// Output messages from a Calendar.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum CalendarOutput {
     /// A date was confirmed (Enter/Space pressed on selected day).
     DateSelected(i32, u32, u32),

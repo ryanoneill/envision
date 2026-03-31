@@ -61,6 +61,7 @@ pub enum NumberInputMessage {
 
 /// Output messages from a NumberInput.
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum NumberInputOutput {
     /// The numeric value changed. Contains the new value.
     ValueChanged(f64),

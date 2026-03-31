@@ -212,6 +212,7 @@ impl App for ChatMarkdownApp {
                     }
                 }
                 TextAreaOutput::Changed(_) | TextAreaOutput::Copied(_) => {}
+                _ => {}
             },
             Msg::SubmitInput => {
                 let text = state.input.value();
