@@ -406,6 +406,17 @@ fn test_set_max_messages() {
 }
 
 #[test]
+fn test_set_max_messages_no_eviction_when_under_limit() {
+    let mut state = ConversationViewState::new();
+    state.push_user("a");
+    state.push_user("b");
+    assert_eq!(state.message_count(), 2);
+
+    state.set_max_messages(10);
+    assert_eq!(state.message_count(), 2);
+}
+
+#[test]
 fn test_last_message_mut() {
     let mut state = ConversationViewState::new();
     state.push_assistant("Starting...");

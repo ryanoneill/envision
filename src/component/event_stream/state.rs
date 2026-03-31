@@ -500,8 +500,9 @@ impl EventStreamState {
     /// ```
     pub fn set_max_events(&mut self, max: usize) {
         self.max_events = max;
-        while self.events.len() > self.max_events {
-            self.events.remove(0);
+        if self.events.len() > max {
+            let excess = self.events.len() - max;
+            self.events.drain(..excess);
         }
     }
 

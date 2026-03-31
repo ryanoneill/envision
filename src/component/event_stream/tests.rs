@@ -896,3 +896,30 @@ fn test_search_cursor_navigation() {
     EventStream::update(&mut state, EventStreamMessage::SearchBackspace);
     assert_eq!(state.filter_text(), "b");
 }
+
+#[test]
+fn test_set_max_events_evicts_oldest() {
+    let mut state = EventStreamState::new();
+    state.push_event(EventLevel::Info, "a");
+    state.push_event(EventLevel::Info, "b");
+    state.push_event(EventLevel::Info, "c");
+    state.push_event(EventLevel::Info, "d");
+    state.push_event(EventLevel::Info, "e");
+    assert_eq!(state.events().len(), 5);
+
+    state.set_max_events(2);
+    assert_eq!(state.events().len(), 2);
+    assert_eq!(state.events()[0].message, "d");
+    assert_eq!(state.events()[1].message, "e");
+}
+
+#[test]
+fn test_set_max_events_no_eviction_when_under_limit() {
+    let mut state = EventStreamState::new();
+    state.push_event(EventLevel::Info, "a");
+    state.push_event(EventLevel::Info, "b");
+    assert_eq!(state.events().len(), 2);
+
+    state.set_max_events(10);
+    assert_eq!(state.events().len(), 2);
+}

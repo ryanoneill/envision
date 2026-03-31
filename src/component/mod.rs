@@ -713,6 +713,11 @@ pub trait Focusable: Component {
     /// before rendering. The focus state is set before rendering and
     /// restored after, using `&mut State`.
     ///
+    /// # Panics
+    ///
+    /// If [`view()`](Component::view) panics, the focus state may not be restored.
+    /// This is generally not a concern since panics in view indicate a bug.
+    ///
     /// # Example
     ///
     /// ```rust,ignore
@@ -865,6 +870,11 @@ pub trait Disableable: Component {
     /// This avoids the need to clone state just to change the disabled flag
     /// before rendering. The disabled state is set before rendering and
     /// restored after, using `&mut State`.
+    ///
+    /// # Panics
+    ///
+    /// If [`view()`](Component::view) panics, the disabled state may not be restored.
+    /// This is generally not a concern since panics in view indicate a bug.
     ///
     /// ```rust,ignore
     /// // Render as disabled without permanently changing state:
