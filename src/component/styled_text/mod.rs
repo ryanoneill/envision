@@ -296,6 +296,21 @@ impl StyledTextState {
         self.show_border
     }
 
+    /// Sets whether the border is shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let mut state = StyledTextState::new();
+    /// state.set_show_border(false);
+    /// assert!(!state.show_border());
+    /// ```
+    pub fn set_show_border(&mut self, show: bool) {
+        self.show_border = show;
+    }
+
     // ---- Scroll accessors ----
 
     /// Returns the current scroll offset.

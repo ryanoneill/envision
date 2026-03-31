@@ -442,6 +442,38 @@ impl StepIndicatorState {
         self.show_descriptions
     }
 
+    /// Sets whether descriptions are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StepIndicatorState;
+    /// use envision::component::step_indicator::Step;
+    ///
+    /// let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
+    /// state.set_show_descriptions(true);
+    /// assert!(state.show_descriptions());
+    /// ```
+    pub fn set_show_descriptions(&mut self, show: bool) {
+        self.show_descriptions = show;
+    }
+
+    /// Sets the orientation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StepIndicatorState;
+    /// use envision::component::step_indicator::{Step, StepOrientation};
+    ///
+    /// let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
+    /// state.set_orientation(StepOrientation::Vertical);
+    /// assert_eq!(state.orientation(), &StepOrientation::Vertical);
+    /// ```
+    pub fn set_orientation(&mut self, orientation: StepOrientation) {
+        self.orientation = orientation;
+    }
+
     /// Maps an input event to a message.
     pub fn handle_event(&self, event: &Event) -> Option<StepIndicatorMessage> {
         StepIndicator::handle_event(self, event)

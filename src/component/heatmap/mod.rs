@@ -598,6 +598,21 @@ impl HeatmapState {
         self.show_values
     }
 
+    /// Sets whether values are shown in cells.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HeatmapState;
+    ///
+    /// let mut state = HeatmapState::new(3, 3);
+    /// state.set_show_values(true);
+    /// assert!(state.show_values());
+    /// ```
+    pub fn set_show_values(&mut self, show: bool) {
+        self.show_values = show;
+    }
+
     // ---- Instance methods ----
 
     /// Returns true if the component is focused.

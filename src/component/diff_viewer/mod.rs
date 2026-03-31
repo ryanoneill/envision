@@ -507,6 +507,107 @@ impl DiffViewerState {
         self.added_count() + self.removed_count()
     }
 
+    /// Returns whether line numbers are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new();
+    /// assert!(state.show_line_numbers());
+    /// ```
+    pub fn show_line_numbers(&self) -> bool {
+        self.show_line_numbers
+    }
+
+    /// Sets whether line numbers are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let mut state = DiffViewerState::new();
+    /// state.set_show_line_numbers(false);
+    /// assert!(!state.show_line_numbers());
+    /// ```
+    pub fn set_show_line_numbers(&mut self, show: bool) {
+        self.show_line_numbers = show;
+    }
+
+    /// Returns the number of context lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new();
+    /// assert_eq!(state.context_lines(), 3);
+    /// ```
+    pub fn context_lines(&self) -> usize {
+        self.context_lines
+    }
+
+    /// Returns the old label, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new().with_old_label("original.rs");
+    /// assert_eq!(state.old_label(), Some("original.rs"));
+    /// ```
+    pub fn old_label(&self) -> Option<&str> {
+        self.old_label.as_deref()
+    }
+
+    /// Sets the old label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let mut state = DiffViewerState::new();
+    /// state.set_old_label("original.rs");
+    /// assert_eq!(state.old_label(), Some("original.rs"));
+    /// ```
+    pub fn set_old_label(&mut self, label: impl Into<String>) {
+        self.old_label = Some(label.into());
+    }
+
+    /// Returns the new label, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new().with_new_label("modified.rs");
+    /// assert_eq!(state.new_label(), Some("modified.rs"));
+    /// ```
+    pub fn new_label(&self) -> Option<&str> {
+        self.new_label.as_deref()
+    }
+
+    /// Sets the new label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let mut state = DiffViewerState::new();
+    /// state.set_new_label("modified.rs");
+    /// assert_eq!(state.new_label(), Some("modified.rs"));
+    /// ```
+    pub fn set_new_label(&mut self, label: impl Into<String>) {
+        self.new_label = Some(label.into());
+    }
+
     /// Returns the display mode.
     ///
     /// # Example

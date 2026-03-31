@@ -406,6 +406,36 @@ impl DependencyGraphState {
         self.show_edge_labels
     }
 
+    /// Sets the graph orientation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DependencyGraphState, GraphOrientation};
+    ///
+    /// let mut state = DependencyGraphState::new();
+    /// state.set_orientation(GraphOrientation::TopToBottom);
+    /// assert_eq!(state.orientation(), &GraphOrientation::TopToBottom);
+    /// ```
+    pub fn set_orientation(&mut self, orientation: GraphOrientation) {
+        self.orientation = orientation;
+    }
+
+    /// Sets whether edge labels are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DependencyGraphState;
+    ///
+    /// let mut state = DependencyGraphState::new();
+    /// state.set_show_edge_labels(true);
+    /// assert!(state.show_edge_labels());
+    /// ```
+    pub fn set_show_edge_labels(&mut self, show: bool) {
+        self.show_edge_labels = show;
+    }
+
     /// Returns whether the component is focused.
     ///
     /// # Example

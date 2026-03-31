@@ -463,6 +463,101 @@ impl EventStreamState {
         self.title = Some(title.into());
     }
 
+    /// Sets the maximum number of events to retain.
+    ///
+    /// If the current count exceeds the new maximum, oldest events are removed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.set_max_events(500);
+    /// assert_eq!(state.max_events(), 500);
+    /// ```
+    pub fn set_max_events(&mut self, max: usize) {
+        self.max_events = max;
+        while self.events.len() > self.max_events {
+            self.events.remove(0);
+        }
+    }
+
+    /// Sets whether to show the timestamp column.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.set_show_timestamps(false);
+    /// assert!(!state.show_timestamps());
+    /// ```
+    pub fn set_show_timestamps(&mut self, show: bool) {
+        self.show_timestamps = show;
+    }
+
+    /// Sets whether to show the level column.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.set_show_level(false);
+    /// assert!(!state.show_level());
+    /// ```
+    pub fn set_show_level(&mut self, show: bool) {
+        self.show_level = show;
+    }
+
+    /// Sets whether to show the source column.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.set_show_source(false);
+    /// assert!(!state.show_source());
+    /// ```
+    pub fn set_show_source(&mut self, show: bool) {
+        self.show_source = show;
+    }
+
+    /// Sets whether auto-scroll is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.set_auto_scroll(false);
+    /// assert!(!state.auto_scroll());
+    /// ```
+    pub fn set_auto_scroll(&mut self, auto_scroll: bool) {
+        self.auto_scroll = auto_scroll;
+    }
+
+    /// Sets the visible column keys.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.set_visible_columns(vec!["path".into(), "method".into()]);
+    /// assert_eq!(state.visible_columns().len(), 2);
+    /// ```
+    pub fn set_visible_columns(&mut self, columns: Vec<String>) {
+        self.visible_columns = columns;
+    }
+
     /// Returns the scroll offset.
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()

@@ -396,6 +396,36 @@ impl ChatViewState {
         self.input.set_value(value);
     }
 
+    /// Returns the placeholder text for the input field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let state = ChatViewState::new()
+    ///     .with_placeholder("Type here...");
+    /// assert_eq!(state.placeholder(), "Type here...");
+    /// ```
+    pub fn placeholder(&self) -> &str {
+        self.input.placeholder()
+    }
+
+    /// Sets the placeholder text for the input field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ChatViewState;
+    ///
+    /// let mut state = ChatViewState::new();
+    /// state.set_placeholder("Enter your message...");
+    /// assert_eq!(state.placeholder(), "Enter your message...");
+    /// ```
+    pub fn set_placeholder(&mut self, placeholder: impl Into<String>) {
+        self.input.set_placeholder(placeholder);
+    }
+
     /// Returns the scroll offset.
     ///
     /// # Example

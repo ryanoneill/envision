@@ -321,6 +321,21 @@ impl SliderState {
         self.show_value
     }
 
+    /// Sets whether the value display is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SliderState;
+    ///
+    /// let mut state = SliderState::new(0.0, 100.0);
+    /// state.set_show_value(true);
+    /// assert!(state.show_value());
+    /// ```
+    pub fn set_show_value(&mut self, show: bool) {
+        self.show_value = show;
+    }
+
     /// Returns true if the slider is focused.
     pub fn is_focused(&self) -> bool {
         self.focused
@@ -344,6 +359,21 @@ impl SliderState {
     /// Returns the orientation.
     pub fn orientation(&self) -> &SliderOrientation {
         &self.orientation
+    }
+
+    /// Sets the orientation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SliderState, SliderOrientation};
+    ///
+    /// let mut state = SliderState::new(0.0, 100.0);
+    /// state.set_orientation(SliderOrientation::Vertical);
+    /// assert_eq!(state.orientation(), &SliderOrientation::Vertical);
+    /// ```
+    pub fn set_orientation(&mut self, orientation: SliderOrientation) {
+        self.orientation = orientation;
     }
 
     /// Maps an input event to a slider message.

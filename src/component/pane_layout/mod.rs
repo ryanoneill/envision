@@ -208,9 +208,56 @@ impl PaneConfig {
         self.min_size
     }
 
+    /// Sets the minimum size.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let mut pane = PaneConfig::new("sidebar");
+    /// pane.set_min_size(20);
+    /// assert_eq!(pane.min_size(), 20);
+    /// ```
+    pub fn set_min_size(&mut self, min_size: u16) {
+        self.min_size = min_size;
+    }
+
     /// Returns the maximum size.
     pub fn max_size(&self) -> u16 {
         self.max_size
+    }
+
+    /// Sets the maximum size.
+    ///
+    /// A value of 0 means no maximum.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let mut pane = PaneConfig::new("sidebar");
+    /// pane.set_max_size(60);
+    /// assert_eq!(pane.max_size(), 60);
+    /// ```
+    pub fn set_max_size(&mut self, max_size: u16) {
+        self.max_size = max_size;
+    }
+
+    /// Sets the pane proportion.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let mut pane = PaneConfig::new("sidebar");
+    /// pane.set_proportion(0.3);
+    /// assert!((pane.proportion() - 0.3).abs() < f32::EPSILON);
+    /// ```
+    pub fn set_proportion(&mut self, proportion: f32) {
+        self.proportion = proportion;
     }
 }
 

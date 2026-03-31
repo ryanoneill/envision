@@ -165,6 +165,22 @@ impl SpanNode {
         self.color
     }
 
+    /// Sets the bar color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanNode;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut node = SpanNode::new("id", "svc", 0.0, 10.0);
+    /// node.set_color(Color::Red);
+    /// assert_eq!(node.color(), Color::Red);
+    /// ```
+    pub fn set_color(&mut self, color: Color) {
+        self.color = color;
+    }
+
     /// Returns the status text, if set.
     pub fn status(&self) -> Option<&str> {
         self.status.as_deref()
