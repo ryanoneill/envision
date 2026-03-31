@@ -361,12 +361,14 @@ impl<T: Clone> SelectableListState<T> {
     pub fn visible_count(&self) -> usize {
         self.filtered_indices.len()
     }
+}
 
-    /// Updates an item at the given index via a closure.
+impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
+    /// Updates an item at the given index and re-applies the active filter.
     ///
-    /// No-ops if the index is out of bounds. This is safe because it
-    /// does not change the number of items or their positions, so
-    /// filter indices and selection remain valid.
+    /// No-ops if the index is out of bounds. If a filter is active, the
+    /// filter indices are recomputed after the mutation to ensure
+    /// consistency.
     ///
     /// # Example
     ///
@@ -380,11 +382,10 @@ impl<T: Clone> SelectableListState<T> {
     pub fn update_item(&mut self, index: usize, f: impl FnOnce(&mut T)) {
         if let Some(item) = self.items.get_mut(index) {
             f(item);
+            self.apply_filter();
         }
     }
-}
 
-impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
     /// Pushes an item and updates filter indices.
     ///
     /// The new item is appended to the end of the list. If a filter is

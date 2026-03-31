@@ -480,6 +480,7 @@ impl LogViewerState {
         if self.entries.len() > max {
             let excess = self.entries.len() - max;
             self.entries.drain(..excess);
+            self.scroll.set_content_length(self.entries.len());
         }
     }
 
