@@ -859,6 +859,29 @@ pub trait Disableable: Component {
     fn enable(state: &mut Self::State) {
         Self::set_disabled(state, false);
     }
+
+    /// Renders the component with the disabled state temporarily overridden.
+    ///
+    /// This avoids the need to clone state just to change the disabled flag
+    /// before rendering. The disabled state is set before rendering and
+    /// restored after, using `&mut State`.
+    ///
+    /// ```rust,ignore
+    /// // Render as disabled without permanently changing state:
+    /// Button::view_with_disabled(&mut state, frame, area, &theme, true);
+    /// ```
+    fn view_with_disabled(
+        state: &mut Self::State,
+        frame: &mut Frame,
+        area: Rect,
+        theme: &Theme,
+        disabled: bool,
+    ) {
+        let was_disabled = Self::is_disabled(state);
+        Self::set_disabled(state, disabled);
+        Self::view(state, frame, area, theme);
+        Self::set_disabled(state, was_disabled);
+    }
 }
 
 #[cfg(any(test, feature = "test-utils"))]
