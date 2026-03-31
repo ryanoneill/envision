@@ -305,7 +305,7 @@ impl TabBarState {
     /// state.tabs_mut()[0].set_label("Renamed");
     /// assert_eq!(state.tabs()[0].label(), "Renamed");
     /// ```
-    pub fn tabs_mut(&mut self) -> &mut [Tab] {
+    pub fn tabs_mut(&mut self) -> &mut Vec<Tab> {
         &mut self.tabs
     }
 

@@ -329,6 +329,18 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Returns a mutable reference to the root nodes.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreeState, TreeNode};
+    ///
+    /// let mut state: TreeState<&str> = TreeState::new(vec![
+    ///     TreeNode::new("Alpha", "a"),
+    /// ]);
+    /// state.roots_mut().push(TreeNode::new("Beta", "b"));
+    /// assert_eq!(state.roots().len(), 2);
+    /// ```
     pub fn roots_mut(&mut self) -> &mut Vec<TreeNode<T>> {
         &mut self.roots
     }

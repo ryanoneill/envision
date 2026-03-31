@@ -195,6 +195,21 @@ impl<T: Clone> SelectableListState<T> {
         &self.items
     }
 
+    /// Returns a mutable reference to the items.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let mut state = SelectableListState::new(vec!["a", "b"]);
+    /// state.items_mut().push("c");
+    /// assert_eq!(state.items(), &["a", "b", "c"]);
+    /// ```
+    pub fn items_mut(&mut self) -> &mut Vec<T> {
+        &mut self.items
+    }
+
     /// Sets the items, clearing any active filter and resetting selection.
     ///
     /// # Examples

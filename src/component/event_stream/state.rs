@@ -383,6 +383,22 @@ impl EventStreamState {
         &self.events
     }
 
+    /// Returns a mutable reference to the events.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{EventLevel, EventStreamState, StreamEvent};
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.push_event(EventLevel::Info, "hello");
+    /// state.events_mut().push(StreamEvent::new(2, 2000.0, EventLevel::Warning, "alert"));
+    /// assert_eq!(state.events().len(), 2);
+    /// ```
+    pub fn events_mut(&mut self) -> &mut Vec<StreamEvent> {
+        &mut self.events
+    }
+
     /// Returns the total number of events.
     ///
     /// # Example

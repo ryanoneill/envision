@@ -403,6 +403,21 @@ impl HeatmapState {
         &self.data
     }
 
+    /// Returns a mutable reference to the data grid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HeatmapState;
+    ///
+    /// let mut state = HeatmapState::with_data(vec![vec![1.0, 2.0]]);
+    /// state.data_mut().push(vec![3.0, 4.0]);
+    /// assert_eq!(state.data().len(), 2);
+    /// ```
+    pub fn data_mut(&mut self) -> &mut Vec<Vec<f64>> {
+        &mut self.data
+    }
+
     /// Returns the number of rows.
     ///
     /// # Example

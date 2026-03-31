@@ -235,7 +235,6 @@ impl FlameGraphState {
     }
 
     // ---- Accessors ----
-
     /// Returns the root frame, if any.
     ///
     /// # Example
@@ -248,6 +247,21 @@ impl FlameGraphState {
     /// ```
     pub fn root(&self) -> Option<&FlameNode> {
         self.root.as_ref()
+    }
+
+    /// Returns a mutable reference to the root frame.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FlameGraphState, FlameNode};
+    ///
+    /// let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+    /// assert!(state.root_mut().is_some());
+    /// assert!(FlameGraphState::new().root_mut().is_none());
+    /// ```
+    pub fn root_mut(&mut self) -> Option<&mut FlameNode> {
+        self.root.as_mut()
     }
 
     /// Sets the root frame.
@@ -491,7 +505,6 @@ impl FlameGraphState {
     }
 
     // ---- Zoom ----
-
     /// Zooms into the currently selected frame, making it the new view root.
     ///
     /// Only zooms if the selected frame has children.

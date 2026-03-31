@@ -312,6 +312,23 @@ impl HelpPanelState {
         &self.groups
     }
 
+    /// Returns a mutable reference to the groups.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{HelpPanelState, KeyBinding, KeyBindingGroup};
+    ///
+    /// let mut state = HelpPanelState::new();
+    /// state.groups_mut().push(KeyBindingGroup::new("Navigation", vec![
+    ///     KeyBinding::new("Up", "Move up"),
+    /// ]));
+    /// assert_eq!(state.groups().len(), 1);
+    /// ```
+    pub fn groups_mut(&mut self) -> &mut Vec<KeyBindingGroup> {
+        &mut self.groups
+    }
+
     /// Adds a group.
     ///
     /// # Example

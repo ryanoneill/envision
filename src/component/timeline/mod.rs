@@ -227,9 +227,41 @@ impl TimelineState {
         &self.events
     }
 
+    /// Returns a mutable reference to the point events.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TimelineState, TimelineEvent};
+    ///
+    /// let mut state = TimelineState::new()
+    ///     .with_events(vec![TimelineEvent::new("e1", 100.0, "Start")]);
+    /// state.events_mut().push(TimelineEvent::new("e2", 200.0, "End"));
+    /// assert_eq!(state.events().len(), 2);
+    /// ```
+    pub fn events_mut(&mut self) -> &mut Vec<TimelineEvent> {
+        &mut self.events
+    }
+
     /// Returns the duration spans.
     pub fn spans(&self) -> &[TimelineSpan] {
         &self.spans
+    }
+
+    /// Returns a mutable reference to the duration spans.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TimelineState, TimelineSpan};
+    ///
+    /// let mut state = TimelineState::new()
+    ///     .with_spans(vec![TimelineSpan::new("s1", 0.0, 100.0, "Init")]);
+    /// state.spans_mut().push(TimelineSpan::new("s2", 50.0, 200.0, "Process"));
+    /// assert_eq!(state.spans().len(), 2);
+    /// ```
+    pub fn spans_mut(&mut self) -> &mut Vec<TimelineSpan> {
+        &mut self.spans
     }
 
     /// Adds a point event.

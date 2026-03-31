@@ -35,6 +35,7 @@
 //! ```
 
 mod render;
+mod types;
 
 use std::fmt::Display;
 use std::marker::PhantomData;
@@ -42,6 +43,9 @@ use std::sync::Arc;
 
 use ratatui::prelude::*;
 use ratatui::widgets::ListState;
+
+use types::Focus;
+pub use types::{SearchableListMessage, SearchableListOutput};
 
 use super::{Component, Disableable, Focusable};
 use crate::input::{Event, KeyCode, KeyModifiers};
@@ -51,59 +55,6 @@ use crate::theme::Theme;
 /// A matcher function that takes `(query, item_text)` and returns
 /// `None` for no match or `Some(score)` for a ranked match (higher = better).
 type MatcherFn = dyn Fn(&str, &str) -> Option<i64> + Send + Sync;
-
-/// Messages that can be sent to a SearchableList.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum SearchableListMessage {
-    /// The filter text changed.
-    FilterChanged(String),
-    /// A character was typed (forwarded to the filter field).
-    FilterChar(char),
-    /// Delete the character before the cursor in the filter.
-    FilterBackspace,
-    /// Clear the filter text.
-    FilterClear,
-    /// Move selection up in the list.
-    Up,
-    /// Move selection down in the list.
-    Down,
-    /// Move selection to the first item.
-    First,
-    /// Move selection to the last item.
-    Last,
-    /// Move selection up by a page.
-    PageUp(usize),
-    /// Move selection down by a page.
-    PageDown(usize),
-    /// Select the current item (triggers output).
-    Select,
-    /// Switch focus between filter and list.
-    ToggleFocus,
-}
-
-/// Output messages from a SearchableList.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum SearchableListOutput<T: Clone> {
-    /// An item was selected (e.g., Enter pressed while list is focused).
-    Selected(T),
-    /// The selection changed to a new filtered index.
-    SelectionChanged(usize),
-    /// The filter text changed.
-    FilterChanged(String),
-}
-
-/// Identifies which sub-component has focus within the SearchableList.
-#[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(
-    feature = "serialization",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-pub(super) enum Focus {
-    /// The filter input field has focus.
-    Filter,
-    /// The selectable list has focus.
-    List,
-}
 
 /// State for a SearchableList component.
 ///
@@ -260,6 +211,19 @@ impl<T: Clone> SearchableListState<T> {
     /// ```
     pub fn items(&self) -> &[T] {
         &self.items
+    }
+
+    /// Returns a mutable reference to the items.
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let mut state = SearchableListState::new(vec!["A".to_string(), "B".to_string()]);
+    /// state.items_mut().push("C".to_string());
+    /// assert_eq!(state.items().len(), 3);
+    /// ```
+    pub fn items_mut(&mut self) -> &mut Vec<T> {
+        &mut self.items
     }
 
     /// Returns the items that match the current filter.

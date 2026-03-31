@@ -323,6 +323,23 @@ impl AlertPanelState {
         &self.metrics
     }
 
+    /// Returns a mutable reference to the metrics.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{AlertPanelState, AlertMetric, AlertThreshold};
+    ///
+    /// let mut state = AlertPanelState::new().with_metrics(vec![
+    ///     AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)),
+    /// ]);
+    /// state.metrics_mut().push(AlertMetric::new("mem", "Memory", AlertThreshold::new(60.0, 80.0)));
+    /// assert_eq!(state.metrics().len(), 2);
+    /// ```
+    pub fn metrics_mut(&mut self) -> &mut Vec<AlertMetric> {
+        &mut self.metrics
+    }
+
     /// Returns the number of grid columns.
     ///
     /// # Example

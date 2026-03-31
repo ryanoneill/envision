@@ -304,6 +304,21 @@ impl DependencyGraphState {
         &self.nodes
     }
 
+    /// Returns a mutable reference to the nodes.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DependencyGraphState, GraphNode};
+    ///
+    /// let mut state = DependencyGraphState::new();
+    /// state.nodes_mut().push(GraphNode::new("svc", "My Service"));
+    /// assert_eq!(state.nodes().len(), 1);
+    /// ```
+    pub fn nodes_mut(&mut self) -> &mut Vec<GraphNode> {
+        &mut self.nodes
+    }
+
     /// Returns all edges.
     ///
     /// # Example
@@ -316,6 +331,21 @@ impl DependencyGraphState {
     /// ```
     pub fn edges(&self) -> &[GraphEdge] {
         &self.edges
+    }
+
+    /// Returns a mutable reference to the edges.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DependencyGraphState, GraphEdge};
+    ///
+    /// let mut state = DependencyGraphState::new();
+    /// state.edges_mut().push(GraphEdge::new("a", "b"));
+    /// assert_eq!(state.edges().len(), 1);
+    /// ```
+    pub fn edges_mut(&mut self) -> &mut Vec<GraphEdge> {
+        &mut self.edges
     }
 
     /// Returns the selected node index.

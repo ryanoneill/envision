@@ -261,6 +261,21 @@ impl HistogramState {
         &self.data
     }
 
+    /// Returns a mutable reference to the data points.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    ///
+    /// let mut state = HistogramState::with_data(vec![1.0, 2.0, 3.0]);
+    /// state.data_mut().push(4.0);
+    /// assert_eq!(state.data(), &[1.0, 2.0, 3.0, 4.0]);
+    /// ```
+    pub fn data_mut(&mut self) -> &mut Vec<f64> {
+        &mut self.data
+    }
+
     /// Adds a single data point.
     ///
     /// # Example

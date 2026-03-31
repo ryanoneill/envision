@@ -291,6 +291,23 @@ impl SpanTreeState {
         &self.roots
     }
 
+    /// Returns a mutable reference to the root spans.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let mut state = SpanTreeState::new(vec![
+    ///     SpanNode::new("a", "svc-a", 0.0, 10.0),
+    /// ]);
+    /// state.roots_mut().push(SpanNode::new("b", "svc-b", 5.0, 15.0));
+    /// assert_eq!(state.roots().len(), 2);
+    /// ```
+    pub fn roots_mut(&mut self) -> &mut Vec<SpanNode> {
+        &mut self.roots
+    }
+
     /// Replaces all root spans and recomputes global times.
     ///
     /// # Example
