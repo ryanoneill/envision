@@ -589,6 +589,7 @@ impl TerminalOutputState {
         if self.lines.len() > self.max_lines {
             let excess = self.lines.len() - self.max_lines;
             self.lines.drain(..excess);
+            self.scroll.set_content_length(self.lines.len());
         }
     }
 }

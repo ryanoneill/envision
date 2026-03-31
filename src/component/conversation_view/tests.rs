@@ -434,22 +434,23 @@ fn test_last_message_mut_empty() {
 }
 
 #[test]
-fn test_messages_mut() {
+fn test_update_message() {
     let mut state = ConversationViewState::new();
     state.push_user("Hello");
     state.push_assistant("Hi");
-    state.push_system("System msg");
-    state
-        .messages_mut()
-        .retain(|m| m.role() == ConversationRole::User);
-    assert_eq!(state.message_count(), 1);
-    assert_eq!(state.messages()[0].role(), ConversationRole::User);
+    state.update_message(1, |msg| {
+        msg.set_blocks(vec![MessageBlock::text("Updated")]);
+    });
+    assert_eq!(state.messages()[1].blocks().len(), 1);
 }
 
 #[test]
-fn test_messages_mut_empty() {
+fn test_update_last_message_empty() {
     let mut state = ConversationViewState::new();
-    assert!(state.messages_mut().is_empty());
+    // Should no-op, not panic
+    state.update_last_message(|_msg| {
+        panic!("should not be called on empty conversation");
+    });
 }
 
 // =============================================================================

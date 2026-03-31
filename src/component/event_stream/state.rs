@@ -503,6 +503,7 @@ impl EventStreamState {
         if self.events.len() > max {
             let excess = self.events.len() - max;
             self.events.drain(..excess);
+            self.scroll.set_content_length(self.events.len());
         }
     }
 

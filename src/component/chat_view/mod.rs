@@ -461,6 +461,7 @@ impl ChatViewState {
         if self.messages.len() > max {
             let excess = self.messages.len() - max;
             self.messages.drain(..excess);
+            self.scroll.set_content_length(self.messages.len());
         }
     }
 

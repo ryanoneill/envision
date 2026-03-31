@@ -449,6 +449,10 @@ impl StatusLogState {
         if self.entries.len() > max {
             let excess = self.entries.len() - max;
             self.entries.drain(..excess);
+            // Clamp scroll offset after eviction
+            if self.scroll_offset >= self.entries.len() {
+                self.scroll_offset = self.entries.len().saturating_sub(1);
+            }
         }
     }
 
