@@ -363,6 +363,21 @@ impl DependencyGraphState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DependencyGraphState;
+    ///
+    /// let mut state = DependencyGraphState::new();
+    /// state.set_title("Service Topology");
+    /// assert_eq!(state.title(), Some("Service Topology"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns the orientation.
     ///
     /// # Example

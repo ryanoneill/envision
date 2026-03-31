@@ -374,6 +374,21 @@ impl SpanTreeState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanTreeState;
+    ///
+    /// let mut state = SpanTreeState::default();
+    /// state.set_title("Trace View");
+    /// assert_eq!(state.title(), Some("Trace View"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns true if the component is focused.
     ///
     /// # Example

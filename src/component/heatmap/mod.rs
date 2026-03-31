@@ -578,6 +578,21 @@ impl HeatmapState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HeatmapState;
+    ///
+    /// let mut state = HeatmapState::new(3, 3);
+    /// state.set_title("Error Rates");
+    /// assert_eq!(state.title(), Some("Error Rates"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns whether values are shown in cells.
     pub fn show_values(&self) -> bool {
         self.show_values

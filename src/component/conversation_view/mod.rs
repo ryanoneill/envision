@@ -374,6 +374,23 @@ impl ConversationViewState {
         &self.messages
     }
 
+    /// Returns a mutable reference to the messages vector.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationViewState, ConversationMessage, ConversationRole};
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.push_user("Hello");
+    /// state.push_assistant("Hi");
+    /// state.messages_mut().retain(|m| m.role() == ConversationRole::User);
+    /// assert_eq!(state.message_count(), 1);
+    /// ```
+    pub fn messages_mut(&mut self) -> &mut Vec<ConversationMessage> {
+        &mut self.messages
+    }
+
     /// Returns the number of messages.
     pub fn message_count(&self) -> usize {
         self.messages.len()

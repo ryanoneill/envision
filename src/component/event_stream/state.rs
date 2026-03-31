@@ -448,6 +448,21 @@ impl EventStreamState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.set_title("System Events");
+    /// assert_eq!(state.title(), Some("System Events"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns the scroll offset.
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()

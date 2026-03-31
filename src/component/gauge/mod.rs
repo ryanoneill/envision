@@ -312,6 +312,38 @@ impl GaugeState {
         self
     }
 
+    /// Returns the title, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::GaugeState;
+    ///
+    /// let state = GaugeState::new(50.0, 100.0).with_title("CPU Usage");
+    /// assert_eq!(state.title(), Some("CPU Usage"));
+    ///
+    /// let state2 = GaugeState::new(50.0, 100.0);
+    /// assert_eq!(state2.title(), None);
+    /// ```
+    pub fn title(&self) -> Option<&str> {
+        self.title.as_deref()
+    }
+
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::GaugeState;
+    ///
+    /// let mut state = GaugeState::new(50.0, 100.0);
+    /// state.set_title("Memory");
+    /// assert_eq!(state.title(), Some("Memory"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns the current value.
     pub fn value(&self) -> f64 {
         self.value

@@ -417,6 +417,21 @@ impl CommandPaletteState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{CommandPaletteState, PaletteItem};
+    ///
+    /// let mut state = CommandPaletteState::new(vec![]);
+    /// state.set_title("Actions");
+    /// assert_eq!(state.title(), Some("Actions"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns the placeholder text.
     ///
     /// # Example

@@ -348,6 +348,38 @@ impl CalendarState {
         self.selected_day
     }
 
+    /// Returns the title, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CalendarState;
+    ///
+    /// let state = CalendarState::new(2026, 3).with_title("My Calendar");
+    /// assert_eq!(state.title(), Some("My Calendar"));
+    ///
+    /// let state2 = CalendarState::new(2026, 3);
+    /// assert_eq!(state2.title(), None);
+    /// ```
+    pub fn title(&self) -> Option<&str> {
+        self.title.as_deref()
+    }
+
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CalendarState;
+    ///
+    /// let mut state = CalendarState::new(2026, 3);
+    /// state.set_title("Events");
+    /// assert_eq!(state.title(), Some("Events"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Sets the selected day.
     ///
     /// # Example

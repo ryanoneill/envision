@@ -267,6 +267,21 @@ impl StyledTextState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StyledTextState;
+    ///
+    /// let mut state = StyledTextState::new();
+    /// state.set_title("Preview");
+    /// assert_eq!(state.title(), Some("Preview"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     /// Returns whether the border is shown.
     ///
     /// # Example

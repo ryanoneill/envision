@@ -476,6 +476,21 @@ impl LogCorrelationState {
         self.title.as_deref()
     }
 
+    /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogCorrelationState;
+    ///
+    /// let mut state = LogCorrelationState::new();
+    /// state.set_title("Correlated Logs");
+    /// assert_eq!(state.title(), Some("Correlated Logs"));
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<String>) {
+        self.title = Some(title.into());
+    }
+
     // ---- Mutation ----
 
     /// Adds a new log stream.

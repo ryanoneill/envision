@@ -247,9 +247,6 @@ fn test_handle_event_unrecognized_key() {
     let mut state = MultiProgressState::new();
     state.set_focused(true);
 
-    let msg = MultiProgress::handle_event(&state, &Event::key(KeyCode::Enter));
-    assert_eq!(msg, None);
-
     let msg = MultiProgress::handle_event(&state, &Event::key(KeyCode::Tab));
     assert_eq!(msg, None);
 
@@ -283,7 +280,7 @@ fn test_handle_event_instance_unrecognized() {
     let mut state = MultiProgressState::new();
     state.set_focused(true);
 
-    let msg = state.handle_event(&Event::key(KeyCode::Enter));
+    let msg = state.handle_event(&Event::key(KeyCode::Tab));
     assert_eq!(msg, None);
 }
 
@@ -296,7 +293,7 @@ fn test_dispatch_event_unrecognized_returns_none() {
     let mut state = MultiProgressState::new();
     state.set_focused(true);
 
-    let output = MultiProgress::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = MultiProgress::dispatch_event(&mut state, &Event::key(KeyCode::Tab));
     assert!(output.is_none());
 }
 
@@ -489,4 +486,112 @@ fn test_update_scroll_to_bottom_ignored_when_disabled() {
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollToBottom);
     assert_eq!(state.scroll_offset(), 0);
+}
+
+// ========================================
+// Select (Enter) Tests
+// ========================================
+
+#[test]
+fn test_handle_event_enter_produces_select() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+
+    let msg = MultiProgress::handle_event(&state, &Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(MultiProgressMessage::Select));
+}
+
+#[test]
+fn test_update_select_emits_selected_output() {
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    state.add("id2", "Item 2");
+    state.add("id3", "Item 3");
+    state.set_scroll_offset(1);
+
+    let output = MultiProgress::update(&mut state, MultiProgressMessage::Select);
+    assert_eq!(output, Some(MultiProgressOutput::Selected(1)));
+}
+
+#[test]
+fn test_update_select_first_item() {
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    state.add("id2", "Item 2");
+
+    let output = MultiProgress::update(&mut state, MultiProgressMessage::Select);
+    assert_eq!(output, Some(MultiProgressOutput::Selected(0)));
+}
+
+#[test]
+fn test_update_select_last_item() {
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    state.add("id2", "Item 2");
+    state.add("id3", "Item 3");
+    state.set_scroll_offset(2);
+
+    let output = MultiProgress::update(&mut state, MultiProgressMessage::Select);
+    assert_eq!(output, Some(MultiProgressOutput::Selected(2)));
+}
+
+#[test]
+fn test_update_select_empty_returns_none() {
+    let mut state = MultiProgressState::new();
+
+    let output = MultiProgress::update(&mut state, MultiProgressMessage::Select);
+    assert!(output.is_none());
+}
+
+#[test]
+fn test_update_select_ignored_when_disabled() {
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    state.set_disabled(true);
+
+    let output = MultiProgress::update(&mut state, MultiProgressMessage::Select);
+    assert!(output.is_none());
+}
+
+#[test]
+fn test_dispatch_event_enter_selects_item() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+    state.add("id1", "Item 1");
+    state.add("id2", "Item 2");
+    state.set_scroll_offset(1);
+
+    let output = MultiProgress::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(MultiProgressOutput::Selected(1)));
+}
+
+#[test]
+fn test_instance_handle_event_enter() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+
+    let msg = state.handle_event(&Event::key(KeyCode::Enter));
+    assert_eq!(msg, Some(MultiProgressMessage::Select));
+}
+
+#[test]
+fn test_instance_dispatch_event_enter() {
+    let mut state = MultiProgressState::new();
+    state.set_focused(true);
+    state.add("id1", "Item 1");
+
+    let output = state.dispatch_event(&Event::key(KeyCode::Enter));
+    assert_eq!(output, Some(MultiProgressOutput::Selected(0)));
+}
+
+#[test]
+fn test_select_clamps_to_last_item() {
+    let mut state = MultiProgressState::new();
+    state.add("id1", "Item 1");
+    // scroll_offset is clamped by set_scroll_offset, but test the Select logic
+    // by directly accessing
+    state.set_scroll_offset(10); // Will be clamped to 0 (last valid index)
+
+    let output = MultiProgress::update(&mut state, MultiProgressMessage::Select);
+    assert_eq!(output, Some(MultiProgressOutput::Selected(0)));
 }
