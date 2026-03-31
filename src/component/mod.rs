@@ -706,6 +706,32 @@ pub trait Focusable: Component {
     fn blur(state: &mut Self::State) {
         Self::set_focused(state, false);
     }
+
+    /// Renders the component with focus temporarily overridden.
+    ///
+    /// This avoids the need to clone state just to change the focus flag
+    /// before rendering. The focus state is set before rendering and
+    /// restored after, using `&mut State`.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// // Render as focused without permanently changing state:
+    /// Button::view_with_focus(&mut state, frame, area, &theme, true);
+    /// // state.is_focused() is restored to its original value
+    /// ```
+    fn view_with_focus(
+        state: &mut Self::State,
+        frame: &mut Frame,
+        area: Rect,
+        theme: &Theme,
+        focused: bool,
+    ) {
+        let was_focused = Self::is_focused(state);
+        Self::set_focused(state, focused);
+        Self::view(state, frame, area, theme);
+        Self::set_focused(state, was_focused);
+    }
 }
 
 /// A component that can be shown or hidden.
