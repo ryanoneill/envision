@@ -312,6 +312,30 @@ impl HelpPanelState {
         &self.groups
     }
 
+    /// Returns a mutable reference to the keybinding groups.
+    ///
+    /// This is safe because the help panel groups are simple display
+    /// data with no derived indices. After modifying, call
+    /// [`sync_scroll`](Self) internally or use the public mutators
+    /// to keep scroll state accurate.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{HelpPanelState, KeyBinding, KeyBindingGroup};
+    ///
+    /// let mut state = HelpPanelState::new()
+    ///     .with_groups(vec![
+    ///         KeyBindingGroup::new("Navigation", vec![
+    ///             KeyBinding::new("Up", "Move up"),
+    ///         ]),
+    ///     ]);
+    /// assert_eq!(state.groups_mut().len(), 1);
+    /// ```
+    pub fn groups_mut(&mut self) -> &mut Vec<KeyBindingGroup> {
+        &mut self.groups
+    }
+
     /// Adds a group.
     ///
     /// # Example

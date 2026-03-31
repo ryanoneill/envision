@@ -491,6 +491,27 @@ impl<T: Clone> SearchableListState<T> {
         self
     }
 
+    /// Updates an item at the given index via a closure.
+    ///
+    /// No-ops if the index is out of bounds. This is safe because it
+    /// does not change the number of items or their positions, so
+    /// filter indices and selection remain valid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let mut state = SearchableListState::new(vec!["apple".to_string(), "banana".to_string()]);
+    /// state.update_item(0, |item| *item = "APPLE".to_string());
+    /// assert_eq!(state.items()[0], "APPLE");
+    /// ```
+    pub fn update_item(&mut self, index: usize, f: impl FnOnce(&mut T)) {
+        if let Some(item) = self.items.get_mut(index) {
+            f(item);
+        }
+    }
+
     /// Returns true if the component is empty (no items at all).
     ///
     /// # Example
@@ -529,6 +550,52 @@ impl<T: Clone> SearchableListState<T> {
 }
 
 impl<T: Clone + Display + 'static> SearchableListState<T> {
+    /// Pushes an item and recomputes the filter.
+    ///
+    /// The new item is appended to the end of the list and the
+    /// current filter is re-applied.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let mut state = SearchableListState::new(vec!["apple".to_string()]);
+    /// state.push_item("banana".to_string());
+    /// assert_eq!(state.len(), 2);
+    /// assert_eq!(state.items()[1], "banana");
+    /// ```
+    pub fn push_item(&mut self, item: T) {
+        self.items.push(item);
+        self.refilter();
+    }
+
+    /// Removes an item by index and recomputes the filter and selection.
+    ///
+    /// Returns the removed item, or `None` if the index is out of bounds.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let mut state = SearchableListState::new(vec![
+    ///     "apple".to_string(), "banana".to_string(), "cherry".to_string(),
+    /// ]);
+    /// let removed = state.remove_item(1);
+    /// assert_eq!(removed, Some("banana".to_string()));
+    /// assert_eq!(state.len(), 2);
+    /// assert_eq!(state.items()[1], "cherry");
+    /// ```
+    pub fn remove_item(&mut self, index: usize) -> Option<T> {
+        if index >= self.items.len() {
+            return None;
+        }
+        let item = self.items.remove(index);
+        self.refilter();
+        Some(item)
+    }
+
     /// Sets the items, recomputing the filter and resetting selection.
     ///
     /// # Example

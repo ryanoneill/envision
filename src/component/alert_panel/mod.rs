@@ -323,6 +323,27 @@ impl AlertPanelState {
         &self.metrics
     }
 
+    /// Returns a mutable reference to the alert metrics.
+    ///
+    /// This is safe because metrics are simple data containers.
+    /// Selection state is index-based and unaffected by value mutation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{AlertPanelState, AlertMetric, AlertThreshold};
+    ///
+    /// let mut state = AlertPanelState::new().with_metrics(vec![
+    ///     AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0))
+    ///         .with_value(50.0),
+    /// ]);
+    /// state.metrics_mut()[0].update_value(85.0);
+    /// assert_eq!(state.metrics()[0].value(), 85.0);
+    /// ```
+    pub fn metrics_mut(&mut self) -> &mut Vec<AlertMetric> {
+        &mut self.metrics
+    }
+
     /// Returns the number of grid columns.
     ///
     /// # Example

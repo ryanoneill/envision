@@ -291,6 +291,27 @@ impl SpanTreeState {
         &self.roots
     }
 
+    /// Returns a mutable reference to the root spans.
+    ///
+    /// This is safe because span nodes are simple data containers.
+    /// The expanded set tracks nodes by string id, so mutating node
+    /// data does not corrupt expand/collapse state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    /// use ratatui::style::Color;
+    ///
+    /// let root = SpanNode::new("r", "root", 0.0, 100.0);
+    /// let mut state = SpanTreeState::new(vec![root]);
+    /// state.roots_mut()[0].set_color(Color::Red);
+    /// assert_eq!(state.roots()[0].color(), Color::Red);
+    /// ```
+    pub fn roots_mut(&mut self) -> &mut Vec<SpanNode> {
+        &mut self.roots
+    }
+
     /// Replaces all root spans and recomputes global times.
     ///
     /// # Example

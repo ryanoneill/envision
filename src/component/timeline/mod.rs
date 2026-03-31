@@ -227,9 +227,47 @@ impl TimelineState {
         &self.events
     }
 
+    /// Returns a mutable reference to the point events.
+    ///
+    /// This is safe because events are simple data with no derived
+    /// indices or filter state to maintain.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TimelineState, TimelineEvent};
+    ///
+    /// let mut state = TimelineState::new()
+    ///     .with_events(vec![TimelineEvent::new("e1", 100.0, "Start")]);
+    /// state.events_mut()[0] = TimelineEvent::new("e1", 200.0, "Updated Start");
+    /// assert_eq!(state.events()[0].timestamp, 200.0);
+    /// ```
+    pub fn events_mut(&mut self) -> &mut Vec<TimelineEvent> {
+        &mut self.events
+    }
+
     /// Returns the duration spans.
     pub fn spans(&self) -> &[TimelineSpan] {
         &self.spans
+    }
+
+    /// Returns a mutable reference to the duration spans.
+    ///
+    /// This is safe because spans are simple data with no derived
+    /// indices or filter state to maintain.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TimelineState, TimelineSpan};
+    ///
+    /// let mut state = TimelineState::new()
+    ///     .with_spans(vec![TimelineSpan::new("s1", 0.0, 200.0, "Init")]);
+    /// state.spans_mut()[0] = TimelineSpan::new("s1", 0.0, 500.0, "Init Extended");
+    /// assert_eq!(state.spans()[0].end, 500.0);
+    /// ```
+    pub fn spans_mut(&mut self) -> &mut Vec<TimelineSpan> {
+        &mut self.spans
     }
 
     /// Adds a point event.
