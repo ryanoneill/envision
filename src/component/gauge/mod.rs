@@ -40,7 +40,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Gauge as RatatuiGauge, LineGauge};
 
-use super::{Component, Disableable};
+use super::{Component, Disableable, ViewContext};
 use crate::theme::Theme;
 
 /// The visual variant of the gauge.
@@ -590,7 +590,7 @@ impl Component for Gauge {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         let label_text = state.label_text();
 
         match state.variant {

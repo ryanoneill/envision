@@ -88,10 +88,22 @@ impl App for ChatApp {
         let theme = Theme::default();
 
         // Render chat history (using ChatView but without its built-in input)
-        ChatView::view(&state.chat, frame, chunks[0], &theme);
+        ChatView::view(
+            &state.chat,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Render LineInput
-        LineInput::view(&state.input, frame, chunks[1], &theme);
+        LineInput::view(
+            &state.input,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Status bar
         let status = Paragraph::new(format!(

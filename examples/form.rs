@@ -89,7 +89,13 @@ impl App for FormApp {
             );
             frame.render_widget(widget, chunks[0]);
         } else {
-            Form::view(&state.form, frame, chunks[0], &theme);
+            Form::view(
+                &state.form,
+                frame,
+                chunks[0],
+                &theme,
+                &ViewContext::default(),
+            );
         }
 
         let status =

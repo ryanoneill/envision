@@ -18,7 +18,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -33,7 +33,7 @@ fn test_snapshot_with_messages() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -53,7 +53,7 @@ fn test_snapshot_with_code_block() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -67,7 +67,7 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -80,7 +80,7 @@ fn test_snapshot_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -96,7 +96,7 @@ fn test_snapshot_multiple_roles() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

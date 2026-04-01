@@ -79,6 +79,7 @@ use envision::component::{
     ThresholdZone,
 };
 use envision::CaptureBackend;
+use envision::ViewContext;
 use ratatui::prelude::*;
 use ratatui::Terminal;
 
@@ -139,7 +140,7 @@ fn test_paginator_boundary_navigation() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -216,7 +217,7 @@ fn test_help_panel_scroll_and_groups() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            HelpPanel::view(&state, frame, frame.area(), &theme);
+            HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -281,7 +282,7 @@ fn test_code_block_set_code_language_scroll() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -359,7 +360,7 @@ fn test_terminal_output_append_and_auto_scroll() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme);
+            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -429,7 +430,7 @@ fn test_conversation_view_messages_and_collapse() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -511,7 +512,7 @@ fn test_tab_bar_add_close_navigate() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            TabBar::view(&state, frame, frame.area(), &theme);
+            TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -759,49 +760,49 @@ fn test_new_components_handle_zero_size_area() {
     // Sparkline
     assert_view_zero_size("Sparkline", |frame, area, theme| {
         let state = SparklineState::with_data(vec![1, 2, 3]);
-        Sparkline::view(&state, frame, area, theme);
+        Sparkline::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Gauge
     assert_view_zero_size("Gauge", |frame, area, theme| {
         let state = GaugeState::new(50.0, 100.0);
-        Gauge::view(&state, frame, area, theme);
+        Gauge::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Calendar
     assert_view_zero_size("Calendar", |frame, area, theme| {
         let state = CalendarState::new(2026, 3);
-        Calendar::view(&state, frame, area, theme);
+        Calendar::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Slider
     assert_view_zero_size("Slider", |frame, area, theme| {
         let state = SliderState::new(0.0, 100.0);
-        Slider::view(&state, frame, area, theme);
+        Slider::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Switch
     assert_view_zero_size("Switch", |frame, area, theme| {
         let state = SwitchState::new();
-        Switch::view(&state, frame, area, theme);
+        Switch::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Paginator
     assert_view_zero_size("Paginator", |frame, area, theme| {
         let state = PaginatorState::new(5);
-        Paginator::view(&state, frame, area, theme);
+        Paginator::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // CodeBlock
     assert_view_zero_size("CodeBlock", |frame, area, theme| {
         let state = CodeBlockState::new().with_code("fn main() {}");
-        CodeBlock::view(&state, frame, area, theme);
+        CodeBlock::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // TabBar
     assert_view_zero_size("TabBar", |frame, area, theme| {
         let state = TabBarState::new(vec![Tab::new("a", "Tab A")]);
-        TabBar::view(&state, frame, area, theme);
+        TabBar::view(&state, frame, area, theme, &ViewContext::default());
     });
 }
 
@@ -950,10 +951,28 @@ fn test_dashboard_workflow_with_mixed_new_components() {
                 ])
                 .split(frame.area());
 
-            Gauge::view(&cpu_gauge, frame, chunks[0], &theme);
-            Sparkline::view(&mem_sparkline, frame, chunks[1], &theme);
-            AlertPanel::view(&alerts, frame, chunks[2], &theme);
-            Paginator::view(&paginator, frame, chunks[3], &theme);
+            Gauge::view(
+                &cpu_gauge,
+                frame,
+                chunks[0],
+                &theme,
+                &ViewContext::default(),
+            );
+            Sparkline::view(
+                &mem_sparkline,
+                frame,
+                chunks[1],
+                &theme,
+                &ViewContext::default(),
+            );
+            AlertPanel::view(&alerts, frame, chunks[2], &theme, &ViewContext::default());
+            Paginator::view(
+                &paginator,
+                frame,
+                chunks[3],
+                &theme,
+                &ViewContext::default(),
+            );
         })
         .unwrap();
 }

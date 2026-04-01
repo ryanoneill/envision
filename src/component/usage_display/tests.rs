@@ -507,7 +507,9 @@ fn test_view_empty() {
     let state = UsageDisplayState::new();
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 3);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -517,7 +519,9 @@ fn test_view_horizontal_single() {
     let state = UsageDisplayState::new().metric(UsageMetric::new("CPU", "45%"));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -530,7 +534,9 @@ fn test_view_horizontal_multiple() {
         .metric(UsageMetric::new("Disk", "120 GB"));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 1);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -542,7 +548,9 @@ fn test_view_horizontal_with_color() {
         .metric(UsageMetric::new("Memory", "3.2 GB").with_color(Color::Yellow));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 1);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -554,7 +562,9 @@ fn test_view_horizontal_with_icon() {
         .metric(UsageMetric::new("Memory", "3.2 GB").with_icon("#"));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 1);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -567,7 +577,9 @@ fn test_view_horizontal_custom_separator() {
         .metric(UsageMetric::new("Memory", "3.2 GB"));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -581,7 +593,9 @@ fn test_view_vertical() {
         .metric(UsageMetric::new("Disk", "120 GB"));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -595,7 +609,9 @@ fn test_view_vertical_with_title() {
         .metric(UsageMetric::new("Memory", "3.2 GB"));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 4);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -610,7 +626,9 @@ fn test_view_grid_2_columns() {
         .metric(UsageMetric::new("Network", "1.5 Mbps"));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(50, 4);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -625,7 +643,9 @@ fn test_view_grid_3_columns() {
         .metric(UsageMetric::new("Disk", "120 GB"));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(50, 3);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -639,7 +659,9 @@ fn test_view_grid_odd_count() {
         .metric(UsageMetric::new("Disk", "120 GB"));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(50, 4);
     terminal
-        .draw(|frame| UsageDisplay::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -651,7 +673,7 @@ fn test_view_zero_width() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 0, 3);
-            UsageDisplay::view(&state, frame, area, &theme);
+            UsageDisplay::view(&state, frame, area, &theme, &ViewContext::default());
         })
         .unwrap();
     // Should not panic
@@ -664,7 +686,7 @@ fn test_view_zero_height() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 60, 0);
-            UsageDisplay::view(&state, frame, area, &theme);
+            UsageDisplay::view(&state, frame, area, &theme, &ViewContext::default());
         })
         .unwrap();
     // Should not panic
@@ -719,7 +741,7 @@ fn test_annotation_emitted_horizontal() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                UsageDisplay::view(&state, frame, frame.area(), &theme);
+                UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -737,7 +759,7 @@ fn test_annotation_emitted_vertical() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                UsageDisplay::view(&state, frame, frame.area(), &theme);
+                UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -756,7 +778,7 @@ fn test_annotation_emitted_grid() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                UsageDisplay::view(&state, frame, frame.area(), &theme);
+                UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

@@ -134,7 +134,13 @@ impl App for StyledTextApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        StyledText::view(&state.text, frame, chunks[0], &theme);
+        StyledText::view(
+            &state.text,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let status = format!(
             " Scroll: {} | Up/Down: scroll | PgUp/PgDn: page | Home/End: jump | q: quit",

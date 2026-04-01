@@ -400,7 +400,9 @@ fn test_view_multiple_items_mixed_states() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -425,7 +427,9 @@ fn test_view_disabled_state() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -447,7 +451,9 @@ fn test_view_single_item_full_progress() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());

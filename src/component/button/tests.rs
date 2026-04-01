@@ -49,7 +49,7 @@ fn test_view() {
 
     terminal
         .draw(|frame| {
-            Button::view(&state, frame, frame.area(), &theme);
+            Button::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -64,7 +64,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Button::view(&state, frame, frame.area(), &theme);
+            Button::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -79,7 +79,7 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Button::view(&state, frame, frame.area(), &theme);
+            Button::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -177,7 +177,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Button::view(&state, frame, frame.area(), &theme);
+                Button::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -198,7 +198,7 @@ fn test_annotation_focused() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Button::view(&state, frame, frame.area(), &theme);
+                Button::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

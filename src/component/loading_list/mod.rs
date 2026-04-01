@@ -38,7 +38,7 @@
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable};
+use super::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -1017,7 +1017,7 @@ impl<T: Clone> Component for LoadingList<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         render::render_loading_list(state, frame, area, theme);
     }
 }

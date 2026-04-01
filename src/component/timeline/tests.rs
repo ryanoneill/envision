@@ -727,7 +727,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -740,7 +740,7 @@ fn test_render_with_events() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -753,7 +753,7 @@ fn test_render_with_spans() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -768,7 +768,7 @@ fn test_render_with_events_and_spans() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -780,7 +780,7 @@ fn test_render_with_selection() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -794,7 +794,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -805,7 +805,7 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -816,7 +816,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -827,7 +827,7 @@ fn test_render_minimal_height() {
     let (mut terminal, theme) = test_utils::setup_render(60, 5);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -838,7 +838,7 @@ fn test_render_very_wide() {
     let (mut terminal, theme) = test_utils::setup_render(120, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -855,7 +855,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Timeline::view(&state, frame, frame.area(), &theme);
+                Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -899,7 +899,7 @@ fn test_overlapping_spans_same_lane() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }

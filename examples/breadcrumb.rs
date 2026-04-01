@@ -77,7 +77,13 @@ impl App for BreadcrumbApp {
         ])
         .split(area);
 
-        Breadcrumb::view(&state.breadcrumb, frame, chunks[0], &theme);
+        Breadcrumb::view(
+            &state.breadcrumb,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Show selection history
         let log_lines: Vec<Line> = state

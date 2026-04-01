@@ -11,7 +11,7 @@ fn test_snapshot_default() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme);
+            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -24,7 +24,7 @@ fn test_snapshot_vertical_focused_first() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme);
+            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -38,7 +38,7 @@ fn test_snapshot_vertical_focused_second() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme);
+            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -51,7 +51,7 @@ fn test_snapshot_horizontal() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme);
+            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -64,7 +64,7 @@ fn test_snapshot_custom_ratio() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme);
+            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -80,7 +80,7 @@ fn test_snapshot_resized() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme);
+            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

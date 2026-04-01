@@ -83,9 +83,27 @@ impl App for TitleCardApp {
 
         let theme = Theme::default();
 
-        TitleCard::view(&state.plain, frame, chunks[0], &theme);
-        TitleCard::view(&state.decorated, frame, chunks[1], &theme);
-        TitleCard::view(&state.styled, frame, chunks[2], &theme);
+        TitleCard::view(
+            &state.plain,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        TitleCard::view(
+            &state.decorated,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
+        TitleCard::view(
+            &state.styled,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let footer = Paragraph::new(" TitleCard configurations | Esc to quit")
             .style(Style::default().fg(Color::DarkGray))

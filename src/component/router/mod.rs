@@ -57,6 +57,7 @@
 use ratatui::prelude::*;
 
 use super::Component;
+use super::ViewContext;
 use crate::theme::Theme;
 
 /// Navigation mode for screen transitions.
@@ -377,7 +378,13 @@ impl<S: Clone + PartialEq> Router<S> {
     ///
     /// Router is state-only, so this is a no-op. The parent application
     /// should render based on `state.current()`.
-    pub fn view(_state: &RouterState<S>, _frame: &mut Frame, _area: Rect, _theme: &Theme) {
+    pub fn view(
+        _state: &RouterState<S>,
+        _frame: &mut Frame,
+        _area: Rect,
+        _theme: &Theme,
+        _ctx: &ViewContext,
+    ) {
         // Router is state-only - no view implementation.
         // The parent application should render based on state.current()
     }
@@ -396,8 +403,8 @@ impl<S: Clone + PartialEq + Default> Component for Router<S> {
         Router::update(state, msg)
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
-        Router::view(state, frame, area, theme)
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+        Router::view(state, frame, area, theme, &ViewContext::default())
     }
 }
 

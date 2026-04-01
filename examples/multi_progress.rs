@@ -55,7 +55,13 @@ impl App for MultiProgressApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        MultiProgress::view(&state.progress, frame, chunks[0], &theme);
+        MultiProgress::view(
+            &state.progress,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let completed = state.progress.completed_count();
         let total = state.progress.len();

@@ -73,7 +73,13 @@ impl App for FileBrowserApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        FileBrowser::view(&state.browser, frame, chunks[0], &theme);
+        FileBrowser::view(
+            &state.browser,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .browser

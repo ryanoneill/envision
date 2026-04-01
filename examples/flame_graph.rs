@@ -79,7 +79,13 @@ impl App for FlameGraphApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        FlameGraph::view(&state.graph, frame, chunks[0], &theme);
+        FlameGraph::view(
+            &state.graph,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .graph

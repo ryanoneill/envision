@@ -53,7 +53,13 @@ impl App for SplitPanelApp {
 
         // Render the split panel borders
         let theme = Theme::default();
-        SplitPanel::view(&state.split, frame, chunks[0], &theme);
+        SplitPanel::view(
+            &state.split,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Render content inside each pane
         let (first_area, second_area) = state.split.layout(chunks[0]);

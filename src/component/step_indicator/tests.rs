@@ -644,7 +644,7 @@ fn test_view_horizontal() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme);
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -664,7 +664,7 @@ fn test_view_vertical() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme);
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -683,7 +683,7 @@ fn test_view_with_title() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme);
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -701,7 +701,7 @@ fn test_view_focused_step() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme);
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -727,7 +727,7 @@ fn test_view_vertical_with_descriptions() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme);
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -749,7 +749,7 @@ fn test_view_all_statuses() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme);
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -764,7 +764,7 @@ fn test_view_empty_steps() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme);
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -784,7 +784,7 @@ fn test_annotation_emission() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                StepIndicator::view(&state, frame, frame.area(), &theme);
+                StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

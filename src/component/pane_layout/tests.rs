@@ -688,7 +688,7 @@ fn test_view_two_panes_horizontal() {
 
     terminal
         .draw(|frame| {
-            PaneLayout::view(&state, frame, frame.area(), &theme);
+            PaneLayout::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -707,7 +707,7 @@ fn test_view_two_panes_vertical() {
 
     terminal
         .draw(|frame| {
-            PaneLayout::view(&state, frame, frame.area(), &theme);
+            PaneLayout::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -729,7 +729,7 @@ fn test_view_three_panes_focused() {
 
     terminal
         .draw(|frame| {
-            PaneLayout::view(&state, frame, frame.area(), &theme);
+            PaneLayout::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -744,7 +744,7 @@ fn test_view_empty_panes() {
 
     terminal
         .draw(|frame| {
-            PaneLayout::view(&state, frame, frame.area(), &theme);
+            PaneLayout::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -764,7 +764,7 @@ fn test_annotation_emission() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                PaneLayout::view(&state, frame, frame.area(), &theme);
+                PaneLayout::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

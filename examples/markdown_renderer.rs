@@ -104,7 +104,13 @@ impl App for MarkdownRendererApp {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
         let theme = Theme::default();
-        MarkdownRenderer::view(&state.renderer, frame, chunks[0], &theme);
+        MarkdownRenderer::view(
+            &state.renderer,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let mode = if state.renderer.show_source() {
             "source"

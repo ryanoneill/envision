@@ -130,10 +130,34 @@ impl App for SliderApp {
         ])
         .split(area);
 
-        Slider::view(&state.volume, frame, chunks[0], &theme);
-        Slider::view(&state.brightness, frame, chunks[1], &theme);
-        Slider::view(&state.temperature, frame, chunks[2], &theme);
-        Slider::view(&state.vertical, frame, chunks[3], &theme);
+        Slider::view(
+            &state.volume,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        Slider::view(
+            &state.brightness,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
+        Slider::view(
+            &state.temperature,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
+        Slider::view(
+            &state.vertical,
+            frame,
+            chunks[3],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let status = format!(
             " Vol: {} | Bright: {} | Temp: {} | Level: {} | Tab: navigate, q: quit",

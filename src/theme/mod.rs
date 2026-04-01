@@ -20,7 +20,7 @@
 //! let dracula_theme = Theme::dracula();
 //!
 //! // Components use theme in their view() method:
-//! // Component::view(&state, frame, area, &nord_theme);
+//! // Component::view(&state, frame, area, &nord_theme, &ViewContext::default());
 //! ```
 //!
 //! # Creating Custom Themes
@@ -282,7 +282,7 @@ impl Theme {
     ///
     /// let theme = Theme::nord();
     /// // Use with components:
-    /// // Button::view(&state, frame, area, &theme);
+    /// // Button::view(&state, frame, area, &theme, &ViewContext::default());
     /// ```
     pub fn nord() -> Self {
         Self {

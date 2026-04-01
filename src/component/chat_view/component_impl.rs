@@ -4,7 +4,7 @@ use ratatui::prelude::*;
 
 use super::message::Focus;
 use super::render_helpers;
-use super::{ChatView, ChatViewMessage, ChatViewOutput, ChatViewState};
+use super::{ChatView, ChatViewMessage, ChatViewOutput, ChatViewState, ViewContext};
 use crate::component::{Component, Disableable, Focusable, TextAreaMessage, TextAreaOutput};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
@@ -206,7 +206,7 @@ impl Component for ChatView {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         if area.height < 4 {
             return;
         }

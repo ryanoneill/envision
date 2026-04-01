@@ -95,8 +95,20 @@ impl App for SelectApp {
         ])
         .split(area);
 
-        Select::view(&state.color, frame, chunks[0], &theme);
-        Select::view(&state.size, frame, chunks[1], &theme);
+        Select::view(
+            &state.color,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        Select::view(
+            &state.size,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Summary
         let color_val = state.color.selected_value().unwrap_or("none");

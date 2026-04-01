@@ -110,9 +110,27 @@ impl App for CheckboxApp {
         ])
         .split(area);
 
-        Checkbox::view(&state.notifications, frame, chunks[0], &theme);
-        Checkbox::view(&state.dark_mode, frame, chunks[1], &theme);
-        Checkbox::view(&state.auto_save, frame, chunks[2], &theme);
+        Checkbox::view(
+            &state.notifications,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        Checkbox::view(
+            &state.dark_mode,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
+        Checkbox::view(
+            &state.auto_save,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Summary
         let summary = format!(

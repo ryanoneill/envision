@@ -60,7 +60,7 @@ pub use item::*;
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable};
+use super::{Component, Disableable, ViewContext};
 use crate::theme::Theme;
 
 /// Section of the status bar for addressing items.
@@ -611,7 +611,7 @@ impl Component for StatusBar {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         // Render background
         let bg_style = Style::default().bg(state.background);
 

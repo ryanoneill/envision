@@ -20,7 +20,7 @@ fn test_snapshot_default_empty() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme);
+            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -32,7 +32,7 @@ fn test_snapshot_populated() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme);
+            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -45,7 +45,7 @@ fn test_snapshot_focused() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme);
+            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -60,7 +60,7 @@ fn test_snapshot_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme);
+            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -75,7 +75,7 @@ fn test_snapshot_with_timestamps() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme);
+            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -92,7 +92,7 @@ fn test_snapshot_search_active() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme);
+            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

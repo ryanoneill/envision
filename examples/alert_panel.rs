@@ -70,7 +70,13 @@ impl App for AlertPanelApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        AlertPanel::view(&state.panel, frame, chunks[0], &theme);
+        AlertPanel::view(
+            &state.panel,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .panel

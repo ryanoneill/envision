@@ -45,7 +45,7 @@ use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{
     Checkbox, CheckboxMessage, CheckboxState, Component, Disableable, Focusable, InputField,
-    InputFieldMessage, InputFieldState, Select, SelectMessage, SelectState,
+    InputFieldMessage, InputFieldState, Select, SelectMessage, SelectState, ViewContext,
 };
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
@@ -792,7 +792,7 @@ impl Component for Form {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         if state.fields.is_empty() {
             return;
         }

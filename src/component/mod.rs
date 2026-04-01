@@ -34,7 +34,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Component, Focusable};
+//! use envision::component::{Component, Focusable, ViewContext};
 //! use envision::theme::Theme;
 //! use ratatui::prelude::*;
 //!
@@ -74,7 +74,7 @@
 //!         Some(CounterOutput::ValueChanged(state.value))
 //!     }
 //!
-//!     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+//!     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
 //!         let style = if state.focused {
 //!             theme.focused_style()
 //!         } else {
@@ -505,6 +505,54 @@ pub use markdown_renderer::{MarkdownRenderer, MarkdownRendererMessage, MarkdownR
 // Always available
 pub use focus_manager::FocusManager;
 
+/// Render-time context passed to [`Component::view`].
+///
+/// `ViewContext` carries information that the parent determines at render
+/// time, such as whether a component is focused or disabled. This separates
+/// render-time concerns from persistent component state, allowing parents
+/// to control visual appearance without mutating component state.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::ViewContext;
+///
+/// // Default: unfocused, enabled
+/// let ctx = ViewContext::default();
+///
+/// // Focused component
+/// let ctx = ViewContext::new().focused(true);
+///
+/// // Disabled and focused
+/// let ctx = ViewContext::new().focused(true).disabled(true);
+/// ```
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ViewContext {
+    /// Whether this component currently has keyboard focus.
+    pub focused: bool,
+    /// Whether this component is currently disabled.
+    pub disabled: bool,
+}
+
+impl ViewContext {
+    /// Creates a new default ViewContext (unfocused, enabled).
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Sets the focused state (builder pattern).
+    pub fn focused(mut self, focused: bool) -> Self {
+        self.focused = focused;
+        self
+    }
+
+    /// Sets the disabled state (builder pattern).
+    pub fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+}
+
 /// A composable UI component with its own state and message handling.
 ///
 /// Components are the building blocks of complex TUI applications. Each
@@ -566,7 +614,7 @@ pub trait Component: Sized {
     /// The `theme` parameter provides the color scheme to use for rendering.
     /// Use [`Theme::default()`] for the standard color scheme, or
     /// [`Theme::nord()`] for the Nord color palette.
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme);
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext);
 
     /// Renders the component with optional tracing instrumentation.
     ///
@@ -574,7 +622,13 @@ pub trait Component: Sized {
     /// around the [`view`](Component::view) call with the component type name
     /// and render area dimensions. When the feature is disabled, this is
     /// identical to calling `view` directly.
-    fn traced_view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn traced_view(
+        state: &Self::State,
+        frame: &mut Frame,
+        area: Rect,
+        theme: &Theme,
+        ctx: &ViewContext,
+    ) {
         #[cfg(feature = "tracing")]
         let _span = tracing::trace_span!(
             "component_view",
@@ -585,7 +639,7 @@ pub trait Component: Sized {
             area.height = area.height,
         )
         .entered();
-        Self::view(state, frame, area, theme);
+        Self::view(state, frame, area, theme, ctx);
     }
 
     /// Maps an input event to a component message.
@@ -650,7 +704,7 @@ pub trait Component: Sized {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{Component, Focusable};
+/// use envision::component::{Component, Focusable, ViewContext};
 /// use envision::theme::Theme;
 /// use ratatui::prelude::*;
 ///
@@ -673,7 +727,7 @@ pub trait Component: Sized {
 /// #     type Output = TextInputOutput;
 /// #     fn init() -> Self::State { TextInputState::default() }
 /// #     fn update(_: &mut Self::State, _: Self::Message) -> Option<Self::Output> { None }
-/// #     fn view(_: &Self::State, _: &mut Frame, _: Rect, _: &Theme) {}
+/// #     fn view(_: &Self::State, _: &mut Frame, _: Rect, _: &Theme, _: &ViewContext) {}
 /// # }
 /// #
 /// impl Focusable for TextInput {
@@ -741,7 +795,8 @@ pub trait Focusable: Component {
     ) {
         let was_focused = Self::is_focused(state);
         Self::set_focused(state, focused);
-        Self::view(state, frame, area, theme);
+        let ctx = ViewContext::new().focused(focused);
+        Self::view(state, frame, area, theme, &ctx);
         Self::set_focused(state, was_focused);
     }
 }
@@ -755,7 +810,7 @@ pub trait Focusable: Component {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{Component, Toggleable};
+/// use envision::component::{Component, Toggleable, ViewContext};
 /// use envision::theme::Theme;
 /// use ratatui::prelude::*;
 ///
@@ -778,7 +833,7 @@ pub trait Focusable: Component {
 /// #     type Output = HelpPanelOutput;
 /// #     fn init() -> Self::State { HelpPanelState { visible: false, content: String::new() } }
 /// #     fn update(_: &mut Self::State, _: Self::Message) -> Option<Self::Output> { None }
-/// #     fn view(_: &Self::State, _: &mut Frame, _: Rect, _: &Theme) {}
+/// #     fn view(_: &Self::State, _: &mut Frame, _: Rect, _: &Theme, _: &ViewContext) {}
 /// # }
 /// #
 /// impl Toggleable for HelpPanel {
@@ -902,7 +957,8 @@ pub trait Disableable: Component {
     ) {
         let was_disabled = Self::is_disabled(state);
         Self::set_disabled(state, disabled);
-        Self::view(state, frame, area, theme);
+        let ctx = ViewContext::new().disabled(disabled);
+        Self::view(state, frame, area, theme, &ctx);
         Self::set_disabled(state, was_disabled);
     }
 }

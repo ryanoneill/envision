@@ -663,7 +663,7 @@ fn test_snapshot_focused() {
     state.set_focused(true);
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme);
+            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -675,7 +675,7 @@ fn test_snapshot_unfocused() {
     let state = LineInputState::with_value("hello");
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme);
+            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -687,7 +687,7 @@ fn test_snapshot_disabled() {
     let state = LineInputState::with_value("hello").with_disabled(true);
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme);
+            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -699,7 +699,7 @@ fn test_snapshot_placeholder() {
     let state = LineInputState::new().with_placeholder("Type here...");
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme);
+            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -712,7 +712,7 @@ fn test_snapshot_wrapped() {
     state.set_focused(true);
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme);
+            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -725,7 +725,7 @@ fn test_snapshot_wide_chars() {
     state.set_focused(true);
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme);
+            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -740,7 +740,7 @@ fn test_snapshot_selection() {
     state.selection_anchor = Some(5);
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme);
+            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -876,7 +876,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                LineInput::view(&state, frame, frame.area(), &theme);
+                LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

@@ -33,6 +33,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
 use super::Component;
+use super::ViewContext;
 use crate::theme::Theme;
 
 /// Default maximum number of visible toasts.
@@ -446,7 +447,7 @@ impl Component for Toast {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         if state.toasts.is_empty() {
             return;
         }

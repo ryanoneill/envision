@@ -37,7 +37,7 @@ use std::time::Duration;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Gauge};
 
-use super::{Component, Disableable};
+use super::{Component, Disableable, ViewContext};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a ProgressBar.
@@ -476,7 +476,7 @@ impl Component for ProgressBar {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         let label = build_label(state);
 
         let gauge = Gauge::default()

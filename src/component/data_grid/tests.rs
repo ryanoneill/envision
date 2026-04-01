@@ -534,7 +534,7 @@ fn test_render_unfocused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme);
+            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -545,7 +545,7 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme);
+            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -557,7 +557,7 @@ fn test_render_editing() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme);
+            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -568,7 +568,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme);
+            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -579,7 +579,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme);
+            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -644,7 +644,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                DataGrid::view(&state, frame, frame.area(), &theme);
+                DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

@@ -21,7 +21,7 @@ fn test_snapshot_default_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -33,7 +33,7 @@ fn test_snapshot_populated() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -46,7 +46,7 @@ fn test_snapshot_focused_filter() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -60,7 +60,7 @@ fn test_snapshot_focused_list() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -74,7 +74,7 @@ fn test_snapshot_filtered() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -91,7 +91,7 @@ fn test_snapshot_no_matches() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -103,7 +103,7 @@ fn test_snapshot_custom_placeholder() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

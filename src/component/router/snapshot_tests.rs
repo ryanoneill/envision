@@ -1,5 +1,6 @@
 use super::*;
 use crate::component::test_utils;
+use crate::component::ViewContext;
 
 /// Router is a state-only component with no visual output.
 /// These tests verify that `Router::view()` is a no-op and
@@ -23,7 +24,7 @@ fn test_snapshot_initial_screen() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Router::view(&state, frame, frame.area(), &theme);
+            Router::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     // Router renders nothing -- the output should be blank
@@ -41,7 +42,7 @@ fn test_snapshot_after_navigation() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Router::view(&state, frame, frame.area(), &theme);
+            Router::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     // Router renders nothing -- the output should be blank
@@ -58,7 +59,7 @@ fn test_snapshot_after_back() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Router::view(&state, frame, frame.area(), &theme);
+            Router::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

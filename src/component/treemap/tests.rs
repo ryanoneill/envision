@@ -748,7 +748,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -763,7 +763,7 @@ fn test_render_simple() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -778,7 +778,7 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -793,7 +793,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -807,7 +807,7 @@ fn test_render_with_values() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -819,7 +819,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(5, 4);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -831,7 +831,7 @@ fn test_render_too_small() {
     let (mut terminal, theme) = test_utils::setup_render(2, 2);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -849,7 +849,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Treemap::view(&state, frame, frame.area(), &theme);
+                Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

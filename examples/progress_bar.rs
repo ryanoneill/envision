@@ -68,9 +68,27 @@ impl App for ProgressBarApp {
         ])
         .split(area);
 
-        ProgressBar::view(&state.download, frame, chunks[0], &theme);
-        ProgressBar::view(&state.install, frame, chunks[1], &theme);
-        ProgressBar::view(&state.verify, frame, chunks[2], &theme);
+        ProgressBar::view(
+            &state.download,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        ProgressBar::view(
+            &state.install,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
+        ProgressBar::view(
+            &state.verify,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

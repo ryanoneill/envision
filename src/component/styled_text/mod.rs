@@ -40,7 +40,7 @@ pub use content::{StyledBlock, StyledContent, StyledInline};
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
-use super::{Component, Focusable};
+use super::{Component, Focusable, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
@@ -558,7 +558,7 @@ impl Component for StyledText {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.register(
                 area,

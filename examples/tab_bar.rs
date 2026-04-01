@@ -83,7 +83,13 @@ impl App for TabBarApp {
         ])
         .split(area);
 
-        TabBar::view(&state.tab_bar, frame, chunks[0], &theme);
+        TabBar::view(
+            &state.tab_bar,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let tab_name = state
             .tab_bar

@@ -26,7 +26,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -37,7 +37,7 @@ fn test_render_with_messages() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -48,7 +48,7 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -59,7 +59,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -70,7 +70,7 @@ fn test_render_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -87,7 +87,7 @@ fn test_render_with_timestamps() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -100,7 +100,7 @@ fn test_render_without_role_labels() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -118,7 +118,7 @@ fn test_render_code_block() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -136,7 +136,7 @@ fn test_render_tool_use_block() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -154,7 +154,7 @@ fn test_render_thinking_block() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -169,7 +169,7 @@ fn test_render_error_block() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -183,7 +183,7 @@ fn test_render_streaming_message() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -202,7 +202,7 @@ fn test_render_collapsed_thinking() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -218,7 +218,7 @@ fn test_render_collapsed_tool_use() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -229,7 +229,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 4);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -240,7 +240,7 @@ fn test_render_tiny_area_no_panic() {
     let (mut terminal, theme) = test_utils::setup_render(4, 2);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -261,7 +261,7 @@ fn test_render_mixed_blocks() {
     let (mut terminal, theme) = test_utils::setup_render(60, 30);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -280,7 +280,7 @@ fn test_render_empty_code_block() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -295,7 +295,7 @@ fn test_render_empty_tool_input() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -310,7 +310,7 @@ fn test_render_empty_text_block() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ConversationView::view(&state, frame, frame.area(), &theme);
+            ConversationView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -327,7 +327,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                ConversationView::view(&state, frame, frame.area(), &theme);
+                ConversationView::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::default(),
+                );
             })
             .unwrap();
     });

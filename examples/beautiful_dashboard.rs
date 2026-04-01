@@ -329,10 +329,16 @@ impl App for DashboardApp {
         render_progress(state, frame, main[3], &theme);
 
         // ── Key Hints ──
-        KeyHints::view(&state.hints, frame, main[4], &theme);
+        KeyHints::view(
+            &state.hints,
+            frame,
+            main[4],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // ── Toast overlay (renders on top) ──
-        Toast::view(&state.toasts, frame, area, &theme);
+        Toast::view(&state.toasts, frame, area, &theme, &ViewContext::default());
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {
@@ -438,7 +444,7 @@ fn render_navigation(state: &State, frame: &mut Frame, area: Rect, theme: &Theme
     frame.render_widget(block, area);
 
     // Render menu inside the block
-    Menu::view(&state.menu, frame, inner, theme);
+    Menu::view(&state.menu, frame, inner, theme, &ViewContext::default());
 }
 
 fn render_content(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
@@ -474,7 +480,13 @@ fn render_content(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
 
     let chart_inner = chart_block.inner(content[0]);
     frame.render_widget(chart_block, content[0]);
-    Chart::view(&state.chart, frame, chart_inner, theme);
+    Chart::view(
+        &state.chart,
+        frame,
+        chart_inner,
+        theme,
+        &ViewContext::default(),
+    );
 
     // ── Metrics Panel ──
     let metrics_focused = state.focus.is_focused(&Panel::Metrics);
@@ -502,7 +514,13 @@ fn render_content(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
 
     let metrics_inner = metrics_block.inner(content[1]);
     frame.render_widget(metrics_block, content[1]);
-    MetricsDashboard::view(&state.metrics, frame, metrics_inner, theme);
+    MetricsDashboard::view(
+        &state.metrics,
+        frame,
+        metrics_inner,
+        theme,
+        &ViewContext::default(),
+    );
 }
 
 fn render_progress(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
@@ -528,9 +546,27 @@ fn render_progress(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) 
     ])
     .split(inner);
 
-    ProgressBar::view(&state.progress_cpu, frame, cols[0], theme);
-    ProgressBar::view(&state.progress_mem, frame, cols[1], theme);
-    ProgressBar::view(&state.progress_disk, frame, cols[2], theme);
+    ProgressBar::view(
+        &state.progress_cpu,
+        frame,
+        cols[0],
+        theme,
+        &ViewContext::default(),
+    );
+    ProgressBar::view(
+        &state.progress_mem,
+        frame,
+        cols[1],
+        theme,
+        &ViewContext::default(),
+    );
+    ProgressBar::view(
+        &state.progress_disk,
+        frame,
+        cols[2],
+        theme,
+        &ViewContext::default(),
+    );
 }
 
 // =============================================================================

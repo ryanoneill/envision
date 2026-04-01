@@ -7,7 +7,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -19,7 +19,7 @@ fn test_snapshot_small_grid() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -34,7 +34,7 @@ fn test_snapshot_with_labels() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -48,7 +48,7 @@ fn test_snapshot_with_values() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -62,7 +62,7 @@ fn test_snapshot_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -77,7 +77,7 @@ fn test_snapshot_focused_with_selection() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -91,7 +91,7 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -105,7 +105,7 @@ fn test_snapshot_blue_to_red_scale() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -117,7 +117,7 @@ fn test_snapshot_1x1_grid() {
     let (mut terminal, theme) = test_utils::setup_render(20, 6);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
