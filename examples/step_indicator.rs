@@ -89,7 +89,13 @@ impl App for StepIndicatorApp {
         ])
         .split(area);
 
-        StepIndicator::view(&state.pipeline, frame, chunks[0], &theme);
+        StepIndicator::view(
+            &state.pipeline,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Info panel
         let active = state

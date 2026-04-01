@@ -301,10 +301,22 @@ impl App for ChatMarkdownApp {
         frame.render_widget(header, chunks[0]);
 
         // Chat messages
-        ChatView::view(&state.chat, frame, chunks[1], &theme);
+        ChatView::view(
+            &state.chat,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Input (multi-line)
-        TextArea::view(&state.input, frame, chunks[2], &theme);
+        TextArea::view(
+            &state.input,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Status bar
         let status = Paragraph::new(Line::from(vec![

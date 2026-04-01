@@ -67,7 +67,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -79,7 +79,7 @@ fn test_snapshot_two_streams() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -92,7 +92,7 @@ fn test_snapshot_focused() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -113,7 +113,7 @@ fn test_snapshot_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -125,7 +125,7 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -138,7 +138,7 @@ fn test_snapshot_with_filter() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

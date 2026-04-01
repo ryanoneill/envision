@@ -37,7 +37,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{List, ListItem};
 
-use super::{Component, Disableable, Focusable};
+use super::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -389,7 +389,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         let items: Vec<ListItem> = state
             .options
             .iter()

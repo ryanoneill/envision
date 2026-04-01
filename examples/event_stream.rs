@@ -166,7 +166,13 @@ impl App for EventStreamApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        EventStream::view(&state.stream, frame, chunks[0], &theme);
+        EventStream::view(
+            &state.stream,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let visible = state.stream.visible_events().len();
         let total = state.stream.event_count();

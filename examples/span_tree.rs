@@ -82,7 +82,13 @@ impl App for SpanTreeApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        SpanTree::view(&state.tree, frame, chunks[0], &theme);
+        SpanTree::view(
+            &state.tree,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .tree

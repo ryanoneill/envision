@@ -42,7 +42,7 @@ use std::collections::HashSet;
 use ratatui::prelude::*;
 
 use self::highlight::Language;
-use super::{Component, Disableable, Focusable};
+use super::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -498,7 +498,7 @@ impl Component for CodeBlock {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         render::render(state, frame, area, theme);
     }
 }

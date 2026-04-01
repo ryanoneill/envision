@@ -24,7 +24,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Disableable};
+use super::{Component, Disableable, ViewContext};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a TitleCard.
@@ -436,7 +436,7 @@ impl Component for TitleCard {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.register(
                 area,

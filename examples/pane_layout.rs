@@ -75,7 +75,13 @@ impl App for PaneLayoutApp {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
         // Render pane borders
-        PaneLayout::view(&state.layout, frame, chunks[0], &theme);
+        PaneLayout::view(
+            &state.layout,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Render content in each pane
         let rects = state.layout.layout(chunks[0]);

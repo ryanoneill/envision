@@ -69,7 +69,13 @@ impl App for MenuApp {
         ])
         .split(area);
 
-        Menu::view(&state.menu, frame, chunks[0], &theme);
+        Menu::view(
+            &state.menu,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected_text = state.last_selected.as_deref().unwrap_or("None");
         let content =

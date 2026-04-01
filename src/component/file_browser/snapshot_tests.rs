@@ -28,7 +28,7 @@ fn test_render_basic() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
+            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -40,7 +40,7 @@ fn test_render_unfocused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
+            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -53,7 +53,7 @@ fn test_render_with_filter() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
+            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -66,7 +66,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
+            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -80,7 +80,7 @@ fn test_render_with_selection_markers() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
+            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -93,7 +93,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 8);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme);
+            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -110,7 +110,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                FileBrowser::view(&state, frame, frame.area(), &theme);
+                FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

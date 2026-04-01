@@ -555,7 +555,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -570,7 +570,7 @@ fn test_view_with_rust_code() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -585,7 +585,7 @@ fn test_view_with_line_numbers() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -601,7 +601,7 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -616,7 +616,7 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -633,7 +633,7 @@ fn test_view_scrolled() {
     let (mut terminal, theme) = test_utils::setup_render(50, 8);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -648,7 +648,7 @@ fn test_view_with_highlight_lines() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -664,7 +664,7 @@ fn test_view_python_code() {
     let (mut terminal, theme) = test_utils::setup_render(60, 8);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -682,7 +682,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                CodeBlock::view(&state, frame, frame.area(), &theme);
+                CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -702,7 +702,7 @@ fn test_annotation_focused() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                CodeBlock::view(&state, frame, frame.area(), &theme);
+                CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -721,7 +721,7 @@ fn test_zero_size_render() {
     let (mut terminal, theme) = test_utils::setup_render(3, 3);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     // Should not panic
@@ -733,7 +733,7 @@ fn test_single_line_render() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -746,7 +746,7 @@ fn test_scroll_beyond_content() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme);
+            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     // Should not panic; scroll is clamped during render

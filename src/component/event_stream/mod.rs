@@ -38,7 +38,7 @@ use std::marker::PhantomData;
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, InputFieldMessage};
+use super::{Component, Disableable, Focusable, InputFieldMessage, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
@@ -382,7 +382,7 @@ impl Component for EventStream {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         render::render_event_stream(state, frame, area, theme);
     }
 }

@@ -54,7 +54,13 @@ impl App for HistogramApp {
     fn view(state: &State, frame: &mut Frame) {
         let theme = Theme::default();
         let area = frame.area();
-        Histogram::view(&state.histogram, frame, area, &theme);
+        Histogram::view(
+            &state.histogram,
+            frame,
+            area,
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

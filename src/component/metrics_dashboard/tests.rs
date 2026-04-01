@@ -520,7 +520,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme);
+            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -531,7 +531,7 @@ fn test_render_with_widgets() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme);
+            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -542,7 +542,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme);
+            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -557,7 +557,7 @@ fn test_render_with_history() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme);
+            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -568,7 +568,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme);
+            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -653,7 +653,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                MetricsDashboard::view(&state, frame, frame.area(), &theme);
+                MetricsDashboard::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::default(),
+                );
             })
             .unwrap();
     });

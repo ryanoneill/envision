@@ -454,7 +454,7 @@ fn test_view_closed_empty() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme);
+            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -469,7 +469,7 @@ fn test_view_closed_with_selection() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme);
+            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -485,7 +485,7 @@ fn test_view_open_no_filter() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme);
+            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -502,7 +502,7 @@ fn test_view_open_with_filter() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme);
+            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -519,7 +519,7 @@ fn test_view_highlight() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme);
+            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -536,7 +536,7 @@ fn test_view_no_matches() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme);
+            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -552,7 +552,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme);
+            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -833,7 +833,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Dropdown::view(&state, frame, frame.area(), &theme);
+                Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

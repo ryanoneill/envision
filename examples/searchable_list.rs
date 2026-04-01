@@ -82,7 +82,13 @@ impl App for SearchableListApp {
         ])
         .split(area);
 
-        SearchableList::view(&state.list, frame, chunks[0], &theme);
+        SearchableList::view(
+            &state.list,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Show selection history
         let log_lines: Vec<Line> = state

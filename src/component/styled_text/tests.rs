@@ -504,7 +504,7 @@ fn test_view_heading_and_text() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme);
+            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -524,7 +524,7 @@ fn test_view_bullet_list() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme);
+            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -544,7 +544,7 @@ fn test_view_numbered_list() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme);
+            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -561,7 +561,7 @@ fn test_view_code_block() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme);
+            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -580,7 +580,7 @@ fn test_view_horizontal_rule() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme);
+            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -598,7 +598,7 @@ fn test_view_with_title() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme);
+            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -616,7 +616,7 @@ fn test_view_no_border() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme);
+            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -631,7 +631,7 @@ fn test_view_empty_content() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme);
+            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -658,7 +658,7 @@ fn test_view_mixed_content() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme);
+            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -677,7 +677,7 @@ fn test_annotation_emission() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                StyledText::view(&state, frame, frame.area(), &theme);
+                StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

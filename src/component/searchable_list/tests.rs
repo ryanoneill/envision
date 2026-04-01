@@ -616,7 +616,7 @@ fn test_render_unfocused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -628,7 +628,7 @@ fn test_render_focused_filter() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -641,7 +641,7 @@ fn test_render_focused_list() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -657,7 +657,7 @@ fn test_render_with_filter() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -669,7 +669,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -680,7 +680,7 @@ fn test_render_empty_list() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme);
+            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -929,7 +929,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                SearchableList::view(&state, frame, frame.area(), &theme);
+                SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

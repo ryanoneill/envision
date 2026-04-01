@@ -116,7 +116,7 @@ impl App for ConfirmDialogApp {
 
         // Overlay dialog when visible
         if ConfirmDialog::is_visible(&state.dialog) {
-            ConfirmDialog::view(&state.dialog, frame, area, &theme);
+            ConfirmDialog::view(&state.dialog, frame, area, &theme, &ViewContext::default());
         }
 
         let status = " d: delete dialog | s: save dialog | q: quit";

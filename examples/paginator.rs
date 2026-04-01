@@ -92,25 +92,49 @@ impl App for PaginatorApp {
             ratatui::widgets::Paragraph::new("PageOfTotal:").style(theme.info_style()),
             chunks[0],
         );
-        Paginator::view(&state.page_of_total, frame, chunks[1], &theme);
+        Paginator::view(
+            &state.page_of_total,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         frame.render_widget(
             ratatui::widgets::Paragraph::new("RangeOfTotal:").style(theme.info_style()),
             chunks[3],
         );
-        Paginator::view(&state.range_of_total, frame, chunks[4], &theme);
+        Paginator::view(
+            &state.range_of_total,
+            frame,
+            chunks[4],
+            &theme,
+            &ViewContext::default(),
+        );
 
         frame.render_widget(
             ratatui::widgets::Paragraph::new("Dots:").style(theme.info_style()),
             chunks[6],
         );
-        Paginator::view(&state.dots, frame, chunks[7], &theme);
+        Paginator::view(
+            &state.dots,
+            frame,
+            chunks[7],
+            &theme,
+            &ViewContext::default(),
+        );
 
         frame.render_widget(
             ratatui::widgets::Paragraph::new("Compact:").style(theme.info_style()),
             chunks[9],
         );
-        Paginator::view(&state.compact, frame, chunks[10], &theme);
+        Paginator::view(
+            &state.compact,
+            frame,
+            chunks[10],
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

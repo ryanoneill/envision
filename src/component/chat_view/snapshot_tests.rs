@@ -18,7 +18,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -31,7 +31,7 @@ fn test_snapshot_single_user_message() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -46,7 +46,7 @@ fn test_snapshot_multi_role() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -63,7 +63,7 @@ fn test_snapshot_focused_input() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -78,7 +78,7 @@ fn test_snapshot_focused_history() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -92,7 +92,7 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -107,7 +107,7 @@ fn test_snapshot_with_timestamps() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

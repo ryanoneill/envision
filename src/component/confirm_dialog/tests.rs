@@ -400,7 +400,7 @@ fn test_view_not_visible() {
 
     terminal
         .draw(|frame| {
-            ConfirmDialog::view(&state, frame, frame.area(), &theme);
+            ConfirmDialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -418,7 +418,7 @@ fn test_view_ok_dialog() {
 
     terminal
         .draw(|frame| {
-            ConfirmDialog::view(&state, frame, frame.area(), &theme);
+            ConfirmDialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -434,7 +434,7 @@ fn test_view_yes_no_dialog() {
 
     terminal
         .draw(|frame| {
-            ConfirmDialog::view(&state, frame, frame.area(), &theme);
+            ConfirmDialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -454,7 +454,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                ConfirmDialog::view(&state, frame, frame.area(), &theme);
+                ConfirmDialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

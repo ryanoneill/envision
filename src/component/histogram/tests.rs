@@ -456,7 +456,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -470,7 +470,7 @@ fn test_render_with_data() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -485,7 +485,7 @@ fn test_render_with_labels() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -498,7 +498,7 @@ fn test_render_with_show_counts() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -511,7 +511,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -524,7 +524,7 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -535,7 +535,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -548,7 +548,7 @@ fn test_render_with_color() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -563,7 +563,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -578,7 +578,7 @@ fn test_snapshot_with_data() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -592,7 +592,7 @@ fn test_snapshot_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -607,7 +607,7 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme);
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -625,7 +625,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Histogram::view(&state, frame, frame.area(), &theme);
+                Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

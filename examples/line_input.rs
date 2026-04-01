@@ -64,7 +64,13 @@ impl App for LineInputApp {
         .split(area);
 
         let theme = Theme::default();
-        LineInput::view(&state.input, frame, chunks[0], &theme);
+        LineInput::view(
+            &state.input,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Show submissions log
         let log_lines: Vec<Line> = state

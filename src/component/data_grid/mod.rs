@@ -47,6 +47,7 @@ use ratatui::widgets::{Block, Borders, Row, Table as RatatuiTable};
 
 use super::{
     Column, Component, Disableable, Focusable, InputFieldMessage, InputFieldState, TableRow,
+    ViewContext,
 };
 use crate::input::{Event, KeyCode};
 use crate::scroll::ScrollState;
@@ -753,7 +754,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         if state.columns.is_empty() {
             return;
         }

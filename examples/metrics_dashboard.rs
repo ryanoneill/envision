@@ -60,7 +60,13 @@ impl App for MetricsDashboardApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        MetricsDashboard::view(&state.dashboard, frame, chunks[0], &theme);
+        MetricsDashboard::view(
+            &state.dashboard,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .dashboard

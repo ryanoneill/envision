@@ -98,7 +98,13 @@ impl App for KeyHintsApp {
         frame.render_widget(widget, chunks[0]);
 
         // Key hints bar at the bottom
-        KeyHints::view(&state.hints, frame, chunks[1], &theme);
+        KeyHints::view(
+            &state.hints,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

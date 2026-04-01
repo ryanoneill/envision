@@ -24,7 +24,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -39,7 +39,7 @@ fn test_snapshot_events_only() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -54,7 +54,7 @@ fn test_snapshot_spans_only() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -70,7 +70,7 @@ fn test_snapshot_full_timeline() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -88,7 +88,7 @@ fn test_snapshot_with_selection() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -105,7 +105,7 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -126,7 +126,7 @@ fn test_snapshot_span_selected() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme);
+            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

@@ -484,7 +484,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme);
+            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -498,7 +498,7 @@ fn test_view_unfocused() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme);
+            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -512,7 +512,7 @@ fn test_view_placeholder() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme);
+            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -528,7 +528,7 @@ fn test_view_renders() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme);
+            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -687,7 +687,7 @@ fn test_view_with_scroll() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme);
+            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -704,7 +704,7 @@ fn test_view_cursor_above_scroll() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme);
+            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -980,7 +980,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                TextArea::view(&state, frame, frame.area(), &theme);
+                TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

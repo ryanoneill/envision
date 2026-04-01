@@ -305,7 +305,13 @@ impl App for StylingShowcaseApp {
         render_style_palette(state, frame, panels[0], &theme);
 
         // Right panel: Rich Text
-        StyledText::view(&state.styled_text, frame, panels[1], &theme);
+        StyledText::view(
+            &state.styled_text,
+            frame,
+            panels[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Footer — key hints
         render_footer(frame, main_chunks[2], &theme);

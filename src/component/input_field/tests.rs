@@ -260,7 +260,7 @@ fn test_view() {
 
     terminal
         .draw(|frame| {
-            InputField::view(&state, frame, frame.area(), &theme);
+            InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -274,7 +274,7 @@ fn test_view_unfocused() {
 
     terminal
         .draw(|frame| {
-            InputField::view(&state, frame, frame.area(), &theme);
+            InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -289,7 +289,7 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            InputField::view(&state, frame, frame.area(), &theme);
+            InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -304,7 +304,7 @@ fn test_view_placeholder() {
 
     terminal
         .draw(|frame| {
-            InputField::view(&state, frame, frame.area(), &theme);
+            InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -698,7 +698,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                InputField::view(&state, frame, frame.area(), &theme);
+                InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

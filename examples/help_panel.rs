@@ -95,7 +95,13 @@ impl App for HelpPanelApp {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
         let theme = Theme::default();
-        HelpPanel::view(&state.help, frame, chunks[0], &theme);
+        HelpPanel::view(
+            &state.help,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let status = Paragraph::new(format!(
             " Scroll: {} | Up/Down | PgUp/PgDn | Home/End | Esc quit",

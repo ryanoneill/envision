@@ -93,7 +93,13 @@ impl App for CanvasApp {
 
     fn view(state: &State, frame: &mut Frame) {
         let theme = Theme::default();
-        Canvas::view(&state.canvas, frame, frame.area(), &theme);
+        Canvas::view(
+            &state.canvas,
+            frame,
+            frame.area(),
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

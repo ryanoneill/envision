@@ -39,7 +39,7 @@ use std::marker::PhantomData;
 
 use ratatui::prelude::*;
 
-use super::{Component, TextAreaState};
+use super::{Component, TextAreaState, ViewContext};
 use crate::input::Event;
 use crate::scroll::ScrollState;
 

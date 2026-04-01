@@ -582,7 +582,7 @@ fn test_view_horizontal_empty() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme);
+            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -596,7 +596,7 @@ fn test_view_horizontal_half() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme);
+            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -610,7 +610,7 @@ fn test_view_horizontal_full() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme);
+            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -626,7 +626,7 @@ fn test_view_horizontal_with_label() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme);
+            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -642,7 +642,7 @@ fn test_view_horizontal_no_value_display() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme);
+            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -657,7 +657,7 @@ fn test_view_horizontal_focused() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme);
+            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -673,7 +673,7 @@ fn test_view_horizontal_disabled() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme);
+            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -689,7 +689,7 @@ fn test_view_vertical() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme);
+            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -706,7 +706,7 @@ fn test_view_vertical_with_label() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme);
+            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -721,7 +721,7 @@ fn test_view_zero_area() {
     // Should not panic
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme);
+            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -764,7 +764,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Slider::view(&state, frame, frame.area(), &theme);
+                Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -784,7 +784,7 @@ fn test_annotation_focused() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Slider::view(&state, frame, frame.area(), &theme);
+                Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -803,7 +803,7 @@ fn test_annotation_disabled() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Slider::view(&state, frame, frame.area(), &theme);
+                Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

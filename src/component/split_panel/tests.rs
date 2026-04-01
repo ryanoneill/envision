@@ -456,7 +456,7 @@ fn test_render_vertical() {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme);
+            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -467,7 +467,7 @@ fn test_render_horizontal() {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme);
+            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -479,7 +479,7 @@ fn test_render_second_pane_focused() {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme);
+            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -490,7 +490,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme);
+            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -539,7 +539,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                SplitPanel::view(&state, frame, frame.area(), &theme);
+                SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

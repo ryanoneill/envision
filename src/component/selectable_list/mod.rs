@@ -30,7 +30,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, ListState};
 
-use super::{Component, Disableable, Focusable};
+use super::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -698,7 +698,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             let mut ann = crate::annotation::Annotation::list("selectable_list")
                 .with_focus(state.focused)

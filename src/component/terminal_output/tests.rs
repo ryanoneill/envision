@@ -625,7 +625,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme);
+            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -641,7 +641,7 @@ fn test_view_with_content() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme);
+            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -657,7 +657,7 @@ fn test_view_with_ansi_colors() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme);
+            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -673,7 +673,7 @@ fn test_view_with_line_numbers() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme);
+            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -687,7 +687,7 @@ fn test_view_running() {
     let (mut terminal, theme) = test_utils::setup_render(50, 8);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme);
+            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -702,7 +702,7 @@ fn test_view_exit_code() {
     let (mut terminal, theme) = test_utils::setup_render(50, 8);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme);
+            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -714,7 +714,7 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme);
+            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -727,7 +727,7 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(50, 8);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme);
+            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -745,7 +745,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                TerminalOutput::view(&state, frame, frame.area(), &theme);
+                TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -764,7 +764,7 @@ fn test_annotation_focused() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                TerminalOutput::view(&state, frame, frame.area(), &theme);
+                TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

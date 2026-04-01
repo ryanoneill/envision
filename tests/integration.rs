@@ -1,5 +1,6 @@
 #![cfg(feature = "full")]
 //! Integration tests exercising multi-component workflows through the public API.
+use envision::ViewContext;
 
 use envision::component::{
     SearchableList, SearchableListMessage, SearchableListOutput, SearchableListState,
@@ -452,37 +453,37 @@ fn test_components_handle_zero_size_area() {
     // Button
     assert_view_zero_size("Button", |frame, area, theme| {
         let state = ButtonState::new("Click");
-        Button::view(&state, frame, area, theme);
+        Button::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Checkbox
     assert_view_zero_size("Checkbox", |frame, area, theme| {
         let state = CheckboxState::new("Check");
-        Checkbox::view(&state, frame, area, theme);
+        Checkbox::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // InputField
     assert_view_zero_size("InputField", |frame, area, theme| {
         let state = InputFieldState::new();
-        InputField::view(&state, frame, area, theme);
+        InputField::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // SelectableList
     assert_view_zero_size("SelectableList", |frame, area, theme| {
         let state = SelectableListState::new(vec!["A".to_string(), "B".to_string()]);
-        SelectableList::<String>::view(&state, frame, area, theme);
+        SelectableList::<String>::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // RadioGroup
     assert_view_zero_size("RadioGroup", |frame, area, theme| {
         let state = RadioGroupState::new(vec!["X".to_string(), "Y".to_string()]);
-        RadioGroup::<String>::view(&state, frame, area, theme);
+        RadioGroup::<String>::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Tabs
     assert_view_zero_size("Tabs", |frame, area, theme| {
         let state = TabsState::new(vec!["Tab1".to_string(), "Tab2".to_string()]);
-        Tabs::<String>::view(&state, frame, area, theme);
+        Tabs::<String>::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Table
@@ -492,89 +493,89 @@ fn test_components_handle_zero_size_area() {
         }];
         let columns = vec![Column::new("Name", Constraint::Length(10))];
         let state = TableState::new(rows, columns);
-        Table::<SimpleRow>::view(&state, frame, area, theme);
+        Table::<SimpleRow>::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Tree
     assert_view_zero_size("Tree", |frame, area, theme| {
         let root = TreeNode::new("root", "root_data".to_string());
         let state = TreeState::new(vec![root]);
-        Tree::<String>::view(&state, frame, area, theme);
+        Tree::<String>::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Accordion
     assert_view_zero_size("Accordion", |frame, area, theme| {
         let panel = AccordionPanel::new("Panel", "Content");
         let state = AccordionState::new(vec![panel]);
-        Accordion::view(&state, frame, area, theme);
+        Accordion::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Dialog
     assert_view_zero_size("Dialog", |frame, area, theme| {
         let mut state = DialogState::confirm("Title", "Body");
         Dialog::update(&mut state, DialogMessage::Open);
-        Dialog::view(&state, frame, area, theme);
+        Dialog::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Menu
     assert_view_zero_size("Menu", |frame, area, theme| {
         let items = vec![MenuItem::new("File"), MenuItem::new("Edit")];
         let state = MenuState::new(items);
-        Menu::view(&state, frame, area, theme);
+        Menu::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Dropdown
     assert_view_zero_size("Dropdown", |frame, area, theme| {
         let state = DropdownState::new(vec!["Option 1", "Option 2"]);
-        Dropdown::view(&state, frame, area, theme);
+        Dropdown::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Select
     assert_view_zero_size("Select", |frame, area, theme| {
         let state = SelectState::new(vec!["Opt A", "Opt B"]);
-        Select::view(&state, frame, area, theme);
+        Select::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // TextArea
     assert_view_zero_size("TextArea", |frame, area, theme| {
         let state = TextAreaState::new();
-        TextArea::view(&state, frame, area, theme);
+        TextArea::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // ProgressBar
     assert_view_zero_size("ProgressBar", |frame, area, theme| {
         let state = ProgressBarState::new();
-        ProgressBar::view(&state, frame, area, theme);
+        ProgressBar::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Spinner
     assert_view_zero_size("Spinner", |frame, area, theme| {
         let state = SpinnerState::new();
-        Spinner::view(&state, frame, area, theme);
+        Spinner::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Toast
     assert_view_zero_size("Toast", |frame, area, theme| {
         let state = ToastState::new();
-        Toast::view(&state, frame, area, theme);
+        Toast::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Tooltip
     assert_view_zero_size("Tooltip", |frame, area, theme| {
         let state = TooltipState::new("Tip content");
-        Tooltip::view(&state, frame, area, theme);
+        Tooltip::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // StatusBar
     assert_view_zero_size("StatusBar", |frame, area, theme| {
         let state = StatusBarState::new();
-        StatusBar::view(&state, frame, area, theme);
+        StatusBar::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // StatusLog
     assert_view_zero_size("StatusLog", |frame, area, theme| {
         let state = StatusLogState::new();
-        StatusLog::view(&state, frame, area, theme);
+        StatusLog::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // Breadcrumb
@@ -584,43 +585,43 @@ fn test_components_handle_zero_size_area() {
             BreadcrumbSegment::new("Settings"),
         ];
         let state = BreadcrumbState::new(segments);
-        Breadcrumb::view(&state, frame, area, theme);
+        Breadcrumb::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // KeyHints
     assert_view_zero_size("KeyHints", |frame, area, theme| {
         let state = KeyHintsState::with_hints(vec![KeyHint::new("q", "Quit")]);
-        KeyHints::view(&state, frame, area, theme);
+        KeyHints::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // MultiProgress
     assert_view_zero_size("MultiProgress", |frame, area, theme| {
         let state = MultiProgressState::new();
-        MultiProgress::view(&state, frame, area, theme);
+        MultiProgress::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // LoadingList
     assert_view_zero_size("LoadingList", |frame, area, theme| {
         let state: LoadingListState<String> = LoadingListState::new();
-        LoadingList::<String>::view(&state, frame, area, theme);
+        LoadingList::<String>::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // ScrollableText
     assert_view_zero_size("ScrollableText", |frame, area, theme| {
         let state = ScrollableTextState::new();
-        ScrollableText::view(&state, frame, area, theme);
+        ScrollableText::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // TitleCard
     assert_view_zero_size("TitleCard", |frame, area, theme| {
         let state = TitleCardState::new("Title");
-        TitleCard::view(&state, frame, area, theme);
+        TitleCard::view(&state, frame, area, theme, &ViewContext::default());
     });
 
     // LineInput
     assert_view_zero_size("LineInput", |frame, area, theme| {
         let state = LineInputState::new();
-        LineInput::view(&state, frame, area, theme);
+        LineInput::view(&state, frame, area, theme, &ViewContext::default());
     });
 }
 

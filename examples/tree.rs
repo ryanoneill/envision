@@ -69,7 +69,13 @@ impl App for TreeApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        Tree::view(&state.tree, frame, chunks[0], &theme);
+        Tree::view(
+            &state.tree,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .tree

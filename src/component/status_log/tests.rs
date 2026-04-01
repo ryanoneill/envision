@@ -480,7 +480,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -495,7 +495,7 @@ fn test_view_with_messages() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -509,7 +509,7 @@ fn test_view_with_title() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -523,7 +523,7 @@ fn test_view_with_timestamps() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -540,7 +540,7 @@ fn test_view_all_levels() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -557,7 +557,7 @@ fn test_view_focused() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -573,7 +573,7 @@ fn test_view_unfocused() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -858,7 +858,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                StatusLog::view(&state, frame, frame.area(), &theme);
+                StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

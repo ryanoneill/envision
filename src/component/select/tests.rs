@@ -195,7 +195,7 @@ fn test_view_closed() {
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &theme);
+            Select::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -211,7 +211,7 @@ fn test_view_open() {
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &theme);
+            Select::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -226,7 +226,7 @@ fn test_view_with_selection() {
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &theme);
+            Select::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -242,7 +242,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &theme);
+            Select::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -468,7 +468,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Select::view(&state, frame, frame.area(), &theme);
+                Select::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

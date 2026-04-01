@@ -320,7 +320,7 @@ fn test_empty_text() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -332,7 +332,7 @@ fn test_unsupported_characters() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -345,7 +345,7 @@ fn test_zero_height_area() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 40, 0);
-            BigText::view(&state, frame, area, &theme);
+            BigText::view(&state, frame, area, &theme, &ViewContext::default());
         })
         .unwrap();
     // Should not panic
@@ -358,7 +358,7 @@ fn test_zero_width_area() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 0, 5);
-            BigText::view(&state, frame, area, &theme);
+            BigText::view(&state, frame, area, &theme, &ViewContext::default());
         })
         .unwrap();
     // Should not panic
@@ -374,7 +374,7 @@ fn test_view_digits() {
     let (mut terminal, theme) = test_utils::setup_render(60, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -386,7 +386,7 @@ fn test_view_clock() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -398,7 +398,7 @@ fn test_view_percentage() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -410,7 +410,7 @@ fn test_view_with_color() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -422,7 +422,7 @@ fn test_view_left_aligned() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -434,7 +434,7 @@ fn test_view_right_aligned() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -446,7 +446,7 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -458,7 +458,7 @@ fn test_view_letters() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -471,7 +471,7 @@ fn test_view_lowercase_converted() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -483,7 +483,7 @@ fn test_view_single_char() {
     let (mut terminal, theme) = test_utils::setup_render(20, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -495,7 +495,7 @@ fn test_view_dash() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -507,7 +507,7 @@ fn test_view_date() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme);
+            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -525,7 +525,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                BigText::view(&state, frame, frame.area(), &theme);
+                BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -544,7 +544,7 @@ fn test_annotation_disabled() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                BigText::view(&state, frame, frame.area(), &theme);
+                BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

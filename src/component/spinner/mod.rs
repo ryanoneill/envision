@@ -41,7 +41,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable};
+use super::{Component, Disableable, ViewContext};
 use crate::theme::Theme;
 
 /// Built-in spinner animation styles.
@@ -356,7 +356,7 @@ impl Component for Spinner {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         let spinner_char = if state.spinning {
             state.current_frame().to_string()
         } else {
