@@ -100,7 +100,7 @@ impl App for ConversationApp {
                 ConversationRole::Assistant,
                 vec![
                     MessageBlock::text("Let me run some test values."),
-                    MessageBlock::tool_use("code_runner", "fibonacci(0) = 0\nfibonacci(1) = 1\nfibonacci(10) = 55\nfibonacci(20) = 6765"),
+                    MessageBlock::tool_use("code_runner").with_input("fibonacci(0) = 0\nfibonacci(1) = 1\nfibonacci(10) = 55\nfibonacci(20) = 6765"),
                 ],
             )
             .with_timestamp("14:02"),

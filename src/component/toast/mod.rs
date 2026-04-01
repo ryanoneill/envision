@@ -133,8 +133,8 @@ pub enum ToastOutput {
     Added(u64),
     /// A toast was dismissed by user.
     Dismissed(u64),
-    /// A toast expired (auto-dismissed).
-    Expired(u64),
+    /// One or more toasts expired (auto-dismissed) in a single tick.
+    Expired(Vec<u64>),
     /// All toasts were cleared.
     Cleared,
 }
@@ -380,7 +380,7 @@ impl ToastState {
 ///
 /// // Tick to advance time
 /// let output = Toast::update(&mut state, ToastMessage::Tick(3000));
-/// assert_eq!(output, Some(ToastOutput::Expired(id)));
+/// assert_eq!(output, Some(ToastOutput::Expired(vec![id])));
 /// assert!(state.is_empty());
 /// ```
 pub struct Toast;
@@ -437,8 +437,11 @@ impl Component for Toast {
                 // Remove expired toasts
                 state.toasts.retain(|t| !expired_ids.contains(&t.id));
 
-                // Return first expired ID (if any)
-                expired_ids.first().copied().map(ToastOutput::Expired)
+                if expired_ids.is_empty() {
+                    None
+                } else {
+                    Some(ToastOutput::Expired(expired_ids))
+                }
             }
         }
     }

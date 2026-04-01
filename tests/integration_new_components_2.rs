@@ -377,15 +377,15 @@ fn test_conversation_view_messages_and_collapse() {
     // Push messages using helper methods
     state.push_user("Hello, can you help me?");
     assert_eq!(state.message_count(), 1);
-    assert_eq!(state.messages()[0].role(), ConversationRole::User);
+    assert_eq!(*state.messages()[0].role(), ConversationRole::User);
 
     state.push_assistant("Of course! How can I help?");
     assert_eq!(state.message_count(), 2);
-    assert_eq!(state.messages()[1].role(), ConversationRole::Assistant);
+    assert_eq!(*state.messages()[1].role(), ConversationRole::Assistant);
 
     state.push_system("System: model context loaded");
     assert_eq!(state.message_count(), 3);
-    assert_eq!(state.messages()[2].role(), ConversationRole::System);
+    assert_eq!(*state.messages()[2].role(), ConversationRole::System);
 
     // Push a structured message with code blocks
     state.push_message(ConversationMessage::with_blocks(
@@ -401,7 +401,7 @@ fn test_conversation_view_messages_and_collapse() {
     // Push tool result
     state.push_tool("Search results: 5 items found");
     assert_eq!(state.message_count(), 5);
-    assert_eq!(state.messages()[4].role(), ConversationRole::Tool);
+    assert_eq!(*state.messages()[4].role(), ConversationRole::Tool);
 
     // Toggle collapse on a named block key
     assert!(!state.is_collapsed("thinking"));

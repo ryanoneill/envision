@@ -338,7 +338,7 @@ fn test_tick_returns_expired() {
 
     let output = Toast::update(&mut state, ToastMessage::Tick(1000));
 
-    assert_eq!(output, Some(ToastOutput::Expired(id)));
+    assert_eq!(output, Some(ToastOutput::Expired(vec![id])));
 }
 
 #[test]
@@ -361,9 +361,9 @@ fn test_tick_multiple_expire() {
 
     let output = Toast::update(&mut state, ToastMessage::Tick(1000));
 
-    // Both should expire, but we only return the first
+    // Both should expire, and all IDs are returned
     assert!(state.is_empty());
-    assert!(matches!(output, Some(ToastOutput::Expired(_))));
+    assert!(matches!(output, Some(ToastOutput::Expired(ref ids)) if ids.len() == 2));
 }
 
 #[test]
@@ -562,7 +562,7 @@ fn test_full_workflow() {
 
     // Tick until expire
     let output = Toast::update(&mut state, ToastMessage::Tick(2000));
-    assert_eq!(output, Some(ToastOutput::Expired(id2)));
+    assert_eq!(output, Some(ToastOutput::Expired(vec![id2])));
     assert!(state.is_empty());
 }
 

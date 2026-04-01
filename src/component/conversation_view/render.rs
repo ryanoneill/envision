@@ -158,8 +158,12 @@ fn format_block<'a>(
         MessageBlock::Code { code, language } => {
             format_code_block(code, language.as_deref(), width, lines);
         }
-        MessageBlock::ToolUse { name, input } => {
-            format_tool_use_block(name, input, state, lines);
+        MessageBlock::ToolUse {
+            name,
+            input,
+            output,
+        } => {
+            format_tool_use_block(name, input.as_deref(), output.as_deref(), state, lines);
         }
         MessageBlock::Thinking(content) => {
             format_thinking_block(content, state, lines);
@@ -217,7 +221,8 @@ fn format_code_block<'a>(
 /// Formats a tool use block (collapsible).
 fn format_tool_use_block<'a>(
     name: &str,
-    input: &str,
+    input: Option<&str>,
+    output: Option<&str>,
     state: &ConversationViewState,
     lines: &mut Vec<Line<'a>>,
 ) {
@@ -239,11 +244,26 @@ fn format_tool_use_block<'a>(
     ]));
 
     if !collapsed {
-        for line in input.lines() {
-            lines.push(Line::from(Span::styled(format!("    {}", line), dim_style)));
+        match input {
+            Some(text) if !text.is_empty() => {
+                for line in text.lines() {
+                    lines.push(Line::from(Span::styled(format!("    {}", line), dim_style)));
+                }
+            }
+            _ => {
+                lines.push(Line::from(Span::styled("    (no input)", dim_style)));
+            }
         }
-        if input.is_empty() {
-            lines.push(Line::from(Span::styled("    (no input)", dim_style)));
+        if let Some(out) = output {
+            let output_style = Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::DIM | Modifier::ITALIC);
+            for line in out.lines() {
+                lines.push(Line::from(Span::styled(
+                    format!("    -> {}", line),
+                    output_style,
+                )));
+            }
         }
     }
 }
