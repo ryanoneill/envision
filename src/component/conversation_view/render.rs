@@ -137,9 +137,10 @@ fn format_message<'a>(
         lines.push(Line::from(header_spans));
     }
 
-    // Content blocks
+    // Content blocks — indent under role label, or no indent if labels hidden
+    let indent = if state.show_role_labels { "  " } else { "" };
     for block in msg.blocks() {
-        format_block(block, state, width, role_style, lines);
+        format_block(block, state, width, indent, role_style, lines);
     }
 }
 
@@ -148,40 +149,94 @@ fn format_block<'a>(
     block: &MessageBlock,
     state: &ConversationViewState,
     width: usize,
+    indent: &str,
     role_style: Style,
     lines: &mut Vec<Line<'a>>,
 ) {
     match block {
         MessageBlock::Text(text) => {
-            format_text_block(text, role_style, lines);
+            format_text_block(text, width, indent, role_style, lines);
         }
         MessageBlock::Code { code, language } => {
-            format_code_block(code, language.as_deref(), width, lines);
+            format_code_block(code, language.as_deref(), width, indent, lines);
         }
         MessageBlock::ToolUse {
             name,
             input,
             output,
         } => {
-            format_tool_use_block(name, input.as_deref(), output.as_deref(), state, lines);
+            format_tool_use_block(
+                name,
+                input.as_deref(),
+                output.as_deref(),
+                width,
+                indent,
+                state,
+                lines,
+            );
         }
         MessageBlock::Thinking(content) => {
-            format_thinking_block(content, state, lines);
+            format_thinking_block(content, width, indent, state, lines);
         }
         MessageBlock::Error(content) => {
-            format_error_block(content, lines);
+            format_error_block(content, width, indent, lines);
         }
     }
 }
 
+/// Word-wraps text at the given width, preserving existing newlines.
+/// Returns wrapped lines with the given prefix prepended.
+fn wrap_lines(text: &str, prefix: &str, width: usize) -> Vec<String> {
+    let effective_width = width.saturating_sub(prefix.len());
+    if effective_width == 0 {
+        return text.lines().map(|l| format!("{}{}", prefix, l)).collect();
+    }
+
+    let mut result = Vec::new();
+    for line in text.lines() {
+        if line.len() <= effective_width {
+            result.push(format!("{}{}", prefix, line));
+        } else {
+            // Word-wrap at effective_width
+            let mut remaining = line;
+            while !remaining.is_empty() {
+                if remaining.len() <= effective_width {
+                    result.push(format!("{}{}", prefix, remaining));
+                    break;
+                }
+                // Find last space within width, or force-break
+                let break_at = remaining[..effective_width]
+                    .rfind(' ')
+                    .map(|i| i + 1)
+                    .unwrap_or(effective_width);
+                result.push(format!("{}{}", prefix, &remaining[..break_at].trim_end()));
+                remaining = &remaining[break_at..];
+                if remaining.starts_with(' ') {
+                    remaining = &remaining[1..];
+                }
+            }
+        }
+    }
+    if result.is_empty() {
+        result.push(prefix.to_string());
+    }
+    result
+}
+
 /// Formats a plain text block.
-fn format_text_block<'a>(text: &str, style: Style, lines: &mut Vec<Line<'a>>) {
+fn format_text_block<'a>(
+    text: &str,
+    width: usize,
+    indent: &str,
+    style: Style,
+    lines: &mut Vec<Line<'a>>,
+) {
     if text.is_empty() {
-        lines.push(Line::from(Span::styled("  ", style)));
+        lines.push(Line::from(Span::styled(indent.to_string(), style)));
         return;
     }
-    for line in text.lines() {
-        lines.push(Line::from(Span::styled(format!("  {}", line), style)));
+    for wrapped in wrap_lines(text, indent, width) {
+        lines.push(Line::from(Span::styled(wrapped, style)));
     }
 }
 
@@ -190,6 +245,7 @@ fn format_code_block<'a>(
     code: &str,
     language: Option<&str>,
     _width: usize,
+    indent: &str,
     lines: &mut Vec<Line<'a>>,
 ) {
     let code_style = Style::default().fg(Color::White);
@@ -198,7 +254,7 @@ fn format_code_block<'a>(
     // Header line with language
     let lang_label = language.unwrap_or("code");
     lines.push(Line::from(vec![
-        Span::styled("  \u{2502} ", border_style),
+        Span::styled(format!("{}\u{2502} ", indent), border_style),
         Span::styled(
             lang_label.to_string(),
             Style::default().fg(Color::Cyan).add_modifier(Modifier::DIM),
@@ -206,15 +262,16 @@ fn format_code_block<'a>(
     ]));
 
     // Code lines
+    let code_prefix = format!("{}\u{2502} ", indent);
     for line in code.lines() {
         lines.push(Line::from(vec![
-            Span::styled("  \u{2502} ", border_style),
+            Span::styled(code_prefix.clone(), border_style),
             Span::styled(line.to_string(), code_style),
         ]));
     }
 
     if code.is_empty() {
-        lines.push(Line::from(vec![Span::styled("  \u{2502} ", border_style)]));
+        lines.push(Line::from(vec![Span::styled(code_prefix, border_style)]));
     }
 }
 
@@ -223,6 +280,8 @@ fn format_tool_use_block<'a>(
     name: &str,
     input: Option<&str>,
     output: Option<&str>,
+    width: usize,
+    indent: &str,
     state: &ConversationViewState,
     lines: &mut Vec<Line<'a>>,
 ) {
@@ -235,8 +294,9 @@ fn format_tool_use_block<'a>(
     let collapsed = state.collapsed_blocks.contains(&block_key);
     let toggle_char = if collapsed { "\u{25b8}" } else { "\u{25be}" };
 
+    let inner_indent = format!("{}  ", indent);
     lines.push(Line::from(vec![
-        Span::styled(format!("  {} ", toggle_char), dim_style),
+        Span::styled(format!("{}{} ", indent, toggle_char), dim_style),
         Span::styled(
             format!("Tool: {}", name),
             tool_style.add_modifier(Modifier::BOLD),
@@ -246,23 +306,24 @@ fn format_tool_use_block<'a>(
     if !collapsed {
         match input {
             Some(text) if !text.is_empty() => {
-                for line in text.lines() {
-                    lines.push(Line::from(Span::styled(format!("    {}", line), dim_style)));
+                for wrapped in wrap_lines(text, &inner_indent, width) {
+                    lines.push(Line::from(Span::styled(wrapped, dim_style)));
                 }
             }
             _ => {
-                lines.push(Line::from(Span::styled("    (no input)", dim_style)));
+                lines.push(Line::from(Span::styled(
+                    format!("{}(no input)", inner_indent),
+                    dim_style,
+                )));
             }
         }
         if let Some(out) = output {
             let output_style = Style::default()
                 .fg(Color::Yellow)
                 .add_modifier(Modifier::DIM | Modifier::ITALIC);
-            for line in out.lines() {
-                lines.push(Line::from(Span::styled(
-                    format!("    -> {}", line),
-                    output_style,
-                )));
+            let out_prefix = format!("{}-> ", inner_indent);
+            for wrapped in wrap_lines(out, &out_prefix, width) {
+                lines.push(Line::from(Span::styled(wrapped, output_style)));
             }
         }
     }
@@ -271,6 +332,8 @@ fn format_tool_use_block<'a>(
 /// Formats a thinking block (collapsible).
 fn format_thinking_block<'a>(
     content: &str,
+    width: usize,
+    indent: &str,
     state: &ConversationViewState,
     lines: &mut Vec<Line<'a>>,
 ) {
@@ -284,29 +347,27 @@ fn format_thinking_block<'a>(
     let collapsed = state.collapsed_blocks.contains("thinking");
     let toggle_char = if collapsed { "\u{25b8}" } else { "\u{25be}" };
 
+    let inner_indent = format!("{}  ", indent);
     lines.push(Line::from(vec![
-        Span::styled(format!("  {} ", toggle_char), thinking_style),
+        Span::styled(format!("{}{} ", indent, toggle_char), thinking_style),
         Span::styled("Thinking...", header_style),
     ]));
 
     if !collapsed {
-        for line in content.lines() {
-            lines.push(Line::from(Span::styled(
-                format!("    {}", line),
-                thinking_style,
-            )));
+        for wrapped in wrap_lines(content, &inner_indent, width) {
+            lines.push(Line::from(Span::styled(wrapped, thinking_style)));
         }
     }
 }
 
 /// Formats an error block.
-fn format_error_block<'a>(content: &str, lines: &mut Vec<Line<'a>>) {
+fn format_error_block<'a>(content: &str, width: usize, indent: &str, lines: &mut Vec<Line<'a>>) {
     let error_style = Style::default().fg(Color::Red).add_modifier(Modifier::BOLD);
 
-    lines.push(Line::from(Span::styled(
-        format!("  \u{2716} Error: {}", content),
-        error_style,
-    )));
+    let prefix = format!("{}\u{2716} Error: ", indent);
+    for wrapped in wrap_lines(content, &prefix, width) {
+        lines.push(Line::from(Span::styled(wrapped, error_style)));
+    }
 }
 
 /// Calculates the total number of display lines for the current message list.
