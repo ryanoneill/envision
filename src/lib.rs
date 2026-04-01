@@ -243,14 +243,14 @@ pub use component::{
     HeatmapColorScale, HeatmapMessage, HeatmapOutput, HeatmapState, Histogram, HistogramMessage,
     HistogramState, LogCorrelation, LogCorrelationMessage, LogCorrelationOutput,
     LogCorrelationState, LogStream, LogViewer, LogViewerMessage, LogViewerOutput, LogViewerState,
-    MessageBlock, MetricKind, MetricWidget, MetricsDashboard, MetricsDashboardMessage,
-    MetricsDashboardOutput, MetricsDashboardState, NodeStatus, PaneLayout, PaneLayoutMessage,
-    PaneLayoutOutput, PaneLayoutState, SearchableList, SearchableListMessage, SearchableListOutput,
-    SearchableListState, SelectedType, SpanNode, SpanTree, SpanTreeMessage, SpanTreeOutput,
-    SpanTreeState, SplitOrientation, SplitPanel, SplitPanelMessage, SplitPanelOutput,
-    SplitPanelState, StreamEvent, ThresholdLine, Timeline, TimelineEvent, TimelineMessage,
-    TimelineOutput, TimelineSpan, TimelineState, Treemap, TreemapMessage, TreemapNode,
-    TreemapOutput, TreemapState,
+    MessageBlock, MessageHandle, MetricKind, MetricWidget, MetricsDashboard,
+    MetricsDashboardMessage, MetricsDashboardOutput, MetricsDashboardState, NodeStatus, PaneLayout,
+    PaneLayoutMessage, PaneLayoutOutput, PaneLayoutState, SearchableList, SearchableListMessage,
+    SearchableListOutput, SearchableListState, SelectedType, SpanNode, SpanTree, SpanTreeMessage,
+    SpanTreeOutput, SpanTreeState, SplitOrientation, SplitPanel, SplitPanelMessage,
+    SplitPanelOutput, SplitPanelState, StreamEvent, ThresholdLine, Timeline, TimelineEvent,
+    TimelineMessage, TimelineOutput, TimelineSpan, TimelineState, Treemap, TreemapMessage,
+    TreemapNode, TreemapOutput, TreemapState,
 };
 
 // Overlay components

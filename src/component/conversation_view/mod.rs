@@ -38,7 +38,7 @@
 mod render;
 pub mod types;
 
-pub use types::{ConversationMessage, ConversationRole, MessageBlock};
+pub use types::{ConversationMessage, ConversationRole, MessageBlock, MessageHandle};
 
 use std::collections::HashSet;
 use std::marker::PhantomData;
@@ -117,6 +117,9 @@ pub struct ConversationViewState {
     pub(super) disabled: bool,
     /// Set of collapsed block keys (e.g., "tool:search", "thinking").
     pub(super) collapsed_blocks: HashSet<String>,
+    /// Next unique ID for message handles.
+    #[cfg_attr(feature = "serialization", serde(skip, default))]
+    pub(super) next_id: u64,
 }
 
 impl Default for ConversationViewState {
@@ -132,6 +135,7 @@ impl Default for ConversationViewState {
             focused: false,
             disabled: false,
             collapsed_blocks: HashSet::new(),
+            next_id: 1,
         }
     }
 }
@@ -148,6 +152,7 @@ impl PartialEq for ConversationViewState {
             && self.focused == other.focused
             && self.disabled == other.disabled
             && self.collapsed_blocks == other.collapsed_blocks
+        // next_id is intentionally excluded from equality
     }
 }
 
@@ -244,7 +249,8 @@ impl ConversationViewState {
 
     // ---- Message manipulation ----
 
-    /// Adds a message to the conversation.
+    /// Adds a message to the conversation and returns a [`MessageHandle`]
+    /// that can be used to update it later.
     ///
     /// # Example
     ///
@@ -252,10 +258,16 @@ impl ConversationViewState {
     /// use envision::component::{ConversationViewState, ConversationMessage, ConversationRole};
     ///
     /// let mut state = ConversationViewState::new();
-    /// state.push_message(ConversationMessage::new(ConversationRole::User, "Hello"));
+    /// let handle = state.push_message(ConversationMessage::new(ConversationRole::User, "Hello"));
     /// assert_eq!(state.message_count(), 1);
+    /// // The handle can be used later with update_by_handle
+    /// let _ = handle;
     /// ```
-    pub fn push_message(&mut self, message: ConversationMessage) {
+    pub fn push_message(&mut self, mut message: ConversationMessage) -> MessageHandle {
+        let id = self.next_id;
+        self.next_id += 1;
+        message.id = id;
+        let handle = MessageHandle(id);
         self.messages.push(message);
         while self.messages.len() > self.max_messages {
             self.messages.remove(0);
@@ -264,9 +276,10 @@ impl ConversationViewState {
         if self.auto_scroll {
             self.scroll_to_bottom();
         }
+        handle
     }
 
-    /// Adds a user text message.
+    /// Adds a user text message and returns a [`MessageHandle`].
     ///
     /// # Example
     ///
@@ -274,14 +287,15 @@ impl ConversationViewState {
     /// use envision::component::{ConversationViewState, ConversationRole};
     ///
     /// let mut state = ConversationViewState::new();
-    /// state.push_user("Hello!");
-    /// assert_eq!(*state.messages()[0].role(), ConversationRole::User);
+    /// let handle = state.push_user("Hello!");
+    /// assert_eq!(state.messages()[0].role(), ConversationRole::User);
+    /// let _ = handle;
     /// ```
-    pub fn push_user(&mut self, content: impl Into<String>) {
-        self.push_message(ConversationMessage::new(ConversationRole::User, content));
+    pub fn push_user(&mut self, content: impl Into<String>) -> MessageHandle {
+        self.push_message(ConversationMessage::new(ConversationRole::User, content))
     }
 
-    /// Adds an assistant text message.
+    /// Adds an assistant text message and returns a [`MessageHandle`].
     ///
     /// # Example
     ///
@@ -289,17 +303,18 @@ impl ConversationViewState {
     /// use envision::component::{ConversationViewState, ConversationRole};
     ///
     /// let mut state = ConversationViewState::new();
-    /// state.push_assistant("How can I help?");
-    /// assert_eq!(*state.messages()[0].role(), ConversationRole::Assistant);
+    /// let handle = state.push_assistant("How can I help?");
+    /// assert_eq!(state.messages()[0].role(), ConversationRole::Assistant);
+    /// let _ = handle;
     /// ```
-    pub fn push_assistant(&mut self, content: impl Into<String>) {
+    pub fn push_assistant(&mut self, content: impl Into<String>) -> MessageHandle {
         self.push_message(ConversationMessage::new(
             ConversationRole::Assistant,
             content,
-        ));
+        ))
     }
 
-    /// Adds a system text message.
+    /// Adds a system text message and returns a [`MessageHandle`].
     ///
     /// # Example
     ///
@@ -307,14 +322,15 @@ impl ConversationViewState {
     /// use envision::component::{ConversationViewState, ConversationRole};
     ///
     /// let mut state = ConversationViewState::new();
-    /// state.push_system("System initialized");
-    /// assert_eq!(*state.messages()[0].role(), ConversationRole::System);
+    /// let handle = state.push_system("System initialized");
+    /// assert_eq!(state.messages()[0].role(), ConversationRole::System);
+    /// let _ = handle;
     /// ```
-    pub fn push_system(&mut self, content: impl Into<String>) {
-        self.push_message(ConversationMessage::new(ConversationRole::System, content));
+    pub fn push_system(&mut self, content: impl Into<String>) -> MessageHandle {
+        self.push_message(ConversationMessage::new(ConversationRole::System, content))
     }
 
-    /// Adds a tool result message.
+    /// Adds a tool result message and returns a [`MessageHandle`].
     ///
     /// # Example
     ///
@@ -322,11 +338,12 @@ impl ConversationViewState {
     /// use envision::component::{ConversationViewState, ConversationRole};
     ///
     /// let mut state = ConversationViewState::new();
-    /// state.push_tool("Search results: 5 items found");
-    /// assert_eq!(*state.messages()[0].role(), ConversationRole::Tool);
+    /// let handle = state.push_tool("Search results: 5 items found");
+    /// assert_eq!(state.messages()[0].role(), ConversationRole::Tool);
+    /// let _ = handle;
     /// ```
-    pub fn push_tool(&mut self, content: impl Into<String>) {
-        self.push_message(ConversationMessage::new(ConversationRole::Tool, content));
+    pub fn push_tool(&mut self, content: impl Into<String>) -> MessageHandle {
+        self.push_message(ConversationMessage::new(ConversationRole::Tool, content))
     }
 
     /// Returns a mutable reference to the last message, if any.
@@ -400,6 +417,36 @@ impl ConversationViewState {
     /// ```
     pub fn update_message(&mut self, index: usize, f: impl FnOnce(&mut ConversationMessage)) {
         if let Some(msg) = self.messages.get_mut(index) {
+            f(msg);
+        }
+    }
+
+    /// Updates a message identified by a [`MessageHandle`].
+    ///
+    /// No-ops if the message has been evicted (e.g., due to
+    /// [`max_messages`](ConversationViewState::max_messages) eviction)
+    /// or if the conversation has been cleared. This makes it safe to
+    /// hold a handle across multiple push/clear operations.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationViewState, MessageBlock};
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// let handle = state.push_assistant("Thinking...");
+    /// state.update_by_handle(handle, |msg| {
+    ///     msg.push_block(MessageBlock::code("let x = 42;", Some("rust")));
+    ///     msg.set_streaming(false);
+    /// });
+    /// assert_eq!(state.messages()[0].blocks().len(), 2);
+    /// ```
+    pub fn update_by_handle(
+        &mut self,
+        handle: MessageHandle,
+        f: impl FnOnce(&mut ConversationMessage),
+    ) {
+        if let Some(msg) = self.messages.iter_mut().find(|m| m.id == handle.0) {
             f(msg);
         }
     }

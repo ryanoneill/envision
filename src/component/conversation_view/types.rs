@@ -6,6 +6,28 @@
 
 use ratatui::style::Color;
 
+/// An opaque handle to a conversation message for streaming updates.
+///
+/// Returned by `ConversationViewState::push_message` and related methods.
+/// Use with `ConversationViewState::update_by_handle` to update a specific
+/// message, even after other messages have been pushed or evicted.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::{ConversationViewState, MessageBlock};
+///
+/// let mut state = ConversationViewState::new();
+/// let handle = state.push_assistant("Thinking...");
+/// state.update_by_handle(handle, |msg| {
+///     msg.push_block(MessageBlock::code("let x = 42;", Some("rust")));
+///     msg.set_streaming(false);
+/// });
+/// assert_eq!(state.messages()[0].blocks().len(), 2);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct MessageHandle(pub(super) u64);
+
 /// The role of a conversation participant.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(
@@ -308,7 +330,7 @@ impl MessageBlock {
 /// Each message has a role, a sequence of content blocks, an optional
 /// timestamp, and a streaming flag to indicate whether the message is
 /// still being received.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
@@ -322,6 +344,18 @@ pub struct ConversationMessage {
     pub(super) timestamp: Option<String>,
     /// Whether this message is still being streamed.
     pub(super) streaming: bool,
+    /// Internal identifier for handle-based lookup (not serialized).
+    #[cfg_attr(feature = "serialization", serde(skip, default))]
+    pub(super) id: u64,
+}
+
+impl PartialEq for ConversationMessage {
+    fn eq(&self, other: &Self) -> bool {
+        self.role == other.role
+            && self.blocks == other.blocks
+            && self.timestamp == other.timestamp
+            && self.streaming == other.streaming
+    }
 }
 
 impl ConversationMessage {
@@ -342,6 +376,7 @@ impl ConversationMessage {
             blocks: vec![MessageBlock::Text(text.into())],
             timestamp: None,
             streaming: false,
+            id: 0,
         }
     }
 
@@ -367,6 +402,7 @@ impl ConversationMessage {
             blocks,
             timestamp: None,
             streaming: false,
+            id: 0,
         }
     }
 
