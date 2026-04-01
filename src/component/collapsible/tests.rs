@@ -612,7 +612,7 @@ fn test_view_expanded() {
 
     terminal
         .draw(|frame| {
-            Collapsible::view(&state, frame, frame.area(), &theme);
+            Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -626,7 +626,7 @@ fn test_view_collapsed() {
 
     terminal
         .draw(|frame| {
-            Collapsible::view(&state, frame, frame.area(), &theme);
+            Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -641,7 +641,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Collapsible::view(&state, frame, frame.area(), &theme);
+            Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -655,7 +655,7 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Collapsible::view(&state, frame, frame.area(), &theme);
+            Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -670,7 +670,7 @@ fn test_view_focused_collapsed() {
 
     terminal
         .draw(|frame| {
-            Collapsible::view(&state, frame, frame.area(), &theme);
+            Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -685,7 +685,7 @@ fn test_view_zero_area() {
     terminal
         .draw(|frame| {
             let zero_area = Rect::new(0, 0, 0, 0);
-            Collapsible::view(&state, frame, zero_area, &theme);
+            Collapsible::view(&state, frame, zero_area, &theme, &ViewContext::default());
         })
         .unwrap();
     // Should not panic
@@ -699,7 +699,7 @@ fn test_view_height_one() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 40, 1);
-            Collapsible::view(&state, frame, area, &theme);
+            Collapsible::view(&state, frame, area, &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -717,7 +717,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Collapsible::view(&state, frame, frame.area(), &theme);
+                Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -742,7 +742,7 @@ fn test_annotation_reflects_state() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Collapsible::view(&state, frame, frame.area(), &theme);
+                Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

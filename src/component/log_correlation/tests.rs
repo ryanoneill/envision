@@ -753,7 +753,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -764,7 +764,7 @@ fn test_render_two_streams() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -775,7 +775,7 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -786,7 +786,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -810,7 +810,7 @@ fn test_render_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -822,7 +822,7 @@ fn test_render_with_filter() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -833,7 +833,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(80, 2);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -844,7 +844,7 @@ fn test_render_narrow_area() {
     let (mut terminal, theme) = test_utils::setup_render(20, 10);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme);
+            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -958,7 +958,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                LogCorrelation::view(&state, frame, frame.area(), &theme);
+                LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

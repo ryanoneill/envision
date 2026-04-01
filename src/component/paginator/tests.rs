@@ -567,7 +567,7 @@ fn test_view_page_of_total_first_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -579,7 +579,7 @@ fn test_view_page_of_total_middle_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -591,7 +591,7 @@ fn test_view_page_of_total_last_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -607,7 +607,7 @@ fn test_view_range_of_total_first_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -621,7 +621,7 @@ fn test_view_range_of_total_middle_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -635,7 +635,7 @@ fn test_view_range_of_total_last_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -647,7 +647,7 @@ fn test_view_range_of_total_zero_items() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -663,7 +663,7 @@ fn test_view_dots_first_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -677,7 +677,7 @@ fn test_view_dots_middle_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -691,7 +691,7 @@ fn test_view_dots_last_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -703,7 +703,7 @@ fn test_view_dots_single_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -717,7 +717,7 @@ fn test_view_dots_many_pages() {
     let (mut terminal, theme) = test_utils::setup_render(50, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -733,7 +733,7 @@ fn test_view_compact_first_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -747,7 +747,7 @@ fn test_view_compact_middle_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -761,7 +761,7 @@ fn test_view_compact_last_page() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -777,7 +777,7 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -789,7 +789,7 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            Paginator::view(&state, frame, frame.area(), &theme);
+            Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -807,7 +807,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Paginator::view(&state, frame, frame.area(), &theme);
+                Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -827,7 +827,7 @@ fn test_annotation_focused() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Paginator::view(&state, frame, frame.area(), &theme);
+                Paginator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

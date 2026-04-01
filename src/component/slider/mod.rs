@@ -34,7 +34,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, Focusable};
+use super::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -544,7 +544,7 @@ impl Component for Slider {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         match state.orientation {
             SliderOrientation::Horizontal => view_horizontal(state, frame, area, theme),
             SliderOrientation::Vertical => view_vertical(state, frame, area, theme),

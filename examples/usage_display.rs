@@ -80,17 +80,35 @@ impl App for UsageDisplayApp {
         frame.render_widget(title, chunks[0]);
 
         // Horizontal layout
-        UsageDisplay::view(&state.horizontal, frame, chunks[1], &theme);
+        UsageDisplay::view(
+            &state.horizontal,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Vertical layout
-        UsageDisplay::view(&state.vertical, frame, chunks[2], &theme);
+        UsageDisplay::view(
+            &state.vertical,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Spacer line
         let spacer = ratatui::widgets::Paragraph::new("");
         frame.render_widget(spacer, chunks[3]);
 
         // Grid layout
-        UsageDisplay::view(&state.grid, frame, chunks[4], &theme);
+        UsageDisplay::view(
+            &state.grid,
+            frame,
+            chunks[4],
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

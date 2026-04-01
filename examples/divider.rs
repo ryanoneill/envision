@@ -60,8 +60,20 @@ impl App for DividerApp {
         ])
         .split(area);
 
-        Divider::view(&state.horizontal, frame, main_chunks[0], &theme);
-        Divider::view(&state.horizontal_labeled, frame, main_chunks[2], &theme);
+        Divider::view(
+            &state.horizontal,
+            frame,
+            main_chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        Divider::view(
+            &state.horizontal_labeled,
+            frame,
+            main_chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Bottom section: vertical dividers side by side
         let vertical_chunks = Layout::horizontal([
@@ -72,8 +84,20 @@ impl App for DividerApp {
         ])
         .split(main_chunks[4]);
 
-        Divider::view(&state.vertical, frame, vertical_chunks[0], &theme);
-        Divider::view(&state.vertical_labeled, frame, vertical_chunks[2], &theme);
+        Divider::view(
+            &state.vertical,
+            frame,
+            vertical_chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        Divider::view(
+            &state.vertical_labeled,
+            frame,
+            vertical_chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

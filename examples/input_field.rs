@@ -67,7 +67,13 @@ impl App for InputFieldApp {
         ])
         .split(area);
 
-        InputField::view(&state.input, frame, chunks[0], &theme);
+        InputField::view(
+            &state.input,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Show submitted values
         let submitted_text = if state.submitted.is_empty() {

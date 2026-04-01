@@ -78,8 +78,20 @@ impl App for ChartEnhancedApp {
         let chunks =
             Layout::vertical([Constraint::Percentage(50), Constraint::Percentage(50)]).split(area);
 
-        Chart::view(&state.area_chart, frame, chunks[0], &theme);
-        Chart::view(&state.scatter_chart, frame, chunks[1], &theme);
+        Chart::view(
+            &state.area_chart,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        Chart::view(
+            &state.scatter_chart,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

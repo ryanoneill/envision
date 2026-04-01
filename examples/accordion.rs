@@ -76,7 +76,13 @@ impl App for AccordionApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        Accordion::view(&state.accordion, frame, chunks[0], &theme);
+        Accordion::view(
+            &state.accordion,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let panel_idx = state
             .accordion

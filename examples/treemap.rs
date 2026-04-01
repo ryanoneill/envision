@@ -85,7 +85,7 @@ impl App for TreemapApp {
     fn view(state: &State, frame: &mut Frame) {
         let theme = Theme::default();
         let area = frame.area();
-        Treemap::view(&state.treemap, frame, area, &theme);
+        Treemap::view(&state.treemap, frame, area, &theme, &ViewContext::default());
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

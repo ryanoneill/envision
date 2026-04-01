@@ -131,10 +131,34 @@ impl App for SwitchApp {
         frame.render_widget(title, chunks[0]);
 
         // Switches
-        Switch::view(&state.wifi, frame, chunks[1], &theme);
-        Switch::view(&state.bluetooth, frame, chunks[2], &theme);
-        Switch::view(&state.dark_mode, frame, chunks[3], &theme);
-        Switch::view(&state.notifications, frame, chunks[4], &theme);
+        Switch::view(
+            &state.wifi,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
+        Switch::view(
+            &state.bluetooth,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
+        Switch::view(
+            &state.dark_mode,
+            frame,
+            chunks[3],
+            &theme,
+            &ViewContext::default(),
+        );
+        Switch::view(
+            &state.notifications,
+            frame,
+            chunks[4],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Summary
         let summary = format!(

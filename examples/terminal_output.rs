@@ -78,7 +78,13 @@ impl App for TerminalOutputApp {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
         let theme = Theme::default();
-        TerminalOutput::view(&state.output, frame, chunks[0], &theme);
+        TerminalOutput::view(
+            &state.output,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let status = Paragraph::new(
             " Lines: {} | a: auto-scroll | n: line nums | Up/Down/PgUp/PgDn | Esc quit"

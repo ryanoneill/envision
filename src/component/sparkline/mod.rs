@@ -34,7 +34,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, RenderDirection, Sparkline as RatatuiSparkline};
 
-use super::{Component, Disableable};
+use super::{Component, Disableable, ViewContext};
 use crate::input::Event;
 use crate::theme::Theme;
 
@@ -528,7 +528,7 @@ impl Component for Sparkline {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         let display_data = match state.max_display_points {
             Some(n) if state.data.len() > n => &state.data[state.data.len() - n..],
             _ => &state.data,

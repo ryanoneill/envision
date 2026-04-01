@@ -671,7 +671,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -682,7 +682,7 @@ fn test_render_small_grid() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -696,7 +696,7 @@ fn test_render_with_labels() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -709,7 +709,7 @@ fn test_render_with_values() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -720,7 +720,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -735,7 +735,7 @@ fn test_render_focused_with_selection() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -746,7 +746,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(5, 2);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme);
+            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -820,7 +820,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Heatmap::view(&state, frame, frame.area(), &theme);
+                Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

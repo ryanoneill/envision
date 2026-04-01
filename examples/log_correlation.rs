@@ -143,7 +143,13 @@ impl App for LogCorrelationApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        LogCorrelation::view(&state.correlation, frame, chunks[0], &theme);
+        LogCorrelation::view(
+            &state.correlation,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let status = " Tab: switch stream | j/k: scroll | s: toggle sync | q: quit";
         frame.render_widget(

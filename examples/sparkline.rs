@@ -61,10 +61,34 @@ impl App for SparklineApp {
         ])
         .split(area);
 
-        Sparkline::view(&state.basic, frame, chunks[0], &theme);
-        Sparkline::view(&state.titled, frame, chunks[1], &theme);
-        Sparkline::view(&state.rtl, frame, chunks[2], &theme);
-        Sparkline::view(&state.limited, frame, chunks[3], &theme);
+        Sparkline::view(
+            &state.basic,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        Sparkline::view(
+            &state.titled,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
+        Sparkline::view(
+            &state.rtl,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
+        Sparkline::view(
+            &state.limited,
+            frame,
+            chunks[3],
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

@@ -86,7 +86,7 @@ impl App for DialogApp {
         frame.render_widget(content, chunks[0]);
 
         if Dialog::is_visible(&state.dialog) {
-            Dialog::view(&state.dialog, frame, area, &theme);
+            Dialog::view(&state.dialog, frame, area, &theme, &ViewContext::default());
         }
 
         let status = " d: show dialog, q: quit";

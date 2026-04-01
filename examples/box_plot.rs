@@ -59,7 +59,13 @@ impl App for BoxPlotApp {
     fn view(state: &State, frame: &mut Frame) {
         let theme = Theme::default();
         let area = frame.area();
-        BoxPlot::view(&state.box_plot, frame, area, &theme);
+        BoxPlot::view(
+            &state.box_plot,
+            frame,
+            area,
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

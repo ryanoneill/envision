@@ -50,7 +50,13 @@ impl App for TextAreaApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        TextArea::view(&state.editor, frame, chunks[0], &theme);
+        TextArea::view(
+            &state.editor,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let (row, col) = state.editor.cursor_position();
         let lines = state.editor.line_count();

@@ -347,17 +347,41 @@ impl App for DashboardApp {
             Layout::vertical([Constraint::Percentage(50), Constraint::Percentage(50)])
                 .split(content_chunks[0]);
 
-        Chart::view(&state.chart, frame, left_chunks[0], &theme);
-        MultiProgress::view(&state.multi_progress, frame, left_chunks[1], &theme);
+        Chart::view(
+            &state.chart,
+            frame,
+            left_chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        MultiProgress::view(
+            &state.multi_progress,
+            frame,
+            left_chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Right column: status log
-        StatusLog::view(&state.status_log, frame, content_chunks[1], &theme);
+        StatusLog::view(
+            &state.status_log,
+            frame,
+            content_chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Toast overlay (renders on top of everything)
-        Toast::view(&state.toasts, frame, area, &theme);
+        Toast::view(&state.toasts, frame, area, &theme, &ViewContext::default());
 
         // Status bar
-        StatusBar::view(&state.status_bar, frame, main_chunks[2], &theme);
+        StatusBar::view(
+            &state.status_bar,
+            frame,
+            main_chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Key hints
         render_key_hints(frame, main_chunks[3], &theme);

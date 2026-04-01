@@ -306,7 +306,7 @@ fn test_view_when_hidden() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme);
+            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -325,7 +325,7 @@ fn test_view_renders() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme);
+            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -340,7 +340,7 @@ fn test_view_title() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme);
+            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -355,7 +355,7 @@ fn test_view_message() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme);
+            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -370,7 +370,7 @@ fn test_view_buttons() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme);
+            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -386,7 +386,7 @@ fn test_view_focused_button() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme);
+            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -401,7 +401,7 @@ fn test_view_primary_button() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme);
+            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -416,7 +416,7 @@ fn test_view_multiline_message() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme);
+            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -727,7 +727,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Dialog::view(&state, frame, frame.area(), &theme);
+                Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

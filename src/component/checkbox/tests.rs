@@ -83,7 +83,7 @@ fn test_view_unchecked() {
 
     terminal
         .draw(|frame| {
-            Checkbox::view(&state, frame, frame.area(), &theme);
+            Checkbox::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -97,7 +97,7 @@ fn test_view_checked() {
 
     terminal
         .draw(|frame| {
-            Checkbox::view(&state, frame, frame.area(), &theme);
+            Checkbox::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -112,7 +112,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Checkbox::view(&state, frame, frame.area(), &theme);
+            Checkbox::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -127,7 +127,7 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Checkbox::view(&state, frame, frame.area(), &theme);
+            Checkbox::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -264,7 +264,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Checkbox::view(&state, frame, frame.area(), &theme);
+                Checkbox::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -284,7 +284,7 @@ fn test_annotation_checked() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Checkbox::view(&state, frame, frame.area(), &theme);
+                Checkbox::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

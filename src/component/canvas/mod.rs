@@ -36,7 +36,7 @@ use ratatui::widgets::canvas::{
 };
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Disableable, Focusable};
+use super::{Component, Disableable, Focusable, ViewContext};
 use crate::theme::Theme;
 
 /// A drawable shape on the canvas.
@@ -615,7 +615,7 @@ impl Component for Canvas {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         if area.height < 2 || area.width < 2 {
             return;
         }

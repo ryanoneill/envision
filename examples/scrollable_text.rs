@@ -63,7 +63,13 @@ impl App for ScrollableTextApp {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
         let theme = Theme::default();
-        ScrollableText::view(&state.text, frame, chunks[0], &theme);
+        ScrollableText::view(
+            &state.text,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let status = Paragraph::new(format!(
             " Scroll offset: {} | Up/Down scroll | PgUp/PgDn page | Home/End | Esc quit",

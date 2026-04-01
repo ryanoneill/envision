@@ -38,7 +38,7 @@ mod tests;
 
 use ratatui::prelude::*;
 
-use crate::component::{Component, Disableable, Focusable};
+use crate::component::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 use crate::undo::{EditKind, UndoStack};
@@ -993,7 +993,7 @@ impl Component for LineInput {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         view_helpers::render(state, frame, area, theme);
     }
 }

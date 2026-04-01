@@ -126,7 +126,13 @@ impl App for CommandPaletteApp {
         .split(area);
 
         // Main area: render the command palette overlay
-        CommandPalette::view(&state.palette, frame, chunks[0], &theme);
+        CommandPalette::view(
+            &state.palette,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Show selection history
         let log_lines: Vec<Line> = state

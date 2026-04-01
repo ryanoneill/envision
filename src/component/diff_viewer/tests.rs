@@ -715,7 +715,7 @@ fn test_view_unified_empty() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            DiffViewer::view(&state, frame, frame.area(), &theme);
+            DiffViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -727,7 +727,7 @@ fn test_view_unified_with_diff() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            DiffViewer::view(&state, frame, frame.area(), &theme);
+            DiffViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -740,7 +740,7 @@ fn test_view_unified_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            DiffViewer::view(&state, frame, frame.area(), &theme);
+            DiffViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -754,7 +754,7 @@ fn test_view_unified_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            DiffViewer::view(&state, frame, frame.area(), &theme);
+            DiffViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -769,7 +769,7 @@ fn test_view_side_by_side() {
     let (mut terminal, theme) = test_utils::setup_render(80, 12);
     terminal
         .draw(|frame| {
-            DiffViewer::view(&state, frame, frame.area(), &theme);
+            DiffViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -781,7 +781,7 @@ fn test_view_with_line_numbers() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            DiffViewer::view(&state, frame, frame.area(), &theme);
+            DiffViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -793,7 +793,7 @@ fn test_view_without_line_numbers() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            DiffViewer::view(&state, frame, frame.area(), &theme);
+            DiffViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -812,7 +812,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                DiffViewer::view(&state, frame, frame.area(), &theme);
+                DiffViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

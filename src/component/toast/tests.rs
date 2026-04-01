@@ -389,7 +389,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &theme);
+            Toast::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -405,7 +405,7 @@ fn test_view_single() {
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &theme);
+            Toast::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -423,7 +423,7 @@ fn test_view_multiple() {
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &theme);
+            Toast::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -441,7 +441,7 @@ fn test_view_multiple_toasts() {
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &theme);
+            Toast::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -459,7 +459,7 @@ fn test_view_max_visible() {
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &theme);
+            Toast::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -475,7 +475,7 @@ fn test_view_info_style() {
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &theme);
+            Toast::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -491,7 +491,7 @@ fn test_view_success_style() {
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &theme);
+            Toast::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -507,7 +507,7 @@ fn test_view_warning_style() {
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &theme);
+            Toast::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -523,7 +523,7 @@ fn test_view_error_style() {
 
     terminal
         .draw(|frame| {
-            Toast::view(&state, frame, frame.area(), &theme);
+            Toast::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -640,7 +640,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Toast::view(&state, frame, frame.area(), &theme);
+                Toast::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

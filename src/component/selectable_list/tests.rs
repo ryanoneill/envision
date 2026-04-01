@@ -259,7 +259,13 @@ fn test_view() {
 
     terminal
         .draw(|frame| {
-            SelectableList::<&str>::view(&state, frame, frame.area(), &theme);
+            SelectableList::<&str>::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
         })
         .unwrap();
 
@@ -274,7 +280,13 @@ fn test_view_unfocused() {
 
     terminal
         .draw(|frame| {
-            SelectableList::<&str>::view(&state, frame, frame.area(), &theme);
+            SelectableList::<&str>::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
         })
         .unwrap();
 
@@ -714,7 +726,13 @@ fn test_filter_view() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            SelectableList::<String>::view(&state, frame, frame.area(), &theme);
+            SelectableList::<String>::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
         })
         .unwrap();
 
@@ -810,7 +828,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                SelectableList::<String>::view(&state, frame, frame.area(), &theme);
+                SelectableList::<String>::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::default(),
+                );
             })
             .unwrap();
     });

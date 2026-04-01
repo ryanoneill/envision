@@ -59,7 +59,13 @@ impl App for TabsApp {
         ])
         .split(area);
 
-        Tabs::<String>::view(&state.tabs, frame, chunks[0], &theme);
+        Tabs::<String>::view(
+            &state.tabs,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let tab_name = state
             .tabs

@@ -43,7 +43,7 @@ use std::sync::Arc;
 use ratatui::prelude::*;
 use ratatui::widgets::ListState;
 
-use super::{Component, Disableable, Focusable};
+use super::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -1030,7 +1030,7 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         render::render_searchable_list(state, frame, area, theme);
     }
 }

@@ -467,7 +467,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme);
+            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -481,7 +481,7 @@ fn test_view_collapsed() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme);
+            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -497,7 +497,7 @@ fn test_view_expanded() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme);
+            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -514,7 +514,7 @@ fn test_view_mixed() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme);
+            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -529,7 +529,7 @@ fn test_view_focused_highlight() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme);
+            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -547,7 +547,7 @@ fn test_view_long_content() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme);
+            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -796,7 +796,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Accordion::view(&state, frame, frame.area(), &theme);
+                Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

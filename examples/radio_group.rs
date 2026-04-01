@@ -60,7 +60,13 @@ impl App for RadioGroupApp {
         ])
         .split(area);
 
-        RadioGroup::<String>::view(&state.size, frame, chunks[0], &theme);
+        RadioGroup::<String>::view(
+            &state.size,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .size

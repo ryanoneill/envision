@@ -96,7 +96,13 @@ impl App for DependencyGraphApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        DependencyGraph::view(&state.graph, frame, chunks[0], &theme);
+        DependencyGraph::view(
+            &state.graph,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected_info = state
             .graph

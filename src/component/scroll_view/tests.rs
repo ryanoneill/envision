@@ -658,7 +658,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme);
+            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -670,7 +670,7 @@ fn test_view_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme);
+            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -682,7 +682,7 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme);
+            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -696,7 +696,7 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme);
+            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -711,7 +711,7 @@ fn test_view_with_scrollbar() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme);
+            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -725,7 +725,7 @@ fn test_view_no_scrollbar_when_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme);
+            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -737,7 +737,7 @@ fn test_view_no_scrollbar_when_content_fits() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme);
+            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -750,7 +750,7 @@ fn test_view_zero_area() {
     terminal
         .draw(|frame| {
             let zero_area = Rect::new(0, 0, 0, 0);
-            ScrollView::view(&state, frame, zero_area, &theme);
+            ScrollView::view(&state, frame, zero_area, &theme, &ViewContext::default());
         })
         .unwrap();
     // Should not panic
@@ -763,7 +763,7 @@ fn test_view_minimal_area() {
     terminal
         .draw(|frame| {
             let small_area = Rect::new(0, 0, 3, 3);
-            ScrollView::view(&state, frame, small_area, &theme);
+            ScrollView::view(&state, frame, small_area, &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -782,7 +782,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                ScrollView::view(&state, frame, frame.area(), &theme);
+                ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -804,7 +804,7 @@ fn test_annotation_reflects_focus_and_disabled() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                ScrollView::view(&state, frame, frame.area(), &theme);
+                ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

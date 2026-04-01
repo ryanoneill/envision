@@ -240,7 +240,9 @@ fn test_view_empty() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -263,7 +265,9 @@ fn test_view_with_items() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -275,7 +279,9 @@ fn test_view_with_title() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -297,7 +303,9 @@ fn test_view_failed_item() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -316,7 +324,9 @@ fn test_view_completed_item() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -335,14 +345,26 @@ fn test_view_zero_size_area() {
     // Test with zero width
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, Rect::new(0, 0, 0, 10), &theme);
+            MultiProgress::view(
+                &state,
+                frame,
+                Rect::new(0, 0, 0, 10),
+                &theme,
+                &ViewContext::default(),
+            );
         })
         .unwrap();
 
     // Test with zero height
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, Rect::new(0, 0, 60, 0), &Theme::default());
+            MultiProgress::view(
+                &state,
+                frame,
+                Rect::new(0, 0, 60, 0),
+                &Theme::default(),
+                &ViewContext::default(),
+            );
         })
         .unwrap();
 }
@@ -355,7 +377,9 @@ fn test_view_without_percentages() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -377,7 +401,9 @@ fn test_view_failed_without_message() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| MultiProgress::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -560,7 +586,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                MultiProgress::view(&state, frame, frame.area(), &theme);
+                MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

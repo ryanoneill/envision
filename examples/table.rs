@@ -97,7 +97,13 @@ impl App for TableApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        Table::<Language>::view(&state.table, frame, chunks[0], &theme);
+        Table::<Language>::view(
+            &state.table,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .table

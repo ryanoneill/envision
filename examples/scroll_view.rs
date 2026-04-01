@@ -60,7 +60,13 @@ impl App for ScrollViewApp {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
         // Render the scroll view (border + scrollbar)
-        ScrollView::view(&state.scroll_view, frame, chunks[0], &theme);
+        ScrollView::view(
+            &state.scroll_view,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Render content inside the content area
         let content_area = state.scroll_view.content_area(chunks[0]);

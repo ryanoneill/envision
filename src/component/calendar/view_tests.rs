@@ -8,7 +8,7 @@ fn test_view_march_2026() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme);
+            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -20,7 +20,7 @@ fn test_view_with_selected_day() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme);
+            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -35,7 +35,7 @@ fn test_view_with_events() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme);
+            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -47,7 +47,7 @@ fn test_view_with_title() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme);
+            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -60,7 +60,7 @@ fn test_view_focused() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme);
+            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -74,7 +74,7 @@ fn test_view_disabled() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme);
+            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -86,7 +86,7 @@ fn test_view_february_leap_year() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme);
+            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -98,7 +98,7 @@ fn test_view_february_non_leap_year() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme);
+            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -110,7 +110,13 @@ fn test_view_zero_area() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, Rect::new(0, 0, 0, 0), &theme);
+            Calendar::view(
+                &state,
+                frame,
+                Rect::new(0, 0, 0, 0),
+                &theme,
+                &ViewContext::default(),
+            );
         })
         .unwrap();
     // Should not panic
@@ -122,7 +128,7 @@ fn test_view_narrow_area() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(10, 5);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme);
+            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -139,7 +145,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Calendar::view(&state, frame, frame.area(), &theme);
+                Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -161,7 +167,7 @@ fn test_annotation_reflects_state() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Calendar::view(&state, frame, frame.area(), &theme);
+                Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

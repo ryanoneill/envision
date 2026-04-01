@@ -102,7 +102,13 @@ impl App for StatusBarApp {
         frame.render_widget(widget, chunks[0]);
 
         // Status bar
-        StatusBar::view(&state.status, frame, chunks[1], &theme);
+        StatusBar::view(
+            &state.status,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Help line
         frame.render_widget(

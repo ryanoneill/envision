@@ -1,5 +1,6 @@
 #![cfg(feature = "full")]
 //! Stress tests exercising components with large datasets (10,000+ items).
+use envision::ViewContext;
 
 use envision::component::{DataGrid, DataGridMessage, DataGridState};
 use envision::{
@@ -96,7 +97,7 @@ fn test_table_stress_10000_rows() {
 
     // Render to verify no panics with large dataset
     assert_renders_ok("Table-10k", 80, 24, |frame, area, theme| {
-        Table::<StressRow>::view(&state, frame, area, theme);
+        Table::<StressRow>::view(&state, frame, area, theme, &ViewContext::default());
     });
 }
 
@@ -155,7 +156,7 @@ fn test_tree_stress_10000_nodes() {
 
     // Render to verify no panics with large tree
     assert_renders_ok("Tree-11k", 100, 40, |frame, area, theme| {
-        Tree::<String>::view(&state, frame, area, theme);
+        Tree::<String>::view(&state, frame, area, theme, &ViewContext::default());
     });
 }
 
@@ -210,7 +211,7 @@ fn test_loading_list_stress_10000_items() {
 
     // Render to verify no panics
     assert_renders_ok("LoadingList-10k", 80, 30, |frame, area, theme| {
-        LoadingList::<String>::view(&state, frame, area, theme);
+        LoadingList::<String>::view(&state, frame, area, theme, &ViewContext::default());
     });
 }
 
@@ -253,7 +254,7 @@ fn test_selectable_list_stress_50000_items() {
 
     // Render to verify no panics with massive list
     assert_renders_ok("SelectableList-50k", 80, 24, |frame, area, theme| {
-        SelectableList::<String>::view(&state, frame, area, theme);
+        SelectableList::<String>::view(&state, frame, area, theme, &ViewContext::default());
     });
 }
 
@@ -293,7 +294,7 @@ fn test_accordion_stress_1000_panels() {
 
     // Render to verify no panics
     assert_renders_ok("Accordion-1k", 80, 40, |frame, area, theme| {
-        Accordion::view(&state, frame, area, theme);
+        Accordion::view(&state, frame, area, theme, &ViewContext::default());
     });
 }
 
@@ -334,7 +335,7 @@ fn test_data_grid_stress_10000_rows() {
 
     // Render to verify no panics
     assert_renders_ok("DataGrid-10k", 120, 40, |frame, area, theme| {
-        DataGrid::<StressRow>::view(&state, frame, area, theme);
+        DataGrid::<StressRow>::view(&state, frame, area, theme, &ViewContext::default());
     });
 }
 

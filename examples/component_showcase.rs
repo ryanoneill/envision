@@ -459,10 +459,22 @@ impl App for ShowcaseApp {
         .split(area);
 
         // Menu bar
-        envision::component::Menu::view(&state.menu, frame, main_chunks[0], &theme);
+        envision::component::Menu::view(
+            &state.menu,
+            frame,
+            main_chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Tabs
-        Tabs::view(&state.tabs, frame, main_chunks[1], &theme);
+        Tabs::view(
+            &state.tabs,
+            frame,
+            main_chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Content panel based on selected tab
         let content_area = main_chunks[2];
@@ -497,7 +509,13 @@ impl App for ShowcaseApp {
         // Dialog overlay (rendered last, on top)
         if state.dialog.is_visible() {
             let dialog_area = centered_rect(40, 8, area);
-            Dialog::view(&state.dialog, frame, dialog_area, &theme);
+            Dialog::view(
+                &state.dialog,
+                frame,
+                dialog_area,
+                &theme,
+                &ViewContext::default(),
+            );
         }
     }
 
@@ -569,10 +587,34 @@ fn render_form_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme
     ])
     .split(inner);
 
-    envision::component::InputField::view(&state.input, frame, chunks[0], theme);
-    envision::component::Checkbox::view(&state.checkbox, frame, chunks[1], theme);
-    envision::component::RadioGroup::view(&state.radio, frame, chunks[2], theme);
-    envision::component::Button::view(&state.submit_button, frame, chunks[3], theme);
+    envision::component::InputField::view(
+        &state.input,
+        frame,
+        chunks[0],
+        theme,
+        &ViewContext::default(),
+    );
+    envision::component::Checkbox::view(
+        &state.checkbox,
+        frame,
+        chunks[1],
+        theme,
+        &ViewContext::default(),
+    );
+    envision::component::RadioGroup::view(
+        &state.radio,
+        frame,
+        chunks[2],
+        theme,
+        &ViewContext::default(),
+    );
+    envision::component::Button::view(
+        &state.submit_button,
+        frame,
+        chunks[3],
+        theme,
+        &ViewContext::default(),
+    );
 }
 
 fn render_data_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
@@ -593,10 +635,22 @@ fn render_data_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme
         .title("Users");
     let list_inner = list_block.inner(chunks[0]);
     frame.render_widget(list_block, chunks[0]);
-    envision::component::SelectableList::view(&state.list, frame, list_inner, theme);
+    envision::component::SelectableList::view(
+        &state.list,
+        frame,
+        list_inner,
+        theme,
+        &ViewContext::default(),
+    );
 
     // Table
-    Table::view(&state.table, frame, chunks[1], theme);
+    Table::view(
+        &state.table,
+        frame,
+        chunks[1],
+        theme,
+        &ViewContext::default(),
+    );
 }
 
 fn render_status_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
@@ -614,9 +668,27 @@ fn render_status_panel(state: &State, frame: &mut Frame, area: Rect, theme: &The
     ])
     .split(inner);
 
-    envision::component::ProgressBar::view(&state.progress, frame, chunks[0], theme);
-    Spinner::view(&state.spinner, frame, chunks[1], theme);
-    Toast::view(&state.toast, frame, chunks[2], theme);
+    envision::component::ProgressBar::view(
+        &state.progress,
+        frame,
+        chunks[0],
+        theme,
+        &ViewContext::default(),
+    );
+    Spinner::view(
+        &state.spinner,
+        frame,
+        chunks[1],
+        theme,
+        &ViewContext::default(),
+    );
+    Toast::view(
+        &state.toast,
+        frame,
+        chunks[2],
+        theme,
+        &ViewContext::default(),
+    );
 }
 
 fn render_viz_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
@@ -639,20 +711,56 @@ fn render_viz_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme)
     // Row 1: Sparkline (left) + Gauge (right)
     let top_cols =
         Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).split(rows[0]);
-    Sparkline::view(&state.sparkline, frame, top_cols[0], theme);
-    Gauge::view(&state.gauge, frame, top_cols[1], theme);
+    Sparkline::view(
+        &state.sparkline,
+        frame,
+        top_cols[0],
+        theme,
+        &ViewContext::default(),
+    );
+    Gauge::view(
+        &state.gauge,
+        frame,
+        top_cols[1],
+        theme,
+        &ViewContext::default(),
+    );
 
     // Row 2: Heatmap (full width)
-    Heatmap::view(&state.heatmap, frame, rows[1], theme);
+    Heatmap::view(
+        &state.heatmap,
+        frame,
+        rows[1],
+        theme,
+        &ViewContext::default(),
+    );
 
     // Row 3: Timeline (full width)
-    Timeline::view(&state.timeline, frame, rows[2], theme);
+    Timeline::view(
+        &state.timeline,
+        frame,
+        rows[2],
+        theme,
+        &ViewContext::default(),
+    );
 
     // Row 4: CommandPalette (left) + CodeBlock (right)
     let bottom_cols =
         Layout::horizontal([Constraint::Percentage(40), Constraint::Percentage(60)]).split(rows[3]);
-    CommandPalette::view(&state.command_palette, frame, bottom_cols[0], theme);
-    CodeBlock::view(&state.code_block, frame, bottom_cols[1], theme);
+    CommandPalette::view(
+        &state.command_palette,
+        frame,
+        bottom_cols[0],
+        theme,
+        &ViewContext::default(),
+    );
+    CodeBlock::view(
+        &state.code_block,
+        frame,
+        bottom_cols[1],
+        theme,
+        &ViewContext::default(),
+    );
 }
 
 // ---------------------------------------------------------------------------

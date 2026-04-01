@@ -70,10 +70,34 @@ impl App for SpinnerApp {
         ])
         .split(area);
 
-        Spinner::view(&state.dots, frame, chunks[0], &theme);
-        Spinner::view(&state.line, frame, chunks[1], &theme);
-        Spinner::view(&state.circle, frame, chunks[2], &theme);
-        Spinner::view(&state.stopped, frame, chunks[3], &theme);
+        Spinner::view(
+            &state.dots,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        Spinner::view(
+            &state.line,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
+        Spinner::view(
+            &state.circle,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
+        Spinner::view(
+            &state.stopped,
+            frame,
+            chunks[3],
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

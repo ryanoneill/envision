@@ -648,7 +648,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Tooltip::view(&state, frame, frame.area(), &theme);
+                Tooltip::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

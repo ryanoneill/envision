@@ -1,4 +1,5 @@
 use super::*;
+use crate::component::ViewContext;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 enum TestScreen {
@@ -303,7 +304,7 @@ fn test_view_is_noop() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
-        .draw(|frame| Router::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| Router::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
 
     // View should do nothing - output should be empty

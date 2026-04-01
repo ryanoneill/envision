@@ -7,7 +7,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -23,7 +23,7 @@ fn test_snapshot_simple() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -41,7 +41,7 @@ fn test_snapshot_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -59,7 +59,7 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -78,7 +78,7 @@ fn test_snapshot_with_values() {
     let (mut terminal, theme) = test_utils::setup_render(40, 12);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -100,7 +100,7 @@ fn test_snapshot_zoomed_in() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -118,7 +118,7 @@ fn test_snapshot_selection_moved() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -132,7 +132,7 @@ fn test_snapshot_single_child() {
     let (mut terminal, theme) = test_utils::setup_render(30, 8);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme);
+            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

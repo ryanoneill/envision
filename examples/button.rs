@@ -113,9 +113,27 @@ impl App for ButtonApp {
         ])
         .split(area);
 
-        Button::view(&state.save, frame, chunks[0], &theme);
-        Button::view(&state.cancel, frame, chunks[1], &theme);
-        Button::view(&state.submit, frame, chunks[2], &theme);
+        Button::view(
+            &state.save,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        Button::view(
+            &state.cancel,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
+        Button::view(
+            &state.submit,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Last pressed info
         let info = match &state.last_pressed {

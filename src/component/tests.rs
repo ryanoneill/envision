@@ -44,7 +44,13 @@ impl Component for TestCounter {
         Some(TestCounterOutput::Changed(state.value))
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, _theme: &Theme) {
+    fn view(
+        state: &Self::State,
+        frame: &mut Frame,
+        area: Rect,
+        _theme: &Theme,
+        _ctx: &ViewContext,
+    ) {
         let text = format!("Count: {}", state.value);
         frame.render_widget(Paragraph::new(text), area);
     }
@@ -104,7 +110,7 @@ fn test_component_view() {
 
     terminal
         .draw(|frame| {
-            TestCounter::view(&state, frame, frame.area(), &theme);
+            TestCounter::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -225,7 +231,14 @@ impl Component for NoOutputComponent {
         None // No output needed
     }
 
-    fn view(_state: &Self::State, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+    fn view(
+        _state: &Self::State,
+        _frame: &mut Frame,
+        _area: Rect,
+        _theme: &Theme,
+        _ctx: &ViewContext,
+    ) {
+    }
 }
 
 #[test]
@@ -266,7 +279,13 @@ fn test_component_non_clone_state() {
             }
         }
 
-        fn view(state: &Self::State, frame: &mut Frame, area: Rect, _theme: &Theme) {
+        fn view(
+            state: &Self::State,
+            frame: &mut Frame,
+            area: Rect,
+            _theme: &Theme,
+            _ctx: &ViewContext,
+        ) {
             let text = format!("Value: {}", state.value);
             frame.render_widget(Paragraph::new(text), area);
         }

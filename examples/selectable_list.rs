@@ -58,7 +58,13 @@ impl App for SelectableListApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        SelectableList::<String>::view(&state.list, frame, chunks[0], &theme);
+        SelectableList::<String>::view(
+            &state.list,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .list

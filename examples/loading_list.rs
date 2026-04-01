@@ -73,7 +73,13 @@ impl App for LoadingListApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        LoadingList::view(&state.list, frame, chunks[0], &theme);
+        LoadingList::view(
+            &state.list,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .list

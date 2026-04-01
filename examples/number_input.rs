@@ -119,9 +119,27 @@ impl App for NumberInputApp {
         ])
         .split(area);
 
-        NumberInput::view(&state.quantity, frame, chunks[0], &theme);
-        NumberInput::view(&state.price, frame, chunks[1], &theme);
-        NumberInput::view(&state.temperature, frame, chunks[2], &theme);
+        NumberInput::view(
+            &state.quantity,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
+        NumberInput::view(
+            &state.price,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
+        NumberInput::view(
+            &state.temperature,
+            frame,
+            chunks[2],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let status = format!(
             " Qty: {} | Price: {} | Temp: {} | Tab: navigate, Enter: edit, q: quit",

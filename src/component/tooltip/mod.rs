@@ -28,7 +28,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
-use super::{Component, Toggleable};
+use super::{Component, Toggleable, ViewContext};
 use crate::theme::Theme;
 
 /// Position of the tooltip relative to its target.
@@ -489,7 +489,13 @@ impl Component for Tooltip {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, _theme: &Theme) {
+    fn view(
+        state: &Self::State,
+        frame: &mut Frame,
+        area: Rect,
+        _theme: &Theme,
+        _ctx: &ViewContext,
+    ) {
         if state.visible {
             crate::annotation::with_registry(|reg| {
                 reg.register(

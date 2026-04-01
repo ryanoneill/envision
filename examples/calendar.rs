@@ -54,7 +54,13 @@ impl App for CalendarApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        Calendar::view(&state.calendar, frame, chunks[0], &theme);
+        Calendar::view(
+            &state.calendar,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected_info = match state.calendar.selected_day() {
             Some(day) => format!(

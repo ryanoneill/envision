@@ -369,7 +369,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollableText::view(&state, frame, frame.area(), &theme);
+            ScrollableText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -382,7 +382,7 @@ fn test_view_with_content() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollableText::view(&state, frame, frame.area(), &theme);
+            ScrollableText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -396,7 +396,7 @@ fn test_view_scrolled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 6);
     terminal
         .draw(|frame| {
-            ScrollableText::view(&state, frame, frame.area(), &theme);
+            ScrollableText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -408,7 +408,7 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollableText::view(&state, frame, frame.area(), &theme);
+            ScrollableText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -422,7 +422,7 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollableText::view(&state, frame, frame.area(), &theme);
+            ScrollableText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -438,7 +438,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                ScrollableText::view(&state, frame, frame.area(), &theme);
+                ScrollableText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

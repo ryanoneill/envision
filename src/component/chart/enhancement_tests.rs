@@ -211,7 +211,7 @@ fn test_render_area_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -228,7 +228,7 @@ fn test_render_area_chart_with_labels() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -239,7 +239,7 @@ fn test_render_area_chart_multi_series() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -257,7 +257,7 @@ fn test_render_scatter_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -268,7 +268,7 @@ fn test_render_scatter_chart_multi_series() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -288,7 +288,7 @@ fn test_render_area_chart_with_thresholds() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -304,7 +304,7 @@ fn test_render_scatter_with_thresholds() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -320,7 +320,7 @@ fn test_render_area_chart_with_y_range() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -335,7 +335,7 @@ fn test_render_empty_area_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -346,7 +346,7 @@ fn test_render_empty_scatter_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -384,7 +384,7 @@ fn test_area_chart_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -396,7 +396,7 @@ fn test_scatter_chart_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }

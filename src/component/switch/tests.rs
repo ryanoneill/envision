@@ -329,7 +329,7 @@ fn test_view_off() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme);
+            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -343,7 +343,7 @@ fn test_view_on() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme);
+            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -358,7 +358,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme);
+            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -373,7 +373,7 @@ fn test_view_focused_on() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme);
+            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -387,7 +387,7 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme);
+            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -401,7 +401,7 @@ fn test_view_disabled_on() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme);
+            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -415,7 +415,7 @@ fn test_view_with_label() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme);
+            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -429,7 +429,7 @@ fn test_view_with_label_on() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme);
+            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -446,7 +446,7 @@ fn test_view_custom_labels() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme);
+            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -585,7 +585,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Switch::view(&state, frame, frame.area(), &theme);
+                Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -603,7 +603,7 @@ fn test_annotation_on() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Switch::view(&state, frame, frame.area(), &theme);
+                Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -619,7 +619,7 @@ fn test_annotation_with_label() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Switch::view(&state, frame, frame.area(), &theme);
+                Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
