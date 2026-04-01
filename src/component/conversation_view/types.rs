@@ -8,8 +8,8 @@ use ratatui::style::Color;
 
 /// An opaque handle to a conversation message for streaming updates.
 ///
-/// Returned by [`ConversationViewState::push_message`] and related methods.
-/// Use with [`ConversationViewState::update_by_handle`] to update a specific
+/// Returned by `ConversationViewState::push_message` and related methods.
+/// Use with `ConversationViewState::update_by_handle` to update a specific
 /// message, even after other messages have been pushed or evicted.
 ///
 /// # Example
