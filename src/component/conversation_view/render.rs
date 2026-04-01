@@ -155,7 +155,14 @@ fn format_block<'a>(
 ) {
     match block {
         MessageBlock::Text(text) => {
-            format_text_block(text, width, indent, role_style, lines);
+            format_text_block(
+                text,
+                width,
+                indent,
+                role_style,
+                state.markdown_enabled,
+                lines,
+            );
         }
         MessageBlock::Code { code, language } => {
             format_code_block(code, language.as_deref(), width, indent, lines);
@@ -229,12 +236,39 @@ fn format_text_block<'a>(
     width: usize,
     indent: &str,
     style: Style,
+    markdown_enabled: bool,
     lines: &mut Vec<Line<'a>>,
 ) {
     if text.is_empty() {
         lines.push(Line::from(Span::styled(indent.to_string(), style)));
         return;
     }
+
+    // When markdown feature is enabled and user opted in, render as markdown
+    #[cfg(feature = "markdown")]
+    if markdown_enabled {
+        let theme = crate::theme::Theme::default();
+        let md_lines = crate::component::markdown_renderer::render::render_markdown(
+            text,
+            width as u16,
+            &theme,
+        );
+        for md_line in md_lines {
+            if indent.is_empty() {
+                lines.push(md_line);
+            } else {
+                // Prepend indent to first span
+                let mut spans: Vec<Span> = vec![Span::raw(indent.to_string())];
+                spans.extend(md_line.spans);
+                lines.push(Line::from(spans));
+            }
+        }
+        return;
+    }
+
+    // Suppress unused variable warning when markdown feature is off
+    let _ = markdown_enabled;
+
     for wrapped in wrap_lines(text, indent, width) {
         lines.push(Line::from(Span::styled(wrapped, style)));
     }
@@ -373,8 +407,8 @@ fn format_error_block<'a>(content: &str, width: usize, indent: &str, lines: &mut
 /// Calculates the total number of display lines for the current message list.
 ///
 /// Used internally to set scroll content length.
-pub(super) fn total_display_lines(state: &ConversationViewState) -> usize {
+pub(super) fn total_display_lines(state: &ConversationViewState, width: usize) -> usize {
     let theme = Theme::default();
-    let lines = build_display_lines(state, 80, &theme);
+    let lines = build_display_lines(state, width, &theme);
     lines.len()
 }

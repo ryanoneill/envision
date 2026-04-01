@@ -109,6 +109,10 @@ pub struct ConversationViewState {
     pub(super) show_timestamps: bool,
     /// Whether to show role labels/headers.
     pub(super) show_role_labels: bool,
+    /// Whether to render text blocks as markdown (requires `markdown` feature).
+    pub(super) markdown_enabled: bool,
+    /// Last known render width for scroll content length estimation.
+    pub(super) last_known_width: usize,
     /// Optional title for the conversation panel.
     pub(super) title: Option<String>,
     /// Whether the component is focused.
@@ -131,6 +135,8 @@ impl Default for ConversationViewState {
             max_messages: 1000,
             show_timestamps: false,
             show_role_labels: true,
+            markdown_enabled: false,
+            last_known_width: 80,
             title: None,
             focused: false,
             disabled: false,
@@ -230,6 +236,26 @@ impl ConversationViewState {
     pub fn with_role_labels(mut self, show: bool) -> Self {
         self.show_role_labels = show;
         self
+    }
+
+    /// Enables or disables markdown rendering for text blocks (builder pattern).
+    ///
+    /// When enabled and the `markdown` feature is active, text blocks are
+    /// rendered as markdown (headings, bold, italic, code, lists, etc.)
+    /// instead of plain text.
+    pub fn with_markdown(mut self, enabled: bool) -> Self {
+        self.markdown_enabled = enabled;
+        self
+    }
+
+    /// Returns whether markdown rendering is enabled.
+    pub fn markdown_enabled(&self) -> bool {
+        self.markdown_enabled
+    }
+
+    /// Sets whether markdown rendering is enabled.
+    pub fn set_markdown_enabled(&mut self, enabled: bool) {
+        self.markdown_enabled = enabled;
     }
 
     /// Sets the disabled state (builder pattern).
@@ -724,8 +750,12 @@ impl ConversationViewState {
     }
 
     /// Updates the scroll content length based on the current display lines.
+    ///
+    /// Uses `last_known_width` from the most recent render for wrapping
+    /// calculations. Defaults to 80 before the first render.
     fn update_scroll_content_length(&mut self) {
-        let total = render::total_display_lines(self);
+        let width = self.last_known_width.max(20);
+        let total = render::total_display_lines(self, width);
         self.scroll.set_content_length(total);
     }
 }
