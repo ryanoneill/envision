@@ -27,7 +27,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable};
+use super::{Component, Disableable, ViewContext};
 use crate::theme::Theme;
 
 /// Layout style for key hints display.
@@ -521,7 +521,7 @@ impl Component for KeyHints {
         None // Display-only, no output
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         if state.hints.is_empty() || area.width == 0 || area.height == 0 {
             return;
         }

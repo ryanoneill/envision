@@ -120,7 +120,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -136,7 +136,7 @@ fn test_view_left_only() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -152,7 +152,7 @@ fn test_view_right_only() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -168,7 +168,7 @@ fn test_view_center_only() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -186,7 +186,7 @@ fn test_view_all_sections() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -203,7 +203,7 @@ fn test_view_with_separator() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -220,7 +220,7 @@ fn test_view_custom_separator() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -237,7 +237,7 @@ fn test_view_no_separator_on_last_item() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -254,7 +254,7 @@ fn test_view_styled_items() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -272,7 +272,7 @@ fn test_view_elapsed_time() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -297,7 +297,7 @@ fn test_view_counter_with_label() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -313,7 +313,7 @@ fn test_view_heartbeat() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -332,7 +332,7 @@ fn test_view_left_and_right_no_center() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -351,7 +351,7 @@ fn test_view_many_items_in_section() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -376,7 +376,7 @@ fn test_view_counter_no_label() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -397,7 +397,7 @@ fn test_view_all_styles() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -415,7 +415,7 @@ fn test_view_narrow_width() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -432,7 +432,7 @@ fn test_view_multiple_items_right() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -451,7 +451,7 @@ fn test_view_mixed_dynamic_items() {
 
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme);
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -517,7 +517,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                StatusBar::view(&state, frame, frame.area(), &theme);
+                StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

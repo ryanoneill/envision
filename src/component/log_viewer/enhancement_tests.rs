@@ -590,7 +590,7 @@ fn test_render_with_follow() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme);
+            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -602,7 +602,7 @@ fn test_render_without_follow() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme);
+            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -614,7 +614,7 @@ fn test_render_with_regex() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme);
+            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }

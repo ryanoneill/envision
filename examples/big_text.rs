@@ -79,16 +79,34 @@ impl App for BigTextApp {
 
         let clock_label = Paragraph::new(" Clock").style(Style::default().fg(Color::DarkGray));
         frame.render_widget(clock_label, chunks[0]);
-        BigText::view(&state.clock, frame, chunks[1], &theme);
+        BigText::view(
+            &state.clock,
+            frame,
+            chunks[1],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let metric_label =
             Paragraph::new(" Active Users").style(Style::default().fg(Color::DarkGray));
         frame.render_widget(metric_label, chunks[2]);
-        BigText::view(&state.metric, frame, chunks[3], &theme);
+        BigText::view(
+            &state.metric,
+            frame,
+            chunks[3],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let pct_label = Paragraph::new(" Uptime").style(Style::default().fg(Color::DarkGray));
         frame.render_widget(pct_label, chunks[4]);
-        BigText::view(&state.percentage, frame, chunks[5], &theme);
+        BigText::view(
+            &state.percentage,
+            frame,
+            chunks[5],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let footer = Paragraph::new(" BigText dashboard metrics | Esc to quit")
             .style(Style::default().fg(Color::DarkGray))

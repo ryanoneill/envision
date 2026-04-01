@@ -267,7 +267,7 @@ fn test_view_renders() {
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &theme);
+            Tabs::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -283,7 +283,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &theme);
+            Tabs::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -299,7 +299,7 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &theme);
+            Tabs::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -314,7 +314,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &theme);
+            Tabs::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -686,7 +686,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Tabs::<String>::view(&state, frame, frame.area(), &theme);
+                Tabs::<String>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

@@ -11,7 +11,7 @@ fn test_view_normal() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme);
+            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -26,7 +26,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme);
+            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -40,7 +40,7 @@ fn test_view_with_label() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme);
+            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -56,7 +56,7 @@ fn test_view_editing() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme);
+            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -72,7 +72,7 @@ fn test_view_editing_with_label() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme);
+            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -86,7 +86,7 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme);
+            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -100,7 +100,7 @@ fn test_view_negative_value() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme);
+            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -114,7 +114,7 @@ fn test_view_float_precision() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme);
+            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -129,7 +129,7 @@ fn test_view_zero_area() {
     // Should not panic
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme);
+            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -146,7 +146,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                NumberInput::view(&state, frame, frame.area(), &theme);
+                NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -166,7 +166,7 @@ fn test_annotation_focused() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                NumberInput::view(&state, frame, frame.area(), &theme);
+                NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });
@@ -183,7 +183,7 @@ fn test_annotation_disabled() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                NumberInput::view(&state, frame, frame.area(), &theme);
+                NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

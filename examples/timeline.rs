@@ -79,7 +79,13 @@ impl App for TimelineApp {
 
     fn view(state: &State, frame: &mut Frame) {
         let theme = Theme::default();
-        Timeline::view(&state.timeline, frame, frame.area(), &theme);
+        Timeline::view(
+            &state.timeline,
+            frame,
+            frame.area(),
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

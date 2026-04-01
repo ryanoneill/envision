@@ -63,7 +63,13 @@ impl App for ChatViewApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        ChatView::view(&state.chat, frame, chunks[0], &theme);
+        ChatView::view(
+            &state.chat,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let status = format!(
             " Messages: {} | Ctrl+Enter: send, Tab: toggle focus, Esc: quit",

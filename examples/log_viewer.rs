@@ -71,7 +71,13 @@ impl App for LogViewerApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        LogViewer::view(&state.viewer, frame, chunks[0], &theme);
+        LogViewer::view(
+            &state.viewer,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let visible = state.viewer.visible_entries().len();
         let follow = if state.viewer.follow() { "ON" } else { "OFF" };

@@ -628,7 +628,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -639,7 +639,7 @@ fn test_render_with_messages() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -650,7 +650,7 @@ fn test_render_focused_input() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -662,7 +662,7 @@ fn test_render_focused_history() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -673,7 +673,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -686,7 +686,7 @@ fn test_render_with_timestamps() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -697,7 +697,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 3);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -713,7 +713,7 @@ fn test_render_with_input_text() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -923,7 +923,7 @@ fn test_render_with_custom_role_styles() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme);
+            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     // Just verify it renders without panicking
@@ -939,7 +939,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                ChatView::view(&state, frame, frame.area(), &theme);
+                ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

@@ -149,7 +149,13 @@ impl App for ConversationApp {
 
     fn view(state: &State, frame: &mut Frame) {
         let theme = Theme::default();
-        ConversationView::view(&state.conversation, frame, frame.area(), &theme);
+        ConversationView::view(
+            &state.conversation,
+            frame,
+            frame.area(),
+            &theme,
+            &ViewContext::default(),
+        );
     }
 
     fn handle_event_with_state(state: &Self::State, event: &Event) -> Option<Msg> {

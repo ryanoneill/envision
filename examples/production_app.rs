@@ -208,7 +208,13 @@ impl App for ProcessorApp {
             .padding(Padding::horizontal(1));
         let progress_inner = progress_block.inner(sections[1]);
         frame.render_widget(progress_block, sections[1]);
-        ProgressBar::view(&state.progress, frame, progress_inner, &theme);
+        ProgressBar::view(
+            &state.progress,
+            frame,
+            progress_inner,
+            &theme,
+            &ViewContext::default(),
+        );
 
         // -- Current file indicator --
         let current_text = match &state.current_file {
@@ -232,7 +238,13 @@ impl App for ProcessorApp {
         frame.render_widget(current, sections[2]);
 
         // -- Status log --
-        StatusLog::view(&state.log, frame, sections[3], &theme);
+        StatusLog::view(
+            &state.log,
+            frame,
+            sections[3],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // -- Bottom status bar --
         let status = Line::from(vec![

@@ -797,7 +797,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                LoadingList::view(&state, frame, frame.area(), &theme);
+                LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

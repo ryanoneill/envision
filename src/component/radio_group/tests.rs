@@ -177,7 +177,7 @@ fn test_view_renders_indicators() {
 
     terminal
         .draw(|frame| {
-            RadioGroup::<&str>::view(&state, frame, frame.area(), &theme);
+            RadioGroup::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -192,7 +192,7 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            RadioGroup::<&str>::view(&state, frame, frame.area(), &theme);
+            RadioGroup::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -223,7 +223,7 @@ fn test_view_unfocused() {
 
     terminal
         .draw(|frame| {
-            RadioGroup::<&str>::view(&state, frame, frame.area(), &theme);
+            RadioGroup::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -239,7 +239,7 @@ fn test_view_focused_not_selected() {
 
     terminal
         .draw(|frame| {
-            RadioGroup::<&str>::view(&state, frame, frame.area(), &theme);
+            RadioGroup::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -505,7 +505,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                RadioGroup::<String>::view(&state, frame, frame.area(), &theme);
+                RadioGroup::<String>::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::default(),
+                );
             })
             .unwrap();
     });

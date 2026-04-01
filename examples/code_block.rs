@@ -96,7 +96,13 @@ fn main() {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
         let theme = Theme::default();
-        CodeBlock::view(&state.code, frame, chunks[0], &theme);
+        CodeBlock::view(
+            &state.code,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let status = Paragraph::new(format!(
             " Line {} | {}/{} | Up/Down/PgUp/PgDn/Home/End | l=line nums | Esc=quit",

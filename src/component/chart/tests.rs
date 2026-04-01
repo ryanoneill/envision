@@ -440,7 +440,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -451,7 +451,7 @@ fn test_render_line_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -465,7 +465,7 @@ fn test_render_line_chart_with_labels() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -479,7 +479,7 @@ fn test_render_bar_vertical() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -490,7 +490,7 @@ fn test_render_bar_horizontal() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -501,7 +501,7 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -512,7 +512,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -523,7 +523,7 @@ fn test_render_single_series_no_legend() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme);
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -570,7 +570,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Chart::view(&state, frame, frame.area(), &theme);
+                Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

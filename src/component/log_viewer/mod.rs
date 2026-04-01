@@ -45,7 +45,7 @@ use ratatui::prelude::*;
 
 use super::{
     Component, Disableable, Focusable, InputFieldMessage, InputFieldState, StatusLogEntry,
-    StatusLogLevel,
+    StatusLogLevel, ViewContext,
 };
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
@@ -451,7 +451,7 @@ impl Component for LogViewer {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         if area.height < 3 {
             return;
         }

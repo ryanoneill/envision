@@ -58,7 +58,13 @@ impl App for StatusLogApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        StatusLog::view(&state.log, frame, chunks[0], &theme);
+        StatusLog::view(
+            &state.log,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let status = format!(" Entries: {} | Up/Down: scroll, q: quit", state.log.len());
         frame.render_widget(

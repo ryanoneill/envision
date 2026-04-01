@@ -5,6 +5,7 @@
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use envision::backend::CaptureBackend;
+use envision::component::ViewContext;
 use envision::component::{
     Column, Component, SelectableList, SelectableListState, Table, TableRow, TableState, Tree,
     TreeNode, TreeState,
@@ -44,6 +45,7 @@ fn bench_selectable_list_view(c: &mut Criterion) {
                                     frame,
                                     frame.area(),
                                     &theme,
+                                    &ViewContext::default(),
                                 );
                             })
                             .unwrap();
@@ -112,6 +114,7 @@ fn bench_table_view(c: &mut Criterion) {
                                     frame,
                                     frame.area(),
                                     &theme,
+                                    &ViewContext::default(),
                                 );
                             })
                             .unwrap();
@@ -184,6 +187,7 @@ fn bench_tree_view(c: &mut Criterion) {
                                     frame,
                                     frame.area(),
                                     &theme,
+                                    &ViewContext::default(),
                                 );
                             })
                             .unwrap();
@@ -208,7 +212,13 @@ fn bench_tree_view(c: &mut Criterion) {
             b.iter(|| {
                 terminal
                     .draw(|frame| {
-                        Tree::<String>::view(black_box(&state), frame, frame.area(), &theme);
+                        Tree::<String>::view(
+                            black_box(&state),
+                            frame,
+                            frame.area(),
+                            &theme,
+                            &ViewContext::default(),
+                        );
                     })
                     .unwrap();
             });

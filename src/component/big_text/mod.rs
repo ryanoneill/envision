@@ -24,7 +24,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable};
+use super::{Component, Disableable, ViewContext};
 use crate::theme::Theme;
 
 /// Returns the 3-row block representation of a character.
@@ -469,7 +469,7 @@ impl Component for BigText {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.register(
                 area,

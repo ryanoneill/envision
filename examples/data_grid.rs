@@ -91,7 +91,13 @@ impl App for DataGridApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        DataGrid::view(&state.grid, frame, chunks[0], &theme);
+        DataGrid::view(
+            &state.grid,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state
             .grid

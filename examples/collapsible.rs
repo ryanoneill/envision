@@ -50,7 +50,13 @@ impl App for CollapsibleApp {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
         // Render the collapsible header and border
-        Collapsible::view(&state.collapsible, frame, chunks[0], &theme);
+        Collapsible::view(
+            &state.collapsible,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Render content inside the content area when expanded
         let content_area = state.collapsible.content_area(chunks[0]);

@@ -78,7 +78,13 @@ fn main() {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
         let theme = Theme::default();
-        DiffViewer::view(&state.viewer, frame, chunks[0], &theme);
+        DiffViewer::view(
+            &state.viewer,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let mode_str = match state.viewer.mode() {
             DiffMode::Unified => "Unified",

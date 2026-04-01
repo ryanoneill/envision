@@ -30,7 +30,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 use unicode_width::UnicodeWidthStr;
 
-use super::{Component, Disableable, Focusable};
+use super::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 use crate::undo::{EditKind, UndoStack};
@@ -784,7 +784,7 @@ impl Component for InputField {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.register(
                 area,

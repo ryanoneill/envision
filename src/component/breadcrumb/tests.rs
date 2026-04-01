@@ -448,7 +448,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme);
+            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -463,7 +463,7 @@ fn test_view_single() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme);
+            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -478,7 +478,7 @@ fn test_view_multiple() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme);
+            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -495,7 +495,7 @@ fn test_view_focused_highlight() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme);
+            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -512,7 +512,7 @@ fn test_view_truncated() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme);
+            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -528,7 +528,7 @@ fn test_view_custom_separator() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme);
+            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -544,7 +544,7 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme);
+            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 
@@ -804,7 +804,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Breadcrumb::view(&state, frame, frame.area(), &theme);
+                Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

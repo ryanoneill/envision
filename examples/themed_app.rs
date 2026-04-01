@@ -213,6 +213,7 @@ impl App for ThemedApp {
             frame,
             button_checkbox_chunks[0],
             &theme,
+            &ViewContext::default(),
         );
 
         // Render checkbox using Component trait
@@ -221,10 +222,17 @@ impl App for ThemedApp {
             frame,
             button_checkbox_chunks[1],
             &theme,
+            &ViewContext::default(),
         );
 
         // Progress bar
-        ProgressBar::view(&state.progress_state, frame, chunks[3], &theme);
+        ProgressBar::view(
+            &state.progress_state,
+            frame,
+            chunks[3],
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Selectable list with block wrapper
         let list_area = chunks[4];
@@ -239,7 +247,13 @@ impl App for ThemedApp {
             .title("Items");
         let inner_area = list_block.inner(list_area);
         frame.render_widget(list_block, list_area);
-        SelectableList::view(&state.list_state, frame, inner_area, &theme);
+        SelectableList::view(
+            &state.list_state,
+            frame,
+            inner_area,
+            &theme,
+            &ViewContext::default(),
+        );
 
         // Controls help
         let controls = Paragraph::new(Line::from(vec![

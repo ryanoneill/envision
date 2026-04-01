@@ -660,7 +660,7 @@ fn test_view_renders_basic() {
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -671,7 +671,7 @@ fn test_view_focused() {
     state.set_focused(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -682,7 +682,7 @@ fn test_view_disabled() {
     state.set_disabled(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -692,7 +692,7 @@ fn test_view_empty() {
     let state = TabBarState::new(vec![]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -705,7 +705,7 @@ fn test_view_with_modified() {
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -718,7 +718,7 @@ fn test_view_with_closable() {
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -731,7 +731,7 @@ fn test_view_with_icon() {
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -747,7 +747,7 @@ fn test_view_with_all_decorations() {
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(50, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -757,7 +757,15 @@ fn test_view_zero_area() {
     let state = TabBarState::new(vec![Tab::new("a", "A")]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, Rect::new(0, 0, 0, 0), &theme))
+        .draw(|frame| {
+            TabBar::view(
+                &state,
+                frame,
+                Rect::new(0, 0, 0, 0),
+                &theme,
+                &ViewContext::default(),
+            )
+        })
         .unwrap();
     // Should not panic
 }
@@ -844,7 +852,9 @@ fn test_annotation_emitted() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     let registry = with_annotations(|| {
         terminal
-            .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme))
+            .draw(|frame| {
+                TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            })
             .unwrap();
     });
     assert_eq!(registry.len(), 1);

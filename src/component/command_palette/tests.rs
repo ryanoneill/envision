@@ -697,7 +697,7 @@ fn test_render_hidden_is_noop() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme);
+            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     // Should render nothing (blank)
@@ -709,7 +709,7 @@ fn test_render_visible() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme);
+            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -721,7 +721,7 @@ fn test_render_with_query() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme);
+            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -733,7 +733,7 @@ fn test_render_with_selection() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme);
+            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -748,7 +748,7 @@ fn test_render_no_matches() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme);
+            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -761,7 +761,7 @@ fn test_render_empty_items() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme);
+            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
 }
@@ -840,7 +840,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                CommandPalette::view(&state, frame, frame.area(), &theme);
+                CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
             })
             .unwrap();
     });

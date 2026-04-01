@@ -61,7 +61,13 @@ impl App for DropdownApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Length(3), Constraint::Min(0)]).split(area);
 
-        Dropdown::view(&state.language, frame, chunks[0], &theme);
+        Dropdown::view(
+            &state.language,
+            frame,
+            chunks[0],
+            &theme,
+            &ViewContext::default(),
+        );
 
         let selected = state.language.selected_value().unwrap_or("None");
         let status = format!(" Selected: {}", selected);

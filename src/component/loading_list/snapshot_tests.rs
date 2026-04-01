@@ -34,7 +34,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme);
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -47,7 +47,7 @@ fn test_snapshot_with_items() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme);
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -60,7 +60,7 @@ fn test_snapshot_with_selected() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme);
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -74,7 +74,7 @@ fn test_snapshot_with_loading_item() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme);
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -88,7 +88,7 @@ fn test_snapshot_with_error_item() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme);
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -104,7 +104,7 @@ fn test_snapshot_mixed_states() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme);
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -117,7 +117,7 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme);
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

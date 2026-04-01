@@ -11,7 +11,9 @@ fn test_view_empty() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -26,7 +28,9 @@ fn test_view_with_items() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -40,7 +44,9 @@ fn test_view_with_title() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -55,7 +61,9 @@ fn test_view_with_error() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -70,14 +78,26 @@ fn test_view_zero_size_area() {
     // Test with zero width
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, Rect::new(0, 0, 0, 10), &theme);
+            LoadingList::view(
+                &state,
+                frame,
+                Rect::new(0, 0, 0, 10),
+                &theme,
+                &ViewContext::default(),
+            );
         })
         .unwrap();
 
     // Test with zero height
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, Rect::new(0, 0, 60, 0), &Theme::default());
+            LoadingList::view(
+                &state,
+                frame,
+                Rect::new(0, 0, 60, 0),
+                &Theme::default(),
+                &ViewContext::default(),
+            );
         })
         .unwrap();
 }
@@ -91,7 +111,9 @@ fn test_view_without_indicators() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -106,7 +128,9 @@ fn test_view_without_indicators_with_error() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -126,7 +150,9 @@ fn test_view_focused() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -141,7 +167,9 @@ fn test_view_with_loading_item() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -158,7 +186,9 @@ fn test_view_with_mixed_states() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -175,7 +205,9 @@ fn test_view_single_item() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -190,7 +222,9 @@ fn test_view_disabled() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -205,7 +239,9 @@ fn test_view_with_title_and_selection() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| LoadingList::view(&state, frame, frame.area(), &theme))
+        .draw(|frame| {
+            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());

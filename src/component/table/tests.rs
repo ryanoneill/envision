@@ -924,7 +924,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Table::<TestRow>::view(&state, frame, frame.area(), &theme);
+                Table::<TestRow>::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::default(),
+                );
             })
             .unwrap();
     });
