@@ -288,7 +288,7 @@ impl ConversationViewState {
     ///
     /// let mut state = ConversationViewState::new();
     /// let handle = state.push_user("Hello!");
-    /// assert_eq!(state.messages()[0].role(), ConversationRole::User);
+    /// assert_eq!(*state.messages()[0].role(), ConversationRole::User);
     /// let _ = handle;
     /// ```
     pub fn push_user(&mut self, content: impl Into<String>) -> MessageHandle {
@@ -304,7 +304,7 @@ impl ConversationViewState {
     ///
     /// let mut state = ConversationViewState::new();
     /// let handle = state.push_assistant("How can I help?");
-    /// assert_eq!(state.messages()[0].role(), ConversationRole::Assistant);
+    /// assert_eq!(*state.messages()[0].role(), ConversationRole::Assistant);
     /// let _ = handle;
     /// ```
     pub fn push_assistant(&mut self, content: impl Into<String>) -> MessageHandle {
@@ -323,7 +323,7 @@ impl ConversationViewState {
     ///
     /// let mut state = ConversationViewState::new();
     /// let handle = state.push_system("System initialized");
-    /// assert_eq!(state.messages()[0].role(), ConversationRole::System);
+    /// assert_eq!(*state.messages()[0].role(), ConversationRole::System);
     /// let _ = handle;
     /// ```
     pub fn push_system(&mut self, content: impl Into<String>) -> MessageHandle {
@@ -339,7 +339,7 @@ impl ConversationViewState {
     ///
     /// let mut state = ConversationViewState::new();
     /// let handle = state.push_tool("Search results: 5 items found");
-    /// assert_eq!(state.messages()[0].role(), ConversationRole::Tool);
+    /// assert_eq!(*state.messages()[0].role(), ConversationRole::Tool);
     /// let _ = handle;
     /// ```
     pub fn push_tool(&mut self, content: impl Into<String>) -> MessageHandle {
