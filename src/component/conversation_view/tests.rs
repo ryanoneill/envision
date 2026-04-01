@@ -54,7 +54,7 @@ fn test_role_equality() {
 #[test]
 fn test_role_clone() {
     let role = ConversationRole::Tool;
-    let cloned = role;
+    let cloned = role.clone();
     assert_eq!(role, cloned);
 }
 
@@ -97,11 +97,11 @@ fn test_code_block_no_language() {
 
 #[test]
 fn test_tool_use_block() {
-    let block = MessageBlock::tool_use("search", "query: TUI");
+    let block = MessageBlock::tool_use("search").with_input("query: TUI");
     assert!(block.is_tool_use());
-    if let MessageBlock::ToolUse { name, input } = &block {
+    if let MessageBlock::ToolUse { name, input, .. } = &block {
         assert_eq!(name, "search");
-        assert_eq!(input, "query: TUI");
+        assert_eq!(input.as_deref(), Some("query: TUI"));
     } else {
         panic!("Expected ToolUse block");
     }
@@ -150,7 +150,7 @@ fn test_block_clone() {
 #[test]
 fn test_message_new() {
     let msg = ConversationMessage::new(ConversationRole::User, "Hello");
-    assert_eq!(msg.role(), ConversationRole::User);
+    assert_eq!(*msg.role(), ConversationRole::User);
     assert_eq!(msg.blocks().len(), 1);
     assert!(matches!(&msg.blocks()[0], MessageBlock::Text(s) if s == "Hello"));
     assert!(!msg.is_streaming());
@@ -336,7 +336,7 @@ fn test_push_user() {
     let mut state = ConversationViewState::new();
     state.push_user("Hello");
     assert_eq!(state.message_count(), 1);
-    assert_eq!(state.messages()[0].role(), ConversationRole::User);
+    assert_eq!(*state.messages()[0].role(), ConversationRole::User);
     assert_eq!(state.messages()[0].text_content(), "Hello");
 }
 
@@ -344,21 +344,21 @@ fn test_push_user() {
 fn test_push_assistant() {
     let mut state = ConversationViewState::new();
     state.push_assistant("Hi there!");
-    assert_eq!(state.messages()[0].role(), ConversationRole::Assistant);
+    assert_eq!(*state.messages()[0].role(), ConversationRole::Assistant);
 }
 
 #[test]
 fn test_push_system() {
     let mut state = ConversationViewState::new();
     state.push_system("Init");
-    assert_eq!(state.messages()[0].role(), ConversationRole::System);
+    assert_eq!(*state.messages()[0].role(), ConversationRole::System);
 }
 
 #[test]
 fn test_push_tool() {
     let mut state = ConversationViewState::new();
     state.push_tool("Result: 42");
-    assert_eq!(state.messages()[0].role(), ConversationRole::Tool);
+    assert_eq!(*state.messages()[0].role(), ConversationRole::Tool);
 }
 
 #[test]

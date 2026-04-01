@@ -130,7 +130,7 @@ fn test_render_tool_use_block() {
         ConversationRole::Assistant,
         vec![
             MessageBlock::text("I'll search for that."),
-            MessageBlock::tool_use("web_search", "query: rust TUI frameworks"),
+            MessageBlock::tool_use("web_search").with_input("query: rust TUI frameworks"),
         ],
     ));
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
@@ -213,7 +213,7 @@ fn test_render_collapsed_tool_use() {
     state.collapse("tool:search");
     state.push_message(ConversationMessage::with_blocks(
         ConversationRole::Assistant,
-        vec![MessageBlock::tool_use("search", "query: test")],
+        vec![MessageBlock::tool_use("search").with_input("query: test")],
     ));
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
@@ -254,7 +254,7 @@ fn test_render_mixed_blocks() {
             MessageBlock::thinking("Analyzing the problem..."),
             MessageBlock::text("I found the answer."),
             MessageBlock::code("x = 42", Some("python")),
-            MessageBlock::tool_use("calculator", "42 * 2"),
+            MessageBlock::tool_use("calculator").with_input("42 * 2"),
             MessageBlock::error("Rate limit exceeded"),
         ],
     ));
@@ -290,7 +290,7 @@ fn test_render_empty_tool_input() {
     let mut state = ConversationViewState::new();
     state.push_message(ConversationMessage::with_blocks(
         ConversationRole::Assistant,
-        vec![MessageBlock::tool_use("noop", "")],
+        vec![MessageBlock::tool_use("noop")],
     ));
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
