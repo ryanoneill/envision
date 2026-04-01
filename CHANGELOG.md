@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-03-31
+
+### Breaking
+
+- **`Component::view()` now takes `&ViewContext`**: The view signature
+  changed from `(state, frame, area, theme)` to
+  `(state, frame, area, theme, ctx)`. Pass `&ViewContext::default()` to
+  migrate existing code. `ViewContext` carries render-time state
+  (focused, disabled) as a parameter, separating it from persistent
+  component state.
+
+- **`ConversationRole` no longer implements `Copy`**: The `Custom(String)`
+  variant requires heap allocation. Use `.clone()` where `Copy` was
+  relied upon. `role()` now returns `&ConversationRole`.
+
+- **`ToastOutput::Expired(u64)` → `Expired(Vec<u64>)`**: Reports all
+  expired toast IDs per tick instead of just the first.
+
+- **`MessageBlock::ToolUse` field changes**: `input` is now
+  `Option<String>`. Constructor `tool_use(name)` takes only the name;
+  use `.with_input()` / `.with_output()` builders for optional fields.
+
+### Added
+
+- **`ViewContext`** struct with `focused` and `disabled` fields, builder
+  pattern (`ViewContext::new().focused(true)`). Passed to all component
+  `view()` functions as the architectural foundation for focus-as-render-
+  parameter (Phase 1).
+
+- **`MessageHandle`** for stable streaming identity. `push_message()`
+  returns a handle; `update_by_handle(handle, f)` finds the message by
+  ID regardless of intervening pushes or evictions.
+
+- **`ConversationRole::Custom(String)`** for user-defined roles beyond
+  User/Assistant/System/Tool.
+
+- **`MessageBlock::tool_use()` builder pattern** with `.with_input()`
+  and `.with_output()` for optional tool data.
+
+- **ConversationView word-wrap**: All block types (text, thinking,
+  tool_use, error) now word-wrap at terminal width instead of only
+  splitting on `\n`.
+
+- **ConversationView markdown rendering**: `with_markdown(true)` enables
+  markdown rendering for text blocks (behind `markdown` feature flag),
+  reusing the existing `render_markdown()` pipeline.
+
+- **Conditional indent**: ConversationView drops the 2-char indent when
+  `show_role_labels` is false, reclaiming 2 columns per line.
+
+- **`examples/README.md`** component catalog: Categorized listing of all
+  74 components with descriptions and example links.
+
+### Fixed
+
+- **`total_display_lines` no longer hardcodes width 80**: Uses
+  `last_known_width` for scroll content length estimation.
+
 ## [0.9.0] - 2026-03-30
 
 ### Breaking
@@ -623,7 +681,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renders to both a real terminal and CaptureBackend
   - Useful for visual debugging while testing
 
-[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/ryanoneill/envision/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/ryanoneill/envision/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/ryanoneill/envision/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/ryanoneill/envision/compare/v0.6.0...v0.7.0
