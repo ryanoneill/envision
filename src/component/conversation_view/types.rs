@@ -29,7 +29,7 @@ use ratatui::style::Color;
 pub struct MessageHandle(pub(super) u64);
 
 /// The role of a conversation participant.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
@@ -43,6 +43,8 @@ pub enum ConversationRole {
     System,
     /// A tool/function call result.
     Tool,
+    /// A custom role with a user-defined label.
+    Custom(String),
 }
 
 impl ConversationRole {
@@ -57,17 +59,21 @@ impl ConversationRole {
     /// assert_eq!(ConversationRole::Assistant.label(), "Assistant");
     /// assert_eq!(ConversationRole::System.label(), "System");
     /// assert_eq!(ConversationRole::Tool.label(), "Tool");
+    /// assert_eq!(ConversationRole::Custom("Moderator".into()).label(), "Moderator");
     /// ```
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self) -> &str {
         match self {
             Self::User => "User",
             Self::Assistant => "Assistant",
             Self::System => "System",
             Self::Tool => "Tool",
+            Self::Custom(name) => name,
         }
     }
 
     /// Returns the indicator symbol for this role.
+    ///
+    /// Custom roles use a neutral dash indicator.
     ///
     /// # Example
     ///
@@ -78,6 +84,7 @@ impl ConversationRole {
     /// assert_eq!(ConversationRole::Assistant.indicator(), "\u{25c6}");
     /// assert_eq!(ConversationRole::System.indicator(), "\u{2699}");
     /// assert_eq!(ConversationRole::Tool.indicator(), "\u{2692}");
+    /// assert_eq!(ConversationRole::Custom("Moderator".into()).indicator(), "\u{25cb}");
     /// ```
     pub fn indicator(&self) -> &'static str {
         match self {
@@ -85,10 +92,13 @@ impl ConversationRole {
             Self::Assistant => "\u{25c6}", // ◆
             Self::System => "\u{2699}",    // ⚙
             Self::Tool => "\u{2692}",      // ⚒
+            Self::Custom(_) => "\u{25cb}", // ○ (neutral open circle)
         }
     }
 
     /// Returns the default color for this role.
+    ///
+    /// Custom roles use a neutral gray color.
     ///
     /// # Example
     ///
@@ -100,6 +110,7 @@ impl ConversationRole {
     /// assert_eq!(ConversationRole::Assistant.color(), Color::Blue);
     /// assert_eq!(ConversationRole::System.color(), Color::DarkGray);
     /// assert_eq!(ConversationRole::Tool.color(), Color::Yellow);
+    /// assert_eq!(ConversationRole::Custom("Moderator".into()).color(), Color::Gray);
     /// ```
     pub fn color(&self) -> Color {
         match self {
@@ -107,6 +118,7 @@ impl ConversationRole {
             Self::Assistant => Color::Blue,
             Self::System => Color::DarkGray,
             Self::Tool => Color::Yellow,
+            Self::Custom(_) => Color::Gray,
         }
     }
 }
@@ -134,8 +146,10 @@ pub enum MessageBlock {
     ToolUse {
         /// The name of the tool being invoked.
         name: String,
-        /// A textual representation of the tool input.
-        input: String,
+        /// A textual representation of the tool input, if any.
+        input: Option<String>,
+        /// A textual representation of the tool output, if any.
+        output: Option<String>,
     },
     /// A thinking/reasoning block (e.g., chain-of-thought).
     Thinking(String),
@@ -178,24 +192,83 @@ impl MessageBlock {
         }
     }
 
-    /// Creates a tool use block.
+    /// Creates a tool use block with only a name.
+    ///
+    /// Use [`with_input`](Self::with_input) and [`with_output`](Self::with_output)
+    /// to attach input and output data via the builder pattern.
     ///
     /// # Example
     ///
     /// ```rust
     /// use envision::component::MessageBlock;
     ///
-    /// let block = MessageBlock::tool_use("search", "query: rust TUI");
-    /// if let MessageBlock::ToolUse { name, input } = &block {
+    /// let block = MessageBlock::tool_use("search");
+    /// if let MessageBlock::ToolUse { name, input, output } = &block {
     ///     assert_eq!(name, "search");
-    ///     assert_eq!(input, "query: rust TUI");
+    ///     assert!(input.is_none());
+    ///     assert!(output.is_none());
     /// }
     /// ```
-    pub fn tool_use(name: impl Into<String>, input: impl Into<String>) -> Self {
+    pub fn tool_use(name: impl Into<String>) -> Self {
         Self::ToolUse {
             name: name.into(),
-            input: input.into(),
+            input: None,
+            output: None,
         }
+    }
+
+    /// Sets the input for a tool use block (builder pattern).
+    ///
+    /// Has no effect on non-`ToolUse` variants.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MessageBlock;
+    ///
+    /// let block = MessageBlock::tool_use("search")
+    ///     .with_input("query: rust TUI");
+    /// if let MessageBlock::ToolUse { name, input, .. } = &block {
+    ///     assert_eq!(name, "search");
+    ///     assert_eq!(input.as_deref(), Some("query: rust TUI"));
+    /// }
+    /// ```
+    pub fn with_input(mut self, input: impl Into<String>) -> Self {
+        if let Self::ToolUse {
+            input: ref mut i, ..
+        } = self
+        {
+            *i = Some(input.into());
+        }
+        self
+    }
+
+    /// Sets the output for a tool use block (builder pattern).
+    ///
+    /// Has no effect on non-`ToolUse` variants.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MessageBlock;
+    ///
+    /// let block = MessageBlock::tool_use("search")
+    ///     .with_input("query: rust TUI")
+    ///     .with_output("Found 5 results");
+    /// if let MessageBlock::ToolUse { name, input, output } = &block {
+    ///     assert_eq!(name, "search");
+    ///     assert_eq!(input.as_deref(), Some("query: rust TUI"));
+    ///     assert_eq!(output.as_deref(), Some("Found 5 results"));
+    /// }
+    /// ```
+    pub fn with_output(mut self, output: impl Into<String>) -> Self {
+        if let Self::ToolUse {
+            output: ref mut o, ..
+        } = self
+        {
+            *o = Some(output.into());
+        }
+        self
     }
 
     /// Creates a thinking block.
@@ -294,7 +367,7 @@ impl ConversationMessage {
     /// use envision::component::{ConversationMessage, ConversationRole};
     ///
     /// let msg = ConversationMessage::new(ConversationRole::User, "Hello!");
-    /// assert_eq!(msg.role(), ConversationRole::User);
+    /// assert_eq!(*msg.role(), ConversationRole::User);
     /// assert_eq!(msg.blocks().len(), 1);
     /// ```
     pub fn new(role: ConversationRole, text: impl Into<String>) -> Self {
@@ -366,8 +439,8 @@ impl ConversationMessage {
     }
 
     /// Returns the role of the message sender.
-    pub fn role(&self) -> ConversationRole {
-        self.role
+    pub fn role(&self) -> &ConversationRole {
+        &self.role
     }
 
     /// Returns the content blocks.
