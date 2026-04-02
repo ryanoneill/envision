@@ -22,9 +22,10 @@ use crate::theme::Theme;
 
 /// Parses a markdown string and produces styled [`Line`]s for rendering.
 ///
-/// The `width` parameter is used for horizontal rules to fill the available
-/// space. Other elements are rendered without width constraints (wrapping is
-/// handled by the ratatui `Paragraph` widget).
+/// The `width` parameter controls horizontal rules and text wrapping.
+/// Paragraph text and list items are word-wrapped at `width` to prevent
+/// overflow, preserving inline styling (bold, italic, etc.) across
+/// wrapped lines.
 pub fn render_markdown(source: &str, width: u16, theme: &Theme) -> Vec<Line<'static>> {
     let mut options = Options::empty();
     options.insert(Options::ENABLE_STRIKETHROUGH);
@@ -205,9 +206,11 @@ impl<'t> MarkdownLineRenderer<'t> {
                 };
 
                 let prefix_style = self.normal_style();
-                let mut item_spans = vec![Span::styled(prefix, prefix_style)];
+                let mut item_spans = vec![Span::styled(prefix.clone(), prefix_style)];
                 item_spans.append(&mut self.current_spans);
-                self.lines.push(Line::from(item_spans));
+                // Wrap list items with continuation indent matching prefix width
+                let cont = " ".repeat(prefix.len());
+                self.wrap_and_push_spans(item_spans, &cont);
             }
             TagEnd::List(_) => {
                 self.list_stack.pop();
@@ -379,16 +382,125 @@ impl<'t> MarkdownLineRenderer<'t> {
     fn flush_paragraph(&mut self) {
         if !self.current_spans.is_empty() {
             let spans = std::mem::take(&mut self.current_spans);
-            self.lines.push(Line::from(spans));
+            self.wrap_and_push_spans(spans, "");
         }
     }
 
     fn flush_blockquote_paragraph(&mut self) {
         if !self.current_spans.is_empty() {
             let border_style = Style::default().fg(self.theme.border);
-            let mut spans = vec![Span::styled("▎ ", border_style)];
+            let prefix_span = Span::styled("▎ ", border_style);
+            let mut spans = vec![prefix_span];
             spans.append(&mut self.current_spans);
+            self.wrap_and_push_spans(spans, "▎ ");
+        }
+    }
+
+    /// Word-wraps a list of spans at self.width, preserving styling.
+    /// On continuation lines, `cont_prefix` is prepended (e.g., "▎ " for blockquotes).
+    fn wrap_and_push_spans(&mut self, spans: Vec<Span<'static>>, cont_prefix: &str) {
+        let max_width = self.width as usize;
+        if max_width == 0 {
             self.lines.push(Line::from(spans));
+            return;
+        }
+
+        let mut current_line: Vec<Span<'static>> = Vec::new();
+        let mut current_width: usize = 0;
+
+        for span in spans {
+            let span_text = span.content.as_ref();
+            let span_style = span.style;
+
+            // Try to fit the whole span
+            let span_display_width = unicode_width::UnicodeWidthStr::width(span_text);
+            if current_width + span_display_width <= max_width {
+                current_line.push(span);
+                current_width += span_display_width;
+                continue;
+            }
+
+            // Need to break this span across lines
+            let mut remaining = span_text.to_string();
+            while !remaining.is_empty() {
+                let avail = max_width.saturating_sub(current_width);
+                let rem_width = unicode_width::UnicodeWidthStr::width(remaining.as_str());
+
+                if rem_width <= avail {
+                    current_line.push(Span::styled(remaining.clone(), span_style));
+                    current_width += rem_width;
+                    break;
+                }
+
+                if avail == 0 {
+                    // Current line is full — flush it
+                    if !current_line.is_empty() {
+                        self.lines
+                            .push(Line::from(std::mem::take(&mut current_line)));
+                    }
+                    current_width = 0;
+                    if !cont_prefix.is_empty() {
+                        let prefix_style = self.normal_style();
+                        let prefix_w = unicode_width::UnicodeWidthStr::width(cont_prefix);
+                        current_line.push(Span::styled(cont_prefix.to_string(), prefix_style));
+                        current_width = prefix_w;
+                    }
+                    continue;
+                }
+
+                // Find break point by display width within `remaining`
+                let mut byte_pos = 0;
+                let mut col = 0;
+                let mut last_space_byte = None;
+                for (i, ch) in remaining.char_indices() {
+                    let ch_w = unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0);
+                    if col + ch_w > avail {
+                        break;
+                    }
+                    col += ch_w;
+                    byte_pos = i + ch.len_utf8();
+                    if ch == ' ' {
+                        last_space_byte = Some(byte_pos);
+                    }
+                }
+
+                let break_at = last_space_byte.unwrap_or(byte_pos);
+                if break_at == 0 {
+                    // Flush current line, start fresh
+                    if !current_line.is_empty() {
+                        self.lines
+                            .push(Line::from(std::mem::take(&mut current_line)));
+                    }
+                    current_width = 0;
+                    if !cont_prefix.is_empty() {
+                        let prefix_style = self.normal_style();
+                        let prefix_w = unicode_width::UnicodeWidthStr::width(cont_prefix);
+                        current_line.push(Span::styled(cont_prefix.to_string(), prefix_style));
+                        current_width = prefix_w;
+                    }
+                    continue;
+                }
+
+                let piece = remaining[..break_at].trim_end().to_string();
+                current_line.push(Span::styled(piece, span_style));
+
+                // Flush line
+                self.lines
+                    .push(Line::from(std::mem::take(&mut current_line)));
+                current_width = 0;
+                if !cont_prefix.is_empty() {
+                    let prefix_style = self.normal_style();
+                    let prefix_w = unicode_width::UnicodeWidthStr::width(cont_prefix);
+                    current_line.push(Span::styled(cont_prefix.to_string(), prefix_style));
+                    current_width = prefix_w;
+                }
+
+                remaining = remaining[break_at..].trim_start_matches(' ').to_string();
+            }
+        }
+
+        if !current_line.is_empty() {
+            self.lines.push(Line::from(current_line));
         }
     }
 

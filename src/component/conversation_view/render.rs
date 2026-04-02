@@ -284,23 +284,9 @@ fn format_text_block<'a>(
             &theme,
         );
         for md_line in md_lines {
-            // Check if the rendered line overflows the available width.
-            // If it does, fall back to plain-text wrapping for that line.
-            let line_width: usize = md_line
-                .spans
-                .iter()
-                .map(|s| UnicodeWidthStr::width(s.content.as_ref()))
-                .sum();
-            if line_width > available_width {
-                // Fall back to plain-text wrapping (loses markdown styling on overflow)
-                let plain: String = md_line.spans.iter().map(|s| s.content.as_ref()).collect();
-                for wrapped in wrap_lines(&plain, indent, width) {
-                    lines.push(Line::from(Span::styled(wrapped, style)));
-                }
-            } else if indent.is_empty() {
+            if indent.is_empty() {
                 lines.push(md_line);
             } else {
-                // Prepend indent to first span
                 let mut spans: Vec<Span> = vec![Span::raw(indent.to_string())];
                 spans.extend(md_line.spans);
                 lines.push(Line::from(spans));

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-03-31
+
+### Fixed
+
+- **render_markdown wraps text preserving styling**: Paragraphs, list
+  items, and blockquotes now word-wrap at the given width inside the
+  markdown renderer itself, preserving bold/italic/code styling across
+  wrapped lines. Previously wrapping was only in the caller and lost
+  styling on overflow lines.
+
+- **Removed plain-text fallback in ConversationView**: Since
+  render_markdown now wraps correctly, the fallback that joined spans
+  to a String and re-wrapped unstyled is no longer needed.
+
 ## [0.10.1] - 2026-03-31
 
 ### Fixed
@@ -701,7 +715,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renders to both a real terminal and CaptureBackend
   - Useful for visual debugging while testing
 
-[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.10.2...HEAD
+[0.10.2]: https://github.com/ryanoneill/envision/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/ryanoneill/envision/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/ryanoneill/envision/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/ryanoneill/envision/compare/v0.8.0...v0.9.0
