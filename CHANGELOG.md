@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-03-31
+
+### Fixed
+
+- **ViewContext Phase 2**: All 74 components now read `ctx.focused` /
+  `ctx.disabled` for rendering decisions instead of `state.focused` /
+  `state.disabled`. ViewContext is no longer dead code — parents can
+  control visual focus/disabled at render time.
+
+- **ConversationView word-wrap uses unicode display width**: `wrap_lines()`
+  now uses `UnicodeWidthStr::width()` and `UnicodeWidthChar::width()` for
+  correct CJK, emoji, and multi-byte character handling.
+
+- **Markdown + indent width accounting**: Markdown rendering passes
+  `width - indent_display_width` to `render_markdown()`. Lines that still
+  overflow fall back to plain-text wrapping.
+
+- **ViewContext precedence documented**: `ctx` is authoritative for
+  rendering; `state` is authoritative for behavior (event handling).
+
 ## [0.10.0] - 2026-03-31
 
 ### Breaking
@@ -681,7 +701,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renders to both a real terminal and CaptureBackend
   - Useful for visual debugging while testing
 
-[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/ryanoneill/envision/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/ryanoneill/envision/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/ryanoneill/envision/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/ryanoneill/envision/compare/v0.7.0...v0.8.0
