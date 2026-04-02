@@ -792,7 +792,7 @@ impl Component for Form {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if state.fields.is_empty() {
             return;
         }
@@ -802,8 +802,8 @@ impl Component for Form {
                 area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::Form)
                     .with_id("form")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
@@ -830,7 +830,7 @@ impl Component for Form {
             .zip(chunks.iter())
             .enumerate()
         {
-            let is_field_focused = state.focused && i == state.focused_index;
+            let is_field_focused = ctx.focused && i == state.focused_index;
 
             match field_state {
                 FieldState::Text(s) => {

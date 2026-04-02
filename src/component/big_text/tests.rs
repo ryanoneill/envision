@@ -446,7 +446,13 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -544,7 +550,13 @@ fn test_annotation_disabled() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                BigText::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().disabled(true),
+                );
             })
             .unwrap();
     });

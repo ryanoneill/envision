@@ -13,6 +13,8 @@ pub(super) fn render_loading_list<T: Clone>(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
     if area.width == 0 || area.height == 0 {
         return;
@@ -20,8 +22,8 @@ pub(super) fn render_loading_list<T: Clone>(
 
     crate::annotation::with_registry(|reg| {
         let mut ann = crate::annotation::Annotation::loading_list("loading_list")
-            .with_focus(state.focused)
-            .with_disabled(state.disabled);
+            .with_focus(focused)
+            .with_disabled(disabled);
         if let Some(idx) = state.selected {
             ann = ann.with_selected(true).with_value(idx.to_string());
         }

@@ -9,13 +9,23 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, List, ListItem};
 use ratatui::Frame;
 
+use unicode_width::UnicodeWidthChar;
+use unicode_width::UnicodeWidthStr;
+
 use crate::theme::Theme;
 
 /// Renders the full conversation view into the given area.
-pub(super) fn render(state: &ConversationViewState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let border_style = if state.disabled {
+pub(super) fn render(
+    state: &ConversationViewState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.focused {
+    } else if focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -193,30 +203,48 @@ fn format_block<'a>(
 
 /// Word-wraps text at the given width, preserving existing newlines.
 /// Returns wrapped lines with the given prefix prepended.
+///
+/// Uses `unicode_width` for accurate width calculations so that CJK
+/// characters and other wide glyphs are measured correctly.
 fn wrap_lines(text: &str, prefix: &str, width: usize) -> Vec<String> {
-    let effective_width = width.saturating_sub(prefix.len());
+    let prefix_width = UnicodeWidthStr::width(prefix);
+    let effective_width = width.saturating_sub(prefix_width);
     if effective_width == 0 {
         return text.lines().map(|l| format!("{}{}", prefix, l)).collect();
     }
 
     let mut result = Vec::new();
     for line in text.lines() {
-        if line.len() <= effective_width {
+        let line_width = UnicodeWidthStr::width(line);
+        if line_width <= effective_width {
             result.push(format!("{}{}", prefix, line));
         } else {
-            // Word-wrap at effective_width
+            // Word-wrap using unicode display widths
             let mut remaining = line;
             while !remaining.is_empty() {
-                if remaining.len() <= effective_width {
+                let rem_width = UnicodeWidthStr::width(remaining);
+                if rem_width <= effective_width {
                     result.push(format!("{}{}", prefix, remaining));
                     break;
                 }
-                // Find last space within width, or force-break
-                let break_at = remaining[..effective_width]
-                    .rfind(' ')
-                    .map(|i| i + 1)
-                    .unwrap_or(effective_width);
-                result.push(format!("{}{}", prefix, &remaining[..break_at].trim_end()));
+                // Walk characters to find the byte offset that fills effective_width
+                let mut col = 0;
+                let mut last_space_byte = None;
+                let mut byte_at_width = remaining.len();
+                for (byte_idx, ch) in remaining.char_indices() {
+                    let ch_w = UnicodeWidthChar::width(ch).unwrap_or(0);
+                    if col + ch_w > effective_width {
+                        byte_at_width = byte_idx;
+                        break;
+                    }
+                    if ch == ' ' {
+                        last_space_byte = Some(byte_idx + 1); // break after the space
+                    }
+                    col += ch_w;
+                }
+                let break_at = last_space_byte.unwrap_or(byte_at_width);
+                let segment = &remaining[..break_at];
+                result.push(format!("{}{}", prefix, segment.trim_end()));
                 remaining = &remaining[break_at..];
                 if remaining.starts_with(' ') {
                     remaining = &remaining[1..];
@@ -248,13 +276,28 @@ fn format_text_block<'a>(
     #[cfg(feature = "markdown")]
     if markdown_enabled {
         let theme = crate::theme::Theme::default();
+        let indent_display_width = UnicodeWidthStr::width(indent);
+        let available_width = width.saturating_sub(indent_display_width);
         let md_lines = crate::component::markdown_renderer::render::render_markdown(
             text,
-            width as u16,
+            available_width as u16,
             &theme,
         );
         for md_line in md_lines {
-            if indent.is_empty() {
+            // Check if the rendered line overflows the available width.
+            // If it does, fall back to plain-text wrapping for that line.
+            let line_width: usize = md_line
+                .spans
+                .iter()
+                .map(|s| UnicodeWidthStr::width(s.content.as_ref()))
+                .sum();
+            if line_width > available_width {
+                // Fall back to plain-text wrapping (loses markdown styling on overflow)
+                let plain: String = md_line.spans.iter().map(|s| s.content.as_ref()).collect();
+                for wrapped in wrap_lines(&plain, indent, width) {
+                    lines.push(Line::from(Span::styled(wrapped, style)));
+                }
+            } else if indent.is_empty() {
                 lines.push(md_line);
             } else {
                 // Prepend indent to first span

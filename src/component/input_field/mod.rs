@@ -784,18 +784,18 @@ impl Component for InputField {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.register(
                 area,
                 crate::annotation::Annotation::input("input_field")
                     .with_value(state.value.as_str())
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
-        let border_style = if state.focused {
+        let border_style = if ctx.focused {
             theme.focused_border_style()
         } else {
             theme.border_style()
@@ -807,9 +807,9 @@ impl Component for InputField {
 
         let is_placeholder = state.value.is_empty() && !state.placeholder.is_empty();
 
-        let base_style = if state.disabled {
+        let base_style = if ctx.disabled {
             theme.disabled_style()
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_style()
         } else if is_placeholder {
             theme.placeholder_style()
@@ -842,7 +842,7 @@ impl Component for InputField {
         frame.render_widget(paragraph, area);
 
         // Show cursor when focused
-        if state.focused && area.width > 2 && area.height > 2 {
+        if ctx.focused && area.width > 2 && area.height > 2 {
             let cursor_x = area.x + 1 + state.cursor_display_position() as u16;
             let cursor_y = area.y + 1;
 

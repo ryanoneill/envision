@@ -26,7 +26,13 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            NumberInput::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -56,7 +62,13 @@ fn test_view_editing() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            NumberInput::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -72,7 +84,13 @@ fn test_view_editing_with_label() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            NumberInput::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -86,7 +104,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            NumberInput::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 
@@ -166,7 +190,13 @@ fn test_annotation_focused() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                NumberInput::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });
@@ -183,7 +213,13 @@ fn test_annotation_disabled() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                NumberInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                NumberInput::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().disabled(true),
+                );
             })
             .unwrap();
     });

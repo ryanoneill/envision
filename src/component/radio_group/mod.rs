@@ -389,7 +389,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         let items: Vec<ListItem> = state
             .options
             .iter()
@@ -399,9 +399,9 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
                 let indicator = if is_selected { "(•)" } else { "( )" };
                 let text = format!("{} {}", indicator, option);
 
-                let style = if state.disabled {
+                let style = if ctx.disabled {
                     theme.disabled_style()
-                } else if is_selected && state.focused {
+                } else if is_selected && ctx.focused {
                     theme.focused_style()
                 } else {
                     theme.normal_style()
@@ -415,8 +415,8 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
 
         let mut ann = crate::annotation::Annotation::new(crate::annotation::WidgetType::RadioGroup)
             .with_id("radio_group")
-            .with_focus(state.focused)
-            .with_disabled(state.disabled);
+            .with_focus(ctx.focused)
+            .with_disabled(ctx.disabled);
         if let Some(idx) = state.selected {
             ann = ann.with_selected(true).with_value(idx.to_string());
         }

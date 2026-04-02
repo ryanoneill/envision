@@ -13,11 +13,13 @@ pub(super) fn render_table<T: TableRow>(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
     crate::annotation::with_registry(|reg| {
         let mut ann = crate::annotation::Annotation::table("table")
-            .with_focus(state.focused)
-            .with_disabled(state.disabled);
+            .with_focus(focused)
+            .with_disabled(disabled);
         if let Some(idx) = state.selected {
             ann = ann.with_selected(true).with_value(idx.to_string());
         }
@@ -52,7 +54,7 @@ pub(super) fn render_table<T: TableRow>(
         })
         .collect();
 
-    let header_style = if state.disabled {
+    let header_style = if disabled {
         theme.disabled_style()
     } else {
         Style::default().add_modifier(Modifier::BOLD)
@@ -76,16 +78,16 @@ pub(super) fn render_table<T: TableRow>(
 
     let widths: Vec<Constraint> = state.columns.iter().map(|c| c.width()).collect();
 
-    let border_style = if state.focused && !state.disabled {
+    let border_style = if focused && !disabled {
         theme.focused_border_style()
     } else {
         theme.border_style()
     };
 
-    let row_highlight_style = if state.disabled {
+    let row_highlight_style = if disabled {
         theme.disabled_style()
     } else {
-        theme.selected_highlight_style(state.focused)
+        theme.selected_highlight_style(focused)
     };
 
     let table = ratatui::widgets::Table::new(rows, widths)

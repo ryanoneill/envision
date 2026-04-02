@@ -484,7 +484,13 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TextArea::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -687,7 +693,13 @@ fn test_view_with_scroll() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TextArea::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -704,7 +716,13 @@ fn test_view_cursor_above_scroll() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TextArea::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 

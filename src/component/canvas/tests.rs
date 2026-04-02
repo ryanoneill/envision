@@ -604,7 +604,13 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            Canvas::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Canvas::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -625,7 +631,13 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            Canvas::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Canvas::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 

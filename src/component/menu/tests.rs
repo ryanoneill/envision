@@ -335,7 +335,13 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Menu::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Menu::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -356,7 +362,13 @@ fn test_view_selected() {
 
     terminal
         .draw(|frame| {
-            Menu::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Menu::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 

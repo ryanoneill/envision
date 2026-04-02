@@ -43,10 +43,12 @@ pub(super) fn render_dependency_graph(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
-    let border_style = if state.disabled {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.focused {
+    } else if focused {
         theme.focused_border_style()
     } else {
         theme.normal_style()
@@ -71,13 +73,13 @@ pub(super) fn render_dependency_graph(
                 "DependencyGraph".to_string(),
             ))
             .with_id("dependency_graph")
-            .with_focus(state.focused)
-            .with_disabled(state.disabled),
+            .with_focus(focused)
+            .with_disabled(disabled),
         );
     });
 
     if state.nodes.is_empty() {
-        render_empty_state(state, frame, inner, theme);
+        render_empty_state(state, frame, inner, theme, disabled);
         return;
     }
 
@@ -92,7 +94,7 @@ pub(super) fn render_dependency_graph(
             .get(edge_idx)
             .and_then(|e| e.color)
             .unwrap_or_else(|| {
-                if state.disabled {
+                if disabled {
                     Color::DarkGray
                 } else {
                     theme.normal_style().fg.unwrap_or(Color::White)
@@ -109,7 +111,7 @@ pub(super) fn render_dependency_graph(
             edge_color,
             edge_label,
             inner,
-            state.disabled,
+            disabled,
             theme,
         );
     }
@@ -124,14 +126,30 @@ pub(super) fn render_dependency_graph(
             .unwrap_or(false);
 
         if let Some(node) = graph_node {
-            render_node(frame, node, layout_node, is_selected, state, inner, theme);
+            render_node(
+                frame,
+                node,
+                layout_node,
+                is_selected,
+                state,
+                inner,
+                theme,
+                focused,
+                disabled,
+            );
         }
     }
 }
 
 /// Renders an empty state message centered in the area.
-fn render_empty_state(state: &DependencyGraphState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let style = if state.disabled {
+fn render_empty_state(
+    _state: &DependencyGraphState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()
@@ -144,14 +162,18 @@ fn render_empty_state(state: &DependencyGraphState, frame: &mut Frame, area: Rec
 }
 
 /// Renders a single graph node as a bordered box with label and status.
+#[allow(clippy::too_many_arguments)]
 fn render_node(
     frame: &mut Frame,
     node: &super::GraphNode,
     layout_node: &LayoutNode,
     is_selected: bool,
-    state: &DependencyGraphState,
+    _state: &DependencyGraphState,
     clip: Rect,
     theme: &Theme,
+
+    focused: bool,
+    disabled: bool,
 ) {
     // Clip node to inner area
     let node_area = clip_rect(
@@ -169,9 +191,9 @@ fn render_node(
 
     let node_color = node.color.unwrap_or_else(|| status_color(&node.status));
 
-    let border_style = if state.disabled {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if is_selected && state.focused {
+    } else if is_selected && focused {
         Style::default().fg(node_color).add_modifier(Modifier::BOLD)
     } else if is_selected {
         Style::default().fg(node_color)
@@ -207,7 +229,7 @@ fn render_node(
     let label = status_label(&node.status);
     let content = format!("{} {}", indicator, label);
 
-    let content_style = if state.disabled {
+    let content_style = if disabled {
         theme.disabled_style()
     } else {
         Style::default().fg(node_color)

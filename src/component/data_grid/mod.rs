@@ -754,7 +754,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if state.columns.is_empty() {
             return;
         }
@@ -763,8 +763,8 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
             reg.register(
                 area,
                 crate::annotation::Annotation::table("data_grid")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
@@ -786,7 +786,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
             .iter()
             .enumerate()
             .map(|(i, col)| {
-                if !state.editing && state.focused && i == state.selected_column {
+                if !state.editing && ctx.focused && i == state.selected_column {
                     format!("[{}]", col.header())
                 } else {
                     col.header().to_string()
@@ -794,7 +794,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
             })
             .collect();
 
-        let header_style = if state.disabled {
+        let header_style = if ctx.disabled {
             theme.disabled_style()
         } else {
             Style::default().add_modifier(Modifier::BOLD)
@@ -828,18 +828,18 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
             })
             .collect();
 
-        let border_style = if state.disabled {
+        let border_style = if ctx.disabled {
             theme.disabled_style()
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_border_style()
         } else {
             theme.border_style()
         };
 
-        let highlight_style = if state.disabled {
+        let highlight_style = if ctx.disabled {
             theme.disabled_style()
         } else {
-            theme.selected_highlight_style(state.focused)
+            theme.selected_highlight_style(ctx.focused)
         };
 
         let table = RatatuiTable::new(rows, widths)
@@ -868,7 +868,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         }
 
         // Show cursor when editing
-        if state.editing && state.focused {
+        if state.editing && ctx.focused {
             if let Some(row_idx) = state.selected_row {
                 // Calculate cursor position for the edit cell
                 // This is approximate — exact positioning depends on column widths

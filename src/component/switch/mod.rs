@@ -417,7 +417,7 @@ impl Component for Switch {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         let indicator = if state.on {
             format!("(*) {}", state.on_label)
         } else {
@@ -430,15 +430,15 @@ impl Component for Switch {
             indicator
         };
 
-        let style = if state.disabled {
+        let style = if ctx.disabled {
             theme.disabled_style()
         } else if state.on {
-            if state.focused {
+            if ctx.focused {
                 theme.focused_style()
             } else {
                 theme.success_style()
             }
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_style()
         } else {
             theme.normal_style()
@@ -453,8 +453,8 @@ impl Component for Switch {
             annotation
         };
         let annotated = crate::annotation::Annotate::new(paragraph, annotation)
-            .focused(state.focused)
-            .disabled(state.disabled);
+            .focused(ctx.focused)
+            .disabled(ctx.disabled);
         frame.render_widget(annotated, area);
     }
 }

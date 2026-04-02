@@ -440,13 +440,13 @@ impl Component for Divider {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.register(
                 area,
                 crate::annotation::Annotation::divider("divider")
                     .with_label(state.label.as_deref().unwrap_or(""))
-                    .with_disabled(state.disabled),
+                    .with_disabled(ctx.disabled),
             );
         });
 
@@ -454,7 +454,7 @@ impl Component for Divider {
             return;
         }
 
-        let style = if state.disabled {
+        let style = if ctx.disabled {
             theme.disabled_style()
         } else if let Some(color) = state.color {
             Style::default().fg(color)

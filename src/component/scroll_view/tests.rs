@@ -696,7 +696,13 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ScrollView::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -804,7 +810,13 @@ fn test_annotation_reflects_focus_and_disabled() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                ScrollView::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true).disabled(true),
+                );
             })
             .unwrap();
     });

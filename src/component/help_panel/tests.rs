@@ -602,7 +602,13 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 16);
     terminal
         .draw(|frame| {
-            HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            HelpPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true).disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -655,7 +661,13 @@ fn test_annotation_focused() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                HelpPanel::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });

@@ -663,7 +663,13 @@ fn test_snapshot_focused() {
     state.set_focused(true);
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LineInput::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -687,7 +693,13 @@ fn test_snapshot_disabled() {
     let state = LineInputState::with_value("hello").with_disabled(true);
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LineInput::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -712,7 +724,13 @@ fn test_snapshot_wrapped() {
     state.set_focused(true);
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LineInput::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -725,7 +743,13 @@ fn test_snapshot_wide_chars() {
     state.set_focused(true);
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LineInput::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -740,7 +764,13 @@ fn test_snapshot_selection() {
     state.selection_anchor = Some(5);
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LineInput::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

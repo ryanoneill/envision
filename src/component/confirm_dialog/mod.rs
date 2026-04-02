@@ -672,7 +672,7 @@ impl Component for ConfirmDialog {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if !state.visible {
             return;
         }
@@ -683,8 +683,8 @@ impl Component for ConfirmDialog {
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::ConfirmDialog)
                     .with_id("confirm_dialog")
                     .with_label(state.title.as_str())
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 

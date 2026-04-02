@@ -13,10 +13,12 @@ pub(super) fn render_span_tree(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
-    let border_style = if state.disabled {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.focused {
+    } else if focused {
         theme.focused_border_style()
     } else {
         theme.normal_style()
@@ -35,8 +37,8 @@ pub(super) fn render_span_tree(
     }
 
     let annotation = crate::annotation::Annotation::span_tree("span_tree")
-        .with_focus(state.focused)
-        .with_disabled(state.disabled);
+        .with_focus(focused)
+        .with_disabled(disabled);
     let empty = Paragraph::new("");
     let annotated = crate::annotation::Annotate::new(empty, annotation);
     frame.render_widget(annotated, inner);
@@ -57,6 +59,7 @@ pub(super) fn render_span_tree(
         effective_label_width,
         bar_area_width,
         theme,
+        disabled,
     );
 
     // Separator line
@@ -71,7 +74,7 @@ pub(super) fn render_span_tree(
                 sep_line.push('─');
             }
         }
-        let sep_style = if state.disabled {
+        let sep_style = if disabled {
             theme.disabled_style()
         } else {
             theme.normal_style()
@@ -103,6 +106,8 @@ pub(super) fn render_span_tree(
         label_width: effective_label_width,
         bar_width: bar_area_width,
         theme,
+        focused,
+        disabled,
     };
 
     for (row_idx, span) in visible_spans.iter().enumerate() {
@@ -130,10 +135,11 @@ fn render_header(
     label_width: u16,
     bar_width: u16,
     theme: &Theme,
+    disabled: bool,
 ) {
     let header_area = Rect::new(inner.x, inner.y, inner.width, 1);
 
-    let style = if state.disabled {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()
@@ -271,6 +277,8 @@ struct RowContext<'a> {
     label_width: u16,
     bar_width: u16,
     theme: &'a Theme,
+    focused: bool,
+    disabled: bool,
 }
 
 /// Renders a single span row with label and timing bar.
@@ -285,10 +293,10 @@ fn render_row(
     let row_area = Rect::new(x, y, ctx.label_width + 1 + ctx.bar_width, 1);
 
     // Determine styles
-    let (label_style, bar_bg_style) = if ctx.state.disabled {
+    let (label_style, bar_bg_style) = if ctx.disabled {
         (ctx.theme.disabled_style(), ctx.theme.disabled_style())
     } else if is_selected {
-        let hl = ctx.theme.selected_highlight_style(ctx.state.focused);
+        let hl = ctx.theme.selected_highlight_style(ctx.focused);
         (hl, ctx.theme.normal_style())
     } else {
         (ctx.theme.normal_style(), ctx.theme.normal_style())
@@ -329,7 +337,7 @@ fn render_row(
     );
 
     // Combine into spans
-    let bar_style = if ctx.state.disabled {
+    let bar_style = if ctx.disabled {
         ctx.theme.disabled_style()
     } else {
         Style::default()

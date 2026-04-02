@@ -786,7 +786,13 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogCorrelation::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 }

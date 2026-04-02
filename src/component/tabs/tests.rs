@@ -283,7 +283,13 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tabs::<&str>::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -299,7 +305,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tabs::<&str>::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 

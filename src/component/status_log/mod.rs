@@ -828,7 +828,7 @@ impl Component for StatusLog {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if area.width == 0 || area.height == 0 {
             return;
         }
@@ -857,7 +857,7 @@ impl Component for StatusLog {
             .take(inner.height as usize)
             .map(|entry| {
                 let prefix = entry.level.prefix();
-                let style = if state.disabled {
+                let style = if ctx.disabled {
                     theme.disabled_style()
                 } else {
                     match entry.level {

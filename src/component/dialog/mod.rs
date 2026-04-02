@@ -642,7 +642,7 @@ impl Component for Dialog {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if !state.visible {
             return;
         }
@@ -652,8 +652,8 @@ impl Component for Dialog {
                 area,
                 crate::annotation::Annotation::dialog(state.title.as_str())
                     .with_id("dialog")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 

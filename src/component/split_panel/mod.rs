@@ -522,23 +522,23 @@ impl Component for SplitPanel {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.open(
                 area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::SplitPanel)
                     .with_id("split_panel")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
         let (first_area, second_area) = state.layout(area);
 
-        let first_focused = state.focused && state.focused_pane == Pane::First;
-        let second_focused = state.focused && state.focused_pane == Pane::Second;
+        let first_focused = ctx.focused && state.focused_pane == Pane::First;
+        let second_focused = ctx.focused && state.focused_pane == Pane::Second;
 
-        let first_border = if state.disabled {
+        let first_border = if ctx.disabled {
             theme.disabled_style()
         } else if first_focused {
             theme.focused_border_style()
@@ -546,7 +546,7 @@ impl Component for SplitPanel {
             theme.border_style()
         };
 
-        let second_border = if state.disabled {
+        let second_border = if ctx.disabled {
             theme.disabled_style()
         } else if second_focused {
             theme.focused_border_style()

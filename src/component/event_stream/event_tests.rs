@@ -293,7 +293,13 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(70, 15);
     terminal
         .draw(|frame| {
-            EventStream::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            EventStream::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 }

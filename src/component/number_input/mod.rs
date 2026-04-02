@@ -630,12 +630,12 @@ impl Component for NumberInput {
     }
 
     #[allow(clippy::cast_possible_truncation)]
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if area.width == 0 || area.height == 0 {
             return;
         }
 
-        let border_style = if state.focused {
+        let border_style = if ctx.focused {
             theme.focused_border_style()
         } else {
             theme.border_style()
@@ -645,9 +645,9 @@ impl Component for NumberInput {
             .borders(Borders::ALL)
             .border_style(border_style);
 
-        let content_style = if state.disabled {
+        let content_style = if ctx.disabled {
             theme.disabled_style()
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_style()
         } else {
             theme.normal_style()
@@ -696,8 +696,8 @@ impl Component for NumberInput {
         };
 
         let annotated = crate::annotation::Annotate::new(paragraph, annotation)
-            .focused(state.focused)
-            .disabled(state.disabled);
+            .focused(ctx.focused)
+            .disabled(ctx.disabled);
         frame.render_widget(annotated, area);
     }
 }

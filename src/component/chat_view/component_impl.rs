@@ -206,7 +206,7 @@ impl Component for ChatView {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if area.height < 4 {
             return;
         }
@@ -215,8 +215,8 @@ impl Component for ChatView {
             reg.open(
                 area,
                 crate::annotation::Annotation::container("chat_view")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
@@ -230,8 +230,15 @@ impl Component for ChatView {
         let history_area = chunks[0];
         let input_area = chunks[1];
 
-        render_helpers::render_history(state, frame, history_area, theme);
-        render_helpers::render_input(state, frame, input_area, theme);
+        render_helpers::render_history(
+            state,
+            frame,
+            history_area,
+            theme,
+            ctx.focused,
+            ctx.disabled,
+        );
+        render_helpers::render_input(state, frame, input_area, theme, ctx.focused, ctx.disabled);
 
         crate::annotation::with_registry(|reg| {
             reg.close();

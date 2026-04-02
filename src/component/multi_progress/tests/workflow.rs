@@ -428,7 +428,13 @@ fn test_view_disabled_state() {
 
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            MultiProgress::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            )
         })
         .unwrap();
 

@@ -59,7 +59,13 @@ fn test_snapshot_focused() {
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -74,7 +80,13 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

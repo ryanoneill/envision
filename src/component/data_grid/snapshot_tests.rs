@@ -72,7 +72,13 @@ fn test_snapshot_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DataGrid::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -86,7 +92,13 @@ fn test_snapshot_focused_second_column() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DataGrid::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -100,7 +112,13 @@ fn test_snapshot_editing() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DataGrid::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

@@ -896,8 +896,8 @@ impl Component for SpanTree {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
-        render::render_span_tree(state, frame, area, theme);
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+        render::render_span_tree(state, frame, area, theme, ctx.focused, ctx.disabled);
     }
 }
 

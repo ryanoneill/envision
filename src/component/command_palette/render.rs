@@ -13,6 +13,8 @@ pub(super) fn render_command_palette(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
     if !state.visible {
         return;
@@ -22,8 +24,8 @@ pub(super) fn render_command_palette(
         reg.register(
             area,
             crate::annotation::Annotation::command_palette("command_palette")
-                .with_focus(state.focused)
-                .with_disabled(state.disabled)
+                .with_focus(focused)
+                .with_disabled(disabled)
                 .with_expanded(state.visible),
         );
     });
@@ -51,7 +53,7 @@ pub(super) fn render_command_palette(
     // Clear the area behind the palette
     frame.render_widget(Clear, palette_area);
 
-    let border_style = if state.focused && !state.disabled {
+    let border_style = if focused && !disabled {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -101,7 +103,7 @@ pub(super) fn render_command_palette(
     frame.render_widget(input_widget, input_area);
 
     // Cursor position
-    if state.focused && !state.disabled {
+    if focused && !disabled {
         let cursor_x = input_area.x + 2 + state.query.len() as u16;
         let cursor_y = input_area.y;
         if cursor_x < input_area.x + input_area.width {
@@ -197,7 +199,7 @@ pub(super) fn render_command_palette(
             };
 
             let style = if is_selected {
-                theme.selected_style(state.focused)
+                theme.selected_style(focused)
             } else {
                 theme.normal_style()
             };

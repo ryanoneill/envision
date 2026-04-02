@@ -358,7 +358,13 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Switch::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -373,7 +379,13 @@ fn test_view_focused_on() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Switch::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -387,7 +399,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Switch::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 
@@ -401,7 +419,13 @@ fn test_view_disabled_on() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Switch::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 

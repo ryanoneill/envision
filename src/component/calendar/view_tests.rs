@@ -74,7 +74,13 @@ fn test_view_disabled() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Calendar::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -167,7 +173,13 @@ fn test_annotation_reflects_state() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Calendar::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true).disabled(true),
+                );
             })
             .unwrap();
     });

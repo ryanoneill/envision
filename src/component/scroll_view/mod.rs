@@ -645,7 +645,7 @@ impl Component for ScrollView {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if area.width == 0 || area.height == 0 {
             return;
         }
@@ -657,14 +657,14 @@ impl Component for ScrollView {
                     "ScrollView".to_string(),
                 ))
                 .with_id("scroll_view")
-                .with_focus(state.focused)
-                .with_disabled(state.disabled),
+                .with_focus(ctx.focused)
+                .with_disabled(ctx.disabled),
             );
         });
 
-        let border_style = if state.disabled {
+        let border_style = if ctx.disabled {
             theme.disabled_style()
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_border_style()
         } else {
             theme.border_style()

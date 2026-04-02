@@ -320,16 +320,16 @@ impl Component for Button {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
-        let style = if state.disabled {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+        let style = if ctx.disabled {
             theme.disabled_style()
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_style()
         } else {
             theme.normal_style()
         };
 
-        let border_style = if state.focused && !state.disabled {
+        let border_style = if ctx.focused && !ctx.disabled {
             theme.focused_border_style()
         } else {
             theme.border_style()
@@ -347,8 +347,8 @@ impl Component for Button {
         let annotation =
             crate::annotation::Annotation::button("button").with_label(state.label.as_str());
         let annotated = crate::annotation::Annotate::new(paragraph, annotation)
-            .focused(state.focused)
-            .disabled(state.disabled);
+            .focused(ctx.focused)
+            .disabled(ctx.disabled);
         frame.render_widget(annotated, area);
     }
 }

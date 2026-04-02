@@ -639,12 +639,12 @@ impl Component for Select {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             let mut ann = crate::annotation::Annotation::new(crate::annotation::WidgetType::Select)
                 .with_id("select")
-                .with_focus(state.focused)
-                .with_disabled(state.disabled)
+                .with_focus(ctx.focused)
+                .with_disabled(ctx.disabled)
                 .with_expanded(state.is_open);
             if let Some(val) = state.selected_value() {
                 ann = ann.with_value(val.to_string());
@@ -652,15 +652,15 @@ impl Component for Select {
             reg.register(area, ann);
         });
 
-        let style = if state.disabled {
+        let style = if ctx.disabled {
             theme.disabled_style()
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_style()
         } else {
             theme.normal_style()
         };
 
-        let border_style = if state.focused && !state.disabled {
+        let border_style = if ctx.focused && !ctx.disabled {
             theme.focused_border_style()
         } else {
             theme.border_style()
@@ -715,7 +715,7 @@ impl Component for Select {
                         };
                         let text = format!("{}{}", prefix, opt);
                         let item_style = if idx == state.highlighted_index {
-                            theme.selected_style(state.focused)
+                            theme.selected_style(ctx.focused)
                         } else {
                             theme.normal_style()
                         };

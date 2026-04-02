@@ -778,7 +778,13 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Treemap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -793,7 +799,13 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Treemap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 }

@@ -5,7 +5,14 @@ use super::LogCorrelationState;
 use crate::theme::Theme;
 
 /// Renders the entire LogCorrelation component.
-pub(super) fn render(state: &LogCorrelationState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render(
+    state: &LogCorrelationState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     if area.height < 3 || area.width < 3 {
         return;
     }
@@ -14,8 +21,8 @@ pub(super) fn render(state: &LogCorrelationState, frame: &mut Frame, area: Rect,
         reg.register(
             area,
             crate::annotation::Annotation::container("log_correlation")
-                .with_focus(state.is_focused())
-                .with_disabled(state.is_disabled()),
+                .with_focus(focused)
+                .with_disabled(disabled),
         );
     });
 
@@ -28,16 +35,23 @@ pub(super) fn render(state: &LogCorrelationState, frame: &mut Frame, area: Rect,
     let streams_area = chunks[0];
     let status_area = chunks[1];
 
-    render_streams(state, frame, streams_area, theme);
-    render_status_bar(state, frame, status_area, theme);
+    render_streams(state, frame, streams_area, theme, focused, disabled);
+    render_status_bar(state, frame, status_area, theme, disabled);
 }
 
 /// Renders the side-by-side stream panels.
-fn render_streams(state: &LogCorrelationState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_streams(
+    state: &LogCorrelationState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     if state.streams.is_empty() {
-        let border_style = if state.is_disabled() {
+        let border_style = if disabled {
             theme.disabled_style()
-        } else if state.is_focused() {
+        } else if focused {
             theme.focused_border_style()
         } else {
             theme.border_style()
@@ -62,9 +76,9 @@ fn render_streams(state: &LogCorrelationState, frame: &mut Frame, area: Rect, th
     }
 
     // Outer border with title
-    let outer_border_style = if state.is_disabled() {
+    let outer_border_style = if disabled {
         theme.disabled_style()
-    } else if state.is_focused() {
+    } else if focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -121,6 +135,8 @@ fn render_streams(state: &LogCorrelationState, frame: &mut Frame, area: Rect, th
             frame,
             stream_area,
             theme,
+            focused,
+            disabled,
         );
     }
 }
@@ -137,20 +153,22 @@ fn render_single_stream(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
     if area.width < 2 || area.height < 2 {
         return;
     }
 
-    let border_style = if state.is_disabled() {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if is_active && state.is_focused() {
+    } else if is_active && focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
     };
 
-    let title_style = if state.is_disabled() {
+    let title_style = if disabled {
         theme.disabled_style()
     } else {
         Style::default().fg(stream.color)
@@ -190,7 +208,7 @@ fn render_single_stream(
                 if idx < filtered_entries.len() {
                     let entry = filtered_entries[idx];
                     let line = format_entry(entry, inner.width as usize);
-                    let style = if state.is_disabled() {
+                    let style = if disabled {
                         theme.disabled_style()
                     } else {
                         Style::default().fg(entry.level.color())
@@ -255,8 +273,14 @@ fn format_timestamp(ts: f64) -> String {
 }
 
 /// Renders the status bar at the bottom.
-fn render_status_bar(state: &LogCorrelationState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let style = if state.is_disabled() {
+fn render_status_bar(
+    state: &LogCorrelationState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()

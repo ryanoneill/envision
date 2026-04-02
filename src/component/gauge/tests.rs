@@ -592,7 +592,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 

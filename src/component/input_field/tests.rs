@@ -260,7 +260,13 @@ fn test_view() {
 
     terminal
         .draw(|frame| {
-            InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            InputField::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -289,7 +295,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            InputField::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 

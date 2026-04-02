@@ -18,19 +18,26 @@ use crate::theme::Theme;
 const GUTTER_WIDTH: u16 = 7;
 
 /// Renders the CodeBlock in the given area.
-pub(super) fn render(state: &CodeBlockState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render(
+    state: &CodeBlockState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     crate::annotation::with_registry(|reg| {
         reg.register(
             area,
             crate::annotation::Annotation::custom("CodeBlock", "code_block")
-                .with_focus(state.focused)
-                .with_disabled(state.disabled),
+                .with_focus(focused)
+                .with_disabled(disabled),
         );
     });
 
-    let border_style = if state.disabled {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.focused {
+    } else if focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -83,7 +90,15 @@ pub(super) fn render(state: &CodeBlockState, frame: &mut Frame, area: Rect, them
         // Render line number gutter
         if state.show_line_numbers {
             let gutter_area = Rect::new(inner.x, y, gutter_width, 1);
-            render_gutter(line_num, is_highlighted, state, frame, gutter_area, theme);
+            render_gutter(
+                line_num,
+                is_highlighted,
+                state,
+                frame,
+                gutter_area,
+                theme,
+                disabled,
+            );
         }
 
         // Render code content
@@ -96,6 +111,7 @@ pub(super) fn render(state: &CodeBlockState, frame: &mut Frame, area: Rect, them
             frame,
             code_line_area,
             theme,
+            disabled,
         );
     }
 
@@ -123,12 +139,14 @@ fn build_title(state: &CodeBlockState) -> String {
 fn render_gutter(
     line_num: usize,
     is_highlighted: bool,
-    state: &CodeBlockState,
+    _state: &CodeBlockState,
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+
+    disabled: bool,
 ) {
-    let gutter_style = if state.disabled {
+    let gutter_style = if disabled {
         theme.disabled_style()
     } else if is_highlighted {
         Style::default()
@@ -151,8 +169,10 @@ fn render_code_line(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+
+    disabled: bool,
 ) {
-    if state.disabled {
+    if disabled {
         let paragraph = Paragraph::new(line_text).style(theme.disabled_style());
         frame.render_widget(paragraph, area);
         return;
