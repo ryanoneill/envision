@@ -557,7 +557,15 @@ fn test_view_focused() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| {
+            StatusLog::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            )
+        })
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());

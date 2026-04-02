@@ -46,7 +46,13 @@ fn test_snapshot_focused_filter() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -60,7 +66,13 @@ fn test_snapshot_focused_list() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -74,7 +86,13 @@ fn test_snapshot_filtered() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -91,7 +109,13 @@ fn test_snapshot_no_matches() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

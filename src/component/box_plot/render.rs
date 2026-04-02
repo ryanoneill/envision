@@ -27,7 +27,14 @@ fn value_to_position(value: f64, data_min: f64, data_max: f64, length: u16) -> u
 }
 
 /// Renders vertical box plots (values on Y axis, datasets on X axis).
-pub(super) fn render_vertical(state: &BoxPlotState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render_vertical(
+    state: &BoxPlotState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     let dataset_count = state.datasets().len() as u16;
     if dataset_count == 0 || area.height < 3 || area.width < 3 {
         return;
@@ -53,7 +60,7 @@ pub(super) fn render_vertical(state: &BoxPlotState, frame: &mut Frame, area: Rec
     let data_min = state.global_min();
     let data_max = state.global_max();
 
-    let style = if state.disabled {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()
@@ -64,14 +71,14 @@ pub(super) fn render_vertical(state: &BoxPlotState, frame: &mut Frame, area: Rec
         let col_x = area.x + (i as u16) * col_width;
         let center_x = col_x + col_width / 2;
 
-        let box_color = if state.disabled {
+        let box_color = if disabled {
             Color::DarkGray
         } else {
             dataset.color()
         };
         let box_style = Style::default().fg(box_color);
 
-        let selected_indicator = if i == state.selected() && state.is_focused() {
+        let selected_indicator = if i == state.selected() && focused {
             Style::default().fg(box_color).add_modifier(Modifier::BOLD)
         } else {
             box_style
@@ -210,6 +217,8 @@ pub(super) fn render_horizontal(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
     let dataset_count = state.datasets().len() as u16;
     if dataset_count == 0 || area.height < 3 || area.width < 3 {
@@ -240,7 +249,7 @@ pub(super) fn render_horizontal(
     let data_min = state.global_min();
     let data_max = state.global_max();
 
-    let style = if state.disabled {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()
@@ -250,14 +259,14 @@ pub(super) fn render_horizontal(
         let row_y = area.y + (i as u16) * row_height;
         let center_y = row_y + row_height / 2;
 
-        let box_color = if state.disabled {
+        let box_color = if disabled {
             Color::DarkGray
         } else {
             dataset.color()
         };
         let box_style = Style::default().fg(box_color);
 
-        let selected_indicator = if i == state.selected() && state.is_focused() {
+        let selected_indicator = if i == state.selected() && focused {
             Style::default().fg(box_color).add_modifier(Modifier::BOLD)
         } else {
             box_style

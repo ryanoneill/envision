@@ -113,7 +113,13 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MultiProgress::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

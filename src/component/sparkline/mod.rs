@@ -528,13 +528,13 @@ impl Component for Sparkline {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         let display_data = match state.max_display_points {
             Some(n) if state.data.len() > n => &state.data[state.data.len() - n..],
             _ => &state.data,
         };
 
-        let style = if state.disabled {
+        let style = if ctx.disabled {
             theme.disabled_style()
         } else if let Some(color) = state.color {
             Style::default().fg(color)

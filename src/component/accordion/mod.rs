@@ -705,7 +705,7 @@ impl Component for Accordion {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if state.panels.is_empty() {
             return;
         }
@@ -714,8 +714,8 @@ impl Component for Accordion {
             reg.register(
                 area,
                 crate::annotation::Annotation::accordion("accordion")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
@@ -727,11 +727,11 @@ impl Component for Accordion {
             }
 
             // Header line
-            let is_focused_panel = state.focused && i == state.focused_index;
+            let is_focused_panel = ctx.focused && i == state.focused_index;
             let icon = if panel.expanded { "▼" } else { "▶" };
             let header = format!("{} {}", icon, panel.title);
 
-            let header_style = if state.disabled {
+            let header_style = if ctx.disabled {
                 theme.disabled_style()
             } else if is_focused_panel {
                 theme.focused_bold_style()
@@ -752,7 +752,7 @@ impl Component for Accordion {
                 if content_height > 0 {
                     let content_area =
                         Rect::new(area.x + 2, y, area.width.saturating_sub(2), content_height);
-                    let content_style = if state.disabled {
+                    let content_style = if ctx.disabled {
                         theme.disabled_style()
                     } else {
                         theme.placeholder_style()

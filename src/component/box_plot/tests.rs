@@ -816,7 +816,13 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -828,7 +834,13 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 }
@@ -912,7 +924,13 @@ fn test_render_horizontal_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 }

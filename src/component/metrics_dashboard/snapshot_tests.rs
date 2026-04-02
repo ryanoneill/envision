@@ -47,7 +47,13 @@ fn test_snapshot_focused() {
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -61,7 +67,13 @@ fn test_snapshot_focused_second_widget() {
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

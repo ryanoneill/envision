@@ -899,7 +899,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         let all_lines = Self::render_lines(state, area.width, theme);
         let viewport_height = area.height as usize;
 
@@ -922,8 +922,8 @@ impl<T: Clone + 'static> Component for Tree<T> {
 
         let annotation = crate::annotation::Annotation::new(crate::annotation::WidgetType::Tree)
             .with_id("tree")
-            .with_focus(state.focused)
-            .with_disabled(state.disabled);
+            .with_focus(ctx.focused)
+            .with_disabled(ctx.disabled);
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
         frame.render_widget(annotated, area);
 

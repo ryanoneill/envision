@@ -39,7 +39,14 @@ pub(super) fn render_legend(state: &ChartState, frame: &mut Frame, area: Rect) {
 }
 
 /// Renders a line chart using sparkline.
-pub(super) fn render_line_chart(state: &ChartState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render_line_chart(
+    state: &ChartState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    _focused: bool,
+    disabled: bool,
+) {
     if state.series.is_empty() {
         return;
     }
@@ -85,7 +92,7 @@ pub(super) fn render_line_chart(state: &ChartState, frame: &mut Frame, area: Rec
         // Single series: full area sparkline
         let series = &state.series[state.active_series];
         let data = series_to_sparkline_data(series, state.max_display_points);
-        let style = if state.disabled {
+        let style = if disabled {
             theme.disabled_style()
         } else {
             Style::default().fg(series.color())
@@ -107,7 +114,7 @@ pub(super) fn render_line_chart(state: &ChartState, frame: &mut Frame, area: Rec
         for (i, series) in state.series.iter().enumerate() {
             if let Some(sparkline_area) = areas.get(i) {
                 let data = series_to_sparkline_data(series, state.max_display_points);
-                let style = if state.disabled {
+                let style = if disabled {
                     theme.disabled_style()
                 } else if i == state.active_series {
                     Style::default()
@@ -156,6 +163,8 @@ pub(super) fn render_bar_chart(
     area: Rect,
     theme: &Theme,
     horizontal: bool,
+    _focused: bool,
+    disabled: bool,
 ) {
     if state.series.is_empty() {
         return;
@@ -167,7 +176,7 @@ pub(super) fn render_bar_chart(
         return;
     }
 
-    let style = if state.disabled {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         Style::default().fg(series.color())
@@ -211,6 +220,8 @@ pub(super) fn render_shared_axis_chart(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    _focused: bool,
+    disabled: bool,
 ) {
     if state.series.is_empty() && state.thresholds.is_empty() {
         return;
@@ -273,7 +284,7 @@ pub(super) fn render_shared_axis_chart(
         .iter()
         .enumerate()
         .map(|(i, s)| {
-            let style = if state.disabled {
+            let style = if disabled {
                 theme.disabled_style()
             } else if i == state.active_series {
                 Style::default().fg(s.color()).add_modifier(Modifier::BOLD)

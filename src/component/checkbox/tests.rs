@@ -112,7 +112,13 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Checkbox::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Checkbox::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -127,7 +133,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Checkbox::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Checkbox::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 

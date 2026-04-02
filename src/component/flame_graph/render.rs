@@ -13,10 +13,12 @@ pub(super) fn render_flame_graph(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
-    let border_style = if state.disabled {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.focused {
+    } else if focused {
         theme.focused_border_style()
     } else {
         theme.normal_style()
@@ -41,8 +43,8 @@ pub(super) fn render_flame_graph(
                 "FlameGraph".to_string(),
             ))
             .with_id("flame_graph")
-            .with_focus(state.focused)
-            .with_disabled(state.disabled),
+            .with_focus(focused)
+            .with_disabled(disabled),
         );
     });
 
@@ -50,7 +52,7 @@ pub(super) fn render_flame_graph(
         Some(r) => r,
         None => {
             // Render empty state
-            let style = if state.disabled {
+            let style = if disabled {
                 theme.disabled_style()
             } else {
                 theme.normal_style()
@@ -81,7 +83,9 @@ pub(super) fn render_flame_graph(
             break;
         }
         let row_area = Rect::new(inner.x, y, inner.width, 1);
-        render_depth_row(state, frame, view_root, root_total, depth, row_area, theme);
+        render_depth_row(
+            state, frame, view_root, root_total, depth, row_area, theme, focused, disabled,
+        );
     }
 
     // Render separator and detail bar
@@ -89,7 +93,7 @@ pub(super) fn render_flame_graph(
     if sep_y < inner.bottom() {
         let sep_area = Rect::new(inner.x, sep_y, inner.width, 1);
         let sep_line: String = "\u{2500}".repeat(inner.width as usize);
-        let sep_style = if state.disabled {
+        let sep_style = if disabled {
             theme.disabled_style()
         } else {
             theme.normal_style()
@@ -100,11 +104,12 @@ pub(super) fn render_flame_graph(
     let detail_y = sep_y + 1;
     if detail_y < inner.bottom() {
         let detail_area = Rect::new(inner.x, detail_y, inner.width, 1);
-        render_detail_bar(state, frame, root_total, detail_area, theme);
+        render_detail_bar(state, frame, root_total, detail_area, theme, disabled);
     }
 }
 
 /// Renders a single depth row of the flame graph.
+#[allow(clippy::too_many_arguments)]
 fn render_depth_row(
     state: &FlameGraphState,
     frame: &mut Frame,
@@ -113,6 +118,9 @@ fn render_depth_row(
     depth: usize,
     area: Rect,
     theme: &Theme,
+
+    focused: bool,
+    disabled: bool,
 ) {
     let width = area.width as usize;
     if width == 0 {
@@ -147,7 +155,15 @@ fn render_depth_row(
                 .to_lowercase()
                 .contains(&state.search_query.to_lowercase());
 
-        let style = compute_frame_style(state, node, is_selected, matches_search, theme);
+        let style = compute_frame_style(
+            state,
+            node,
+            is_selected,
+            matches_search,
+            theme,
+            focused,
+            disabled,
+        );
 
         // Build the label, truncating or padding to fit
         let label = &node.label;
@@ -188,7 +204,7 @@ fn render_depth_row(
     // Fill remaining space
     if total_cols_used < width {
         let remaining = width - total_cols_used;
-        let bg_style = if state.disabled {
+        let bg_style = if disabled {
             theme.disabled_style()
         } else {
             theme.normal_style()
@@ -202,17 +218,20 @@ fn render_depth_row(
 
 /// Computes the style for a frame.
 fn compute_frame_style(
-    state: &FlameGraphState,
+    _state: &FlameGraphState,
     node: &FlameNode,
     is_selected: bool,
     matches_search: bool,
     theme: &Theme,
+
+    focused: bool,
+    disabled: bool,
 ) -> Style {
-    if state.disabled {
+    if disabled {
         return theme.disabled_style();
     }
 
-    if is_selected && state.focused {
+    if is_selected && focused {
         // Selected + focused: use highlight style with the frame's color
         Style::default()
             .fg(Color::Black)
@@ -240,8 +259,10 @@ fn render_detail_bar(
     root_total: u64,
     area: Rect,
     theme: &Theme,
+
+    disabled: bool,
 ) {
-    let style = if state.disabled {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()
@@ -279,7 +300,7 @@ mod tests {
         let state = FlameGraphState::with_root(FlameNode::new("main()", 500)).with_disabled(true);
         let node = FlameNode::new("test()", 100);
         let theme = Theme::default();
-        let style = compute_frame_style(&state, &node, false, false, &theme);
+        let style = compute_frame_style(&state, &node, false, false, &theme, false, true);
         assert_eq!(style, theme.disabled_style());
     }
 
@@ -289,7 +310,7 @@ mod tests {
         state.set_focused(true);
         let node = FlameNode::new("test()", 100).with_color(Color::Red);
         let theme = Theme::default();
-        let style = compute_frame_style(&state, &node, true, false, &theme);
+        let style = compute_frame_style(&state, &node, true, false, &theme, true, false);
         assert_eq!(style.fg, Some(Color::Black));
         assert_eq!(style.bg, Some(Color::Red));
     }
@@ -300,7 +321,7 @@ mod tests {
         state.set_search("test".to_string());
         let node = FlameNode::new("test()", 100);
         let theme = Theme::default();
-        let style = compute_frame_style(&state, &node, false, true, &theme);
+        let style = compute_frame_style(&state, &node, false, true, &theme, false, false);
         assert_eq!(style.bg, Some(Color::Yellow));
     }
 
@@ -309,7 +330,7 @@ mod tests {
         let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
         let node = FlameNode::new("test()", 100).with_color(Color::Green);
         let theme = Theme::default();
-        let style = compute_frame_style(&state, &node, false, false, &theme);
+        let style = compute_frame_style(&state, &node, false, false, &theme, false, false);
         assert_eq!(style.fg, Some(Color::Green));
     }
 }

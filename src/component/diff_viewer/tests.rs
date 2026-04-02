@@ -740,7 +740,13 @@ fn test_view_unified_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            DiffViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DiffViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -754,7 +760,13 @@ fn test_view_unified_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            DiffViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DiffViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

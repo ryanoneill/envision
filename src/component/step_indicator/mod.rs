@@ -672,14 +672,14 @@ impl Component for StepIndicator {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.register(
                 area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::StepIndicator)
                     .with_id("step_indicator")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
@@ -687,7 +687,7 @@ impl Component for StepIndicator {
             Block::default()
                 .title(format!(" {} ", title))
                 .borders(Borders::ALL)
-                .border_style(if state.focused {
+                .border_style(if ctx.focused {
                     theme.focused_border_style()
                 } else {
                     theme.border_style()
@@ -695,7 +695,7 @@ impl Component for StepIndicator {
         } else {
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(if state.focused {
+                .border_style(if ctx.focused {
                     theme.focused_border_style()
                 } else {
                     theme.border_style()

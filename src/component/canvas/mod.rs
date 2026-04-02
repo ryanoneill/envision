@@ -615,7 +615,7 @@ impl Component for Canvas {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if area.height < 2 || area.width < 2 {
             return;
         }
@@ -624,22 +624,22 @@ impl Component for Canvas {
             reg.register(
                 area,
                 crate::annotation::Annotation::canvas("canvas")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
-        let needs_border = state.title.is_some() || state.focused;
+        let needs_border = state.title.is_some() || ctx.focused;
 
-        let border_style = if state.disabled {
+        let border_style = if ctx.disabled {
             theme.disabled_style()
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_border_style()
         } else {
             theme.border_style()
         };
 
-        let content_style = if state.disabled {
+        let content_style = if ctx.disabled {
             theme.disabled_style()
         } else {
             theme.normal_style()
@@ -669,7 +669,7 @@ impl Component for Canvas {
         let x_bounds = state.x_bounds;
         let y_bounds = state.y_bounds;
         let shapes = state.shapes.clone();
-        let is_disabled = state.disabled;
+        let is_disabled = ctx.disabled;
         let disabled_style = theme.disabled_style();
 
         let canvas = RatatuiCanvas::default()

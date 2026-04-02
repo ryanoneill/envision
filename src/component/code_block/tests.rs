@@ -601,7 +601,13 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -616,7 +622,13 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -702,7 +714,13 @@ fn test_annotation_focused() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                CodeBlock::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });

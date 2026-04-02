@@ -605,20 +605,20 @@ impl Component for Paginator {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.register(
                 area,
                 crate::annotation::Annotation::paginator("paginator")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled)
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled)
                     .with_value(format!("{}/{}", state.display_page(), state.total_pages)),
             );
         });
 
-        let text_style = if state.disabled {
+        let text_style = if ctx.disabled {
             theme.disabled_style()
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_style()
         } else {
             theme.normal_style()

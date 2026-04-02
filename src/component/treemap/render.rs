@@ -8,7 +8,14 @@ use super::TreemapState;
 use crate::theme::Theme;
 
 /// Renders the treemap inside the border area.
-pub(super) fn render_treemap(state: &TreemapState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render_treemap(
+    state: &TreemapState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     let view_node = state.current_view_node();
     let children = match view_node {
         Some(node) => &node.children,
@@ -25,6 +32,7 @@ pub(super) fn render_treemap(state: &TreemapState, frame: &mut Frame, area: Rect
                 state,
                 frame,
                 area,
+                disabled,
             );
         }
         return;
@@ -47,27 +55,32 @@ pub(super) fn render_treemap(state: &TreemapState, frame: &mut Frame, area: Rect
 
     // Render each rectangle.
     for rect in &rects {
-        let is_selected =
-            state.focused && !state.disabled && rect.node_index.first() == Some(&selected_index);
+        let is_selected = focused && !disabled && rect.node_index.first() == Some(&selected_index);
 
-        render_rect(rect, is_selected, state, frame);
+        render_rect(rect, is_selected, state, frame, disabled);
     }
 
     // Render detail bar.
     if let Some(detail) = detail_area {
-        render_detail_bar(state, frame, detail, theme);
+        render_detail_bar(state, frame, detail, theme, disabled);
     }
 }
 
 /// Render a single layout rectangle.
-fn render_rect(rect: &LayoutRect, is_selected: bool, state: &TreemapState, frame: &mut Frame) {
+fn render_rect(
+    rect: &LayoutRect,
+    is_selected: bool,
+    state: &TreemapState,
+    frame: &mut Frame,
+    disabled: bool,
+) {
     let cell_area = Rect::new(rect.x, rect.y, rect.width, rect.height);
 
     if cell_area.width == 0 || cell_area.height == 0 {
         return;
     }
 
-    let bg = if state.disabled {
+    let bg = if disabled {
         Color::DarkGray
     } else {
         rect.color
@@ -130,12 +143,10 @@ fn render_leaf(
     state: &TreemapState,
     frame: &mut Frame,
     area: Rect,
+
+    disabled: bool,
 ) {
-    let bg = if state.disabled {
-        Color::DarkGray
-    } else {
-        color
-    };
+    let bg = if disabled { Color::DarkGray } else { color };
     let fg = contrasting_fg(bg);
     let style = Style::default().bg(bg).fg(fg);
 
@@ -166,8 +177,14 @@ fn render_leaf(
 }
 
 /// Render the detail bar at the bottom.
-fn render_detail_bar(state: &TreemapState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let style = if state.disabled {
+fn render_detail_bar(
+    state: &TreemapState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()

@@ -377,7 +377,13 @@ fn test_view_focused_selection() {
 
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 

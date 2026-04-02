@@ -9,7 +9,14 @@ use unicode_width::UnicodeWidthStr;
 use super::*;
 
 /// Renders the tab bar into the given frame area.
-pub(super) fn render_tab_bar(state: &TabBarState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render_tab_bar(
+    state: &TabBarState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     if area.height == 0 || area.width == 0 {
         return;
     }
@@ -28,7 +35,7 @@ pub(super) fn render_tab_bar(state: &TabBarState, frame: &mut Frame, area: Rect,
         .enumerate()
         .map(|(i, tab)| {
             let is_active = state.active == Some(i);
-            let base_style = if state.disabled {
+            let base_style = if disabled {
                 theme.disabled_style()
             } else if is_active {
                 theme.focused_style().add_modifier(Modifier::BOLD)
@@ -54,7 +61,7 @@ pub(super) fn render_tab_bar(state: &TabBarState, frame: &mut Frame, area: Rect,
             parts.push(Span::styled(label_text, base_style));
 
             if tab.modified {
-                let mod_style = if state.disabled {
+                let mod_style = if disabled {
                     theme.disabled_style()
                 } else {
                     theme.warning_style()
@@ -63,7 +70,7 @@ pub(super) fn render_tab_bar(state: &TabBarState, frame: &mut Frame, area: Rect,
             }
 
             if tab.closable {
-                let close_style = if state.disabled {
+                let close_style = if disabled {
                     theme.disabled_style()
                 } else {
                     theme.error_style()
@@ -118,7 +125,7 @@ pub(super) fn render_tab_bar(state: &TabBarState, frame: &mut Frame, area: Rect,
     let mut spans: Vec<Span<'static>> = Vec::new();
 
     if has_left_overflow {
-        let indicator_style = if state.disabled {
+        let indicator_style = if disabled {
             theme.disabled_style()
         } else {
             theme.info_style()
@@ -135,7 +142,7 @@ pub(super) fn render_tab_bar(state: &TabBarState, frame: &mut Frame, area: Rect,
     }
 
     if has_right_overflow {
-        let indicator_style = if state.disabled {
+        let indicator_style = if disabled {
             theme.disabled_style()
         } else {
             theme.info_style()
@@ -148,8 +155,8 @@ pub(super) fn render_tab_bar(state: &TabBarState, frame: &mut Frame, area: Rect,
 
     let annotation = crate::annotation::Annotation::new(crate::annotation::WidgetType::TabBar)
         .with_id("tab_bar")
-        .with_focus(state.focused)
-        .with_disabled(state.disabled)
+        .with_focus(focused)
+        .with_disabled(disabled)
         .with_selected(state.active.is_some())
         .with_value(state.active.map(|i| i.to_string()).unwrap_or_default());
     let annotated = crate::annotation::Annotate::new(paragraph, annotation);

@@ -447,7 +447,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         let selected_idx = state.selected.unwrap_or(0);
 
         let titles: Vec<Line> = state
@@ -455,10 +455,10 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             .iter()
             .enumerate()
             .map(|(i, tab)| {
-                let style = if state.disabled {
+                let style = if ctx.disabled {
                     theme.disabled_style()
                 } else if i == selected_idx {
-                    theme.selected_style(state.focused)
+                    theme.selected_style(ctx.focused)
                 } else {
                     theme.normal_style()
                 };
@@ -466,16 +466,16 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             })
             .collect();
 
-        let border_style = if state.focused && !state.disabled {
+        let border_style = if ctx.focused && !ctx.disabled {
             theme.focused_border_style()
         } else {
             theme.border_style()
         };
 
-        let highlight_style = if state.disabled {
+        let highlight_style = if ctx.disabled {
             theme.disabled_style()
         } else {
-            theme.selected_style(state.focused)
+            theme.selected_style(ctx.focused)
         };
 
         let tabs_widget = ratatui::widgets::Tabs::new(titles)
@@ -489,8 +489,8 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
 
         let annotation = crate::annotation::Annotation::new(crate::annotation::WidgetType::TabBar)
             .with_id("tabs")
-            .with_focus(state.focused)
-            .with_disabled(state.disabled)
+            .with_focus(ctx.focused)
+            .with_disabled(ctx.disabled)
             .with_selected(true)
             .with_value(selected_idx.to_string());
         let annotated = crate::annotation::Annotate::new(tabs_widget, annotation);

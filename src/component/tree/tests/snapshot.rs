@@ -57,7 +57,13 @@ fn test_view_multiple_roots_focused() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -78,7 +84,13 @@ fn test_view_selection_on_child() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -124,7 +136,13 @@ fn test_view_deep_nesting_selection_at_leaf() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -187,7 +205,13 @@ fn test_view_disabled_with_children() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 
@@ -208,7 +232,13 @@ fn test_view_focused_expanded_tree() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -273,7 +303,13 @@ fn test_view_filtered_focused() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -332,7 +368,13 @@ fn test_view_selection_on_last_root() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 

@@ -92,7 +92,13 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Table::<TestRow>::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -108,7 +114,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Table::<TestRow>::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 

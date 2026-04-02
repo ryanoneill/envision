@@ -698,11 +698,11 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             let mut ann = crate::annotation::Annotation::list("selectable_list")
-                .with_focus(state.focused)
-                .with_disabled(state.disabled);
+                .with_focus(ctx.focused)
+                .with_disabled(ctx.disabled);
             if let Some(idx) = state.selected_index() {
                 ann = ann.with_selected(true).with_value(idx.to_string());
             }
@@ -714,10 +714,10 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             items.push(ListItem::new(state.items[idx].to_string()));
         }
 
-        let highlight_style = if state.disabled {
+        let highlight_style = if ctx.disabled {
             theme.disabled_style()
         } else {
-            theme.selected_highlight_style(state.focused)
+            theme.selected_highlight_style(ctx.focused)
         };
 
         let block = Block::default().borders(Borders::ALL);

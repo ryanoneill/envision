@@ -499,7 +499,7 @@ impl Component for Menu {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         let mut menu_text = String::new();
 
         for (idx, item) in state.items.iter().enumerate() {
@@ -507,7 +507,7 @@ impl Component for Menu {
                 menu_text.push_str("  ");
             }
 
-            let item_text = if Some(idx) == state.selected_index && state.focused {
+            let item_text = if Some(idx) == state.selected_index && ctx.focused {
                 format!("[{}]", item.label())
             } else {
                 item.label().to_string()
@@ -517,9 +517,9 @@ impl Component for Menu {
         }
 
         // Determine style based on state
-        let style = if state.disabled {
+        let style = if ctx.disabled {
             theme.disabled_style()
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_style()
         } else {
             theme.normal_style()
@@ -529,8 +529,8 @@ impl Component for Menu {
 
         let annotation = crate::annotation::Annotation::new(crate::annotation::WidgetType::Menu)
             .with_id("menu")
-            .with_focus(state.focused)
-            .with_disabled(state.disabled);
+            .with_focus(ctx.focused)
+            .with_disabled(ctx.disabled);
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
         frame.render_widget(annotated, area);
     }

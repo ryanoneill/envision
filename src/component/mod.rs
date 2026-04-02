@@ -74,8 +74,8 @@
 //!         Some(CounterOutput::ValueChanged(state.value))
 //!     }
 //!
-//!     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
-//!         let style = if state.focused {
+//!     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+//!         let style = if ctx.focused {
 //!             theme.focused_style()
 //!         } else {
 //!             theme.normal_style()
@@ -511,6 +511,13 @@ pub use focus_manager::FocusManager;
 /// time, such as whether a component is focused or disabled. This separates
 /// render-time concerns from persistent component state, allowing parents
 /// to control visual appearance without mutating component state.
+///
+/// # Precedence
+///
+/// `ctx` values are authoritative for rendering. Components read
+/// `ctx.focused` / `ctx.disabled` for visual appearance (border style,
+/// text color, cursor). `state.focused` / `state.disabled` remain the
+/// source of truth for behavior (`handle_event` guards).
 ///
 /// # Example
 ///

@@ -990,7 +990,7 @@ impl Component for MultiProgress {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if area.width == 0 || area.height == 0 {
             return;
         }
@@ -1028,7 +1028,7 @@ impl Component for MultiProgress {
             .take(visible_count)
             .map(|item| {
                 let symbol = item.status.symbol();
-                let style = if state.disabled {
+                let style = if ctx.disabled {
                     theme.disabled_style()
                 } else {
                     item.status.style(theme)

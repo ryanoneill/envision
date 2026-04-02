@@ -658,15 +658,15 @@ impl Component for TextArea {
         state.apply_update(msg)
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             let first_line = state.lines.first().map_or("", |l| l.as_str());
             reg.register(
                 area,
                 crate::annotation::Annotation::text_area("text_area")
                     .with_value(first_line)
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
@@ -697,9 +697,9 @@ impl Component for TextArea {
                 .join("\n")
         };
 
-        let style = if state.disabled {
+        let style = if ctx.disabled {
             theme.disabled_style()
-        } else if state.focused {
+        } else if ctx.focused {
             theme.focused_style()
         } else if state.is_empty() && !state.placeholder.is_empty() {
             theme.placeholder_style()
@@ -707,7 +707,7 @@ impl Component for TextArea {
             theme.normal_style()
         };
 
-        let border_style = if state.focused && !state.disabled {
+        let border_style = if ctx.focused && !ctx.disabled {
             theme.focused_border_style()
         } else {
             theme.border_style()
@@ -722,7 +722,7 @@ impl Component for TextArea {
         frame.render_widget(paragraph, area);
 
         // Show cursor when focused
-        if state.focused && area.width > 2 && area.height > 2 {
+        if ctx.focused && area.width > 2 && area.height > 2 {
             let cursor_row_in_view = state.cursor_row.saturating_sub(scroll);
             let (_, display_col) = state.cursor_display_position();
 

@@ -495,7 +495,13 @@ fn test_view_focused_highlight() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Breadcrumb::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -544,7 +550,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Breadcrumb::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 

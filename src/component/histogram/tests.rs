@@ -511,7 +511,13 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Histogram::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 }
@@ -524,7 +530,13 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Histogram::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -607,7 +619,13 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Histogram::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

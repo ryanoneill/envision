@@ -673,7 +673,13 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ChatView::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 }
@@ -923,7 +929,13 @@ fn test_render_with_custom_role_styles() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            ChatView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ChatView::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     // Just verify it renders without panicking

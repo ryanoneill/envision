@@ -90,7 +90,13 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -124,7 +130,13 @@ fn test_annotation_with_focus() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                BoxPlot::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });
@@ -141,7 +153,13 @@ fn test_annotation_with_disabled() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                BoxPlot::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().disabled(true),
+                );
             })
             .unwrap();
     });

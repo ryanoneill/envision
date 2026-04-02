@@ -10,6 +10,8 @@ pub(super) fn render_event_stream(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
     if area.height < 3 {
         return;
@@ -19,8 +21,8 @@ pub(super) fn render_event_stream(
         reg.register(
             area,
             crate::annotation::Annotation::container("event_stream")
-                .with_focus(state.is_focused())
-                .with_disabled(state.is_disabled()),
+                .with_focus(focused)
+                .with_disabled(disabled),
         );
     });
 
@@ -34,19 +36,26 @@ pub(super) fn render_event_stream(
     let status_area = chunks[1];
 
     // Render event list
-    render_event_list(state, frame, list_area, theme);
+    render_event_list(state, frame, list_area, theme, focused, disabled);
 
     // Render status bar (filter + level + auto-scroll indicator)
-    render_status_bar(state, frame, status_area, theme);
+    render_status_bar(state, frame, status_area, theme, focused, disabled);
 }
 
 /// Renders the event list area with a bordered block.
-fn render_event_list(state: &EventStreamState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_event_list(
+    state: &EventStreamState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     let visible = state.visible_events();
 
-    let border_style = if state.is_disabled() {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.is_focused() && !state.is_search_focused() {
+    } else if focused && !state.is_search_focused() {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -90,7 +99,7 @@ fn render_event_list(state: &EventStreamState, frame: &mut Frame, area: Rect, th
 
     if inner.height >= 1 {
         let header_area = Rect::new(inner.x, inner.y, inner.width, 1);
-        render_header(state, frame, header_area, theme);
+        render_header(state, frame, header_area, theme, disabled);
     }
 
     if data_height == 0 {
@@ -114,7 +123,7 @@ fn render_event_list(state: &EventStreamState, frame: &mut Frame, area: Rect, th
         .iter()
         .skip(effective_offset)
         .take(data_height as usize)
-        .map(|event| render_event_row(state, event, inner.width as usize, theme))
+        .map(|event| render_event_row(state, event, inner.width as usize, theme, disabled))
         .collect();
 
     let list = List::new(items);
@@ -130,8 +139,14 @@ fn render_event_list(state: &EventStreamState, frame: &mut Frame, area: Rect, th
 }
 
 /// Renders the column header line.
-fn render_header(state: &EventStreamState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let style = if state.is_disabled() {
+fn render_header(
+    state: &EventStreamState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style().add_modifier(Modifier::BOLD)
@@ -171,9 +186,10 @@ fn render_event_row<'a>(
     event: &super::StreamEvent,
     _max_width: usize,
     theme: &Theme,
+    disabled: bool,
 ) -> ListItem<'a> {
     let level_color = event.level.color();
-    let style = if state.is_disabled() {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         Style::default().fg(level_color)
@@ -223,7 +239,7 @@ fn render_event_row<'a>(
     let text = parts.join(" ");
 
     // Highlight search matches
-    if !state.filter_text().is_empty() && !state.is_disabled() {
+    if !state.filter_text().is_empty() && !disabled {
         let text_lower = text.to_lowercase();
         let search_lower = state.filter_text().to_lowercase();
         if text_lower.contains(&search_lower) {
@@ -236,8 +252,15 @@ fn render_event_row<'a>(
 }
 
 /// Renders the status bar at the bottom.
-fn render_status_bar(state: &EventStreamState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let style = if state.is_disabled() {
+fn render_status_bar(
+    state: &EventStreamState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
+    let style = if disabled {
         theme.disabled_style()
     } else if state.is_search_focused() {
         theme.focused_style()
@@ -281,7 +304,7 @@ fn render_status_bar(state: &EventStreamState, frame: &mut Frame, area: Rect, th
     frame.render_widget(paragraph, area);
 
     // Show cursor when search is focused
-    if state.is_focused() && state.is_search_focused() && !state.is_disabled() {
+    if focused && state.is_search_focused() && !disabled {
         // "Filter: [" is 9 chars, cursor is at that offset plus cursor position
         let cursor_x = area.x + 9 + state.search_cursor_position() as u16;
         if cursor_x < area.right() {

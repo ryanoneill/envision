@@ -878,7 +878,7 @@ impl Component for ConversationView {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if area.height < 3 || area.width < 5 {
             return;
         }
@@ -887,12 +887,12 @@ impl Component for ConversationView {
             reg.open(
                 area,
                 crate::annotation::Annotation::container("conversation_view")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
-        render::render(state, frame, area, theme);
+        render::render(state, frame, area, theme, ctx.focused, ctx.disabled);
 
         crate::annotation::with_registry(|reg| {
             reg.close();

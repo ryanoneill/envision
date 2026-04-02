@@ -21,6 +21,8 @@ pub(super) fn render_alert_panel(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
     if area.height < 3 || area.width < 3 {
         return;
@@ -30,15 +32,15 @@ pub(super) fn render_alert_panel(
         reg.register(
             area,
             crate::annotation::Annotation::container("alert_panel")
-                .with_focus(state.is_focused())
-                .with_disabled(state.is_disabled()),
+                .with_focus(focused)
+                .with_disabled(disabled),
         );
     });
 
     // Outer border with title showing aggregate counts
-    let outer_border_style = if state.is_disabled() {
+    let outer_border_style = if disabled {
         theme.disabled_style()
-    } else if state.is_focused() {
+    } else if focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -85,13 +87,23 @@ pub(super) fn render_alert_panel(
             let metric_idx = row_idx * cols + col_idx;
             if let Some(metric) = state.metrics().get(metric_idx) {
                 let is_selected = state.selected() == Some(metric_idx);
-                render_metric_card(metric, is_selected, state, frame, *col_area, theme);
+                render_metric_card(
+                    metric,
+                    is_selected,
+                    state,
+                    frame,
+                    *col_area,
+                    theme,
+                    focused,
+                    disabled,
+                );
             }
         }
     }
 }
 
 /// Renders a single metric card within the grid.
+#[allow(clippy::too_many_arguments)]
 fn render_metric_card(
     metric: &super::AlertMetric,
     is_selected: bool,
@@ -99,10 +111,12 @@ fn render_metric_card(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
-    let border_style = if state.is_disabled() {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if is_selected && state.is_focused() {
+    } else if is_selected && focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -120,7 +134,7 @@ fn render_metric_card(
         return;
     }
 
-    let state_style = if state.is_disabled() {
+    let state_style = if disabled {
         theme.disabled_style()
     } else {
         state_color(metric.state(), theme)
@@ -193,7 +207,7 @@ fn render_metric_card(
     // Sparkline
     if show_sparkline && chunk_idx < chunks.len() {
         let data = history_to_sparkline_data(metric.history());
-        let sparkline_style = if state.is_disabled() {
+        let sparkline_style = if disabled {
             theme.disabled_style()
         } else {
             state_color(metric.state(), theme)

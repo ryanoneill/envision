@@ -701,7 +701,13 @@ fn test_view_focused_step() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -784,7 +790,13 @@ fn test_annotation_emission() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                StepIndicator::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });

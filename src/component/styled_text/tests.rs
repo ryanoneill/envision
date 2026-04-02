@@ -677,7 +677,13 @@ fn test_annotation_emission() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                StyledText::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });

@@ -15,14 +15,16 @@ pub(super) fn render_searchable_list<T: Clone + Display>(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
     crate::annotation::with_registry(|reg| {
         reg.open(
             area,
             crate::annotation::Annotation::new(crate::annotation::WidgetType::SearchableList)
                 .with_id("searchable_list")
-                .with_focus(state.focused)
-                .with_disabled(state.disabled),
+                .with_focus(focused)
+                .with_disabled(disabled),
         );
     });
 
@@ -33,8 +35,8 @@ pub(super) fn render_searchable_list<T: Clone + Display>(
         .split(area);
 
     // Render filter input
-    let filter_focused = state.focused && state.internal_focus == Focus::Filter;
-    let filter_border_style = if state.disabled {
+    let filter_focused = focused && state.internal_focus == Focus::Filter;
+    let filter_border_style = if disabled {
         theme.disabled_style()
     } else if filter_focused {
         theme.focused_border_style()
@@ -59,15 +61,15 @@ pub(super) fn render_searchable_list<T: Clone + Display>(
     frame.render_widget(filter_widget, chunks[0]);
 
     // Show cursor in filter when focused
-    if filter_focused && !state.disabled {
+    if filter_focused && !disabled {
         let cursor_x = chunks[0].x + 1 + state.filter_text.len() as u16;
         let cursor_y = chunks[0].y + 1;
         frame.set_cursor_position(Position::new(cursor_x, cursor_y));
     }
 
     // Render filtered list
-    let list_focused = state.focused && state.internal_focus == Focus::List;
-    let list_border_style = if state.disabled {
+    let list_focused = focused && state.internal_focus == Focus::List;
+    let list_border_style = if disabled {
         theme.disabled_style()
     } else if list_focused {
         theme.focused_border_style()
@@ -82,7 +84,7 @@ pub(super) fn render_searchable_list<T: Clone + Display>(
         .map(|item| ListItem::new(format!("{}", item)))
         .collect();
 
-    let highlight_style = if state.disabled {
+    let highlight_style = if disabled {
         theme.disabled_style()
     } else {
         theme.selected_highlight_style(list_focused)

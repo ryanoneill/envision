@@ -66,7 +66,13 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FileBrowser::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true).disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -93,7 +99,13 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 8);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FileBrowser::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

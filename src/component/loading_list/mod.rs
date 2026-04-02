@@ -1017,8 +1017,8 @@ impl<T: Clone> Component for LoadingList<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
-        render::render_loading_list(state, frame, area, theme);
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+        render::render_loading_list(state, frame, area, theme, ctx.focused, ctx.disabled);
     }
 }
 

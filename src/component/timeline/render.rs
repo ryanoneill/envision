@@ -11,7 +11,14 @@ use super::{SelectedType, TimelineState};
 use crate::theme::Theme;
 
 /// Renders the complete timeline inside the block's inner area.
-pub(super) fn render_timeline(state: &TimelineState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render_timeline(
+    state: &TimelineState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    _focused: bool,
+    disabled: bool,
+) {
     // Layout:
     //  1 row: time axis
     //  1 row: separator
@@ -44,7 +51,7 @@ pub(super) fn render_timeline(state: &TimelineState, frame: &mut Frame, area: Re
 
     // Time axis - always present
     let axis_area = Rect::new(area.x, y, area.width, 1);
-    render_time_axis(state, frame, axis_area, theme);
+    render_time_axis(state, frame, axis_area, theme, disabled);
     y += 1;
 
     if remaining < 2 {
@@ -53,7 +60,7 @@ pub(super) fn render_timeline(state: &TimelineState, frame: &mut Frame, area: Re
 
     // Separator
     let sep1_area = Rect::new(area.x, y, area.width, 1);
-    render_separator(frame, sep1_area, theme, state.disabled);
+    render_separator(frame, sep1_area, theme, disabled);
     y += 1;
 
     // If we don't have room for anything else, stop
@@ -86,31 +93,31 @@ pub(super) fn render_timeline(state: &TimelineState, frame: &mut Frame, area: Re
             break;
         }
         let lane_area = Rect::new(area.x, y, area.width, 1);
-        render_span_lane(state, frame, lane_area, lane_idx as usize, theme);
+        render_span_lane(state, frame, lane_area, lane_idx as usize, theme, disabled);
         y += 1;
     }
 
     // Render event row
     if has_events && y < area.y + area.height {
         let event_area = Rect::new(area.x, y, area.width, 1);
-        render_events(state, frame, event_area, theme);
+        render_events(state, frame, event_area, theme, disabled);
         y += 1;
     }
 
     // Detail bar (separator + detail)
     if has_selection && y + 1 < area.y + area.height {
         let sep2_area = Rect::new(area.x, y, area.width, 1);
-        render_separator(frame, sep2_area, theme, state.disabled);
+        render_separator(frame, sep2_area, theme, disabled);
         y += 1;
 
         if y < area.y + area.height {
             let detail_area = Rect::new(area.x, y, area.width, 1);
-            render_detail_bar(state, frame, detail_area, theme);
+            render_detail_bar(state, frame, detail_area, theme, disabled);
         }
     } else if has_selection && y < area.y + area.height {
         // Just the detail bar, no separator
         let detail_area = Rect::new(area.x, y, area.width, 1);
-        render_detail_bar(state, frame, detail_area, theme);
+        render_detail_bar(state, frame, detail_area, theme, disabled);
     }
 
     // Suppress unused variable warning
@@ -118,12 +125,18 @@ pub(super) fn render_timeline(state: &TimelineState, frame: &mut Frame, area: Re
 }
 
 /// Renders the time axis with tick labels.
-fn render_time_axis(state: &TimelineState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_time_axis(
+    state: &TimelineState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
     if area.width == 0 {
         return;
     }
 
-    let style = if state.disabled {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()
@@ -185,6 +198,8 @@ fn render_span_lane(
     area: Rect,
     lane_idx: usize,
     theme: &Theme,
+
+    disabled: bool,
 ) {
     if area.width == 0 {
         return;
@@ -214,7 +229,7 @@ fn render_span_lane(
         let is_selected =
             state.selected_type == SelectedType::Span && state.selected_index == Some(*span_idx);
 
-        let style = if state.disabled {
+        let style = if disabled {
             theme.disabled_style()
         } else if is_selected {
             Style::default()
@@ -277,7 +292,13 @@ fn render_span_lane(
 }
 
 /// Renders point events as markers.
-fn render_events(state: &TimelineState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_events(
+    state: &TimelineState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
     if area.width == 0 {
         return;
     }
@@ -306,7 +327,7 @@ fn render_events(state: &TimelineState, frame: &mut Frame, area: Rect, theme: &T
         let is_selected =
             state.selected_type == SelectedType::Event && state.selected_index == Some(event_idx);
 
-        let style = if state.disabled {
+        let style = if disabled {
             theme.disabled_style()
         } else if is_selected {
             Style::default()
@@ -331,7 +352,13 @@ fn render_events(state: &TimelineState, frame: &mut Frame, area: Rect, theme: &T
 }
 
 /// Renders the detail bar showing information about the selected item.
-fn render_detail_bar(state: &TimelineState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_detail_bar(
+    state: &TimelineState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
     let detail = match state.selected_type {
         SelectedType::Event => {
             if let Some(event) = state.selected_event() {
@@ -359,7 +386,7 @@ fn render_detail_bar(state: &TimelineState, frame: &mut Frame, area: Rect, theme
         }
     };
 
-    let style = if state.disabled {
+    let style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style().add_modifier(Modifier::DIM)

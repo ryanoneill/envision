@@ -628,7 +628,13 @@ fn test_render_focused_filter() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -641,7 +647,13 @@ fn test_render_focused_list() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -657,7 +669,13 @@ fn test_render_with_filter() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -669,7 +687,13 @@ fn test_render_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 }

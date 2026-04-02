@@ -7,7 +7,14 @@ use super::{value_to_color, HeatmapState};
 use crate::theme::Theme;
 
 /// Renders the heatmap grid inside the border.
-pub(super) fn render_heatmap(state: &HeatmapState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render_heatmap(
+    state: &HeatmapState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     let num_rows = state.rows();
     let num_cols = state.cols();
 
@@ -51,7 +58,7 @@ pub(super) fn render_heatmap(state: &HeatmapState, frame: &mut Frame, area: Rect
 
     // Render column labels
     if col_label_height > 0 {
-        render_col_labels(state, frame, area, grid_x, cell_width, theme);
+        render_col_labels(state, frame, area, grid_x, cell_width, theme, disabled);
     }
 
     // Render row labels and cells
@@ -63,7 +70,16 @@ pub(super) fn render_heatmap(state: &HeatmapState, frame: &mut Frame, area: Rect
 
         // Row label
         if !state.row_labels().is_empty() {
-            render_row_label(state, frame, area.x, y, row_label_width, ri, theme);
+            render_row_label(
+                state,
+                frame,
+                area.x,
+                y,
+                row_label_width,
+                ri,
+                theme,
+                disabled,
+            );
         }
 
         // Cells
@@ -79,6 +95,8 @@ pub(super) fn render_heatmap(state: &HeatmapState, frame: &mut Frame, area: Rect
             min_val,
             max_val,
             theme,
+            focused,
+            disabled,
         );
     }
 }
@@ -91,6 +109,7 @@ fn render_col_labels(
     grid_x: u16,
     cell_width: u16,
     theme: &Theme,
+    disabled: bool,
 ) {
     for (ci, label) in state.col_labels().iter().enumerate() {
         let x = grid_x + (ci as u16) * cell_width;
@@ -103,7 +122,7 @@ fn render_col_labels(
         }
         let label_area = Rect::new(x, area.y, available, 1);
         let truncated = truncate_str(label, available as usize);
-        let style = if state.is_disabled() {
+        let style = if disabled {
             theme.disabled_style()
         } else {
             theme.normal_style().add_modifier(Modifier::BOLD)
@@ -116,6 +135,7 @@ fn render_col_labels(
 }
 
 /// Renders a single row label.
+#[allow(clippy::too_many_arguments)]
 fn render_row_label(
     state: &HeatmapState,
     frame: &mut Frame,
@@ -124,11 +144,12 @@ fn render_row_label(
     width: u16,
     row_index: usize,
     theme: &Theme,
+    disabled: bool,
 ) {
     if let Some(label) = state.row_labels().get(row_index) {
         let label_area = Rect::new(x, y, width, 1);
         let truncated = truncate_str(label, width as usize);
-        let style = if state.is_disabled() {
+        let style = if disabled {
             theme.disabled_style()
         } else {
             theme.normal_style()
@@ -152,6 +173,8 @@ fn render_row_cells(
     min_val: f64,
     max_val: f64,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
     let _ = theme; // reserved for future style customization
     let row_data = &state.data()[ri];
@@ -166,7 +189,7 @@ fn render_row_cells(
         }
         let cell_area = Rect::new(x, y, available_w, cell_height);
 
-        let bg_color = if state.is_disabled() {
+        let bg_color = if disabled {
             Color::DarkGray
         } else {
             value_to_color(value, min_val, max_val, state.color_scale())
@@ -174,7 +197,7 @@ fn render_row_cells(
 
         let is_selected = state.selected() == Some((ri, ci));
 
-        let cell_style = if is_selected && state.is_focused() && !state.is_disabled() {
+        let cell_style = if is_selected && focused && !disabled {
             // Selected cell: invert colors for visibility
             Style::default()
                 .fg(bg_color)

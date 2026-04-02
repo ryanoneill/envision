@@ -671,7 +671,15 @@ fn test_view_focused() {
     state.set_focused(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| {
+            TabBar::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            )
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -682,7 +690,15 @@ fn test_view_disabled() {
     state.set_disabled(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| {
+            TabBar::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            )
+        })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }

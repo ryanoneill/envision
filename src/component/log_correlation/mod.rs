@@ -820,8 +820,8 @@ impl Component for LogCorrelation {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
-        render::render(state, frame, area, theme);
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+        render::render(state, frame, area, theme, ctx.focused, ctx.disabled);
     }
 }
 

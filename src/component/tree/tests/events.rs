@@ -303,7 +303,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 

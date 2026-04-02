@@ -289,7 +289,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Divider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Divider::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 
@@ -394,7 +400,13 @@ fn test_annotation_disabled() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Divider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Divider::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().disabled(true),
+                );
             })
             .unwrap();
     });

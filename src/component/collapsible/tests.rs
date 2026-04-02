@@ -655,7 +655,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Collapsible::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 
@@ -742,7 +748,13 @@ fn test_annotation_reflects_state() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Collapsible::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true).disabled(true),
+                );
             })
             .unwrap();
     });

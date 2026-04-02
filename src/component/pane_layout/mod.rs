@@ -1058,22 +1058,22 @@ impl Component for PaneLayout {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.register(
                 area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::PaneLayout)
                     .with_id("pane_layout")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 
         let rects = state.layout(area);
 
         for (i, (pane, rect)) in state.panes.iter().zip(rects.iter()).enumerate() {
-            let is_focused_pane = state.focused && i == state.focused_pane;
-            let border_style = if state.disabled {
+            let is_focused_pane = ctx.focused && i == state.focused_pane;
+            let border_style = if ctx.disabled {
                 theme.disabled_style()
             } else if is_focused_pane {
                 theme.focused_border_style()

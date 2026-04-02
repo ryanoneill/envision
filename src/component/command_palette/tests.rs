@@ -761,7 +761,13 @@ fn test_render_empty_items() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }

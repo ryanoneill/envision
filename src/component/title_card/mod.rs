@@ -436,18 +436,18 @@ impl Component for TitleCard {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         crate::annotation::with_registry(|reg| {
             reg.register(
                 area,
                 crate::annotation::Annotation::title_card("title_card")
                     .with_label(state.title.as_str())
-                    .with_disabled(state.disabled),
+                    .with_disabled(ctx.disabled),
             );
         });
 
         let render_area = if state.bordered {
-            let border_style = if state.disabled {
+            let border_style = if ctx.disabled {
                 theme.disabled_style()
             } else {
                 theme.border_style()
@@ -469,13 +469,13 @@ impl Component for TitleCard {
         }
 
         // Build title line with optional prefix and suffix
-        let title_style = if state.disabled {
+        let title_style = if ctx.disabled {
             theme.disabled_style()
         } else {
             state.title_style
         };
 
-        let subtitle_style = if state.disabled {
+        let subtitle_style = if ctx.disabled {
             theme.disabled_style()
         } else {
             state.subtitle_style

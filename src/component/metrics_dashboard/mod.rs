@@ -700,7 +700,7 @@ impl Component for MetricsDashboard {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if state.widgets.is_empty() || area.height < 3 || area.width < 3 {
             return;
         }
@@ -709,8 +709,8 @@ impl Component for MetricsDashboard {
             reg.register(
                 area,
                 crate::annotation::Annotation::container("metrics_dashboard")
-                    .with_focus(state.focused)
-                    .with_disabled(state.disabled),
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
             );
         });
 

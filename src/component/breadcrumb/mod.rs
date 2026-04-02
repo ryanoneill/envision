@@ -583,7 +583,7 @@ impl Component for Breadcrumb {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if state.segments.is_empty() {
             return;
         }
@@ -600,9 +600,9 @@ impl Component for Breadcrumb {
         for seg_idx in start..end {
             let segment = &state.segments[seg_idx];
             let is_last = seg_idx == state.segments.len() - 1;
-            let is_focused_segment = state.focused && seg_idx == state.focused_index;
+            let is_focused_segment = ctx.focused && seg_idx == state.focused_index;
 
-            let style = if state.disabled {
+            let style = if ctx.disabled {
                 theme.disabled_style()
             } else if is_focused_segment {
                 theme
@@ -626,8 +626,8 @@ impl Component for Breadcrumb {
         let line = Line::from(spans);
 
         let annotation = crate::annotation::Annotation::breadcrumb("breadcrumb")
-            .with_focus(state.focused)
-            .with_disabled(state.disabled);
+            .with_focus(ctx.focused)
+            .with_disabled(ctx.disabled);
         let annotated = crate::annotation::Annotate::new(Paragraph::new(line), annotation);
         frame.render_widget(annotated, area);
     }

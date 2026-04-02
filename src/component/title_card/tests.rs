@@ -278,7 +278,13 @@ fn test_view_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            TitleCard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TitleCard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

@@ -10,19 +10,26 @@ use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 /// Renders the DiffViewer in the given area.
-pub(super) fn render(state: &DiffViewerState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render(
+    state: &DiffViewerState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     crate::annotation::with_registry(|reg| {
         reg.register(
             area,
             crate::annotation::Annotation::diff_viewer("diff_viewer")
-                .with_focus(state.focused)
-                .with_disabled(state.disabled),
+                .with_focus(focused)
+                .with_disabled(disabled),
         );
     });
 
-    let border_style = if state.disabled {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.focused {
+    } else if focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -42,8 +49,8 @@ pub(super) fn render(state: &DiffViewerState, frame: &mut Frame, area: Rect, the
     }
 
     match state.mode {
-        DiffMode::Unified => render_unified(state, frame, inner, theme),
-        DiffMode::SideBySide => render_side_by_side(state, frame, inner, theme),
+        DiffMode::Unified => render_unified(state, frame, inner, theme, disabled),
+        DiffMode::SideBySide => render_side_by_side(state, frame, inner, theme, disabled),
     }
 }
 
@@ -71,8 +78,8 @@ fn header_style(theme: &Theme) -> Style {
 }
 
 /// Returns the style for an added line.
-fn added_style(state: &DiffViewerState, theme: &Theme) -> Style {
-    if state.disabled {
+fn added_style(_state: &DiffViewerState, theme: &Theme, disabled: bool) -> Style {
+    if disabled {
         theme.disabled_style()
     } else {
         Style::default().fg(Color::Green).bg(Color::Rgb(0, 40, 0))
@@ -80,8 +87,8 @@ fn added_style(state: &DiffViewerState, theme: &Theme) -> Style {
 }
 
 /// Returns the style for a removed line.
-fn removed_style(state: &DiffViewerState, theme: &Theme) -> Style {
-    if state.disabled {
+fn removed_style(_state: &DiffViewerState, theme: &Theme, disabled: bool) -> Style {
+    if disabled {
         theme.disabled_style()
     } else {
         Style::default().fg(Color::Red).bg(Color::Rgb(40, 0, 0))
@@ -89,8 +96,8 @@ fn removed_style(state: &DiffViewerState, theme: &Theme) -> Style {
 }
 
 /// Returns the style for a context line.
-fn context_style(state: &DiffViewerState, theme: &Theme) -> Style {
-    if state.disabled {
+fn context_style(_state: &DiffViewerState, theme: &Theme, disabled: bool) -> Style {
+    if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()
@@ -98,7 +105,13 @@ fn context_style(state: &DiffViewerState, theme: &Theme) -> Style {
 }
 
 /// Renders the diff in unified mode.
-fn render_unified(state: &DiffViewerState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_unified(
+    state: &DiffViewerState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
     let all_lines = state.collect_display_lines();
     let total = all_lines.len();
     let visible = area.height as usize;
@@ -120,17 +133,17 @@ fn render_unified(state: &DiffViewerState, frame: &mut Frame, area: Rect, theme:
             DiffLineType::Added => {
                 let prefix = build_unified_prefix(display_line, state.show_line_numbers, '+');
                 let text = format!("{}{}", prefix, display_line.content);
-                (text, added_style(state, theme))
+                (text, added_style(state, theme, disabled))
             }
             DiffLineType::Removed => {
                 let prefix = build_unified_prefix(display_line, state.show_line_numbers, '-');
                 let text = format!("{}{}", prefix, display_line.content);
-                (text, removed_style(state, theme))
+                (text, removed_style(state, theme, disabled))
             }
             DiffLineType::Context => {
                 let prefix = build_unified_prefix(display_line, state.show_line_numbers, ' ');
                 let text = format!("{}{}", prefix, display_line.content);
-                (text, context_style(state, theme))
+                (text, context_style(state, theme, disabled))
             }
         };
 
@@ -165,7 +178,13 @@ fn build_unified_prefix(line: &super::DiffLine, show_line_numbers: bool, sigil: 
 }
 
 /// Renders the diff in side-by-side mode.
-fn render_side_by_side(state: &DiffViewerState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_side_by_side(
+    state: &DiffViewerState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
     let pairs = state.collect_side_by_side_pairs();
     let total = pairs.len();
     let visible = area.height as usize;
@@ -211,9 +230,9 @@ fn render_side_by_side(state: &DiffViewerState, frame: &mut Frame, area: Rect, t
         let right_rect = Rect::new(right_x, y, right_width, 1);
 
         // Left side (prefer old line numbers)
-        render_side_line(left_line, frame, left_rect, state, theme, false);
+        render_side_line(left_line, frame, left_rect, state, theme, false, disabled);
         // Right side (prefer new line numbers)
-        render_side_line(right_line, frame, right_rect, state, theme, true);
+        render_side_line(right_line, frame, right_rect, state, theme, true, disabled);
     }
 
     // Render scrollbar
@@ -236,13 +255,14 @@ fn render_side_line(
     state: &DiffViewerState,
     theme: &Theme,
     prefer_new: bool,
+    disabled: bool,
 ) {
     if let Some(ref diff_line) = line {
         let style = match diff_line.line_type {
             DiffLineType::Header => header_style(theme),
-            DiffLineType::Added => added_style(state, theme),
-            DiffLineType::Removed => removed_style(state, theme),
-            DiffLineType::Context => context_style(state, theme),
+            DiffLineType::Added => added_style(state, theme, disabled),
+            DiffLineType::Removed => removed_style(state, theme, disabled),
+            DiffLineType::Context => context_style(state, theme, disabled),
         };
 
         let line_num = if prefer_new {
@@ -265,7 +285,7 @@ fn render_side_line(
         frame.render_widget(paragraph, line_area);
     } else {
         // Empty line (padding for alignment)
-        let style = context_style(state, theme);
+        let style = context_style(state, theme, disabled);
         let paragraph = Paragraph::new("").style(style);
         frame.render_widget(paragraph, line_area);
     }

@@ -657,7 +657,13 @@ fn test_view_horizontal_focused() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Slider::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -673,7 +679,13 @@ fn test_view_horizontal_disabled() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Slider::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 
@@ -784,7 +796,13 @@ fn test_annotation_focused() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Slider::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });
@@ -803,7 +821,13 @@ fn test_annotation_disabled() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Slider::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().disabled(true),
+                );
             })
             .unwrap();
     });

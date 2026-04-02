@@ -415,7 +415,13 @@ fn test_view_disabled() {
 
     terminal
         .draw(|frame| {
-            Sparkline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Sparkline::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
 

@@ -11,10 +11,17 @@ use crate::layout::Position;
 use crate::theme::Theme;
 
 /// Renders the message history area.
-pub(super) fn render_history(state: &ChatViewState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let border_style = if state.disabled {
+pub(super) fn render_history(
+    state: &ChatViewState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.focused && state.focus == Focus::History {
+    } else if focused && state.focus == Focus::History {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -185,18 +192,25 @@ fn format_message_markdown(
 }
 
 /// Renders the input area.
-pub(super) fn render_input(state: &ChatViewState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let border_style = if state.disabled {
+pub(super) fn render_input(
+    state: &ChatViewState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.focused && state.focus == Focus::Input {
+    } else if focused && state.focus == Focus::Input {
         theme.focused_border_style()
     } else {
         theme.border_style()
     };
 
-    let text_style = if state.disabled {
+    let text_style = if disabled {
         theme.disabled_style()
-    } else if state.focused && state.focus == Focus::Input {
+    } else if focused && state.focus == Focus::Input {
         theme.focused_style()
     } else {
         theme.normal_style()
@@ -227,7 +241,7 @@ pub(super) fn render_input(state: &ChatViewState, frame: &mut Frame, area: Rect,
     frame.render_widget(paragraph, area);
 
     // Show cursor when input is focused
-    if state.focused && state.focus == Focus::Input && !state.disabled {
+    if focused && state.focus == Focus::Input && !disabled {
         let (cursor_row, cursor_col) = state.input.cursor_display_position();
         let cursor_x = area.x + 1 + cursor_col as u16;
         let cursor_y = area.y + 1 + cursor_row as u16;

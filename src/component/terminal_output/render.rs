@@ -14,19 +14,26 @@ use crate::theme::Theme;
 /// - ANSI-colored content lines with optional line numbers
 /// - Status bar at the bottom (inside the border)
 /// - Scrollbar on the right edge (inside the border)
-pub(super) fn render(state: &TerminalOutputState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render(
+    state: &TerminalOutputState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     crate::annotation::with_registry(|reg| {
         reg.register(
             area,
             crate::annotation::Annotation::terminal_output("terminal_output")
-                .with_focus(state.focused)
-                .with_disabled(state.disabled),
+                .with_focus(focused)
+                .with_disabled(disabled),
         );
     });
 
-    let border_style = if state.disabled {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.focused {
+    } else if focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -54,7 +61,7 @@ pub(super) fn render(state: &TerminalOutputState, frame: &mut Frame, area: Rect,
     if content_height == 0 {
         // Only room for status bar
         let status_area = Rect::new(inner.x, inner.y, inner.width, inner.height.min(1));
-        render_status_bar(state, frame, status_area, theme);
+        render_status_bar(state, frame, status_area, theme, disabled);
         return;
     }
 
@@ -66,8 +73,8 @@ pub(super) fn render(state: &TerminalOutputState, frame: &mut Frame, area: Rect,
         status_bar_height,
     );
 
-    render_content(state, frame, content_area, theme);
-    render_status_bar(state, frame, status_area, theme);
+    render_content(state, frame, content_area, theme, disabled);
+    render_status_bar(state, frame, status_area, theme, disabled);
 
     // Render scrollbar when content exceeds viewport
     let total_lines = state.lines.len();
@@ -81,7 +88,13 @@ pub(super) fn render(state: &TerminalOutputState, frame: &mut Frame, area: Rect,
 }
 
 /// Renders the ANSI-colored content lines.
-fn render_content(state: &TerminalOutputState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_content(
+    state: &TerminalOutputState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
     let visible_lines = area.height as usize;
     let offset = state.scroll.offset();
 
@@ -98,13 +111,13 @@ fn render_content(state: &TerminalOutputState, frame: &mut Frame, area: Rect, th
         0
     };
 
-    let text_style = if state.disabled {
+    let text_style = if disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()
     };
 
-    let line_num_style = if state.disabled {
+    let line_num_style = if disabled {
         theme.disabled_style()
     } else {
         Style::default().fg(Color::DarkGray)
@@ -134,7 +147,7 @@ fn render_content(state: &TerminalOutputState, frame: &mut Frame, area: Rect, th
         // Render the ANSI-styled line content
         let line = &state.lines[line_idx];
 
-        if state.disabled {
+        if disabled {
             // When disabled, render without ANSI colors
             let remaining = (max_x.saturating_sub(x)) as usize;
             let display: String = line.chars().take(remaining).collect();
@@ -164,12 +177,18 @@ fn render_content(state: &TerminalOutputState, frame: &mut Frame, area: Rect, th
 }
 
 /// Renders the status bar at the bottom of the component.
-fn render_status_bar(state: &TerminalOutputState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_status_bar(
+    state: &TerminalOutputState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    disabled: bool,
+) {
     if area.width == 0 || area.height == 0 {
         return;
     }
 
-    let status_style = if state.disabled {
+    let status_style = if disabled {
         theme.disabled_style()
     } else {
         Style::default().fg(Color::DarkGray).bg(Color::Black)

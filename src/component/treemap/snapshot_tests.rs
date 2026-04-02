@@ -41,7 +41,13 @@ fn test_snapshot_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Treemap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -59,7 +65,13 @@ fn test_snapshot_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Treemap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -100,7 +112,13 @@ fn test_snapshot_zoomed_in() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Treemap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -118,7 +136,13 @@ fn test_snapshot_selection_moved() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Treemap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Treemap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

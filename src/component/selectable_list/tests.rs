@@ -264,7 +264,7 @@ fn test_view() {
                 frame,
                 frame.area(),
                 &theme,
-                &ViewContext::default(),
+                &ViewContext::new().focused(true),
             );
         })
         .unwrap();
@@ -731,7 +731,7 @@ fn test_filter_view() {
                 frame,
                 frame.area(),
                 &theme,
-                &ViewContext::default(),
+                &ViewContext::new().focused(true),
             );
         })
         .unwrap();
