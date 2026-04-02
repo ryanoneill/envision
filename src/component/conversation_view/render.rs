@@ -49,7 +49,22 @@ pub(super) fn render(
 
 /// Renders the message list inside the content area.
 fn render_messages(state: &ConversationViewState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let display_lines = build_display_lines(state, area.width as usize, theme);
+    // First pass: check if content will be scrollable (needs scrollbar).
+    // If so, reserve 1 column for the scrollbar track.
+    let preliminary_lines = build_display_lines(state, area.width as usize, theme);
+    let needs_scrollbar = preliminary_lines.len() > area.height as usize;
+    let content_width = if needs_scrollbar {
+        (area.width as usize).saturating_sub(1)
+    } else {
+        area.width as usize
+    };
+
+    // Rebuild at correct width if scrollbar is needed
+    let display_lines = if needs_scrollbar {
+        build_display_lines(state, content_width, theme)
+    } else {
+        preliminary_lines
+    };
 
     let total_lines = display_lines.len();
     let visible_lines = area.height as usize;

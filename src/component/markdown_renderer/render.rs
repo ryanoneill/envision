@@ -420,6 +420,27 @@ impl<'t> MarkdownLineRenderer<'t> {
                 continue;
             }
 
+            // Inline code spans (backtick-wrapped) are atomic — never break inside them.
+            // If it doesn't fit, flush current line and put it on the next.
+            let is_code_span =
+                span_text.starts_with('`') && span_text.ends_with('`') && span_text.len() > 1;
+            if is_code_span {
+                if !current_line.is_empty() {
+                    self.lines
+                        .push(Line::from(std::mem::take(&mut current_line)));
+                    current_width = 0;
+                    if !cont_prefix.is_empty() {
+                        let prefix_style = self.normal_style();
+                        let prefix_w = unicode_width::UnicodeWidthStr::width(cont_prefix);
+                        current_line.push(Span::styled(cont_prefix.to_string(), prefix_style));
+                        current_width = prefix_w;
+                    }
+                }
+                current_line.push(span);
+                current_width += span_display_width;
+                continue;
+            }
+
             // Need to break this span across lines
             let mut remaining = span_text.to_string();
             while !remaining.is_empty() {
