@@ -54,7 +54,7 @@ enum DashTab {
 enum Msg {
     Metrics(MetricsDashboardMessage),
     Alert(AlertPanelMessage),
-    HeatmapMsg(HeatmapMessage),
+    Heatmap(HeatmapMessage),
     Tab(TabsMessage),
     Tick,
     Quit,
@@ -206,7 +206,7 @@ impl App for Dashboard {
                     }
                 }
             }
-            Msg::HeatmapMsg(m) => {
+            Msg::Heatmap(m) => {
                 Heatmap::update(&mut state.heatmap, m);
             }
             Msg::Tab(m) => {
@@ -354,7 +354,7 @@ impl App for Dashboard {
                         AlertPanel::handle_event(&state.alerts, event).map(Msg::Alert)
                     }
                     Some(DashTab::Heatmap) => {
-                        Heatmap::handle_event(&state.heatmap, event).map(Msg::HeatmapMsg)
+                        Heatmap::handle_event(&state.heatmap, event).map(Msg::Heatmap)
                     }
                     None => None,
                 }
