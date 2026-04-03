@@ -350,8 +350,22 @@ impl LogViewerState {
         )
     }
 
-    /// Internal method to add an entry.
-    pub(super) fn push_entry(
+    /// Adds an entry with the given level and optional timestamp, returning its ID.
+    ///
+    /// This is the general-purpose entry method. For convenience, use
+    /// [`push_info`](Self::push_info), [`push_warning`](Self::push_warning),
+    /// [`push_error`](Self::push_error), or [`push_success`](Self::push_success).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LogViewerState, StatusLogLevel};
+    ///
+    /// let mut state = LogViewerState::new();
+    /// let id = state.push_entry("Custom entry".into(), StatusLogLevel::Info, None);
+    /// assert_eq!(state.entries().len(), 1);
+    /// ```
+    pub fn push_entry(
         &mut self,
         message: String,
         level: StatusLogLevel,
