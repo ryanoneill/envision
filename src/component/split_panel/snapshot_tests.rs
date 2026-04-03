@@ -77,7 +77,7 @@ fn test_snapshot_horizontal() {
 
 #[test]
 fn test_snapshot_custom_ratio() {
-    let mut state = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.3);
+    let mut state = SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.3);
     SplitPanel::set_focused(&mut state, true);
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal

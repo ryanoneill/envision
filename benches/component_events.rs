@@ -111,7 +111,7 @@ fn bench_handle_event(c: &mut Criterion) {
         let event = Event::key(KeyCode::Down);
 
         // Focused
-        let mut state = TextAreaState::with_value(&content);
+        let mut state = TextAreaState::new().with_value(&content);
         state.set_focused(true);
         group.bench_with_input(
             BenchmarkId::new("text_area/focused", size),
@@ -216,7 +216,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
             BenchmarkId::new("text_area/focused", size),
             &size,
             |b, _| {
-                let mut state = TextAreaState::with_value(&content);
+                let mut state = TextAreaState::new().with_value(&content);
                 state.set_focused(true);
                 // Start at top so Down always moves
                 state.set_cursor_position(0, 0);

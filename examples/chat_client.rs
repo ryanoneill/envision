@@ -159,7 +159,7 @@ impl App for ChatClient {
             conversations: vec![initial_conv],
             active_tab: 0,
             tab_bar,
-            input: TextAreaState::with_placeholder("Type a message... (Ctrl+Enter to send)"),
+            input: TextAreaState::new().with_placeholder("Type a message... (Ctrl+Enter to send)"),
             palette: CommandPaletteState::new(palette_items)
                 .with_title("Commands")
                 .with_placeholder("Type a command..."),

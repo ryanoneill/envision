@@ -1,7 +1,7 @@
 use super::*;
 
 fn focused_state(value: &str) -> TextAreaState {
-    let mut state = TextAreaState::with_value(value);
+    let mut state = TextAreaState::new().with_value(value);
     state.set_focused(true);
     state
 }
@@ -12,7 +12,7 @@ fn focused_state(value: &str) -> TextAreaState {
 
 #[test]
 fn test_undo_single_insert() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::Insert('!'));
     TextArea::update(&mut state, TextAreaMessage::Undo);
     assert_eq!(state.value(), "hello");
@@ -20,7 +20,7 @@ fn test_undo_single_insert() {
 
 #[test]
 fn test_redo_after_undo() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::Insert('!'));
     TextArea::update(&mut state, TextAreaMessage::Undo);
     assert_eq!(state.value(), "hello");
@@ -31,7 +31,7 @@ fn test_redo_after_undo() {
 
 #[test]
 fn test_undo_empty_stack_no_change() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     let output = TextArea::update(&mut state, TextAreaMessage::Undo);
     assert_eq!(output, None);
     assert_eq!(state.value(), "hello");
@@ -39,7 +39,7 @@ fn test_undo_empty_stack_no_change() {
 
 #[test]
 fn test_redo_empty_stack_no_change() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     let output = TextArea::update(&mut state, TextAreaMessage::Redo);
     assert_eq!(output, None);
     assert_eq!(state.value(), "hello");
@@ -91,7 +91,7 @@ fn test_whitespace_breaks_insert_group() {
 
 #[test]
 fn test_grouped_backspace_undo_together() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::Backspace);
     TextArea::update(&mut state, TextAreaMessage::Backspace);
     assert_eq!(state.value(), "hel");
@@ -102,7 +102,7 @@ fn test_grouped_backspace_undo_together() {
 
 #[test]
 fn test_grouped_delete_undo_together() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::Delete);
     TextArea::update(&mut state, TextAreaMessage::Delete);
@@ -118,7 +118,7 @@ fn test_grouped_delete_undo_together() {
 
 #[test]
 fn test_newline_is_own_undo_entry() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::NewLine);
     assert_eq!(state.line_count(), 2);
 
@@ -158,7 +158,7 @@ fn test_newline_breaks_insert_group() {
 
 #[test]
 fn test_delete_line_undo() {
-    let mut state = TextAreaState::with_value("abc\ndef\nghi");
+    let mut state = TextAreaState::new().with_value("abc\ndef\nghi");
     state.set_cursor_position(1, 0);
     TextArea::update(&mut state, TextAreaMessage::DeleteLine);
     assert_eq!(state.value(), "abc\nghi");
@@ -169,7 +169,7 @@ fn test_delete_line_undo() {
 
 #[test]
 fn test_delete_to_end_undo() {
-    let mut state = TextAreaState::with_value("hello world");
+    let mut state = TextAreaState::new().with_value("hello world");
     state.set_cursor_position(0, 5);
     TextArea::update(&mut state, TextAreaMessage::DeleteToEnd);
     assert_eq!(state.value(), "hello");
@@ -180,7 +180,7 @@ fn test_delete_to_end_undo() {
 
 #[test]
 fn test_delete_to_start_undo() {
-    let mut state = TextAreaState::with_value("hello world");
+    let mut state = TextAreaState::new().with_value("hello world");
     state.set_cursor_position(0, 6);
     TextArea::update(&mut state, TextAreaMessage::DeleteToStart);
     assert_eq!(state.value(), "world");
@@ -195,7 +195,7 @@ fn test_delete_to_start_undo() {
 
 #[test]
 fn test_clear_undo() {
-    let mut state = TextAreaState::with_value("hello\nworld");
+    let mut state = TextAreaState::new().with_value("hello\nworld");
     TextArea::update(&mut state, TextAreaMessage::Clear);
     assert_eq!(state.value(), "");
 
@@ -205,7 +205,7 @@ fn test_clear_undo() {
 
 #[test]
 fn test_set_value_undo() {
-    let mut state = TextAreaState::with_value("original");
+    let mut state = TextAreaState::new().with_value("original");
     TextArea::update(&mut state, TextAreaMessage::SetValue("replaced".into()));
     assert_eq!(state.value(), "replaced");
 
@@ -219,7 +219,7 @@ fn test_set_value_undo() {
 
 #[test]
 fn test_undo_restores_cursor_position() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     let (row_before, col_before) = (state.cursor_row(), state.cursor_col());
     TextArea::update(&mut state, TextAreaMessage::Insert('!'));
     TextArea::update(&mut state, TextAreaMessage::Undo);
@@ -229,7 +229,7 @@ fn test_undo_restores_cursor_position() {
 
 #[test]
 fn test_undo_restores_multiline_cursor() {
-    let mut state = TextAreaState::with_value("abc\ndef");
+    let mut state = TextAreaState::new().with_value("abc\ndef");
     // Cursor at end of "def" (row=1, col=3)
     TextArea::update(&mut state, TextAreaMessage::NewLine);
     // Now on row 2
@@ -244,7 +244,7 @@ fn test_undo_restores_multiline_cursor() {
 
 #[test]
 fn test_new_edit_clears_redo() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::Insert('!'));
     TextArea::update(&mut state, TextAreaMessage::Undo);
 
@@ -261,7 +261,7 @@ fn test_new_edit_clears_redo() {
 
 #[test]
 fn test_undo_ignored_when_disabled() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::Insert('!'));
     state.set_disabled(true);
     let output = TextArea::update(&mut state, TextAreaMessage::Undo);
@@ -293,7 +293,7 @@ fn test_ctrl_y_maps_to_redo() {
 
 #[test]
 fn test_can_undo() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     assert!(!state.can_undo());
 
     TextArea::update(&mut state, TextAreaMessage::Insert('!'));
@@ -305,7 +305,7 @@ fn test_can_undo() {
 
 #[test]
 fn test_can_redo() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     assert!(!state.can_redo());
 
     TextArea::update(&mut state, TextAreaMessage::Insert('!'));
@@ -322,7 +322,7 @@ fn test_can_redo() {
 
 #[test]
 fn test_backspace_join_lines_undo() {
-    let mut state = TextAreaState::with_value("abc\ndef");
+    let mut state = TextAreaState::new().with_value("abc\ndef");
     state.set_cursor_position(1, 0);
     TextArea::update(&mut state, TextAreaMessage::Backspace);
     assert_eq!(state.value(), "abcdef");
@@ -371,7 +371,7 @@ fn test_multiple_undo_redo_cycles() {
 
 #[test]
 fn test_undo_clears_selection() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::Insert('!'));
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     assert!(state.has_selection());

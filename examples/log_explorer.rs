@@ -135,7 +135,8 @@ impl App for LogExplorer {
                 .with_title("Command Palette")
                 .with_placeholder("Type to search actions..."),
             status,
-            split: SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.5)
+            split: SplitPanelState::new(SplitOrientation::Vertical)
+                .with_ratio(0.5)
                 .with_bounds(0.25, 0.75),
             focus: FocusManager::with_initial_focus(vec![Pane::LogViewer, Pane::EventStream]),
             tick_count: 0,

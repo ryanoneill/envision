@@ -48,7 +48,7 @@ fn test_input_field_state_round_trip() {
 
 #[test]
 fn test_text_area_state_round_trip() {
-    let state = TextAreaState::with_value("line 1\nline 2\nline 3");
+    let state = TextAreaState::new().with_value("line 1\nline 2\nline 3");
     let restored = round_trip(&state);
     assert_eq!(restored.value(), "line 1\nline 2\nline 3");
     assert_eq!(restored.line_count(), 3);

@@ -170,7 +170,7 @@ impl SplitPanelState {
         }
     }
 
-    /// Creates a split panel with a custom ratio.
+    /// Sets the split ratio (builder pattern).
     ///
     /// The ratio is clamped to `[min_ratio, max_ratio]`.
     ///
@@ -179,13 +179,12 @@ impl SplitPanelState {
     /// ```rust
     /// use envision::component::{SplitPanelState, SplitOrientation};
     ///
-    /// let state = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.3);
+    /// let state = SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.3);
     /// assert!((state.ratio() - 0.3).abs() < f32::EPSILON);
     /// ```
-    pub fn with_ratio(orientation: SplitOrientation, ratio: f32) -> Self {
-        let mut state = Self::new(orientation);
-        state.ratio = ratio.clamp(state.min_ratio, state.max_ratio);
-        state
+    pub fn with_ratio(mut self, ratio: f32) -> Self {
+        self.ratio = ratio.clamp(self.min_ratio, self.max_ratio);
+        self
     }
 
     /// Returns the current orientation.
