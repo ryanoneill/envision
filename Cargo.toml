@@ -381,6 +381,10 @@ name = "chat_markdown_demo"
 required-features = ["compound-components", "markdown"]
 
 [[example]]
+name = "dashboard_builder"
+required-features = ["full"]
+
+[[example]]
 name = "dashboard_demo"
 required-features = ["full"]
 
