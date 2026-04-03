@@ -244,6 +244,44 @@ impl MetricsDashboardState {
         self.widgets.get_mut(index)
     }
 
+    /// Returns a reference to the first widget with the given label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("CPU", 42),
+    ///     MetricWidget::gauge("Memory", 75, 100),
+    /// ], 2);
+    /// assert!(state.widget_by_label("CPU").is_some());
+    /// assert!(state.widget_by_label("Disk").is_none());
+    /// ```
+    pub fn widget_by_label(&self, label: &str) -> Option<&MetricWidget> {
+        self.widgets.iter().find(|w| w.label() == label)
+    }
+
+    /// Returns a mutable reference to the first widget with the given label.
+    ///
+    /// This is the primary way to update a metric by name rather than by index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MetricsDashboardState, MetricWidget};
+    ///
+    /// let mut state = MetricsDashboardState::new(vec![
+    ///     MetricWidget::counter("Requests", 0),
+    ///     MetricWidget::gauge("CPU", 50, 100),
+    /// ], 2);
+    /// state.widget_by_label_mut("Requests").unwrap().set_counter_value(42);
+    /// assert_eq!(state.widget_by_label("Requests").unwrap().display_value(), "42");
+    /// ```
+    pub fn widget_by_label_mut(&mut self, label: &str) -> Option<&mut MetricWidget> {
+        self.widgets.iter_mut().find(|w| w.label() == label)
+    }
+
     /// Returns the number of widgets.
     ///
     /// # Example
