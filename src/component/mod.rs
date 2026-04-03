@@ -318,7 +318,7 @@ pub use calendar::{Calendar, CalendarMessage, CalendarOutput, CalendarState};
 #[cfg(feature = "display-components")]
 pub use canvas::{Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState};
 #[cfg(feature = "display-components")]
-pub use code_block::{CodeBlock, CodeBlockMessage, CodeBlockState};
+pub use code_block::{CodeBlock, CodeBlockMessage, CodeBlockState, Language};
 #[cfg(feature = "display-components")]
 pub use collapsible::{Collapsible, CollapsibleMessage, CollapsibleOutput, CollapsibleState};
 #[cfg(feature = "display-components")]
@@ -387,7 +387,10 @@ pub use event_stream::{
     EventLevel, EventStream, EventStreamMessage, EventStreamOutput, EventStreamState, StreamEvent,
 };
 #[cfg(feature = "compound-components")]
-pub use file_browser::{FileBrowser, FileBrowserMessage, FileBrowserOutput, FileBrowserState};
+pub use file_browser::{
+    FileBrowser, FileBrowserMessage, FileBrowserOutput, FileBrowserState, FileEntry,
+    FileSortDirection, FileSortField, SelectionMode,
+};
 #[cfg(feature = "compound-components")]
 pub use flame_graph::{
     FlameGraph, FlameGraphMessage, FlameGraphOutput, FlameGraphState, FlameNode,
