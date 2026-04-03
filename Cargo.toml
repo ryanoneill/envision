@@ -400,6 +400,10 @@ required-features = ["input-components"]
 name = "chat_view"
 required-features = ["compound-components"]
 
+[[example]]
+name = "chat_client"
+required-features = ["full"]
+
 [[bench]]
 name = "capture_backend"
 harness = false
