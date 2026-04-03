@@ -529,3 +529,59 @@ fn test_annotation_emitted() {
         Some(&"0".to_string())
     );
 }
+
+#[test]
+fn test_view_overflow_truncates_center() {
+    // When left + center + right exceeds terminal width, center should truncate
+    // to preserve the right section which usually has critical status info.
+    let mut state = StatusBarState::new();
+    state.push_left(StatusBarItem::new("Mode: Normal"));
+    state.push_center(StatusBarItem::new("very-long-center-section-text"));
+    state.push_right(StatusBarItem::new("Ln 42, Col 8"));
+
+    // Total content: 12 + 29 + 12 = 53 chars, but terminal is only 40 wide
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
+
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+
+    let output = terminal.backend().to_string();
+    // Right section must appear in full
+    assert!(
+        output.contains("Ln 42, Col 8"),
+        "Right section should not be truncated, got: {output}"
+    );
+    // Left section must appear in full
+    assert!(
+        output.contains("Mode: Normal"),
+        "Left section should not be truncated, got: {output}"
+    );
+}
+
+#[test]
+fn test_view_severe_overflow_drops_center() {
+    // When left + right alone fill the terminal, center should be dropped entirely
+    let mut state = StatusBarState::new();
+    state.push_left(StatusBarItem::new("Left Section Here"));
+    state.push_center(StatusBarItem::new("Center"));
+    state.push_right(StatusBarItem::new("Right Section Here"));
+
+    // left=17, center=6, right=18 → total 41, terminal only 35
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(35, 1);
+
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+
+    let output = terminal.backend().to_string();
+    // Right section must appear in full
+    assert!(
+        output.contains("Right Section Here"),
+        "Right section should not be truncated, got: {output}"
+    );
+}

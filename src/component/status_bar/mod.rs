@@ -485,6 +485,44 @@ impl StatusBar {
 
         spans
     }
+
+    /// Truncates a list of spans to fit within `max_width` characters.
+    /// Appends an ellipsis if truncation occurs.
+    fn truncate_spans(spans: Vec<Span<'static>>, max_width: usize) -> Vec<Span<'static>> {
+        if max_width == 0 {
+            return Vec::new();
+        }
+
+        let total: usize = spans.iter().map(|s| s.content.len()).sum();
+        if total <= max_width {
+            return spans;
+        }
+
+        let mut result = Vec::new();
+        let mut remaining = max_width.saturating_sub(1); // Reserve 1 for ellipsis
+
+        for span in spans {
+            let len = span.content.len();
+            if remaining == 0 {
+                break;
+            }
+            if len <= remaining {
+                remaining -= len;
+                result.push(span);
+            } else {
+                // Truncate this span
+                let truncated: String = span.content.chars().take(remaining).collect();
+                result.push(Span::styled(truncated, span.style));
+                remaining = 0;
+            }
+        }
+
+        // Add ellipsis with the style of the last span
+        let ellipsis_style = result.last().map(|s| s.style).unwrap_or_default();
+        result.push(Span::styled("…", ellipsis_style));
+
+        result
+    }
 }
 
 impl Component for StatusBar {
@@ -627,6 +665,16 @@ impl Component for StatusBar {
 
         let total_width = area.width as usize;
 
+        // Determine how much space is available for center after left and right.
+        // Priority: left (full), right (full), center (gets remainder).
+        let available_for_center = total_width
+            .saturating_sub(left_width)
+            .saturating_sub(right_width);
+        let effective_center_width = center_width.min(available_for_center);
+
+        // Truncate center spans if they exceed available space
+        let center_spans = Self::truncate_spans(center_spans, effective_center_width);
+
         // Build the line with proper spacing
         let mut line_spans: Vec<Span> = Vec::new();
 
@@ -634,8 +682,8 @@ impl Component for StatusBar {
         line_spans.extend(left_spans);
 
         // Calculate padding for center
-        let left_padding = if !state.center.is_empty() {
-            let center_start = (total_width.saturating_sub(center_width)) / 2;
+        let left_padding = if effective_center_width > 0 {
+            let center_start = (total_width.saturating_sub(effective_center_width)) / 2;
             center_start.saturating_sub(left_width)
         } else {
             0
@@ -649,7 +697,7 @@ impl Component for StatusBar {
         line_spans.extend(center_spans);
 
         // Calculate padding for right
-        let current_width = left_width + left_padding + center_width;
+        let current_width = left_width + left_padding + effective_center_width;
         let right_padding = total_width.saturating_sub(current_width + right_width);
 
         if right_padding > 0 {
