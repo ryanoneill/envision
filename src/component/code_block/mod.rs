@@ -41,7 +41,7 @@ use std::collections::HashSet;
 
 use ratatui::prelude::*;
 
-use self::highlight::Language;
+pub use self::highlight::Language;
 use super::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
