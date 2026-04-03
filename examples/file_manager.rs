@@ -517,11 +517,10 @@ fn main() {
 fn main() -> envision::Result<()> {
     let mut vt = Runtime::<FileManager, _>::virtual_terminal(100, 30)?;
 
-    // Simulate selecting a file
-    FileManager::update(vt.state_mut(), Msg::Browser(FileBrowserMessage::Down));
-    FileManager::update(vt.state_mut(), Msg::Browser(FileBrowserMessage::Down));
-    FileManager::update(vt.state_mut(), Msg::Browser(FileBrowserMessage::Down));
-    // Select Cargo.toml (4th entry after 3 directories)
+    // Simulate selecting a file using vt.dispatch() for proper command processing
+    vt.dispatch(Msg::Browser(FileBrowserMessage::Down));
+    vt.dispatch(Msg::Browser(FileBrowserMessage::Down));
+    vt.dispatch(Msg::Browser(FileBrowserMessage::Down));
     vt.tick()?;
 
     println!("File Manager — Reference Application");

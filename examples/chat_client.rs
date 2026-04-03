@@ -458,25 +458,21 @@ fn generate_response(msg_num: usize) -> String {
 fn main() -> envision::Result<()> {
     let mut vt = Runtime::<ChatClient, _>::virtual_terminal(90, 28)?;
 
-    // Simulate a conversation
-    // Push a user message and trigger the simulated response
+    // Simulate a conversation using vt.dispatch() so that returned
+    // Command::message() values are automatically processed on tick().
     TextArea::update(
         &mut vt.state_mut().input,
         TextAreaMessage::SetValue("How do I sort a vector in Rust?".to_string()),
     );
-    ChatClient::update(vt.state_mut(), Msg::SubmitInput);
-    // The SubmitInput returns Command::message(SimulateResponse) which the
-    // virtual terminal doesn't process, so dispatch it manually.
-    ChatClient::update(vt.state_mut(), Msg::SimulateResponse);
-    vt.tick()?;
+    vt.dispatch(Msg::SubmitInput);
+    vt.tick()?; // Processes Command::message(SimulateResponse) from SubmitInput
 
     // Push another user message and response
     TextArea::update(
         &mut vt.state_mut().input,
         TextAreaMessage::SetValue("What about ownership?".to_string()),
     );
-    ChatClient::update(vt.state_mut(), Msg::SubmitInput);
-    ChatClient::update(vt.state_mut(), Msg::SimulateResponse);
+    vt.dispatch(Msg::SubmitInput);
     vt.tick()?;
 
     println!("Chat Client — Reference Application");
