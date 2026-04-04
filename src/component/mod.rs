@@ -770,45 +770,6 @@ pub trait Focusable: Component {
     fn blur(state: &mut Self::State) {
         Self::set_focused(state, false);
     }
-
-    /// Renders the component with focus temporarily overridden.
-    ///
-    /// Temporarily sets the focus flag, renders, and restores it. Useful
-    /// in testing and non-TEA contexts where you have `&mut State`.
-    ///
-    /// # TEA note
-    ///
-    /// In standard TEA, `App::view()` receives `&State` (immutable), so
-    /// this method **cannot** be called from within a TEA view function.
-    /// Instead, set focus during the update phase (e.g., in response to
-    /// focus-change events) where you have `&mut State`. The view function
-    /// will then read the correct focus state automatically.
-    ///
-    /// # Panics
-    ///
-    /// If [`view()`](Component::view) panics, the focus state may not be restored.
-    /// This is generally not a concern since panics in view indicate a bug.
-    ///
-    /// # Example
-    ///
-    /// ```rust,ignore
-    /// // In tests or non-TEA code where you have &mut State:
-    /// Button::view_with_focus(&mut state, frame, area, &theme, true);
-    /// // state.is_focused() is restored to its original value
-    /// ```
-    fn view_with_focus(
-        state: &mut Self::State,
-        frame: &mut Frame,
-        area: Rect,
-        theme: &Theme,
-        focused: bool,
-    ) {
-        let was_focused = Self::is_focused(state);
-        Self::set_focused(state, focused);
-        let ctx = ViewContext::new().focused(focused);
-        Self::view(state, frame, area, theme, &ctx);
-        Self::set_focused(state, was_focused);
-    }
 }
 
 /// A component that can be shown or hidden.
@@ -935,41 +896,6 @@ pub trait Disableable: Component {
     /// Convenience method equivalent to `set_disabled(state, false)`.
     fn enable(state: &mut Self::State) {
         Self::set_disabled(state, false);
-    }
-
-    /// Renders the component with the disabled state temporarily overridden.
-    ///
-    /// Temporarily sets the disabled flag, renders, and restores it. Useful
-    /// in testing and non-TEA contexts where you have `&mut State`.
-    ///
-    /// # TEA note
-    ///
-    /// In standard TEA, `App::view()` receives `&State` (immutable), so
-    /// this method **cannot** be called from within a TEA view function.
-    /// Instead, set the disabled state during the update phase where you
-    /// have `&mut State`.
-    ///
-    /// # Panics
-    ///
-    /// If [`view()`](Component::view) panics, the disabled state may not be restored.
-    /// This is generally not a concern since panics in view indicate a bug.
-    ///
-    /// ```rust,ignore
-    /// // In tests or non-TEA code where you have &mut State:
-    /// Button::view_with_disabled(&mut state, frame, area, &theme, true);
-    /// ```
-    fn view_with_disabled(
-        state: &mut Self::State,
-        frame: &mut Frame,
-        area: Rect,
-        theme: &Theme,
-        disabled: bool,
-    ) {
-        let was_disabled = Self::is_disabled(state);
-        Self::set_disabled(state, disabled);
-        let ctx = ViewContext::new().disabled(disabled);
-        Self::view(state, frame, area, theme, &ctx);
-        Self::set_disabled(state, was_disabled);
     }
 }
 
