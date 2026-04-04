@@ -660,9 +660,31 @@ pub trait Component: Sized {
     ///
     /// The default implementation returns `None` (ignores all events).
     /// Components should override this to handle keyboard input when focused.
+    ///
+    /// **Note:** This method checks `state.focused` / `state.disabled` internally.
+    /// Prefer [`handle_event_with_ctx`](Component::handle_event_with_ctx) for
+    /// context-driven event routing where the parent controls focus.
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
         let _ = (state, event);
         None
+    }
+
+    /// Maps an input event to a component message using a [`ViewContext`].
+    ///
+    /// Like [`handle_event`](Component::handle_event) but uses `ctx.focused`
+    /// and `ctx.disabled` instead of reading from state. This allows the parent
+    /// to control which component receives events without mutating child state.
+    ///
+    /// The default implementation delegates to `handle_event`, ignoring the
+    /// context. Components that opt into context-driven focus should override
+    /// this method and check `ctx.focused` / `ctx.disabled` instead of state.
+    fn handle_event_with_ctx(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        let _ = ctx;
+        Self::handle_event(state, event)
     }
 
     /// Dispatches an event by mapping it to a message and updating state.
@@ -692,6 +714,22 @@ pub trait Component: Sized {
             #[cfg(feature = "tracing")]
             tracing::trace!(has_output = output.is_some(), "update complete");
             output
+        } else {
+            None
+        }
+    }
+
+    /// Dispatches an event using a [`ViewContext`] for focus/disabled state.
+    ///
+    /// Like [`dispatch_event`](Component::dispatch_event) but uses
+    /// [`handle_event_with_ctx`](Component::handle_event_with_ctx).
+    fn dispatch_event_with_ctx(
+        state: &mut Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Output> {
+        if let Some(msg) = Self::handle_event_with_ctx(state, event, ctx) {
+            Self::update(state, msg)
         } else {
             None
         }
