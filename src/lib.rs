@@ -243,7 +243,7 @@ pub use component::{
     HeatmapColorScale, HeatmapMessage, HeatmapOutput, HeatmapState, Histogram, HistogramMessage,
     HistogramState, LogCorrelation, LogCorrelationMessage, LogCorrelationOutput,
     LogCorrelationState, LogStream, LogViewer, LogViewerMessage, LogViewerOutput, LogViewerState,
-    MessageBlock, MessageHandle, MetricKind, MetricWidget, MetricsDashboard,
+    MessageBlock, MessageHandle, MessageSource, MetricKind, MetricWidget, MetricsDashboard,
     MetricsDashboardMessage, MetricsDashboardOutput, MetricsDashboardState, NodeStatus, PaneLayout,
     PaneLayoutMessage, PaneLayoutOutput, PaneLayoutState, SearchableList, SearchableListMessage,
     SearchableListOutput, SearchableListState, SelectedType, SpanNode, SpanTree, SpanTreeMessage,

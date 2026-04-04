@@ -345,3 +345,254 @@ fn test_annotation_emitted() {
     });
     assert!(registry.get_by_id("conversation_view").is_some());
 }
+
+// =============================================================================
+// view_from() -- external MessageSource rendering
+// =============================================================================
+
+#[test]
+fn test_view_from_renders_external_messages() {
+    let messages = vec![
+        ConversationMessage::new(ConversationRole::User, "Hello from external"),
+        ConversationMessage::new(ConversationRole::Assistant, "Response from external"),
+    ];
+    let state = ConversationViewState::new();
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            ConversationView::view_from(
+                &messages,
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_view_from_matches_view_with_same_messages() {
+    let mut state_owned = ConversationViewState::new();
+    state_owned.push_user("Hello");
+    state_owned.push_assistant("Hi there!");
+
+    let external_messages = vec![
+        ConversationMessage::new(ConversationRole::User, "Hello"),
+        ConversationMessage::new(ConversationRole::Assistant, "Hi there!"),
+    ];
+    let state_config = ConversationViewState::new();
+
+    // Render with view()
+    let (mut terminal1, theme) = test_utils::setup_render(60, 20);
+    terminal1
+        .draw(|frame| {
+            ConversationView::view(
+                &state_owned,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
+        })
+        .unwrap();
+    let output1 = terminal1.backend().to_string();
+
+    // Render with view_from()
+    let (mut terminal2, theme) = test_utils::setup_render(60, 20);
+    terminal2
+        .draw(|frame| {
+            ConversationView::view_from(
+                &external_messages,
+                &state_config,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
+        })
+        .unwrap();
+    let output2 = terminal2.backend().to_string();
+
+    assert_eq!(output1, output2);
+}
+
+#[test]
+fn test_view_from_empty_source() {
+    let messages: Vec<ConversationMessage> = Vec::new();
+    let state = ConversationViewState::new();
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            ConversationView::view_from(
+                &messages,
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_view_from_respects_state_config() {
+    let messages = vec![ConversationMessage::new(ConversationRole::User, "Hello")];
+    let state = ConversationViewState::new()
+        .with_title("External Chat")
+        .with_role_labels(false);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            ConversationView::view_from(
+                &messages,
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_view_from_with_vec_reference() {
+    let messages = vec![
+        ConversationMessage::new(ConversationRole::User, "Hello"),
+        ConversationMessage::new(ConversationRole::Assistant, "Hi!"),
+    ];
+    let state = ConversationViewState::new();
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            // Pass &Vec<ConversationMessage> which implements MessageSource
+            ConversationView::view_from(
+                &messages,
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_view_from_tiny_area_no_panic() {
+    let messages = vec![ConversationMessage::new(ConversationRole::User, "Hello")];
+    let state = ConversationViewState::new();
+    let (mut terminal, theme) = test_utils::setup_render(4, 2);
+    terminal
+        .draw(|frame| {
+            ConversationView::view_from(
+                &messages,
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_view_from_annotation_emitted() {
+    use crate::annotation::with_annotations;
+    let messages = vec![ConversationMessage::new(ConversationRole::User, "Hello")];
+    let state = ConversationViewState::new();
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    let registry = with_annotations(|| {
+        terminal
+            .draw(|frame| {
+                ConversationView::view_from(
+                    &messages,
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::default(),
+                );
+            })
+            .unwrap();
+    });
+    assert!(registry.get_by_id("conversation_view").is_some());
+}
+
+#[test]
+fn test_view_from_with_code_blocks() {
+    let messages = vec![ConversationMessage::with_blocks(
+        ConversationRole::Assistant,
+        vec![
+            MessageBlock::text("Here is code:"),
+            MessageBlock::code("fn main() {}", Some("rust")),
+        ],
+    )];
+    let state = ConversationViewState::new();
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            ConversationView::view_from(
+                &messages,
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_view_from_collapsed_blocks_use_state_config() {
+    let messages = vec![ConversationMessage::with_blocks(
+        ConversationRole::Assistant,
+        vec![
+            MessageBlock::thinking("Hidden reasoning"),
+            MessageBlock::text("Visible answer"),
+        ],
+    )];
+
+    // Render without collapse
+    let state_expanded = ConversationViewState::new();
+    let (mut terminal1, theme) = test_utils::setup_render(60, 20);
+    terminal1
+        .draw(|frame| {
+            ConversationView::view_from(
+                &messages,
+                &state_expanded,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
+        })
+        .unwrap();
+    let output_expanded = terminal1.backend().to_string();
+
+    // Render with collapse
+    let mut state_collapsed = ConversationViewState::new();
+    state_collapsed.collapse("thinking");
+    let (mut terminal2, theme) = test_utils::setup_render(60, 20);
+    terminal2
+        .draw(|frame| {
+            ConversationView::view_from(
+                &messages,
+                &state_collapsed,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::default(),
+            );
+        })
+        .unwrap();
+    let output_collapsed = terminal2.backend().to_string();
+
+    // Collapsed should be shorter (different output)
+    assert_ne!(output_expanded, output_collapsed);
+}
