@@ -188,5 +188,8 @@ pub fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
     Rect::new(x, y, width.min(area.width), height.min(area.height))
 }
 
+mod markdown_strip;
+pub use markdown_strip::strip_markdown;
+
 #[cfg(test)]
 mod tests;

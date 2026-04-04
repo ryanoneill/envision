@@ -95,13 +95,20 @@ pub(super) fn format_message(
         return format_message_markdown(msg, state.show_timestamps, width, base_style, theme);
     }
 
-    format_message_plain(msg, state.show_timestamps, base_style)
+    format_message_plain(
+        msg,
+        state.show_timestamps,
+        state.markdown_enabled,
+        base_style,
+    )
 }
 
 /// Plain text message formatting (original behavior).
+/// When `strip_md` is true, markdown markers are stripped for readable output.
 fn format_message_plain(
     msg: &ChatMessage,
     show_timestamps: bool,
+    strip_md: bool,
     base_style: Style,
 ) -> Vec<(Line<'static>, ChatRole)> {
     let mut result = Vec::new();
@@ -124,8 +131,14 @@ fn format_message_plain(
 
     result.push((Line::from(header_spans), role));
 
-    // Content lines
-    for line in msg.content().lines() {
+    // Content lines — strip markdown markers when feature is off but markdown_enabled
+    let content = if strip_md {
+        std::borrow::Cow::Owned(crate::util::strip_markdown(msg.content()))
+    } else {
+        std::borrow::Cow::Borrowed(msg.content())
+    };
+
+    for line in content.lines() {
         result.push((
             Line::from(Span::styled(format!("  {}", line), base_style)),
             role,
@@ -133,7 +146,7 @@ fn format_message_plain(
     }
 
     // Handle empty content
-    if msg.content().is_empty() {
+    if content.is_empty() {
         result.push((Line::from(Span::styled("  ", base_style)), role));
     }
 

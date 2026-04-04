@@ -336,9 +336,15 @@ fn format_text_block<'a>(
         return;
     }
 
-    let _ = markdown_enabled;
+    // When markdown feature is off but markdown_enabled is true,
+    // strip markers so output is readable plain text, not raw syntax.
+    let text = if markdown_enabled {
+        std::borrow::Cow::Owned(crate::util::strip_markdown(text))
+    } else {
+        std::borrow::Cow::Borrowed(text)
+    };
 
-    for wrapped in wrap_lines(text, indent, width) {
+    for wrapped in wrap_lines(&text, indent, width) {
         lines.push(Line::from(Span::styled(wrapped, style)));
     }
 }
