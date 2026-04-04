@@ -624,7 +624,21 @@ impl Component for HelpPanel {
     }
 
     fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+        Self::handle_event_with_ctx(
+            state,
+            event,
+            &ViewContext::new()
+                .focused(state.focused)
+                .disabled(state.disabled),
+        )
+    }
+
+    fn handle_event_with_ctx(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
