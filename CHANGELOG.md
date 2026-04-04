@@ -7,6 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-04-04
+
+### Breaking
+
+- **`TextAreaState::with_value()` is now a chainable builder**: Takes
+  `mut self` instead of being a standalone constructor. Migrate from
+  `TextAreaState::with_value("...")` to
+  `TextAreaState::new().with_value("...")`.
+
+- **`TextAreaState::with_placeholder()` is now a chainable builder**:
+  Same change. Use `TextAreaState::new().with_placeholder("...")`.
+
+- **`SplitPanelState::with_ratio()` is now a chainable builder**: Takes
+  `mut self` instead of `(orientation, ratio)`. Migrate from
+  `SplitPanelState::with_ratio(orientation, 0.3)` to
+  `SplitPanelState::new(orientation).with_ratio(0.3)`.
+
+### Added
+
+- **Reference Application: Log Explorer** (`examples/log_explorer.rs`):
+  Multi-pane log analysis tool demonstrating LogViewer, EventStream,
+  SplitPanel, CommandPalette, FocusManager, and StatusBar.
+
+- **Reference Application: Dashboard Builder**
+  (`examples/dashboard_builder.rs`): Metrics dashboard demonstrating
+  MetricsDashboard, AlertPanel, Heatmap, Tabs, Gauge, and Sparkline.
+
+- **Reference Application: Chat Client** (`examples/chat_client.rs`):
+  AI chat client demonstrating ConversationView, MessageHandle, TabBar,
+  TextArea, CommandPalette, and markdown rendering.
+
+- **Reference Application: File Manager** (`examples/file_manager.rs`):
+  File manager demonstrating FileBrowser, CodeBlock, DiffViewer,
+  SplitPanel, Breadcrumb, and CommandPalette.
+
+- **Prelude re-exports**: `FileEntry`, `FileSortField`,
+  `FileSortDirection`, `SelectionMode` (from FileBrowser) and `Language`
+  (from CodeBlock) are now available via the prelude.
+
+- **`MetricsDashboardState::widget_by_label()`**: Look up a metric
+  widget by its label string instead of tracking indices.
+
+- **`MetricsDashboardState::widget_by_label_mut()`**: Mutable version
+  for updating metrics by label.
+
+- **`LogViewerState::push_entry()` is now public**: General-purpose
+  method for adding entries with a specific level and optional timestamp.
+
+### Fixed
+
+- **StatusBar right section truncation**: When left + center + right
+  sections exceeded terminal width, the right section was silently
+  clipped. Now the center section is truncated first (with ellipsis "…")
+  to preserve left and right sections.
+
+- **Virtual terminal command dispatch**: Reference app examples now use
+  `vt.dispatch()` instead of `App::update()` for proper
+  `Command::message()` cascading on `tick()`.
+
 ## [0.10.3] - 2026-03-31
 
 ### Fixed
@@ -727,7 +786,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renders to both a real terminal and CaptureBackend
   - Useful for visual debugging while testing
 
-[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.10.3...HEAD
+[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/ryanoneill/envision/compare/v0.10.3...v0.11.0
 [0.10.3]: https://github.com/ryanoneill/envision/compare/v0.10.2...v0.10.3
 [0.10.2]: https://github.com/ryanoneill/envision/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/ryanoneill/envision/compare/v0.10.0...v0.10.1
