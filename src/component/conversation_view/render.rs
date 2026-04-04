@@ -44,7 +44,32 @@ pub(super) fn render(
         return;
     }
 
-    render_messages(state, frame, inner, theme);
+    // Reserve the bottom row for the status line when present.
+    let (message_area, status_area) = if state.status.is_some() && inner.height > 1 {
+        let msg = Rect {
+            height: inner.height - 1,
+            ..inner
+        };
+        let status = Rect {
+            y: inner.y + inner.height - 1,
+            height: 1,
+            ..inner
+        };
+        (msg, Some(status))
+    } else {
+        (inner, None)
+    };
+
+    render_messages(state, frame, message_area, theme);
+
+    if let Some((status_rect, text)) = status_area.zip(state.status.as_deref()) {
+        let style = Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::ITALIC);
+        let line = Line::from(Span::styled(text, style));
+        let paragraph = ratatui::widgets::Paragraph::new(line);
+        frame.render_widget(paragraph, status_rect);
+    }
 }
 
 /// Renders the message list inside the content area.
