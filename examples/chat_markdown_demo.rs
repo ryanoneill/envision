@@ -147,7 +147,7 @@ impl Default for State {
             "09:04",
         );
 
-        let mut input = TextAreaState::with_placeholder("Type a markdown message...");
+        let mut input = TextAreaState::new().with_placeholder("Type a markdown message...");
         input.set_focused(true);
 
         Self {

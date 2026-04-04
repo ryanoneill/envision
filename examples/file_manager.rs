@@ -125,7 +125,7 @@ impl App for FileManager {
             browser: FileBrowserState::new("/home/user/project", entries),
             code: sample_code_block("main.rs"),
             diff: sample_diff(),
-            split: SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.3),
+            split: SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.3),
             breadcrumb: BreadcrumbState::from_path("/home/user/project", "/"),
             palette: CommandPaletteState::new(palette_items)
                 .with_title("File Manager")

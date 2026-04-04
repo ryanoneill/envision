@@ -83,7 +83,7 @@ impl Default for ChatViewState {
     fn default() -> Self {
         Self {
             messages: Vec::new(),
-            input: TextAreaState::with_placeholder("Type a message..."),
+            input: TextAreaState::new().with_placeholder("Type a message..."),
             scroll: ScrollState::default(),
             auto_scroll: true,
             max_messages: 1000,

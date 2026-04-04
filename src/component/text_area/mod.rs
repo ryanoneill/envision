@@ -242,63 +242,45 @@ impl TextAreaState {
     }
 
     /// Creates a textarea with initial content, split on newlines.
-    /// Cursor is placed at the end of the content.
+    /// Sets the content and places cursor at the end (builder pattern).
     ///
     /// # Examples
     ///
     /// ```
     /// use envision::prelude::*;
     ///
-    /// let state = TextAreaState::with_value("Hello\nWorld");
+    /// let state = TextAreaState::new().with_value("Hello\nWorld");
     /// assert_eq!(state.value(), "Hello\nWorld");
     /// assert_eq!(state.line_count(), 2);
     /// ```
-    pub fn with_value(value: impl Into<String>) -> Self {
+    pub fn with_value(mut self, value: impl Into<String>) -> Self {
         let value = value.into();
-        let lines: Vec<String> = if value.is_empty() {
+        self.lines = if value.is_empty() {
             vec![String::new()]
         } else {
             // Use split('\n') instead of lines() to preserve trailing newlines
             value.split('\n').map(String::from).collect()
         };
 
-        let cursor_row = lines.len().saturating_sub(1);
-        let cursor_col = lines.last().map(|l| l.len()).unwrap_or(0);
-
-        Self {
-            lines,
-            cursor_row,
-            cursor_col,
-            scroll_offset: 0,
-            focused: false,
-            disabled: false,
-            placeholder: String::new(),
-            selection_anchor: None,
-            clipboard: String::new(),
-            undo_stack: UndoStack::default(),
-            show_line_numbers: false,
-            search_query: None,
-            search_matches: Vec::new(),
-            current_match: 0,
-        }
+        self.cursor_row = self.lines.len().saturating_sub(1);
+        self.cursor_col = self.lines.last().map(|l| l.len()).unwrap_or(0);
+        self
     }
 
-    /// Creates a textarea with placeholder text.
+    /// Sets the placeholder text (builder pattern).
     ///
     /// # Examples
     ///
     /// ```
     /// use envision::prelude::*;
     ///
-    /// let state = TextAreaState::with_placeholder("Enter text...");
+    /// let state = TextAreaState::new().with_placeholder("Enter text...");
     /// assert_eq!(state.placeholder(), "Enter text...");
     /// assert!(state.is_empty());
     /// ```
-    pub fn with_placeholder(placeholder: impl Into<String>) -> Self {
-        Self {
-            placeholder: placeholder.into(),
-            ..Default::default()
-        }
+    pub fn with_placeholder(mut self, placeholder: impl Into<String>) -> Self {
+        self.placeholder = placeholder.into();
+        self
     }
 
     /// Returns the full text content (lines joined with \n).
@@ -308,7 +290,7 @@ impl TextAreaState {
     /// ```
     /// use envision::prelude::*;
     ///
-    /// let state = TextAreaState::with_value("line1\nline2");
+    /// let state = TextAreaState::new().with_value("line1\nline2");
     /// assert_eq!(state.value(), "line1\nline2");
     /// ```
     pub fn value(&self) -> String {
@@ -409,7 +391,7 @@ impl TextAreaState {
     /// use envision::prelude::*;
     ///
     /// assert!(TextAreaState::new().is_empty());
-    /// assert!(!TextAreaState::with_value("hi").is_empty());
+    /// assert!(!TextAreaState::new().with_value("hi").is_empty());
     /// ```
     pub fn is_empty(&self) -> bool {
         self.lines.len() == 1 && self.lines[0].is_empty()

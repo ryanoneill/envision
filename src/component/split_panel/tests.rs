@@ -34,16 +34,16 @@ fn test_new_horizontal() {
 
 #[test]
 fn test_with_ratio() {
-    let state = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.3);
+    let state = SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.3);
     assert!((state.ratio() - 0.3).abs() < f32::EPSILON);
 }
 
 #[test]
 fn test_with_ratio_clamped() {
-    let state = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.05);
+    let state = SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.05);
     assert!((state.ratio() - 0.1).abs() < f32::EPSILON); // min is 0.1
 
-    let state = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.95);
+    let state = SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.95);
     assert!((state.ratio() - 0.9).abs() < f32::EPSILON); // max is 0.9
 }
 
@@ -75,7 +75,9 @@ fn test_with_bounds() {
 
 #[test]
 fn test_with_bounds_clamps_ratio() {
-    let state = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.95).with_bounds(0.2, 0.8);
+    let state = SplitPanelState::new(SplitOrientation::Vertical)
+        .with_ratio(0.95)
+        .with_bounds(0.2, 0.8);
     assert!((state.ratio() - 0.8).abs() < f32::EPSILON);
 }
 
@@ -394,7 +396,7 @@ fn test_layout_horizontal_50_50() {
 
 #[test]
 fn test_layout_vertical_70_30() {
-    let state = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.7);
+    let state = SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.7);
     let area = Rect::new(0, 0, 100, 24);
     let (first, second) = state.layout(area);
     assert_eq!(first.width, 70);
@@ -531,7 +533,7 @@ fn test_partial_eq() {
 #[test]
 fn test_partial_eq_different_ratio() {
     let state1 = SplitPanelState::new(SplitOrientation::Vertical);
-    let state2 = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.3);
+    let state2 = SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.3);
     assert_ne!(state1, state2);
 }
 

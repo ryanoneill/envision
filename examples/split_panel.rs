@@ -28,7 +28,8 @@ impl App for SplitPanelApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut split = SplitPanelState::with_ratio(SplitOrientation::Vertical, 0.4)
+        let mut split = SplitPanelState::new(SplitOrientation::Vertical)
+            .with_ratio(0.4)
             .with_resize_step(0.1)
             .with_bounds(0.2, 0.8);
 

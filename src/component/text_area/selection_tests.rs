@@ -1,7 +1,7 @@
 use super::*;
 
 fn focused_state(value: &str) -> TextAreaState {
-    let mut state = TextAreaState::with_value(value);
+    let mut state = TextAreaState::new().with_value(value);
     state.set_focused(true);
     state
 }
@@ -12,14 +12,14 @@ fn focused_state(value: &str) -> TextAreaState {
 
 #[test]
 fn test_no_selection_by_default() {
-    let state = TextAreaState::with_value("hello");
+    let state = TextAreaState::new().with_value("hello");
     assert!(!state.has_selection());
     assert_eq!(state.selected_text(), None);
 }
 
 #[test]
 fn test_select_left() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::SelectLeft);
     assert!(state.has_selection());
     assert_eq!(state.selected_text(), Some("o".to_string()));
@@ -27,7 +27,7 @@ fn test_select_left() {
 
 #[test]
 fn test_select_right() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::SelectRight);
     assert_eq!(state.selected_text(), Some("h".to_string()));
@@ -35,14 +35,14 @@ fn test_select_right() {
 
 #[test]
 fn test_select_home() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::SelectHome);
     assert_eq!(state.selected_text(), Some("hello".to_string()));
 }
 
 #[test]
 fn test_select_end() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::SelectEnd);
     assert_eq!(state.selected_text(), Some("hello".to_string()));
@@ -50,7 +50,7 @@ fn test_select_end() {
 
 #[test]
 fn test_select_up() {
-    let mut state = TextAreaState::with_value("line1\nline2");
+    let mut state = TextAreaState::new().with_value("line1\nline2");
     // Cursor at end of line2
     TextArea::update(&mut state, TextAreaMessage::SelectUp);
     assert!(state.has_selection());
@@ -60,7 +60,7 @@ fn test_select_up() {
 
 #[test]
 fn test_select_down() {
-    let mut state = TextAreaState::with_value("line1\nline2");
+    let mut state = TextAreaState::new().with_value("line1\nline2");
     state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::SelectDown);
     assert!(state.has_selection());
@@ -68,14 +68,14 @@ fn test_select_down() {
 
 #[test]
 fn test_select_word_left() {
-    let mut state = TextAreaState::with_value("hello world");
+    let mut state = TextAreaState::new().with_value("hello world");
     TextArea::update(&mut state, TextAreaMessage::SelectWordLeft);
     assert_eq!(state.selected_text(), Some("world".to_string()));
 }
 
 #[test]
 fn test_select_word_right() {
-    let mut state = TextAreaState::with_value("hello world");
+    let mut state = TextAreaState::new().with_value("hello world");
     state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::SelectWordRight);
     assert_eq!(state.selected_text(), Some("hello ".to_string()));
@@ -83,7 +83,7 @@ fn test_select_word_right() {
 
 #[test]
 fn test_select_all() {
-    let mut state = TextAreaState::with_value("line1\nline2");
+    let mut state = TextAreaState::new().with_value("line1\nline2");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     assert_eq!(state.selected_text(), Some("line1\nline2".to_string()));
 }
@@ -102,7 +102,7 @@ fn test_select_all_empty() {
 
 #[test]
 fn test_multiline_selection() {
-    let mut state = TextAreaState::with_value("abc\ndef\nghi");
+    let mut state = TextAreaState::new().with_value("abc\ndef\nghi");
     state.set_cursor_position(0, 0);
     // Select from start to end of line 1
     TextArea::update(&mut state, TextAreaMessage::SelectDown);
@@ -114,7 +114,7 @@ fn test_multiline_selection() {
 
 #[test]
 fn test_select_across_lines() {
-    let mut state = TextAreaState::with_value("abc\ndef");
+    let mut state = TextAreaState::new().with_value("abc\ndef");
     state.set_cursor_position(0, 1); // After 'a'
                                      // Select from (0,1) to (1,2) using SelectDown then SelectRight
     TextArea::update(&mut state, TextAreaMessage::SelectDown);
@@ -129,7 +129,7 @@ fn test_select_across_lines() {
 
 #[test]
 fn test_left_clears_selection() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::SelectLeft);
     assert!(state.has_selection());
 
@@ -139,7 +139,7 @@ fn test_left_clears_selection() {
 
 #[test]
 fn test_right_clears_selection() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     state.set_cursor_position(0, 0);
     TextArea::update(&mut state, TextAreaMessage::SelectRight);
     assert!(state.has_selection());
@@ -150,7 +150,7 @@ fn test_right_clears_selection() {
 
 #[test]
 fn test_up_clears_selection() {
-    let mut state = TextAreaState::with_value("a\nb");
+    let mut state = TextAreaState::new().with_value("a\nb");
     TextArea::update(&mut state, TextAreaMessage::SelectUp);
     assert!(state.has_selection());
 
@@ -164,7 +164,7 @@ fn test_up_clears_selection() {
 
 #[test]
 fn test_insert_replaces_selection() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     TextArea::update(&mut state, TextAreaMessage::Insert('X'));
     assert_eq!(state.value(), "X");
@@ -172,7 +172,7 @@ fn test_insert_replaces_selection() {
 
 #[test]
 fn test_backspace_deletes_selection() {
-    let mut state = TextAreaState::with_value("hello world");
+    let mut state = TextAreaState::new().with_value("hello world");
     // Select "world"
     for _ in 0..5 {
         TextArea::update(&mut state, TextAreaMessage::SelectLeft);
@@ -183,7 +183,7 @@ fn test_backspace_deletes_selection() {
 
 #[test]
 fn test_delete_deletes_selection() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     TextArea::update(&mut state, TextAreaMessage::Delete);
     assert_eq!(state.value(), "");
@@ -191,7 +191,7 @@ fn test_delete_deletes_selection() {
 
 #[test]
 fn test_multiline_delete_selection() {
-    let mut state = TextAreaState::with_value("abc\ndef\nghi");
+    let mut state = TextAreaState::new().with_value("abc\ndef\nghi");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     TextArea::update(&mut state, TextAreaMessage::Delete);
     assert_eq!(state.value(), "");
@@ -200,7 +200,7 @@ fn test_multiline_delete_selection() {
 
 #[test]
 fn test_newline_replaces_selection() {
-    let mut state = TextAreaState::with_value("hello world");
+    let mut state = TextAreaState::new().with_value("hello world");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     TextArea::update(&mut state, TextAreaMessage::NewLine);
     assert_eq!(state.value(), "\n");
@@ -212,7 +212,7 @@ fn test_newline_replaces_selection() {
 
 #[test]
 fn test_copy() {
-    let mut state = TextAreaState::with_value("hello world");
+    let mut state = TextAreaState::new().with_value("hello world");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     let output = TextArea::update(&mut state, TextAreaMessage::Copy);
     assert_eq!(output, Some(TextAreaOutput::Copied("hello world".into())));
@@ -222,14 +222,14 @@ fn test_copy() {
 
 #[test]
 fn test_copy_without_selection() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     let output = TextArea::update(&mut state, TextAreaMessage::Copy);
     assert_eq!(output, None);
 }
 
 #[test]
 fn test_cut() {
-    let mut state = TextAreaState::with_value("hello world");
+    let mut state = TextAreaState::new().with_value("hello world");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     let output = TextArea::update(&mut state, TextAreaMessage::Cut);
     assert_eq!(output, Some(TextAreaOutput::Changed(String::new())));
@@ -239,14 +239,14 @@ fn test_cut() {
 
 #[test]
 fn test_cut_without_selection() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     let output = TextArea::update(&mut state, TextAreaMessage::Cut);
     assert_eq!(output, None);
 }
 
 #[test]
 fn test_paste() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     let output = TextArea::update(&mut state, TextAreaMessage::Paste(" world".into()));
     assert_eq!(state.value(), "hello world");
     assert!(output.is_some());
@@ -254,7 +254,7 @@ fn test_paste() {
 
 #[test]
 fn test_paste_replaces_selection() {
-    let mut state = TextAreaState::with_value("hello world");
+    let mut state = TextAreaState::new().with_value("hello world");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     TextArea::update(&mut state, TextAreaMessage::Paste("goodbye".into()));
     assert_eq!(state.value(), "goodbye");
@@ -273,14 +273,14 @@ fn test_paste_multiline() {
 
 #[test]
 fn test_paste_empty() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     let output = TextArea::update(&mut state, TextAreaMessage::Paste(String::new()));
     assert_eq!(output, None);
 }
 
 #[test]
 fn test_copy_then_paste() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     TextArea::update(&mut state, TextAreaMessage::Copy);
     TextArea::update(&mut state, TextAreaMessage::End);
@@ -358,7 +358,7 @@ fn test_paste_event() {
 
 #[test]
 fn test_disabled_ignores_selection() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     state.set_disabled(true);
     let output = TextArea::update(&mut state, TextAreaMessage::SelectAll);
     assert_eq!(output, None);
@@ -367,7 +367,7 @@ fn test_disabled_ignores_selection() {
 
 #[test]
 fn test_clear_clears_selection() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     TextArea::update(&mut state, TextAreaMessage::Clear);
     assert!(!state.has_selection());
@@ -376,7 +376,7 @@ fn test_clear_clears_selection() {
 
 #[test]
 fn test_set_value_clears_selection() {
-    let mut state = TextAreaState::with_value("hello");
+    let mut state = TextAreaState::new().with_value("hello");
     TextArea::update(&mut state, TextAreaMessage::SelectAll);
     TextArea::update(&mut state, TextAreaMessage::SetValue("new".into()));
     assert!(!state.has_selection());
@@ -385,7 +385,7 @@ fn test_set_value_clears_selection() {
 
 #[test]
 fn test_delete_partial_multiline_selection() {
-    let mut state = TextAreaState::with_value("abc\ndef\nghi");
+    let mut state = TextAreaState::new().with_value("abc\ndef\nghi");
     // Select from middle of line 0 to middle of line 2
     state.set_cursor_position(0, 1); // After 'a'
     state.selection_anchor = Some((0, 1));

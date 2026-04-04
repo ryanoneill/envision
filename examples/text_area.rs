@@ -29,7 +29,7 @@ impl App for TextAreaApp {
 
     fn init() -> (State, Command<Msg>) {
         let initial_text = "Hello, TextArea!\nEdit this content.\nLine three.";
-        let mut editor = TextAreaState::with_value(initial_text);
+        let mut editor = TextAreaState::new().with_value(initial_text);
         editor.set_focused(true);
 
         (State { editor }, Command::none())
