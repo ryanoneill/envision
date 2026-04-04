@@ -11,7 +11,7 @@
 //! # Supported Languages
 //!
 //! Rust, Python, JavaScript, TypeScript, Go, Shell, JSON, YAML, TOML,
-//! SQL, and Plain text. See [`Language`].
+//! SQL, HCL, and Plain text. See [`Language`].
 //!
 //! # Example
 //!
@@ -66,6 +66,10 @@ pub enum CodeBlockMessage {
     Home,
     /// Scroll to the bottom.
     End,
+    /// Scroll left by one column.
+    ScrollLeft,
+    /// Scroll right by one column.
+    ScrollRight,
     /// Replace the code content.
     SetCode(String),
     /// Set the language for syntax highlighting.
@@ -96,6 +100,8 @@ pub struct CodeBlockState {
     pub(crate) language: Language,
     /// Scroll state tracking offset and providing scrollbar support.
     pub(crate) scroll: ScrollState,
+    /// Horizontal scroll offset in characters.
+    pub(crate) horizontal_offset: usize,
     /// Whether to show line numbers.
     pub(crate) show_line_numbers: bool,
     /// Set of 1-based line numbers to highlight.
@@ -113,6 +119,7 @@ impl PartialEq for CodeBlockState {
         self.code == other.code
             && self.language == other.language
             && self.scroll == other.scroll
+            && self.horizontal_offset == other.horizontal_offset
             && self.show_line_numbers == other.show_line_numbers
             && self.highlight_lines == other.highlight_lines
             && self.title == other.title
@@ -354,6 +361,16 @@ impl CodeBlockState {
         self.scroll.set_offset(offset);
     }
 
+    /// Returns the horizontal scroll offset.
+    pub fn horizontal_offset(&self) -> usize {
+        self.horizontal_offset
+    }
+
+    /// Sets the horizontal scroll offset.
+    pub fn set_horizontal_offset(&mut self, offset: usize) {
+        self.horizontal_offset = offset;
+    }
+
     // ---- State accessors ----
 
     /// Returns true if the component is focused.
@@ -414,11 +431,13 @@ impl CodeBlockState {
 ///
 /// - `Up` / `k` -- Scroll up one line
 /// - `Down` / `j` -- Scroll down one line
+/// - `Left` / `h` -- Scroll left one column
+/// - `Right` / `l` -- Scroll right one column
 /// - `PageUp` / `Ctrl+u` -- Scroll up half a page
 /// - `PageDown` / `Ctrl+d` -- Scroll down half a page
 /// - `Home` / `g` -- Scroll to top
 /// - `End` / `G` -- Scroll to bottom
-/// - `l` -- Toggle line numbers
+/// - `n` -- Toggle line numbers
 pub struct CodeBlock;
 
 impl Component for CodeBlock {
@@ -442,6 +461,8 @@ impl Component for CodeBlock {
         match key.code {
             KeyCode::Up | KeyCode::Char('k') if !ctrl => Some(CodeBlockMessage::ScrollUp),
             KeyCode::Down | KeyCode::Char('j') if !ctrl => Some(CodeBlockMessage::ScrollDown),
+            KeyCode::Left | KeyCode::Char('h') if !ctrl => Some(CodeBlockMessage::ScrollLeft),
+            KeyCode::Right | KeyCode::Char('l') if !ctrl => Some(CodeBlockMessage::ScrollRight),
             KeyCode::PageUp => Some(CodeBlockMessage::PageUp(10)),
             KeyCode::PageDown => Some(CodeBlockMessage::PageDown(10)),
             KeyCode::Char('u') if ctrl => Some(CodeBlockMessage::PageUp(10)),
@@ -450,7 +471,7 @@ impl Component for CodeBlock {
             KeyCode::End | KeyCode::Char('G') if shift || key.code == KeyCode::End => {
                 Some(CodeBlockMessage::End)
             }
-            KeyCode::Char('l') if !ctrl => Some(CodeBlockMessage::ToggleLineNumbers),
+            KeyCode::Char('n') if !ctrl => Some(CodeBlockMessage::ToggleLineNumbers),
             _ => None,
         }
     }
@@ -469,8 +490,19 @@ impl Component for CodeBlock {
             CodeBlockMessage::PageDown(n) => {
                 state.scroll.page_down(n);
             }
+            CodeBlockMessage::ScrollLeft => {
+                state.horizontal_offset = state.horizontal_offset.saturating_sub(1);
+            }
+            CodeBlockMessage::ScrollRight => {
+                // Clamp to max line width (computed lazily)
+                let max_width = state.code.lines().map(|l| l.len()).max().unwrap_or(0);
+                if state.horizontal_offset < max_width {
+                    state.horizontal_offset += 1;
+                }
+            }
             CodeBlockMessage::Home => {
                 state.scroll.scroll_to_start();
+                state.horizontal_offset = 0;
             }
             CodeBlockMessage::End => {
                 state.scroll.scroll_to_end();
@@ -478,6 +510,7 @@ impl Component for CodeBlock {
             CodeBlockMessage::SetCode(code) => {
                 state.code = code;
                 state.scroll = ScrollState::new(state.code.lines().count().max(1));
+                state.horizontal_offset = 0;
             }
             CodeBlockMessage::SetLanguage(lang) => {
                 state.language = lang;

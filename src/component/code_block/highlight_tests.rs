@@ -476,3 +476,49 @@ fn test_highlight_preserves_whitespace() {
     let reconstructed: String = spans.iter().map(|s| s.content.as_ref()).collect();
     assert_eq!(reconstructed, line);
 }
+
+// =============================================================================
+// HCL highlighting
+// =============================================================================
+
+#[test]
+fn test_hcl_language_name() {
+    assert_eq!(Language::Hcl.name(), "HCL");
+}
+
+#[test]
+fn test_hcl_keywords_highlighted() {
+    let spans = highlight_line("resource \"aws_instance\" \"web\" {", &Language::Hcl);
+    assert!(!spans.is_empty());
+    // "resource" should be a keyword
+    let first_word = spans.iter().find(|s| s.content.as_ref() == "resource");
+    assert!(first_word.is_some(), "resource should appear as a span");
+    assert_eq!(
+        first_word.unwrap().style.fg,
+        Some(Color::Magenta),
+        "resource should be keyword-colored"
+    );
+}
+
+#[test]
+fn test_hcl_type_keywords() {
+    let spans = highlight_line("  type = string", &Language::Hcl);
+    let type_span = spans.iter().find(|s| s.content.as_ref() == "string");
+    assert!(type_span.is_some());
+    assert_eq!(type_span.unwrap().style.fg, Some(Color::Cyan));
+}
+
+#[test]
+fn test_hcl_comments() {
+    let spans = highlight_line("# This is a comment", &Language::Hcl);
+    assert_eq!(spans.len(), 1);
+    assert_eq!(spans[0].style.fg, Some(Color::DarkGray));
+}
+
+#[test]
+fn test_hcl_preserves_content() {
+    let line = "  ami           = \"ami-0c55b159cbfafe1f0\"";
+    let spans = highlight_line(line, &Language::Hcl);
+    let reconstructed: String = spans.iter().map(|s| s.content.as_ref()).collect();
+    assert_eq!(reconstructed, line);
+}

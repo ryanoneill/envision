@@ -448,10 +448,19 @@ fn test_handle_event_g_and_G() {
 }
 
 #[test]
-fn test_handle_event_l_toggle_line_numbers() {
+fn test_handle_event_l_scroll_right() {
     let state = focused_state();
     assert_eq!(
         CodeBlock::handle_event(&state, &Event::char('l')),
+        Some(CodeBlockMessage::ScrollRight)
+    );
+}
+
+#[test]
+fn test_handle_event_n_toggle_line_numbers() {
+    let state = focused_state();
+    assert_eq!(
+        CodeBlock::handle_event(&state, &Event::char('n')),
         Some(CodeBlockMessage::ToggleLineNumbers)
     );
 }
@@ -768,4 +777,135 @@ fn test_scroll_beyond_content() {
         })
         .unwrap();
     // Should not panic; scroll is clamped during render
+}
+
+// =============================================================================
+// Horizontal scroll
+// =============================================================================
+
+#[test]
+fn test_horizontal_scroll_right() {
+    let mut state = CodeBlockState::new().with_code("Hello, World!");
+    assert_eq!(state.horizontal_offset(), 0);
+
+    CodeBlock::update(&mut state, CodeBlockMessage::ScrollRight);
+    assert_eq!(state.horizontal_offset(), 1);
+
+    CodeBlock::update(&mut state, CodeBlockMessage::ScrollRight);
+    assert_eq!(state.horizontal_offset(), 2);
+}
+
+#[test]
+fn test_horizontal_scroll_left() {
+    let mut state = CodeBlockState::new().with_code("Hello, World!");
+    state.set_horizontal_offset(5);
+
+    CodeBlock::update(&mut state, CodeBlockMessage::ScrollLeft);
+    assert_eq!(state.horizontal_offset(), 4);
+}
+
+#[test]
+fn test_horizontal_scroll_left_at_zero() {
+    let mut state = CodeBlockState::new().with_code("Hello");
+
+    CodeBlock::update(&mut state, CodeBlockMessage::ScrollLeft);
+    assert_eq!(state.horizontal_offset(), 0); // Cannot go below 0
+}
+
+#[test]
+fn test_horizontal_scroll_clamped_to_max_width() {
+    let mut state = CodeBlockState::new().with_code("abc"); // 3 chars
+
+    for _ in 0..10 {
+        CodeBlock::update(&mut state, CodeBlockMessage::ScrollRight);
+    }
+    // Should not exceed line length
+    assert!(state.horizontal_offset() <= 3);
+}
+
+#[test]
+fn test_home_resets_horizontal_scroll() {
+    let mut state = CodeBlockState::new().with_code("Hello, World!");
+    state.set_horizontal_offset(5);
+    state.set_scroll_offset(3);
+
+    CodeBlock::update(&mut state, CodeBlockMessage::Home);
+    assert_eq!(state.horizontal_offset(), 0);
+    assert_eq!(state.scroll_offset(), 0);
+}
+
+#[test]
+fn test_set_code_resets_horizontal_scroll() {
+    let mut state = CodeBlockState::new().with_code("Hello");
+    state.set_horizontal_offset(3);
+
+    CodeBlock::update(
+        &mut state,
+        CodeBlockMessage::SetCode("New code".to_string()),
+    );
+    assert_eq!(state.horizontal_offset(), 0);
+}
+
+#[test]
+fn test_horizontal_scroll_key_bindings() {
+    let mut state = CodeBlockState::new().with_code("Long line of code here");
+    CodeBlock::set_focused(&mut state, true);
+
+    // Left arrow
+    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Left));
+    assert_eq!(msg, Some(CodeBlockMessage::ScrollLeft));
+
+    // Right arrow
+    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Right));
+    assert_eq!(msg, Some(CodeBlockMessage::ScrollRight));
+
+    // h key
+    let msg = CodeBlock::handle_event(&state, &Event::char('h'));
+    assert_eq!(msg, Some(CodeBlockMessage::ScrollLeft));
+
+    // l key (now horizontal scroll, not toggle line numbers)
+    let msg = CodeBlock::handle_event(&state, &Event::char('l'));
+    assert_eq!(msg, Some(CodeBlockMessage::ScrollRight));
+
+    // n key (toggle line numbers)
+    let msg = CodeBlock::handle_event(&state, &Event::char('n'));
+    assert_eq!(msg, Some(CodeBlockMessage::ToggleLineNumbers));
+}
+
+#[test]
+fn test_horizontal_scroll_renders_shifted_content() {
+    let code = "resource \"aws_instance\" \"web\" {\n  ami = \"ami-0c55b159\"\n}";
+    let mut state = CodeBlockState::new()
+        .with_code(code)
+        .with_language(Language::Hcl);
+    CodeBlock::set_focused(&mut state, true);
+    state.set_horizontal_offset(10);
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(33, 7);
+    terminal
+        .draw(|frame| {
+            CodeBlock::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
+        })
+        .unwrap();
+
+    let output = terminal.backend().to_string();
+    // After scrolling 10 chars right, "resource \"" is gone,
+    // the visible part should start with "aws_instance"
+    assert!(
+        output.contains("aws_instance"),
+        "Should see aws_instance after scrolling right 10 chars, got:\n{}",
+        output
+    );
+    // "resource" should NOT be visible
+    assert!(
+        !output.contains("resource"),
+        "resource should be scrolled off-screen, got:\n{}",
+        output
+    );
 }
