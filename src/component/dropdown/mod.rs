@@ -65,7 +65,6 @@ pub enum DropdownMessage {
 
 /// Output messages from a Dropdown.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum DropdownOutput {
     /// A new item was selected (contains the selected value).
     Selected(String),

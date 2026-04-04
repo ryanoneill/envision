@@ -59,7 +59,6 @@ impl App for DialogApp {
                         DialogOutput::Closed => {
                             state.last_result = Some("Dialog closed".into());
                         }
-                        _ => {}
                     }
                 }
             }

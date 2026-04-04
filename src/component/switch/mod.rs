@@ -54,7 +54,6 @@ pub enum SwitchMessage {
 
 /// Output messages from a Switch.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum SwitchOutput {
     /// The switch was toggled. Contains the new on/off value.
     Toggled(bool),

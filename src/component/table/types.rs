@@ -471,7 +471,6 @@ pub enum TableMessage {
 
 /// Output messages from a Table component.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum TableOutput<T: Clone> {
     /// A row was selected (e.g., Enter pressed).
     Selected(T),

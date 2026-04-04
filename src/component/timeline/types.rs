@@ -312,7 +312,6 @@ pub enum TimelineMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-#[non_exhaustive]
 pub enum TimelineOutput {
     /// An event was selected (carries event id).
     EventSelected(String),

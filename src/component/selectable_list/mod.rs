@@ -60,7 +60,6 @@ pub enum SelectableListMessage {
 
 /// Output messages from a SelectableList.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum SelectableListOutput<T: Clone> {
     /// An item was selected (e.g., Enter pressed).
     Selected(T),

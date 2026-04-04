@@ -206,7 +206,6 @@ pub enum TreeMessage {
 
 /// Output messages from a Tree component.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum TreeOutput {
     /// A node was selected (activated). Contains the path to the node.
     Selected(Vec<usize>),

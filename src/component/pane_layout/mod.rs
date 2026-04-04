@@ -293,7 +293,6 @@ pub enum PaneLayoutMessage {
 
 /// Output messages from a PaneLayout.
 #[derive(Clone, Debug, PartialEq)]
-#[non_exhaustive]
 pub enum PaneLayoutOutput {
     /// Focus changed to a different pane.
     FocusChanged {

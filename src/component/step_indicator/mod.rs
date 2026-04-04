@@ -191,7 +191,6 @@ pub enum StepIndicatorMessage {
 
 /// Output messages from a StepIndicator.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum StepIndicatorOutput {
     /// A step's status changed.
     StatusChanged {

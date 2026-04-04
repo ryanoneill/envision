@@ -103,7 +103,6 @@ pub enum FileBrowserMessage {
 
 /// Output messages from a FileBrowser.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum FileBrowserOutput {
     /// A file was selected (Enter on a file).
     FileSelected(FileEntry),

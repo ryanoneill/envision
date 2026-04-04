@@ -54,7 +54,6 @@ pub enum SelectMessage {
 
 /// Output messages from a Select.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum SelectOutput {
     /// A new item was selected (contains the selected value).
     Selected(String),

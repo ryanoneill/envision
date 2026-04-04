@@ -63,7 +63,6 @@ pub enum StatusLogMessage {
 
 /// Output messages from a StatusLog component.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum StatusLogOutput {
     /// An entry was added (returns ID).
     Added(u64),

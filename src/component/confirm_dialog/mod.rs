@@ -117,7 +117,6 @@ pub enum ConfirmDialogMessage {
 
 /// Output messages from a ConfirmDialog.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum ConfirmDialogOutput {
     /// A result was selected.
     Confirmed(ConfirmDialogResult),

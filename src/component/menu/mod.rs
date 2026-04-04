@@ -115,7 +115,6 @@ pub enum MenuMessage {
 
 /// Output messages from a Menu.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum MenuOutput {
     /// A menu item was selected (contains the item index).
     Selected(usize),
