@@ -121,6 +121,8 @@ pub struct ConversationViewState {
     pub(super) disabled: bool,
     /// Set of collapsed block keys (e.g., "tool:search", "thinking").
     pub(super) collapsed_blocks: HashSet<String>,
+    /// Optional status text rendered at the bottom of the viewport, above the border.
+    pub(super) status: Option<String>,
     /// Next unique ID for message handles.
     #[cfg_attr(feature = "serialization", serde(skip, default))]
     pub(super) next_id: u64,
@@ -141,6 +143,7 @@ impl Default for ConversationViewState {
             focused: false,
             disabled: false,
             collapsed_blocks: HashSet::new(),
+            status: None,
             next_id: 1,
         }
     }
@@ -158,6 +161,7 @@ impl PartialEq for ConversationViewState {
             && self.focused == other.focused
             && self.disabled == other.disabled
             && self.collapsed_blocks == other.collapsed_blocks
+            && self.status == other.status
         // next_id is intentionally excluded from equality
     }
 }
@@ -531,6 +535,38 @@ impl ConversationViewState {
         self.title = Some(title.into());
     }
 
+    /// Returns the status text, if set.
+    ///
+    /// The status line renders at the bottom of the viewport, above the
+    /// border. Use it for transient information like rate-limit backoff
+    /// or connection state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// assert!(state.status().is_none());
+    ///
+    /// state.set_status(Some("Rate limited"));
+    /// assert_eq!(state.status(), Some("Rate limited"));
+    ///
+    /// state.set_status(None::<&str>);
+    /// assert!(state.status().is_none());
+    /// ```
+    pub fn status(&self) -> Option<&str> {
+        self.status.as_deref()
+    }
+
+    /// Sets or clears the status text.
+    ///
+    /// When `Some`, a single line is rendered at the bottom of the
+    /// viewport inside the border. When `None`, the full viewport
+    /// is used for messages.
+    pub fn set_status(&mut self, status: Option<impl Into<String>>) {
+        self.status = status.map(|s| s.into());
+    }
     /// Returns the scroll offset.
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
