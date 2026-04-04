@@ -366,7 +366,7 @@ pub use chat_view::{
 #[cfg(feature = "compound-components")]
 pub use conversation_view::{
     ConversationMessage, ConversationRole, ConversationView, ConversationViewMessage,
-    ConversationViewOutput, ConversationViewState, MessageBlock, MessageHandle,
+    ConversationViewOutput, ConversationViewState, MessageBlock, MessageHandle, MessageSource,
 };
 #[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};

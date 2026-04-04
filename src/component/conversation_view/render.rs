@@ -1,7 +1,7 @@
 //! Rendering helpers for the ConversationView component.
 
 use super::types::{ConversationMessage, MessageBlock};
-use super::ConversationViewState;
+use super::{ConversationViewState, MessageSource};
 
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
@@ -14,8 +14,21 @@ use unicode_width::UnicodeWidthStr;
 
 use crate::theme::Theme;
 
-/// Renders the full conversation view into the given area.
+/// Renders the full conversation view using the messages stored in state.
 pub(super) fn render(
+    state: &ConversationViewState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
+    render_from(state, state, frame, area, theme, focused, disabled);
+}
+
+/// Renders the conversation view using messages from an external [`MessageSource`].
+pub(super) fn render_from(
+    source: &dyn MessageSource,
     state: &ConversationViewState,
     frame: &mut Frame,
     area: Rect,
@@ -44,7 +57,6 @@ pub(super) fn render(
         return;
     }
 
-    // Reserve the bottom row for the status line when present.
     let (message_area, status_area) = if state.status.is_some() && inner.height > 1 {
         let msg = Rect {
             height: inner.height - 1,
@@ -60,7 +72,7 @@ pub(super) fn render(
         (inner, None)
     };
 
-    render_messages(state, frame, message_area, theme);
+    render_messages_from(source, state, frame, message_area, theme);
 
     if let Some((status_rect, text)) = status_area.zip(state.status.as_deref()) {
         let style = Style::default()
@@ -72,11 +84,16 @@ pub(super) fn render(
     }
 }
 
-/// Renders the message list inside the content area.
-fn render_messages(state: &ConversationViewState, frame: &mut Frame, area: Rect, theme: &Theme) {
-    // First pass: check if content will be scrollable (needs scrollbar).
-    // If so, reserve 1 column for the scrollbar track.
-    let preliminary_lines = build_display_lines(state, area.width as usize, theme);
+fn render_messages_from(
+    source: &dyn MessageSource,
+    state: &ConversationViewState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+) {
+    let messages = source.source_messages();
+
+    let preliminary_lines = build_display_lines(messages, state, area.width as usize, theme);
     let needs_scrollbar = preliminary_lines.len() > area.height as usize;
     let content_width = if needs_scrollbar {
         (area.width as usize).saturating_sub(1)
@@ -84,9 +101,8 @@ fn render_messages(state: &ConversationViewState, frame: &mut Frame, area: Rect,
         area.width as usize
     };
 
-    // Rebuild at correct width if scrollbar is needed
     let display_lines = if needs_scrollbar {
-        build_display_lines(state, content_width, theme)
+        build_display_lines(messages, state, content_width, theme)
     } else {
         preliminary_lines
     };
@@ -111,7 +127,6 @@ fn render_messages(state: &ConversationViewState, frame: &mut Frame, area: Rect,
     let list = List::new(items);
     frame.render_widget(list, area);
 
-    // Render scrollbar when content exceeds viewport
     if total_lines > visible_lines {
         let outer_area = Rect {
             x: area.x.saturating_sub(1),
@@ -126,17 +141,16 @@ fn render_messages(state: &ConversationViewState, frame: &mut Frame, area: Rect,
     }
 }
 
-/// Builds all display lines from the message list.
 fn build_display_lines<'a>(
+    messages: &[ConversationMessage],
     state: &ConversationViewState,
     width: usize,
     _theme: &Theme,
 ) -> Vec<Line<'a>> {
     let mut lines = Vec::new();
 
-    for (i, msg) in state.messages.iter().enumerate() {
+    for (i, msg) in messages.iter().enumerate() {
         if i > 0 {
-            // Separator between messages
             lines.push(Line::from(""));
         }
         format_message(msg, state, width, &mut lines);
@@ -145,7 +159,6 @@ fn build_display_lines<'a>(
     lines
 }
 
-/// Formats a single conversation message into display lines.
 fn format_message<'a>(
     msg: &ConversationMessage,
     state: &ConversationViewState,
@@ -157,7 +170,6 @@ fn format_message<'a>(
     let role_style = Style::default().fg(role_color);
     let bold_role_style = role_style.add_modifier(Modifier::BOLD);
 
-    // Role header
     if state.show_role_labels {
         let mut header_spans = Vec::new();
 
@@ -187,14 +199,12 @@ fn format_message<'a>(
         lines.push(Line::from(header_spans));
     }
 
-    // Content blocks — indent under role label, or no indent if labels hidden
     let indent = if state.show_role_labels { "  " } else { "" };
     for block in msg.blocks() {
         format_block(block, state, width, indent, role_style, lines);
     }
 }
 
-/// Formats a single message block into display lines.
 fn format_block<'a>(
     block: &MessageBlock,
     state: &ConversationViewState,
@@ -241,11 +251,6 @@ fn format_block<'a>(
     }
 }
 
-/// Word-wraps text at the given width, preserving existing newlines.
-/// Returns wrapped lines with the given prefix prepended.
-///
-/// Uses `unicode_width` for accurate width calculations so that CJK
-/// characters and other wide glyphs are measured correctly.
 fn wrap_lines(text: &str, prefix: &str, width: usize) -> Vec<String> {
     let prefix_width = UnicodeWidthStr::width(prefix);
     let effective_width = width.saturating_sub(prefix_width);
@@ -259,7 +264,6 @@ fn wrap_lines(text: &str, prefix: &str, width: usize) -> Vec<String> {
         if line_width <= effective_width {
             result.push(format!("{}{}", prefix, line));
         } else {
-            // Word-wrap using unicode display widths
             let mut remaining = line;
             while !remaining.is_empty() {
                 let rem_width = UnicodeWidthStr::width(remaining);
@@ -267,7 +271,6 @@ fn wrap_lines(text: &str, prefix: &str, width: usize) -> Vec<String> {
                     result.push(format!("{}{}", prefix, remaining));
                     break;
                 }
-                // Walk characters to find the byte offset that fills effective_width
                 let mut col = 0;
                 let mut last_space_byte = None;
                 let mut byte_at_width = remaining.len();
@@ -278,7 +281,7 @@ fn wrap_lines(text: &str, prefix: &str, width: usize) -> Vec<String> {
                         break;
                     }
                     if ch == ' ' {
-                        last_space_byte = Some(byte_idx + 1); // break after the space
+                        last_space_byte = Some(byte_idx + 1);
                     }
                     col += ch_w;
                 }
@@ -298,7 +301,6 @@ fn wrap_lines(text: &str, prefix: &str, width: usize) -> Vec<String> {
     result
 }
 
-/// Formats a plain text block.
 fn format_text_block<'a>(
     text: &str,
     width: usize,
@@ -312,7 +314,6 @@ fn format_text_block<'a>(
         return;
     }
 
-    // When markdown feature is enabled and user opted in, render as markdown
     #[cfg(feature = "markdown")]
     if markdown_enabled {
         let theme = crate::theme::Theme::default();
@@ -335,7 +336,6 @@ fn format_text_block<'a>(
         return;
     }
 
-    // Suppress unused variable warning when markdown feature is off
     let _ = markdown_enabled;
 
     for wrapped in wrap_lines(text, indent, width) {
@@ -343,7 +343,6 @@ fn format_text_block<'a>(
     }
 }
 
-/// Formats a code block with a left border.
 fn format_code_block<'a>(
     code: &str,
     language: Option<&str>,
@@ -354,7 +353,6 @@ fn format_code_block<'a>(
     let code_style = Style::default().fg(Color::White);
     let border_style = Style::default().fg(Color::DarkGray);
 
-    // Header line with language
     let lang_label = language.unwrap_or("code");
     lines.push(Line::from(vec![
         Span::styled(format!("{}\u{2502} ", indent), border_style),
@@ -364,7 +362,6 @@ fn format_code_block<'a>(
         ),
     ]));
 
-    // Code lines
     let code_prefix = format!("{}\u{2502} ", indent);
     for line in code.lines() {
         lines.push(Line::from(vec![
@@ -378,7 +375,6 @@ fn format_code_block<'a>(
     }
 }
 
-/// Formats a tool use block (collapsible).
 fn format_tool_use_block<'a>(
     name: &str,
     input: Option<&str>,
@@ -432,7 +428,6 @@ fn format_tool_use_block<'a>(
     }
 }
 
-/// Formats a thinking block (collapsible).
 fn format_thinking_block<'a>(
     content: &str,
     width: usize,
@@ -463,7 +458,6 @@ fn format_thinking_block<'a>(
     }
 }
 
-/// Formats an error block.
 fn format_error_block<'a>(content: &str, width: usize, indent: &str, lines: &mut Vec<Line<'a>>) {
     let error_style = Style::default().fg(Color::Red).add_modifier(Modifier::BOLD);
 
@@ -474,10 +468,9 @@ fn format_error_block<'a>(content: &str, width: usize, indent: &str, lines: &mut
 }
 
 /// Calculates the total number of display lines for the current message list.
-///
-/// Used internally to set scroll content length.
 pub(super) fn total_display_lines(state: &ConversationViewState, width: usize) -> usize {
     let theme = Theme::default();
-    let lines = build_display_lines(state, width, &theme);
+    let messages = state.source_messages();
+    let lines = build_display_lines(messages, state, width, &theme);
     lines.len()
 }

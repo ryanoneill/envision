@@ -38,7 +38,9 @@
 mod render;
 pub mod types;
 
-pub use types::{ConversationMessage, ConversationRole, MessageBlock, MessageHandle};
+pub use types::{
+    ConversationMessage, ConversationRole, MessageBlock, MessageHandle, MessageSource,
+};
 
 use std::collections::HashSet;
 use std::marker::PhantomData;
@@ -49,6 +51,12 @@ use super::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
+
+impl MessageSource for ConversationViewState {
+    fn source_messages(&self) -> &[ConversationMessage] {
+        &self.messages
+    }
+}
 
 /// Messages that can be sent to a ConversationView.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -566,6 +574,7 @@ impl ConversationViewState {
     pub fn set_status(&mut self, status: Option<impl Into<String>>) {
         self.status = status.map(|s| s.into());
     }
+
     /// Returns the scroll offset.
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
@@ -928,6 +937,67 @@ impl Component for ConversationView {
         });
 
         render::render(state, frame, area, theme, ctx.focused, ctx.disabled);
+
+        crate::annotation::with_registry(|reg| {
+            reg.close();
+        });
+    }
+}
+
+impl ConversationView {
+    /// Renders the conversation using messages from an external [`MessageSource`]
+    /// instead of the messages stored in the state.
+    ///
+    /// This is the key method for avoiding the "dual-store" pattern: your
+    /// application can own the canonical message list and pass it directly
+    /// for rendering, while [`ConversationViewState`] only tracks scroll
+    /// position, collapsed blocks, and display configuration.
+    ///
+    /// The `state` parameter still provides all non-message configuration
+    /// (scroll offset, collapsed blocks, auto-scroll, title, etc.).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{
+    ///     ConversationView, ConversationViewState, ConversationMessage,
+    ///     ConversationRole, MessageSource, ViewContext,
+    /// };
+    ///
+    /// // Application owns the canonical message list
+    /// let messages = vec![
+    ///     ConversationMessage::new(ConversationRole::User, "Hello"),
+    ///     ConversationMessage::new(ConversationRole::Assistant, "Hi!"),
+    /// ];
+    /// assert_eq!(messages.source_messages().len(), 2);
+    ///
+    /// // State tracks only view configuration (scroll, collapsed blocks, etc.)
+    /// let state = ConversationViewState::new();
+    /// // Call ConversationView::view_from(&messages, &state, frame, area, &theme, &ctx)
+    /// // to render from the external source without mirroring.
+    /// ```
+    pub fn view_from(
+        source: &dyn MessageSource,
+        state: &ConversationViewState,
+        frame: &mut Frame,
+        area: Rect,
+        theme: &Theme,
+        ctx: &ViewContext,
+    ) {
+        if area.height < 3 || area.width < 5 {
+            return;
+        }
+
+        crate::annotation::with_registry(|reg| {
+            reg.open(
+                area,
+                crate::annotation::Annotation::container("conversation_view")
+                    .with_focus(ctx.focused)
+                    .with_disabled(ctx.disabled),
+            );
+        });
+
+        render::render_from(source, state, frame, area, theme, ctx.focused, ctx.disabled);
 
         crate::annotation::with_registry(|reg| {
             reg.close();
