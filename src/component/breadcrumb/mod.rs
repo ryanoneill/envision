@@ -132,7 +132,6 @@ pub enum BreadcrumbMessage {
 
 /// Output messages from a Breadcrumb component.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum BreadcrumbOutput {
     /// A segment was selected (for navigation).
     Selected(usize),

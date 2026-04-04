@@ -278,7 +278,6 @@ pub enum LoadingListMessage<T: Clone> {
 
 /// Output messages from LoadingList.
 #[derive(Clone, Debug, PartialEq)]
-#[non_exhaustive]
 pub enum LoadingListOutput<T: Clone> {
     /// An item was selected.
     Selected(T),

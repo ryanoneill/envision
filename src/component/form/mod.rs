@@ -103,7 +103,6 @@ pub enum FormMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-#[non_exhaustive]
 pub enum FormOutput {
     /// The form was submitted. Contains field ID-value pairs.
     Submitted(Vec<(String, FormValue)>),

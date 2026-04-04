@@ -56,7 +56,6 @@ pub enum ScrollableTextMessage {
 
 /// Output messages from a ScrollableText.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum ScrollableTextOutput {
     /// The scroll position changed.
     ScrollChanged(usize),

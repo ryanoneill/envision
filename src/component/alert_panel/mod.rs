@@ -121,7 +121,6 @@ pub enum AlertPanelMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-#[non_exhaustive]
 pub enum AlertPanelOutput {
     /// A metric changed alert state.
     StateChanged {

@@ -116,7 +116,6 @@ pub enum DependencyGraphMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-#[non_exhaustive]
 pub enum DependencyGraphOutput {
     /// A node was selected.
     NodeSelected(String),

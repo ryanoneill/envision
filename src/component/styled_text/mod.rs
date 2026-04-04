@@ -69,7 +69,6 @@ pub enum StyledTextMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-#[non_exhaustive]
 pub enum StyledTextOutput {
     /// The scroll position changed.
     ScrollChanged(usize),

@@ -99,7 +99,6 @@ impl App for CommandPaletteApp {
                             state.selections.push("-- Dismissed --".to_string());
                         }
                         CommandPaletteOutput::QueryChanged(_) => {}
-                        _ => {}
                     }
                 }
             }

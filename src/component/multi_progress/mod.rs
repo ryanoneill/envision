@@ -243,7 +243,6 @@ pub enum MultiProgressMessage {
 
 /// Output messages from MultiProgress.
 #[derive(Clone, Debug, PartialEq)]
-#[non_exhaustive]
 pub enum MultiProgressOutput {
     /// An item was added.
     Added(String),

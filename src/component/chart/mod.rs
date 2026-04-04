@@ -145,7 +145,6 @@ pub enum ChartMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-#[non_exhaustive]
 pub enum ChartOutput {
     /// The active series changed.
     ActiveSeriesChanged(usize),

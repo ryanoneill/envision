@@ -148,7 +148,6 @@ pub enum HeatmapMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-#[non_exhaustive]
 pub enum HeatmapOutput {
     /// A cell was selected/confirmed with Enter.
     CellSelected {

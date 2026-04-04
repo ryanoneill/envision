@@ -117,7 +117,6 @@ pub enum TabBarMessage {
 
 /// Output messages from a [`TabBar`] component.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum TabBarOutput {
     /// A tab was selected (contains the new active index).
     TabSelected(usize),

@@ -100,7 +100,6 @@ pub enum DataGridMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-#[non_exhaustive]
 pub enum DataGridOutput<T: Clone> {
     /// A cell was edited. Contains the row index, column index, and new value.
     CellEdited {

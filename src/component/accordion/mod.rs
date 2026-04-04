@@ -151,7 +151,6 @@ pub enum AccordionMessage {
 
 /// Output messages from an Accordion.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum AccordionOutput {
     /// A panel was expanded (index).
     Expanded(usize),

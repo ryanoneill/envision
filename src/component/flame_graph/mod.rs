@@ -110,7 +110,6 @@ pub enum FlameGraphMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-#[non_exhaustive]
 pub enum FlameGraphOutput {
     /// A frame was selected.
     FrameSelected {

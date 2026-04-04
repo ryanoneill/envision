@@ -58,7 +58,6 @@ pub enum CollapsibleMessage {
 
 /// Output messages from a Collapsible.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum CollapsibleOutput {
     /// The section was expanded.
     Expanded,

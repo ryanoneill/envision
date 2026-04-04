@@ -78,7 +78,6 @@ pub enum LineInputMessage {
 
 /// Output events from the [`super::LineInput`] component.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum LineInputOutput {
     /// The buffer was submitted (Enter pressed). Contains the submitted text.
     /// The buffer is cleared and the text is pushed to history.

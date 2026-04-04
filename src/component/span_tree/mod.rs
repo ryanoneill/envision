@@ -106,7 +106,6 @@ pub enum SpanTreeMessage {
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
-#[non_exhaustive]
 pub enum SpanTreeOutput {
     /// A span was selected. Contains the span id.
     Selected(String),

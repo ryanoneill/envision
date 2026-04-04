@@ -155,7 +155,6 @@ pub enum TextAreaMessage {
 
 /// Output messages from a TextArea.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum TextAreaOutput {
     /// The value was submitted.
     Submitted(String),

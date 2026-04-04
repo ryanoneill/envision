@@ -83,7 +83,6 @@ pub enum SearchableListMessage {
 
 /// Output messages from a SearchableList.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum SearchableListOutput<T: Clone> {
     /// An item was selected (e.g., Enter pressed while list is focused).
     Selected(T),

@@ -132,7 +132,6 @@ pub enum LogViewerMessage {
 
 /// Output messages from a LogViewer.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum LogViewerOutput {
     /// A log entry was added.
     Added(u64),

@@ -73,7 +73,6 @@ pub enum CommandPaletteMessage {
 
 /// Output messages from a CommandPalette.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum CommandPaletteOutput {
     /// An item was confirmed/selected.
     Selected(PaletteItem),
