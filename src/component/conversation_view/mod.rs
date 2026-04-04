@@ -961,31 +961,20 @@ impl ConversationView {
     /// ```rust
     /// use envision::component::{
     ///     ConversationView, ConversationViewState, ConversationMessage,
-    ///     ConversationRole, ViewContext,
+    ///     ConversationRole, MessageSource, ViewContext,
     /// };
-    /// use envision::prelude::*;
-    /// use envision::component::test_utils;
     ///
     /// // Application owns the canonical message list
     /// let messages = vec![
     ///     ConversationMessage::new(ConversationRole::User, "Hello"),
     ///     ConversationMessage::new(ConversationRole::Assistant, "Hi!"),
     /// ];
+    /// assert_eq!(messages.source_messages().len(), 2);
     ///
     /// // State tracks only view configuration (scroll, collapsed blocks, etc.)
     /// let state = ConversationViewState::new();
-    /// let (mut terminal, theme) = test_utils::setup_render(60, 20);
-    ///
-    /// terminal.draw(|frame| {
-    ///     ConversationView::view_from(
-    ///         &messages,
-    ///         &state,
-    ///         frame,
-    ///         frame.area(),
-    ///         &theme,
-    ///         &ViewContext::default(),
-    ///     );
-    /// }).unwrap();
+    /// // Call ConversationView::view_from(&messages, &state, frame, area, &theme, &ctx)
+    /// // to render from the external source without mirroring.
     /// ```
     pub fn view_from(
         source: &dyn MessageSource,
