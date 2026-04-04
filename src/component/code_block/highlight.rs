@@ -38,6 +38,8 @@ pub enum Language {
     Toml,
     /// SQL
     Sql,
+    /// HCL (HashiCorp Configuration Language — Terraform, etc.)
+    Hcl,
     /// Plain text (no highlighting)
     #[default]
     Plain,
@@ -66,6 +68,7 @@ impl Language {
             Language::Yaml => "YAML",
             Language::Toml => "TOML",
             Language::Sql => "SQL",
+            Language::Hcl => "HCL",
             Language::Plain => "Plain",
         }
     }
@@ -264,6 +267,32 @@ impl Language {
                 "GRANT",
                 "REVOKE",
             ],
+            Language::Hcl => &[
+                "resource",
+                "data",
+                "variable",
+                "output",
+                "locals",
+                "module",
+                "provider",
+                "terraform",
+                "backend",
+                "required_providers",
+                "required_version",
+                "for_each",
+                "count",
+                "depends_on",
+                "lifecycle",
+                "provisioner",
+                "connection",
+                "dynamic",
+                "content",
+                "for",
+                "in",
+                "if",
+                "else",
+                "endif",
+            ],
             Language::Plain => &[],
         }
     }
@@ -400,6 +429,50 @@ impl Language {
                 "MIN",
                 "MAX",
             ],
+            Language::Hcl => &[
+                "string",
+                "number",
+                "bool",
+                "list",
+                "map",
+                "set",
+                "object",
+                "tuple",
+                "any",
+                "true",
+                "false",
+                "null",
+                "each",
+                "self",
+                "var",
+                "local",
+                "path",
+                "tostring",
+                "tonumber",
+                "tobool",
+                "tolist",
+                "toset",
+                "tomap",
+                "length",
+                "lookup",
+                "merge",
+                "concat",
+                "join",
+                "split",
+                "replace",
+                "format",
+                "formatlist",
+                "file",
+                "templatefile",
+                "jsonencode",
+                "jsondecode",
+                "yamlencode",
+                "yamldecode",
+                "base64encode",
+                "base64decode",
+                "cidrsubnet",
+                "cidrhost",
+            ],
             _ => &[],
         }
     }
@@ -410,7 +483,11 @@ impl Language {
             Language::Rust | Language::Go | Language::JavaScript | Language::TypeScript => {
                 Some("//")
             }
-            Language::Python | Language::Shell | Language::Yaml | Language::Toml => Some("#"),
+            Language::Python
+            | Language::Shell
+            | Language::Yaml
+            | Language::Toml
+            | Language::Hcl => Some("#"),
             Language::Sql => Some("--"),
             Language::Json | Language::Plain => None,
         }

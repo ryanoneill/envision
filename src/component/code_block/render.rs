@@ -18,6 +18,7 @@ use crate::theme::Theme;
 const GUTTER_WIDTH: u16 = 7;
 
 /// Renders the CodeBlock in the given area.
+#[allow(clippy::too_many_lines)]
 pub(super) fn render(
     state: &CodeBlockState,
     frame: &mut Frame,
@@ -101,7 +102,7 @@ pub(super) fn render(
             );
         }
 
-        // Render code content
+        // Render code content with horizontal scroll offset
         let code_x = inner.x + gutter_width;
         let code_line_area = Rect::new(code_x, y, code_area_width, 1);
         render_code_line(
@@ -112,6 +113,7 @@ pub(super) fn render(
             code_line_area,
             theme,
             disabled,
+            state.horizontal_offset,
         );
     }
 
@@ -161,7 +163,38 @@ fn render_gutter(
     frame.render_widget(paragraph, area);
 }
 
+/// Applies a horizontal offset to a list of styled spans, skipping
+/// the first `offset` characters while preserving styling.
+fn apply_horizontal_offset<'a>(spans: Vec<Span<'a>>, offset: usize) -> Vec<Span<'a>> {
+    if offset == 0 {
+        return spans;
+    }
+
+    let mut remaining = offset;
+    let mut result = Vec::new();
+
+    for span in spans {
+        let len = span.content.len();
+        if remaining >= len {
+            // Skip this entire span
+            remaining -= len;
+            continue;
+        }
+        if remaining > 0 {
+            // Partially skip this span
+            let trimmed: String = span.content.chars().skip(remaining).collect();
+            result.push(Span::styled(trimmed, span.style));
+            remaining = 0;
+        } else {
+            result.push(span);
+        }
+    }
+
+    result
+}
+
 /// Renders a single line of highlighted code.
+#[allow(clippy::too_many_arguments)]
 fn render_code_line(
     line_text: &str,
     is_highlighted: bool,
@@ -169,11 +202,12 @@ fn render_code_line(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
-
     disabled: bool,
+    horizontal_offset: usize,
 ) {
     if disabled {
-        let paragraph = Paragraph::new(line_text).style(theme.disabled_style());
+        let visible: String = line_text.chars().skip(horizontal_offset).collect();
+        let paragraph = Paragraph::new(visible).style(theme.disabled_style());
         frame.render_widget(paragraph, area);
         return;
     }
@@ -182,7 +216,8 @@ fn render_code_line(
         // Highlighted lines get a distinct background
         let hl_bg = Color::Rgb(50, 50, 20);
         let spans = highlight_line(line_text, &state.language);
-        let styled_spans: Vec<Span<'_>> = spans
+        let shifted = apply_horizontal_offset(spans, horizontal_offset);
+        let styled_spans: Vec<Span<'_>> = shifted
             .into_iter()
             .map(|s| {
                 let mut style = s.style;
@@ -204,7 +239,8 @@ fn render_code_line(
         frame.render_widget(paragraph, area);
     } else {
         let spans = highlight_line(line_text, &state.language);
-        let line = Line::from(spans);
+        let shifted = apply_horizontal_offset(spans, horizontal_offset);
+        let line = Line::from(shifted);
         let paragraph = Paragraph::new(line);
         frame.render_widget(paragraph, area);
     }
