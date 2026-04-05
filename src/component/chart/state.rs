@@ -259,6 +259,26 @@ impl ChartState {
         self.thresholds.clear();
     }
 
+    /// Returns the cursor position (data index), if set.
+    pub fn cursor_position(&self) -> Option<usize> {
+        self.cursor_position
+    }
+
+    /// Sets the cursor position.
+    pub fn set_cursor_position(&mut self, position: Option<usize>) {
+        self.cursor_position = position;
+    }
+
+    /// Returns whether the crosshair is visible.
+    pub fn show_crosshair(&self) -> bool {
+        self.show_crosshair
+    }
+
+    /// Sets crosshair visibility.
+    pub fn set_show_crosshair(&mut self, show: bool) {
+        self.show_crosshair = show;
+    }
+
     /// Returns the vertical reference lines.
     pub fn vertical_lines(&self) -> &[VerticalLine] {
         &self.vertical_lines
