@@ -736,12 +736,18 @@ impl ChartState {
 
     /// Maps an input event to a chart message.
     pub fn handle_event(&self, event: &Event) -> Option<ChartMessage> {
-        Chart::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Chart::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<ChartOutput> {
-        Chart::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Chart::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.
@@ -771,17 +777,7 @@ impl Component for Chart {
         ChartState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         _state: &Self::State,
         event: &Event,
         ctx: &ViewContext,

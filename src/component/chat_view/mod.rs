@@ -768,7 +768,10 @@ impl ChatViewState {
     /// assert_eq!(state.handle_event(&event), Some(ChatViewMessage::ToggleFocus));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<ChatViewMessage> {
-        ChatView::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        ChatView::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -786,7 +789,10 @@ impl ChatViewState {
     /// assert!(matches!(output, Some(ChatViewOutput::InputChanged(_))));
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<ChatViewOutput> {
-        ChatView::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        ChatView::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.

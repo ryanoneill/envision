@@ -534,7 +534,10 @@ impl CalendarState {
     /// assert_eq!(msg, Some(CalendarMessage::SelectNextDay));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<CalendarMessage> {
-        Calendar::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Calendar::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -552,7 +555,10 @@ impl CalendarState {
     /// assert_eq!(output, Some(CalendarOutput::DateSelected(2026, 3, 15)));
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<CalendarOutput> {
-        Calendar::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Calendar::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the calendar state with a message, returning any output.
@@ -797,17 +803,7 @@ impl Component for Calendar {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         _state: &Self::State,
         event: &Event,
         ctx: &ViewContext,
