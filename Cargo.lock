@@ -422,6 +422,7 @@ dependencies = [
  "crossterm",
  "futures-util",
  "insta",
+ "moxcms",
  "pretty_assertions",
  "proptest",
  "pulldown-cmark",
@@ -794,9 +795,9 @@ dependencies = [
 
 [[package]]
 name = "moxcms"
-version = "0.7.11"
+version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac9557c559cd6fc9867e122e20d2cbefc9ca29d80d027a8e39310920ed2f0a97"
+checksum = "80986bbbcf925ebd3be54c26613d861255284584501595cf418320c078945608"
 dependencies = [
  "num-traits",
  "pxfm",
