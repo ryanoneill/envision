@@ -410,11 +410,9 @@ fn test_view_multiple_items_mixed_states() {
 
 #[test]
 fn test_view_disabled_state() {
-    let mut state = MultiProgressState::new().with_disabled(true);
+    let mut state = MultiProgressState::new();
     state.add("id1", "Item 1");
 
-    // Need to temporarily enable to add progress
-    state.set_disabled(false);
     MultiProgress::update(
         &mut state,
         MultiProgressMessage::SetProgress {
@@ -422,7 +420,6 @@ fn test_view_disabled_state() {
             progress: 0.5,
         },
     );
-    state.set_disabled(true);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 

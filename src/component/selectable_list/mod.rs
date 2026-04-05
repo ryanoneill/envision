@@ -5,7 +5,6 @@
 //! stored in [`SelectableListState<T>`], updated via [`SelectableListMessage`],
 //! and produces [`SelectableListOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`SearchableList`](super::SearchableList) for a filterable variant,
 //! and [`LoadingList`](super::LoadingList) for lists with loading states.
@@ -13,7 +12,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Component, Focusable, SelectableListMessage, SelectableList, SelectableListState};
+//! use envision::component::{Component, SelectableListMessage, SelectableList, SelectableListState};
 //!
 //! // Create a list of items
 //! let mut state = SelectableList::<String>::init();
@@ -30,7 +29,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, ListState};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -79,8 +78,6 @@ pub struct SelectableListState<T: Clone> {
     items: Vec<T>,
     #[cfg_attr(feature = "serialization", serde(skip))]
     list_state: ListState,
-    focused: bool,
-    disabled: bool,
     filter_text: String,
     filtered_indices: Vec<usize>,
     #[cfg_attr(feature = "serialization", serde(skip))]
@@ -91,8 +88,6 @@ impl<T: Clone + PartialEq> PartialEq for SelectableListState<T> {
     fn eq(&self, other: &Self) -> bool {
         self.items == other.items
             && self.list_state.selected() == other.list_state.selected()
-            && self.focused == other.focused
-            && self.disabled == other.disabled
             && self.filter_text == other.filter_text
     }
 }
@@ -102,8 +97,6 @@ impl<T: Clone> Default for SelectableListState<T> {
         Self {
             items: Vec::new(),
             list_state: ListState::default(),
-            focused: false,
-            disabled: false,
             filter_text: String::new(),
             filtered_indices: Vec::new(),
             scroll: ScrollState::default(),
@@ -145,8 +138,6 @@ impl<T: Clone> SelectableListState<T> {
         let mut state = Self {
             items,
             list_state: ListState::default(),
-            focused: false,
-            disabled: false,
             filter_text: String::new(),
             filtered_indices,
             scroll,
@@ -442,70 +433,6 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
         Some(item)
     }
 
-    /// Returns true if the selectable list is focused.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = SelectableListState::new(vec!["a", "b"]);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = SelectableListState::new(vec!["a", "b"]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the selectable list is disabled.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = SelectableListState::new(vec!["a"]);
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = SelectableListState::new(vec!["a"]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state using builder pattern.
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Sets the filter text for case-insensitive substring matching.
     ///
     /// Items whose `Display` output contains the filter text (case-insensitive)
@@ -557,16 +484,6 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
         }
     }
 
-    /// Maps an input event to a selectable list message.
-    pub fn handle_event(&self, event: &Event) -> Option<SelectableListMessage> {
-        SelectableList::<T>::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<SelectableListOutput<T>> {
-        SelectableList::<T>::dispatch_event(self, event)
-    }
-
     /// Updates the selectable list state with a message, returning any output.
     pub fn update(&mut self, msg: SelectableListMessage) -> Option<SelectableListOutput<T>> {
         SelectableList::<T>::update(self, msg)
@@ -595,8 +512,12 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
         SelectableListState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -628,7 +549,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             _ => {}
         }
 
-        if state.disabled || state.filtered_indices.is_empty() {
+        if state.filtered_indices.is_empty() {
             return None;
         }
 
@@ -738,26 +659,6 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             bar_scroll.set_offset(list_state.offset());
             crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
         }
-    }
-}
-
-impl<T: Clone + std::fmt::Display + 'static> Focusable for SelectableList<T> {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl<T: Clone + std::fmt::Display + 'static> Disableable for SelectableList<T> {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

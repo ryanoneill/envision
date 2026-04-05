@@ -8,14 +8,13 @@
 //! State is stored in [`AlertPanelState`], updated via [`AlertPanelMessage`],
 //! and produces [`AlertPanelOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
 //! use envision::component::{
 //!     AlertPanel, AlertPanelState, AlertMetric, AlertThreshold, AlertState,
-//!     Component, Focusable,
+//!     Component,
 //! };
 //!
 //! let metrics = vec![
@@ -45,7 +44,7 @@ use std::marker::PhantomData;
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -62,7 +61,6 @@ use crate::theme::Theme;
 /// let mut state = AlertPanelState::new().with_metrics(vec![
 ///     AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)).with_value(50.0),
 /// ]);
-/// state.set_focused(true);
 /// let output = state.update(AlertPanelMessage::UpdateMetric {
 ///     id: "cpu".into(),
 ///     value: 80.0,
@@ -175,10 +173,6 @@ pub struct AlertPanelState {
     show_sparklines: bool,
     /// Whether to show threshold values.
     show_thresholds: bool,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for AlertPanelState {
@@ -190,8 +184,6 @@ impl Default for AlertPanelState {
             title: None,
             show_sparklines: true,
             show_thresholds: false,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -287,21 +279,6 @@ impl AlertPanelState {
     /// ```
     pub fn with_show_thresholds(mut self, show: bool) -> Self {
         self.show_thresholds = show;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::AlertPanelState;
-    ///
-    /// let state = AlertPanelState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -459,64 +436,6 @@ impl AlertPanelState {
     /// ```
     pub fn set_show_thresholds(&mut self, show: bool) {
         self.show_thresholds = show;
-    }
-
-    /// Returns true if the panel is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::AlertPanelState;
-    ///
-    /// let state = AlertPanelState::new();
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::AlertPanelState;
-    ///
-    /// let mut state = AlertPanelState::new();
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the panel is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::AlertPanelState;
-    ///
-    /// let state = AlertPanelState::new();
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::AlertPanelState;
-    ///
-    /// let mut state = AlertPanelState::new();
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
     }
 
     /// Adds a metric to the panel.
@@ -724,49 +643,6 @@ impl AlertPanelState {
 
     // ---- Instance methods ----
 
-    /// Maps an input event to an alert panel message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{
-    ///     AlertPanelState, AlertPanelMessage, AlertMetric, AlertThreshold,
-    /// };
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = AlertPanelState::new().with_metrics(vec![
-    ///     AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)),
-    /// ]);
-    /// state.set_focused(true);
-    /// let msg = state.handle_event(&Event::key(KeyCode::Enter));
-    /// assert_eq!(msg, Some(AlertPanelMessage::Select));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<AlertPanelMessage> {
-        AlertPanel::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{
-    ///     AlertPanelState, AlertPanelOutput, AlertMetric, AlertThreshold,
-    /// };
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = AlertPanelState::new().with_metrics(vec![
-    ///     AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)),
-    ///     AlertMetric::new("mem", "Memory", AlertThreshold::new(80.0, 95.0)),
-    /// ]);
-    /// state.set_focused(true);
-    /// let output = state.dispatch_event(&Event::key(KeyCode::Right));
-    /// assert!(output.is_some());
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<AlertPanelOutput> {
-        AlertPanel::dispatch_event(self, event)
-    }
-
     /// Updates the state with a message, returning any output.
     ///
     /// # Example
@@ -811,8 +687,12 @@ impl Component for AlertPanel {
         AlertPanelState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -944,26 +824,6 @@ impl Component for AlertPanel {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render_alert_panel(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl Focusable for AlertPanel {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for AlertPanel {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

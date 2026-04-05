@@ -42,8 +42,7 @@ fn test_snapshot_populated() {
 
 #[test]
 fn test_snapshot_focused() {
-    let mut state = MetricsDashboardState::new(sample_widgets(), 3);
-    MetricsDashboard::set_focused(&mut state, true);
+    let state = MetricsDashboardState::new(sample_widgets(), 3);
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
@@ -62,7 +61,6 @@ fn test_snapshot_focused() {
 #[test]
 fn test_snapshot_focused_second_widget() {
     let mut state = MetricsDashboardState::new(sample_widgets(), 3);
-    MetricsDashboard::set_focused(&mut state, true);
     MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal

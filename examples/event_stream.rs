@@ -32,8 +32,6 @@ impl App for EventStreamApp {
             .with_title("System Events")
             .with_visible_columns(vec![]);
 
-        stream.set_focused(true);
-
         // Simulate structured events from multiple services
         push_event(
             &mut stream,
@@ -192,7 +190,8 @@ impl App for EventStreamApp {
                 return Some(Msg::Quit);
             }
         }
-        state.stream.handle_event(event).map(Msg::Stream)
+        EventStream::handle_event(&state.stream, event, &ViewContext::new().focused(true))
+            .map(Msg::Stream)
     }
 }
 

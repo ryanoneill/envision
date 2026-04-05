@@ -28,13 +28,12 @@ impl App for CalendarApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut calendar = CalendarState::new(2026, 3)
+        let calendar = CalendarState::new(2026, 3)
             .with_selected_day(1)
             .with_title("My Calendar")
             .with_event(2026, 3, 10, Color::Green)
             .with_event(2026, 3, 15, Color::Red)
             .with_event(2026, 3, 24, Color::Cyan);
-        calendar.set_focused(true);
 
         (State { calendar }, Command::none())
     }
@@ -87,7 +86,8 @@ impl App for CalendarApp {
                 return Some(Msg::Quit);
             }
         }
-        state.calendar.handle_event(event).map(Msg::Calendar)
+        Calendar::handle_event(&state.calendar, event, &ViewContext::new().focused(true))
+            .map(Msg::Calendar)
     }
 }
 

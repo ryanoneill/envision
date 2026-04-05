@@ -64,7 +64,6 @@ impl App for DialogApp {
             }
             Msg::ShowDialog => {
                 Dialog::show(&mut state.dialog);
-                state.dialog.set_focused(true);
             }
             Msg::Quit => return Command::quit(),
         }
@@ -97,7 +96,8 @@ impl App for DialogApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if Dialog::is_visible(&state.dialog) {
-            return state.dialog.handle_event(event).map(Msg::Dialog);
+            return Dialog::handle_event(&state.dialog, event, &ViewContext::new().focused(true))
+                .map(Msg::Dialog);
         }
         if let Some(key) = event.as_key() {
             match key.code {

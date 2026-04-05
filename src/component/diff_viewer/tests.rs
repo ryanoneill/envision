@@ -3,9 +3,7 @@ use crate::component::test_utils;
 use crate::input::Event;
 
 fn focused_state() -> DiffViewerState {
-    let mut state = DiffViewerState::new();
-    DiffViewer::set_focused(&mut state, true);
-    state
+    DiffViewerState::new()
 }
 
 fn sample_diff_text() -> &'static str {
@@ -24,9 +22,7 @@ fn sample_diff_text() -> &'static str {
 }
 
 fn sample_state() -> DiffViewerState {
-    let mut state = DiffViewerState::from_diff(sample_diff_text());
-    state.set_focused(true);
-    state
+    DiffViewerState::from_diff(sample_diff_text())
 }
 
 fn two_hunk_state() -> DiffViewerState {
@@ -44,9 +40,8 @@ fn two_hunk_state() -> DiffViewerState {
 +new2
  end
 ";
-    let mut state = DiffViewerState::from_diff(diff);
-    state.set_focused(true);
-    state
+
+    DiffViewerState::from_diff(diff)
 }
 
 // =============================================================================
@@ -60,8 +55,6 @@ fn test_new() {
     assert_eq!(state.current_hunk(), 0);
     assert_eq!(state.hunk_count(), 0);
     assert_eq!(state.total_lines(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(*state.mode(), DiffMode::Unified);
 }
 
@@ -133,12 +126,6 @@ fn test_with_context_lines() {
 fn test_with_show_line_numbers() {
     let state = DiffViewerState::new().with_show_line_numbers(false);
     assert!(!state.show_line_numbers);
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = DiffViewerState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -416,16 +403,19 @@ fn test_clear_message() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
-    let msg = DiffViewer::handle_event(&state, &Event::key(KeyCode::Up));
+    let state = focused_state();
+    let msg = DiffViewer::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_unfocused_ignores_events() {
     let state = DiffViewerState::new();
-    let msg = DiffViewer::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = DiffViewer::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -437,7 +427,11 @@ fn test_unfocused_ignores_events() {
 fn test_handle_event_up() {
     let state = focused_state();
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::key(KeyCode::Up)),
+        DiffViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(DiffViewerMessage::ScrollUp)
     );
 }
@@ -446,7 +440,11 @@ fn test_handle_event_up() {
 fn test_handle_event_down() {
     let state = focused_state();
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::key(KeyCode::Down)),
+        DiffViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(DiffViewerMessage::ScrollDown)
     );
 }
@@ -455,11 +453,11 @@ fn test_handle_event_down() {
 fn test_handle_event_k_j() {
     let state = focused_state();
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::char('k')),
+        DiffViewer::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(DiffViewerMessage::ScrollUp)
     );
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::char('j')),
+        DiffViewer::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(DiffViewerMessage::ScrollDown)
     );
 }
@@ -468,7 +466,7 @@ fn test_handle_event_k_j() {
 fn test_handle_event_n_for_next_hunk() {
     let state = focused_state();
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::char('n')),
+        DiffViewer::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true)),
         Some(DiffViewerMessage::NextHunk)
     );
 }
@@ -479,7 +477,8 @@ fn test_handle_event_shift_n_for_prev_hunk() {
     assert_eq!(
         DiffViewer::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('N'), KeyModifiers::SHIFT)
+            &Event::key_with(KeyCode::Char('N'), KeyModifiers::SHIFT),
+            &ViewContext::new().focused(true),
         ),
         Some(DiffViewerMessage::PrevHunk)
     );
@@ -489,7 +488,7 @@ fn test_handle_event_shift_n_for_prev_hunk() {
 fn test_handle_event_p_for_prev_hunk() {
     let state = focused_state();
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::char('p')),
+        DiffViewer::handle_event(&state, &Event::char('p'), &ViewContext::new().focused(true)),
         Some(DiffViewerMessage::PrevHunk)
     );
 }
@@ -498,11 +497,19 @@ fn test_handle_event_p_for_prev_hunk() {
 fn test_handle_event_page_up_down() {
     let state = focused_state();
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::key(KeyCode::PageUp)),
+        DiffViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::PageUp),
+            &ViewContext::new().focused(true)
+        ),
         Some(DiffViewerMessage::PageUp(10))
     );
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::key(KeyCode::PageDown)),
+        DiffViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::PageDown),
+            &ViewContext::new().focused(true)
+        ),
         Some(DiffViewerMessage::PageDown(10))
     );
 }
@@ -511,11 +518,11 @@ fn test_handle_event_page_up_down() {
 fn test_handle_event_ctrl_u_d() {
     let state = focused_state();
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::ctrl('u')),
+        DiffViewer::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true)),
         Some(DiffViewerMessage::PageUp(10))
     );
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::ctrl('d')),
+        DiffViewer::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true)),
         Some(DiffViewerMessage::PageDown(10))
     );
 }
@@ -524,11 +531,19 @@ fn test_handle_event_ctrl_u_d() {
 fn test_handle_event_home_end() {
     let state = focused_state();
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::key(KeyCode::Home)),
+        DiffViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(DiffViewerMessage::Home)
     );
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::key(KeyCode::End)),
+        DiffViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(DiffViewerMessage::End)
     );
 }
@@ -538,13 +553,14 @@ fn test_handle_event_home_end() {
 fn test_handle_event_g_and_G() {
     let state = focused_state();
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::char('g')),
+        DiffViewer::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true)),
         Some(DiffViewerMessage::Home)
     );
     assert_eq!(
         DiffViewer::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT)
+            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &ViewContext::new().focused(true),
         ),
         Some(DiffViewerMessage::End)
     );
@@ -554,7 +570,7 @@ fn test_handle_event_g_and_G() {
 fn test_handle_event_m_toggle_mode() {
     let state = focused_state();
     assert_eq!(
-        DiffViewer::handle_event(&state, &Event::char('m')),
+        DiffViewer::handle_event(&state, &Event::char('m'), &ViewContext::new().focused(true)),
         Some(DiffViewerMessage::ToggleMode)
     );
 }
@@ -562,26 +578,15 @@ fn test_handle_event_m_toggle_mode() {
 #[test]
 fn test_handle_event_unrecognized() {
     let state = focused_state();
-    assert_eq!(DiffViewer::handle_event(&state, &Event::char('x')), None);
+    assert_eq!(
+        DiffViewer::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        None
+    );
 }
 
 // =============================================================================
 // Instance methods
 // =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(DiffViewerMessage::ScrollUp));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = sample_state();
-    let _output = state.dispatch_event(&Event::key(KeyCode::Down));
-    assert_eq!(state.scroll_offset(), 1);
-}
 
 #[test]
 fn test_instance_update() {
@@ -593,30 +598,6 @@ fn test_instance_update() {
 // =============================================================================
 // Focusable / Disableable traits
 // =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = DiffViewer::init();
-    assert!(!DiffViewer::is_focused(&state));
-
-    DiffViewer::focus(&mut state);
-    assert!(DiffViewer::is_focused(&state));
-
-    DiffViewer::blur(&mut state);
-    assert!(!DiffViewer::is_focused(&state));
-}
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = DiffViewer::init();
-    assert!(!DiffViewer::is_disabled(&state));
-
-    DiffViewer::disable(&mut state);
-    assert!(DiffViewer::is_disabled(&state));
-
-    DiffViewer::enable(&mut state);
-    assert!(!DiffViewer::is_disabled(&state));
-}
 
 // =============================================================================
 // Side-by-side pairs
@@ -735,8 +716,7 @@ fn test_view_unified_with_diff() {
 
 #[test]
 fn test_view_unified_focused() {
-    let mut state = DiffViewerState::from_diff(sample_diff_text()).with_title("Changes");
-    state.set_focused(true);
+    let state = DiffViewerState::from_diff(sample_diff_text()).with_title("Changes");
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
@@ -754,9 +734,7 @@ fn test_view_unified_focused() {
 
 #[test]
 fn test_view_unified_disabled() {
-    let state = DiffViewerState::from_diff(sample_diff_text())
-        .with_title("Changes")
-        .with_disabled(true);
+    let state = DiffViewerState::from_diff(sample_diff_text()).with_title("Changes");
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {

@@ -113,7 +113,7 @@ fn test_snapshot_mixed_states() {
 #[test]
 fn test_snapshot_disabled() {
     let tasks = make_tasks();
-    let state = LoadingListState::with_items(tasks, |t| t.name.clone()).with_disabled(true);
+    let state = LoadingListState::with_items(tasks, |t| t.name.clone());
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {

@@ -129,7 +129,6 @@ impl Default for State {
         let mut status_log = StatusLogState::new()
             .with_title("Activity")
             .with_max_entries(30);
-        status_log.set_focused(true);
         status_log.info("Dashboard initialized");
         status_log.info("Press Space to start a build");
 
@@ -403,7 +402,8 @@ impl App for DashboardApp {
             }
         }
         // Delegate scroll to status log
-        state.status_log.handle_event(event).map(Msg::Log)
+        StatusLog::handle_event(&state.status_log, event, &ViewContext::new().focused(true))
+            .map(Msg::Log)
     }
 
     fn on_tick(state: &State) -> Option<Msg> {

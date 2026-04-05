@@ -33,7 +33,6 @@ impl App for TerminalOutputApp {
             .with_title("Build Output")
             .with_auto_scroll(true)
             .with_running(true);
-        output.set_focused(true);
 
         // Simulate some build output with ANSI colors
         output.push_line("\x1b[1;34m==>\x1b[0m Building envision v0.7.0");
@@ -101,7 +100,8 @@ impl App for TerminalOutputApp {
             }
         }
 
-        state.output.handle_event(event).map(Msg::Output)
+        TerminalOutput::handle_event(&state.output, event, &ViewContext::new().focused(true))
+            .map(Msg::Output)
     }
 }
 

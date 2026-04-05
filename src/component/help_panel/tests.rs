@@ -25,15 +25,11 @@ fn sample_groups() -> Vec<KeyBindingGroup> {
 }
 
 fn focused_state() -> HelpPanelState {
-    let mut state = HelpPanelState::new();
-    HelpPanel::set_focused(&mut state, true);
-    state
+    HelpPanelState::new()
 }
 
 fn focused_state_with_groups() -> HelpPanelState {
-    let mut state = HelpPanelState::new().with_groups(sample_groups());
-    HelpPanel::set_focused(&mut state, true);
-    state
+    HelpPanelState::new().with_groups(sample_groups())
 }
 
 // =============================================================================
@@ -87,8 +83,7 @@ fn test_new() {
     let state = HelpPanelState::new();
     assert!(state.groups().is_empty());
     assert_eq!(state.title(), Some("Help"));
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
+
     assert!(state.is_visible());
 }
 
@@ -113,12 +108,6 @@ fn test_with_title() {
     let state = HelpPanelState::new().with_title("Keybindings");
     // Title is always "Help"
     assert_eq!(state.title(), Some("Help"));
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = HelpPanelState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 #[test]
@@ -321,7 +310,11 @@ fn test_update_returns_none() {
 fn test_handle_event_up() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::Up)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::ScrollUp)
     );
 }
@@ -330,7 +323,11 @@ fn test_handle_event_up() {
 fn test_handle_event_down() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::Down)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::ScrollDown)
     );
 }
@@ -339,11 +336,11 @@ fn test_handle_event_down() {
 fn test_handle_event_k_j() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::char('k')),
+        HelpPanel::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(HelpPanelMessage::ScrollUp)
     );
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::char('j')),
+        HelpPanel::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(HelpPanelMessage::ScrollDown)
     );
 }
@@ -352,11 +349,19 @@ fn test_handle_event_k_j() {
 fn test_handle_event_page_up_down() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::PageUp)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::PageUp),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::PageUp(10))
     );
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::PageDown)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::PageDown),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::PageDown(10))
     );
 }
@@ -365,11 +370,11 @@ fn test_handle_event_page_up_down() {
 fn test_handle_event_ctrl_u_d() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::ctrl('u')),
+        HelpPanel::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true)),
         Some(HelpPanelMessage::PageUp(10))
     );
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::ctrl('d')),
+        HelpPanel::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true)),
         Some(HelpPanelMessage::PageDown(10))
     );
 }
@@ -378,11 +383,19 @@ fn test_handle_event_ctrl_u_d() {
 fn test_handle_event_home_end() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::Home)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::Home)
     );
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::End)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::End)
     );
 }
@@ -392,13 +405,14 @@ fn test_handle_event_home_end() {
 fn test_handle_event_g_and_G() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::char('g')),
+        HelpPanel::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true)),
         Some(HelpPanelMessage::Home)
     );
     assert_eq!(
         HelpPanel::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT)
+            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &ViewContext::new().focused(true)
         ),
         Some(HelpPanelMessage::End)
     );
@@ -407,7 +421,10 @@ fn test_handle_event_g_and_G() {
 #[test]
 fn test_handle_event_unrecognized() {
     let state = focused_state();
-    assert_eq!(HelpPanel::handle_event(&state, &Event::char('x')), None);
+    assert_eq!(
+        HelpPanel::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        None
+    );
 }
 
 // =============================================================================
@@ -416,10 +433,13 @@ fn test_handle_event_unrecognized() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
+    let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::Up)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true).disabled(true)
+        ),
         None
     );
 }
@@ -428,7 +448,7 @@ fn test_disabled_ignores_events() {
 fn test_unfocused_ignores_events() {
     let state = HelpPanelState::new();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::Up)),
+        HelpPanel::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default()),
         None
     );
 }
@@ -438,57 +458,11 @@ fn test_unfocused_ignores_events() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(HelpPanelMessage::ScrollUp));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = focused_state_with_groups();
-    state.dispatch_event(&Event::key(KeyCode::Down));
-    assert_eq!(state.scroll_offset(), 1);
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = focused_state_with_groups();
     let output = state.update(HelpPanelMessage::ScrollDown);
     assert_eq!(output, None);
     assert_eq!(state.scroll_offset(), 1);
-}
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = HelpPanel::init();
-    assert!(!HelpPanel::is_focused(&state));
-
-    HelpPanel::focus(&mut state);
-    assert!(HelpPanel::is_focused(&state));
-
-    HelpPanel::blur(&mut state);
-    assert!(!HelpPanel::is_focused(&state));
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = HelpPanel::init();
-    assert!(!HelpPanel::is_disabled(&state));
-
-    HelpPanel::disable(&mut state);
-    assert!(HelpPanel::is_disabled(&state));
-
-    HelpPanel::enable(&mut state);
-    assert!(!HelpPanel::is_disabled(&state));
 }
 
 // =============================================================================
@@ -527,24 +501,6 @@ fn test_set_title() {
 }
 
 #[test]
-fn test_set_focused() {
-    let mut state = HelpPanelState::new();
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = HelpPanelState::new();
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_set_visible() {
     let mut state = HelpPanelState::new();
     state.set_visible(false);
@@ -563,7 +519,13 @@ fn test_view_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            HelpPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -575,7 +537,13 @@ fn test_view_with_groups() {
     let (mut terminal, theme) = test_utils::setup_render(40, 16);
     terminal
         .draw(|frame| {
-            HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            HelpPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -587,7 +555,13 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 16);
     terminal
         .draw(|frame| {
-            HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            HelpPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -595,10 +569,7 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_disabled() {
-    let mut state = HelpPanelState::new()
-        .with_groups(sample_groups())
-        .with_disabled(true);
-    state.set_focused(true);
+    let state = HelpPanelState::new().with_groups(sample_groups());
     let (mut terminal, theme) = test_utils::setup_render(40, 16);
     terminal
         .draw(|frame| {
@@ -624,7 +595,13 @@ fn test_view_scrolled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            HelpPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

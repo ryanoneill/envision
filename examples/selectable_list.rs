@@ -37,8 +37,7 @@ impl App for SelectableListApp {
             "C++".to_string(),
             "Haskell".to_string(),
         ];
-        let mut list = SelectableListState::new(items);
-        list.set_focused(true);
+        let list = SelectableListState::new(items);
 
         (State { list }, Command::none())
     }
@@ -87,7 +86,8 @@ impl App for SelectableListApp {
                 return Some(Msg::Quit);
             }
         }
-        state.list.handle_event(event).map(Msg::List)
+        SelectableList::handle_event(&state.list, event, &ViewContext::new().focused(true))
+            .map(Msg::List)
     }
 }
 

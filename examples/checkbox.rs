@@ -36,7 +36,6 @@ impl App for CheckboxApp {
 
     fn init() -> (State, Command<Msg>) {
         let mut notifications = CheckboxState::new("Enable notifications");
-        notifications.set_focused(true);
         notifications.set_checked(true);
 
         let dark_mode = CheckboxState::new("Dark mode");
@@ -64,34 +63,10 @@ impl App for CheckboxApp {
                 Checkbox::update(&mut state.auto_save, m);
             }
             Msg::FocusNext => {
-                // Blur current
-                match state.focus_index {
-                    0 => state.notifications.set_focused(false),
-                    1 => state.dark_mode.set_focused(false),
-                    _ => state.auto_save.set_focused(false),
-                }
                 state.focus_index = (state.focus_index + 1) % 3;
-                // Focus next
-                match state.focus_index {
-                    0 => state.notifications.set_focused(true),
-                    1 => state.dark_mode.set_focused(true),
-                    _ => state.auto_save.set_focused(true),
-                }
             }
             Msg::FocusPrev => {
-                // Blur current
-                match state.focus_index {
-                    0 => state.notifications.set_focused(false),
-                    1 => state.dark_mode.set_focused(false),
-                    _ => state.auto_save.set_focused(false),
-                }
                 state.focus_index = (state.focus_index + 2) % 3;
-                // Focus prev
-                match state.focus_index {
-                    0 => state.notifications.set_focused(true),
-                    1 => state.dark_mode.set_focused(true),
-                    _ => state.auto_save.set_focused(true),
-                }
             }
             Msg::Quit => return Command::quit(),
         }
@@ -179,12 +154,16 @@ impl App for CheckboxApp {
         }
         // Route event to focused checkbox
         match state.focus_index {
-            0 => state
-                .notifications
-                .handle_event(event)
-                .map(Msg::Notifications),
-            1 => state.dark_mode.handle_event(event).map(Msg::DarkMode),
-            _ => state.auto_save.handle_event(event).map(Msg::AutoSave),
+            0 => Checkbox::handle_event(
+                &state.notifications,
+                event,
+                &ViewContext::new().focused(true),
+            )
+            .map(Msg::Notifications),
+            1 => Checkbox::handle_event(&state.dark_mode, event, &ViewContext::new().focused(true))
+                .map(Msg::DarkMode),
+            _ => Checkbox::handle_event(&state.auto_save, event, &ViewContext::new().focused(true))
+                .map(Msg::AutoSave),
         }
     }
 }

@@ -34,8 +34,7 @@ impl App for RadioGroupApp {
             "Large (16 oz)".to_string(),
             "Extra Large (20 oz)".to_string(),
         ];
-        let mut size = RadioGroupState::new(options);
-        size.set_focused(true);
+        let size = RadioGroupState::new(options);
 
         (State { size }, Command::none())
     }
@@ -94,7 +93,8 @@ impl App for RadioGroupApp {
                 return Some(Msg::Quit);
             }
         }
-        state.size.handle_event(event).map(Msg::Size)
+        RadioGroup::<String>::handle_event(&state.size, event, &ViewContext::new().focused(true))
+            .map(Msg::Size)
     }
 }
 

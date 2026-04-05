@@ -110,11 +110,9 @@ impl App for StyledTextApp {
             .horizontal_rule()
             .text("Use Up/Down or j/k to scroll. Press q to quit.");
 
-        let mut state = StyledTextState::new()
+        let state = StyledTextState::new()
             .with_content(content)
             .with_title("Documentation");
-
-        state.set_focused(true);
 
         (State { text: state }, Command::none())
     }
@@ -158,7 +156,8 @@ impl App for StyledTextApp {
                 return Some(Msg::Quit);
             }
         }
-        state.text.handle_event(event).map(Msg::StyledText)
+        StyledText::handle_event(&state.text, event, &ViewContext::new().focused(true))
+            .map(Msg::StyledText)
     }
 }
 

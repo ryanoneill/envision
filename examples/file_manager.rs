@@ -327,7 +327,8 @@ impl App for FileManager {
 
         // Command palette gets priority
         if state.palette.is_visible() {
-            return CommandPalette::handle_event(&state.palette, event).map(Msg::Palette);
+            return CommandPalette::handle_event(&state.palette, event, &ViewContext::default())
+                .map(Msg::Palette);
         }
 
         // Global shortcuts
@@ -345,22 +346,29 @@ impl App for FileManager {
 
         // Browser-focused
         if state.focus.is_focused(&Focus::Browser) {
-            return FileBrowser::handle_event(&state.browser, event).map(Msg::Browser);
+            return FileBrowser::handle_event(&state.browser, event, &ViewContext::default())
+                .map(Msg::Browser);
         }
 
         // Preview-focused
         if state.focus.is_focused(&Focus::Preview) {
             return match state.preview_mode {
-                PreviewMode::Code => CodeBlock::handle_event(&state.code, event).map(Msg::Code),
-                PreviewMode::Diff => DiffViewer::handle_event(&state.diff, event).map(Msg::Diff),
+                PreviewMode::Code => {
+                    CodeBlock::handle_event(&state.code, event, &ViewContext::default())
+                        .map(Msg::Code)
+                }
+                PreviewMode::Diff => {
+                    DiffViewer::handle_event(&state.diff, event, &ViewContext::default())
+                        .map(Msg::Diff)
+                }
             };
         }
 
         // Fall through: split panel resize and breadcrumb navigation
-        if let Some(m) = SplitPanel::handle_event(&state.split, event) {
+        if let Some(m) = SplitPanel::handle_event(&state.split, event, &ViewContext::default()) {
             return Some(Msg::Split(m));
         }
-        Breadcrumb::handle_event(&state.breadcrumb, event).map(Msg::Crumb)
+        Breadcrumb::handle_event(&state.breadcrumb, event, &ViewContext::default()).map(Msg::Crumb)
     }
 }
 

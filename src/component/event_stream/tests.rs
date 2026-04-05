@@ -52,9 +52,7 @@ fn sample_state_with_sources() -> EventStreamState {
 }
 
 fn focused_state() -> EventStreamState {
-    let mut state = sample_state();
-    EventStream::set_focused(&mut state, true);
-    state
+    sample_state()
 }
 
 // =============================================================================
@@ -70,8 +68,6 @@ fn test_new() {
     assert!(state.show_timestamps());
     assert!(state.show_level());
     assert!(state.show_source());
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -123,12 +119,6 @@ fn test_with_show_level() {
 fn test_with_show_source() {
     let state = EventStreamState::new().with_show_source(false);
     assert!(!state.show_source());
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = EventStreamState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -556,7 +546,6 @@ fn test_stream_event_with_source() {
 #[test]
 fn test_push_event_message() {
     let mut state = EventStreamState::new();
-    state.set_focused(true);
     let event = StreamEvent::new(0, 100.0, EventLevel::Info, "test");
     let output = EventStream::update(&mut state, EventStreamMessage::PushEvent(event));
     assert_eq!(state.event_count(), 1);
@@ -740,33 +729,22 @@ fn test_search_resets_scroll() {
 }
 
 #[test]
-fn test_disabled_ignores_messages() {
-    let mut state = focused_state();
-    state.set_disabled(true);
-    let output = EventStream::update(&mut state, EventStreamMessage::ScrollDown);
-    assert_eq!(output, None);
-}
-
-#[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
-    let msg = EventStream::handle_event(&state, &Event::key(KeyCode::Down));
+    let state = focused_state();
+    let msg = EventStream::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_unfocused_ignores_events() {
     let state = sample_state();
-    let msg = EventStream::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg =
+        EventStream::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
     assert_eq!(msg, None);
-}
-
-#[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Down));
-    assert_eq!(msg, Some(EventStreamMessage::ScrollDown));
 }
 
 #[test]
@@ -779,39 +757,6 @@ fn test_instance_update() {
 }
 
 #[test]
-fn test_instance_dispatch_event() {
-    let mut state = focused_state();
-    state.auto_scroll = false;
-    state.scroll.set_offset(0);
-    state.dispatch_event(&Event::key(KeyCode::Down));
-    assert_eq!(state.scroll_offset(), 1);
-}
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = EventStream::init();
-    assert!(!EventStream::is_focused(&state));
-
-    EventStream::focus(&mut state);
-    assert!(EventStream::is_focused(&state));
-
-    EventStream::blur(&mut state);
-    assert!(!EventStream::is_focused(&state));
-}
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = EventStream::init();
-    assert!(!EventStream::is_disabled(&state));
-
-    EventStream::disable(&mut state);
-    assert!(EventStream::is_disabled(&state));
-
-    EventStream::enable(&mut state);
-    assert!(!EventStream::is_disabled(&state));
-}
-
-#[test]
 fn test_partial_eq() {
     let state1 = sample_state();
     let state2 = sample_state();
@@ -819,9 +764,10 @@ fn test_partial_eq() {
 }
 
 #[test]
-fn test_partial_eq_different_focus() {
-    let state1 = focused_state();
-    let state2 = sample_state();
+fn test_partial_eq_different_filter() {
+    let state1 = sample_state();
+    let mut state2 = sample_state();
+    state2.set_filter("hello".to_string());
     assert_ne!(state1, state2);
 }
 
@@ -832,7 +778,6 @@ fn test_partial_eq_different_focus() {
 #[test]
 fn test_scroll_empty_stream() {
     let mut state = EventStreamState::new();
-    EventStream::set_focused(&mut state, true);
     EventStream::update(&mut state, EventStreamMessage::ScrollDown);
     assert_eq!(state.scroll_offset(), 0);
 }

@@ -6,13 +6,12 @@
 //! [`MetricsDashboardState`], updated via [`MetricsDashboardMessage`], and
 //! produces [`MetricsDashboardOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, MetricsDashboard, MetricsDashboardState,
+//!     Component, MetricsDashboard, MetricsDashboardState,
 //!     MetricsDashboardMessage, MetricWidget, MetricKind,
 //! };
 //!
@@ -36,7 +35,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Sparkline};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -91,10 +90,6 @@ pub struct MetricsDashboardState {
     columns: usize,
     /// Currently selected widget index.
     selected: Option<usize>,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// Optional title.
     title: Option<String>,
 }
@@ -105,8 +100,6 @@ impl Default for MetricsDashboardState {
             widgets: Vec::new(),
             columns: 3,
             selected: None,
-            focused: false,
-            disabled: false,
             title: None,
         }
     }
@@ -133,8 +126,6 @@ impl MetricsDashboardState {
             widgets,
             columns: columns.max(1),
             selected,
-            focused: false,
-            disabled: false,
             title: None,
         }
     }
@@ -153,23 +144,6 @@ impl MetricsDashboardState {
     /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("Ops", 0),
-    /// ], 1).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -502,104 +476,6 @@ impl MetricsDashboardState {
 
     // ---- Instance methods ----
 
-    /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![], 1);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![], 1);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![], 1);
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![], 1);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a dashboard message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricsDashboardMessage, MetricWidget};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    /// ], 1);
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Enter);
-    /// assert_eq!(state.handle_event(&event), Some(MetricsDashboardMessage::Select));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<MetricsDashboardMessage> {
-        MetricsDashboard::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricsDashboardOutput, MetricWidget};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    ///     MetricWidget::counter("B", 0),
-    /// ], 2);
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Right);
-    /// let output = state.dispatch_event(&event);
-    /// assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(1)));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<MetricsDashboardOutput> {
-        MetricsDashboard::dispatch_event(self, event)
-    }
-
     /// Updates the state with a message, returning any output.
     ///
     /// # Example
@@ -645,8 +521,12 @@ impl Component for MetricsDashboard {
         MetricsDashboardState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -665,7 +545,7 @@ impl Component for MetricsDashboard {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.widgets.is_empty() {
+        if state.widgets.is_empty() {
             return None;
         }
 
@@ -779,30 +659,10 @@ impl Component for MetricsDashboard {
                 let widget_idx = row_idx * cols + col_idx;
                 if let Some(widget) = state.widgets.get(widget_idx) {
                     let is_selected = state.selected == Some(widget_idx);
-                    render_widget(widget, is_selected, state, frame, *col_area, theme);
+                    render_widget(widget, is_selected, frame, *col_area, theme, ctx);
                 }
             }
         }
-    }
-}
-
-impl Focusable for MetricsDashboard {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for MetricsDashboard {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 
@@ -810,14 +670,14 @@ impl Disableable for MetricsDashboard {
 fn render_widget(
     widget: &MetricWidget,
     is_selected: bool,
-    state: &MetricsDashboardState,
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    ctx: &ViewContext,
 ) {
-    let border_style = if state.disabled {
+    let border_style = if ctx.disabled {
         theme.disabled_style()
-    } else if is_selected && state.focused {
+    } else if is_selected && ctx.focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -835,7 +695,7 @@ fn render_widget(
         return;
     }
 
-    let value_style = if state.disabled {
+    let value_style = if ctx.disabled {
         theme.disabled_style()
     } else {
         value_color(widget, theme)

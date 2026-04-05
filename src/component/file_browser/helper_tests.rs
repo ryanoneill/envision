@@ -14,9 +14,7 @@ fn sample_entries() -> Vec<FileEntry> {
 }
 
 fn focused_state() -> FileBrowserState {
-    let mut state = FileBrowserState::new("/", sample_entries());
-    FileBrowser::set_focused(&mut state, true);
-    state
+    FileBrowserState::new("/", sample_entries())
 }
 
 // =============================================================================
@@ -96,8 +94,6 @@ fn test_debug_impl() {
     assert!(debug.contains("selected_paths"));
     assert!(debug.contains("filter_text"));
     assert!(debug.contains("internal_focus"));
-    assert!(debug.contains("focused"));
-    assert!(debug.contains("disabled"));
     assert!(debug.contains("selection_mode"));
     assert!(debug.contains("sort_field"));
     assert!(debug.contains("sort_direction"));
@@ -143,10 +139,24 @@ fn test_pathbar_focus_only_handles_tab() {
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     // In PathBar focus, regular keys shouldn't map
-    assert!(FileBrowser::handle_event(&state, &Event::char('j')).is_none());
-    assert!(FileBrowser::handle_event(&state, &Event::key(KeyCode::Enter)).is_none());
+    assert!(FileBrowser::handle_event(
+        &state,
+        &Event::char('j'),
+        &ViewContext::new().focused(true)
+    )
+    .is_none());
+    assert!(FileBrowser::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true)
+    )
+    .is_none());
     // Tab still works
-    let msg = FileBrowser::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::CycleFocus));
 }
 
@@ -160,7 +170,8 @@ fn test_filter_focus_handles_chars() {
     // Cycle to Filter
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     // In Filter focus, chars should map to FilterChar
-    let msg = FileBrowser::handle_event(&state, &Event::char('z'));
+    let msg =
+        FileBrowser::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(FileBrowserMessage::FilterChar('z')));
 }
 
@@ -168,7 +179,11 @@ fn test_filter_focus_handles_chars() {
 fn test_filter_focus_backspace() {
     let mut state = focused_state();
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
-    let msg = FileBrowser::handle_event(&state, &Event::key(KeyCode::Backspace));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::key(KeyCode::Backspace),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::FilterBackspace));
 }
 
@@ -176,7 +191,11 @@ fn test_filter_focus_backspace() {
 fn test_filter_focus_esc() {
     let mut state = focused_state();
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
-    let msg = FileBrowser::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::key(KeyCode::Esc),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::FilterClear));
 }
 
@@ -211,7 +230,6 @@ fn test_with_provider() {
 
     let provider = Arc::new(TestProvider);
     let mut state = FileBrowserState::with_provider("/", provider);
-    FileBrowser::set_focused(&mut state, true);
 
     assert_eq!(state.entries().len(), 2);
     assert_eq!(state.current_path(), "/");

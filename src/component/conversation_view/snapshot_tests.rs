@@ -1,11 +1,8 @@
 use super::*;
 use crate::component::test_utils;
-use crate::component::Focusable;
 
 fn focused_state() -> ConversationViewState {
-    let mut state = ConversationViewState::new();
-    ConversationView::set_focused(&mut state, true);
-    state
+    ConversationViewState::new()
 }
 
 // =============================================================================
@@ -61,7 +58,7 @@ fn test_snapshot_with_code_block() {
 
 #[test]
 fn test_snapshot_disabled() {
-    let mut state = ConversationViewState::new().with_disabled(true);
+    let mut state = ConversationViewState::new();
     state.push_user("Hello");
     state.push_assistant("Hi there!");
     let (mut terminal, theme) = test_utils::setup_render(60, 20);

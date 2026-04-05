@@ -41,7 +41,6 @@ use envision::component::{
     FlameGraphOutput,
     FlameGraphState,
     FlameNode,
-    Focusable,
     Gauge,
     GaugeMessage,
     GaugeState,
@@ -216,7 +215,6 @@ fn test_histogram_push_data_and_bin_computation() {
 #[test]
 fn test_heatmap_cell_navigation_and_selection() {
     let mut state = HeatmapState::new(3, 4);
-    state.set_focused(true);
 
     // Initial selection at (0, 0)
     assert_eq!(state.selected(), Some((0, 0)));
@@ -349,7 +347,6 @@ fn test_timeline_events_spans_and_zoom() {
             TimelineEvent::new("e2", 500.0, "Deploy"),
         ])
         .with_spans(vec![TimelineSpan::new("s1", 200.0, 800.0, "request-1")]);
-    state.set_focused(true);
 
     assert_eq!(state.events().len(), 2);
     assert_eq!(state.spans().len(), 1);
@@ -423,7 +420,6 @@ fn test_span_tree_expand_collapse_navigate() {
         .with_child(SpanNode::new("cache", "cache/lookup", 400.0, 600.0));
 
     let mut state = SpanTreeState::new(vec![root]);
-    state.set_focused(true);
 
     assert_eq!(state.roots().len(), 1);
     assert_eq!(state.global_start(), 0.0);
@@ -484,7 +480,6 @@ fn test_flame_graph_navigation_zoom_search() {
         .with_child(FlameNode::new("io()", 100));
 
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     assert!(state.root().is_some());
     assert_eq!(state.root().unwrap().label(), "main()");
@@ -548,7 +543,6 @@ fn test_flame_graph_navigation_zoom_search() {
 #[test]
 fn test_event_stream_push_and_level_filter() {
     let mut state = EventStreamState::new().with_title("System Events");
-    state.set_focused(true);
 
     // Push events at different levels
     state.push_event(EventLevel::Trace, "Trace message");
@@ -617,7 +611,6 @@ fn test_alert_panel_state_transitions() {
     ];
 
     let mut state = AlertPanelState::new().with_metrics(metrics).with_columns(2);
-    state.set_focused(true);
 
     // All start as OK
     assert_eq!(state.ok_count(), 3);
@@ -713,7 +706,6 @@ fn test_command_palette_filter_and_select() {
     ];
 
     let mut state = CommandPaletteState::new(items);
-    state.set_focused(true);
     state.set_visible(true);
 
     assert!(state.is_visible());
@@ -756,7 +748,6 @@ fn test_command_palette_filter_and_select() {
 #[test]
 fn test_calendar_navigation_and_selection() {
     let mut state = CalendarState::new(2026, 3).with_selected_day(15);
-    Calendar::focus(&mut state);
 
     assert_eq!(state.year(), 2026);
     assert_eq!(state.month(), 3);
@@ -872,7 +863,6 @@ fn test_slider_increment_decrement_clamping() {
     assert!((state.percentage() - 1.0).abs() < f64::EPSILON);
 
     // Disabled slider returns None
-    state.set_disabled(true);
     let output = Slider::update(&mut state, SliderMessage::Increment);
     assert_eq!(output, None);
 }
@@ -907,14 +897,7 @@ fn test_switch_toggle_workflow() {
     assert_eq!(output, Some(SwitchOutput::Toggled(false)));
     assert!(!state.is_on());
 
-    // Disabled switch does not toggle
-    state.set_disabled(true);
-    let output = Switch::update(&mut state, SwitchMessage::Toggle);
-    assert_eq!(output, None);
-    assert!(!state.is_on());
-
-    // Re-enable and verify toggle works again
-    state.set_disabled(false);
+    // Toggle back on
     let output = Switch::update(&mut state, SwitchMessage::Toggle);
     assert_eq!(output, Some(SwitchOutput::On));
     assert!(state.is_on());

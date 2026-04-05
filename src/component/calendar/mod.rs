@@ -5,19 +5,17 @@
 //! State is stored in [`CalendarState`], updated via [`CalendarMessage`],
 //! and produces [`CalendarOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Calendar, CalendarMessage, CalendarOutput, CalendarState, Component, Focusable};
+//! use envision::component::{Calendar, CalendarMessage, CalendarOutput, CalendarState, Component};
 //! use ratatui::style::Color;
 //!
 //! // Create a calendar for March 2026
 //! let mut state = CalendarState::new(2026, 3)
 //!     .with_selected_day(20)
 //!     .with_title("My Calendar");
-//! Calendar::focus(&mut state);
 //!
 //! assert_eq!(state.year(), 2026);
 //! assert_eq!(state.month(), 3);
@@ -44,7 +42,7 @@ use std::collections::HashMap;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -216,8 +214,6 @@ pub struct CalendarState {
     selected_day: Option<u32>,
     events: HashMap<(i32, u32, u32), Color>,
     title: Option<String>,
-    focused: bool,
-    disabled: bool,
 }
 
 impl CalendarState {
@@ -240,8 +236,6 @@ impl CalendarState {
             selected_day: None,
             events: HashMap::new(),
             title: None,
-            focused: false,
-            disabled: false,
         }
     }
 
@@ -288,21 +282,6 @@ impl CalendarState {
     /// ```
     pub fn with_event(mut self, year: i32, month: u32, day: u32, color: Color) -> Self {
         self.events.insert((year, month, day), color);
-        self
-    }
-
-    /// Sets the disabled state (builder method).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CalendarState;
-    ///
-    /// let state = CalendarState::new(2026, 3).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -461,100 +440,6 @@ impl CalendarState {
         self.events.contains_key(&(year, month, day))
     }
 
-    /// Returns whether the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CalendarState;
-    ///
-    /// let state = CalendarState::new(2026, 3);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CalendarState;
-    ///
-    /// let mut state = CalendarState::new(2026, 3);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns whether the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CalendarState;
-    ///
-    /// let state = CalendarState::new(2026, 3);
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CalendarState;
-    ///
-    /// let mut state = CalendarState::new(2026, 3);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a calendar message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Calendar, CalendarMessage, CalendarState, Component, Focusable};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = CalendarState::new(2026, 3).with_selected_day(15);
-    /// Calendar::focus(&mut state);
-    ///
-    /// let msg = state.handle_event(&Event::key(KeyCode::Right));
-    /// assert_eq!(msg, Some(CalendarMessage::SelectNextDay));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<CalendarMessage> {
-        Calendar::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Calendar, CalendarOutput, CalendarState, Focusable};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = CalendarState::new(2026, 3).with_selected_day(15);
-    /// Calendar::focus(&mut state);
-    ///
-    /// let output = state.dispatch_event(&Event::key(KeyCode::Enter));
-    /// assert_eq!(output, Some(CalendarOutput::DateSelected(2026, 3, 15)));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<CalendarOutput> {
-        Calendar::dispatch_event(self, event)
-    }
-
     /// Updates the calendar state with a message, returning any output.
     ///
     /// # Example
@@ -609,10 +494,9 @@ impl CalendarState {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{Calendar, CalendarMessage, CalendarState, Component, Focusable};
+/// use envision::component::{Calendar, CalendarMessage, CalendarState, Component};
 ///
 /// let mut state = CalendarState::new(2026, 3).with_selected_day(1);
-/// Calendar::focus(&mut state);
 ///
 /// // Navigate forward
 /// let output = Calendar::update(&mut state, CalendarMessage::NextMonth);
@@ -666,10 +550,6 @@ impl Component for Calendar {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             CalendarMessage::NextMonth => {
                 Self::go_next_month(state);
@@ -797,8 +677,12 @@ impl Component for Calendar {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -963,26 +847,6 @@ impl Component for Calendar {
 
         let paragraph = Paragraph::new(lines).style(normal_style);
         frame.render_widget(paragraph, inner);
-    }
-}
-
-impl Focusable for Calendar {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Calendar {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

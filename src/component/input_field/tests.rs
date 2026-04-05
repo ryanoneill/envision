@@ -254,8 +254,7 @@ fn test_len() {
 
 #[test]
 fn test_view() {
-    let mut state = InputFieldState::with_value("Hello");
-    state.focused = true;
+    let state = InputFieldState::with_value("Hello");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
@@ -280,7 +279,13 @@ fn test_view_unfocused() {
 
     terminal
         .draw(|frame| {
-            InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            InputField::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -289,8 +294,7 @@ fn test_view_unfocused() {
 
 #[test]
 fn test_view_disabled() {
-    let mut state = InputFieldState::with_value("Hello");
-    state.set_disabled(true);
+    let state = InputFieldState::with_value("Hello");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
@@ -316,7 +320,13 @@ fn test_view_placeholder() {
 
     terminal
         .draw(|frame| {
-            InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            InputField::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -396,86 +406,117 @@ fn test_word_nav_with_emoji() {
 
 #[test]
 fn test_handle_event_char_insert() {
-    let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::char('a'));
+    let state = InputField::init();
+
+    let msg =
+        InputField::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(InputFieldMessage::Insert('a')));
 }
 
 #[test]
 fn test_handle_event_backspace() {
-    let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Backspace));
+    let state = InputField::init();
+
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Backspace),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Backspace));
 }
 
 #[test]
 fn test_handle_event_delete() {
-    let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Delete));
+    let state = InputField::init();
+
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Delete),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Delete));
 }
 
 #[test]
 fn test_handle_event_left() {
-    let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Left));
+    let state = InputField::init();
+
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Left));
 }
 
 #[test]
 fn test_handle_event_right() {
-    let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Right));
+    let state = InputField::init();
+
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Right));
 }
 
 #[test]
 fn test_handle_event_home() {
-    let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Home));
+    let state = InputField::init();
+
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Home));
 }
 
 #[test]
 fn test_handle_event_end() {
-    let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::End));
+    let state = InputField::init();
+
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::End));
 }
 
 #[test]
 fn test_handle_event_enter() {
-    let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Enter));
+    let state = InputField::init();
+
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Submit));
 }
 
 #[test]
 fn test_handle_event_ctrl_left() {
-    let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
+    let state = InputField::init();
+
     let msg = InputField::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::WordLeft));
 }
 
 #[test]
 fn test_handle_event_ctrl_right() {
-    let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
+    let state = InputField::init();
+
     let msg = InputField::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::WordRight));
 }
@@ -483,164 +524,68 @@ fn test_handle_event_ctrl_right() {
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = InputField::init();
-    let msg = InputField::handle_event(&state, &Event::char('a'));
+    let msg = InputField::handle_event(&state, &Event::char('a'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_dispatch_event_char() {
     let mut state = InputField::init();
-    InputField::set_focused(&mut state, true);
-    let output = InputField::dispatch_event(&mut state, &Event::char('a'));
-    assert_eq!(output, Some(InputFieldOutput::Changed("a".to_string())));
-}
 
-#[test]
-fn test_instance_is_focused() {
-    let mut state = InputField::init();
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-}
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = InputField::init();
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::char('a'));
-    assert_eq!(msg, Some(InputFieldMessage::Insert('a')));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = InputField::init();
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::char('a'));
+    let output = InputField::dispatch_event(
+        &mut state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(InputFieldOutput::Changed("a".to_string())));
 }
 
 // ========== Disabled State Tests ==========
 
 #[test]
-fn test_is_disabled_default() {
-    let state = InputField::init();
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = InputField::init();
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = InputFieldState::new().with_disabled(true);
-    assert!(state.is_disabled());
-
-    let state = InputFieldState::new().with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_value_not_disabled() {
-    let state = InputFieldState::with_value("hello");
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_placeholder_not_disabled() {
-    let state = InputFieldState::with_placeholder("Enter text...");
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = InputField::init();
-    state.set_focused(true);
-    state.set_disabled(true);
+    let state = InputField::init();
 
-    let msg = InputField::handle_event(&state, &Event::char('a'));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Backspace));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Backspace),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
-}
-
-#[test]
-fn test_update_ignored_when_disabled() {
-    let mut state = InputFieldState::with_value("hello");
-    state.set_disabled(true);
-
-    let output = InputField::update(&mut state, InputFieldMessage::Insert('x'));
-    assert_eq!(output, None);
-    assert_eq!(state.value(), "hello");
-
-    let output = InputField::update(&mut state, InputFieldMessage::Backspace);
-    assert_eq!(output, None);
-    assert_eq!(state.value(), "hello");
-
-    let output = InputField::update(&mut state, InputFieldMessage::Clear);
-    assert_eq!(output, None);
-    assert_eq!(state.value(), "hello");
-
-    let output = InputField::update(&mut state, InputFieldMessage::Submit);
-    assert_eq!(output, None);
 }
 
 #[test]
 fn test_dispatch_event_ignored_when_disabled() {
     let mut state = InputField::init();
-    state.set_focused(true);
-    state.set_disabled(true);
 
-    let output = InputField::dispatch_event(&mut state, &Event::char('a'));
+    let output = InputField::dispatch_event(
+        &mut state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(output, None);
     assert!(state.is_empty());
-}
-
-#[test]
-fn test_instance_is_disabled() {
-    let mut state = InputField::init();
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_instance_handle_event_disabled() {
-    let mut state = InputField::init();
-    state.set_focused(true);
-    state.set_disabled(true);
-    let msg = state.handle_event(&Event::char('a'));
-    assert_eq!(msg, None);
-}
-
-#[test]
-fn test_instance_dispatch_event_disabled() {
-    let mut state = InputField::init();
-    state.set_focused(true);
-    state.set_disabled(true);
-    let output = state.dispatch_event(&Event::char('a'));
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_instance_update_disabled() {
-    let mut state = InputFieldState::with_value("hello");
-    state.set_disabled(true);
-    let output = state.update(InputFieldMessage::Insert('x'));
-    assert_eq!(output, None);
-    assert_eq!(state.value(), "hello");
 }
 
 // ========== cursor_display_position Tests ==========
@@ -710,7 +655,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                InputField::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });

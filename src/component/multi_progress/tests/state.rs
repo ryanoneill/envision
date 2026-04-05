@@ -252,8 +252,6 @@ fn test_default_matches_init() {
         default_state.auto_remove_completed(),
         init_state.auto_remove_completed()
     );
-    assert_eq!(default_state.is_focused(), init_state.is_focused());
-    assert_eq!(default_state.is_disabled(), init_state.is_disabled());
     assert_eq!(default_state.title(), init_state.title());
     assert_eq!(
         default_state.show_percentages(),
@@ -316,52 +314,12 @@ fn test_builder_chaining() {
         .with_max_visible(5)
         .with_auto_remove(true)
         .with_title("Downloads")
-        .with_percentages(false)
-        .with_disabled(true);
+        .with_percentages(false);
 
     assert_eq!(state.max_visible(), 5);
     assert!(state.auto_remove_completed());
     assert_eq!(state.title(), Some("Downloads"));
     assert!(!state.show_percentages());
-    assert!(state.is_disabled());
-}
-
-// ========================================
-// Focus State Tests
-// ========================================
-
-#[test]
-fn test_focus_default_false() {
-    let state = MultiProgressState::new();
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_set_focused() {
-    let mut state = MultiProgressState::new();
-    state.set_focused(true);
-    assert!(state.is_focused());
-
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_focusable_trait_is_focused() {
-    let state = MultiProgressState::new();
-    assert!(!MultiProgress::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_trait_set_focused() {
-    let mut state = MultiProgressState::new();
-    MultiProgress::set_focused(&mut state, true);
-    assert!(MultiProgress::is_focused(&state));
-    assert!(state.is_focused());
-
-    MultiProgress::set_focused(&mut state, false);
-    assert!(!MultiProgress::is_focused(&state));
-    assert!(!state.is_focused());
 }
 
 // ========================================
@@ -502,13 +460,11 @@ fn test_state_clone() {
         .with_title("Test")
         .with_max_visible(5);
     state.add("id1", "Item 1");
-    state.set_focused(true);
 
     let cloned = state.clone();
     assert_eq!(cloned.title(), Some("Test"));
     assert_eq!(cloned.max_visible(), 5);
     assert_eq!(cloned.len(), 1);
-    assert!(cloned.is_focused());
 }
 
 #[test]

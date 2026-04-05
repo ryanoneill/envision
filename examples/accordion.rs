@@ -55,8 +55,7 @@ impl App for AccordionApp {
             ),
         ];
 
-        let mut accordion = AccordionState::new(panels);
-        accordion.set_focused(true);
+        let accordion = AccordionState::new(panels);
 
         (State { accordion }, Command::none())
     }
@@ -111,7 +110,8 @@ impl App for AccordionApp {
                 return Some(Msg::Quit);
             }
         }
-        state.accordion.handle_event(event).map(Msg::Accordion)
+        Accordion::handle_event(&state.accordion, event, &ViewContext::new().focused(true))
+            .map(Msg::Accordion)
     }
 }
 

@@ -36,8 +36,7 @@ impl App for BreadcrumbApp {
             BreadcrumbSegment::new("Envision").with_data("/documents/projects/envision"),
         ];
 
-        let mut breadcrumb = BreadcrumbState::new(segments);
-        breadcrumb.set_focused(true);
+        let breadcrumb = BreadcrumbState::new(segments);
 
         let state = State {
             breadcrumb,
@@ -115,7 +114,8 @@ impl App for BreadcrumbApp {
                 return Some(Msg::Quit);
             }
         }
-        state.breadcrumb.handle_event(event).map(Msg::Breadcrumb)
+        Breadcrumb::handle_event(&state.breadcrumb, event, &ViewContext::new().focused(true))
+            .map(Msg::Breadcrumb)
     }
 }
 

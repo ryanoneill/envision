@@ -5,7 +5,6 @@
 //! [`TextAreaState`], updated via [`TextAreaMessage`], and produces
 //! [`TextAreaOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`InputField`](super::InputField) for single-line input,
 //! and [`LineInput`](super::LineInput) for a wrapping single-line input.
@@ -13,7 +12,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Component, Focusable, TextArea, TextAreaState, TextAreaMessage};
+//! use envision::component::{Component, TextArea, TextAreaState, TextAreaMessage};
 //!
 //! // Create a textarea
 //! let mut state = TextArea::init();
@@ -32,7 +31,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 use unicode_width::UnicodeWidthStr;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 use crate::undo::UndoStack;
@@ -179,10 +178,6 @@ pub struct TextAreaState {
     cursor_col: usize,
     /// First visible line (for scrolling).
     scroll_offset: usize,
-    /// Whether the textarea is focused.
-    focused: bool,
-    /// Whether the textarea is disabled.
-    disabled: bool,
     /// Placeholder text shown when empty.
     placeholder: String,
     /// Selection anchor position (row, col_byte). When Some, text is selected
@@ -210,8 +205,6 @@ impl Default for TextAreaState {
             cursor_row: 0,
             cursor_col: 0,
             scroll_offset: 0,
-            focused: false,
-            disabled: false,
             placeholder: String::new(),
             selection_anchor: None,
             clipboard: String::new(),
@@ -469,32 +462,6 @@ impl TextAreaState {
         self.clear_selection();
     }
 
-    /// Returns true if the textarea is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the textarea is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state using builder pattern.
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Sets whether line numbers are shown (builder pattern).
     ///
     /// # Example
@@ -518,16 +485,6 @@ impl TextAreaState {
     /// Sets whether line numbers are shown.
     pub fn set_show_line_numbers(&mut self, show: bool) {
         self.show_line_numbers = show;
-    }
-
-    /// Maps an input event to a textarea message.
-    pub fn handle_event(&self, event: &Event) -> Option<TextAreaMessage> {
-        TextArea::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<TextAreaOutput> {
-        TextArea::dispatch_event(self, event)
     }
 
     /// Updates the textarea state with a message, returning any output.
@@ -570,8 +527,12 @@ impl Component for TextArea {
         TextAreaState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Event::Paste(ref text) = event {
@@ -718,26 +679,6 @@ impl Component for TextArea {
                 frame.set_cursor_position((cursor_x, cursor_y));
             }
         }
-    }
-}
-
-impl Focusable for TextArea {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for TextArea {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

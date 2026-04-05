@@ -30,7 +30,7 @@ impl App for HelpPanelApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut help = HelpPanelState::new()
+        let help = HelpPanelState::new()
             .with_title("Keybindings")
             .with_groups(vec![
                 KeyBindingGroup::new(
@@ -75,7 +75,6 @@ impl App for HelpPanelApp {
                     ],
                 ),
             ]);
-        help.set_focused(true);
 
         (State { help }, Command::none())
     }
@@ -118,7 +117,8 @@ impl App for HelpPanelApp {
             }
         }
 
-        state.help.handle_event(event).map(Msg::Help)
+        HelpPanel::handle_event(&state.help, event, &ViewContext::new().focused(true))
+            .map(Msg::Help)
     }
 }
 

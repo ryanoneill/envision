@@ -349,7 +349,8 @@ impl App for LogExplorer {
 
         // Command palette gets priority when visible
         if state.palette.is_visible() {
-            return CommandPalette::handle_event(&state.palette, event).map(Msg::Palette);
+            return CommandPalette::handle_event(&state.palette, event, &ViewContext::default())
+                .map(Msg::Palette);
         }
 
         // Global shortcuts (always active)
@@ -370,13 +371,15 @@ impl App for LogExplorer {
 
         // Route to focused component
         if state.focus.is_focused(&Pane::LogViewer) {
-            if let Some(msg) = LogViewer::handle_event(&state.log, event) {
+            if let Some(msg) = LogViewer::handle_event(&state.log, event, &ViewContext::default()) {
                 return Some(Msg::Log(msg));
             }
         }
 
         if state.focus.is_focused(&Pane::EventStream) {
-            if let Some(msg) = EventStream::handle_event(&state.events, event) {
+            if let Some(msg) =
+                EventStream::handle_event(&state.events, event, &ViewContext::default())
+            {
                 return Some(Msg::Event(msg));
             }
         }

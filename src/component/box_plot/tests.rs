@@ -164,8 +164,6 @@ fn test_state_default() {
     assert!(state.show_outliers());
     assert_eq!(state.orientation(), &BoxPlotOrientation::Vertical);
     assert_eq!(state.selected(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -193,12 +191,6 @@ fn test_state_with_show_outliers_false() {
 fn test_state_with_orientation_horizontal() {
     let state = BoxPlotState::default().with_orientation(BoxPlotOrientation::Horizontal);
     assert_eq!(state.orientation(), &BoxPlotOrientation::Horizontal);
-}
-
-#[test]
-fn test_state_with_disabled() {
-    let state = BoxPlotState::default().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -399,54 +391,6 @@ fn test_global_max_empty() {
 }
 
 // =============================================================================
-// Focus and disabled
-// =============================================================================
-
-#[test]
-fn test_state_focused() {
-    let mut state = BoxPlotState::default();
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_state_disabled() {
-    let mut state = BoxPlotState::default();
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = BoxPlotState::default();
-    assert!(!BoxPlot::is_focused(&state));
-    BoxPlot::set_focused(&mut state, true);
-    assert!(BoxPlot::is_focused(&state));
-    BoxPlot::blur(&mut state);
-    assert!(!BoxPlot::is_focused(&state));
-    BoxPlot::focus(&mut state);
-    assert!(BoxPlot::is_focused(&state));
-}
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = BoxPlotState::default();
-    assert!(!BoxPlot::is_disabled(&state));
-    BoxPlot::set_disabled(&mut state, true);
-    assert!(BoxPlot::is_disabled(&state));
-    BoxPlot::enable(&mut state);
-    assert!(!BoxPlot::is_disabled(&state));
-    BoxPlot::disable(&mut state);
-    assert!(BoxPlot::is_disabled(&state));
-}
-
-// =============================================================================
 // Component trait: init
 // =============================================================================
 
@@ -466,70 +410,78 @@ fn test_component_init() {
 #[test]
 fn test_handle_event_not_focused() {
     let state = BoxPlotState::default();
-    let msg = BoxPlot::handle_event(&state, &Event::key(crate::input::KeyCode::Right));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::key(crate::input::KeyCode::Right),
+        &ViewContext::default(),
+    );
     assert!(msg.is_none());
 }
 
 #[test]
 fn test_handle_event_disabled() {
-    let mut state = BoxPlotState::default();
-    state.set_focused(true);
-    state.set_disabled(true);
-    let msg = BoxPlot::handle_event(&state, &Event::key(crate::input::KeyCode::Right));
+    let state = BoxPlotState::default();
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::key(crate::input::KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert!(msg.is_none());
 }
 
 #[test]
 fn test_handle_event_right_arrow() {
-    let mut state = BoxPlotState::new(vec![
+    let state = BoxPlotState::new(vec![
         BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
     ]);
-    state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::key(crate::input::KeyCode::Right));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::key(crate::input::KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BoxPlotMessage::NextDataset));
 }
 
 #[test]
 fn test_handle_event_left_arrow() {
-    let mut state = BoxPlotState::new(vec![
+    let state = BoxPlotState::new(vec![
         BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
     ]);
-    state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::key(crate::input::KeyCode::Left));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::key(crate::input::KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BoxPlotMessage::PrevDataset));
 }
 
 #[test]
 fn test_handle_event_l_key() {
-    let mut state = BoxPlotState::default();
-    state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::char('l'));
+    let state = BoxPlotState::default();
+    let msg = BoxPlot::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(BoxPlotMessage::NextDataset));
 }
 
 #[test]
 fn test_handle_event_h_key() {
-    let mut state = BoxPlotState::default();
-    state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::char('h'));
+    let state = BoxPlotState::default();
+    let msg = BoxPlot::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(BoxPlotMessage::PrevDataset));
 }
 
 #[test]
 fn test_handle_event_o_key() {
-    let mut state = BoxPlotState::default();
-    state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::char('o'));
+    let state = BoxPlotState::default();
+    let msg = BoxPlot::handle_event(&state, &Event::char('o'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(BoxPlotMessage::ToggleOutliers));
 }
 
 #[test]
 fn test_handle_event_unhandled_key() {
-    let mut state = BoxPlotState::default();
-    state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::char('z'));
+    let state = BoxPlotState::default();
+    let msg = BoxPlot::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
     assert!(msg.is_none());
 }
 
@@ -657,26 +609,6 @@ fn test_update_returns_none() {
 // =============================================================================
 // Instance methods
 // =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = BoxPlotState::default();
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::char('o'));
-    assert_eq!(msg, Some(BoxPlotMessage::ToggleOutliers));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = BoxPlotState::new(vec![
-        BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
-        BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
-    ]);
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(crate::input::KeyCode::Right));
-    assert!(output.is_none());
-    assert_eq!(state.selected(), 1);
-}
 
 #[test]
 fn test_instance_update() {
@@ -810,9 +742,8 @@ fn test_render_without_outliers() {
 
 #[test]
 fn test_render_focused() {
-    let mut state = BoxPlotState::new(vec![BoxPlotData::new("Test", 10.0, 20.0, 30.0, 40.0, 50.0)])
+    let state = BoxPlotState::new(vec![BoxPlotData::new("Test", 10.0, 20.0, 30.0, 40.0, 50.0)])
         .with_title("Focused Box Plot");
-    state.set_focused(true);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -829,8 +760,7 @@ fn test_render_focused() {
 
 #[test]
 fn test_render_disabled() {
-    let state = BoxPlotState::new(vec![BoxPlotData::new("Test", 10.0, 20.0, 30.0, 40.0, 50.0)])
-        .with_disabled(true);
+    let state = BoxPlotState::new(vec![BoxPlotData::new("Test", 10.0, 20.0, 30.0, 40.0, 50.0)]);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -919,8 +849,7 @@ fn test_render_horizontal_with_outliers() {
 #[test]
 fn test_render_horizontal_disabled() {
     let state = BoxPlotState::new(vec![BoxPlotData::new("Test", 10.0, 20.0, 30.0, 40.0, 50.0)])
-        .with_orientation(BoxPlotOrientation::Horizontal)
-        .with_disabled(true);
+        .with_orientation(BoxPlotOrientation::Horizontal);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {

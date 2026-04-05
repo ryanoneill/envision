@@ -5,16 +5,12 @@ use crate::input::{Event, KeyCode};
 fn test_new() {
     let state = ButtonState::new("Click me");
     assert_eq!(state.label(), "Click me");
-    assert!(!state.is_disabled());
-    assert!(!Button::is_focused(&state));
 }
 
 #[test]
 fn test_default() {
     let state = ButtonState::default();
     assert_eq!(state.label(), "");
-    assert!(!state.is_disabled());
-    assert!(!Button::is_focused(&state));
 }
 
 #[test]
@@ -26,20 +22,9 @@ fn test_press_enabled() {
 }
 
 #[test]
-fn test_press_disabled() {
-    let mut state = ButtonState::new("Submit");
-    state.set_disabled(true);
-
-    let output = Button::update(&mut state, ButtonMessage::Press);
-    assert_eq!(output, None);
-}
-
-#[test]
 fn test_init() {
     let state = Button::init();
     assert_eq!(state.label(), "");
-    assert!(!state.is_disabled());
-    assert!(!Button::is_focused(&state));
 }
 
 #[test]
@@ -58,8 +43,7 @@ fn test_view() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = ButtonState::new("Focused");
-    Button::set_focused(&mut state, true);
+    let state = ButtonState::new("Focused");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
 
     terminal
@@ -79,8 +63,7 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_disabled() {
-    let mut state = ButtonState::new("Disabled");
-    state.set_disabled(true);
+    let state = ButtonState::new("Disabled");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
 
     terminal
@@ -102,73 +85,55 @@ fn test_view_disabled() {
 
 #[test]
 fn test_handle_event_enter_when_focused() {
-    let mut state = ButtonState::new("OK");
-    Button::set_focused(&mut state, true);
-    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter));
+    let state = ButtonState::new("OK");
+    let msg = Button::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ButtonMessage::Press));
 }
 
 #[test]
 fn test_handle_event_space_when_focused() {
-    let mut state = ButtonState::new("OK");
-    Button::set_focused(&mut state, true);
-    let msg = Button::handle_event(&state, &Event::char(' '));
+    let state = ButtonState::new("OK");
+    let msg = Button::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(ButtonMessage::Press));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = ButtonState::new("OK");
-    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = ButtonState::new("OK");
-    Button::set_focused(&mut state, true);
-    state.set_disabled(true);
-    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter));
+    let state = ButtonState::new("OK");
+    let msg = Button::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_handle_event_irrelevant_key() {
-    let mut state = ButtonState::new("OK");
-    Button::set_focused(&mut state, true);
-    let msg = Button::handle_event(&state, &Event::char('x'));
+    let state = ButtonState::new("OK");
+    let msg = Button::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_dispatch_event() {
     let mut state = ButtonState::new("OK");
-    Button::set_focused(&mut state, true);
-    let output = Button::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
-    assert_eq!(output, Some(ButtonOutput::Pressed));
-}
-
-#[test]
-fn test_instance_is_focused() {
-    let mut state = ButtonState::new("OK");
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-}
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = ButtonState::new("OK");
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Enter));
-    assert_eq!(msg, Some(ButtonMessage::Press));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = ButtonState::new("OK");
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Enter));
+    let output = Button::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(ButtonOutput::Pressed));
 }
 
@@ -204,8 +169,7 @@ fn test_annotation_emitted() {
 #[test]
 fn test_annotation_focused() {
     use crate::annotation::{with_annotations, WidgetType};
-    let mut state = ButtonState::new("OK");
-    Button::set_focused(&mut state, true);
+    let state = ButtonState::new("OK");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
     let registry = with_annotations(|| {
         terminal

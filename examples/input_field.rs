@@ -29,8 +29,7 @@ impl App for InputFieldApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut input = InputFieldState::with_placeholder("Enter your name...");
-        input.set_focused(true);
+        let input = InputFieldState::with_placeholder("Enter your name...");
 
         let state = State {
             input,
@@ -111,7 +110,8 @@ impl App for InputFieldApp {
                 return Some(Msg::Quit);
             }
         }
-        state.input.handle_event(event).map(Msg::Input)
+        InputField::handle_event(&state.input, event, &ViewContext::new().focused(true))
+            .map(Msg::Input)
     }
 }
 

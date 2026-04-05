@@ -20,11 +20,9 @@ fn sample_metrics() -> Vec<AlertMetric> {
 }
 
 fn focused_state() -> AlertPanelState {
-    let mut state = AlertPanelState::new()
+    AlertPanelState::new()
         .with_metrics(sample_metrics())
-        .with_columns(2);
-    state.set_focused(true);
-    state
+        .with_columns(2)
 }
 
 // =============================================================================
@@ -37,8 +35,6 @@ fn test_new() {
     assert!(state.metrics().is_empty());
     assert_eq!(state.columns(), 2);
     assert_eq!(state.selected(), None);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert!(state.show_sparklines());
     assert!(!state.show_thresholds());
     assert_eq!(state.title(), None);
@@ -79,12 +75,6 @@ fn test_with_show_sparklines() {
 fn test_with_show_thresholds() {
     let state = AlertPanelState::new().with_show_thresholds(true);
     assert!(state.show_thresholds());
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = AlertPanelState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -594,23 +584,43 @@ fn test_set_columns_minimum_message() {
 fn test_key_maps() {
     let state = focused_state();
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Left)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Left),
+            &ViewContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectPrev)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Right)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &ViewContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectNext)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Up)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectUp)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Down)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectDown)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Enter)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &ViewContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::Select)
     );
 }
@@ -619,19 +629,19 @@ fn test_key_maps() {
 fn test_vim_key_maps() {
     let state = focused_state();
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('h')),
+        AlertPanel::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
         Some(AlertPanelMessage::SelectPrev)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('l')),
+        AlertPanel::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
         Some(AlertPanelMessage::SelectNext)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('k')),
+        AlertPanel::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(AlertPanelMessage::SelectUp)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('j')),
+        AlertPanel::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(AlertPanelMessage::SelectDown)
     );
 }
@@ -642,9 +652,12 @@ fn test_vim_key_maps() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
-    let msg = AlertPanel::handle_event(&state, &Event::key(KeyCode::Right));
+    let state = focused_state();
+    let msg = AlertPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -655,7 +668,8 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = AlertPanelState::new().with_metrics(sample_metrics());
-    let msg = AlertPanel::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg =
+        AlertPanel::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -664,23 +678,9 @@ fn test_unfocused_ignores_events() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Right));
-    assert_eq!(msg, Some(AlertPanelMessage::SelectNext));
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = focused_state();
     let output = state.update(AlertPanelMessage::SelectNext);
-    assert_eq!(output, Some(AlertPanelOutput::MetricSelected("mem".into())));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = focused_state();
-    let output = state.dispatch_event(&Event::key(KeyCode::Right));
     assert_eq!(output, Some(AlertPanelOutput::MetricSelected("mem".into())));
 }
 
@@ -712,9 +712,7 @@ fn test_render_with_metrics() {
 
 #[test]
 fn test_render_disabled() {
-    let state = AlertPanelState::new()
-        .with_metrics(sample_metrics())
-        .with_disabled(true);
+    let state = AlertPanelState::new().with_metrics(sample_metrics());
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -758,38 +756,6 @@ fn test_render_with_history() {
 }
 
 // =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = AlertPanel::init();
-    assert!(!AlertPanel::is_focused(&state));
-
-    AlertPanel::focus(&mut state);
-    assert!(AlertPanel::is_focused(&state));
-
-    AlertPanel::blur(&mut state);
-    assert!(!AlertPanel::is_focused(&state));
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = AlertPanel::init();
-    assert!(!AlertPanel::is_disabled(&state));
-
-    AlertPanel::disable(&mut state);
-    assert!(AlertPanel::is_disabled(&state));
-
-    AlertPanel::enable(&mut state);
-    assert!(!AlertPanel::is_disabled(&state));
-}
-
-// =============================================================================
 // Edge cases
 // =============================================================================
 
@@ -803,7 +769,6 @@ fn test_empty_metrics_selected_none() {
 #[test]
 fn test_empty_metrics_ignores_navigation() {
     let mut state = AlertPanelState::new();
-    state.set_focused(true);
     let output = AlertPanel::update(&mut state, AlertPanelMessage::SelectNext);
     assert_eq!(output, None);
 }
@@ -817,7 +782,6 @@ fn test_single_metric_navigation() {
             AlertThreshold::new(70.0, 90.0),
         )])
         .with_columns(1);
-    state.set_focused(true);
     assert_eq!(
         AlertPanel::update(&mut state, AlertPanelMessage::SelectNext),
         None

@@ -16,10 +16,10 @@
 //! Run with: cargo run --example beautiful_dashboard --features full
 
 use envision::component::{
-    Chart, ChartState, Component, DataSeries, FocusManager, Focusable, KeyHint, KeyHints,
-    KeyHintsLayout, KeyHintsState, Menu, MenuItem, MenuMessage, MenuState, MetricWidget,
-    MetricsDashboard, MetricsDashboardMessage, MetricsDashboardState, ProgressBar,
-    ProgressBarState, Toast, ToastMessage, ToastState,
+    Chart, ChartState, Component, DataSeries, FocusManager, KeyHint, KeyHints, KeyHintsLayout,
+    KeyHintsState, Menu, MenuItem, MenuMessage, MenuState, MetricWidget, MetricsDashboard,
+    MetricsDashboardMessage, MetricsDashboardState, ProgressBar, ProgressBarState, Toast,
+    ToastMessage, ToastState,
 };
 use envision::prelude::*;
 use ratatui::layout::{Alignment, Constraint, Layout};
@@ -289,7 +289,7 @@ impl App for DashboardApp {
             Msg::ChartNextSeries => {
                 // Toggle active series via chart message
                 let event = Event::key(KeyCode::Tab);
-                Chart::dispatch_event(&mut state.chart, &event);
+                Chart::dispatch_event(&mut state.chart, &event, &ViewContext::default());
             }
             Msg::Quit => {
                 return Command::quit();
@@ -365,14 +365,8 @@ impl App for DashboardApp {
 // View helpers
 // =============================================================================
 
-fn sync_focus(state: &mut State) {
-    let nav_focused = state.focus.is_focused(&Panel::Navigation);
-    let chart_focused = state.focus.is_focused(&Panel::Chart);
-    let metrics_focused = state.focus.is_focused(&Panel::Metrics);
-
-    Menu::set_focused(&mut state.menu, nav_focused);
-    state.chart.set_focused(chart_focused);
-    MetricsDashboard::set_focused(&mut state.metrics, metrics_focused);
+fn sync_focus(_state: &mut State) {
+    // No-op: focused/disabled state is passed via ViewContext, not stored in component state.
 }
 
 fn render_title_bar(state: &State, frame: &mut Frame, area: Rect, _theme: &Theme) {

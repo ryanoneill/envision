@@ -4,7 +4,6 @@
 //! row selection, and column sorting capabilities. State is stored in
 //! [`TableState<T>`], updated via [`TableMessage`], and produces [`TableOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`DataGrid`](super::DataGrid) for a table with inline cell editing.
 //!
@@ -12,7 +11,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Column, Component, Focusable, SortDirection, Table, TableMessage, TableOutput,
+//!     Column, Component, SortDirection, Table, TableMessage, TableOutput,
 //!     TableRow, TableState,
 //! };
 //! use ratatui::layout::Constraint;
@@ -42,7 +41,6 @@
 //! ];
 //!
 //! let mut state = TableState::new(users, columns);
-//! Table::set_focused(&mut state, true);
 //!
 //! // Navigate down
 //! let output = Table::<User>::update(&mut state, TableMessage::Down);
@@ -68,7 +66,7 @@ use std::marker::PhantomData;
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -90,8 +88,6 @@ pub struct TableState<T: TableRow> {
     selected: Option<usize>,
     sort_columns: Vec<(usize, SortDirection)>,
     display_order: Vec<usize>,
-    focused: bool,
-    disabled: bool,
     filter_text: String,
     #[cfg_attr(feature = "serialization", serde(skip))]
     scroll: ScrollState,
@@ -104,8 +100,6 @@ impl<T: TableRow + PartialEq> PartialEq for TableState<T> {
             && self.selected == other.selected
             && self.sort_columns == other.sort_columns
             && self.display_order == other.display_order
-            && self.focused == other.focused
-            && self.disabled == other.disabled
             && self.filter_text == other.filter_text
     }
 }
@@ -118,8 +112,6 @@ impl<T: TableRow> Default for TableState<T> {
             selected: None,
             sort_columns: Vec::new(),
             display_order: Vec::new(),
-            focused: false,
-            disabled: false,
             filter_text: String::new(),
             scroll: ScrollState::default(),
         }
@@ -163,8 +155,6 @@ impl<T: TableRow> TableState<T> {
             selected,
             sort_columns: Vec::new(),
             display_order,
-            focused: false,
-            disabled: false,
             filter_text: String::new(),
             scroll,
         }
@@ -187,8 +177,6 @@ impl<T: TableRow> TableState<T> {
             selected,
             sort_columns: Vec::new(),
             display_order,
-            focused: false,
-            disabled: false,
             filter_text: String::new(),
             scroll,
         }
@@ -407,48 +395,6 @@ impl<T: TableRow> TableState<T> {
         }
     }
 
-    /// Returns `true` if the table is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// Disabled tables do not respond to messages.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state (builder method).
-    ///
-    /// Disabled tables do not respond to messages.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
-    /// use ratatui::layout::Constraint;
-    ///
-    /// #[derive(Clone)]
-    /// struct Item { name: String }
-    ///
-    /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> {
-    ///         vec![self.name.clone()]
-    ///     }
-    /// }
-    ///
-    /// let state = TableState::new(
-    ///     vec![Item { name: "A".into() }],
-    ///     vec![Column::new("Name", Constraint::Length(10))],
-    /// ).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Returns the current filter text.
     ///
     /// # Example
@@ -595,26 +541,6 @@ impl<T: TableRow> TableState<T> {
 }
 
 impl<T: TableRow + 'static> TableState<T> {
-    /// Returns true if the table is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Maps an input event to a table message.
-    pub fn handle_event(&self, event: &Event) -> Option<TableMessage> {
-        Table::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<TableOutput<T>> {
-        Table::dispatch_event(self, event)
-    }
-
     /// Updates the table state with a message, returning any output.
     pub fn update(&mut self, msg: TableMessage) -> Option<TableOutput<T>> {
         Table::update(self, msg)
@@ -706,7 +632,7 @@ impl<T: TableRow + 'static> Component for Table<T> {
             _ => {}
         }
 
-        if state.disabled || state.display_order.is_empty() {
+        if state.display_order.is_empty() {
             return None;
         }
 
@@ -866,8 +792,12 @@ impl<T: TableRow + 'static> Component for Table<T> {
         None
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -903,26 +833,6 @@ impl<T: TableRow + 'static> Component for Table<T> {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render_table(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl<T: TableRow + 'static> Focusable for Table<T> {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl<T: TableRow + 'static> Disableable for Table<T> {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

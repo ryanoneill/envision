@@ -13,7 +13,6 @@ fn sample_items() -> Vec<PaletteItem> {
 
 fn active_state() -> CommandPaletteState {
     let mut state = CommandPaletteState::new(sample_items());
-    state.set_focused(true);
     state.set_visible(true);
     state
 }
@@ -51,8 +50,6 @@ fn test_default_state() {
     assert!(state.items().is_empty());
     assert!(state.filtered_items().is_empty());
     assert_eq!(state.query(), "");
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert!(!state.is_visible());
     assert_eq!(state.title(), Some("Command Palette"));
     assert_eq!(state.placeholder(), "Type to search...");
@@ -91,12 +88,6 @@ fn test_with_max_visible() {
 fn test_with_visible() {
     let state = CommandPaletteState::new(vec![]).with_visible(true);
     assert!(state.is_visible());
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = CommandPaletteState::new(vec![]).with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -410,7 +401,6 @@ fn test_confirm_empty_filtered_list_returns_none() {
 #[test]
 fn test_confirm_on_empty_items_returns_none() {
     let mut state = CommandPaletteState::new(vec![]);
-    state.set_focused(true);
     state.set_visible(true);
     let output = CommandPalette::update(&mut state, CommandPaletteMessage::Confirm);
     assert_eq!(output, None);
@@ -466,7 +456,6 @@ fn test_show_sets_visible() {
 fn test_show_sets_focused() {
     let mut state = CommandPaletteState::new(sample_items());
     CommandPalette::update(&mut state, CommandPaletteMessage::Show);
-    assert!(state.is_focused());
 }
 
 // =============================================================================
@@ -515,25 +504,13 @@ fn test_set_items_method() {
 // =============================================================================
 
 #[test]
-fn test_disabled_ignores_all_messages() {
-    let mut state = active_state();
-    state.set_disabled(true);
-
-    let output = CommandPalette::update(&mut state, CommandPaletteMessage::TypeChar('a'));
-    assert_eq!(output, None);
-
-    let output = CommandPalette::update(&mut state, CommandPaletteMessage::Confirm);
-    assert_eq!(output, None);
-
-    let output = CommandPalette::update(&mut state, CommandPaletteMessage::Dismiss);
-    assert_eq!(output, None);
-}
-
-#[test]
 fn test_disabled_ignores_events() {
-    let mut state = active_state();
-    state.set_disabled(true);
-    let msg = CommandPalette::handle_event(&state, &Event::char('a'));
+    let state = active_state();
+    let msg = CommandPalette::handle_event(
+        &state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -546,7 +523,7 @@ fn test_unfocused_ignores_events() {
     let mut state = CommandPaletteState::new(sample_items());
     state.set_visible(true);
     // focused is false by default
-    let msg = CommandPalette::handle_event(&state, &Event::char('a'));
+    let msg = CommandPalette::handle_event(&state, &Event::char('a'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -556,10 +533,10 @@ fn test_unfocused_ignores_events() {
 
 #[test]
 fn test_hidden_ignores_events() {
-    let mut state = CommandPaletteState::new(sample_items());
-    state.set_focused(true);
+    let state = CommandPaletteState::new(sample_items());
     // visible is false by default
-    let msg = CommandPalette::handle_event(&state, &Event::char('a'));
+    let msg =
+        CommandPalette::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
@@ -572,7 +549,6 @@ fn test_show_method() {
     let mut state = CommandPaletteState::new(sample_items());
     state.show();
     assert!(state.is_visible());
-    assert!(state.is_focused());
 }
 
 #[test]
@@ -590,26 +566,9 @@ fn test_dismiss_method() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = active_state();
-    let msg = state.handle_event(&Event::char('x'));
-    assert_eq!(msg, Some(CommandPaletteMessage::TypeChar('x')));
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = active_state();
     let output = state.update(CommandPaletteMessage::TypeChar('a'));
-    assert!(matches!(
-        output,
-        Some(CommandPaletteOutput::QueryChanged(_))
-    ));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = active_state();
-    let output = state.dispatch_event(&Event::char('a'));
     assert!(matches!(
         output,
         Some(CommandPaletteOutput::QueryChanged(_))
@@ -620,33 +579,9 @@ fn test_instance_dispatch_event() {
 // Focusable trait
 // =============================================================================
 
-#[test]
-fn test_focusable_trait() {
-    let mut state = CommandPalette::init();
-    assert!(!CommandPalette::is_focused(&state));
-
-    CommandPalette::focus(&mut state);
-    assert!(CommandPalette::is_focused(&state));
-
-    CommandPalette::blur(&mut state);
-    assert!(!CommandPalette::is_focused(&state));
-}
-
 // =============================================================================
 // Disableable trait
 // =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = CommandPalette::init();
-    assert!(!CommandPalette::is_disabled(&state));
-
-    CommandPalette::disable(&mut state);
-    assert!(CommandPalette::is_disabled(&state));
-
-    CommandPalette::enable(&mut state);
-    assert!(!CommandPalette::is_disabled(&state));
-}
 
 // =============================================================================
 // Toggleable trait
@@ -756,7 +691,6 @@ fn test_render_no_matches() {
 #[test]
 fn test_render_empty_items() {
     let mut state = CommandPaletteState::new(vec![]);
-    state.set_focused(true);
     state.set_visible(true);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
@@ -779,7 +713,6 @@ fn test_render_empty_items() {
 #[test]
 fn test_single_item() {
     let mut state = CommandPaletteState::new(vec![PaletteItem::new("only", "Only Item")]);
-    state.set_focused(true);
     state.set_visible(true);
 
     assert_eq!(state.selected_index(), Some(0));
@@ -821,7 +754,6 @@ fn test_fuzzy_filter_sorts_by_score() {
         PaletteItem::new("copy", "Copy to Clipboard"), // substring match for "op"
     ];
     let mut state = CommandPaletteState::new(items);
-    state.set_focused(true);
     state.set_visible(true);
     CommandPalette::update(
         &mut state,

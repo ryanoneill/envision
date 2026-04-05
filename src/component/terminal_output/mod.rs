@@ -8,7 +8,6 @@
 //! State is stored in [`TerminalOutputState`], updated via
 //! [`TerminalOutputMessage`], and produces [`TerminalOutputOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Features
 //!
@@ -25,7 +24,7 @@
 //! # #[cfg(feature = "display-components")]
 //! # {
 //! use envision::component::{
-//!     Component, Focusable, TerminalOutput, TerminalOutputState,
+//!     Component, TerminalOutput, TerminalOutputState,
 //!     TerminalOutputMessage,
 //! };
 //!
@@ -48,7 +47,7 @@ pub use ansi::{parse_ansi, AnsiSegment};
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -143,10 +142,6 @@ pub struct TerminalOutputState {
     exit_code: Option<i32>,
     /// Whether the process is currently running.
     running: bool,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for TerminalOutputState {
@@ -160,8 +155,6 @@ impl Default for TerminalOutputState {
             title: None,
             exit_code: None,
             running: false,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -277,24 +270,6 @@ impl TerminalOutputState {
     /// ```
     pub fn with_running(mut self, running: bool) -> Self {
         self.running = running;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// # #[cfg(feature = "display-components")]
-    /// # {
-    /// use envision::component::TerminalOutputState;
-    ///
-    /// let state = TerminalOutputState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// # }
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -532,37 +507,7 @@ impl TerminalOutputState {
 
     // ---- State accessors ----
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods ----
-
-    /// Maps an input event to a terminal output message.
-    pub fn handle_event(&self, event: &Event) -> Option<TerminalOutputMessage> {
-        TerminalOutput::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<TerminalOutputOutput> {
-        TerminalOutput::dispatch_event(self, event)
-    }
 
     /// Updates the state with a message, returning any output.
     ///
@@ -620,8 +565,12 @@ impl Component for TerminalOutput {
         TerminalOutputState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -750,26 +699,6 @@ impl Component for TerminalOutput {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl Focusable for TerminalOutput {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for TerminalOutput {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

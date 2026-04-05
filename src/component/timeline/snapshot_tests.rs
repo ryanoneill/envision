@@ -83,7 +83,6 @@ fn test_snapshot_with_selection() {
         .with_spans(sample_spans())
         .with_view_range(0.0, 1000.0)
         .with_title("Selected Timeline");
-    state.set_focused(true);
     state.update(TimelineMessage::SelectNext);
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
@@ -106,8 +105,7 @@ fn test_snapshot_disabled() {
         .with_events(sample_events())
         .with_spans(sample_spans())
         .with_view_range(0.0, 1000.0)
-        .with_title("Disabled Timeline")
-        .with_disabled(true);
+        .with_title("Disabled Timeline");
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
@@ -130,7 +128,6 @@ fn test_snapshot_span_selected() {
         .with_spans(sample_spans())
         .with_view_range(0.0, 1000.0)
         .with_title("Span Selected");
-    state.set_focused(true);
     // Navigate past 3 events to first span
     for _ in 0..4 {
         state.update(TimelineMessage::SelectNext);

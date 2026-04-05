@@ -6,8 +6,6 @@ fn test_new() {
     let state = CheckboxState::new("Test label");
     assert_eq!(state.label(), "Test label");
     assert!(!state.is_checked());
-    assert!(!state.is_disabled());
-    assert!(!Checkbox::is_focused(&state));
 }
 
 #[test]
@@ -15,7 +13,6 @@ fn test_checked_constructor() {
     let state = CheckboxState::checked("Checked label");
     assert_eq!(state.label(), "Checked label");
     assert!(state.is_checked());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -23,8 +20,6 @@ fn test_default() {
     let state = CheckboxState::default();
     assert_eq!(state.label(), "");
     assert!(!state.is_checked());
-    assert!(!state.is_disabled());
-    assert!(!Checkbox::is_focused(&state));
 }
 
 #[test]
@@ -48,32 +43,10 @@ fn test_toggle_checked() {
 }
 
 #[test]
-fn test_toggle_disabled() {
-    let mut state = CheckboxState::new("Test");
-    state.set_disabled(true);
-
-    let output = Checkbox::update(&mut state, CheckboxMessage::Toggle);
-    assert_eq!(output, None);
-    assert!(!state.is_checked()); // State unchanged
-}
-
-#[test]
-fn test_toggle_disabled_when_checked() {
-    let mut state = CheckboxState::checked("Test");
-    state.set_disabled(true);
-
-    let output = Checkbox::update(&mut state, CheckboxMessage::Toggle);
-    assert_eq!(output, None);
-    assert!(state.is_checked()); // State unchanged
-}
-
-#[test]
 fn test_init() {
     let state = Checkbox::init();
     assert_eq!(state.label(), "");
     assert!(!state.is_checked());
-    assert!(!state.is_disabled());
-    assert!(!Checkbox::is_focused(&state));
 }
 
 #[test]
@@ -106,8 +79,7 @@ fn test_view_checked() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = CheckboxState::new("Focused");
-    Checkbox::set_focused(&mut state, true);
+    let state = CheckboxState::new("Focused");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
 
     terminal
@@ -127,8 +99,7 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_disabled() {
-    let mut state = CheckboxState::new("Disabled");
-    state.set_disabled(true);
+    let state = CheckboxState::new("Disabled");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
 
     terminal
@@ -165,65 +136,48 @@ fn test_multiple_toggles() {
 
 #[test]
 fn test_handle_event_enter_when_focused() {
-    let mut state = CheckboxState::new("Test");
-    Checkbox::set_focused(&mut state, true);
-    let msg = Checkbox::handle_event(&state, &Event::key(KeyCode::Enter));
+    let state = CheckboxState::new("Test");
+    let msg = Checkbox::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CheckboxMessage::Toggle));
 }
 
 #[test]
 fn test_handle_event_space_when_focused() {
-    let mut state = CheckboxState::new("Test");
-    Checkbox::set_focused(&mut state, true);
-    let msg = Checkbox::handle_event(&state, &Event::char(' '));
+    let state = CheckboxState::new("Test");
+    let msg = Checkbox::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(CheckboxMessage::Toggle));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = CheckboxState::new("Test");
-    let msg = Checkbox::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Checkbox::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = CheckboxState::new("Test");
-    Checkbox::set_focused(&mut state, true);
-    state.set_disabled(true);
-    let msg = Checkbox::handle_event(&state, &Event::key(KeyCode::Enter));
+    let state = CheckboxState::new("Test");
+    let msg = Checkbox::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_dispatch_event() {
     let mut state = CheckboxState::new("Test");
-    Checkbox::set_focused(&mut state, true);
-    let output = Checkbox::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
-    assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
-}
-
-#[test]
-fn test_instance_is_focused() {
-    let mut state = CheckboxState::new("Test");
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-}
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = CheckboxState::new("Test");
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Enter));
-    assert_eq!(msg, Some(CheckboxMessage::Toggle));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = CheckboxState::new("Test");
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Enter));
+    let output = Checkbox::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
 }
 
@@ -232,38 +186,6 @@ fn test_instance_update() {
     let mut state = CheckboxState::new("Test");
     let output = state.update(CheckboxMessage::Toggle);
     assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
-}
-
-// ========================================
-// Builder Tests
-// ========================================
-
-#[test]
-fn test_with_disabled() {
-    let state = CheckboxState::new("Test").with_disabled(true);
-    assert!(state.is_disabled());
-
-    let state = CheckboxState::new("Test").with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_prevents_toggle() {
-    let mut state = CheckboxState::new("Test").with_disabled(true);
-    state.set_focused(true);
-    let output = Checkbox::update(&mut state, CheckboxMessage::Toggle);
-    assert_eq!(output, None);
-    assert!(!state.is_checked());
-}
-
-#[test]
-fn test_with_disabled_prevents_handle_event() {
-    let state = CheckboxState::new("Test").with_disabled(true);
-    // Even if we manually set focused, disabled should prevent events
-    let mut state = state;
-    state.set_focused(true);
-    let msg = Checkbox::handle_event(&state, &Event::key(KeyCode::Enter));
-    assert_eq!(msg, None);
 }
 
 // Annotation tests

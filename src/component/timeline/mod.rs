@@ -7,7 +7,6 @@
 //! State is stored in [`TimelineState`], updated via [`TimelineMessage`],
 //! and produces [`TimelineOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -34,7 +33,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -83,10 +82,6 @@ pub struct TimelineState {
     pub(crate) show_labels: bool,
     /// Number of horizontal lanes for spans (0 = auto from data).
     pub(crate) lane_count: usize,
-    /// Whether the component is focused.
-    pub(crate) focused: bool,
-    /// Whether the component is disabled.
-    pub(crate) disabled: bool,
 }
 
 impl Default for TimelineState {
@@ -101,8 +96,6 @@ impl Default for TimelineState {
             title: None,
             show_labels: true,
             lane_count: 0,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -201,22 +194,6 @@ impl TimelineState {
     /// ```
     pub fn with_show_labels(mut self, show: bool) -> Self {
         self.show_labels = show;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::TimelineState;
-    ///
-    /// let state = TimelineState::new()
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -437,7 +414,6 @@ impl TimelineState {
     ///
     /// let mut state = TimelineState::new()
     ///     .with_events(vec![TimelineEvent::new("e1", 100.0, "Start")]);
-    /// state.set_focused(true);
     /// state.update(TimelineMessage::SelectNext);
     /// assert_eq!(state.selected_event().unwrap().id, "e1");
     /// ```
@@ -458,7 +434,6 @@ impl TimelineState {
     ///
     /// let mut state = TimelineState::new()
     ///     .with_spans(vec![TimelineSpan::new("s1", 0.0, 200.0, "Init")]);
-    /// state.set_focused(true);
     /// state.update(TimelineMessage::SelectNext);
     /// assert_eq!(state.selected_span().unwrap().id, "s1");
     /// ```
@@ -618,36 +593,6 @@ impl TimelineState {
 
     // ---- Instance methods ----
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a timeline message.
-    pub fn handle_event(&self, event: &Event) -> Option<TimelineMessage> {
-        Timeline::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<TimelineOutput> {
-        Timeline::dispatch_event(self, event)
-    }
-
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: TimelineMessage) -> Option<TimelineOutput> {
         Timeline::update(self, msg)
@@ -680,8 +625,12 @@ impl Component for Timeline {
         TimelineState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -820,26 +769,6 @@ impl Component for Timeline {
         }
 
         render::render_timeline(state, frame, inner, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl Focusable for Timeline {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Timeline {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

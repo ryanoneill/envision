@@ -8,7 +8,7 @@
 //! `HelpPanel` is a full overlay/panel showing **all** keybindings in a
 //! categorized, multi-line format with scroll support.
 //!
-//! Implements [`Focusable`], [`Disableable`], and [`Toggleable`].
+//! Implements [`Toggleable`].
 //!
 //! # Example
 //!
@@ -37,7 +37,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Disableable, Focusable, Toggleable, ViewContext};
+use super::{Component, Toggleable, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -211,10 +211,6 @@ pub struct HelpPanelState {
     scroll: ScrollState,
     /// Panel title (default: "Help").
     title: Option<String>,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// Whether the component is visible.
     visible: bool,
 }
@@ -278,21 +274,6 @@ impl HelpPanelState {
         // consistency but the display title is fixed to "Help".
         // Stored title remains "Help".
         self.title = Some("Help".to_string());
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::HelpPanelState;
-    ///
-    /// let state = HelpPanelState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -457,26 +438,6 @@ impl HelpPanelState {
 
     // ---- State accessors ----
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Returns true if the component is visible.
     pub fn is_visible(&self) -> bool {
         self.visible
@@ -493,16 +454,6 @@ impl HelpPanelState {
     }
 
     // ---- Instance methods ----
-
-    /// Maps an input event to a help panel message.
-    pub fn handle_event(&self, event: &Event) -> Option<HelpPanelMessage> {
-        HelpPanel::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
-        HelpPanel::dispatch_event(self, event)
-    }
 
     /// Updates the state with a message, returning any output.
     ///
@@ -609,7 +560,6 @@ impl HelpPanelState {
 ///         ]),
 ///     ]);
 ///
-/// state.set_focused(true);
 /// state.update(HelpPanelMessage::ScrollDown);
 /// ```
 pub struct HelpPanel;
@@ -623,8 +573,12 @@ impl Component for HelpPanel {
         HelpPanelState::new()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -743,26 +697,6 @@ impl Component for HelpPanel {
             bar_scroll.set_offset(effective_scroll);
             crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
         }
-    }
-}
-
-impl Focusable for HelpPanel {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for HelpPanel {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

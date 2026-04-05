@@ -5,7 +5,7 @@
 //! [`DialogMessage`], and produces [`DialogOutput`]. Buttons are configured
 //! with [`DialogButton`].
 //!
-//! Implements [`Focusable`], [`Disableable`], and [`Toggleable`].
+//! Implements [`Toggleable`].
 //!
 //! See also [`ConfirmDialog`](super::ConfirmDialog) for a purpose-built
 //! confirmation dialog with preset button configurations.
@@ -27,7 +27,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
-use super::{Component, Disableable, Focusable, Toggleable, ViewContext};
+use super::{Component, Toggleable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -136,10 +136,6 @@ pub struct DialogState {
     focused_button: usize,
     /// Whether the dialog is visible.
     visible: bool,
-    /// Whether the dialog itself is focused (receives input).
-    focused: bool,
-    /// Whether the dialog is disabled.
-    disabled: bool,
 }
 
 impl DialogState {
@@ -172,8 +168,6 @@ impl DialogState {
             primary_button: 0,
             focused_button: 0,
             visible: false,
-            focused: false,
-            disabled: false,
         }
     }
 
@@ -211,8 +205,6 @@ impl DialogState {
             primary_button: primary,
             focused_button: primary,
             visible: false,
-            focused: false,
-            disabled: false,
         }
     }
 
@@ -417,51 +409,6 @@ impl DialogState {
         self
     }
 
-    /// Returns true if the dialog is focused.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = DialogState::alert("Info", "Done.");
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = DialogState::alert("Info", "Done.");
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the dialog is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state using builder pattern.
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Returns true if the dialog is visible.
     ///
     /// # Examples
@@ -508,12 +455,12 @@ impl DialogState {
 
     /// Maps an input event to a dialog message.
     pub fn handle_event(&self, event: &Event) -> Option<DialogMessage> {
-        Dialog::handle_event(self, event)
+        Dialog::handle_event(self, event, &ViewContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<DialogOutput> {
-        Dialog::dispatch_event(self, event)
+        Dialog::dispatch_event(self, event, &ViewContext::default())
     }
 
     /// Updates the dialog state with a message, returning any output.
@@ -527,7 +474,6 @@ impl DialogState {
 /// `Dialog` displays a centered overlay with a title, message, and
 /// configurable buttons. It implements:
 /// - [`Component`] for update/view logic
-/// - [`Focusable`] for keyboard focus
 /// - [`Toggleable`] for visibility control
 ///
 /// # Visual Format
@@ -592,10 +538,6 @@ impl Component for Dialog {
             return None;
         }
 
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             DialogMessage::FocusNext => {
                 if !state.buttons.is_empty() {
@@ -624,8 +566,12 @@ impl Component for Dialog {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.visible || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        _ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !state.visible {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -690,27 +636,7 @@ impl Component for Dialog {
         frame.render_widget(message, chunks[0]);
 
         // Render buttons horizontally centered
-        render_buttons(state, frame, chunks[1], theme);
-    }
-}
-
-impl Focusable for Dialog {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Dialog {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
+        render_buttons(state, frame, chunks[1], theme, ctx.focused, ctx.disabled);
     }
 }
 
@@ -733,7 +659,14 @@ fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
 }
 
 /// Renders the dialog buttons horizontally centered.
-fn render_buttons(state: &DialogState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_buttons(
+    state: &DialogState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     if state.buttons.is_empty() {
         return;
     }
@@ -755,10 +688,10 @@ fn render_buttons(state: &DialogState, frame: &mut Frame, area: Rect, theme: &Th
         let width = button_widths[i];
         let button_area = Rect::new(x, area.y, width, 3.min(area.height));
 
-        let is_focused = i == state.focused_button && state.focused;
+        let is_focused = i == state.focused_button && focused;
         let is_primary = i == state.primary_button;
 
-        let style = if state.disabled {
+        let style = if disabled {
             theme.disabled_style()
         } else if is_focused {
             theme.focused_bold_style()
@@ -768,7 +701,7 @@ fn render_buttons(state: &DialogState, frame: &mut Frame, area: Rect, theme: &Th
             theme.normal_style()
         };
 
-        let border_style = if is_focused && !state.disabled {
+        let border_style = if is_focused && !disabled {
             theme.focused_border_style()
         } else {
             theme.border_style()

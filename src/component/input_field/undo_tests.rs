@@ -1,9 +1,7 @@
 use super::*;
 
 fn focused_state(value: &str) -> InputFieldState {
-    let mut state = InputFieldState::with_value(value);
-    state.set_focused(true);
-    state
+    InputFieldState::with_value(value)
 }
 
 // =============================================================================
@@ -228,31 +226,22 @@ fn test_new_edit_clears_redo() {
 // Disabled state
 // =============================================================================
 
-#[test]
-fn test_undo_ignored_when_disabled() {
-    let mut state = InputFieldState::with_value("hello");
-    InputField::update(&mut state, InputFieldMessage::Insert('!'));
-    state.set_disabled(true);
-    let output = InputField::update(&mut state, InputFieldMessage::Undo);
-    assert_eq!(output, None);
-    assert_eq!(state.value(), "hello!");
-}
-
 // =============================================================================
 // Event mapping
 // =============================================================================
-
 #[test]
 fn test_ctrl_z_maps_to_undo() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(&state, &Event::ctrl('z'));
+    let msg =
+        InputField::handle_event(&state, &Event::ctrl('z'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(InputFieldMessage::Undo));
 }
 
 #[test]
 fn test_ctrl_y_maps_to_redo() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(&state, &Event::ctrl('y'));
+    let msg =
+        InputField::handle_event(&state, &Event::ctrl('y'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(InputFieldMessage::Redo));
 }
 

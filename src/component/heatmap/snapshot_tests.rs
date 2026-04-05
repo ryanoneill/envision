@@ -56,9 +56,9 @@ fn test_snapshot_with_values() {
 
 #[test]
 fn test_snapshot_focused() {
-    let mut state = HeatmapState::with_data(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]])
+    let state = HeatmapState::with_data(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]])
         .with_title("Focused Heatmap");
-    state.set_focused(true);
+
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
@@ -77,7 +77,7 @@ fn test_snapshot_focused() {
 #[test]
 fn test_snapshot_focused_with_selection() {
     let mut state = HeatmapState::with_data(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
-    state.set_focused(true);
+
     state.update(HeatmapMessage::SelectDown);
     state.update(HeatmapMessage::SelectRight);
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
@@ -97,9 +97,8 @@ fn test_snapshot_focused_with_selection() {
 
 #[test]
 fn test_snapshot_disabled() {
-    let state = HeatmapState::with_data(vec![vec![1.0, 2.0], vec![3.0, 4.0]])
-        .with_disabled(true)
-        .with_title("Disabled");
+    let state =
+        HeatmapState::with_data(vec![vec![1.0, 2.0], vec![3.0, 4.0]]).with_title("Disabled");
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {

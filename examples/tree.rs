@@ -48,8 +48,7 @@ impl App for TreeApp {
         tests.add_child(TreeNode::new("integration.rs", "integration.rs".into()));
         tests.add_child(TreeNode::new("unit.rs", "unit.rs".into()));
 
-        let mut tree = TreeState::new(vec![src, tests]);
-        tree.set_focused(true);
+        let tree = TreeState::new(vec![src, tests]);
 
         (State { tree }, Command::none())
     }
@@ -95,7 +94,7 @@ impl App for TreeApp {
                 return Some(Msg::Quit);
             }
         }
-        state.tree.handle_event(event).map(Msg::Tree)
+        Tree::handle_event(&state.tree, event, &ViewContext::new().focused(true)).map(Msg::Tree)
     }
 }
 

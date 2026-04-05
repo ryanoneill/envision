@@ -87,8 +87,7 @@ fn test_snapshot_two_streams() {
 
 #[test]
 fn test_snapshot_focused() {
-    let mut state = two_stream_state();
-    LogCorrelation::set_focused(&mut state, true);
+    let state = two_stream_state();
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
@@ -127,7 +126,7 @@ fn test_snapshot_with_title() {
 
 #[test]
 fn test_snapshot_disabled() {
-    let state = two_stream_state().with_disabled(true);
+    let state = two_stream_state();
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {

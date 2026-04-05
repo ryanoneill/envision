@@ -127,7 +127,6 @@ fn test_state_new() {
     assert!(state.is_empty());
     assert_eq!(state.layout(), UsageLayout::Horizontal);
     assert_eq!(state.title(), None);
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -169,12 +168,6 @@ fn test_state_with_title() {
 fn test_state_with_separator() {
     let state = UsageDisplayState::new().with_separator(" | ");
     assert_eq!(state.separator(), " | ");
-}
-
-#[test]
-fn test_state_with_disabled() {
-    let state = UsageDisplayState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 #[test]
@@ -334,17 +327,6 @@ fn test_set_separator() {
     state.set_separator(" -- ");
     assert_eq!(state.separator(), " -- ");
 }
-
-#[test]
-fn test_set_disabled() {
-    let mut state = UsageDisplayState::new();
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
 #[test]
 fn test_clear() {
     let mut state = UsageDisplayState::new()
@@ -468,36 +450,6 @@ fn test_update_returns_none() {
 // ========================================
 // Disableable Trait Tests
 // ========================================
-
-#[test]
-fn test_disableable_is_disabled() {
-    let state = UsageDisplayState::new().with_disabled(true);
-    assert!(UsageDisplay::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_set_disabled() {
-    let mut state = UsageDisplay::init();
-    UsageDisplay::set_disabled(&mut state, true);
-    assert!(UsageDisplay::is_disabled(&state));
-    UsageDisplay::set_disabled(&mut state, false);
-    assert!(!UsageDisplay::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_disable() {
-    let mut state = UsageDisplay::init();
-    UsageDisplay::disable(&mut state);
-    assert!(UsageDisplay::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_enable() {
-    let mut state = UsageDisplayState::new().with_disabled(true);
-    UsageDisplay::enable(&mut state);
-    assert!(!UsageDisplay::is_disabled(&state));
-}
-
 // ========================================
 // View Tests
 // ========================================
@@ -700,7 +652,7 @@ fn test_view_zero_height() {
 fn test_handle_event_returns_none() {
     let state = UsageDisplayState::new().metric(UsageMetric::new("CPU", "45%"));
     let event = crate::input::Event::key(crate::input::KeyCode::Char('q'));
-    let msg = UsageDisplay::handle_event(&state, &event);
+    let msg = UsageDisplay::handle_event(&state, &event, &ViewContext::default());
     assert!(msg.is_none());
 }
 
@@ -708,7 +660,7 @@ fn test_handle_event_returns_none() {
 fn test_dispatch_event_returns_none() {
     let mut state = UsageDisplayState::new().metric(UsageMetric::new("CPU", "45%"));
     let event = crate::input::Event::key(crate::input::KeyCode::Enter);
-    let output = UsageDisplay::dispatch_event(&mut state, &event);
+    let output = UsageDisplay::dispatch_event(&mut state, &event, &ViewContext::default());
     assert!(output.is_none());
 }
 

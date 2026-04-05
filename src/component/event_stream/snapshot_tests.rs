@@ -69,8 +69,7 @@ fn test_snapshot_populated() {
 
 #[test]
 fn test_snapshot_focused() {
-    let mut state = sample_state();
-    EventStream::set_focused(&mut state, true);
+    let state = sample_state();
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
@@ -103,7 +102,7 @@ fn test_snapshot_with_title() {
 
 #[test]
 fn test_snapshot_disabled() {
-    let state = EventStreamState::new().with_disabled(true);
+    let state = EventStreamState::new();
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
@@ -135,7 +134,6 @@ fn test_snapshot_filtered() {
 #[test]
 fn test_snapshot_search_active() {
     let mut state = sample_state();
-    EventStream::set_focused(&mut state, true);
     EventStream::update(&mut state, EventStreamMessage::FocusSearch);
     EventStream::update(&mut state, EventStreamMessage::SearchInput('a'));
     EventStream::update(&mut state, EventStreamMessage::SearchInput('p'));

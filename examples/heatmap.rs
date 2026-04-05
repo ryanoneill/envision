@@ -35,7 +35,7 @@ impl App for HeatmapApp {
             vec![0.08, 0.10, 0.09, 0.12, 0.07, 0.04, 0.03],
         ];
 
-        let mut heatmap = HeatmapState::with_data(data)
+        let heatmap = HeatmapState::with_data(data)
             .with_row_labels(vec!["00h".into(), "06h".into(), "12h".into(), "18h".into()])
             .with_col_labels(vec![
                 "Mon".into(),
@@ -50,7 +50,6 @@ impl App for HeatmapApp {
             .with_range(0.0, 0.20)
             .with_show_values(true)
             .with_title("Error Rates by Hour and Day");
-        heatmap.set_focused(true);
 
         let state = State { heatmap };
         (state, Command::none())

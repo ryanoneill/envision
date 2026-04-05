@@ -49,12 +49,9 @@ fn build_steps() -> Vec<step_indicator::Step> {
 }
 
 fn build_pipeline() -> StepIndicatorState {
-    let mut pipeline = StepIndicatorState::new(build_steps())
+    StepIndicatorState::new(build_steps())
         .with_title("CI Pipeline")
-        .with_orientation(step_indicator::StepOrientation::Horizontal);
-
-    pipeline.set_focused(true);
-    pipeline
+        .with_orientation(step_indicator::StepOrientation::Horizontal)
 }
 
 impl App for StepIndicatorApp {
@@ -147,7 +144,8 @@ impl App for StepIndicatorApp {
                 _ => {}
             }
         }
-        state.pipeline.handle_event(event).map(Msg::Step)
+        StepIndicator::handle_event(&state.pipeline, event, &ViewContext::new().focused(true))
+            .map(Msg::Step)
     }
 }
 

@@ -71,7 +71,6 @@ fn test_table_stress_10000_rows() {
     let rows = make_stress_rows(10_000);
     let columns = stress_columns();
     let mut state = TableState::new(rows, columns);
-    state.set_focused(true);
 
     assert_eq!(state.selected_index(), Some(0));
 
@@ -126,7 +125,6 @@ fn test_tree_stress_10000_nodes() {
         .collect();
 
     let mut state = TreeState::new(roots);
-    state.set_focused(true);
 
     assert_eq!(state.selected_index(), Some(0));
 
@@ -168,7 +166,6 @@ fn test_tree_stress_10000_nodes() {
 fn test_loading_list_stress_10000_items() {
     let items: Vec<String> = (0..10_000).map(|i| format!("Task {}", i)).collect();
     let mut state = LoadingListState::with_items(items, |s| s.clone());
-    state.set_focused(true);
 
     // LoadingList starts with no selection; select the first item
     LoadingList::<String>::update(&mut state, LoadingListMessage::First);
@@ -223,7 +220,6 @@ fn test_loading_list_stress_10000_items() {
 fn test_selectable_list_stress_50000_items() {
     let items: Vec<String> = (0..50_000).map(|i| format!("Item {}", i)).collect();
     let mut state = SelectableListState::new(items);
-    state.set_focused(true);
 
     assert_eq!(state.selected_index(), Some(0));
 
@@ -268,7 +264,6 @@ fn test_accordion_stress_1000_panels() {
         .map(|i| AccordionPanel::new(format!("Panel {}", i), format!("Content for panel {}", i)))
         .collect();
     let mut state = AccordionState::new(panels);
-    state.set_focused(true);
 
     assert_eq!(state.selected_index(), Some(0));
 
@@ -307,7 +302,6 @@ fn test_data_grid_stress_10000_rows() {
     let rows = make_stress_rows(10_000);
     let columns = stress_columns();
     let mut state = DataGridState::new(rows, columns);
-    state.set_focused(true);
 
     assert_eq!(state.selected_index(), Some(0));
 
@@ -347,17 +341,17 @@ fn test_data_grid_stress_10000_rows() {
 fn test_rapid_input_10000_events() {
     let items: Vec<String> = (0..100).map(|i| format!("Item {}", i)).collect();
     let mut state = SelectableListState::new(items);
-    state.set_focused(true);
 
     // Send 10,000 alternating Down/Up events via dispatch_event
     let down = envision::Event::key(crossterm::event::KeyCode::Down);
     let up = envision::Event::key(crossterm::event::KeyCode::Up);
 
+    let ctx = envision::ViewContext::new().focused(true);
     for i in 0..10_000 {
         if i % 2 == 0 {
-            state.dispatch_event(&down);
+            envision::SelectableList::<String>::dispatch_event(&mut state, &down, &ctx);
         } else {
-            state.dispatch_event(&up);
+            envision::SelectableList::<String>::dispatch_event(&mut state, &up, &ctx);
         }
     }
 
@@ -368,7 +362,7 @@ fn test_rapid_input_10000_events() {
 
     // Now rapid all-down to verify we hit the boundary correctly
     for _ in 0..10_000 {
-        state.dispatch_event(&down);
+        envision::SelectableList::<String>::dispatch_event(&mut state, &down, &ctx);
     }
     // Clamped to last item (index 99)
     assert_eq!(state.selected_index(), Some(99));

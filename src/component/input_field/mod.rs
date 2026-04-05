@@ -5,7 +5,6 @@
 //! [`InputFieldState`], updated via [`InputFieldMessage`], and produces
 //! [`InputFieldOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`LineInput`](super::LineInput) for a multi-row wrapping input,
 //! and [`TextArea`](super::TextArea) for multi-line editing.
@@ -13,7 +12,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Component, Focusable, InputField, InputFieldState, InputFieldMessage};
+//! use envision::component::{Component, InputField, InputFieldState, InputFieldMessage};
 //!
 //! // Create an input field
 //! let mut state = InputField::init();
@@ -30,7 +29,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 use unicode_width::UnicodeWidthStr;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 use crate::undo::{EditKind, UndoStack};
@@ -126,10 +125,6 @@ pub struct InputFieldState {
     value: String,
     /// Cursor position (byte offset into value).
     cursor: usize,
-    /// Whether the input is focused.
-    focused: bool,
-    /// Whether the input is disabled.
-    disabled: bool,
     /// Placeholder text shown when empty.
     placeholder: String,
     /// Selection anchor (byte offset). When `Some`, text is selected from
@@ -175,8 +170,6 @@ impl InputFieldState {
         Self {
             value,
             cursor,
-            focused: false,
-            disabled: false,
             placeholder: String::new(),
             selection_anchor: None,
             clipboard: String::new(),
@@ -199,8 +192,6 @@ impl InputFieldState {
         Self {
             value: String::new(),
             cursor: 0,
-            focused: false,
-            disabled: false,
             placeholder: placeholder.into(),
             selection_anchor: None,
             clipboard: String::new(),
@@ -396,61 +387,6 @@ impl InputFieldState {
         self.clear_selection();
     }
 
-    /// Returns true if the input field is focused.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = InputFieldState::new();
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = InputFieldState::new();
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the input field is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state using builder pattern.
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Maps an input event to an input field message.
-    pub fn handle_event(&self, event: &Event) -> Option<InputFieldMessage> {
-        InputField::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<InputFieldOutput> {
-        InputField::dispatch_event(self, event)
-    }
-
     /// Updates the input field state with a message, returning any output.
     pub fn update(&mut self, msg: InputFieldMessage) -> Option<InputFieldOutput> {
         InputField::update(self, msg)
@@ -488,9 +424,6 @@ impl Component for InputField {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
         match msg {
             InputFieldMessage::Insert(c) => {
                 if c.is_whitespace() {
@@ -721,8 +654,12 @@ impl Component for InputField {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -849,26 +786,6 @@ impl Component for InputField {
                 frame.set_cursor_position((cursor_x, cursor_y));
             }
         }
-    }
-}
-
-impl Focusable for InputField {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for InputField {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

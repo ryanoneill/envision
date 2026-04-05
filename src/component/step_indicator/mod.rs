@@ -6,7 +6,6 @@
 //! [`StepIndicatorMessage`], and produces [`StepIndicatorOutput`]. Steps are
 //! defined with [`Step`] and have a [`StepStatus`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
 //!
 //! # Example
 //!
@@ -32,7 +31,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -218,8 +217,6 @@ pub enum StepIndicatorOutput {
 pub struct StepIndicatorState {
     steps: Vec<Step>,
     orientation: StepOrientation,
-    focused: bool,
-    disabled: bool,
     focused_index: usize,
     show_descriptions: bool,
     title: Option<String>,
@@ -231,8 +228,6 @@ impl Default for StepIndicatorState {
         Self {
             steps: Vec::new(),
             orientation: StepOrientation::Horizontal,
-            focused: false,
-            disabled: false,
             focused_index: 0,
             show_descriptions: false,
             title: None,
@@ -322,12 +317,6 @@ impl StepIndicatorState {
         self
     }
 
-    /// Sets the disabled state (builder pattern).
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Returns the steps.
     pub fn steps(&self) -> &[Step] {
         &self.steps
@@ -391,26 +380,6 @@ impl StepIndicatorState {
                 .all(|s| s.status == StepStatus::Completed || s.status == StepStatus::Skipped)
     }
 
-    /// Returns true if the step indicator is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the step indicator is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Returns the connector string.
     pub fn connector(&self) -> &str {
         &self.connector
@@ -472,16 +441,6 @@ impl StepIndicatorState {
     /// ```
     pub fn set_orientation(&mut self, orientation: StepOrientation) {
         self.orientation = orientation;
-    }
-
-    /// Maps an input event to a message.
-    pub fn handle_event(&self, event: &Event) -> Option<StepIndicatorMessage> {
-        StepIndicator::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<StepIndicatorOutput> {
-        StepIndicator::dispatch_event(self, event)
     }
 
     /// Updates the state with a message, returning any output.
@@ -614,14 +573,14 @@ impl Component for StepIndicator {
                 Some(StepIndicatorOutput::Reset)
             }
             StepIndicatorMessage::FocusNext => {
-                if !state.focused || state.disabled || state.steps.is_empty() {
+                if state.steps.is_empty() {
                     return None;
                 }
                 state.focused_index = (state.focused_index + 1) % state.steps.len();
                 Some(StepIndicatorOutput::FocusChanged(state.focused_index))
             }
             StepIndicatorMessage::FocusPrev => {
-                if !state.focused || state.disabled || state.steps.is_empty() {
+                if state.steps.is_empty() {
                     return None;
                 }
                 state.focused_index = state
@@ -631,20 +590,20 @@ impl Component for StepIndicator {
                 Some(StepIndicatorOutput::FocusChanged(state.focused_index))
             }
             StepIndicatorMessage::Select => {
-                if !state.focused || state.disabled || state.steps.is_empty() {
+                if state.steps.is_empty() {
                     return None;
                 }
                 Some(StepIndicatorOutput::Selected(state.focused_index))
             }
             StepIndicatorMessage::First => {
-                if !state.focused || state.disabled || state.steps.is_empty() {
+                if state.steps.is_empty() {
                     return None;
                 }
                 state.focused_index = 0;
                 Some(StepIndicatorOutput::FocusChanged(0))
             }
             StepIndicatorMessage::Last => {
-                if !state.focused || state.disabled || state.steps.is_empty() {
+                if state.steps.is_empty() {
                     return None;
                 }
                 state.focused_index = state.steps.len() - 1;
@@ -653,8 +612,12 @@ impl Component for StepIndicator {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -710,22 +673,12 @@ impl Component for StepIndicator {
 
         match state.orientation {
             StepOrientation::Horizontal => {
-                render_horizontal(state, frame, inner, theme);
+                render_horizontal(state, frame, inner, theme, ctx.focused);
             }
             StepOrientation::Vertical => {
-                render_vertical(state, frame, inner, theme);
+                render_vertical(state, frame, inner, theme, ctx.focused);
             }
         }
-    }
-}
-
-impl Focusable for StepIndicator {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
     }
 }
 
@@ -744,7 +697,13 @@ fn step_style(status: &StepStatus, is_focused_step: bool, theme: &Theme) -> Styl
     }
 }
 
-fn render_horizontal(state: &StepIndicatorState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_horizontal(
+    state: &StepIndicatorState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+) {
     let mut spans = Vec::new();
 
     for (i, step) in state.steps.iter().enumerate() {
@@ -755,7 +714,7 @@ fn render_horizontal(state: &StepIndicatorState, frame: &mut Frame, area: Rect, 
             ));
         }
 
-        let is_focused_step = state.focused && i == state.focused_index;
+        let is_focused_step = focused && i == state.focused_index;
         let style = step_style(&step.status, is_focused_step, theme);
 
         spans.push(Span::styled(
@@ -769,7 +728,13 @@ fn render_horizontal(state: &StepIndicatorState, frame: &mut Frame, area: Rect, 
     frame.render_widget(paragraph, area);
 }
 
-fn render_vertical(state: &StepIndicatorState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_vertical(
+    state: &StepIndicatorState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+) {
     let mut lines = Vec::new();
 
     for (i, step) in state.steps.iter().enumerate() {
@@ -777,7 +742,7 @@ fn render_vertical(state: &StepIndicatorState, frame: &mut Frame, area: Rect, th
             lines.push(Line::from(Span::styled("│", theme.normal_style())));
         }
 
-        let is_focused_step = state.focused && i == state.focused_index;
+        let is_focused_step = focused && i == state.focused_index;
         let style = step_style(&step.status, is_focused_step, theme);
 
         lines.push(Line::from(Span::styled(

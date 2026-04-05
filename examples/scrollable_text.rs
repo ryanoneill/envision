@@ -40,10 +40,9 @@ impl App for ScrollableTextApp {
             .collect::<Vec<_>>()
             .join("\n");
 
-        let mut text = ScrollableTextState::new()
+        let text = ScrollableTextState::new()
             .with_content(&content)
             .with_title("Scrollable Content");
-        text.set_focused(true);
 
         (State { text }, Command::none())
     }
@@ -86,7 +85,8 @@ impl App for ScrollableTextApp {
             }
         }
 
-        state.text.handle_event(event).map(Msg::Text)
+        ScrollableText::handle_event(&state.text, event, &ViewContext::new().focused(true))
+            .map(Msg::Text)
     }
 }
 

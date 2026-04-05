@@ -41,8 +41,7 @@ fn test_snapshot_populated_line_chart() {
 
 #[test]
 fn test_snapshot_focused_line_chart() {
-    let mut state = ChartState::line(sample_series()).with_title("CPU Usage");
-    state.set_focused(true);
+    let state = ChartState::line(sample_series()).with_title("CPU Usage");
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {

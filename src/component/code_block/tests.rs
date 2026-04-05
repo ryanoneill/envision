@@ -3,9 +3,7 @@ use super::*;
 use crate::component::test_utils;
 
 fn focused_state() -> CodeBlockState {
-    let mut state = CodeBlockState::new();
-    CodeBlock::set_focused(&mut state, true);
-    state
+    CodeBlockState::new()
 }
 
 fn code_state() -> CodeBlockState {
@@ -34,8 +32,6 @@ fn test_new() {
     let state = CodeBlockState::new();
     assert!(state.code().is_empty());
     assert_eq!(state.scroll_offset(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.title(), None);
     assert_eq!(state.language(), &Language::Plain);
     assert!(!state.show_line_numbers());
@@ -84,27 +80,19 @@ fn test_with_highlight_lines() {
 }
 
 #[test]
-fn test_with_disabled() {
-    let state = CodeBlockState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
 fn test_builder_chaining() {
     let state = CodeBlockState::new()
         .with_code("let x = 1;")
         .with_language(Language::Rust)
         .with_title("test.rs")
         .with_line_numbers(true)
-        .with_highlight_lines(vec![1])
-        .with_disabled(false);
+        .with_highlight_lines(vec![1]);
 
     assert_eq!(state.code(), "let x = 1;");
     assert_eq!(state.language(), &Language::Rust);
     assert_eq!(state.title(), Some("test.rs"));
     assert!(state.show_line_numbers());
     assert!(state.is_line_highlighted(1));
-    assert!(!state.is_disabled());
 }
 
 // =============================================================================
@@ -343,16 +331,19 @@ fn test_update_returns_none() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
-    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Up));
+    let state = focused_state();
+    let msg = CodeBlock::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_unfocused_ignores_events() {
     let state = CodeBlockState::new();
-    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -364,7 +355,11 @@ fn test_unfocused_ignores_events() {
 fn test_handle_event_up() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::Up)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::ScrollUp)
     );
 }
@@ -373,7 +368,11 @@ fn test_handle_event_up() {
 fn test_handle_event_down() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::Down)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::ScrollDown)
     );
 }
@@ -382,11 +381,11 @@ fn test_handle_event_down() {
 fn test_handle_event_k_j() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('k')),
+        CodeBlock::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::ScrollUp)
     );
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('j')),
+        CodeBlock::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::ScrollDown)
     );
 }
@@ -395,11 +394,19 @@ fn test_handle_event_k_j() {
 fn test_handle_event_page_up_down() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::PageUp)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::PageUp),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::PageUp(10))
     );
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::PageDown)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::PageDown),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::PageDown(10))
     );
 }
@@ -408,11 +415,11 @@ fn test_handle_event_page_up_down() {
 fn test_handle_event_ctrl_u_d() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::ctrl('u')),
+        CodeBlock::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::PageUp(10))
     );
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::ctrl('d')),
+        CodeBlock::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::PageDown(10))
     );
 }
@@ -421,11 +428,19 @@ fn test_handle_event_ctrl_u_d() {
 fn test_handle_event_home_end() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::Home)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::Home)
     );
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::End)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::End)
     );
 }
@@ -435,13 +450,14 @@ fn test_handle_event_home_end() {
 fn test_handle_event_g_and_G() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('g')),
+        CodeBlock::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::Home)
     );
     assert_eq!(
         CodeBlock::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT)
+            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &ViewContext::new().focused(true),
         ),
         Some(CodeBlockMessage::End)
     );
@@ -451,7 +467,7 @@ fn test_handle_event_g_and_G() {
 fn test_handle_event_l_scroll_right() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('l')),
+        CodeBlock::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::ScrollRight)
     );
 }
@@ -460,7 +476,7 @@ fn test_handle_event_l_scroll_right() {
 fn test_handle_event_n_toggle_line_numbers() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('n')),
+        CodeBlock::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::ToggleLineNumbers)
     );
 }
@@ -468,7 +484,10 @@ fn test_handle_event_n_toggle_line_numbers() {
 #[test]
 fn test_handle_event_unrecognized() {
     let state = focused_state();
-    assert_eq!(CodeBlock::handle_event(&state, &Event::char('x')), None);
+    assert_eq!(
+        CodeBlock::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        None
+    );
 }
 
 // =============================================================================
@@ -476,57 +495,10 @@ fn test_handle_event_unrecognized() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(CodeBlockMessage::ScrollUp));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = code_state();
-    state.set_scroll_offset(5);
-    state.dispatch_event(&Event::key(KeyCode::Up));
-    assert_eq!(state.scroll_offset(), 4);
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = code_state();
     state.update(CodeBlockMessage::ScrollDown);
     assert_eq!(state.scroll_offset(), 1);
-}
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = CodeBlock::init();
-    assert!(!CodeBlock::is_focused(&state));
-
-    CodeBlock::focus(&mut state);
-    assert!(CodeBlock::is_focused(&state));
-
-    CodeBlock::blur(&mut state);
-    assert!(!CodeBlock::is_focused(&state));
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = CodeBlock::init();
-    assert!(!CodeBlock::is_disabled(&state));
-
-    CodeBlock::disable(&mut state);
-    assert!(CodeBlock::is_disabled(&state));
-
-    CodeBlock::enable(&mut state);
-    assert!(!CodeBlock::is_disabled(&state));
 }
 
 // =============================================================================
@@ -605,8 +577,6 @@ fn test_view_focused() {
     let state = CodeBlockState::new()
         .with_code("let x = 1;")
         .with_language(Language::Rust);
-    let mut state = state;
-    state.set_focused(true);
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
@@ -626,8 +596,7 @@ fn test_view_focused() {
 fn test_view_disabled() {
     let state = CodeBlockState::new()
         .with_code("let x = 1;")
-        .with_language(Language::Rust)
-        .with_disabled(true);
+        .with_language(Language::Rust);
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
@@ -717,8 +686,7 @@ fn test_annotation_emitted() {
 #[test]
 fn test_annotation_focused() {
     use crate::annotation::{with_annotations, WidgetType};
-    let mut state = CodeBlockState::new().with_code("fn main() {}");
-    state.set_focused(true);
+    let state = CodeBlockState::new().with_code("fn main() {}");
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     let registry = with_annotations(|| {
         terminal
@@ -848,27 +816,33 @@ fn test_set_code_resets_horizontal_scroll() {
 
 #[test]
 fn test_horizontal_scroll_key_bindings() {
-    let mut state = CodeBlockState::new().with_code("Long line of code here");
-    CodeBlock::set_focused(&mut state, true);
-
+    let state = CodeBlockState::new().with_code("Long line of code here");
     // Left arrow
-    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = CodeBlock::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CodeBlockMessage::ScrollLeft));
 
     // Right arrow
-    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = CodeBlock::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CodeBlockMessage::ScrollRight));
 
     // h key
-    let msg = CodeBlock::handle_event(&state, &Event::char('h'));
+    let msg = CodeBlock::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(CodeBlockMessage::ScrollLeft));
 
     // l key (now horizontal scroll, not toggle line numbers)
-    let msg = CodeBlock::handle_event(&state, &Event::char('l'));
+    let msg = CodeBlock::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(CodeBlockMessage::ScrollRight));
 
     // n key (toggle line numbers)
-    let msg = CodeBlock::handle_event(&state, &Event::char('n'));
+    let msg = CodeBlock::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(CodeBlockMessage::ToggleLineNumbers));
 }
 
@@ -878,7 +852,6 @@ fn test_horizontal_scroll_renders_shifted_content() {
     let mut state = CodeBlockState::new()
         .with_code(code)
         .with_language(Language::Hcl);
-    CodeBlock::set_focused(&mut state, true);
     state.set_horizontal_offset(10);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(33, 7);

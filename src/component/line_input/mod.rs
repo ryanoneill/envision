@@ -16,7 +16,6 @@
 //! State is stored in [`LineInputState`], updated via [`LineInputMessage`],
 //! and produces [`LineInputOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`InputField`](super::InputField) for a simpler single-line input,
 //! and [`TextArea`](super::TextArea) for multi-line editing.
@@ -38,7 +37,7 @@ mod tests;
 
 use ratatui::prelude::*;
 
-use crate::component::{Component, Disableable, Focusable, ViewContext};
+use crate::component::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 use crate::undo::{EditKind, UndoStack};
@@ -72,10 +71,6 @@ pub struct LineInputState {
     buffer: String,
     /// Cursor position as a byte offset into `buffer`.
     cursor: usize,
-    /// Whether this component is focused.
-    focused: bool,
-    /// Whether this component is disabled.
-    disabled: bool,
     /// Placeholder text shown when the buffer is empty.
     placeholder: String,
     /// Selection anchor (byte offset); `None` if no selection.
@@ -100,8 +95,6 @@ impl Default for LineInputState {
         Self {
             buffer: String::new(),
             cursor: 0,
-            focused: false,
-            disabled: false,
             placeholder: String::new(),
             selection_anchor: None,
             clipboard: String::new(),
@@ -168,21 +161,6 @@ impl LineInputState {
     /// Sets the maximum number of history entries (builder pattern).
     pub fn with_max_history(mut self, max: usize) -> Self {
         self.history = History::new(max);
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use envision::component::LineInputState;
-    ///
-    /// let state = LineInputState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -347,16 +325,6 @@ impl LineInputState {
         self.placeholder = placeholder.into();
     }
 
-    /// Returns true if this component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Returns the maximum number of history entries.
     ///
     /// # Example
@@ -450,27 +418,7 @@ impl LineInputState {
         &self.clipboard
     }
 
-    /// Returns true if this component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
     // --- Instance methods ---
-
-    /// Maps an input event to a message (instance method).
-    pub fn handle_event(&self, event: &Event) -> Option<LineInputMessage> {
-        LineInput::handle_event(self, event)
-    }
-
-    /// Dispatches an event by mapping and updating (instance method).
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<LineInputOutput> {
-        LineInput::dispatch_event(self, event)
-    }
 
     /// Updates state with a message (instance method).
     ///
@@ -547,8 +495,12 @@ impl Component for LineInput {
         LineInputState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -645,10 +597,6 @@ impl Component for LineInput {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             LineInputMessage::Insert(c) => {
                 // Check max_length before inserting.
@@ -993,27 +941,7 @@ impl Component for LineInput {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
-        view_helpers::render(state, frame, area, theme);
-    }
-}
-
-impl Focusable for LineInput {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for LineInput {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+        view_helpers::render(state, frame, area, theme, ctx);
     }
 }

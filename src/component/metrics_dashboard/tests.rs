@@ -13,9 +13,7 @@ fn sample_widgets() -> Vec<MetricWidget> {
 }
 
 fn focused_state() -> MetricsDashboardState {
-    let mut state = MetricsDashboardState::new(sample_widgets(), 3);
-    MetricsDashboard::set_focused(&mut state, true);
-    state
+    MetricsDashboardState::new(sample_widgets(), 3)
 }
 
 // =============================================================================
@@ -28,8 +26,6 @@ fn test_new() {
     assert_eq!(state.widget_count(), 6);
     assert_eq!(state.columns(), 3);
     assert_eq!(state.selected_index(), Some(0));
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -49,12 +45,6 @@ fn test_columns_minimum() {
 fn test_with_title() {
     let state = MetricsDashboardState::new(sample_widgets(), 3).with_title("Dashboard");
     assert_eq!(state.title(), Some("Dashboard"));
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = MetricsDashboardState::new(sample_widgets(), 3).with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -355,18 +345,13 @@ fn test_select() {
 // =============================================================================
 
 #[test]
-fn test_disabled_ignores_messages() {
-    let mut state = focused_state();
-    state.set_disabled(true);
-    let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
-    assert_eq!(output, None);
-}
-
-#[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
-    let msg = MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Right));
+    let state = focused_state();
+    let msg = MetricsDashboard::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -377,7 +362,11 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = MetricsDashboardState::new(sample_widgets(), 3);
-    let msg = MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = MetricsDashboard::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -389,31 +378,59 @@ fn test_unfocused_ignores_events() {
 fn test_key_maps() {
     let state = focused_state();
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Left)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Left),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Left)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Right)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Right)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Up)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Up)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Down)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Down)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Home)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::First)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::End)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Last)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Enter)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Select)
     );
 }
@@ -422,19 +439,35 @@ fn test_key_maps() {
 fn test_vim_key_maps() {
     let state = focused_state();
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::char('h')),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::char('h'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Left)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::char('l')),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::char('l'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Right)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::char('k')),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::char('k'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Up)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::char('j')),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::char('j'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Down)
     );
 }
@@ -492,7 +525,11 @@ fn test_set_columns_minimum() {
 #[test]
 fn test_instance_handle_event() {
     let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Right));
+    let msg = MetricsDashboard::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(MetricsDashboardMessage::Right));
 }
 
@@ -506,7 +543,11 @@ fn test_instance_update() {
 #[test]
 fn test_instance_dispatch_event() {
     let mut state = focused_state();
-    let output = state.dispatch_event(&Event::key(KeyCode::Right));
+    let output = MetricsDashboard::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(1)));
 }
 
@@ -520,7 +561,13 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -531,14 +578,20 @@ fn test_render_with_widgets() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
 
 #[test]
 fn test_render_disabled() {
-    let state = MetricsDashboardState::new(sample_widgets(), 3).with_disabled(true);
+    let state = MetricsDashboardState::new(sample_widgets(), 3);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -563,7 +616,13 @@ fn test_render_with_history() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -574,25 +633,15 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
-}
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = MetricsDashboard::init();
-    assert!(!MetricsDashboard::is_focused(&state));
-
-    MetricsDashboard::focus(&mut state);
-    assert!(MetricsDashboard::is_focused(&state));
-
-    MetricsDashboard::blur(&mut state);
-    assert!(!MetricsDashboard::is_focused(&state));
 }
 
 // =============================================================================
@@ -621,7 +670,6 @@ fn test_empty_dashboard_selected_index_is_none() {
 #[test]
 fn test_empty_dashboard_ignores_navigation() {
     let mut state = MetricsDashboardState::default();
-    state.set_focused(true);
     let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
     assert_eq!(output, None);
 }
@@ -629,7 +677,6 @@ fn test_empty_dashboard_ignores_navigation() {
 #[test]
 fn test_single_widget_navigation() {
     let mut state = MetricsDashboardState::new(vec![MetricWidget::counter("A", 0)], 1);
-    state.set_focused(true);
     assert_eq!(
         MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right),
         None
@@ -664,7 +711,7 @@ fn test_annotation_emitted() {
                     frame,
                     frame.area(),
                     &theme,
-                    &ViewContext::default(),
+                    &ViewContext::new().focused(true),
                 );
             })
             .unwrap();

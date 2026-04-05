@@ -24,7 +24,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Disableable, ViewContext};
+use super::{Component, ViewContext};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a TitleCard.
@@ -399,7 +399,7 @@ impl TitleCardState {
 /// A stylish display-only component for application titles.
 ///
 /// Renders a centered title with optional decorations, subtitle, and borders.
-/// This is a display-only component and does not implement [`Focusable`](super::Focusable).
+/// This is a display-only component that does not receive keyboard focus.
 ///
 /// # Example
 ///
@@ -521,16 +521,6 @@ impl Component for TitleCard {
                 frame.render_widget(subtitle_paragraph, subtitle_area);
             }
         }
-    }
-}
-
-impl Disableable for TitleCard {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

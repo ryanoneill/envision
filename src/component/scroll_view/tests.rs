@@ -3,9 +3,7 @@ use crate::component::test_utils;
 use crate::input::{Event, KeyCode, KeyModifiers};
 
 fn focused_state() -> ScrollViewState {
-    let mut state = ScrollViewState::new();
-    ScrollView::set_focused(&mut state, true);
-    state
+    ScrollViewState::new()
 }
 
 fn scrollable_state() -> ScrollViewState {
@@ -23,8 +21,6 @@ fn test_new() {
     let state = ScrollViewState::new();
     assert_eq!(state.content_height(), 0);
     assert_eq!(state.scroll_offset(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert!(state.show_scrollbar());
     assert_eq!(state.title(), None);
 }
@@ -54,24 +50,15 @@ fn test_with_show_scrollbar() {
     let state = ScrollViewState::new().with_show_scrollbar(false);
     assert!(!state.show_scrollbar());
 }
-
-#[test]
-fn test_with_disabled() {
-    let state = ScrollViewState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
 #[test]
 fn test_builder_chaining() {
     let state = ScrollViewState::new()
         .with_content_height(50)
         .with_title("Log")
-        .with_show_scrollbar(false)
-        .with_disabled(true);
+        .with_show_scrollbar(false);
     assert_eq!(state.content_height(), 50);
     assert_eq!(state.title(), Some("Log"));
     assert!(!state.show_scrollbar());
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -116,37 +103,6 @@ fn test_scroll_state() {
     let state = ScrollViewState::new().with_content_height(50);
     assert_eq!(state.scroll_state().content_length(), 50);
 }
-
-#[test]
-fn test_is_focused() {
-    let state = ScrollViewState::new();
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_set_focused() {
-    let mut state = ScrollViewState::new();
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_is_disabled() {
-    let state = ScrollViewState::new();
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = ScrollViewState::new();
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
 // =============================================================================
 // content_area
 // =============================================================================
@@ -347,74 +303,6 @@ fn test_set_content_height_message() {
     assert_eq!(state.scroll_state().content_length(), 200);
     assert_eq!(output, None);
 }
-
-// =============================================================================
-// Disabled guards
-// =============================================================================
-
-#[test]
-fn test_disabled_ignores_scroll_down() {
-    let mut state = scrollable_state();
-    state.set_disabled(true);
-    let output = ScrollView::update(&mut state, ScrollViewMessage::ScrollDown);
-    assert_eq!(state.scroll_offset(), 0);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_disabled_ignores_scroll_up() {
-    let mut state = scrollable_state();
-    state.set_scroll_offset(5);
-    state.set_disabled(true);
-    let output = ScrollView::update(&mut state, ScrollViewMessage::ScrollUp);
-    assert_eq!(state.scroll_offset(), 5);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_disabled_ignores_page_up() {
-    let mut state = scrollable_state();
-    state.set_scroll_offset(20);
-    state.set_disabled(true);
-    let output = ScrollView::update(&mut state, ScrollViewMessage::PageUp);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_disabled_ignores_page_down() {
-    let mut state = scrollable_state();
-    state.set_disabled(true);
-    let output = ScrollView::update(&mut state, ScrollViewMessage::PageDown);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_disabled_ignores_home() {
-    let mut state = scrollable_state();
-    state.set_scroll_offset(50);
-    state.set_disabled(true);
-    let output = ScrollView::update(&mut state, ScrollViewMessage::Home);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_disabled_ignores_end() {
-    let mut state = scrollable_state();
-    state.set_disabled(true);
-    let output = ScrollView::update(&mut state, ScrollViewMessage::End);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_disabled_allows_set_content_height() {
-    // SetContentHeight is a data mutation, not interactive -- but our
-    // component guards all updates when disabled (consistent with Collapsible).
-    let mut state = ScrollViewState::new().with_disabled(true);
-    let output = ScrollView::update(&mut state, ScrollViewMessage::SetContentHeight(50));
-    assert_eq!(output, None);
-    assert_eq!(state.content_height(), 0); // unchanged
-}
-
 // =============================================================================
 // Event mapping
 // =============================================================================
@@ -423,7 +311,11 @@ fn test_disabled_allows_set_content_height() {
 fn test_handle_event_up() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::Up)),
+        ScrollView::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::ScrollUp)
     );
 }
@@ -432,7 +324,11 @@ fn test_handle_event_up() {
 fn test_handle_event_down() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::Down)),
+        ScrollView::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::ScrollDown)
     );
 }
@@ -441,11 +337,11 @@ fn test_handle_event_down() {
 fn test_handle_event_k_j() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::char('k')),
+        ScrollView::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(ScrollViewMessage::ScrollUp)
     );
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::char('j')),
+        ScrollView::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(ScrollViewMessage::ScrollDown)
     );
 }
@@ -454,11 +350,19 @@ fn test_handle_event_k_j() {
 fn test_handle_event_page_up_down() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::PageUp)),
+        ScrollView::handle_event(
+            &state,
+            &Event::key(KeyCode::PageUp),
+            &ViewContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::PageUp)
     );
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::PageDown)),
+        ScrollView::handle_event(
+            &state,
+            &Event::key(KeyCode::PageDown),
+            &ViewContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::PageDown)
     );
 }
@@ -467,11 +371,11 @@ fn test_handle_event_page_up_down() {
 fn test_handle_event_ctrl_u_d() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::ctrl('u')),
+        ScrollView::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true)),
         Some(ScrollViewMessage::PageUp)
     );
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::ctrl('d')),
+        ScrollView::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true)),
         Some(ScrollViewMessage::PageDown)
     );
 }
@@ -480,11 +384,19 @@ fn test_handle_event_ctrl_u_d() {
 fn test_handle_event_home_end() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::Home)),
+        ScrollView::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::Home)
     );
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::End)),
+        ScrollView::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::End)
     );
 }
@@ -494,13 +406,14 @@ fn test_handle_event_home_end() {
 fn test_handle_event_g_and_G() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::char('g')),
+        ScrollView::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true)),
         Some(ScrollViewMessage::Home)
     );
     assert_eq!(
         ScrollView::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT)
+            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &ViewContext::new().focused(true)
         ),
         Some(ScrollViewMessage::End)
     );
@@ -509,55 +422,45 @@ fn test_handle_event_g_and_G() {
 #[test]
 fn test_handle_event_unrecognized() {
     let state = focused_state();
-    assert_eq!(ScrollView::handle_event(&state, &Event::char('x')), None);
+    assert_eq!(
+        ScrollView::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        None
+    );
 }
 
 #[test]
 fn test_handle_event_unfocused_ignores() {
     let state = ScrollViewState::new();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::Up)),
+        ScrollView::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default()),
         None
     );
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::Down)),
+        ScrollView::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default()),
         None
     );
 }
 
 #[test]
 fn test_handle_event_disabled_ignores() {
-    let mut state = focused_state();
-    state.set_disabled(true);
+    let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::Up)),
+        ScrollView::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true).disabled(true)
+        ),
         None
     );
 }
-
-// =============================================================================
-// Instance methods
-// =============================================================================
-
 #[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(ScrollViewMessage::ScrollUp));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
+fn test_dispatch_event_no_change() {
     let mut state = scrollable_state();
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
-    assert_eq!(output, Some(()));
-    assert_eq!(state.scroll_offset(), 1);
-}
-
-#[test]
-fn test_instance_dispatch_event_no_change() {
-    let mut state = scrollable_state();
-    let output = state.dispatch_event(&Event::key(KeyCode::Up));
+    let output = ScrollView::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, None);
     assert_eq!(state.scroll_offset(), 0);
 }
@@ -569,71 +472,6 @@ fn test_instance_update() {
     assert_eq!(output, Some(()));
     assert_eq!(state.scroll_offset(), 1);
 }
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_is_focused() {
-    let state = ScrollView::init();
-    assert!(!ScrollView::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = ScrollView::init();
-    ScrollView::set_focused(&mut state, true);
-    assert!(ScrollView::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_focus() {
-    let mut state = ScrollView::init();
-    ScrollView::focus(&mut state);
-    assert!(ScrollView::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_blur() {
-    let mut state = ScrollView::init();
-    ScrollView::focus(&mut state);
-    ScrollView::blur(&mut state);
-    assert!(!ScrollView::is_focused(&state));
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_is_disabled() {
-    let state = ScrollView::init();
-    assert!(!ScrollView::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_set_disabled() {
-    let mut state = ScrollView::init();
-    ScrollView::set_disabled(&mut state, true);
-    assert!(ScrollView::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_disable() {
-    let mut state = ScrollView::init();
-    ScrollView::disable(&mut state);
-    assert!(ScrollView::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_enable() {
-    let mut state = ScrollView::init();
-    ScrollView::disable(&mut state);
-    ScrollView::enable(&mut state);
-    assert!(!ScrollView::is_disabled(&state));
-}
-
 // =============================================================================
 // Init
 // =============================================================================
@@ -643,8 +481,6 @@ fn test_init() {
     let state = ScrollView::init();
     assert_eq!(state.content_height(), 0);
     assert_eq!(state.scroll_offset(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert!(state.show_scrollbar());
 }
 
@@ -687,27 +523,6 @@ fn test_view_focused() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
-
-#[test]
-fn test_view_disabled() {
-    let state = ScrollViewState::new()
-        .with_title("Disabled")
-        .with_disabled(true);
-    let (mut terminal, theme) = test_utils::setup_render(40, 10);
-    terminal
-        .draw(|frame| {
-            ScrollView::view(
-                &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
-            );
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
 #[test]
 fn test_view_with_scrollbar() {
     let mut state = ScrollViewState::new()
@@ -804,8 +619,7 @@ fn test_annotation_emitted() {
 fn test_annotation_reflects_focus_and_disabled() {
     use crate::annotation::with_annotations;
 
-    let mut state = ScrollViewState::new().with_disabled(true);
-    ScrollView::focus(&mut state);
+    let state = ScrollViewState::new();
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     let registry = with_annotations(|| {
         terminal

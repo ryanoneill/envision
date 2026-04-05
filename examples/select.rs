@@ -30,15 +30,7 @@ enum Msg {
 
 impl State {
     fn set_focus(&mut self, index: usize) {
-        match self.focus_index {
-            0 => self.color.set_focused(false),
-            _ => self.size.set_focused(false),
-        }
         self.focus_index = index;
-        match self.focus_index {
-            0 => self.color.set_focused(true),
-            _ => self.size.set_focused(true),
-        }
     }
 }
 
@@ -47,9 +39,8 @@ impl App for SelectApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut color = SelectState::new(vec!["Red", "Green", "Blue", "Yellow"])
+        let color = SelectState::new(vec!["Red", "Green", "Blue", "Yellow"])
             .with_placeholder("Choose a color...");
-        color.set_focused(true);
 
         let size = SelectState::new(vec!["Small", "Medium", "Large", "Extra Large"])
             .with_placeholder("Choose a size...");
@@ -100,14 +91,14 @@ impl App for SelectApp {
             frame,
             chunks[0],
             &theme,
-            &ViewContext::default(),
+            &ViewContext::new().focused(state.focus_index == 0),
         );
         Select::view(
             &state.size,
             frame,
             chunks[1],
             &theme,
-            &ViewContext::default(),
+            &ViewContext::new().focused(state.focus_index == 1),
         );
 
         // Summary
@@ -146,8 +137,10 @@ impl App for SelectApp {
         }
         // Route event to focused select
         match state.focus_index {
-            0 => state.color.handle_event(event).map(Msg::Color),
-            _ => state.size.handle_event(event).map(Msg::Size),
+            0 => Select::handle_event(&state.color, event, &ViewContext::new().focused(true))
+                .map(Msg::Color),
+            _ => Select::handle_event(&state.size, event, &ViewContext::new().focused(true))
+                .map(Msg::Size),
         }
     }
 }

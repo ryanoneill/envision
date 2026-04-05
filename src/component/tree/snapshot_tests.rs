@@ -66,7 +66,6 @@ fn test_snapshot_focused_selected() {
     root.add_child(TreeNode::new("Child 2", ()));
     root.add_child(TreeNode::new("Child 3", ()));
     let mut state = TreeState::new(vec![root]);
-    state.set_focused(true);
     state.set_selected(Some(2));
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
@@ -106,8 +105,7 @@ fn test_snapshot_disabled() {
     let mut root = TreeNode::new_expanded("Root", ());
     root.add_child(TreeNode::new("Child 1", ()));
     root.add_child(TreeNode::new("Child 2", ()));
-    let mut state = TreeState::new(vec![root]);
-    state.set_disabled(true);
+    let state = TreeState::new(vec![root]);
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {

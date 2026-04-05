@@ -2,15 +2,11 @@ use super::*;
 use crate::component::test_utils;
 
 fn vertical_state() -> SplitPanelState {
-    let mut state = SplitPanelState::new(SplitOrientation::Vertical);
-    SplitPanel::set_focused(&mut state, true);
-    state
+    SplitPanelState::new(SplitOrientation::Vertical)
 }
 
 fn horizontal_state() -> SplitPanelState {
-    let mut state = SplitPanelState::new(SplitOrientation::Horizontal);
-    SplitPanel::set_focused(&mut state, true);
-    state
+    SplitPanelState::new(SplitOrientation::Horizontal)
 }
 
 // =============================================================================
@@ -52,8 +48,6 @@ fn test_default() {
     let state = SplitPanelState::default();
     assert_eq!(state.orientation(), &SplitOrientation::Vertical);
     assert!((state.ratio() - 0.5).abs() < f32::EPSILON);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 // =============================================================================
@@ -80,13 +74,6 @@ fn test_with_bounds_clamps_ratio() {
         .with_bounds(0.2, 0.8);
     assert!((state.ratio() - 0.8).abs() < f32::EPSILON);
 }
-
-#[test]
-fn test_with_disabled() {
-    let state = SplitPanelState::new(SplitOrientation::Vertical).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // =============================================================================
 // Setters
 // =============================================================================
@@ -113,16 +100,6 @@ fn test_set_ratio_clamped() {
     state.set_ratio(1.0);
     assert!((state.ratio() - 0.9).abs() < f32::EPSILON);
 }
-
-#[test]
-fn test_set_disabled() {
-    let mut state = SplitPanelState::new(SplitOrientation::Vertical);
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
 // =============================================================================
 // Focus management
 // =============================================================================
@@ -255,7 +232,6 @@ fn test_reset_ratio_already_50() {
 #[test]
 fn test_custom_resize_step() {
     let mut state = SplitPanelState::new(SplitOrientation::Vertical).with_resize_step(0.05);
-    SplitPanel::set_focused(&mut state, true);
     SplitPanel::update(&mut state, SplitPanelMessage::GrowFirst);
     assert!((state.ratio() - 0.55).abs() < f32::EPSILON);
 }
@@ -265,24 +241,14 @@ fn test_custom_resize_step() {
 // =============================================================================
 
 #[test]
-fn test_disabled_ignores_messages() {
-    let mut state = vertical_state();
-    state.set_disabled(true);
-
-    let output = SplitPanel::update(&mut state, SplitPanelMessage::FocusOther);
-    assert_eq!(output, None);
-    assert!(state.is_first_pane_focused());
-
-    let output = SplitPanel::update(&mut state, SplitPanelMessage::GrowFirst);
-    assert_eq!(output, None);
-}
-
-#[test]
 fn test_disabled_ignores_events() {
-    let mut state = vertical_state();
-    state.set_disabled(true);
+    let state = vertical_state();
 
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -293,8 +259,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = SplitPanelState::new(SplitOrientation::Vertical);
-    assert!(!state.is_focused());
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -305,14 +270,22 @@ fn test_unfocused_ignores_events() {
 #[test]
 fn test_tab_maps_to_focus_other() {
     let state = vertical_state();
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SplitPanelMessage::FocusOther));
 }
 
 #[test]
 fn test_backtab_maps_to_focus_other() {
     let state = vertical_state();
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::BackTab));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::BackTab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SplitPanelMessage::FocusOther));
 }
 
@@ -322,6 +295,7 @@ fn test_ctrl_right_maps_to_grow_first() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::GrowFirst));
 }
@@ -332,6 +306,7 @@ fn test_ctrl_left_maps_to_shrink_first() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::ShrinkFirst));
 }
@@ -342,6 +317,7 @@ fn test_ctrl_down_maps_to_grow_first() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key_with(KeyCode::Down, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::GrowFirst));
 }
@@ -349,22 +325,30 @@ fn test_ctrl_down_maps_to_grow_first() {
 #[test]
 fn test_ctrl_up_maps_to_shrink_first() {
     let state = vertical_state();
-    let msg =
-        SplitPanel::handle_event(&state, &Event::key_with(KeyCode::Up, KeyModifiers::CONTROL));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::key_with(KeyCode::Up, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SplitPanelMessage::ShrinkFirst));
 }
 
 #[test]
 fn test_ctrl_0_maps_to_reset_ratio() {
     let state = vertical_state();
-    let msg = SplitPanel::handle_event(&state, &Event::ctrl('0'));
+    let msg =
+        SplitPanel::handle_event(&state, &Event::ctrl('0'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SplitPanelMessage::ResetRatio));
 }
 
 #[test]
 fn test_arrow_without_ctrl_ignored() {
     let state = vertical_state();
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -419,35 +403,19 @@ fn test_layout_zero_area() {
 #[test]
 fn test_dispatch_event_resize() {
     let mut state = vertical_state();
-    let output = state.dispatch_event(&Event::key_with(KeyCode::Right, KeyModifiers::CONTROL));
+    let output = SplitPanel::dispatch_event(
+        &mut state,
+        &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
+    );
     assert!(matches!(output, Some(SplitPanelOutput::RatioChanged(_))));
 }
-
-// =============================================================================
-// Instance methods
-// =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let state = vertical_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Tab));
-    assert_eq!(msg, Some(SplitPanelMessage::FocusOther));
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = vertical_state();
     let output = state.update(SplitPanelMessage::FocusOther);
     assert_eq!(output, Some(SplitPanelOutput::FocusedSecond));
 }
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = vertical_state();
-    let output = state.dispatch_event(&Event::key(KeyCode::Tab));
-    assert_eq!(output, Some(SplitPanelOutput::FocusedSecond));
-}
-
 // =============================================================================
 // Rendering
 // =============================================================================
@@ -488,7 +456,7 @@ fn test_render_second_pane_focused() {
 
 #[test]
 fn test_render_disabled() {
-    let state = SplitPanelState::new(SplitOrientation::Vertical).with_disabled(true);
+    let state = SplitPanelState::new(SplitOrientation::Vertical);
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
@@ -502,23 +470,6 @@ fn test_render_disabled() {
         })
         .unwrap();
 }
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = SplitPanel::init();
-    assert!(!SplitPanel::is_focused(&state));
-
-    SplitPanel::focus(&mut state);
-    assert!(SplitPanel::is_focused(&state));
-
-    SplitPanel::blur(&mut state);
-    assert!(!SplitPanel::is_focused(&state));
-}
-
 // =============================================================================
 // PartialEq
 // =============================================================================

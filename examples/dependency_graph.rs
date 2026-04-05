@@ -75,8 +75,7 @@ impl App for DependencyGraphApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut graph = build_graph();
-        graph.set_focused(true);
+        let graph = build_graph();
 
         (State { graph }, Command::none())
     }
@@ -140,7 +139,8 @@ impl App for DependencyGraphApp {
                 return Some(Msg::Quit);
             }
         }
-        state.graph.handle_event(event).map(Msg::Graph)
+        DependencyGraph::handle_event(&state.graph, event, &ViewContext::new().focused(true))
+            .map(Msg::Graph)
     }
 }
 

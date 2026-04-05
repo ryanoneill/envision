@@ -7,12 +7,11 @@
 //! State is stored in [`SwitchState`], updated via [`SwitchMessage`], and
 //! produces [`SwitchOutput`].
 //!
-//! Implements [`Focusable`], [`Disableable`], and [`Toggleable`].
 //!
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Switch, SwitchMessage, SwitchOutput, SwitchState, Component, Focusable};
+//! use envision::component::{Switch, SwitchMessage, SwitchOutput, SwitchState, Component};
 //!
 //! // Create an off switch
 //! let mut state = SwitchState::new();
@@ -27,17 +26,12 @@
 //! let output = Switch::update(&mut state, SwitchMessage::Toggle);
 //! assert_eq!(output, Some(SwitchOutput::Off));
 //! assert!(!state.is_on());
-//!
-//! // Disabled switches don't toggle
-//! state.set_disabled(true);
-//! let output = Switch::update(&mut state, SwitchMessage::Toggle);
-//! assert_eq!(output, None);
 //! ```
 
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, Focusable, Toggleable, ViewContext};
+use super::{Component, Toggleable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -78,10 +72,6 @@ pub struct SwitchState {
     on_label: String,
     /// Text shown when the switch is off.
     off_label: String,
-    /// Whether the switch is focused.
-    focused: bool,
-    /// Whether the switch is disabled.
-    disabled: bool,
 }
 
 impl Default for SwitchState {
@@ -91,8 +81,6 @@ impl Default for SwitchState {
             label: None,
             on_label: "ON".to_string(),
             off_label: "OFF".to_string(),
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -168,21 +156,6 @@ impl SwitchState {
     /// ```
     pub fn with_off_label(mut self, off_label: impl Into<String>) -> Self {
         self.off_label = off_label.into();
-        self
-    }
-
-    /// Sets the disabled state using builder pattern.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SwitchState;
-    ///
-    /// let state = SwitchState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -267,50 +240,6 @@ impl SwitchState {
         self.label = label;
     }
 
-    /// Returns true if the switch is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// Disabled switches do not respond to toggle events.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Returns true if the switch is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Maps an input event to a switch message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{SwitchMessage, SwitchState};
-    /// use envision::input::Event;
-    ///
-    /// let mut state = SwitchState::new();
-    /// state.set_focused(true);
-    /// let event = Event::key(envision::input::KeyCode::Enter);
-    /// assert_eq!(state.handle_event(&event), Some(SwitchMessage::Toggle));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<SwitchMessage> {
-        Switch::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<SwitchOutput> {
-        Switch::dispatch_event(self, event)
-    }
-
     /// Updates the switch state with a message, returning any output.
     ///
     /// # Example
@@ -372,21 +301,14 @@ impl Component for Switch {
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
         match msg {
             SwitchMessage::Toggle => {
-                if state.disabled {
-                    None
+                state.on = !state.on;
+                if state.on {
+                    Some(SwitchOutput::On)
                 } else {
-                    state.on = !state.on;
-                    if state.on {
-                        Some(SwitchOutput::On)
-                    } else {
-                        Some(SwitchOutput::Off)
-                    }
+                    Some(SwitchOutput::Off)
                 }
             }
             SwitchMessage::SetOn(on) => {
-                if state.disabled {
-                    return None;
-                }
                 let changed = state.on != on;
                 state.on = on;
                 if changed {
@@ -402,8 +324,12 @@ impl Component for Switch {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -455,26 +381,6 @@ impl Component for Switch {
             .focused(ctx.focused)
             .disabled(ctx.disabled);
         frame.render_widget(annotated, area);
-    }
-}
-
-impl Focusable for Switch {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Switch {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

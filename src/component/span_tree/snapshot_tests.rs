@@ -42,7 +42,6 @@ fn test_snapshot_with_selection() {
         .with_child(SpanNode::new("api", "api/handler", 50.0, 800.0))
         .with_child(SpanNode::new("auth", "auth/validate", 10.0, 200.0));
     let mut state = SpanTreeState::new(vec![root]).with_title("Trace");
-    state.set_focused(true);
     state.selected_index = Some(1); // select api/handler
     let (mut terminal, theme) = test_utils::setup_render(60, 10);
     terminal
@@ -83,9 +82,7 @@ fn test_snapshot_disabled() {
         50.0,
         800.0,
     ));
-    let state = SpanTreeState::new(vec![root])
-        .with_title("Trace")
-        .with_disabled(true);
+    let state = SpanTreeState::new(vec![root]).with_title("Trace");
     let (mut terminal, theme) = test_utils::setup_render(60, 10);
     terminal
         .draw(|frame| {

@@ -6,14 +6,13 @@
 //! [`BreadcrumbState`], updated via [`BreadcrumbMessage`], and produces
 //! [`BreadcrumbOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
 //! use envision::component::{
 //!     Breadcrumb, BreadcrumbMessage, BreadcrumbOutput, BreadcrumbSegment,
-//!     BreadcrumbState, Component, Focusable,
+//!     BreadcrumbState, Component,
 //! };
 //!
 //! // Create breadcrumb from segments
@@ -23,7 +22,6 @@
 //!     BreadcrumbSegment::new("Electronics"),
 //! ];
 //! let mut state = BreadcrumbState::new(segments);
-//! Breadcrumb::set_focused(&mut state, true);
 //!
 //! // Navigate right
 //! let output = Breadcrumb::update(&mut state, BreadcrumbMessage::Right);
@@ -38,7 +36,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -163,10 +161,6 @@ pub struct BreadcrumbState {
     segments: Vec<BreadcrumbSegment>,
     /// Currently focused segment index.
     focused_index: usize,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// The separator between segments.
     separator: String,
     /// Maximum visible segments (None = show all).
@@ -178,8 +172,6 @@ impl Default for BreadcrumbState {
         Self {
             segments: Vec::new(),
             focused_index: 0,
-            focused: false,
-            disabled: false,
             separator: " > ".to_string(),
             max_visible: None,
         }
@@ -205,8 +197,6 @@ impl BreadcrumbState {
         Self {
             segments,
             focused_index: 0,
-            focused: false,
-            disabled: false,
             separator: " > ".to_string(),
             max_visible: None,
         }
@@ -276,11 +266,6 @@ impl BreadcrumbState {
     /// Returns the currently focused segment, if any.
     pub fn focused_segment(&self) -> Option<&BreadcrumbSegment> {
         self.segments.get(self.focused_index)
-    }
-
-    /// Returns whether the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
     }
 
     /// Returns the separator used between segments.
@@ -355,11 +340,6 @@ impl BreadcrumbState {
         self.max_visible = max;
     }
 
-    /// Sets whether the component is disabled.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Sets the separator between segments (builder method).
     ///
     /// # Example
@@ -395,22 +375,6 @@ impl BreadcrumbState {
         self
     }
 
-    /// Sets the disabled state (builder method).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::BreadcrumbState;
-    ///
-    /// let state = BreadcrumbState::from_labels(vec!["Home"])
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Returns whether the breadcrumb is truncated.
     pub fn is_truncated(&self) -> bool {
         match self.max_visible {
@@ -437,26 +401,6 @@ impl BreadcrumbState {
     pub fn visible_segments(&self) -> &[BreadcrumbSegment] {
         let (start, end) = self.visible_range();
         &self.segments[start..end]
-    }
-
-    /// Returns true if the breadcrumb is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Maps an input event to a breadcrumb message.
-    pub fn handle_event(&self, event: &Event) -> Option<BreadcrumbMessage> {
-        Breadcrumb::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<BreadcrumbOutput> {
-        Breadcrumb::dispatch_event(self, event)
     }
 
     /// Updates the breadcrumb state with a message, returning any output.
@@ -489,11 +433,10 @@ impl BreadcrumbState {
 ///
 /// ```rust
 /// use envision::component::{
-///     Breadcrumb, BreadcrumbMessage, BreadcrumbOutput, BreadcrumbState, Component, Focusable,
+///     Breadcrumb, BreadcrumbMessage, BreadcrumbOutput, BreadcrumbState, Component,
 /// };
 ///
 /// let mut state = BreadcrumbState::from_labels(vec!["Home", "Products", "Item"]);
-/// Breadcrumb::set_focused(&mut state, true);
 ///
 /// // Navigate to Products
 /// let output = Breadcrumb::update(&mut state, BreadcrumbMessage::Right);
@@ -515,7 +458,7 @@ impl Component for Breadcrumb {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.segments.is_empty() {
+        if state.segments.is_empty() {
             return None;
         }
 
@@ -564,8 +507,12 @@ impl Component for Breadcrumb {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -629,26 +576,6 @@ impl Component for Breadcrumb {
             .with_disabled(ctx.disabled);
         let annotated = crate::annotation::Annotate::new(Paragraph::new(line), annotation);
         frame.render_widget(annotated, area);
-    }
-}
-
-impl Focusable for Breadcrumb {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Breadcrumb {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

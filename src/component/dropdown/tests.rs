@@ -8,7 +8,6 @@ fn test_new() {
     assert_eq!(state.options().len(), 3);
     assert_eq!(state.selected_index(), None);
     assert!(!state.is_open());
-    assert!(!Dropdown::is_focused(&state));
     assert_eq!(state.filtered_indices.len(), 3);
 }
 
@@ -420,30 +419,6 @@ fn test_confirm_with_filter() {
 
 // ========== Disabled State Tests ==========
 
-#[test]
-fn test_disabled_ignores_messages() {
-    let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    state.set_disabled(true);
-
-    let output = Dropdown::update(&mut state, DropdownMessage::Open);
-    assert_eq!(output, None);
-    assert!(!state.is_open());
-
-    let output = Dropdown::update(&mut state, DropdownMessage::Insert('a'));
-    assert_eq!(output, None);
-    assert_eq!(state.filter_text(), "");
-}
-
-#[test]
-fn test_disabling_closes_dropdown() {
-    let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    Dropdown::update(&mut state, DropdownMessage::Open);
-    assert!(state.is_open());
-
-    state.set_disabled(true);
-    assert!(!state.is_open());
-}
-
 // ========== View Tests ==========
 
 #[test]
@@ -545,8 +520,7 @@ fn test_view_no_matches() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = DropdownState::new(vec!["A", "B"]);
-    Dropdown::focus(&mut state);
+    let state = DropdownState::new(vec!["A", "B"]);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
 
@@ -565,7 +539,6 @@ fn test_view_focused() {
 fn test_init() {
     let state = Dropdown::init();
     assert_eq!(state.options().len(), 0);
-    assert!(!Dropdown::is_focused(&state));
 }
 
 #[test]
@@ -650,86 +623,105 @@ use crate::input::{Event, KeyCode};
 
 #[test]
 fn test_handle_event_toggle_when_closed() {
-    let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    Dropdown::focus(&mut state);
+    let state = DropdownState::new(vec!["A", "B", "C"]);
 
-    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Dropdown::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(DropdownMessage::Toggle));
 }
 
 #[test]
 fn test_handle_event_confirm_when_open() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    Dropdown::focus(&mut state);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Dropdown::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(DropdownMessage::Confirm));
 }
 
 #[test]
 fn test_handle_event_close_when_open() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    Dropdown::focus(&mut state);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = Dropdown::handle_event(
+        &state,
+        &Event::key(KeyCode::Esc),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(DropdownMessage::Close));
 }
 
 #[test]
 fn test_handle_event_up_when_open() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    Dropdown::focus(&mut state);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = Dropdown::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(DropdownMessage::Up));
 }
 
 #[test]
 fn test_handle_event_down_when_open() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    Dropdown::focus(&mut state);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = Dropdown::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(DropdownMessage::Down));
 }
 
 #[test]
 fn test_handle_event_char_when_open() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    Dropdown::focus(&mut state);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    let msg = Dropdown::handle_event(&state, &Event::char('a'));
+    let msg = Dropdown::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(DropdownMessage::Insert('a')));
 }
 
 #[test]
 fn test_handle_event_backspace_when_open() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    Dropdown::focus(&mut state);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Backspace));
+    let msg = Dropdown::handle_event(
+        &state,
+        &Event::key(KeyCode::Backspace),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(DropdownMessage::Backspace));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = DropdownState::new(vec!["A", "B", "C"]);
-    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    Dropdown::focus(&mut state);
-    state.set_disabled(true);
-    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Enter));
+    let state = DropdownState::new(vec!["A", "B", "C"]);
+    let msg = Dropdown::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -740,12 +732,15 @@ fn test_handle_event_ignored_when_disabled() {
 #[test]
 fn test_dispatch_event() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    Dropdown::focus(&mut state);
     Dropdown::update(&mut state, DropdownMessage::Open);
     Dropdown::update(&mut state, DropdownMessage::Down);
 
     // Enter when open dispatches Confirm, which selects the item
-    let output = Dropdown::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = Dropdown::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(DropdownOutput::Selected("B".to_string())));
     assert!(!state.is_open());
 }
@@ -755,22 +750,13 @@ fn test_dispatch_event() {
 // ========================================
 
 #[test]
-fn test_instance_methods() {
+fn test_instance_update() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
-    state.set_focused(true);
-
-    // instance handle_event
-    let msg = state.handle_event(&Event::key(KeyCode::Enter));
-    assert_eq!(msg, Some(DropdownMessage::Toggle));
 
     // instance update
     let output = state.update(DropdownMessage::Toggle);
     assert!(output.is_none()); // Toggle just opens, returns None
     assert!(state.is_open());
-
-    // instance dispatch_event
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
-    assert_eq!(output, Some(DropdownOutput::SelectionChanged(1)));
 }
 
 #[test]
@@ -791,24 +777,6 @@ fn test_selected_item_none() {
 // ========================================
 
 #[test]
-fn test_with_disabled() {
-    let state = DropdownState::new(vec!["A", "B", "C"]).with_disabled(true);
-    assert!(state.is_disabled());
-
-    let state = DropdownState::new(vec!["A", "B", "C"]).with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_prevents_open() {
-    let mut state = DropdownState::new(vec!["A", "B", "C"]).with_disabled(true);
-    state.set_focused(true);
-    let output = Dropdown::update(&mut state, DropdownMessage::Open);
-    assert_eq!(output, None);
-    assert!(!state.is_open());
-}
-
-#[test]
 fn test_with_placeholder() {
     let state = DropdownState::new(vec!["A", "B", "C"]).with_placeholder("Pick one...");
     assert_eq!(state.placeholder(), "Pick one...");
@@ -816,11 +784,8 @@ fn test_with_placeholder() {
 
 #[test]
 fn test_with_placeholder_chained() {
-    let state = DropdownState::new(vec!["A", "B", "C"])
-        .with_placeholder("Pick one...")
-        .with_disabled(true);
+    let state = DropdownState::new(vec!["A", "B", "C"]).with_placeholder("Pick one...");
     assert_eq!(state.placeholder(), "Pick one...");
-    assert!(state.is_disabled());
 }
 
 // Annotation tests

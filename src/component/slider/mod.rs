@@ -4,7 +4,6 @@
 //! within a configurable range. State is stored in [`SliderState`], updated
 //! via [`SliderMessage`], and produces [`SliderOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`ProgressBar`](super::ProgressBar) for a display-only progress indicator.
 //!
@@ -34,7 +33,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -99,10 +98,6 @@ pub struct SliderState {
     label: Option<String>,
     /// Whether to display the current value.
     show_value: bool,
-    /// Whether the slider is focused.
-    focused: bool,
-    /// Whether the slider is disabled.
-    disabled: bool,
 }
 
 impl Default for SliderState {
@@ -115,8 +110,6 @@ impl Default for SliderState {
             orientation: SliderOrientation::default(),
             label: None,
             show_value: true,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -224,21 +217,6 @@ impl SliderState {
         self
     }
 
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SliderState;
-    ///
-    /// let state = SliderState::new(0.0, 100.0).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Returns the current value.
     ///
     /// # Example
@@ -336,26 +314,6 @@ impl SliderState {
         self.show_value = show;
     }
 
-    /// Returns true if the slider is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the slider is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Returns the orientation.
     pub fn orientation(&self) -> &SliderOrientation {
         &self.orientation
@@ -374,28 +332,6 @@ impl SliderState {
     /// ```
     pub fn set_orientation(&mut self, orientation: SliderOrientation) {
         self.orientation = orientation;
-    }
-
-    /// Maps an input event to a slider message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{SliderMessage, SliderState};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = SliderState::new(0.0, 100.0);
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Right);
-    /// assert_eq!(state.handle_event(&event), Some(SliderMessage::Increment));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<SliderMessage> {
-        Slider::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<SliderOutput> {
-        Slider::dispatch_event(self, event)
     }
 
     /// Updates the slider state with a message, returning any output.
@@ -451,7 +387,7 @@ impl SliderState {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{Slider, SliderMessage, SliderOutput, SliderState, Component, Focusable};
+/// use envision::component::{Slider, SliderMessage, SliderOutput, SliderState, Component};
 ///
 /// let mut state = SliderState::new(0.0, 100.0)
 ///     .with_value(50.0)
@@ -475,10 +411,6 @@ impl Component for Slider {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         let old_value = state.value;
 
         match msg {
@@ -512,8 +444,12 @@ impl Component for Slider {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -543,22 +479,28 @@ impl Component for Slider {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         match state.orientation {
-            SliderOrientation::Horizontal => view_horizontal(state, frame, area, theme),
-            SliderOrientation::Vertical => view_vertical(state, frame, area, theme),
+            SliderOrientation::Horizontal => view_horizontal(state, frame, area, theme, ctx),
+            SliderOrientation::Vertical => view_vertical(state, frame, area, theme, ctx),
         }
     }
 }
 
 /// Renders the slider in horizontal orientation.
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-fn view_horizontal(state: &SliderState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn view_horizontal(
+    state: &SliderState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    ctx: &ViewContext,
+) {
     if area.height == 0 || area.width == 0 {
         return;
     }
 
-    let (label_style, filled_style, empty_style) = compute_styles(state, theme);
+    let (label_style, filled_style, empty_style) = compute_styles(theme, ctx);
 
     let mut lines = Vec::new();
 
@@ -599,19 +541,25 @@ fn view_horizontal(state: &SliderState, frame: &mut Frame, area: Rect, theme: &T
     };
 
     let annotated = crate::annotation::Annotate::new(paragraph, annotation)
-        .focused(state.focused)
-        .disabled(state.disabled);
+        .focused(ctx.focused)
+        .disabled(ctx.disabled);
     frame.render_widget(annotated, area);
 }
 
 /// Renders the slider in vertical orientation.
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-fn view_vertical(state: &SliderState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn view_vertical(
+    state: &SliderState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    ctx: &ViewContext,
+) {
     if area.height == 0 || area.width == 0 {
         return;
     }
 
-    let (label_style, filled_style, empty_style) = compute_styles(state, theme);
+    let (label_style, filled_style, empty_style) = compute_styles(theme, ctx);
 
     let mut lines = Vec::new();
 
@@ -659,17 +607,17 @@ fn view_vertical(state: &SliderState, frame: &mut Frame, area: Rect, theme: &The
     };
 
     let annotated = crate::annotation::Annotate::new(paragraph, annotation)
-        .focused(state.focused)
-        .disabled(state.disabled);
+        .focused(ctx.focused)
+        .disabled(ctx.disabled);
     frame.render_widget(annotated, area);
 }
 
 /// Computes the styles for label, filled, and empty portions.
-fn compute_styles(state: &SliderState, theme: &Theme) -> (Style, Style, Style) {
-    if state.disabled {
+fn compute_styles(theme: &Theme, ctx: &ViewContext) -> (Style, Style, Style) {
+    if ctx.disabled {
         let disabled = theme.disabled_style();
         (disabled, disabled, disabled)
-    } else if state.focused {
+    } else if ctx.focused {
         let label_style = theme.focused_style();
         let filled_style = theme.focused_style();
         let empty_style = theme.normal_style();
@@ -703,26 +651,6 @@ fn format_value(value: f64) -> String {
         format!("{}", value as i64)
     } else {
         format!("{value}")
-    }
-}
-
-impl Focusable for Slider {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Slider {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

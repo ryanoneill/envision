@@ -315,7 +315,6 @@ fn test_file_tree_workflow() {
     root.add_child(TreeNode::new("Cargo.toml", "/project/Cargo.toml"));
 
     let mut state = TreeState::new(vec![root]);
-    Tree::focus(&mut state);
 
     // Navigate to src
     Tree::update(&mut state, TreeMessage::Down);
@@ -370,8 +369,7 @@ fn test_multiple_roots() {
 #[test]
 fn test_view_focused_selection() {
     let root = TreeNode::new("Root", ());
-    let mut state = TreeState::new(vec![root]);
-    state.focused = true; // Set focused for different highlight style
+    let state = TreeState::new(vec![root]);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
@@ -393,8 +391,7 @@ fn test_view_focused_selection() {
 #[test]
 fn test_view_unfocused_selection() {
     let root = TreeNode::new("Root", ());
-    let mut state = TreeState::new(vec![root]);
-    state.focused = false; // Unfocused state
+    let state = TreeState::new(vec![root]);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 

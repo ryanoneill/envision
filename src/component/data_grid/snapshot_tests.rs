@@ -67,8 +67,7 @@ fn test_snapshot_populated() {
 
 #[test]
 fn test_snapshot_focused() {
-    let mut state = DataGridState::new(sample_rows(), sample_columns());
-    DataGrid::set_focused(&mut state, true);
+    let state = DataGridState::new(sample_rows(), sample_columns());
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -87,7 +86,6 @@ fn test_snapshot_focused() {
 #[test]
 fn test_snapshot_focused_second_column() {
     let mut state = DataGridState::new(sample_rows(), sample_columns());
-    DataGrid::set_focused(&mut state, true);
     DataGrid::update(&mut state, DataGridMessage::Right);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
@@ -107,7 +105,6 @@ fn test_snapshot_focused_second_column() {
 #[test]
 fn test_snapshot_editing() {
     let mut state = DataGridState::new(sample_rows(), sample_columns());
-    DataGrid::set_focused(&mut state, true);
     DataGrid::update(&mut state, DataGridMessage::Enter);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal

@@ -13,7 +13,6 @@ fn test_new() {
     assert_eq!(state.text(), "42");
     assert_eq!(state.color(), None);
     assert_eq!(state.alignment(), Alignment::Center);
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -22,7 +21,6 @@ fn test_default() {
     assert_eq!(state.text(), "");
     assert_eq!(state.color(), None);
     assert_eq!(state.alignment(), Alignment::Center);
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -44,21 +42,13 @@ fn test_with_alignment() {
 }
 
 #[test]
-fn test_with_disabled() {
-    let state = BigTextState::new("OFF").with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
 fn test_chained_builders() {
     let state = BigTextState::new("100")
         .with_color(Color::Cyan)
-        .with_alignment(Alignment::Right)
-        .with_disabled(true);
+        .with_alignment(Alignment::Right);
     assert_eq!(state.text(), "100");
     assert_eq!(state.color(), Some(Color::Cyan));
     assert_eq!(state.alignment(), Alignment::Right);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -86,15 +76,6 @@ fn test_set_alignment() {
     let mut state = BigTextState::new("0");
     state.set_alignment(Alignment::Right);
     assert_eq!(state.alignment(), Alignment::Right);
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = BigTextState::new("0");
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 // =============================================================================
@@ -144,18 +125,6 @@ fn test_instance_update() {
     assert_eq!(state.text(), "new");
 }
 
-#[test]
-fn test_instance_handle_event() {
-    let state = BigTextState::new("42");
-    assert_eq!(state.handle_event(&Event::key(KeyCode::Enter)), None);
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = BigTextState::new("42");
-    assert_eq!(state.dispatch_event(&Event::key(KeyCode::Enter)), None);
-}
-
 // =============================================================================
 // handle_event (display-only, always None)
 // =============================================================================
@@ -164,30 +133,17 @@ fn test_instance_dispatch_event() {
 fn test_handle_event_returns_none() {
     let state = BigTextState::new("42");
     assert_eq!(
-        BigText::handle_event(&state, &Event::key(KeyCode::Up)),
+        BigText::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default()),
         None
     );
     assert_eq!(
-        BigText::handle_event(&state, &Event::key(KeyCode::Enter)),
+        BigText::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default()),
         None
     );
-    assert_eq!(BigText::handle_event(&state, &Event::char('a')), None);
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = BigTextState::new("42");
-    assert!(!BigText::is_disabled(&state));
-
-    BigText::disable(&mut state);
-    assert!(BigText::is_disabled(&state));
-
-    BigText::enable(&mut state);
-    assert!(!BigText::is_disabled(&state));
+    assert_eq!(
+        BigText::handle_event(&state, &Event::char('a'), &ViewContext::default()),
+        None
+    );
 }
 
 // =============================================================================
@@ -442,7 +398,7 @@ fn test_view_right_aligned() {
 
 #[test]
 fn test_view_disabled() {
-    let state = BigTextState::new("42").with_disabled(true);
+    let state = BigTextState::new("42");
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
@@ -545,7 +501,7 @@ fn test_annotation_emitted() {
 #[test]
 fn test_annotation_disabled() {
     use crate::annotation::{with_annotations, WidgetType};
-    let state = BigTextState::new("OFF").with_disabled(true);
+    let state = BigTextState::new("OFF");
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     let registry = with_annotations(|| {
         terminal

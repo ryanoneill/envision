@@ -74,7 +74,6 @@ impl App for CommandPaletteApp {
             .with_title("Command Palette")
             .with_placeholder("Type a command...")
             .with_max_visible(8);
-        palette.set_focused(true);
         palette.set_visible(true);
 
         let state = State {
@@ -171,7 +170,8 @@ impl App for CommandPaletteApp {
 
         // Delegate to palette when visible
         if state.palette.is_visible() {
-            state.palette.handle_event(event).map(Msg::Palette)
+            CommandPalette::handle_event(&state.palette, event, &ViewContext::new().focused(true))
+                .map(Msg::Palette)
         } else {
             None
         }

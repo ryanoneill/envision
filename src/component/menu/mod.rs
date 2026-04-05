@@ -5,12 +5,11 @@
 //! stored in [`MenuState`], updated via [`MenuMessage`], and produces [`MenuOutput`].
 //! Items are configured with [`MenuItem`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Menu, MenuMessage, MenuOutput, MenuState, MenuItem, Component, Focusable};
+//! use envision::component::{Menu, MenuMessage, MenuOutput, MenuState, MenuItem, Component};
 //!
 //! // Create a menu
 //! let mut state = MenuState::new(vec![
@@ -19,8 +18,7 @@
 //!     MenuItem::new("View"),
 //! ]);
 //!
-//! // Focus and activate
-//! Menu::focus(&mut state);
+//! // Activate
 //! let output = Menu::update(&mut state, MenuMessage::Select);
 //! assert_eq!(output, Some(MenuOutput::Selected(0)));
 //! ```
@@ -28,7 +26,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -133,10 +131,6 @@ pub struct MenuState {
     items: Vec<MenuItem>,
     /// Currently selected item index, or `None` if no items.
     selected_index: Option<usize>,
-    /// Whether the menu is focused.
-    focused: bool,
-    /// Whether the menu is disabled.
-    disabled: bool,
 }
 
 impl MenuState {
@@ -158,8 +152,6 @@ impl MenuState {
         Self {
             items,
             selected_index,
-            focused: false,
-            disabled: false,
         }
     }
 
@@ -301,80 +293,6 @@ impl MenuState {
         self.items.get(self.selected_index?)
     }
 
-    /// Returns true if the menu is focused.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = MenuState::new(vec![MenuItem::new("File")]);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = MenuState::new(vec![MenuItem::new("File")]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the menu is disabled.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = MenuState::new(vec![MenuItem::new("File")]);
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = MenuState::new(vec![MenuItem::new("File")]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state using builder pattern.
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Maps an input event to a menu message.
-    pub fn handle_event(&self, event: &Event) -> Option<MenuMessage> {
-        Menu::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<MenuOutput> {
-        Menu::dispatch_event(self, event)
-    }
-
     /// Updates the menu state with a message, returning any output.
     pub fn update(&mut self, msg: MenuMessage) -> Option<MenuOutput> {
         Menu::update(self, msg)
@@ -433,9 +351,6 @@ impl Component for Menu {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
         if state.items.is_empty() {
             return None;
         }
@@ -482,8 +397,12 @@ impl Component for Menu {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -532,26 +451,6 @@ impl Component for Menu {
             .with_disabled(ctx.disabled);
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
         frame.render_widget(annotated, area);
-    }
-}
-
-impl Focusable for Menu {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Menu {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

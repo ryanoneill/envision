@@ -5,21 +5,19 @@
 //! using keyboard controls. State is stored in [`DropdownState`], updated via
 //! [`DropdownMessage`], and produces [`DropdownOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`Select`](super::Select) for a simpler dropdown without filtering.
 //!
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Dropdown, DropdownMessage, DropdownOutput, DropdownState, Component, Focusable};
+//! use envision::component::{Dropdown, DropdownMessage, DropdownOutput, DropdownState, Component};
 //!
 //! // Create a dropdown with options
 //! let mut state = DropdownState::new(vec!["Apple", "Banana", "Cherry", "Date"]);
 //! state.set_placeholder("Search fruits...");
 //!
-//! // Focus and open it
-//! Dropdown::focus(&mut state);
+//! // Open it
 //! let _ = Dropdown::update(&mut state, DropdownMessage::Open);
 //!
 //! // Type to filter (shows Apple, Banana, Date - all contain 'a')
@@ -34,7 +32,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
@@ -95,12 +93,8 @@ pub struct DropdownState {
     highlighted_index: usize,
     /// Whether the dropdown is open.
     is_open: bool,
-    /// Whether the component is focused.
-    focused: bool,
     /// Placeholder text when nothing selected and filter empty.
     placeholder: String,
-    /// Whether the dropdown is disabled.
-    disabled: bool,
 }
 
 impl Default for DropdownState {
@@ -112,9 +106,7 @@ impl Default for DropdownState {
             filtered_indices: Vec::new(),
             highlighted_index: 0,
             is_open: false,
-            focused: false,
             placeholder: String::from("Search..."),
-            disabled: false,
         }
     }
 }
@@ -408,129 +400,6 @@ impl DropdownState {
         self
     }
 
-    /// Returns true if the dropdown is disabled.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = DropdownState::new(vec!["A", "B"]);
-    /// assert!(!state.is_disabled());
-    ///
-    /// let state = DropdownState::new(vec!["A", "B"]).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = DropdownState::new(vec!["A", "B"]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// assert!(!state.is_open());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-        if disabled {
-            self.is_open = false;
-        }
-    }
-
-    /// Sets the disabled state using builder pattern.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = DropdownState::new(vec!["A", "B"]).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Returns true if the dropdown is focused.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = DropdownState::new(vec!["A", "B"]);
-    /// assert!(!state.is_focused());
-    ///
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = DropdownState::new(vec!["A", "B"]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    ///
-    /// state.set_focused(false);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Maps an input event to a dropdown message.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = DropdownState::new(vec!["A", "B"]);
-    /// state.set_focused(true);
-    /// state.update(DropdownMessage::Open);
-    ///
-    /// let event = Event::key(KeyCode::Down);
-    /// assert_eq!(state.handle_event(&event), Some(DropdownMessage::Down));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<DropdownMessage> {
-        Dropdown::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = DropdownState::new(vec!["A", "B"]);
-    /// state.set_focused(true);
-    /// state.update(DropdownMessage::Open);
-    ///
-    /// let event = Event::key(KeyCode::Down);
-    /// let output = state.dispatch_event(&event);
-    /// assert_eq!(output, Some(DropdownOutput::SelectionChanged(1)));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<DropdownOutput> {
-        Dropdown::dispatch_event(self, event)
-    }
-
     /// Updates the dropdown state with a message, returning any output.
     ///
     /// # Examples
@@ -649,10 +518,6 @@ impl Component for Dropdown {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             DropdownMessage::Open => {
                 if !state.options.is_empty() {
@@ -781,8 +646,12 @@ impl Component for Dropdown {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -930,26 +799,6 @@ impl Component for Dropdown {
                 }
             }
         }
-    }
-}
-
-impl Focusable for Dropdown {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Dropdown {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

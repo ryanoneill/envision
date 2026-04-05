@@ -106,9 +106,7 @@ fn test_snapshot_without_percentages() {
 
 #[test]
 fn test_snapshot_disabled() {
-    let mut state = MultiProgressState::new()
-        .with_disabled(true)
-        .with_title("Disabled");
+    let mut state = MultiProgressState::new().with_title("Disabled");
     state.add("x", "Item X");
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal

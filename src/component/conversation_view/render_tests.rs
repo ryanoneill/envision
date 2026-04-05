@@ -1,11 +1,8 @@
 use super::*;
 use crate::component::test_utils;
-use crate::component::Focusable;
 
 fn focused_state() -> ConversationViewState {
-    let mut state = ConversationViewState::new();
-    ConversationView::set_focused(&mut state, true);
-    state
+    ConversationViewState::new()
 }
 
 fn state_with_messages() -> ConversationViewState {
@@ -55,7 +52,7 @@ fn test_render_focused() {
 
 #[test]
 fn test_render_disabled() {
-    let state = ConversationViewState::new().with_disabled(true);
+    let state = ConversationViewState::new();
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {

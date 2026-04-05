@@ -5,16 +5,14 @@
 //! State is stored in [`TabsState<T>`], updated via [`TabsMessage`], and produces
 //! [`TabsOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Component, Focusable, Tabs, TabsState, TabsMessage, TabsOutput};
+//! use envision::component::{Component, Tabs, TabsState, TabsMessage, TabsOutput};
 //!
 //! // Create tabs with string labels
 //! let mut state = TabsState::new(vec!["Home", "Settings", "Help"]);
-//! Tabs::set_focused(&mut state, true);
 //!
 //! assert_eq!(state.selected_index(), Some(0));
 //! assert_eq!(state.selected_item(), Some(&"Home"));
@@ -31,7 +29,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -77,18 +75,11 @@ pub struct TabsState<T: Clone> {
     tabs: Vec<T>,
     /// Currently selected tab index, or `None` if empty.
     selected: Option<usize>,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl<T: Clone + PartialEq> PartialEq for TabsState<T> {
     fn eq(&self, other: &Self) -> bool {
-        self.tabs == other.tabs
-            && self.selected == other.selected
-            && self.focused == other.focused
-            && self.disabled == other.disabled
+        self.tabs == other.tabs && self.selected == other.selected
     }
 }
 
@@ -97,8 +88,6 @@ impl<T: Clone> Default for TabsState<T> {
         Self {
             tabs: Vec::new(),
             selected: None,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -119,12 +108,7 @@ impl<T: Clone> TabsState<T> {
     /// ```
     pub fn new(tabs: Vec<T>) -> Self {
         let selected = if tabs.is_empty() { None } else { Some(0) };
-        Self {
-            tabs,
-            selected,
-            focused: false,
-            disabled: false,
-        }
+        Self { tabs, selected }
     }
 
     /// Creates a tabs state with a specific tab selected.
@@ -147,12 +131,7 @@ impl<T: Clone> TabsState<T> {
         } else {
             Some(selected.min(tabs.len() - 1))
         };
-        Self {
-            tabs,
-            selected,
-            focused: false,
-            disabled: false,
-        }
+        Self { tabs, selected }
     }
 
     /// Returns the currently selected index.
@@ -236,31 +215,6 @@ impl<T: Clone> TabsState<T> {
         self.tabs.is_empty()
     }
 
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state (builder method).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::TabsState;
-    ///
-    /// let state = TabsState::new(vec!["A", "B", "C"]).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Move selection to the left (previous tab).
     ///
     /// Returns true if the selection changed.
@@ -289,26 +243,6 @@ impl<T: Clone> TabsState<T> {
 }
 
 impl<T: Clone + std::fmt::Display + 'static> TabsState<T> {
-    /// Returns true if the tabs component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Maps an input event to a tabs message.
-    pub fn handle_event(&self, event: &Event) -> Option<TabsMessage> {
-        Tabs::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<TabsOutput<T>> {
-        Tabs::dispatch_event(self, event)
-    }
-
     /// Updates the tabs state with a message, returning any output.
     pub fn update(&mut self, msg: TabsMessage) -> Option<TabsOutput<T>> {
         Tabs::update(self, msg)
@@ -342,7 +276,7 @@ impl<T: Clone + std::fmt::Display + 'static> TabsState<T> {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{Component, Focusable, Tabs, TabsState, TabsMessage, TabsOutput};
+/// use envision::component::{Component, Tabs, TabsState, TabsMessage, TabsOutput};
 ///
 /// // Using with string slices
 /// let mut state = TabsState::new(vec!["Home", "Settings", "Help"]);
@@ -377,7 +311,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.tabs.is_empty() {
+        if state.tabs.is_empty() {
             return None;
         }
 
@@ -428,8 +362,12 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -494,26 +432,6 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             .with_value(selected_idx.to_string());
         let annotated = crate::annotation::Annotate::new(tabs_widget, annotation);
         frame.render_widget(annotated, area);
-    }
-}
-
-impl<T: Clone + Display + 'static> Focusable for Tabs<T> {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl<T: Clone + Display + 'static> Disableable for Tabs<T> {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

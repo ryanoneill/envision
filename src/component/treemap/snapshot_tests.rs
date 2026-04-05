@@ -34,10 +34,9 @@ fn test_snapshot_focused() {
     let root = TreemapNode::new("root", 0.0)
         .with_child(TreemapNode::new("alpha", 60.0).with_color(Color::Red))
         .with_child(TreemapNode::new("beta", 40.0).with_color(Color::Blue));
-    let mut state = TreemapState::new()
+    let state = TreemapState::new()
         .with_root(root)
         .with_title("Focused Treemap");
-    state.set_focused(true);
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
@@ -58,10 +57,7 @@ fn test_snapshot_disabled() {
     let root = TreemapNode::new("root", 0.0)
         .with_child(TreemapNode::new("a", 50.0).with_color(Color::Red))
         .with_child(TreemapNode::new("b", 50.0).with_color(Color::Blue));
-    let state = TreemapState::new()
-        .with_root(root)
-        .with_disabled(true)
-        .with_title("Disabled");
+    let state = TreemapState::new().with_root(root).with_title("Disabled");
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
@@ -107,7 +103,6 @@ fn test_snapshot_zoomed_in() {
         )
         .with_child(TreemapNode::new("docs", 10.0).with_color(Color::Green));
     let mut state = TreemapState::new().with_root(root).with_title("Zoomed");
-    state.set_focused(true);
     state.update(TreemapMessage::ZoomIn); // Zoom into "src".
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
@@ -131,7 +126,6 @@ fn test_snapshot_selection_moved() {
         .with_child(TreemapNode::new("second", 30.0).with_color(Color::Green))
         .with_child(TreemapNode::new("third", 30.0).with_color(Color::Blue));
     let mut state = TreemapState::new().with_root(root);
-    state.set_focused(true);
     state.update(TreemapMessage::SelectNext); // Select "second".
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal

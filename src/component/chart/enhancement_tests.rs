@@ -379,8 +379,7 @@ fn test_empty_data_with_thresholds() {
 
 #[test]
 fn test_area_chart_disabled() {
-    let state =
-        ChartState::area(vec![DataSeries::new("CPU", vec![45.0, 52.0, 48.0])]).with_disabled(true);
+    let state = ChartState::area(vec![DataSeries::new("CPU", vec![45.0, 52.0, 48.0])]);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -397,8 +396,7 @@ fn test_area_chart_disabled() {
 
 #[test]
 fn test_scatter_chart_disabled() {
-    let state = ChartState::scatter(vec![DataSeries::new("Points", vec![10.0, 20.0, 30.0])])
-        .with_disabled(true);
+    let state = ChartState::scatter(vec![DataSeries::new("Points", vec![10.0, 20.0, 30.0])]);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -438,8 +436,6 @@ fn test_chart_kind_eq() {
 #[test]
 fn test_disabled_still_processes_threshold_messages() {
     let mut state = ChartState::area(vec![DataSeries::new("X", vec![1.0])]);
-    state.set_disabled(true);
-    // Threshold and range messages should still work even when disabled
     let output = Chart::update(
         &mut state,
         ChartMessage::AddThreshold(ThresholdLine::new(50.0, "Mid", Color::Cyan)),
@@ -451,7 +447,6 @@ fn test_disabled_still_processes_threshold_messages() {
 #[test]
 fn test_disabled_still_processes_y_range_messages() {
     let mut state = ChartState::area(vec![DataSeries::new("X", vec![1.0])]);
-    state.set_disabled(true);
     let output = Chart::update(&mut state, ChartMessage::SetYRange(Some(0.0), Some(100.0)));
     assert_eq!(output, None);
     assert_eq!(state.y_min(), Some(0.0));

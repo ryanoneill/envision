@@ -8,7 +8,6 @@
 //! State is stored in [`DependencyGraphState`], updated via
 //! [`DependencyGraphMessage`], and produces [`DependencyGraphOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -22,7 +21,6 @@
 //!     .with_node(GraphNode::new("api", "API Gateway").with_status(NodeStatus::Healthy))
 //!     .with_node(GraphNode::new("db", "Database").with_status(NodeStatus::Degraded))
 //!     .with_edge(GraphEdge::new("api", "db"));
-//! state.set_focused(true);
 //!
 //! // Select and navigate
 //! DependencyGraph::update(&mut state, DependencyGraphMessage::SelectNext);
@@ -31,7 +29,7 @@
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -59,7 +57,6 @@ pub use types::{GraphEdge, GraphNode, GraphOrientation, NodeStatus};
 /// let mut state = DependencyGraphState::new()
 ///     .with_node(GraphNode::new("a", "Node A"))
 ///     .with_node(GraphNode::new("b", "Node B"));
-/// state.set_focused(true);
 /// DependencyGraph::update(&mut state, DependencyGraphMessage::SelectNext);
 /// assert_eq!(state.selected(), Some(0));
 /// ```
@@ -106,7 +103,6 @@ pub enum DependencyGraphMessage {
 ///
 /// let mut state = DependencyGraphState::new()
 ///     .with_node(GraphNode::new("a", "Node A"));
-/// state.set_focused(true);
 ///
 /// let output = DependencyGraph::update(&mut state, DependencyGraphMessage::SelectNext);
 /// assert!(matches!(output, Some(DependencyGraphOutput::NodeSelected(_))));
@@ -170,10 +166,6 @@ pub struct DependencyGraphState {
     pub(crate) orientation: GraphOrientation,
     /// Whether to show labels on edges.
     pub(crate) show_edge_labels: bool,
-    /// Whether the component is focused.
-    pub(crate) focused: bool,
-    /// Whether the component is disabled.
-    pub(crate) disabled: bool,
 }
 
 impl DependencyGraphState {
@@ -270,21 +262,6 @@ impl DependencyGraphState {
     /// ```
     pub fn with_show_edge_labels(mut self, show: bool) -> Self {
         self.show_edge_labels = show;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::DependencyGraphState;
-    ///
-    /// let state = DependencyGraphState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -475,64 +452,6 @@ impl DependencyGraphState {
     /// ```
     pub fn set_show_edge_labels(&mut self, show: bool) {
         self.show_edge_labels = show;
-    }
-
-    /// Returns whether the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::DependencyGraphState;
-    ///
-    /// let state = DependencyGraphState::new();
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::DependencyGraphState;
-    ///
-    /// let mut state = DependencyGraphState::new();
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns whether the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::DependencyGraphState;
-    ///
-    /// let state = DependencyGraphState::new();
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::DependencyGraphState;
-    ///
-    /// let mut state = DependencyGraphState::new();
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
     }
 
     // ---- Mutation ----
@@ -734,42 +653,6 @@ impl DependencyGraphState {
 
     // ---- Instance methods ----
 
-    /// Maps an input event to a dependency graph message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{DependencyGraphState, DependencyGraphMessage, GraphNode};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = DependencyGraphState::new()
-    ///     .with_node(GraphNode::new("a", "A"));
-    /// state.set_focused(true);
-    /// let msg = state.handle_event(&Event::key(KeyCode::Down));
-    /// assert_eq!(msg, Some(DependencyGraphMessage::SelectNext));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<DependencyGraphMessage> {
-        DependencyGraph::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{DependencyGraphState, GraphNode};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = DependencyGraphState::new()
-    ///     .with_node(GraphNode::new("a", "A"));
-    /// state.set_focused(true);
-    /// let output = state.dispatch_event(&Event::key(KeyCode::Down));
-    /// assert!(output.is_some());
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<DependencyGraphOutput> {
-        DependencyGraph::dispatch_event(self, event)
-    }
-
     /// Updates the state with a message, returning any output.
     ///
     /// # Example
@@ -779,7 +662,6 @@ impl DependencyGraphState {
     ///
     /// let mut state = DependencyGraphState::new()
     ///     .with_node(GraphNode::new("a", "A"));
-    /// state.set_focused(true);
     /// let output = state.update(DependencyGraphMessage::SelectNext);
     /// assert!(output.is_some());
     /// ```
@@ -832,7 +714,6 @@ impl DependencyGraphState {
 ///     .with_node(GraphNode::new("db", "Database").with_status(NodeStatus::Degraded))
 ///     .with_edge(GraphEdge::new("api", "db"))
 ///     .with_title("Service Topology");
-/// state.set_focused(true);
 ///
 /// DependencyGraph::update(&mut state, DependencyGraphMessage::SelectNext);
 /// assert_eq!(state.selected_node().unwrap().id, "api");
@@ -887,9 +768,6 @@ impl Component for DependencyGraph {
                 None
             }
             DependencyGraphMessage::SelectNext => {
-                if state.disabled {
-                    return None;
-                }
                 if state.select_next() {
                     make_selected_output(state)
                 } else {
@@ -897,9 +775,6 @@ impl Component for DependencyGraph {
                 }
             }
             DependencyGraphMessage::SelectPrev => {
-                if state.disabled {
-                    return None;
-                }
                 if state.select_prev() {
                     make_selected_output(state)
                 } else {
@@ -907,9 +782,6 @@ impl Component for DependencyGraph {
                 }
             }
             DependencyGraphMessage::SelectConnected => {
-                if state.disabled {
-                    return None;
-                }
                 if state.select_connected() {
                     make_selected_output(state)
                 } else {
@@ -919,8 +791,12 @@ impl Component for DependencyGraph {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -943,26 +819,6 @@ impl Component for DependencyGraph {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render_dependency_graph(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl Focusable for DependencyGraph {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for DependencyGraph {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

@@ -12,13 +12,12 @@
 //! State is stored in [`LogViewerState`], updated via [`LogViewerMessage`],
 //! and produces [`LogViewerOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, LogViewer, LogViewerState,
+//!     Component, LogViewer, LogViewerState,
 //!     LogViewerMessage, LogViewerOutput,
 //! };
 //!
@@ -44,8 +43,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 
 use super::{
-    Component, Disableable, Focusable, InputFieldMessage, InputFieldState, StatusLogEntry,
-    StatusLogLevel, ViewContext,
+    Component, InputFieldMessage, InputFieldState, StatusLogEntry, StatusLogLevel, ViewContext,
 };
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
@@ -190,8 +188,12 @@ impl Component for LogViewer {
         LogViewerState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -238,10 +240,6 @@ impl Component for LogViewer {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             LogViewerMessage::ScrollUp => {
                 state.follow = false;
@@ -275,12 +273,10 @@ impl Component for LogViewer {
             }
             LogViewerMessage::FocusSearch => {
                 state.focus = Focus::Search;
-                state.search.set_focused(true);
                 None
             }
             LogViewerMessage::FocusLog => {
                 state.focus = Focus::Log;
-                state.search.set_focused(false);
                 state.history_index = None;
                 None
             }
@@ -323,7 +319,6 @@ impl Component for LogViewer {
                 state.search_text.clear();
                 state.scroll.set_offset(0);
                 state.focus = Focus::Log;
-                state.search.set_focused(false);
                 state.history_index = None;
                 Some(LogViewerOutput::SearchChanged(String::new()))
             }
@@ -396,7 +391,6 @@ impl Component for LogViewer {
                 }
                 state.history_index = None;
                 state.focus = Focus::Log;
-                state.search.set_focused(false);
                 None
             }
             LogViewerMessage::SearchHistoryUp => {
@@ -479,33 +473,13 @@ impl Component for LogViewer {
         let log_area = chunks[2];
 
         // Render search bar
-        view::render_search_bar(state, frame, search_area, theme);
+        view::render_search_bar(state, frame, search_area, theme, ctx);
 
         // Render filter bar
-        view::render_filter_bar(state, frame, filter_area, theme);
+        view::render_filter_bar(state, frame, filter_area, theme, ctx);
 
         // Render log entries
-        view::render_log(state, frame, log_area, theme);
-    }
-}
-
-impl Focusable for LogViewer {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for LogViewer {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
+        view::render_log(state, frame, log_area, theme, ctx);
     }
 }
 

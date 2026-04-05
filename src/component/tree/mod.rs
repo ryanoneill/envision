@@ -5,14 +5,13 @@
 //! [`TreeState<T>`], updated via [`TreeMessage`], and produces [`TreeOutput`].
 //! Tree data is provided via [`TreeNode<T>`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`Accordion`](super::Accordion) for a simpler collapsible panel list.
 //!
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Tree, TreeMessage, TreeState, TreeNode, Component, Focusable};
+//! use envision::component::{Tree, TreeMessage, TreeState, TreeNode, Component};
 //!
 //! // Create a tree with nodes
 //! let mut root = TreeNode::new("Root", "root-data");
@@ -20,7 +19,6 @@
 //! root.add_child(TreeNode::new("Child 2", "child2"));
 //!
 //! let mut state = TreeState::new(vec![root]);
-//! Tree::focus(&mut state);
 //!
 //! // Navigate and expand
 //! Tree::update(&mut state, TreeMessage::Expand);
@@ -30,7 +28,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -228,10 +226,6 @@ pub struct TreeState<T> {
     roots: Vec<TreeNode<T>>,
     /// Index of the currently selected node in the flattened view, or `None` if empty.
     selected_index: Option<usize>,
-    /// Whether the tree has focus.
-    focused: bool,
-    /// Whether the tree is disabled.
-    disabled: bool,
     /// Current filter text for searching nodes by label.
     filter_text: String,
     /// Scroll state for scrollbar rendering.
@@ -243,8 +237,6 @@ impl<T: Clone + PartialEq> PartialEq for TreeState<T> {
     fn eq(&self, other: &Self) -> bool {
         self.roots == other.roots
             && self.selected_index == other.selected_index
-            && self.focused == other.focused
-            && self.disabled == other.disabled
             && self.filter_text == other.filter_text
     }
 }
@@ -277,8 +269,6 @@ impl<T: Clone> TreeState<T> {
         Self {
             roots,
             selected_index,
-            focused: false,
-            disabled: false,
             filter_text: String::new(),
             scroll: ScrollState::default(),
         }
@@ -569,80 +559,6 @@ impl<T: Clone> TreeState<T> {
 }
 
 impl<T: Clone + 'static> TreeState<T> {
-    /// Returns true if the tree is focused.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state: TreeState<()> = TreeState::new(vec![]);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the tree is disabled.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state: TreeState<()> = TreeState::new(vec![]);
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state using builder pattern.
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Maps an input event to a tree message.
-    pub fn handle_event(&self, event: &Event) -> Option<TreeMessage> {
-        Tree::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<TreeOutput> {
-        Tree::dispatch_event(self, event)
-    }
-
     /// Updates the tree state with a message, returning any output.
     pub fn update(&mut self, msg: TreeMessage) -> Option<TreeOutput> {
         Tree::update(self, msg)
@@ -695,7 +611,12 @@ pub struct Tree<T>(std::marker::PhantomData<T>);
 
 impl<T: Clone + 'static> Tree<T> {
     /// Renders the tree to a list of styled lines.
-    fn render_lines(state: &TreeState<T>, width: u16, theme: &Theme) -> Vec<Line<'static>> {
+    fn render_lines(
+        state: &TreeState<T>,
+        width: u16,
+        theme: &Theme,
+        ctx: &ViewContext,
+    ) -> Vec<Line<'static>> {
         let flat = state.flatten();
         let mut lines = Vec::with_capacity(flat.len());
 
@@ -705,13 +626,13 @@ impl<T: Clone + 'static> Tree<T> {
 
         // Pre-compute styles to avoid per-node method calls.
         let normal_style = theme.normal_style();
-        let disabled_style = if state.disabled {
+        let disabled_style = if ctx.disabled {
             Some(theme.disabled_style())
         } else {
             None
         };
-        let highlight_style = if !state.disabled {
-            Some(theme.selected_highlight_style(state.focused))
+        let highlight_style = if !ctx.disabled {
+            Some(theme.selected_highlight_style(ctx.focused))
         } else {
             None
         };
@@ -779,10 +700,6 @@ impl<T: Clone + 'static> Component for Tree<T> {
                 return Some(TreeOutput::FilterChanged(String::new()));
             }
             _ => {}
-        }
-
-        if state.disabled {
-            return None;
         }
 
         let flat = state.flatten();
@@ -879,8 +796,12 @@ impl<T: Clone + 'static> Component for Tree<T> {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        _state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -899,7 +820,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        let all_lines = Self::render_lines(state, area.width, theme);
+        let all_lines = Self::render_lines(state, area.width, theme, ctx);
         let viewport_height = area.height as usize;
 
         // Use a local ScrollState for scrollbar rendering and virtual scrolling
@@ -928,26 +849,6 @@ impl<T: Clone + 'static> Component for Tree<T> {
 
         // Render scrollbar if content exceeds viewport
         crate::scroll::render_scrollbar(&bar_scroll, frame, area, theme);
-    }
-}
-
-impl<T: Clone + 'static> Focusable for Tree<T> {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl<T: Clone + 'static> Disableable for Tree<T> {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

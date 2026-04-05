@@ -1,6 +1,5 @@
 use super::*;
 use crate::component::test_utils;
-use crate::input::Event;
 
 // =============================================================================
 // Construction
@@ -13,8 +12,6 @@ fn test_new() {
     assert_eq!(state.x_bounds(), [0.0, 100.0]);
     assert_eq!(state.y_bounds(), [0.0, 100.0]);
     assert_eq!(state.title(), None);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.marker(), &CanvasMarker::Braille);
 }
 
@@ -95,18 +92,6 @@ fn test_with_marker_dot() {
 fn test_with_marker_half_block() {
     let state = CanvasState::new().with_marker(CanvasMarker::HalfBlock);
     assert_eq!(state.marker(), &CanvasMarker::HalfBlock);
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = CanvasState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_false() {
-    let state = CanvasState::new().with_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 // =============================================================================
@@ -224,42 +209,6 @@ fn test_marker_default() {
 // Focus/Disabled state
 // =============================================================================
 
-#[test]
-fn test_focus_state() {
-    let mut state = CanvasState::new();
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_disabled_state() {
-    let mut state = CanvasState::new();
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = CanvasState::new();
-    assert!(!Canvas::is_focused(&state));
-    Canvas::set_focused(&mut state, true);
-    assert!(Canvas::is_focused(&state));
-}
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = CanvasState::new();
-    assert!(!Canvas::is_disabled(&state));
-    Canvas::set_disabled(&mut state, true);
-    assert!(Canvas::is_disabled(&state));
-}
-
 // =============================================================================
 // Update messages
 // =============================================================================
@@ -354,14 +303,6 @@ fn test_update_set_marker() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = CanvasState::new();
-    // Canvas has no event handling yet, so all events return None
-    let msg = state.handle_event(&Event::key(crate::input::KeyCode::Char('a')));
-    assert_eq!(msg, None);
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = CanvasState::new();
     let output = state.update(CanvasMessage::AddShape(CanvasShape::Circle {
@@ -372,13 +313,6 @@ fn test_instance_update() {
     }));
     assert_eq!(output, None);
     assert_eq!(state.shapes().len(), 1);
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = CanvasState::new();
-    let output = state.dispatch_event(&Event::key(crate::input::KeyCode::Char('a')));
-    assert_eq!(output, None);
 }
 
 // =============================================================================
@@ -599,8 +533,7 @@ fn test_render_with_shapes() {
 
 #[test]
 fn test_render_focused() {
-    let mut state = CanvasState::new();
-    state.set_focused(true);
+    let state = CanvasState::new();
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
@@ -621,7 +554,6 @@ fn test_render_focused() {
 fn test_render_disabled() {
     let state = CanvasState::new()
         .with_title("Disabled Canvas")
-        .with_disabled(true)
         .with_shapes(vec![CanvasShape::Circle {
             x: 50.0,
             y: 50.0,
@@ -752,7 +684,6 @@ fn test_builder_chaining() {
         .with_y_bounds(-100.0, 100.0)
         .with_title("Full Builder")
         .with_marker(CanvasMarker::HalfBlock)
-        .with_disabled(false)
         .with_shapes(vec![CanvasShape::Line {
             x1: 0.0,
             y1: 0.0,
@@ -765,6 +696,5 @@ fn test_builder_chaining() {
     assert_eq!(state.y_bounds(), [-100.0, 100.0]);
     assert_eq!(state.title(), Some("Full Builder"));
     assert_eq!(state.marker(), &CanvasMarker::HalfBlock);
-    assert!(!state.is_disabled());
     assert_eq!(state.shapes().len(), 1);
 }

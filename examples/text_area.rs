@@ -29,8 +29,7 @@ impl App for TextAreaApp {
 
     fn init() -> (State, Command<Msg>) {
         let initial_text = "Hello, TextArea!\nEdit this content.\nLine three.";
-        let mut editor = TextAreaState::new().with_value(initial_text);
-        editor.set_focused(true);
+        let editor = TextAreaState::new().with_value(initial_text);
 
         (State { editor }, Command::none())
     }
@@ -73,7 +72,8 @@ impl App for TextAreaApp {
                 return Some(Msg::Quit);
             }
         }
-        state.editor.handle_event(event).map(Msg::Editor)
+        TextArea::handle_event(&state.editor, event, &ViewContext::new().focused(true))
+            .map(Msg::Editor)
     }
 }
 

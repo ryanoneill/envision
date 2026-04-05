@@ -30,7 +30,6 @@ impl App for LogViewerApp {
 
     fn init() -> (State, Command<Msg>) {
         let mut viewer = LogViewerState::new();
-        viewer.set_focused(true);
 
         // Populate with realistic log entries
         viewer.push_info("Application starting up");
@@ -102,7 +101,8 @@ impl App for LogViewerApp {
                 return Some(Msg::Quit);
             }
         }
-        state.viewer.handle_event(event).map(Msg::Viewer)
+        LogViewer::handle_event(&state.viewer, event, &ViewContext::new().focused(true))
+            .map(Msg::Viewer)
     }
 }
 

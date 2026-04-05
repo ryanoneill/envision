@@ -9,9 +9,7 @@ fn sample_series() -> Vec<DataSeries> {
 }
 
 fn focused_line_chart() -> ChartState {
-    let mut state = ChartState::line(sample_series());
-    state.set_focused(true);
-    state
+    ChartState::line(sample_series())
 }
 
 // =============================================================================
@@ -206,12 +204,6 @@ fn test_with_bar_gap() {
     assert_eq!(state.bar_gap(), 2);
 }
 
-#[test]
-fn test_with_disabled() {
-    let state = ChartState::line(vec![]).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // =============================================================================
 // State manipulation
 // =============================================================================
@@ -325,18 +317,13 @@ fn test_prev_series_wraps() {
 // =============================================================================
 
 #[test]
-fn test_disabled_ignores_messages() {
-    let mut state = focused_line_chart();
-    state.set_disabled(true);
-    let output = Chart::update(&mut state, ChartMessage::NextSeries);
-    assert_eq!(output, None);
-}
-
-#[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_line_chart();
-    state.set_disabled(true);
-    let msg = Chart::handle_event(&state, &Event::key(KeyCode::Tab));
+    let state = focused_line_chart();
+    let msg = Chart::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -347,7 +334,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = ChartState::line(sample_series());
-    let msg = Chart::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = Chart::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -359,7 +346,11 @@ fn test_unfocused_ignores_events() {
 fn test_tab_maps_to_next() {
     let state = focused_line_chart();
     assert_eq!(
-        Chart::handle_event(&state, &Event::key(KeyCode::Tab)),
+        Chart::handle_event(
+            &state,
+            &Event::key(KeyCode::Tab),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChartMessage::NextSeries)
     );
 }
@@ -368,7 +359,11 @@ fn test_tab_maps_to_next() {
 fn test_backtab_maps_to_prev() {
     let state = focused_line_chart();
     assert_eq!(
-        Chart::handle_event(&state, &Event::key(KeyCode::BackTab)),
+        Chart::handle_event(
+            &state,
+            &Event::key(KeyCode::BackTab),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChartMessage::PrevSeries)
     );
 }
@@ -410,23 +405,9 @@ fn test_series_to_sparkline_data_empty() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = focused_line_chart();
-    let msg = state.handle_event(&Event::key(KeyCode::Tab));
-    assert_eq!(msg, Some(ChartMessage::NextSeries));
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = focused_line_chart();
     let output = state.update(ChartMessage::NextSeries);
-    assert_eq!(output, Some(ChartOutput::ActiveSeriesChanged(1)));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = focused_line_chart();
-    let output = state.dispatch_event(&Event::key(KeyCode::Tab));
     assert_eq!(output, Some(ChartOutput::ActiveSeriesChanged(1)));
 }
 
@@ -497,7 +478,7 @@ fn test_render_bar_horizontal() {
 
 #[test]
 fn test_render_disabled() {
-    let state = ChartState::line(sample_series()).with_disabled(true);
+    let state = ChartState::line(sample_series());
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -552,7 +533,6 @@ fn test_partial_eq() {
 #[test]
 fn test_empty_chart_ignores_messages() {
     let mut state = ChartState::line(vec![]);
-    state.set_focused(true);
     let output = Chart::update(&mut state, ChartMessage::NextSeries);
     assert_eq!(output, None);
 }
@@ -560,7 +540,6 @@ fn test_empty_chart_ignores_messages() {
 #[test]
 fn test_single_series_cycling() {
     let mut state = ChartState::line(vec![DataSeries::new("Solo", vec![1.0])]);
-    state.set_focused(true);
     let output = Chart::update(&mut state, ChartMessage::NextSeries);
     assert_eq!(state.active_series(), 0);
     assert_eq!(output, Some(ChartOutput::ActiveSeriesChanged(0)));

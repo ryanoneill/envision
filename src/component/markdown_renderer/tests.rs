@@ -2,9 +2,7 @@ use super::*;
 use crate::component::test_utils;
 
 fn focused_state() -> MarkdownRendererState {
-    let mut state = MarkdownRendererState::new();
-    MarkdownRenderer::set_focused(&mut state, true);
-    state
+    MarkdownRendererState::new()
 }
 
 fn content_state() -> MarkdownRendererState {
@@ -25,8 +23,6 @@ fn test_new() {
     let state = MarkdownRendererState::new();
     assert!(state.source().is_empty());
     assert_eq!(state.scroll_offset(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.title(), None);
     assert!(!state.show_source());
 }
@@ -55,13 +51,6 @@ fn test_with_show_source() {
     let state = MarkdownRendererState::new().with_show_source(true);
     assert!(state.show_source());
 }
-
-#[test]
-fn test_with_disabled() {
-    let state = MarkdownRendererState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // =============================================================================
 // Source management
 // =============================================================================
@@ -199,16 +188,20 @@ fn test_update_returns_none() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
-    let msg = MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::Up));
+    let state = focused_state();
+    let msg = MarkdownRenderer::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_unfocused_ignores_events() {
     let state = MarkdownRendererState::new();
-    let msg = MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg =
+        MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -220,7 +213,11 @@ fn test_unfocused_ignores_events() {
 fn test_handle_event_up() {
     let state = focused_state();
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::Up)),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::ScrollUp)
     );
 }
@@ -229,7 +226,11 @@ fn test_handle_event_up() {
 fn test_handle_event_down() {
     let state = focused_state();
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::Down)),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::ScrollDown)
     );
 }
@@ -238,11 +239,19 @@ fn test_handle_event_down() {
 fn test_handle_event_k_j() {
     let state = focused_state();
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::char('k')),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::char('k'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::ScrollUp)
     );
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::char('j')),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::char('j'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::ScrollDown)
     );
 }
@@ -251,11 +260,19 @@ fn test_handle_event_k_j() {
 fn test_handle_event_page_up_down() {
     let state = focused_state();
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::PageUp)),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::key(KeyCode::PageUp),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::PageUp(10))
     );
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::PageDown)),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::key(KeyCode::PageDown),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::PageDown(10))
     );
 }
@@ -264,11 +281,19 @@ fn test_handle_event_page_up_down() {
 fn test_handle_event_ctrl_u_d() {
     let state = focused_state();
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::ctrl('u')),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::ctrl('u'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::PageUp(10))
     );
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::ctrl('d')),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::ctrl('d'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::PageDown(10))
     );
 }
@@ -277,11 +302,19 @@ fn test_handle_event_ctrl_u_d() {
 fn test_handle_event_home_end() {
     let state = focused_state();
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::Home)),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::Home)
     );
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::End)),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::End)
     );
 }
@@ -291,13 +324,18 @@ fn test_handle_event_home_end() {
 fn test_handle_event_g_and_G() {
     let state = focused_state();
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::char('g')),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::char('g'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::Home)
     );
     assert_eq!(
         MarkdownRenderer::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT)
+            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &ViewContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::End)
     );
@@ -307,7 +345,11 @@ fn test_handle_event_g_and_G() {
 fn test_handle_event_s_toggle() {
     let state = focused_state();
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::char('s')),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::char('s'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MarkdownRendererMessage::ToggleSource)
     );
 }
@@ -316,69 +358,20 @@ fn test_handle_event_s_toggle() {
 fn test_handle_event_unrecognized() {
     let state = focused_state();
     assert_eq!(
-        MarkdownRenderer::handle_event(&state, &Event::char('x')),
+        MarkdownRenderer::handle_event(
+            &state,
+            &Event::char('x'),
+            &ViewContext::new().focused(true)
+        ),
         None
     );
 }
-
-// =============================================================================
-// Instance methods
-// =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(MarkdownRendererMessage::ScrollUp));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = content_state();
-    state.set_scroll_offset(5);
-    state.dispatch_event(&Event::key(KeyCode::Up));
-    assert_eq!(state.scroll_offset(), 4);
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = content_state();
     state.update(MarkdownRendererMessage::ScrollDown);
     assert_eq!(state.scroll_offset(), 1);
 }
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = MarkdownRenderer::init();
-    assert!(!MarkdownRenderer::is_focused(&state));
-
-    MarkdownRenderer::focus(&mut state);
-    assert!(MarkdownRenderer::is_focused(&state));
-
-    MarkdownRenderer::blur(&mut state);
-    assert!(!MarkdownRenderer::is_focused(&state));
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = MarkdownRenderer::init();
-    assert!(!MarkdownRenderer::is_disabled(&state));
-
-    MarkdownRenderer::disable(&mut state);
-    assert!(MarkdownRenderer::is_disabled(&state));
-
-    MarkdownRenderer::enable(&mut state);
-    assert!(!MarkdownRenderer::is_disabled(&state));
-}
-
 // =============================================================================
 // Snapshot tests (view)
 // =============================================================================
@@ -389,7 +382,13 @@ fn test_view_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            MarkdownRenderer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MarkdownRenderer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -401,7 +400,13 @@ fn test_view_with_heading() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            MarkdownRenderer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MarkdownRenderer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -414,7 +419,13 @@ fn test_view_with_paragraph() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            MarkdownRenderer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MarkdownRenderer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -427,7 +438,13 @@ fn test_view_with_code_block() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            MarkdownRenderer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MarkdownRenderer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -439,7 +456,13 @@ fn test_view_with_list() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            MarkdownRenderer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MarkdownRenderer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -451,32 +474,17 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            MarkdownRenderer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
-#[test]
-fn test_view_disabled() {
-    let state = MarkdownRendererState::new()
-        .with_source("# Disabled")
-        .with_disabled(true);
-    let (mut terminal, theme) = test_utils::setup_render(40, 10);
-    terminal
-        .draw(|frame| {
             MarkdownRenderer::view(
                 &state,
                 frame,
                 frame.area(),
                 &theme,
-                &ViewContext::new().disabled(true),
+                &ViewContext::new().focused(true),
             );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
-
 #[test]
 fn test_view_with_title() {
     let state = MarkdownRendererState::new()
@@ -485,7 +493,13 @@ fn test_view_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            MarkdownRenderer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MarkdownRenderer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -500,7 +514,13 @@ fn test_view_source_mode() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            MarkdownRenderer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MarkdownRenderer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

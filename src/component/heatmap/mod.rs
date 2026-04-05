@@ -6,7 +6,6 @@
 //! visualizations. State is stored in [`HeatmapState`], updated via
 //! [`HeatmapMessage`], and produces [`HeatmapOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -28,7 +27,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -78,7 +77,6 @@ pub enum HeatmapColorScale {
 /// };
 ///
 /// let mut state = HeatmapState::new(3, 3);
-/// state.set_focused(true);
 /// state.update(HeatmapMessage::SelectDown);
 /// assert_eq!(state.selected(), Some((1, 0)));
 /// ```
@@ -128,18 +126,16 @@ pub enum HeatmapMessage {
 ///     Component, Heatmap, HeatmapState, HeatmapOutput,
 /// };
 ///
+/// use envision::component::HeatmapMessage;
+///
 /// let mut state = HeatmapState::with_data(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
-/// state.set_focused(true);
-/// // Navigate to select a cell, then Enter to confirm
-/// let output = state.dispatch_event(&envision::input::Event::key(
-///     envision::input::KeyCode::Enter,
-/// ));
+/// // Navigate to second row
+/// let output = Heatmap::update(&mut state, HeatmapMessage::SelectDown);
 /// assert_eq!(
 ///     output,
-///     Some(HeatmapOutput::CellSelected {
-///         row: 0,
+///     Some(HeatmapOutput::SelectionChanged {
+///         row: 1,
 ///         col: 0,
-///         value: 1.0,
 ///     })
 /// );
 /// ```
@@ -207,10 +203,6 @@ pub struct HeatmapState {
     show_values: bool,
     /// Optional title.
     title: Option<String>,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl HeatmapState {
@@ -369,21 +361,6 @@ impl HeatmapState {
     /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::HeatmapState;
-    ///
-    /// let state = HeatmapState::new(2, 2).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -633,36 +610,6 @@ impl HeatmapState {
 
     // ---- Instance methods ----
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a heatmap message.
-    pub fn handle_event(&self, event: &Event) -> Option<HeatmapMessage> {
-        Heatmap::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<HeatmapOutput> {
-        Heatmap::dispatch_event(self, event)
-    }
-
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: HeatmapMessage) -> Option<HeatmapOutput> {
         Heatmap::update(self, msg)
@@ -791,8 +738,12 @@ impl Component for Heatmap {
         HeatmapState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -979,26 +930,6 @@ fn navigate_selection(state: &mut HeatmapState, direction: Direction) -> Option<
         row: new_row,
         col: new_col,
     })
-}
-
-impl Focusable for Heatmap {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Heatmap {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
-    }
 }
 
 #[cfg(test)]

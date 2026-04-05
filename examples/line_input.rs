@@ -31,8 +31,7 @@ impl App for LineInputApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut input = LineInputState::new().with_placeholder("Type something and press Enter...");
-        input.set_focused(true);
+        let input = LineInputState::new().with_placeholder("Type something and press Enter...");
 
         let state = State {
             input,
@@ -100,7 +99,8 @@ impl App for LineInputApp {
             }
         }
 
-        state.input.handle_event(event).map(Msg::Input)
+        LineInput::handle_event(&state.input, event, &ViewContext::new().focused(true))
+            .map(Msg::Input)
     }
 }
 

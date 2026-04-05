@@ -7,7 +7,7 @@
 
 use envision::component::{
     Component, ConversationMessage, ConversationRole, ConversationView, ConversationViewMessage,
-    ConversationViewState, Focusable, MessageBlock,
+    ConversationViewState, MessageBlock,
 };
 use envision::prelude::*;
 
@@ -32,8 +32,6 @@ impl App for ConversationApp {
         let mut conversation = ConversationViewState::new()
             .with_title("AI Conversation")
             .with_timestamps(true);
-
-        ConversationView::set_focused(&mut conversation, true);
 
         // System message
         conversation.push_message(
@@ -165,10 +163,12 @@ impl App for ConversationApp {
             }
         }
 
-        state
-            .conversation
-            .handle_event(event)
-            .map(Msg::Conversation)
+        ConversationView::handle_event(
+            &state.conversation,
+            event,
+            &ViewContext::new().focused(true),
+        )
+        .map(Msg::Conversation)
     }
 }
 

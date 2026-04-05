@@ -19,7 +19,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Bar, BarChart, BarGroup, Block, Borders};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::Event;
 use crate::theme::Theme;
 
@@ -63,10 +63,6 @@ pub struct HistogramState {
     color: Option<Color>,
     /// Whether to show count labels on bars.
     show_counts: bool,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for HistogramState {
@@ -81,8 +77,6 @@ impl Default for HistogramState {
             y_label: None,
             color: None,
             show_counts: false,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -227,21 +221,6 @@ impl HistogramState {
     /// ```
     pub fn with_show_counts(mut self, show: bool) -> Self {
         self.show_counts = show;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::HistogramState;
-    ///
-    /// let state = HistogramState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -533,36 +512,16 @@ impl HistogramState {
 
     // ---- Focus / Disabled ----
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods ----
 
     /// Maps an input event to a histogram message.
     pub fn handle_event(&self, event: &Event) -> Option<HistogramMessage> {
-        Histogram::handle_event(self, event)
+        Histogram::handle_event(self, event, &ViewContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
-        Histogram::dispatch_event(self, event)
+        Histogram::dispatch_event(self, event, &ViewContext::default())
     }
 
     /// Updates the state with a message, returning any output.
@@ -621,7 +580,11 @@ impl Component for Histogram {
         HistogramState::default()
     }
 
-    fn handle_event(_state: &Self::State, _event: &Event) -> Option<Self::Message> {
+    fn handle_event(
+        _state: &Self::State,
+        _event: &Event,
+        _ctx: &ViewContext,
+    ) -> Option<Self::Message> {
         // Display-only component; no event handling.
         None
     }
@@ -786,26 +749,6 @@ impl Component for Histogram {
             .max(max_count as u64);
 
         frame.render_widget(chart, chart_area);
-    }
-}
-
-impl Focusable for Histogram {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Histogram {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

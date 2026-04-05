@@ -10,7 +10,6 @@ fn test_new() {
     let state = GaugeState::new(50.0, 100.0);
     assert_eq!(state.value(), 50.0);
     assert_eq!(state.max(), 100.0);
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -87,18 +86,6 @@ fn test_with_thresholds_sorts() {
 fn test_with_title() {
     let state = GaugeState::new(50.0, 100.0).with_title("CPU Usage");
     assert_eq!(state.title, Some("CPU Usage".to_string()));
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = GaugeState::new(50.0, 100.0).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_false() {
-    let state = GaugeState::new(50.0, 100.0).with_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 // =========================================================================
@@ -362,20 +349,6 @@ fn test_instance_update() {
     assert_eq!(state.value(), 42.0);
 }
 
-#[test]
-fn test_instance_handle_event() {
-    let state = GaugeState::new(50.0, 100.0);
-    let event = crate::input::Event::key(crate::input::KeyCode::Enter);
-    assert_eq!(state.handle_event(&event), None);
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = GaugeState::new(50.0, 100.0);
-    let event = crate::input::Event::key(crate::input::KeyCode::Enter);
-    assert_eq!(state.dispatch_event(&event), None);
-}
-
 // =========================================================================
 // Init tests
 // =========================================================================
@@ -386,33 +359,6 @@ fn test_init() {
     assert_eq!(state.value(), 0.0);
     assert_eq!(state.max(), 100.0);
     assert_eq!(state.display_percentage(), 0);
-}
-
-// =========================================================================
-// Disabled tests
-// =========================================================================
-
-#[test]
-fn test_disabled_default_is_false() {
-    let state = GaugeState::new(50.0, 100.0);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = GaugeState::new(50.0, 100.0);
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = GaugeState::new(50.0, 100.0);
-    assert!(!Gauge::is_disabled(&state));
-    Gauge::set_disabled(&mut state, true);
-    assert!(Gauge::is_disabled(&state));
 }
 
 // =========================================================================
@@ -587,7 +533,7 @@ fn test_view_line_gauge_with_title() {
 
 #[test]
 fn test_view_disabled() {
-    let state = GaugeState::new(50.0, 100.0).with_disabled(true);
+    let state = GaugeState::new(50.0, 100.0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal

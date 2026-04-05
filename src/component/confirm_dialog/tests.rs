@@ -10,8 +10,6 @@ fn test_new() {
     assert_eq!(state.message(), "Message");
     assert_eq!(state.button_config(), &ButtonConfig::Ok);
     assert!(!state.is_visible());
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -54,12 +52,6 @@ fn test_with_button_config() {
 fn test_with_destructive_button() {
     let state = ConfirmDialogState::new("T", "M").with_destructive_button(Some(1));
     assert_eq!(state.destructive_button(), Some(1));
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = ConfirmDialogState::new("T", "M").with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 #[test]
@@ -165,10 +157,10 @@ fn test_press_cancel_in_ok_cancel() {
 
 #[test]
 fn test_y_shortcut_yes_no() {
-    let mut state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
-    state.set_focused(true);
+    let state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::char('y'));
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::char('y'), &ViewContext::new().focused(true));
     assert_eq!(
         msg,
         Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes))
@@ -177,10 +169,10 @@ fn test_y_shortcut_yes_no() {
 
 #[test]
 fn test_n_shortcut_yes_no() {
-    let mut state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
-    state.set_focused(true);
+    let state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::char('n'));
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true));
     assert_eq!(
         msg,
         Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::No))
@@ -189,10 +181,10 @@ fn test_n_shortcut_yes_no() {
 
 #[test]
 fn test_y_shortcut_uppercase() {
-    let mut state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
-    state.set_focused(true);
+    let state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::char('Y'));
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::char('Y'), &ViewContext::new().focused(true));
     assert_eq!(
         msg,
         Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes))
@@ -201,46 +193,58 @@ fn test_y_shortcut_uppercase() {
 
 #[test]
 fn test_y_shortcut_not_in_ok_config() {
-    let mut state = ConfirmDialogState::ok("T", "M").with_visible(true);
-    state.set_focused(true);
+    let state = ConfirmDialogState::ok("T", "M").with_visible(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::char('y'));
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::char('y'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_tab_key() {
-    let mut state = ConfirmDialogState::ok_cancel("T", "M").with_visible(true);
-    state.set_focused(true);
+    let state = ConfirmDialogState::ok_cancel("T", "M").with_visible(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ConfirmDialogMessage::FocusNext));
 }
 
 #[test]
 fn test_backtab_key() {
-    let mut state = ConfirmDialogState::ok_cancel("T", "M").with_visible(true);
-    state.set_focused(true);
+    let state = ConfirmDialogState::ok_cancel("T", "M").with_visible(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::BackTab));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::key(KeyCode::BackTab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ConfirmDialogMessage::FocusPrev));
 }
 
 #[test]
 fn test_enter_key() {
-    let mut state = ConfirmDialogState::ok("T", "M").with_visible(true);
-    state.set_focused(true);
+    let state = ConfirmDialogState::ok("T", "M").with_visible(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ConfirmDialogMessage::Press));
 }
 
 #[test]
 fn test_esc_key() {
-    let mut state = ConfirmDialogState::ok("T", "M").with_visible(true);
-    state.set_focused(true);
+    let state = ConfirmDialogState::ok("T", "M").with_visible(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::key(KeyCode::Esc),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ConfirmDialogMessage::Close));
 }
 
@@ -283,28 +287,9 @@ fn test_open_resets_focus() {
 #[test]
 fn test_not_visible_ignores_events() {
     let state = ConfirmDialogState::ok("T", "M");
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
-}
-
-#[test]
-fn test_disabled_ignores_events() {
-    let mut state = ConfirmDialogState::ok("T", "M")
-        .with_visible(true)
-        .with_disabled(true);
-    state.set_focused(true);
-
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Enter));
-    assert_eq!(msg, None);
-}
-
-#[test]
-fn test_disabled_ignores_messages() {
-    let mut state = ConfirmDialogState::ok("T", "M")
-        .with_visible(true)
-        .with_disabled(true);
-    let output = ConfirmDialog::update(&mut state, ConfirmDialogMessage::Press);
-    assert_eq!(output, None);
 }
 
 // Toggleable/Focusable trait tests
@@ -332,18 +317,6 @@ fn test_toggleable_toggle() {
     assert!(!state.is_visible());
 }
 
-#[test]
-fn test_focusable() {
-    let mut state = ConfirmDialogState::ok("T", "M");
-    assert!(!ConfirmDialog::is_focused(&state));
-
-    ConfirmDialog::focus(&mut state);
-    assert!(ConfirmDialog::is_focused(&state));
-
-    ConfirmDialog::blur(&mut state);
-    assert!(!ConfirmDialog::is_focused(&state));
-}
-
 // SelectResult tests
 
 #[test]
@@ -361,25 +334,6 @@ fn test_select_result_directly() {
 }
 
 // Instance method tests
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = ConfirmDialogState::ok("T", "M").with_visible(true);
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Enter));
-    assert_eq!(msg, Some(ConfirmDialogMessage::Press));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = ConfirmDialogState::ok("T", "M").with_visible(true);
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Enter));
-    assert_eq!(
-        output,
-        Some(ConfirmDialogOutput::Confirmed(ConfirmDialogResult::Ok))
-    );
-}
 
 #[test]
 fn test_instance_update() {
@@ -413,7 +367,6 @@ fn test_view_not_visible() {
 fn test_view_ok_dialog() {
     let mut state = ConfirmDialogState::ok("Info", "Operation complete.");
     state.set_visible(true);
-    state.set_focused(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 20);
 
     terminal
@@ -435,7 +388,6 @@ fn test_view_ok_dialog() {
 fn test_view_yes_no_dialog() {
     let mut state = ConfirmDialogState::yes_no("Delete?", "This cannot be undone.");
     state.set_visible(true);
-    state.set_focused(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 20);
 
     terminal
@@ -460,7 +412,6 @@ fn test_annotation_emitted() {
     use crate::annotation::{with_annotations, WidgetType};
     let mut state = ConfirmDialogState::yes_no("Delete?", "Sure?");
     state.set_visible(true);
-    state.set_focused(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 20);
 
     let registry = with_annotations(|| {

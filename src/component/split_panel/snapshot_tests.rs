@@ -19,8 +19,7 @@ fn test_snapshot_default() {
 
 #[test]
 fn test_snapshot_vertical_focused_first() {
-    let mut state = SplitPanelState::new(SplitOrientation::Vertical);
-    SplitPanel::set_focused(&mut state, true);
+    let state = SplitPanelState::new(SplitOrientation::Vertical);
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
@@ -39,7 +38,6 @@ fn test_snapshot_vertical_focused_first() {
 #[test]
 fn test_snapshot_vertical_focused_second() {
     let mut state = SplitPanelState::new(SplitOrientation::Vertical);
-    SplitPanel::set_focused(&mut state, true);
     SplitPanel::update(&mut state, SplitPanelMessage::FocusOther);
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
@@ -58,8 +56,7 @@ fn test_snapshot_vertical_focused_second() {
 
 #[test]
 fn test_snapshot_horizontal() {
-    let mut state = SplitPanelState::new(SplitOrientation::Horizontal);
-    SplitPanel::set_focused(&mut state, true);
+    let state = SplitPanelState::new(SplitOrientation::Horizontal);
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
@@ -77,8 +74,7 @@ fn test_snapshot_horizontal() {
 
 #[test]
 fn test_snapshot_custom_ratio() {
-    let mut state = SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.3);
-    SplitPanel::set_focused(&mut state, true);
+    let state = SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.3);
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
@@ -97,7 +93,6 @@ fn test_snapshot_custom_ratio() {
 #[test]
 fn test_snapshot_resized() {
     let mut state = SplitPanelState::new(SplitOrientation::Vertical);
-    SplitPanel::set_focused(&mut state, true);
     // Grow the first pane twice
     SplitPanel::update(&mut state, SplitPanelMessage::GrowFirst);
     SplitPanel::update(&mut state, SplitPanelMessage::GrowFirst);

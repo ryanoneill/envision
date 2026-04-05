@@ -51,11 +51,10 @@ fn test_snapshot_with_metrics() {
 
 #[test]
 fn test_snapshot_focused() {
-    let mut state = AlertPanelState::new()
+    let state = AlertPanelState::new()
         .with_metrics(sample_metrics())
         .with_columns(2)
         .with_title("Alerts");
-    state.set_focused(true);
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
@@ -75,8 +74,7 @@ fn test_snapshot_focused() {
 fn test_snapshot_disabled() {
     let state = AlertPanelState::new()
         .with_metrics(sample_metrics())
-        .with_columns(2)
-        .with_disabled(true);
+        .with_columns(2);
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {

@@ -28,8 +28,7 @@ impl App for CollapsibleApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut collapsible = CollapsibleState::new("Advanced Settings").with_content_height(4);
-        collapsible.set_focused(true);
+        let collapsible = CollapsibleState::new("Advanced Settings").with_content_height(4);
 
         (State { collapsible }, Command::none())
     }
@@ -98,7 +97,8 @@ impl App for CollapsibleApp {
                 return Some(Msg::Quit);
             }
         }
-        state.collapsible.handle_event(event).map(Msg::Collapsible)
+        Collapsible::handle_event(&state.collapsible, event, &ViewContext::new().focused(true))
+            .map(Msg::Collapsible)
     }
 }
 

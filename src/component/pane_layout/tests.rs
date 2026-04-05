@@ -1,6 +1,6 @@
 use super::*;
 use crate::component::test_utils::setup_render;
-use crate::component::{Component, Focusable};
+use crate::component::Component;
 use crate::input::{Event, KeyCode, KeyModifiers};
 use ratatui::prelude::Rect;
 
@@ -63,8 +63,6 @@ fn test_state_new() {
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     assert_eq!(state.pane_count(), 2);
     assert_eq!(state.focused_pane_index(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.direction(), &PaneDirection::Horizontal);
 }
 
@@ -73,12 +71,6 @@ fn test_state_default() {
     let state = PaneLayoutState::default();
     assert_eq!(state.pane_count(), 0);
     assert_eq!(state.direction(), &PaneDirection::Horizontal);
-}
-
-#[test]
-fn test_state_with_disabled() {
-    let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![]).with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 #[test]
@@ -254,7 +246,6 @@ fn test_focus_next() {
         PaneConfig::new("c"),
     ];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
 
     let output = PaneLayout::update(&mut state, PaneLayoutMessage::FocusNext);
     assert_eq!(state.focused_pane_index(), 1);
@@ -268,7 +259,6 @@ fn test_focus_next() {
 fn test_focus_next_wraps() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
     state.focused_pane = 1;
 
     PaneLayout::update(&mut state, PaneLayoutMessage::FocusNext);
@@ -283,7 +273,6 @@ fn test_focus_prev() {
         PaneConfig::new("c"),
     ];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
     state.focused_pane = 2;
 
     let output = PaneLayout::update(&mut state, PaneLayoutMessage::FocusPrev);
@@ -298,7 +287,6 @@ fn test_focus_prev() {
 fn test_focus_prev_wraps() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
 
     PaneLayout::update(&mut state, PaneLayoutMessage::FocusPrev);
     assert_eq!(state.focused_pane_index(), 1);
@@ -308,7 +296,6 @@ fn test_focus_prev_wraps() {
 fn test_focus_pane_by_id() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
 
     let output = PaneLayout::update(&mut state, PaneLayoutMessage::FocusPane("b".to_string()));
     assert_eq!(state.focused_pane_index(), 1);
@@ -322,7 +309,6 @@ fn test_focus_pane_by_id() {
 fn test_focus_pane_by_id_nonexistent() {
     let panes = vec![PaneConfig::new("a")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
 
     let output = PaneLayout::update(
         &mut state,
@@ -339,7 +325,6 @@ fn test_focus_pane_by_index() {
         PaneConfig::new("c"),
     ];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
 
     let output = PaneLayout::update(&mut state, PaneLayoutMessage::FocusPaneIndex(2));
     assert_eq!(state.focused_pane_index(), 2);
@@ -353,7 +338,6 @@ fn test_focus_pane_by_index() {
 fn test_focus_pane_by_index_out_of_bounds() {
     let panes = vec![PaneConfig::new("a")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
 
     let output = PaneLayout::update(&mut state, PaneLayoutMessage::FocusPaneIndex(5));
     assert_eq!(output, None);
@@ -368,7 +352,6 @@ fn test_grow_focused() {
         PaneConfig::new("b").with_proportion(0.5),
     ];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
 
     let output = PaneLayout::update(&mut state, PaneLayoutMessage::GrowFocused);
     assert!(output.is_some());
@@ -383,7 +366,6 @@ fn test_shrink_focused() {
         PaneConfig::new("b").with_proportion(0.5),
     ];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
 
     let output = PaneLayout::update(&mut state, PaneLayoutMessage::ShrinkFocused);
     assert!(output.is_some());
@@ -424,7 +406,6 @@ fn test_grow_at_boundary() {
         PaneConfig::new("b").with_proportion(0.05),
     ];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
 
     // Neighbor is too small to shrink further
     let output = PaneLayout::update(&mut state, PaneLayoutMessage::GrowFocused);
@@ -438,7 +419,6 @@ fn test_shrink_at_boundary() {
         PaneConfig::new("b").with_proportion(0.95),
     ];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
 
     // Focused pane is too small to shrink further
     let output = PaneLayout::update(&mut state, PaneLayoutMessage::ShrinkFocused);
@@ -505,38 +485,9 @@ fn test_reset_proportions_empty() {
 // ========== Guard Tests ==========
 
 #[test]
-fn test_focus_next_unfocused_guard() {
-    let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    let output = PaneLayout::update(&mut state, PaneLayoutMessage::FocusNext);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_focus_next_disabled_guard() {
-    let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes).with_disabled(true);
-    state.set_focused(true);
-    let output = PaneLayout::update(&mut state, PaneLayoutMessage::FocusNext);
-    assert_eq!(output, None);
-}
-
-#[test]
 fn test_focus_next_empty_guard() {
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![]);
-    state.set_focused(true);
     let output = PaneLayout::update(&mut state, PaneLayoutMessage::FocusNext);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_grow_unfocused_guard() {
-    let panes = vec![
-        PaneConfig::new("a").with_proportion(0.5),
-        PaneConfig::new("b").with_proportion(0.5),
-    ];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    let output = PaneLayout::update(&mut state, PaneLayoutMessage::GrowFocused);
     assert_eq!(output, None);
 }
 
@@ -545,29 +496,35 @@ fn test_grow_unfocused_guard() {
 #[test]
 fn test_handle_event_tab() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
-    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab));
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+    let msg = PaneLayout::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(PaneLayoutMessage::FocusNext));
 }
 
 #[test]
 fn test_handle_event_backtab() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
-    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::BackTab));
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+    let msg = PaneLayout::handle_event(
+        &state,
+        &Event::key(KeyCode::BackTab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(PaneLayoutMessage::FocusPrev));
 }
 
 #[test]
 fn test_handle_event_ctrl_right() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     let msg = PaneLayout::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::GrowFocused));
 }
@@ -575,11 +532,11 @@ fn test_handle_event_ctrl_right() {
 #[test]
 fn test_handle_event_ctrl_left() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     let msg = PaneLayout::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::ShrinkFocused));
 }
@@ -587,9 +544,9 @@ fn test_handle_event_ctrl_left() {
 #[test]
 fn test_handle_event_ctrl_0() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
-    let msg = PaneLayout::handle_event(&state, &Event::ctrl('0'));
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+    let msg =
+        PaneLayout::handle_event(&state, &Event::ctrl('0'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(PaneLayoutMessage::ResetProportions));
 }
 
@@ -597,25 +554,28 @@ fn test_handle_event_ctrl_0() {
 fn test_handle_event_unfocused_ignored() {
     let panes = vec![PaneConfig::new("a")];
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_handle_event_disabled_ignored() {
     let panes = vec![PaneConfig::new("a")];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes).with_disabled(true);
-    state.set_focused(true);
-    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab));
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+    let msg = PaneLayout::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_handle_event_unrecognized() {
     let panes = vec![PaneConfig::new("a")];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
-    let msg = PaneLayout::handle_event(&state, &Event::char('z'));
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+    let msg =
+        PaneLayout::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
@@ -625,8 +585,11 @@ fn test_handle_event_unrecognized() {
 fn test_dispatch_event() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Tab));
+    let output = PaneLayout::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert!(matches!(
         output,
         Some(PaneLayoutOutput::FocusChanged { .. })
@@ -637,33 +600,8 @@ fn test_dispatch_event() {
 fn test_instance_update() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
     let output = state.update(PaneLayoutMessage::FocusNext);
     assert!(output.is_some());
-}
-
-// ========== Focusable Trait Tests ==========
-
-#[test]
-fn test_focusable_is_focused() {
-    let state = PaneLayoutState::default();
-    assert!(!PaneLayout::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = PaneLayoutState::default();
-    PaneLayout::set_focused(&mut state, true);
-    assert!(PaneLayout::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_focus_blur() {
-    let mut state = PaneLayoutState::default();
-    PaneLayout::focus(&mut state);
-    assert!(state.is_focused());
-    PaneLayout::blur(&mut state);
-    assert!(!state.is_focused());
 }
 
 // ========== Init Test ==========
@@ -672,7 +610,6 @@ fn test_focusable_focus_blur() {
 fn test_init() {
     let state = PaneLayout::init();
     assert_eq!(state.pane_count(), 0);
-    assert!(!state.is_focused());
 }
 
 // ========== Rendering Snapshot Tests ==========
@@ -724,7 +661,6 @@ fn test_view_three_panes_focused() {
         PaneConfig::new("c").with_title("C"),
     ];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
     state.focused_pane = 1;
 
     terminal
@@ -764,8 +700,7 @@ fn test_view_empty_panes() {
 fn test_annotation_emission() {
     use crate::annotation::{with_annotations, WidgetType};
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
-    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    state.set_focused(true);
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     let (mut terminal, theme) = setup_render(60, 10);
     let registry = with_annotations(|| {
         terminal

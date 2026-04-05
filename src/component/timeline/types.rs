@@ -260,7 +260,6 @@ pub enum SelectedType {
 /// };
 ///
 /// let mut state = TimelineState::new();
-/// state.set_focused(true);
 /// let event = TimelineEvent::new("e1", 100.0, "Start");
 /// state.update(TimelineMessage::AddEvent(event));
 /// assert_eq!(state.events().len(), 1);

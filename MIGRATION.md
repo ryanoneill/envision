@@ -486,24 +486,24 @@ If you were cloning commands, create them via a helper function instead.
 
 #### handle_event and dispatch_event
 
-Every component now supports `handle_event` (read-only event-to-message
+Every component supports `handle_event` (read-only event-to-message
 mapping) and `dispatch_event` (combines handle_event + update in one call).
-Both are available as static trait methods and as instance methods on all
-state types.
-
-**Static trait method (works, but verbose with generics):**
+These are static trait methods that take a `ViewContext` parameter for
+focused and disabled state.
 
 ```rust
-let msg = SelectableList::<String>::handle_event(&state, &event);
+let ctx = ViewContext::new().focused(true);
+let msg = SelectableList::<String>::handle_event(&state, &event, &ctx);
 if let Some(msg) = msg {
     let output = SelectableList::<String>::update(&mut state, msg);
 }
 ```
 
-**Instance method (preferred, eliminates turbofish):**
+**dispatch_event (preferred, combines handle_event + update):**
 
 ```rust
-if let Some(output) = state.dispatch_event(&event) {
+let ctx = ViewContext::new().focused(true);
+if let Some(output) = SelectableList::<String>::dispatch_event(&mut state, &event, &ctx) {
     match output {
         SelectableListOutput::Selected(item) => { /* ... */ }
         SelectableListOutput::SelectionChanged(idx) => { /* ... */ }
@@ -512,32 +512,14 @@ if let Some(output) = state.dispatch_event(&event) {
 }
 ```
 
-The instance methods are available on every state type: `ButtonState`,
-`InputFieldState`, `SelectableListState<T>`, `TabsState<T>`,
-`TableState<T>`, etc.
-
 #### Typical Event Routing Pattern
 
 ```rust
-fn update(state: &mut AppState, msg: AppMsg) -> Command<AppMsg> {
-    match msg {
-        AppMsg::TerminalEvent(event) => {
-            // Route event to the focused component
-            if let Some(output) = state.list.dispatch_event(&event) {
-                match output {
-                    SelectableListOutput::Selected(item) => {
-                        // handle item selection
-                    }
-                    SelectableListOutput::SelectionChanged(idx) => {
-                        // handle navigation
-                    }
-                    _ => {}
-                }
-            }
-        }
-        // ...
-    }
-    Command::none()
+fn handle_event_with_state(state: &AppState, event: &Event) -> Option<AppMsg> {
+    // Route event to the focused component
+    SelectableList::<String>::handle_event(
+        &state.list, event, &ViewContext::new().focused(true)
+    ).map(AppMsg::List)
 }
 ```
 
@@ -590,31 +572,20 @@ envision = { version = "0.5", default-features = false, features = [
 
 The following patterns still work in v0.5.0 but should be updated.
 
-#### Static Trait Methods for Event Handling
+#### ViewContext for Focus and Disabled State
 
-Static trait methods work but are verbose, especially with generic components:
-
-```rust
-// Works but verbose (especially with generics requiring turbofish)
-let msg = SelectableList::<String>::handle_event(&state, &event);
-if let Some(msg) = msg {
-    SelectableList::<String>::update(&mut state, msg);
-}
-
-// Preferred: use instance methods
-state.dispatch_event(&event);
-```
-
-#### Static Trait Methods for Focus
+Focus and disabled state are passed via `ViewContext` to `handle_event`,
+`dispatch_event`, and `view`:
 
 ```rust
-// Works but verbose
-Button::set_focused(&mut state, true);
-assert!(Button::is_focused(&state));
+// Focused component receives events
+let ctx = ViewContext::new().focused(true);
+let msg = Button::handle_event(&state, &event, &ctx);
 
-// Preferred: use instance methods
-state.set_focused(true);
-assert!(state.is_focused());
+// Disabled component ignores events
+let ctx = ViewContext::new().focused(true).disabled(true);
+let msg = Button::handle_event(&state, &event, &ctx);
+assert!(msg.is_none());
 ```
 
 #### Static Trait Methods for Update
@@ -625,29 +596,6 @@ Button::update(&mut state, ButtonMessage::Press);
 
 // Preferred: use instance methods
 state.update(ButtonMessage::Press);
-```
-
----
-
-### New Capabilities
-
-#### Disabled State on All Focusable Components
-
-Every focusable component now supports `is_disabled()`, `set_disabled()`,
-and `with_disabled()`. Disabled components ignore all input events and
-render with `theme.disabled_style()`.
-
-```rust
-// Builder pattern
-let state = ButtonState::new("Submit").with_disabled(true);
-
-// Mutation
-state.set_disabled(true);
-assert!(state.is_disabled());
-
-// Disabled components ignore events
-let output = state.dispatch_event(&Event::key(KeyCode::Enter));
-assert!(output.is_none());
 ```
 
 #### Overlay/Modal System
@@ -732,5 +680,5 @@ let state = SelectState::new(options).with_placeholder("Select...");
 - [ ] Rename `set_cursor()` to `set_cursor_position()`
 - [ ] Update component message/output type names to `{Component}Message` / `{Component}Output`
 - [ ] Update ratatui imports if relying on types no longer in the prelude
-- [ ] Consider adopting `dispatch_event` and instance methods for cleaner code
+- [ ] Consider adopting `dispatch_event` with `ViewContext` for cleaner event routing
 - [ ] Add feature flags to `Cargo.toml` if you want to reduce compile times

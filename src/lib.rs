@@ -166,7 +166,7 @@ pub use app::{
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 // Core component traits and utilities (always available)
-pub use component::{Component, Disableable, FocusManager, Focusable, Toggleable, ViewContext};
+pub use component::{Component, FocusManager, Toggleable, ViewContext};
 
 // Input components
 #[cfg(feature = "input-components")]
@@ -230,8 +230,7 @@ pub use component::{
 pub use component::{
     AlertMetric, AlertPanel, AlertPanelMessage, AlertPanelOutput, AlertPanelState, AlertState,
     AlertThreshold, BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation, BoxPlotState, Chart,
-    ChartKind, ChartMessage, ChartOutput, ChartState, ChatMessage, ChatRole, ChatView,
-    ChatViewMessage, ChatViewOutput, ChatViewState, ConversationMessage, ConversationRole,
+    ChartKind, ChartMessage, ChartOutput, ChartState, ConversationMessage, ConversationRole,
     ConversationView, ConversationViewMessage, ConversationViewOutput, ConversationViewState,
     DataGrid, DataGridMessage, DataGridOutput, DataGridState, DataSeries, DependencyGraph,
     DependencyGraphMessage, DependencyGraphOutput, DependencyGraphState, DiffHunk, DiffLine,

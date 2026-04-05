@@ -552,7 +552,6 @@ fn test_view_focused() {
     state.info("Server started");
     state.success("Connection established");
     state.warning("High memory usage");
-    state.set_focused(true);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
@@ -595,54 +594,66 @@ use crate::input::{Event, KeyCode};
 
 #[test]
 fn test_handle_event_scroll_up() {
-    let mut state = StatusLogState::new();
-    state.set_focused(true);
+    let state = StatusLogState::new();
 
     // Up arrow -> ScrollUp
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
 
     // Vim 'k' -> ScrollUp
-    let msg = StatusLog::handle_event(&state, &Event::char('k'));
+    let msg = StatusLog::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
 }
 
 #[test]
 fn test_handle_event_scroll_down() {
-    let mut state = StatusLogState::new();
-    state.set_focused(true);
+    let state = StatusLogState::new();
 
     // Down arrow -> ScrollDown
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollDown));
 
     // Vim 'j' -> ScrollDown
-    let msg = StatusLog::handle_event(&state, &Event::char('j'));
+    let msg = StatusLog::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StatusLogMessage::ScrollDown));
 }
 
 #[test]
 fn test_handle_event_scroll_to_top() {
-    let mut state = StatusLogState::new();
-    state.set_focused(true);
+    let state = StatusLogState::new();
 
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Home));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollToTop));
 }
 
 #[test]
 fn test_handle_event_scroll_to_bottom() {
-    let mut state = StatusLogState::new();
-    state.set_focused(true);
+    let state = StatusLogState::new();
 
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::End));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollToBottom));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = StatusLogState::new();
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -653,40 +664,45 @@ fn test_handle_event_ignored_when_unfocused() {
 #[test]
 fn test_dispatch_event() {
     let mut state = StatusLogState::new();
-    state.set_focused(true);
     for i in 0..5 {
         state.info(format!("Msg {}", i));
     }
     state.set_scroll_offset(3);
 
     // Down arrow dispatches ScrollDown
-    StatusLog::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+    StatusLog::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(state.scroll_offset(), 4);
 }
-
-// ========================================
-// Instance Method Tests
-// ========================================
-
 #[test]
 fn test_instance_methods() {
     let mut state = StatusLogState::new();
-    state.set_focused(true);
     for i in 0..5 {
         state.info(format!("Msg {}", i));
     }
     state.set_scroll_offset(2);
 
-    // instance handle_event
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
+    // static handle_event
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
 
     // instance update
     state.update(StatusLogMessage::ScrollUp);
     assert_eq!(state.scroll_offset(), 1);
 
-    // instance dispatch_event
-    state.dispatch_event(&Event::key(KeyCode::Down));
+    // static dispatch_event
+    StatusLog::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(state.scroll_offset(), 2);
 }
 
@@ -695,139 +711,60 @@ fn test_instance_methods() {
 // ========================================
 
 #[test]
-fn test_is_disabled_default() {
-    let state = StatusLogState::new();
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_default_not_disabled() {
-    let state = StatusLogState::default();
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = StatusLogState::new();
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = StatusLogState::new().with_disabled(true);
-    assert!(state.is_disabled());
-
-    let state = StatusLogState::new().with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = StatusLogState::new();
-    state.set_focused(true);
-    state.set_disabled(true);
+    let state = StatusLogState::new();
 
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up));
-    assert_eq!(msg, None);
-
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Down));
-    assert_eq!(msg, None);
-
-    let msg = StatusLog::handle_event(&state, &Event::char('k'));
-    assert_eq!(msg, None);
-
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Home));
-    assert_eq!(msg, None);
-
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::End));
-    assert_eq!(msg, None);
-}
-
-#[test]
-fn test_update_ignored_when_disabled() {
-    let mut state = StatusLogState::new();
-    state.info("Existing");
-    state.set_disabled(true);
-
-    let output = StatusLog::update(
-        &mut state,
-        StatusLogMessage::Push {
-            message: "New".to_string(),
-            level: StatusLogLevel::Info,
-            timestamp: None,
-        },
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true).disabled(true),
     );
-    assert_eq!(output, None);
-    assert_eq!(state.len(), 1);
+    assert_eq!(msg, None);
 
-    let output = StatusLog::update(&mut state, StatusLogMessage::Clear);
-    assert_eq!(output, None);
-    assert_eq!(state.len(), 1);
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
+    assert_eq!(msg, None);
 
-    let output = StatusLog::update(&mut state, StatusLogMessage::ScrollDown);
-    assert_eq!(output, None);
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::char('k'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
+    assert_eq!(msg, None);
 
-    let output = StatusLog::update(&mut state, StatusLogMessage::ScrollUp);
-    assert_eq!(output, None);
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true).disabled(true),
+    );
+    assert_eq!(msg, None);
+
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true).disabled(true),
+    );
+    assert_eq!(msg, None);
 }
 
 #[test]
 fn test_dispatch_event_ignored_when_disabled() {
     let mut state = StatusLogState::new();
-    state.set_focused(true);
-    state.set_disabled(true);
     for i in 0..5 {
         state.info(format!("Msg {}", i));
     }
     state.set_scroll_offset(2);
 
-    let output = StatusLog::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+    let output = StatusLog::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(output, None);
     assert_eq!(state.scroll_offset(), 2);
-}
-
-#[test]
-fn test_instance_is_disabled() {
-    let mut state = StatusLogState::new();
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_instance_handle_event_disabled() {
-    let mut state = StatusLogState::new();
-    state.set_focused(true);
-    state.set_disabled(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, None);
-}
-
-#[test]
-fn test_instance_dispatch_event_disabled() {
-    let mut state = StatusLogState::new();
-    state.set_focused(true);
-    state.set_disabled(true);
-    for i in 0..5 {
-        state.info(format!("Msg {}", i));
-    }
-    state.set_scroll_offset(2);
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
-    assert_eq!(output, None);
-    assert_eq!(state.scroll_offset(), 2);
-}
-
-#[test]
-fn test_instance_update_disabled() {
-    let mut state = StatusLogState::new();
-    state.info("Existing");
-    state.set_disabled(true);
-    let output = state.update(StatusLogMessage::Clear);
-    assert_eq!(output, None);
-    assert_eq!(state.len(), 1);
 }
 
 #[test]
@@ -843,8 +780,6 @@ fn test_default_matches_init() {
         init_state.show_timestamps()
     );
     assert_eq!(default_state.scroll_offset(), init_state.scroll_offset());
-    assert_eq!(default_state.is_focused(), init_state.is_focused());
-    assert_eq!(default_state.is_disabled(), init_state.is_disabled());
     assert_eq!(default_state.title(), init_state.title());
 }
 

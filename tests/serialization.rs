@@ -304,8 +304,9 @@ fn test_json_structure_is_clean() {
     let json = serde_json::to_value(&state).expect("serialize");
     // Verify the JSON has expected fields
     assert!(json.get("label").is_some());
-    assert!(json.get("focused").is_some());
-    assert!(json.get("disabled").is_some());
+    // focused and disabled are no longer part of state
+    assert!(json.get("focused").is_none());
+    assert!(json.get("disabled").is_none());
 }
 
 #[test]

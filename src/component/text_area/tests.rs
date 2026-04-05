@@ -478,8 +478,7 @@ fn test_ensure_cursor_visible_up() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = TextAreaState::new().with_value("Hello");
-    state.focused = true;
+    let state = TextAreaState::new().with_value("Hello");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
@@ -544,7 +543,6 @@ fn test_view_renders() {
 #[test]
 fn test_full_workflow() {
     let mut state = TextAreaState::new();
-    TextArea::set_focused(&mut state, true);
 
     // Type "Hello"
     TextArea::update(&mut state, TextAreaMessage::Insert('H'));
@@ -587,7 +585,6 @@ fn test_full_workflow() {
 fn test_init() {
     let state = TextArea::init();
     assert!(state.is_empty());
-    assert!(!state.focused);
 }
 
 #[test]
@@ -684,10 +681,9 @@ fn test_delete_to_start_at_start() {
 #[test]
 fn test_view_with_scroll() {
     // Create a long content that needs scrolling
-    let mut state = TextAreaState::new().with_value(
+    let state = TextAreaState::new().with_value(
         "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10",
     );
-    state.focused = true;
     // Small height to trigger scrolling
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
@@ -711,7 +707,6 @@ fn test_view_cursor_above_scroll() {
     let mut state = TextAreaState::new().with_value("1\n2\n3\n4\n5\n6\n7\n8\n9\n10");
     state.scroll_offset = 5; // Scroll down
     state.set_cursor_position(2, 0); // Cursor above scroll
-    state.focused = true;
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
 
     terminal
@@ -803,131 +798,120 @@ fn test_multiline_mixed_unicode() {
 
 #[test]
 fn test_handle_event_char_insert() {
-    let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::char('a'));
+    let state = TextArea::init();
+    let msg = TextArea::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(TextAreaMessage::Insert('a')));
 }
 
 #[test]
 fn test_handle_event_enter() {
-    let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Enter));
+    let state = TextArea::init();
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::NewLine));
 }
 
 #[test]
 fn test_handle_event_arrow_up() {
-    let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Up));
+    let state = TextArea::init();
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Up));
 }
 
 #[test]
 fn test_handle_event_arrow_down() {
-    let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Down));
+    let state = TextArea::init();
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Down));
 }
 
 #[test]
 fn test_handle_event_arrow_left() {
-    let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Left));
+    let state = TextArea::init();
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Left));
 }
 
 #[test]
 fn test_handle_event_arrow_right() {
-    let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Right));
+    let state = TextArea::init();
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Right));
 }
 
 #[test]
 fn test_handle_event_ctrl_home() {
-    let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
+    let state = TextArea::init();
     let msg = TextArea::handle_event(
         &state,
         &Event::key_with(KeyCode::Home, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::TextStart));
 }
 
 #[test]
 fn test_handle_event_ctrl_end() {
-    let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
+    let state = TextArea::init();
     let msg = TextArea::handle_event(
         &state,
         &Event::key_with(KeyCode::End, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::TextEnd));
 }
 
 #[test]
 fn test_handle_event_ctrl_k() {
-    let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::ctrl('k'));
+    let state = TextArea::init();
+    let msg = TextArea::handle_event(&state, &Event::ctrl('k'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(TextAreaMessage::DeleteToEnd));
 }
 
 #[test]
 fn test_handle_event_ctrl_u() {
-    let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::ctrl('u'));
+    let state = TextArea::init();
+    let msg = TextArea::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(TextAreaMessage::DeleteToStart));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = TextArea::init();
-    let msg = TextArea::handle_event(&state, &Event::char('a'));
+    let msg = TextArea::handle_event(&state, &Event::char('a'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_dispatch_event_insert() {
     let mut state = TextArea::init();
-    TextArea::set_focused(&mut state, true);
-    let output = TextArea::dispatch_event(&mut state, &Event::char('a'));
+    let output = TextArea::dispatch_event(
+        &mut state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true),
+    );
     assert!(matches!(output, Some(TextAreaOutput::Changed(_))));
     assert_eq!(state.value(), "a");
 }
-
-#[test]
-fn test_instance_is_focused() {
-    let mut state = TextArea::init();
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-}
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = TextArea::init();
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::char('a'));
-    assert_eq!(msg, Some(TextAreaMessage::Insert('a')));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = TextArea::init();
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::char('a'));
-    assert!(matches!(output, Some(TextAreaOutput::Changed(_))));
-    assert_eq!(state.value(), "a");
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = TextArea::init();

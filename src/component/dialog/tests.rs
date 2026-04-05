@@ -381,7 +381,6 @@ fn test_view_buttons() {
 fn test_view_focused_button() {
     let mut state = DialogState::confirm("Title", "Message");
     Dialog::show(&mut state);
-    Dialog::focus(&mut state);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
     terminal
@@ -439,7 +438,6 @@ fn test_init() {
 fn test_alert_workflow() {
     let mut state = DialogState::alert("Error", "File not found.");
     Dialog::show(&mut state);
-    Dialog::focus(&mut state);
 
     // Press OK
     let output = Dialog::update(&mut state, DialogMessage::Press);
@@ -451,7 +449,6 @@ fn test_alert_workflow() {
 fn test_confirm_workflow() {
     let mut state = DialogState::confirm("Delete?", "This cannot be undone.");
     Dialog::show(&mut state);
-    Dialog::focus(&mut state);
 
     // Start at OK (primary)
     assert_eq!(state.focused_button(), 1);
@@ -475,7 +472,6 @@ fn test_custom_workflow() {
     ];
     let mut state = DialogState::with_primary("Unsaved Changes", "Save your work?", buttons, 0);
     Dialog::show(&mut state);
-    Dialog::focus(&mut state);
 
     // Navigate to Discard
     Dialog::update(&mut state, DialogMessage::FocusNext);
@@ -514,7 +510,7 @@ fn test_handle_event_tab() {
     let mut state = DialogState::confirm("T", "M");
     Dialog::show(&mut state);
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
     assert_eq!(msg, Some(DialogMessage::FocusNext));
 }
 
@@ -523,7 +519,11 @@ fn test_handle_event_backtab() {
     let mut state = DialogState::confirm("T", "M");
     Dialog::show(&mut state);
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::BackTab));
+    let msg = Dialog::handle_event(
+        &state,
+        &Event::key(KeyCode::BackTab),
+        &ViewContext::default(),
+    );
     assert_eq!(msg, Some(DialogMessage::FocusPrev));
 }
 
@@ -532,7 +532,7 @@ fn test_handle_event_enter() {
     let mut state = DialogState::confirm("T", "M");
     Dialog::show(&mut state);
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, Some(DialogMessage::Press));
 }
 
@@ -541,7 +541,7 @@ fn test_handle_event_escape() {
     let mut state = DialogState::confirm("T", "M");
     Dialog::show(&mut state);
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Esc), &ViewContext::default());
     assert_eq!(msg, Some(DialogMessage::Close));
 }
 
@@ -551,7 +551,7 @@ fn test_handle_event_ignored_when_not_visible() {
     // Not visible by default
     assert!(!Dialog::is_visible(&state));
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -565,7 +565,11 @@ fn test_dispatch_event() {
     Dialog::show(&mut state);
 
     // Enter dispatches Press, which presses the OK button
-    let output = Dialog::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = Dialog::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::default(),
+    );
     assert_eq!(output, Some(DialogOutput::ButtonPressed("ok".into())));
     assert!(!Dialog::is_visible(&state));
 }
@@ -604,44 +608,6 @@ fn test_with_visible() {
 fn test_with_visible_false() {
     let state = DialogState::alert("T", "M").with_visible(false);
     assert!(!state.is_visible());
-}
-
-#[test]
-fn test_instance_is_focused() {
-    let mut state = DialogState::alert("T", "M");
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-}
-
-#[test]
-fn test_instance_set_focused() {
-    let mut state = DialogState::alert("T", "M");
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = DialogState::alert("T", "M");
-    state.set_visible(true);
-
-    // instance handle_event
-    let msg = state.handle_event(&Event::key(KeyCode::Enter));
-    assert_eq!(msg, Some(DialogMessage::Press));
-
-    // instance update
-    let output = state.update(DialogMessage::Press);
-    assert_eq!(output, Some(DialogOutput::ButtonPressed("ok".into())));
-
-    // Re-show for dispatch_event test
-    state.set_visible(true);
-
-    // instance dispatch_event
-    let output = state.dispatch_event(&Event::key(KeyCode::Esc));
-    assert_eq!(output, Some(DialogOutput::Closed));
 }
 
 // ========================================

@@ -297,7 +297,7 @@ mod tests {
 
     #[test]
     fn test_compute_frame_style_disabled() {
-        let state = FlameGraphState::with_root(FlameNode::new("main()", 500)).with_disabled(true);
+        let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
         let node = FlameNode::new("test()", 100);
         let theme = Theme::default();
         let style = compute_frame_style(&state, &node, false, false, &theme, false, true);
@@ -306,8 +306,7 @@ mod tests {
 
     #[test]
     fn test_compute_frame_style_selected_focused() {
-        let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-        state.set_focused(true);
+        let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
         let node = FlameNode::new("test()", 100).with_color(Color::Red);
         let theme = Theme::default();
         let style = compute_frame_style(&state, &node, true, false, &theme, true, false);

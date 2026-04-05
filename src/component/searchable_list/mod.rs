@@ -7,13 +7,12 @@
 //! [`SearchableListState<T>`], updated via [`SearchableListMessage`], and
 //! produces [`SearchableListOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, SearchableList, SearchableListState,
+//!     Component, SearchableList, SearchableListState,
 //!     SearchableListMessage, SearchableListOutput,
 //! };
 //!
@@ -23,7 +22,6 @@
 //!     "Cherry".to_string(),
 //!     "Date".to_string(),
 //! ]);
-//! SearchableList::set_focused(&mut state, true);
 //!
 //! // Type "an" to filter
 //! SearchableList::update(&mut state, SearchableListMessage::FilterChanged("an".into()));
@@ -43,7 +41,7 @@ use std::sync::Arc;
 use ratatui::prelude::*;
 use ratatui::widgets::ListState;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -130,10 +128,6 @@ pub struct SearchableListState<T: Clone> {
     pub(super) scroll: ScrollState,
     /// Which sub-component has internal focus.
     pub(super) internal_focus: Focus,
-    /// Whether the overall component is focused.
-    pub(super) focused: bool,
-    /// Whether the component is disabled.
-    pub(super) disabled: bool,
     /// Placeholder text for the filter input.
     pub(super) placeholder: String,
     /// Custom matcher function: `(query, item_text) -> Option<score>`.
@@ -153,8 +147,6 @@ impl<T: Clone> Clone for SearchableListState<T> {
             list_state: self.list_state.clone(),
             scroll: self.scroll.clone(),
             internal_focus: self.internal_focus.clone(),
-            focused: self.focused,
-            disabled: self.disabled,
             placeholder: self.placeholder.clone(),
             matcher: self.matcher.clone(),
         }
@@ -170,8 +162,6 @@ impl<T: Clone + std::fmt::Debug> std::fmt::Debug for SearchableListState<T> {
             .field("selected", &self.selected)
             .field("list_state", &self.list_state)
             .field("internal_focus", &self.internal_focus)
-            .field("focused", &self.focused)
-            .field("disabled", &self.disabled)
             .field("placeholder", &self.placeholder)
             .field("matcher", &self.matcher.as_ref().map(|_| "..."))
             .finish()
@@ -186,8 +176,6 @@ impl<T: Clone + PartialEq> PartialEq for SearchableListState<T> {
             && self.selected == other.selected
             && self.list_state.selected() == other.list_state.selected()
             && self.internal_focus == other.internal_focus
-            && self.focused == other.focused
-            && self.disabled == other.disabled
             && self.placeholder == other.placeholder
     }
 }
@@ -202,8 +190,6 @@ impl<T: Clone> Default for SearchableListState<T> {
             list_state: ListState::default(),
             scroll: ScrollState::default(),
             internal_focus: Focus::Filter,
-            focused: false,
-            disabled: false,
             placeholder: "Type to filter...".to_string(),
             matcher: None,
         }
@@ -240,8 +226,6 @@ impl<T: Clone> SearchableListState<T> {
             list_state,
             scroll,
             internal_focus: Focus::Filter,
-            focused: false,
-            disabled: false,
             placeholder: "Type to filter...".to_string(),
             matcher: None,
         }
@@ -616,117 +600,6 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
         self.refilter();
     }
 
-    /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SearchableListState;
-    ///
-    /// let state = SearchableListState::new(vec!["A".to_string()]);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SearchableListState;
-    ///
-    /// let mut state = SearchableListState::new(vec!["A".to_string()]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SearchableListState;
-    ///
-    /// let state = SearchableListState::new(vec!["A".to_string()]);
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SearchableListState;
-    ///
-    /// let mut state = SearchableListState::new(vec!["A".to_string()]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SearchableListState;
-    ///
-    /// let state = SearchableListState::new(vec!["A".to_string()])
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Maps an input event to a searchable list message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{SearchableListState, SearchableListMessage};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = SearchableListState::new(vec!["A".to_string()]);
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Esc);
-    /// assert_eq!(state.handle_event(&event), Some(SearchableListMessage::FilterClear));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<SearchableListMessage> {
-        SearchableList::<T>::handle_event(self, event)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{SearchableListState, SearchableListOutput};
-    /// use envision::input::Event;
-    ///
-    /// let mut state = SearchableListState::new(vec![
-    ///     "Apple".to_string(), "Banana".to_string(),
-    /// ]);
-    /// state.set_focused(true);
-    /// let event = Event::char('a');
-    /// let output = state.dispatch_event(&event);
-    /// assert!(matches!(output, Some(SearchableListOutput::FilterChanged(_))));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<SearchableListOutput<T>> {
-        SearchableList::<T>::dispatch_event(self, event)
-    }
-
     /// Updates the state with a message, returning any output.
     ///
     /// # Example
@@ -818,13 +691,12 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
 ///
 /// ```rust
 /// use envision::component::{
-///     Component, Focusable, SearchableList, SearchableListState,
+///     Component, SearchableList, SearchableListState,
 ///     SearchableListMessage, SearchableListOutput,
 /// };
 ///
 /// let items = vec!["Apple".to_string(), "Banana".to_string(), "Cherry".to_string()];
 /// let mut state = SearchableListState::new(items);
-/// SearchableList::set_focused(&mut state, true);
 ///
 /// // Filter to items containing "an"
 /// SearchableList::update(&mut state, SearchableListMessage::FilterChanged("an".into()));
@@ -845,8 +717,12 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
         SearchableListState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        if !state.focused || state.disabled {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Message> {
+        if !ctx.focused || ctx.disabled {
             return None;
         }
 
@@ -908,10 +784,6 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             SearchableListMessage::FilterChanged(text) => {
                 state.filter_text = text.clone();
@@ -1031,26 +903,6 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render_searchable_list(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl<T: Clone + Display + 'static> Focusable for SearchableList<T> {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl<T: Clone + Display + 'static> Disableable for SearchableList<T> {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 
