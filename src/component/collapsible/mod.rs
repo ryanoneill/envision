@@ -18,7 +18,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Collapsible, CollapsibleMessage, CollapsibleOutput, CollapsibleState, Component, Focusable};
+//! use envision::component::{Collapsible, CollapsibleMessage, CollapsibleOutput, CollapsibleState, Component};
 //!
 //! let mut state = CollapsibleState::new("Details");
 //! Collapsible::focus(&mut state);
@@ -37,7 +37,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Disableable, Focusable, Toggleable, ViewContext};
+use super::{Component, Toggleable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -93,10 +93,6 @@ pub struct CollapsibleState {
     expanded: bool,
     /// Height to allocate for content when expanded.
     content_height: u16,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for CollapsibleState {
@@ -105,8 +101,6 @@ impl Default for CollapsibleState {
             header: String::new(),
             expanded: true,
             content_height: 5,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -160,21 +154,6 @@ impl CollapsibleState {
     /// ```
     pub fn with_content_height(mut self, height: u16) -> Self {
         self.content_height = height;
-        self
-    }
-
-    /// Sets the disabled state (builder method).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CollapsibleState;
-    ///
-    /// let state = CollapsibleState::new("Details").with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -338,106 +317,6 @@ impl CollapsibleState {
         Rect::new(area.x, area.y + 1, area.width, height)
     }
 
-    /// Returns whether the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CollapsibleState;
-    ///
-    /// let state = CollapsibleState::new("Details");
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CollapsibleState;
-    ///
-    /// let mut state = CollapsibleState::new("Details");
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns whether the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CollapsibleState;
-    ///
-    /// let state = CollapsibleState::new("Details");
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CollapsibleState;
-    ///
-    /// let mut state = CollapsibleState::new("Details");
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a collapsible message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Collapsible, CollapsibleMessage, CollapsibleState, Component, Focusable};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = CollapsibleState::new("Details");
-    /// Collapsible::focus(&mut state);
-    ///
-    /// let msg = state.handle_event(&Event::char(' '));
-    /// assert_eq!(msg, Some(CollapsibleMessage::Toggle));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<CollapsibleMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Collapsible::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Collapsible, CollapsibleOutput, CollapsibleState, Focusable};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = CollapsibleState::new("Details");
-    /// Collapsible::focus(&mut state);
-    ///
-    /// let output = state.dispatch_event(&Event::char(' '));
-    /// assert_eq!(output, Some(CollapsibleOutput::Toggled(false)));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<CollapsibleOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Collapsible::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the collapsible state with a message, returning any output.
     ///
     /// # Example
@@ -482,7 +361,7 @@ impl CollapsibleState {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{Collapsible, CollapsibleMessage, CollapsibleState, Component, Focusable};
+/// use envision::component::{Collapsible, CollapsibleMessage, CollapsibleState, Component};
 ///
 /// let mut state = CollapsibleState::new("Advanced Settings");
 /// Collapsible::focus(&mut state);
@@ -507,10 +386,6 @@ impl Component for Collapsible {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             CollapsibleMessage::Toggle => {
                 state.expanded = !state.expanded;
@@ -620,26 +495,6 @@ impl Component for Collapsible {
                 frame.render_widget(content_block, content_area);
             }
         }
-    }
-}
-
-impl Focusable for Collapsible {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Collapsible {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

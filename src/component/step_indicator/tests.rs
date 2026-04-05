@@ -1,6 +1,6 @@
 use super::*;
 use crate::component::test_utils::setup_render;
-use crate::component::{Component, Focusable};
+use crate::component::Component;
 use crate::input::{Event, KeyCode};
 
 // ========== Step Tests ==========

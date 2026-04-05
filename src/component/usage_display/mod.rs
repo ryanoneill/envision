@@ -33,7 +33,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Disableable, ViewContext};
+use super::{Component, ViewContext};
 use crate::theme::Theme;
 
 /// Layout style for usage metrics display.
@@ -734,16 +734,6 @@ impl Component for UsageDisplay {
             UsageLayout::Vertical => Self::view_vertical(state, frame, area, theme),
             UsageLayout::Grid(cols) => Self::view_grid(state, frame, area, theme, cols),
         }
-    }
-}
-
-impl Disableable for UsageDisplay {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

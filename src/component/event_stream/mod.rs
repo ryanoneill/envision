@@ -38,7 +38,7 @@ use std::marker::PhantomData;
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, InputFieldMessage, ViewContext};
+use super::{Component, InputFieldMessage, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
@@ -214,10 +214,6 @@ impl Component for EventStream {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             EventStreamMessage::PushEvent(event) => {
                 let id = if event.id == 0 {
@@ -314,12 +310,10 @@ impl Component for EventStream {
             }
             EventStreamMessage::FocusSearch => {
                 state.focus = Focus::Search;
-                state.search.set_focused(true);
                 None
             }
             EventStreamMessage::FocusList => {
                 state.focus = Focus::List;
-                state.search.set_focused(false);
                 None
             }
             EventStreamMessage::SearchInput(c) => {
@@ -361,7 +355,6 @@ impl Component for EventStream {
                 state.filter_text.clear();
                 state.scroll.set_offset(0);
                 state.focus = Focus::List;
-                state.search.set_focused(false);
                 Some(EventStreamOutput::FilterChanged)
             }
             EventStreamMessage::QuickLevelFilter(n) => {
@@ -387,26 +380,6 @@ impl Component for EventStream {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render_event_stream(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl Focusable for EventStream {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for EventStream {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

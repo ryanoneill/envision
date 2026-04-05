@@ -11,7 +11,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Button, ButtonMessage, ButtonOutput, ButtonState, Component, Focusable};
+//! use envision::component::{Button, ButtonMessage, ButtonOutput, ButtonState, Component};
 //!
 //! // Create a button
 //! let mut state = ButtonState::new("Submit");
@@ -32,7 +32,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -59,10 +59,6 @@ pub enum ButtonOutput {
 pub struct ButtonState {
     /// The button label.
     label: String,
-    /// Whether the button is focused.
-    focused: bool,
-    /// Whether the button is disabled.
-    disabled: bool,
 }
 
 impl ButtonState {
@@ -79,8 +75,6 @@ impl ButtonState {
     pub fn new(label: impl Into<String>) -> Self {
         Self {
             label: label.into(),
-            focused: false,
-            disabled: false,
         }
     }
 
@@ -113,37 +107,6 @@ impl ButtonState {
         self.label = label.into();
     }
 
-    /// Returns true if the button is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ButtonState;
-    ///
-    /// let state = ButtonState::new("OK");
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// Disabled buttons do not respond to press events.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ButtonState;
-    ///
-    /// let mut state = ButtonState::new("OK");
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Sets the button label using builder pattern.
     ///
     /// # Example
@@ -157,90 +120,6 @@ impl ButtonState {
     pub fn with_label(mut self, label: impl Into<String>) -> Self {
         self.label = label.into();
         self
-    }
-
-    /// Sets the disabled state using builder pattern.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ButtonState;
-    ///
-    /// let state = ButtonState::new("OK").with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Returns true if the button is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ButtonState;
-    ///
-    /// let state = ButtonState::new("OK");
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ButtonState;
-    ///
-    /// let mut state = ButtonState::new("OK");
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Maps an input event to a button message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{ButtonMessage, ButtonState};
-    /// use envision::input::Event;
-    ///
-    /// let mut state = ButtonState::new("OK");
-    /// state.set_focused(true);
-    /// let event = Event::key(envision::input::KeyCode::Enter);
-    /// assert_eq!(state.handle_event(&event), Some(ButtonMessage::Press));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<ButtonMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Button::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{ButtonOutput, ButtonState};
-    /// use envision::input::Event;
-    ///
-    /// let mut state = ButtonState::new("OK");
-    /// state.set_focused(true);
-    /// let event = Event::key(envision::input::KeyCode::Enter);
-    /// assert_eq!(state.dispatch_event(&event), Some(ButtonOutput::Pressed));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<ButtonOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Button::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the button state with a message, returning any output.
@@ -301,13 +180,7 @@ impl Component for Button {
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
         match msg {
-            ButtonMessage::Press => {
-                if state.disabled {
-                    None
-                } else {
-                    Some(ButtonOutput::Pressed)
-                }
-            }
+            ButtonMessage::Press => Some(ButtonOutput::Pressed),
         }
     }
 
@@ -359,26 +232,6 @@ impl Component for Button {
             .focused(ctx.focused)
             .disabled(ctx.disabled);
         frame.render_widget(annotated, area);
-    }
-}
-
-impl Focusable for Button {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Button {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

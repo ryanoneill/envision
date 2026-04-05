@@ -12,7 +12,7 @@
 //! ```rust
 //! use envision::component::{
 //!     CommandPalette, CommandPaletteMessage, CommandPaletteOutput,
-//!     CommandPaletteState, Component, Focusable, PaletteItem,
+//!     CommandPaletteState, Component, PaletteItem,
 //! };
 //!
 //! let items = vec![
@@ -41,7 +41,7 @@ pub use item::{fuzzy_score, PaletteItem};
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, Toggleable, ViewContext};
+use super::{Component, Toggleable, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -126,10 +126,6 @@ pub struct CommandPaletteState {
     placeholder: String,
     /// Optional title.
     title: Option<String>,
-    /// Whether the component has focus.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// Scroll state for scrollbar rendering.
     #[cfg_attr(feature = "serialization", serde(skip))]
     scroll: ScrollState,
@@ -145,8 +141,6 @@ impl PartialEq for CommandPaletteState {
             && self.max_visible == other.max_visible
             && self.placeholder == other.placeholder
             && self.title == other.title
-            && self.focused == other.focused
-            && self.disabled == other.disabled
     }
 }
 
@@ -161,8 +155,6 @@ impl Default for CommandPaletteState {
             max_visible: 10,
             placeholder: "Type to search...".to_string(),
             title: Some("Command Palette".to_string()),
-            focused: false,
-            disabled: false,
             scroll: ScrollState::default(),
         }
     }
@@ -257,21 +249,6 @@ impl CommandPaletteState {
     /// ```
     pub fn with_visible(mut self, visible: bool) -> Self {
         self.visible = visible;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{CommandPaletteState, PaletteItem};
-    ///
-    /// let state = CommandPaletteState::new(vec![]).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -378,7 +355,6 @@ impl CommandPaletteState {
     /// ```
     pub fn show(&mut self) {
         self.visible = true;
-        self.focused = true;
     }
 
     /// Dismisses the palette: hides it and clears the query.
@@ -553,85 +529,6 @@ impl CommandPaletteState {
         self.visible = visible;
     }
 
-    /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{CommandPaletteState, PaletteItem};
-    ///
-    /// let state = CommandPaletteState::new(vec![]);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{CommandPaletteState, PaletteItem};
-    ///
-    /// let mut state = CommandPaletteState::new(vec![]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{CommandPaletteState, PaletteItem};
-    ///
-    /// let state = CommandPaletteState::new(vec![]);
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{CommandPaletteState, PaletteItem};
-    ///
-    /// let mut state = CommandPaletteState::new(vec![]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a command palette message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{CommandPaletteState, CommandPaletteMessage, PaletteItem};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = CommandPaletteState::new(vec![PaletteItem::new("a", "Alpha")]);
-    /// state.set_focused(true);
-    /// state.set_visible(true);
-    /// let msg = state.handle_event(&Event::char('x'));
-    /// assert_eq!(msg, Some(CommandPaletteMessage::TypeChar('x')));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<CommandPaletteMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        CommandPalette::handle_event(self, event, &ctx)
-    }
-
     /// Updates the state with a message, returning any output.
     ///
     /// # Example
@@ -647,27 +544,6 @@ impl CommandPaletteState {
     /// ```
     pub fn update(&mut self, msg: CommandPaletteMessage) -> Option<CommandPaletteOutput> {
         CommandPalette::update(self, msg)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{CommandPaletteState, CommandPaletteOutput, PaletteItem};
-    /// use envision::input::Event;
-    ///
-    /// let mut state = CommandPaletteState::new(vec![PaletteItem::new("a", "Alpha")]);
-    /// state.set_focused(true);
-    /// state.set_visible(true);
-    /// let output = state.dispatch_event(&Event::char('a'));
-    /// assert!(matches!(output, Some(CommandPaletteOutput::QueryChanged(_))));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<CommandPaletteOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        CommandPalette::dispatch_event(self, event, &ctx)
     }
 
     /// Recomputes filtered indices based on the current query.
@@ -717,7 +593,7 @@ impl CommandPaletteState {
 /// ```rust
 /// use envision::component::{
 ///     CommandPalette, CommandPaletteMessage, CommandPaletteOutput,
-///     CommandPaletteState, Component, Focusable, PaletteItem,
+///     CommandPaletteState, Component, PaletteItem,
 /// };
 ///
 /// let items = vec![
@@ -786,10 +662,6 @@ impl Component for CommandPalette {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             CommandPaletteMessage::SetQuery(text) => {
                 state.query = text.clone();
@@ -865,7 +737,6 @@ impl Component for CommandPalette {
             }
             CommandPaletteMessage::Show => {
                 state.visible = true;
-                state.focused = true;
                 None
             }
             CommandPaletteMessage::SetItems(items) => {
@@ -878,26 +749,6 @@ impl Component for CommandPalette {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render_command_palette(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl Focusable for CommandPalette {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for CommandPalette {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

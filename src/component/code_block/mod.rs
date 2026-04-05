@@ -17,7 +17,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, CodeBlock, CodeBlockState,
+//!     Component, CodeBlock, CodeBlockState,
 //!     CodeBlockMessage,
 //! };
 //! use envision::component::code_block::highlight::Language;
@@ -42,7 +42,7 @@ use std::collections::HashSet;
 use ratatui::prelude::*;
 
 pub use self::highlight::Language;
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -108,10 +108,6 @@ pub struct CodeBlockState {
     pub(crate) highlight_lines: HashSet<usize>,
     /// Optional title for the border.
     pub(crate) title: Option<String>,
-    /// Whether the component is focused.
-    pub(crate) focused: bool,
-    /// Whether the component is disabled.
-    pub(crate) disabled: bool,
 }
 
 impl PartialEq for CodeBlockState {
@@ -123,8 +119,6 @@ impl PartialEq for CodeBlockState {
             && self.show_line_numbers == other.show_line_numbers
             && self.highlight_lines == other.highlight_lines
             && self.title == other.title
-            && self.focused == other.focused
-            && self.disabled == other.disabled
     }
 }
 
@@ -228,21 +222,6 @@ impl CodeBlockState {
     /// ```
     pub fn with_highlight_lines(mut self, lines: Vec<usize>) -> Self {
         self.highlight_lines = lines.into_iter().collect();
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CodeBlockState;
-    ///
-    /// let state = CodeBlockState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -373,43 +352,7 @@ impl CodeBlockState {
 
     // ---- State accessors ----
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods ----
-
-    /// Maps an input event to a code block message.
-    pub fn handle_event(&self, event: &Event) -> Option<CodeBlockMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        CodeBlock::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        CodeBlock::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     ///
@@ -543,26 +486,6 @@ impl Component for CodeBlock {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl Focusable for CodeBlock {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for CodeBlock {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

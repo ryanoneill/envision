@@ -24,7 +24,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -344,10 +344,6 @@ pub struct BoxPlotState {
     orientation: BoxPlotOrientation,
     /// Index of the currently selected dataset.
     selected: usize,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for BoxPlotState {
@@ -358,8 +354,6 @@ impl Default for BoxPlotState {
             show_outliers: true,
             orientation: BoxPlotOrientation::Vertical,
             selected: 0,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -430,21 +424,6 @@ impl BoxPlotState {
     /// ```
     pub fn with_orientation(mut self, orientation: BoxPlotOrientation) -> Self {
         self.orientation = orientation;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::BoxPlotState;
-    ///
-    /// let state = BoxPlotState::default().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -613,43 +592,7 @@ impl BoxPlotState {
 
     // ---- Focus / Disabled ----
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods ----
-
-    /// Maps an input event to a box plot message.
-    pub fn handle_event(&self, event: &Event) -> Option<BoxPlotMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        BoxPlot::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        BoxPlot::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: BoxPlotMessage) -> Option<()> {
@@ -793,26 +736,6 @@ impl Component for BoxPlot {
                 render::render_horizontal(state, frame, inner, theme, ctx.focused, ctx.disabled);
             }
         }
-    }
-}
-
-impl Focusable for BoxPlot {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for BoxPlot {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

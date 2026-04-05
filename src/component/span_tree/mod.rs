@@ -8,7 +8,6 @@
 //! State is stored in [`SpanTreeState`], updated via [`SpanTreeMessage`],
 //! and produces [`SpanTreeOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -36,7 +35,7 @@ use std::collections::HashSet;
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -156,10 +155,6 @@ pub struct SpanTreeState {
     label_width: u16,
     /// Optional title.
     title: Option<String>,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for SpanTreeState {
@@ -173,8 +168,6 @@ impl Default for SpanTreeState {
             global_end: 0.0,
             label_width: 30,
             title: None,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -217,8 +210,6 @@ impl SpanTreeState {
             global_end,
             label_width: 30,
             title: None,
-            focused: false,
-            disabled: false,
         };
         state.scroll.set_content_length(state.flatten().len());
         state
@@ -253,22 +244,6 @@ impl SpanTreeState {
     /// ```
     pub fn with_label_width(mut self, width: u16) -> Self {
         self.label_width = width;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{SpanTreeState, SpanNode};
-    ///
-    /// let state = SpanTreeState::new(vec![SpanNode::new("r", "root", 0.0, 10.0)])
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -412,64 +387,6 @@ impl SpanTreeState {
         self.title = Some(title.into());
     }
 
-    /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SpanTreeState;
-    ///
-    /// let state = SpanTreeState::default();
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{SpanTreeState, SpanNode};
-    ///
-    /// let mut state = SpanTreeState::new(vec![SpanNode::new("r", "root", 0.0, 10.0)]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SpanTreeState;
-    ///
-    /// let state = SpanTreeState::default();
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{SpanTreeState, SpanNode};
-    ///
-    /// let mut state = SpanTreeState::new(vec![SpanNode::new("r", "root", 0.0, 10.0)]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Returns true if the tree is empty.
     ///
     /// # Example
@@ -608,34 +525,6 @@ impl SpanTreeState {
     }
 
     // ---- Instance methods ----
-
-    /// Maps an input event to a span tree message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{SpanTreeState, SpanNode, SpanTreeMessage};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = SpanTreeState::new(vec![SpanNode::new("r", "root", 0.0, 10.0)]);
-    /// state.set_focused(true);
-    /// let msg = state.handle_event(&Event::key(KeyCode::Down));
-    /// assert_eq!(msg, Some(SpanTreeMessage::SelectDown));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<SpanTreeMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        SpanTree::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<SpanTreeOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        SpanTree::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: SpanTreeMessage) -> Option<SpanTreeOutput> {
@@ -907,26 +796,6 @@ impl Component for SpanTree {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render_span_tree(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl Focusable for SpanTree {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for SpanTree {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

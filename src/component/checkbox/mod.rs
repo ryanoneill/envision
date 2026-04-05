@@ -11,7 +11,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState, Component, Focusable};
+//! use envision::component::{Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState, Component};
 //!
 //! // Create an unchecked checkbox
 //! let mut state = CheckboxState::new("Accept terms");
@@ -35,7 +35,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -64,10 +64,6 @@ pub struct CheckboxState {
     label: String,
     /// Whether the checkbox is checked.
     checked: bool,
-    /// Whether the checkbox is focused.
-    focused: bool,
-    /// Whether the checkbox is disabled.
-    disabled: bool,
 }
 
 impl CheckboxState {
@@ -86,8 +82,6 @@ impl CheckboxState {
         Self {
             label: label.into(),
             checked: false,
-            focused: false,
-            disabled: false,
         }
     }
 
@@ -105,8 +99,6 @@ impl CheckboxState {
         Self {
             label: label.into(),
             checked: true,
-            focused: false,
-            disabled: false,
         }
     }
 
@@ -159,18 +151,6 @@ impl CheckboxState {
         self.checked = checked;
     }
 
-    /// Returns true if the checkbox is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// Disabled checkboxes do not respond to toggle events.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Sets the checkbox label using builder pattern.
     ///
     /// # Example
@@ -199,59 +179,6 @@ impl CheckboxState {
     pub fn with_checked(mut self, checked: bool) -> Self {
         self.checked = checked;
         self
-    }
-
-    /// Sets the disabled state using builder pattern.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CheckboxState;
-    ///
-    /// let state = CheckboxState::new("Option").with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Returns true if the checkbox is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Maps an input event to a checkbox message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{CheckboxMessage, CheckboxState};
-    /// use envision::input::Event;
-    ///
-    /// let mut state = CheckboxState::new("Opt in");
-    /// state.set_focused(true);
-    /// let event = Event::key(envision::input::KeyCode::Enter);
-    /// assert_eq!(state.handle_event(&event), Some(CheckboxMessage::Toggle));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<CheckboxMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Checkbox::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<CheckboxOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Checkbox::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the checkbox state with a message, returning any output.
@@ -316,12 +243,8 @@ impl Component for Checkbox {
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
         match msg {
             CheckboxMessage::Toggle => {
-                if state.disabled {
-                    None
-                } else {
-                    state.checked = !state.checked;
-                    Some(CheckboxOutput::Toggled(state.checked))
-                }
+                state.checked = !state.checked;
+                Some(CheckboxOutput::Toggled(state.checked))
             }
         }
     }
@@ -365,26 +288,6 @@ impl Component for Checkbox {
             .focused(ctx.focused)
             .disabled(ctx.disabled);
         frame.render_widget(annotated, area);
-    }
-}
-
-impl Focusable for Checkbox {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Checkbox {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

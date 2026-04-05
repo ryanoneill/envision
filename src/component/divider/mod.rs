@@ -25,7 +25,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::Event;
 use crate::theme::Theme;
 
@@ -87,8 +87,6 @@ pub struct DividerState {
     label: Option<String>,
     /// Optional color override for the divider line.
     color: Option<Color>,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for DividerState {
@@ -97,7 +95,6 @@ impl Default for DividerState {
             orientation: DividerOrientation::Horizontal,
             label: None,
             color: None,
-            disabled: false,
         }
     }
 }
@@ -201,21 +198,6 @@ impl DividerState {
         self
     }
 
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::DividerState;
-    ///
-    /// let state = DividerState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     // ---- Getters ----
 
     /// Returns the label text if set.
@@ -261,20 +243,6 @@ impl DividerState {
     /// ```
     pub fn color(&self) -> Option<Color> {
         self.color
-    }
-
-    /// Returns whether the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::DividerState;
-    ///
-    /// let state = DividerState::new();
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
     }
 
     // ---- Setters ----
@@ -326,21 +294,6 @@ impl DividerState {
     /// ```
     pub fn set_orientation(&mut self, orientation: DividerOrientation) {
         self.orientation = orientation;
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::DividerState;
-    ///
-    /// let mut state = DividerState::new();
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
     }
 
     // ---- Instance methods ----
@@ -532,16 +485,6 @@ fn render_vertical(state: &DividerState, frame: &mut Frame, area: Rect, style: S
     let render_area = Rect::new(area.x, area.y, 1.min(area.width), area.height);
     let paragraph = Paragraph::new(lines);
     frame.render_widget(paragraph, render_area);
-}
-
-impl Disableable for Divider {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
-    }
 }
 
 #[cfg(test)]

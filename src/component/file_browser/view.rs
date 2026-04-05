@@ -8,20 +8,27 @@ use super::{format_size, FileBrowserState};
 use crate::theme::Theme;
 
 /// Renders the file browser component into the given frame area.
-pub(super) fn render(state: &FileBrowserState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render(
+    state: &FileBrowserState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+    disabled: bool,
+) {
     crate::annotation::with_registry(|reg| {
         reg.register(
             area,
             crate::annotation::Annotation::new(crate::annotation::WidgetType::FileBrowser)
                 .with_id("file_browser")
-                .with_focus(state.is_focused())
-                .with_disabled(state.is_disabled()),
+                .with_focus(focused)
+                .with_disabled(disabled),
         );
     });
 
-    let border_style = if state.is_disabled() {
+    let border_style = if disabled {
         theme.disabled_style()
-    } else if state.is_focused() {
+    } else if focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -60,7 +67,7 @@ pub(super) fn render(state: &FileBrowserState, frame: &mut Frame, area: Rect, th
 
     // Render path bar
     let path_text = state.path_segments().join(" / ");
-    let path_style = if *internal_focus == FileBrowserFocus::PathBar && state.is_focused() {
+    let path_style = if *internal_focus == FileBrowserFocus::PathBar && focused {
         theme.focused_style()
     } else {
         theme.info_style()
@@ -70,7 +77,7 @@ pub(super) fn render(state: &FileBrowserState, frame: &mut Frame, area: Rect, th
     // Render filter
     if has_filter {
         let filter_display = format!("Filter: {}", state.filter_text());
-        let filter_style = if *internal_focus == FileBrowserFocus::Filter && state.is_focused() {
+        let filter_style = if *internal_focus == FileBrowserFocus::Filter && focused {
             theme.focused_style()
         } else {
             theme.normal_style()
@@ -105,13 +112,13 @@ pub(super) fn render(state: &FileBrowserState, frame: &mut Frame, area: Rect, th
         })
         .collect();
 
-    let list_style = if *internal_focus == FileBrowserFocus::FileList && state.is_focused() {
+    let list_style = if *internal_focus == FileBrowserFocus::FileList && focused {
         theme.focused_style()
     } else {
         theme.normal_style()
     };
 
-    let highlight_style = theme.selected_style(state.is_focused());
+    let highlight_style = theme.selected_style(focused);
     let list = List::new(items)
         .style(list_style)
         .highlight_style(highlight_style);

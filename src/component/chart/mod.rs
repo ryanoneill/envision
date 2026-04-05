@@ -25,7 +25,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Disableable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -179,10 +179,6 @@ pub struct ChartState {
     pub(crate) bar_width: u16,
     /// Bar gap for bar charts.
     pub(crate) bar_gap: u16,
-    /// Whether the component is focused.
-    pub(crate) focused: bool,
-    /// Whether the component is disabled.
-    pub(crate) disabled: bool,
     /// Horizontal threshold/reference lines.
     pub(crate) thresholds: Vec<ThresholdLine>,
     /// Manual Y-axis minimum (None = auto from data).
@@ -204,8 +200,6 @@ impl Default for ChartState {
             max_display_points: 50,
             bar_width: 3,
             bar_gap: 1,
-            focused: false,
-            disabled: false,
             thresholds: Vec::new(),
             y_min: None,
             y_max: None,
@@ -366,12 +360,6 @@ impl ChartState {
     /// Sets the bar gap (builder pattern).
     pub fn with_bar_gap(mut self, gap: u16) -> Self {
         self.bar_gap = gap;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -714,42 +702,6 @@ impl ChartState {
 
     // ---- Instance methods ----
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a chart message.
-    pub fn handle_event(&self, event: &Event) -> Option<ChartMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Chart::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<ChartOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Chart::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: ChartMessage) -> Option<ChartOutput> {
         Chart::update(self, msg)
@@ -811,7 +763,7 @@ impl Component for Chart {
                 None
             }
             ChartMessage::NextSeries | ChartMessage::PrevSeries => {
-                if state.disabled || state.series.is_empty() {
+                if state.series.is_empty() {
                     return None;
                 }
 
@@ -948,16 +900,6 @@ impl Component for Chart {
                 ctx.disabled,
             ),
         }
-    }
-}
-
-impl Disableable for Chart {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

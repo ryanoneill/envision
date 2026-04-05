@@ -6,7 +6,6 @@
 //! produces [`StyledTextOutput`]. Content is built with [`StyledContent`],
 //! [`StyledBlock`], and [`StyledInline`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
 //!
 //! See also [`ScrollableText`](super::ScrollableText) for plain text display.
 //!
@@ -40,7 +39,7 @@ pub use content::{StyledBlock, StyledContent, StyledInline};
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
-use super::{Component, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
@@ -104,8 +103,6 @@ pub struct StyledTextState {
     #[cfg_attr(feature = "serialization", serde(skip))]
     content: StyledContent,
     scroll_offset: usize,
-    focused: bool,
-    disabled: bool,
     title: Option<String>,
     show_border: bool,
 }
@@ -127,8 +124,6 @@ impl Default for StyledTextState {
         Self {
             content: StyledContent::default(),
             scroll_offset: 0,
-            focused: false,
-            disabled: false,
             title: None,
             show_border: true,
         }
@@ -181,21 +176,6 @@ impl StyledTextState {
     /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StyledTextState;
-    ///
-    /// let state = StyledTextState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -331,106 +311,7 @@ impl StyledTextState {
 
     // ---- State accessors ----
 
-    /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StyledTextState;
-    ///
-    /// let state = StyledTextState::new();
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StyledTextState;
-    ///
-    /// let mut state = StyledTextState::new();
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StyledTextState;
-    ///
-    /// let state = StyledTextState::new();
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StyledTextState;
-    ///
-    /// let mut state = StyledTextState::new();
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods ----
-
-    /// Maps an input event to a styled text message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{StyledTextState, StyledTextMessage};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = StyledTextState::new();
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Down);
-    /// assert_eq!(state.handle_event(&event), Some(StyledTextMessage::ScrollDown));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<StyledTextMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        StyledText::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{StyledTextState, StyledTextOutput};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = StyledTextState::new();
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Down);
-    /// let output = state.dispatch_event(&event);
-    /// assert_eq!(output, Some(StyledTextOutput::ScrollChanged(1)));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<StyledTextOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        StyledText::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     ///
@@ -618,16 +499,6 @@ impl Component for StyledText {
             .scroll((effective_scroll as u16, 0));
 
         frame.render_widget(paragraph, render_area);
-    }
-}
-
-impl Focusable for StyledText {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
     }
 }
 

@@ -31,7 +31,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -275,10 +275,6 @@ pub struct MultiProgressState {
     selected: Option<usize>,
     /// Whether to auto-remove completed items.
     auto_remove_completed: bool,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// Optional title.
     title: Option<String>,
     /// Whether to show percentages.
@@ -293,8 +289,6 @@ impl Default for MultiProgressState {
             scroll_offset: 0,
             selected: None,
             auto_remove_completed: false,
-            focused: false,
-            disabled: false,
             title: None,
             show_percentages: true,
         }
@@ -761,57 +755,6 @@ impl MultiProgressState {
         self.auto_remove_completed = auto_remove;
     }
 
-    /// Returns true if the multi-progress is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the multi-progress is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state using builder pattern.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::MultiProgressState;
-    ///
-    /// let state = MultiProgressState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Maps an input event to a multi-progress message.
-    pub fn handle_event(&self, event: &Event) -> Option<MultiProgressMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        MultiProgress::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<MultiProgressOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        MultiProgress::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the multi-progress state with a message, returning any output.
     pub fn update(&mut self, msg: MultiProgressMessage) -> Option<MultiProgressOutput> {
         MultiProgress::update(self, msg)
@@ -1072,26 +1015,6 @@ impl Component for MultiProgress {
 
         let list = List::new(items);
         frame.render_widget(list, inner);
-    }
-}
-
-impl Focusable for MultiProgress {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for MultiProgress {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

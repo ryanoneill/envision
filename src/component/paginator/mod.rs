@@ -5,7 +5,6 @@
 //! and a compact arrows format. State is stored in [`PaginatorState`], updated via
 //! [`PaginatorMessage`], and produces [`PaginatorOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`StepIndicator`](super::StepIndicator) for wizard-style step display.
 //!
@@ -20,7 +19,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, Paginator, PaginatorState,
+//!     Component, Paginator, PaginatorState,
 //!     PaginatorMessage, PaginatorOutput, PaginatorStyle,
 //! };
 //!
@@ -40,7 +39,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -132,10 +131,6 @@ pub struct PaginatorState {
     total_items: usize,
     /// Display style.
     style: PaginatorStyle,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for PaginatorState {
@@ -146,8 +141,6 @@ impl Default for PaginatorState {
             page_size: 10,
             total_items: 10,
             style: PaginatorStyle::default(),
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -259,22 +252,6 @@ impl PaginatorState {
     /// ```
     pub fn with_current_page(mut self, page: usize) -> Self {
         self.current_page = page.min(self.total_pages.saturating_sub(1));
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::PaginatorState;
-    ///
-    /// let state = PaginatorState::new(5)
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -453,43 +430,7 @@ impl PaginatorState {
         self.current_page = self.current_page.min(self.total_pages.saturating_sub(1));
     }
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods ----
-
-    /// Maps an input event to a paginator message.
-    pub fn handle_event(&self, event: &Event) -> Option<PaginatorMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Paginator::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<PaginatorOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Paginator::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     ///
@@ -827,26 +768,6 @@ fn calculate_total_pages(total_items: usize, page_size: usize) -> usize {
     }
     let page_size = page_size.max(1);
     total_items.div_ceil(page_size)
-}
-
-impl Focusable for Paginator {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Paginator {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
-    }
 }
 
 #[cfg(test)]

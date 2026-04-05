@@ -6,7 +6,6 @@
 //! stored in [`SplitPanelState`], updated via [`SplitPanelMessage`], and
 //! produces [`SplitPanelOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`PaneLayout`](super::PaneLayout) for N-pane layouts.
 //!
@@ -14,7 +13,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, SplitPanel, SplitPanelState,
+//!     Component, SplitPanel, SplitPanelState,
 //!     SplitPanelMessage, SplitOrientation,
 //! };
 //!
@@ -36,7 +35,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
@@ -110,10 +109,6 @@ pub struct SplitPanelState {
     ratio: f32,
     /// Which pane currently has focus.
     focused_pane: Pane,
-    /// Whether the overall component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// How much the ratio changes per resize step.
     resize_step: f32,
     /// Minimum ratio (prevents collapsing first pane).
@@ -127,8 +122,6 @@ impl PartialEq for SplitPanelState {
         self.orientation == other.orientation
             && (self.ratio - other.ratio).abs() < f32::EPSILON
             && self.focused_pane == other.focused_pane
-            && self.focused == other.focused
-            && self.disabled == other.disabled
             && (self.resize_step - other.resize_step).abs() < f32::EPSILON
             && (self.min_ratio - other.min_ratio).abs() < f32::EPSILON
             && (self.max_ratio - other.max_ratio).abs() < f32::EPSILON
@@ -141,8 +134,6 @@ impl Default for SplitPanelState {
             orientation: SplitOrientation::Vertical,
             ratio: 0.5,
             focused_pane: Pane::First,
-            focused: false,
-            disabled: false,
             resize_step: 0.1,
             min_ratio: 0.1,
             max_ratio: 0.9,
@@ -287,57 +278,6 @@ impl SplitPanelState {
         self
     }
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{SplitPanelState, SplitOrientation};
-    ///
-    /// let state = SplitPanelState::new(SplitOrientation::Vertical).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Maps an input event to a split panel message.
-    pub fn handle_event(&self, event: &Event) -> Option<SplitPanelMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        SplitPanel::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<SplitPanelOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        SplitPanel::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: SplitPanelMessage) -> Option<SplitPanelOutput> {
         SplitPanel::update(self, msg)
@@ -404,7 +344,7 @@ impl SplitPanelState {
 ///
 /// ```rust
 /// use envision::component::{
-///     Component, Focusable, SplitPanel, SplitPanelState,
+///     Component, SplitPanel, SplitPanelState,
 ///     SplitPanelMessage, SplitOrientation,
 /// };
 ///
@@ -578,26 +518,6 @@ impl Component for SplitPanel {
         crate::annotation::with_registry(|reg| {
             reg.close();
         });
-    }
-}
-
-impl Focusable for SplitPanel {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for SplitPanel {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

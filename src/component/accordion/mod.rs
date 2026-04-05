@@ -11,7 +11,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Component, Focusable};
+//! use envision::component::{Accordion, AccordionMessage, AccordionOutput, AccordionPanel, AccordionState, Component};
 //!
 //! // Create panels
 //! let panels = vec![
@@ -37,7 +37,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -171,10 +171,6 @@ pub struct AccordionState {
     panels: Vec<AccordionPanel>,
     /// Currently focused panel index.
     focused_index: usize,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl AccordionState {
@@ -197,8 +193,6 @@ impl AccordionState {
         Self {
             panels,
             focused_index: 0,
-            focused: false,
-            disabled: false,
         }
     }
 
@@ -316,11 +310,6 @@ impl AccordionState {
         self.focused_panel()
     }
 
-    /// Returns whether the accordion is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
     /// Sets new panels, resetting the focused index if needed.
     pub fn set_panels(&mut self, panels: Vec<AccordionPanel>) {
         self.panels = panels;
@@ -351,11 +340,6 @@ impl AccordionState {
         }
     }
 
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Sets the focused panel index (builder method).
     ///
     /// If the index is out of bounds, it will be clamped to the valid range.
@@ -374,22 +358,6 @@ impl AccordionState {
         if !self.panels.is_empty() {
             self.focused_index = index.min(self.panels.len() - 1);
         }
-        self
-    }
-
-    /// Sets the disabled state (builder method).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::AccordionState;
-    ///
-    /// let state = AccordionState::from_pairs(vec![("A", "1")])
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -445,51 +413,6 @@ impl AccordionState {
     /// ```
     pub fn is_all_expanded(&self) -> bool {
         !self.panels.is_empty() && self.panels.iter().all(|p| p.expanded)
-    }
-
-    /// Returns true if the accordion is focused.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = AccordionState::from_pairs(vec![("A", "1")]);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = AccordionState::from_pairs(vec![("A", "1")]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Maps an input event to an accordion message.
-    pub fn handle_event(&self, event: &Event) -> Option<AccordionMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Accordion::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<AccordionOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Accordion::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the accordion state with a message, returning any output.
@@ -559,10 +482,6 @@ impl Component for Accordion {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             AccordionMessage::Down => {
                 if !state.panels.is_empty() {
@@ -774,26 +693,6 @@ impl Component for Accordion {
                 }
             }
         }
-    }
-}
-
-impl Focusable for Accordion {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Accordion {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

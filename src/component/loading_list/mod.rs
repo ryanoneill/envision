@@ -6,7 +6,6 @@
 //! updated via [`LoadingListMessage`], and produces [`LoadingListOutput`].
 //! Items are wrapped in [`LoadingItem<T>`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`SelectableList`](super::SelectableList) for a simpler list.
 //!
@@ -38,7 +37,7 @@
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -303,10 +302,6 @@ pub struct LoadingListState<T: Clone> {
     items: Vec<LoadingListItem<T>>,
     /// Currently selected index.
     selected: Option<usize>,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// Current spinner animation frame.
     spinner_frame: usize,
     /// Optional title.
@@ -322,8 +317,6 @@ impl<T: Clone + PartialEq> PartialEq for LoadingListState<T> {
     fn eq(&self, other: &Self) -> bool {
         self.items == other.items
             && self.selected == other.selected
-            && self.focused == other.focused
-            && self.disabled == other.disabled
             && self.spinner_frame == other.spinner_frame
             && self.title == other.title
             && self.show_indicators == other.show_indicators
@@ -335,8 +328,6 @@ impl<T: Clone> Default for LoadingListState<T> {
         Self {
             items: Vec::new(),
             selected: None,
-            focused: false,
-            disabled: false,
             spinner_frame: 0,
             title: None,
             show_indicators: true,
@@ -396,8 +387,6 @@ impl<T: Clone> LoadingListState<T> {
         Self {
             items: list_items,
             selected: None,
-            focused: false,
-            disabled: false,
             spinner_frame: 0,
             title: None,
             show_indicators: true,
@@ -464,21 +453,6 @@ impl<T: Clone> LoadingListState<T> {
     /// ```
     pub fn with_indicators(mut self, show: bool) -> Self {
         self.show_indicators = show;
-        self
-    }
-
-    /// Sets the disabled state using builder pattern.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LoadingListState;
-    ///
-    /// let state = LoadingListState::<String>::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -792,44 +766,6 @@ impl<T: Clone> LoadingListState<T> {
 }
 
 impl<T: Clone + 'static> LoadingListState<T> {
-    /// Returns true if the loading list is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the loading list is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// Disabled loading lists do not respond to input events.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a loading list message.
-    pub fn handle_event(&self, event: &Event) -> Option<LoadingListMessage<T>> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        LoadingList::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<LoadingListOutput<T>> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        LoadingList::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the loading list state with a message, returning any output.
     pub fn update(&mut self, msg: LoadingListMessage<T>) -> Option<LoadingListOutput<T>> {
         LoadingList::update(self, msg)
@@ -1028,26 +964,6 @@ impl<T: Clone> Component for LoadingList<T> {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render_loading_list(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl<T: Clone> Focusable for LoadingList<T> {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl<T: Clone> Disableable for LoadingList<T> {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

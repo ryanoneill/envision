@@ -13,7 +13,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     FileBrowser, FileBrowserState, FileBrowserMessage, Component, Focusable,
+//!     FileBrowser, FileBrowserState, FileBrowserMessage, Component,
 //!     file_browser::{FileEntry, SelectionMode},
 //! };
 //!
@@ -38,7 +38,7 @@ use std::sync::Arc;
 use ratatui::prelude::*;
 use ratatui::widgets::ListState;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 use types::FileBrowserFocus;
@@ -135,8 +135,6 @@ pub struct FileBrowserState {
     selected_paths: Vec<String>,
     filter_text: String,
     internal_focus: FileBrowserFocus,
-    focused: bool,
-    disabled: bool,
     selection_mode: SelectionMode,
     sort_field: FileSortField,
     sort_direction: FileSortDirection,
@@ -158,8 +156,6 @@ impl Default for FileBrowserState {
             selected_paths: Vec::new(),
             filter_text: String::new(),
             internal_focus: FileBrowserFocus::FileList,
-            focused: false,
-            disabled: false,
             selection_mode: SelectionMode::Single,
             sort_field: FileSortField::Name,
             sort_direction: FileSortDirection::Ascending,
@@ -182,8 +178,6 @@ impl std::fmt::Debug for FileBrowserState {
             .field("selected_paths", &self.selected_paths)
             .field("filter_text", &self.filter_text)
             .field("internal_focus", &self.internal_focus)
-            .field("focused", &self.focused)
-            .field("disabled", &self.disabled)
             .field("selection_mode", &self.selection_mode)
             .field("sort_field", &self.sort_field)
             .field("sort_direction", &self.sort_direction)
@@ -208,8 +202,6 @@ impl PartialEq for FileBrowserState {
             && self.selected_paths == other.selected_paths
             && self.filter_text == other.filter_text
             && self.internal_focus == other.internal_focus
-            && self.focused == other.focused
-            && self.disabled == other.disabled
             && self.selection_mode == other.selection_mode
             && self.sort_field == other.sort_field
             && self.sort_direction == other.sort_direction
@@ -336,12 +328,6 @@ impl FileBrowserState {
     pub fn with_show_hidden(mut self, show: bool) -> Self {
         self.show_hidden = show;
         self.sort_and_filter();
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -525,43 +511,7 @@ impl FileBrowserState {
         &self.internal_focus
     }
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods ----
-
-    /// Maps an input event to a file browser message.
-    pub fn handle_event(&self, event: &Event) -> Option<FileBrowserMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        FileBrowser::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<FileBrowserOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        FileBrowser::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: FileBrowserMessage) -> Option<FileBrowserOutput> {
@@ -977,28 +927,8 @@ impl Component for FileBrowser {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
-        view::render(state, frame, area, theme);
-    }
-}
-
-impl Focusable for FileBrowser {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for FileBrowser {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+        view::render(state, frame, area, theme, ctx.focused, ctx.disabled);
     }
 }
 

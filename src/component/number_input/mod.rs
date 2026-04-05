@@ -7,7 +7,6 @@
 //! State is stored in [`NumberInputState`], updated via [`NumberInputMessage`],
 //! and produces [`NumberInputOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`Slider`](super::Slider) for range selection with a visual track,
 //! and [`InputField`](super::InputField) for general text input.
@@ -34,7 +33,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -97,10 +96,6 @@ pub struct NumberInputState {
     editing: bool,
     /// Text buffer used during edit mode.
     edit_buffer: String,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for NumberInputState {
@@ -115,8 +110,6 @@ impl Default for NumberInputState {
             placeholder: None,
             editing: false,
             edit_buffer: String::new(),
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -268,21 +261,6 @@ impl NumberInputState {
         self
     }
 
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::NumberInputState;
-    ///
-    /// let state = NumberInputState::new(0.0).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Returns the current numeric value.
     ///
     /// # Example
@@ -387,54 +365,6 @@ impl NumberInputState {
         format!("{:.prec$}", self.value, prec = self.precision)
     }
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a number input message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{NumberInputMessage, NumberInputState};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = NumberInputState::new(0.0);
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Up);
-    /// assert_eq!(state.handle_event(&event), Some(NumberInputMessage::Increment));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<NumberInputMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        NumberInput::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<NumberInputOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        NumberInput::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the number input state with a message, returning any output.
     ///
     /// # Example
@@ -509,7 +439,7 @@ impl NumberInputState {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{NumberInput, NumberInputMessage, NumberInputOutput, NumberInputState, Component, Focusable};
+/// use envision::component::{NumberInput, NumberInputMessage, NumberInputOutput, NumberInputState, Component};
 ///
 /// let mut state = NumberInputState::new(50.0)
 ///     .with_range(0.0, 100.0)
@@ -720,26 +650,6 @@ fn is_valid_numeric_char(c: char, buffer: &str) -> bool {
         '.' => !buffer.contains('.'),
         '-' => buffer.is_empty(),
         _ => false,
-    }
-}
-
-impl Focusable for NumberInput {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for NumberInput {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

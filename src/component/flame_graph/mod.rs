@@ -34,7 +34,7 @@
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -162,10 +162,6 @@ pub struct FlameGraphState {
     search_query: String,
     /// Optional title.
     title: Option<String>,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl FlameGraphState {
@@ -215,22 +211,6 @@ impl FlameGraphState {
     /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{FlameGraphState, FlameNode};
-    ///
-    /// let state = FlameGraphState::with_root(FlameNode::new("main()", 500))
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -455,64 +435,6 @@ impl FlameGraphState {
         self.title = Some(title.into());
     }
 
-    /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::FlameGraphState;
-    ///
-    /// let state = FlameGraphState::new();
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::FlameGraphState;
-    ///
-    /// let mut state = FlameGraphState::new();
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::FlameGraphState;
-    ///
-    /// let state = FlameGraphState::new();
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::FlameGraphState;
-    ///
-    /// let mut state = FlameGraphState::new();
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Zoom ----
 
     /// Zooms into the currently selected frame, making it the new view root.
@@ -692,34 +614,6 @@ impl FlameGraphState {
 
     // ---- Instance methods ----
 
-    /// Maps an input event to a flame graph message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{FlameGraphState, FlameNode, FlameGraphMessage};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    /// state.set_focused(true);
-    /// let msg = state.handle_event(&Event::key(KeyCode::Down));
-    /// assert_eq!(msg, Some(FlameGraphMessage::SelectDown));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<FlameGraphMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        FlameGraph::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<FlameGraphOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        FlameGraph::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: FlameGraphMessage) -> Option<FlameGraphOutput> {
         FlameGraph::update(self, msg)
@@ -890,9 +784,6 @@ impl Component for FlameGraph {
                 None
             }
             _ => {
-                if state.disabled {
-                    return None;
-                }
                 state.root.as_ref()?;
                 match msg {
                     FlameGraphMessage::SelectUp => {
@@ -980,26 +871,6 @@ impl Component for FlameGraph {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render_flame_graph(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl Focusable for FlameGraph {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for FlameGraph {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

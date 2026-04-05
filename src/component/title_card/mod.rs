@@ -24,7 +24,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Disableable, ViewContext};
+use super::{Component, ViewContext};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a TitleCard.
@@ -521,16 +521,6 @@ impl Component for TitleCard {
                 frame.render_widget(subtitle_paragraph, subtitle_area);
             }
         }
-    }
-}
-
-impl Disableable for TitleCard {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

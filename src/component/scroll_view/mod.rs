@@ -14,12 +14,11 @@
 //! State is stored in [`ScrollViewState`], updated via [`ScrollViewMessage`],
 //! and produces no output (Output = `()`).
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{ScrollView, ScrollViewMessage, ScrollViewState, Component, Focusable};
+//! use envision::component::{ScrollView, ScrollViewMessage, ScrollViewState, Component};
 //!
 //! let mut state = ScrollViewState::new()
 //!     .with_content_height(100)
@@ -34,7 +33,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -92,10 +91,6 @@ pub struct ScrollViewState {
     title: Option<String>,
     /// Whether to show the scrollbar when content overflows.
     show_scrollbar: bool,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for ScrollViewState {
@@ -105,8 +100,6 @@ impl Default for ScrollViewState {
             scroll: ScrollState::default(),
             title: None,
             show_scrollbar: true,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -177,21 +170,6 @@ impl ScrollViewState {
     /// ```
     pub fn with_show_scrollbar(mut self, show: bool) -> Self {
         self.show_scrollbar = show;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ScrollViewState;
-    ///
-    /// let state = ScrollViewState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -339,64 +317,6 @@ impl ScrollViewState {
 
     // ---- State accessors ----
 
-    /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ScrollViewState;
-    ///
-    /// let state = ScrollViewState::new();
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ScrollViewState;
-    ///
-    /// let mut state = ScrollViewState::new();
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ScrollViewState;
-    ///
-    /// let state = ScrollViewState::new();
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ScrollViewState;
-    ///
-    /// let mut state = ScrollViewState::new();
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Content area ----
 
     /// Returns the visible content `Rect` accounting for the scroll offset.
@@ -456,48 +376,6 @@ impl ScrollViewState {
 
     // ---- Instance methods ----
 
-    /// Maps an input event to a scroll view message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{ScrollView, ScrollViewMessage, ScrollViewState, Component, Focusable};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = ScrollViewState::new();
-    /// ScrollView::focus(&mut state);
-    ///
-    /// let msg = state.handle_event(&Event::key(KeyCode::Up));
-    /// assert_eq!(msg, Some(ScrollViewMessage::ScrollUp));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<ScrollViewMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        ScrollView::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{ScrollView, ScrollViewState, Focusable};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = ScrollViewState::new().with_content_height(100);
-    /// ScrollView::focus(&mut state);
-    ///
-    /// let output = state.dispatch_event(&Event::key(KeyCode::Down));
-    /// assert_eq!(state.scroll_offset(), 1);
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        ScrollView::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the state with a message, returning any output.
     ///
     /// # Example
@@ -545,7 +423,7 @@ impl ScrollViewState {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{ScrollView, ScrollViewMessage, ScrollViewState, Component, Focusable};
+/// use envision::component::{ScrollView, ScrollViewMessage, ScrollViewState, Component};
 ///
 /// let mut state = ScrollViewState::new()
 ///     .with_content_height(200)
@@ -711,26 +589,6 @@ impl Component for ScrollView {
             );
             crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
         }
-    }
-}
-
-impl Focusable for ScrollView {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for ScrollView {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

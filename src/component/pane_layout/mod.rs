@@ -7,7 +7,6 @@
 //! [`PaneLayoutMessage`], and produces [`PaneLayoutOutput`]. Panes are configured
 //! with [`PaneConfig`].
 //!
-//! Implements [`Focusable`] and [`Disableable`](super::Disableable).
 //!
 //! See also [`SplitPanel`](super::SplitPanel) for a simpler two-pane layout.
 //!
@@ -15,7 +14,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     PaneLayout, PaneLayoutState, PaneLayoutMessage, Component, Focusable,
+//!     PaneLayout, PaneLayoutState, PaneLayoutMessage, Component,
 //!     pane_layout::{PaneConfig, PaneDirection},
 //! };
 //! use ratatui::prelude::Rect;
@@ -41,7 +40,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
 
@@ -345,8 +344,6 @@ pub struct PaneLayoutState {
     direction: PaneDirection,
     panes: Vec<PaneConfig>,
     focused_pane: usize,
-    focused: bool,
-    disabled: bool,
     resize_step: f32,
 }
 
@@ -356,8 +353,6 @@ impl Default for PaneLayoutState {
             direction: PaneDirection::Horizontal,
             panes: Vec::new(),
             focused_pane: 0,
-            focused: false,
-            disabled: false,
             resize_step: 0.05,
         }
     }
@@ -410,24 +405,6 @@ impl PaneLayoutState {
     /// ```
     pub fn with_resize_step(mut self, step: f32) -> Self {
         self.resize_step = step.clamp(0.01, 0.5);
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
-    /// use envision::component::PaneLayoutState;
-    ///
-    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
-    ///     PaneConfig::new("a"),
-    /// ]).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -650,132 +627,7 @@ impl PaneLayoutState {
         self.resize_step
     }
 
-    /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
-    /// use envision::component::PaneLayoutState;
-    ///
-    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
-    ///     PaneConfig::new("a"),
-    /// ]);
-    /// assert!(!state.is_focused());
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
-    /// use envision::component::PaneLayoutState;
-    ///
-    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
-    ///     PaneConfig::new("a"),
-    /// ]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
-    /// use envision::component::PaneLayoutState;
-    ///
-    /// let state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
-    ///     PaneConfig::new("a"),
-    /// ]).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
-    /// use envision::component::PaneLayoutState;
-    ///
-    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
-    ///     PaneConfig::new("a"),
-    /// ]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods ----
-
-    /// Maps an input event to a pane layout message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
-    /// use envision::component::{PaneLayoutState, PaneLayoutMessage};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
-    ///     PaneConfig::new("left"),
-    ///     PaneConfig::new("right"),
-    /// ]);
-    /// state.set_focused(true);
-    ///
-    /// let msg = state.handle_event(&Event::key(KeyCode::Tab));
-    /// assert_eq!(msg, Some(PaneLayoutMessage::FocusNext));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<PaneLayoutMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        PaneLayout::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::pane_layout::{PaneConfig, PaneDirection};
-    /// use envision::component::{PaneLayoutState, PaneLayoutOutput};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, vec![
-    ///     PaneConfig::new("left"),
-    ///     PaneConfig::new("right"),
-    /// ]);
-    /// state.set_focused(true);
-    ///
-    /// let output = state.dispatch_event(&Event::key(KeyCode::Tab));
-    /// assert_eq!(output, Some(PaneLayoutOutput::FocusChanged {
-    ///     pane_id: "right".to_string(),
-    ///     index: 1,
-    /// }));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<PaneLayoutOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        PaneLayout::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     ///
@@ -919,7 +771,7 @@ impl PaneLayoutState {
 ///
 /// ```rust
 /// use envision::component::{
-///     PaneLayout, PaneLayoutState, PaneLayoutMessage, Component, Focusable,
+///     PaneLayout, PaneLayoutState, PaneLayoutMessage, Component,
 ///     pane_layout::{PaneConfig, PaneDirection},
 /// };
 /// use ratatui::prelude::Rect;
@@ -1100,16 +952,6 @@ impl Component for PaneLayout {
 
             frame.render_widget(block, *rect);
         }
-    }
-}
-
-impl Focusable for PaneLayout {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
     }
 }
 

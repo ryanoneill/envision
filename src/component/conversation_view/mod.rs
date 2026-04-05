@@ -18,7 +18,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, ConversationView, ConversationViewState,
+//!     Component, ConversationView, ConversationViewState,
 //!     ConversationMessage, ConversationRole, MessageBlock,
 //! };
 //!
@@ -47,7 +47,7 @@ use std::marker::PhantomData;
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -122,10 +122,6 @@ pub struct ConversationViewState {
     pub(super) last_known_width: usize,
     /// Optional title for the conversation panel.
     pub(super) title: Option<String>,
-    /// Whether the component is focused.
-    pub(super) focused: bool,
-    /// Whether the component is disabled.
-    pub(super) disabled: bool,
     /// Set of collapsed block keys (e.g., "tool:search", "thinking").
     pub(super) collapsed_blocks: HashSet<String>,
     /// Optional status text rendered at the bottom of the viewport, above the border.
@@ -147,8 +143,6 @@ impl Default for ConversationViewState {
             markdown_enabled: false,
             last_known_width: 80,
             title: None,
-            focused: false,
-            disabled: false,
             collapsed_blocks: HashSet::new(),
             status: None,
             next_id: 1,
@@ -165,8 +159,6 @@ impl PartialEq for ConversationViewState {
             && self.show_timestamps == other.show_timestamps
             && self.show_role_labels == other.show_role_labels
             && self.title == other.title
-            && self.focused == other.focused
-            && self.disabled == other.disabled
             && self.collapsed_blocks == other.collapsed_blocks
             && self.status == other.status
         // next_id is intentionally excluded from equality
@@ -267,21 +259,6 @@ impl ConversationViewState {
     /// Sets whether markdown rendering is enabled.
     pub fn set_markdown_enabled(&mut self, enabled: bool) {
         self.markdown_enabled = enabled;
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConversationViewState;
-    ///
-    /// let state = ConversationViewState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
     }
 
     // ---- Message manipulation ----
@@ -676,105 +653,7 @@ impl ConversationViewState {
 
     // ---- Focus/Disabled instance methods ----
 
-    /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConversationViewState;
-    ///
-    /// let state = ConversationViewState::new();
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConversationViewState;
-    ///
-    /// let mut state = ConversationViewState::new();
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConversationViewState;
-    ///
-    /// let state = ConversationViewState::new();
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConversationViewState;
-    ///
-    /// let mut state = ConversationViewState::new();
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods for dispatch ----
-
-    /// Maps an input event to a conversation view message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{ConversationViewState, ConversationViewMessage};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = ConversationViewState::new();
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Up);
-    /// assert_eq!(state.handle_event(&event), Some(ConversationViewMessage::ScrollUp));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<ConversationViewMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        ConversationView::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConversationViewState;
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = ConversationViewState::new();
-    /// state.set_focused(true);
-    /// state.push_user("Hello");
-    /// let _output = state.dispatch_event(&Event::key(KeyCode::Up));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<ConversationViewOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        ConversationView::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     ///
@@ -866,10 +745,6 @@ impl Component for ConversationView {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             ConversationViewMessage::ScrollUp => {
                 state.update_scroll_content_length();
@@ -1012,26 +887,6 @@ impl ConversationView {
         crate::annotation::with_registry(|reg| {
             reg.close();
         });
-    }
-}
-
-impl Focusable for ConversationView {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for ConversationView {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

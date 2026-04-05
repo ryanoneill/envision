@@ -31,7 +31,7 @@ pub use entry::{StatusLogEntry, StatusLogLevel};
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -105,10 +105,6 @@ pub struct StatusLogState {
     show_timestamps: bool,
     /// Scroll offset for viewing older entries.
     scroll_offset: usize,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// Title for the block.
     title: Option<String>,
 }
@@ -121,8 +117,6 @@ impl Default for StatusLogState {
             max_entries: 50,
             show_timestamps: false,
             scroll_offset: 0,
-            focused: false,
-            disabled: false,
             title: None,
         }
     }
@@ -576,124 +570,6 @@ impl StatusLogState {
         self.title = title;
     }
 
-    /// Returns true if the status log is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StatusLogState;
-    ///
-    /// let state = StatusLogState::new();
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StatusLogState;
-    ///
-    /// let mut state = StatusLogState::new();
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the status log is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StatusLogState;
-    ///
-    /// let state = StatusLogState::new();
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StatusLogState;
-    ///
-    /// let mut state = StatusLogState::new();
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state using builder pattern.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StatusLogState;
-    ///
-    /// let state = StatusLogState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Maps an input event to a status log message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{StatusLogState, StatusLogMessage};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = StatusLogState::new();
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Up);
-    /// assert_eq!(state.handle_event(&event), Some(StatusLogMessage::ScrollUp));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<StatusLogMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        StatusLog::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::StatusLogState;
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = StatusLogState::new();
-    /// state.set_focused(true);
-    /// state.info("A");
-    /// state.info("B");
-    /// // Scroll down then dispatch up
-    /// state.set_scroll_offset(1);
-    /// let event = Event::key(KeyCode::Up);
-    /// state.dispatch_event(&event);
-    /// assert_eq!(state.scroll_offset(), 0);
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<StatusLogOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        StatusLog::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the status log state with a message, returning any output.
     ///
     /// # Example
@@ -897,26 +773,6 @@ impl Component for StatusLog {
             let list = List::new(items);
             frame.render_widget(list, inner);
         }
-    }
-}
-
-impl Focusable for StatusLog {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for StatusLog {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

@@ -41,7 +41,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, ViewContext};
+use super::{Component, ViewContext};
 use crate::theme::Theme;
 
 /// Built-in spinner animation styles.
@@ -374,16 +374,6 @@ impl Component for Spinner {
             .with_label(state.label.as_deref().unwrap_or(""));
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
         frame.render_widget(annotated, area);
-    }
-}
-
-impl Disableable for Spinner {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

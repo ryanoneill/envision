@@ -6,7 +6,6 @@
 //! State is stored in [`RadioGroupState<T>`], updated via [`RadioGroupMessage`],
 //! and produces [`RadioGroupOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -37,7 +36,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{List, ListItem};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -74,18 +73,11 @@ pub struct RadioGroupState<T: Clone> {
     options: Vec<T>,
     /// The currently selected index, or `None` if empty.
     selected: Option<usize>,
-    /// Whether the radio group is focused.
-    focused: bool,
-    /// Whether the radio group is disabled.
-    disabled: bool,
 }
 
 impl<T: Clone + PartialEq> PartialEq for RadioGroupState<T> {
     fn eq(&self, other: &Self) -> bool {
-        self.options == other.options
-            && self.selected == other.selected
-            && self.focused == other.focused
-            && self.disabled == other.disabled
+        self.options == other.options && self.selected == other.selected
     }
 }
 
@@ -94,8 +86,6 @@ impl<T: Clone> Default for RadioGroupState<T> {
         Self {
             options: Vec::new(),
             selected: None,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -117,12 +107,7 @@ impl<T: Clone> RadioGroupState<T> {
     /// ```
     pub fn new(options: Vec<T>) -> Self {
         let selected = if options.is_empty() { None } else { Some(0) };
-        Self {
-            options,
-            selected,
-            focused: false,
-            disabled: false,
-        }
+        Self { options, selected }
     }
 
     /// Creates a radio group with a specific initial selection.
@@ -145,12 +130,7 @@ impl<T: Clone> RadioGroupState<T> {
         } else {
             Some(selected.min(options.len() - 1))
         };
-        Self {
-            options,
-            selected,
-            focused: false,
-            disabled: false,
-        }
+        Self { options, selected }
     }
 
     /// Returns the available options.
@@ -219,35 +199,6 @@ impl<T: Clone> RadioGroupState<T> {
         }
     }
 
-    /// Returns true if the radio group is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// Disabled radio groups do not respond to messages.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state (builder method).
-    ///
-    /// Disabled radio groups do not respond to messages.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::RadioGroupState;
-    ///
-    /// let state = RadioGroupState::new(vec!["A", "B", "C"]).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Returns true if the options are empty.
     pub fn is_empty(&self) -> bool {
         self.options.is_empty()
@@ -260,32 +211,6 @@ impl<T: Clone> RadioGroupState<T> {
 }
 
 impl<T: Clone + std::fmt::Display + 'static> RadioGroupState<T> {
-    /// Returns true if the radio group is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Maps an input event to a radio group message.
-    pub fn handle_event(&self, event: &Event) -> Option<RadioGroupMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        RadioGroup::<T>::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<RadioGroupOutput<T>> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        RadioGroup::<T>::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the radio group state with a message, returning any output.
     pub fn update(&mut self, msg: RadioGroupMessage) -> Option<RadioGroupOutput<T>> {
         RadioGroup::<T>::update(self, msg)
@@ -318,7 +243,7 @@ impl<T: Clone + std::fmt::Display + 'static> RadioGroupState<T> {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState, Component, Focusable};
+/// use envision::component::{RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState, Component};
 ///
 /// let mut state = RadioGroupState::new(vec!["Small", "Medium", "Large"]);
 ///
@@ -431,26 +356,6 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
         }
         let annotated = crate::annotation::Annotate::new(list, ann);
         frame.render_widget(annotated, area);
-    }
-}
-
-impl<T: Clone + std::fmt::Display + 'static> Focusable for RadioGroup<T> {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl<T: Clone + std::fmt::Display + 'static> Disableable for RadioGroup<T> {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

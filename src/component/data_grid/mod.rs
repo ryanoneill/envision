@@ -11,7 +11,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, DataGrid, DataGridState,
+//!     Component, DataGrid, DataGridState,
 //!     DataGridMessage, DataGridOutput, TableRow, Column,
 //! };
 //! use ratatui::layout::Constraint;
@@ -45,10 +45,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Row, Table as RatatuiTable};
 
-use super::{
-    Column, Component, Disableable, Focusable, InputFieldMessage, InputFieldState, TableRow,
-    ViewContext,
-};
+use super::{Column, Component, InputFieldMessage, InputFieldState, TableRow, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -148,10 +145,6 @@ pub struct DataGridState<T: TableRow> {
     editor: InputFieldState,
     /// Value before editing started (for cancel).
     original_value: String,
-    /// Whether the overall component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// Scroll state for scrollbar rendering.
     #[cfg_attr(feature = "serialization", serde(skip))]
     scroll: ScrollState,
@@ -164,8 +157,6 @@ impl<T: TableRow + PartialEq> PartialEq for DataGridState<T> {
             && self.selected_row == other.selected_row
             && self.selected_column == other.selected_column
             && self.editing == other.editing
-            && self.focused == other.focused
-            && self.disabled == other.disabled
     }
 }
 
@@ -179,8 +170,6 @@ impl<T: TableRow> Default for DataGridState<T> {
             editing: false,
             editor: InputFieldState::new(),
             original_value: String::new(),
-            focused: false,
-            disabled: false,
             scroll: ScrollState::default(),
         }
     }
@@ -221,8 +210,6 @@ impl<T: TableRow> DataGridState<T> {
             editing: false,
             editor: InputFieldState::new(),
             original_value: String::new(),
-            focused: false,
-            disabled: false,
             scroll,
         }
     }
@@ -466,48 +453,6 @@ impl<T: TableRow> DataGridState<T> {
 }
 
 impl<T: TableRow + 'static> DataGridState<T> {
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the disabled state (builder pattern).
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Maps an input event to a data grid message.
-    pub fn handle_event(&self, event: &Event) -> Option<DataGridMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        DataGrid::<T>::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<DataGridOutput<T>> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        DataGrid::<T>::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: DataGridMessage) -> Option<DataGridOutput<T>> {
         DataGrid::<T>::update(self, msg)
@@ -518,7 +463,6 @@ impl<T: TableRow + 'static> DataGridState<T> {
         if let Some(cell_value) = self.current_cell_value() {
             self.original_value = cell_value.clone();
             self.editor.set_value(&cell_value);
-            self.editor.set_focused(true);
             self.editing = true;
         }
     }
@@ -526,7 +470,6 @@ impl<T: TableRow + 'static> DataGridState<T> {
     /// Cancels the current edit, restoring the original value.
     fn cancel_editing(&mut self) {
         self.editing = false;
-        self.editor.set_focused(false);
     }
 }
 
@@ -606,7 +549,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.rows.is_empty() {
+        if state.rows.is_empty() {
             return None;
         }
 
@@ -897,26 +840,6 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                 }
             }
         }
-    }
-}
-
-impl<T: TableRow + 'static> Focusable for DataGrid<T> {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl<T: TableRow + 'static> Disableable for DataGrid<T> {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

@@ -5,14 +5,13 @@
 //! options when opened. State is stored in [`SelectState`], updated via
 //! [`SelectMessage`], and produces [`SelectOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`Dropdown`](super::Dropdown) for a variant with search filtering.
 //!
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Select, SelectMessage, SelectOutput, SelectState, Component, Focusable};
+//! use envision::component::{Select, SelectMessage, SelectOutput, SelectState, Component};
 //!
 //! // Create a select with options
 //! let mut state = SelectState::new(vec!["Red", "Green", "Blue"]);
@@ -31,7 +30,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -78,12 +77,8 @@ pub struct SelectState {
     highlighted_index: usize,
     /// Whether the dropdown is open.
     is_open: bool,
-    /// Whether the component is focused.
-    focused: bool,
     /// Placeholder text when nothing is selected.
     placeholder: String,
-    /// Whether the select is disabled.
-    disabled: bool,
 }
 
 impl Default for SelectState {
@@ -105,9 +100,7 @@ impl Default for SelectState {
             selected_index: None,
             highlighted_index: 0,
             is_open: false,
-            focused: false,
             placeholder: String::from("Select..."),
-            disabled: false,
         }
     }
 }
@@ -343,134 +336,6 @@ impl SelectState {
     pub fn with_placeholder(mut self, placeholder: impl Into<String>) -> Self {
         self.placeholder = placeholder.into();
         self
-    }
-
-    /// Returns true if the select is disabled.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = SelectState::new(vec!["A", "B"]);
-    /// assert!(!state.is_disabled());
-    ///
-    /// let state = SelectState::new(vec!["A", "B"]).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = SelectState::new(vec!["A", "B"]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// assert!(!state.is_open());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-        if disabled {
-            self.is_open = false;
-        }
-    }
-
-    /// Sets the disabled state using builder pattern.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = SelectState::new(vec!["A", "B"]).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
-    /// Returns true if the select is focused.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = SelectState::new(vec!["A", "B"]);
-    /// assert!(!state.is_focused());
-    ///
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = SelectState::new(vec!["A", "B"]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    ///
-    /// state.set_focused(false);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Maps an input event to a select message.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = SelectState::new(vec!["A", "B"]);
-    /// state.set_focused(true);
-    ///
-    /// let event = Event::key(KeyCode::Enter);
-    /// assert_eq!(state.handle_event(&event), Some(SelectMessage::Toggle));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<SelectMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Select::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let mut state = SelectState::new(vec!["A", "B"]);
-    /// state.set_focused(true);
-    /// state.update(SelectMessage::Open);
-    ///
-    /// let event = Event::key(KeyCode::Down);
-    /// let output = state.dispatch_event(&event);
-    /// assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<SelectOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Select::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the select state with a message, returning any output.
@@ -741,26 +606,6 @@ impl Component for Select {
                 frame.render_widget(list, list_area);
             }
         }
-    }
-}
-
-impl Focusable for Select {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Select {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

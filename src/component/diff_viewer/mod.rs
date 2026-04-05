@@ -19,7 +19,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, DiffViewer, DiffViewerState,
+//!     Component, DiffViewer, DiffViewerState,
 //!     DiffViewerMessage, DiffMode,
 //! };
 //!
@@ -40,7 +40,7 @@ mod render;
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -186,10 +186,6 @@ pub struct DiffViewerState {
     pub(crate) old_label: Option<String>,
     /// Label for the new file side.
     pub(crate) new_label: Option<String>,
-    /// Whether the component is focused.
-    pub(crate) focused: bool,
-    /// Whether the component is disabled.
-    pub(crate) disabled: bool,
 }
 
 impl Default for DiffViewerState {
@@ -204,8 +200,6 @@ impl Default for DiffViewerState {
             title: None,
             old_label: None,
             new_label: None,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -221,8 +215,6 @@ impl PartialEq for DiffViewerState {
             && self.title == other.title
             && self.old_label == other.old_label
             && self.new_label == other.new_label
-            && self.focused == other.focused
-            && self.disabled == other.disabled
     }
 }
 
@@ -376,21 +368,6 @@ impl DiffViewerState {
     /// ```
     pub fn with_new_label(mut self, label: impl Into<String>) -> Self {
         self.new_label = Some(label.into());
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::DiffViewerState;
-    ///
-    /// let state = DiffViewerState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -625,48 +602,12 @@ impl DiffViewerState {
         &self.mode
     }
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Returns the current scroll offset.
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
     }
 
     // ---- Instance methods ----
-
-    /// Maps an input event to a diff viewer message.
-    pub fn handle_event(&self, event: &Event) -> Option<DiffViewerMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        DiffViewer::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<DiffViewerOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        DiffViewer::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     ///
@@ -983,26 +924,6 @@ fn update_current_hunk_from_scroll(state: &mut DiffViewerState) {
     }
     if !state.hunks.is_empty() {
         state.current_hunk = state.hunks.len() - 1;
-    }
-}
-
-impl Focusable for DiffViewer {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for DiffViewer {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

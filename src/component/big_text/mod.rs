@@ -24,7 +24,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Disableable, ViewContext};
+use super::{Component, ViewContext};
 use crate::theme::Theme;
 
 /// Returns the 3-row block representation of a character.
@@ -147,8 +147,6 @@ pub struct BigTextState {
     /// Text alignment within the render area.
     #[cfg_attr(feature = "serialization", serde(skip))]
     alignment: Alignment,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for BigTextState {
@@ -157,7 +155,6 @@ impl Default for BigTextState {
             text: String::new(),
             color: None,
             alignment: Alignment::Center,
-            disabled: false,
         }
     }
 }
@@ -220,22 +217,6 @@ impl BigTextState {
         self
     }
 
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::BigTextState;
-    ///
-    /// let state = BigTextState::new("OFF")
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     // ---- Getters ----
 
     /// Returns the text being displayed.
@@ -279,20 +260,6 @@ impl BigTextState {
     /// ```
     pub fn alignment(&self) -> Alignment {
         self.alignment
-    }
-
-    /// Returns whether the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::BigTextState;
-    ///
-    /// let state = BigTextState::new("0");
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
     }
 
     // ---- Setters ----
@@ -342,21 +309,6 @@ impl BigTextState {
     /// ```
     pub fn set_alignment(&mut self, alignment: Alignment) {
         self.alignment = alignment;
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::BigTextState;
-    ///
-    /// let mut state = BigTextState::new("0");
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
     }
 
     // ---- Instance methods ----
@@ -514,16 +466,6 @@ impl Component for BigText {
             let paragraph = Paragraph::new(lines).alignment(state.alignment);
             frame.render_widget(paragraph, render_area);
         }
-    }
-}
-
-impl Disableable for BigText {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

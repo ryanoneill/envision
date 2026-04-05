@@ -31,7 +31,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
-use super::{Component, Focusable, Toggleable, ViewContext};
+use super::{Component, Toggleable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -136,8 +136,6 @@ pub struct ConfirmDialogState {
     button_config: ButtonConfig,
     focused_button: usize,
     visible: bool,
-    focused: bool,
-    disabled: bool,
     destructive_button: Option<usize>,
 }
 
@@ -149,8 +147,6 @@ impl Default for ConfirmDialogState {
             button_config: ButtonConfig::Ok,
             focused_button: 0,
             visible: false,
-            focused: false,
-            disabled: false,
             destructive_button: None,
         }
     }
@@ -315,22 +311,6 @@ impl ConfirmDialogState {
         self
     }
 
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConfirmDialogState;
-    ///
-    /// let state = ConfirmDialogState::new("Title", "Message")
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-
     /// Returns the dialog title.
     ///
     /// # Example
@@ -383,35 +363,6 @@ impl ConfirmDialogState {
         self.destructive_button
     }
 
-    /// Returns true if the dialog is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConfirmDialogState;
-    ///
-    /// let state = ConfirmDialogState::new("Title", "Message");
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConfirmDialogState;
-    ///
-    /// let mut state = ConfirmDialogState::new("Title", "Message");
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
     /// Returns true if the dialog is visible.
     ///
     /// # Example
@@ -455,35 +406,6 @@ impl ConfirmDialogState {
     pub fn with_visible(mut self, visible: bool) -> Self {
         ConfirmDialog::set_visible(&mut self, visible);
         self
-    }
-
-    /// Returns true if the dialog is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConfirmDialogState;
-    ///
-    /// let state = ConfirmDialogState::new("Title", "Message");
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ConfirmDialogState;
-    ///
-    /// let mut state = ConfirmDialogState::new("Title", "Message");
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
     }
 
     /// Maps an input event to a dialog message.
@@ -607,10 +529,6 @@ impl Component for ConfirmDialog {
             return None;
         }
 
-        if state.disabled {
-            return None;
-        }
-
         let button_count = state.button_config.button_count();
 
         match msg {
@@ -653,7 +571,7 @@ impl Component for ConfirmDialog {
         event: &Event,
         _ctx: &ViewContext,
     ) -> Option<Self::Message> {
-        if !state.visible || state.disabled {
+        if !state.visible {
             return None;
         }
         if let Some(key) = event.as_key() {
@@ -724,17 +642,7 @@ impl Component for ConfirmDialog {
         frame.render_widget(message, chunks[0]);
 
         // Render buttons
-        render_confirm_buttons(state, frame, chunks[1], theme);
-    }
-}
-
-impl Focusable for ConfirmDialog {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
+        render_confirm_buttons(state, frame, chunks[1], theme, ctx.focused, ctx.disabled);
     }
 }
 
@@ -757,6 +665,8 @@ fn render_confirm_buttons(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    focused: bool,
+    disabled: bool,
 ) {
     let labels = state.button_config.labels();
     if labels.is_empty() {
@@ -774,10 +684,10 @@ fn render_confirm_buttons(
         let width = button_widths[i];
         let button_area = Rect::new(x, area.y, width, 3.min(area.height));
 
-        let is_focused = i == state.focused_button && state.focused;
+        let is_focused = i == state.focused_button && focused;
         let is_destructive = state.destructive_button == Some(i);
 
-        let style = if state.disabled {
+        let style = if disabled {
             theme.disabled_style()
         } else if is_destructive && is_focused {
             theme.error_style().add_modifier(Modifier::BOLD)
@@ -789,7 +699,7 @@ fn render_confirm_buttons(
             theme.normal_style()
         };
 
-        let border_style = if is_focused && !state.disabled {
+        let border_style = if is_focused && !disabled {
             theme.focused_border_style()
         } else {
             theme.border_style()

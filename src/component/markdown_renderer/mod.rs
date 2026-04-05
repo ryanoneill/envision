@@ -7,7 +7,6 @@
 //! State is stored in [`MarkdownRendererState`], updated via
 //! [`MarkdownRendererMessage`], and produces no output (unit `()`).
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Feature Gate
 //!
@@ -17,7 +16,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, MarkdownRenderer, MarkdownRendererState,
+//!     Component, MarkdownRenderer, MarkdownRendererState,
 //!     MarkdownRendererMessage,
 //! };
 //!
@@ -36,7 +35,7 @@ pub mod render;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -97,10 +96,6 @@ pub struct MarkdownRendererState {
     title: Option<String>,
     /// Whether to show raw source instead of rendered markdown.
     show_source: bool,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl MarkdownRendererState {
@@ -166,22 +161,6 @@ impl MarkdownRendererState {
     /// ```
     pub fn with_show_source(mut self, show: bool) -> Self {
         self.show_source = show;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::MarkdownRendererState;
-    ///
-    /// let state = MarkdownRendererState::new()
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -283,86 +262,7 @@ impl MarkdownRendererState {
 
     // ---- State accessors ----
 
-    /// Returns true if the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::MarkdownRendererState;
-    ///
-    /// let state = MarkdownRendererState::new();
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::MarkdownRendererState;
-    ///
-    /// let state = MarkdownRendererState::new();
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods ----
-
-    /// Maps an input event to a markdown renderer message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MarkdownRendererState, MarkdownRendererMessage};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = MarkdownRendererState::new();
-    /// state.set_focused(true);
-    /// let msg = state.handle_event(&Event::key(KeyCode::Down));
-    /// assert_eq!(msg, Some(MarkdownRendererMessage::ScrollDown));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<MarkdownRendererMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        MarkdownRenderer::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::MarkdownRendererState;
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = MarkdownRendererState::new()
-    ///     .with_source("line 1\nline 2\nline 3");
-    /// state.set_focused(true);
-    /// state.dispatch_event(&Event::key(KeyCode::Down));
-    /// assert_eq!(state.scroll_offset(), 1);
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        MarkdownRenderer::dispatch_event(self, event, &ctx);
-    }
 
     /// Updates the state with a message.
     ///
@@ -567,26 +467,6 @@ impl Component for MarkdownRenderer {
                 crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
             }
         }
-    }
-}
-
-impl Focusable for MarkdownRenderer {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for MarkdownRenderer {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

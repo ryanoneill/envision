@@ -36,7 +36,7 @@ use ratatui::widgets::canvas::{
 };
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::theme::Theme;
 
 /// A drawable shape on the canvas.
@@ -249,10 +249,6 @@ pub struct CanvasState {
     y_bounds: [f64; 2],
     /// Optional border title.
     title: Option<String>,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// The marker type for drawing.
     marker: CanvasMarker,
 }
@@ -264,8 +260,6 @@ impl Default for CanvasState {
             x_bounds: [0.0, 100.0],
             y_bounds: [0.0, 100.0],
             title: None,
-            focused: false,
-            disabled: false,
             marker: CanvasMarker::default(),
         }
     }
@@ -380,21 +374,6 @@ impl CanvasState {
     /// ```
     pub fn with_marker(mut self, marker: CanvasMarker) -> Self {
         self.marker = marker;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CanvasState;
-    ///
-    /// let state = CanvasState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -514,42 +493,6 @@ impl CanvasState {
     }
 
     // ---- Instance methods ----
-
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a canvas message.
-    pub fn handle_event(&self, event: &crate::input::Event) -> Option<CanvasMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Canvas::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &crate::input::Event) -> Option<()> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Canvas::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: CanvasMessage) -> Option<()> {
@@ -766,26 +709,6 @@ impl Component for Canvas {
             });
 
         frame.render_widget(canvas, canvas_area);
-    }
-}
-
-impl Focusable for Canvas {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for Canvas {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

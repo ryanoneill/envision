@@ -5,13 +5,12 @@
 //! and horizontal scrolling for overflow. State is stored in [`TabBarState`],
 //! updated via [`TabBarMessage`], and produces [`TabBarOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, Tab, TabBar, TabBarMessage, TabBarOutput, TabBarState,
+//!     Component, Tab, TabBar, TabBarMessage, TabBarOutput, TabBarState,
 //! };
 //!
 //! let tabs = vec![
@@ -33,7 +32,7 @@
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -163,10 +162,6 @@ pub struct TabBarState {
     scroll_offset: usize,
     /// Optional maximum rendered width per tab (in columns).
     max_tab_width: Option<usize>,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl PartialEq for TabBarState {
@@ -175,8 +170,6 @@ impl PartialEq for TabBarState {
             && self.active == other.active
             && self.scroll_offset == other.scroll_offset
             && self.max_tab_width == other.max_tab_width
-            && self.focused == other.focused
-            && self.disabled == other.disabled
     }
 }
 
@@ -204,8 +197,6 @@ impl TabBarState {
             active,
             scroll_offset: 0,
             max_tab_width: None,
-            focused: false,
-            disabled: false,
         }
     }
 
@@ -235,8 +226,6 @@ impl TabBarState {
             active,
             scroll_offset: 0,
             max_tab_width: None,
-            focused: false,
-            disabled: false,
         }
     }
 
@@ -255,22 +244,6 @@ impl TabBarState {
     /// ```
     pub fn with_max_tab_width(mut self, max: Option<usize>) -> Self {
         self.max_tab_width = max;
-        self
-    }
-
-    /// Sets the disabled state (builder).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Tab, TabBarState};
-    ///
-    /// let state = TabBarState::new(vec![Tab::new("a", "A")])
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -415,40 +388,6 @@ impl TabBarState {
         self.max_tab_width
     }
 
-    /// Returns whether the component is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Tab, TabBarState};
-    ///
-    /// let state = TabBarState::new(vec![Tab::new("a", "A")]);
-    /// assert!(!state.is_disabled());
-    ///
-    /// let state = state.with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Returns whether the component is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Tab, TabBarState};
-    ///
-    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
-    /// assert!(!state.is_focused());
-    ///
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
     // -- Mutators ------------------------------------------------------------
 
     /// Sets the active tab by index.
@@ -507,36 +446,6 @@ impl TabBarState {
     /// ```
     pub fn set_max_tab_width(&mut self, max: Option<usize>) {
         self.max_tab_width = max;
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Tab, TabBarState};
-    ///
-    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Sets the focused state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Tab, TabBarState};
-    ///
-    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
     }
 
     /// Updates a tab at the given index via a closure.
@@ -610,51 +519,6 @@ impl TabBarState {
 
     // -- Instance methods that delegate to component -------------------------
 
-    /// Maps an input event to a tab bar message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Tab, TabBarState, TabBarMessage};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
-    /// state.set_focused(true);
-    ///
-    /// let msg = state.handle_event(&Event::key(KeyCode::Right));
-    /// assert_eq!(msg, Some(TabBarMessage::NextTab));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<TabBarMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        TabBar::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Tab, TabBarState, TabBarOutput};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = TabBarState::new(vec![
-    ///     Tab::new("a", "A"),
-    ///     Tab::new("b", "B"),
-    /// ]);
-    /// state.set_focused(true);
-    ///
-    /// let output = state.dispatch_event(&Event::key(KeyCode::Right));
-    /// assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<TabBarOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        TabBar::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the tab bar state with a message, returning any output.
     ///
     /// # Example
@@ -723,7 +587,7 @@ impl TabBarState {
 ///
 /// ```rust
 /// use envision::component::{
-///     Component, Focusable, Tab, TabBar, TabBarMessage, TabBarOutput, TabBarState,
+///     Component, Tab, TabBar, TabBarMessage, TabBarOutput, TabBarState,
 /// };
 ///
 /// let tabs = vec![
@@ -883,26 +747,6 @@ impl Component for TabBar {
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         render::render_tab_bar(state, frame, area, theme, ctx.focused, ctx.disabled);
-    }
-}
-
-impl Focusable for TabBar {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for TabBar {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

@@ -9,13 +9,12 @@
 //! State is stored in [`LogCorrelationState`], updated via
 //! [`LogCorrelationMessage`], and produces [`LogCorrelationOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, LogCorrelation, LogCorrelationState,
+//!     Component, LogCorrelation, LogCorrelationState,
 //!     LogCorrelationMessage, LogCorrelationOutput,
 //!     LogStream, CorrelationEntry, CorrelationLevel,
 //! };
@@ -40,7 +39,7 @@ use std::marker::PhantomData;
 
 use ratatui::prelude::*;
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -348,10 +347,6 @@ pub struct LogCorrelationState {
     sync_scroll: bool,
     /// Optional title.
     title: Option<String>,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for LogCorrelationState {
@@ -363,8 +358,6 @@ impl Default for LogCorrelationState {
             scroll: ScrollState::default(),
             sync_scroll: true,
             title: None,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -377,8 +370,6 @@ impl PartialEq for LogCorrelationState {
             && self.scroll == other.scroll
             && self.sync_scroll == other.sync_scroll
             && self.title == other.title
-            && self.focused == other.focused
-            && self.disabled == other.disabled
     }
 }
 
@@ -446,12 +437,6 @@ impl LogCorrelationState {
     /// ```
     pub fn with_sync_scroll(mut self, sync: bool) -> Self {
         self.sync_scroll = sync;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -628,42 +613,6 @@ impl LogCorrelationState {
     }
 
     // ---- Instance methods ----
-
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a log correlation message.
-    pub fn handle_event(&self, event: &Event) -> Option<LogCorrelationMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        LogCorrelation::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<LogCorrelationOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        LogCorrelation::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: LogCorrelationMessage) -> Option<LogCorrelationOutput> {
@@ -859,26 +808,6 @@ impl LogCorrelation {
         if let Some(last) = rows.last() {
             state.scroll_timestamp = last.timestamp;
         }
-    }
-}
-
-impl Focusable for LogCorrelation {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for LogCorrelation {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

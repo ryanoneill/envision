@@ -40,7 +40,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Gauge as RatatuiGauge, LineGauge};
 
-use super::{Component, Disableable, ViewContext};
+use super::{Component, ViewContext};
 use crate::theme::Theme;
 
 /// The visual variant of the gauge.
@@ -166,8 +166,6 @@ pub struct GaugeState {
     thresholds: Vec<ThresholdZone>,
     /// Optional border title.
     title: Option<String>,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl Default for GaugeState {
@@ -180,7 +178,6 @@ impl Default for GaugeState {
             variant: GaugeVariant::default(),
             thresholds: default_thresholds(),
             title: None,
-            disabled: false,
         }
     }
 }
@@ -294,21 +291,6 @@ impl GaugeState {
     /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
-        self
-    }
-
-    /// Sets the disabled state using builder pattern.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::GaugeState;
-    ///
-    /// let state = GaugeState::new(50.0, 100.0).with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -473,16 +455,6 @@ impl GaugeState {
         }
     }
 
-    /// Returns true if the gauge is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Updates the gauge state with a message, returning any output.
     ///
     /// # Example
@@ -590,15 +562,15 @@ impl Component for Gauge {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         let label_text = state.label_text();
 
         match state.variant {
             GaugeVariant::Full => {
-                render_full_gauge(state, frame, area, theme, &label_text);
+                render_full_gauge(state, frame, area, theme, &label_text, ctx.disabled);
             }
             GaugeVariant::Line => {
-                render_line_gauge(state, frame, area, theme, &label_text);
+                render_line_gauge(state, frame, area, theme, &label_text, ctx.disabled);
             }
         }
     }
@@ -611,8 +583,9 @@ fn render_full_gauge(
     area: Rect,
     theme: &Theme,
     label_text: &str,
+    disabled: bool,
 ) {
-    let color = if state.disabled {
+    let color = if disabled {
         theme.disabled
     } else {
         state.current_color()
@@ -642,8 +615,9 @@ fn render_line_gauge(
     area: Rect,
     theme: &Theme,
     label_text: &str,
+    disabled: bool,
 ) {
-    let color = if state.disabled {
+    let color = if disabled {
         theme.disabled
     } else {
         state.current_color()
@@ -683,16 +657,6 @@ fn build_block(state: &GaugeState, theme: &Theme) -> Block<'static> {
     }
 
     block
-}
-
-impl Disableable for Gauge {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
-    }
 }
 
 #[cfg(test)]

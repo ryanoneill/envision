@@ -12,13 +12,12 @@
 //! State is stored in [`LogViewerState`], updated via [`LogViewerMessage`],
 //! and produces [`LogViewerOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, LogViewer, LogViewerState,
+//!     Component, LogViewer, LogViewerState,
 //!     LogViewerMessage, LogViewerOutput,
 //! };
 //!
@@ -44,8 +43,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 
 use super::{
-    Component, Disableable, Focusable, InputFieldMessage, InputFieldState, StatusLogEntry,
-    StatusLogLevel, ViewContext,
+    Component, InputFieldMessage, InputFieldState, StatusLogEntry, StatusLogLevel, ViewContext,
 };
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::theme::Theme;
@@ -490,26 +488,6 @@ impl Component for LogViewer {
 
         // Render log entries
         view::render_log(state, frame, log_area, theme);
-    }
-}
-
-impl Focusable for LogViewer {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for LogViewer {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

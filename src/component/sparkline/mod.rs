@@ -34,7 +34,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, RenderDirection, Sparkline as RatatuiSparkline};
 
-use super::{Component, Disableable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::Event;
 use crate::theme::Theme;
 
@@ -119,8 +119,6 @@ pub struct SparklineState {
     direction: SparklineDirection,
     /// Optional color override.
     color: Option<Color>,
-    /// Whether the component is disabled.
-    disabled: bool,
 }
 
 impl SparklineState {
@@ -218,21 +216,6 @@ impl SparklineState {
     /// ```
     pub fn with_color(mut self, color: Color) -> Self {
         self.color = Some(color);
-        self
-    }
-
-    /// Sets the disabled state using builder pattern.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SparklineState;
-    ///
-    /// let state = SparklineState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -411,16 +394,6 @@ impl SparklineState {
         self.color = color;
     }
 
-    /// Returns true if the sparkline is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     /// Updates the state with a message, returning any output.
     ///
     /// This is an instance method equivalent to [`Sparkline::update`].
@@ -437,27 +410,13 @@ impl SparklineState {
     pub fn update(&mut self, msg: SparklineMessage) -> Option<SparklineOutput> {
         Sparkline::update(self, msg)
     }
-
-    /// Maps an input event to a sparkline message.
-    ///
-    /// Always returns `None` because sparkline is display-only.
-    pub fn handle_event(&self, event: &Event) -> Option<SparklineMessage> {
-        Sparkline::handle_event(self, event, &ViewContext::default())
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// Always returns `None` because sparkline is display-only.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<SparklineOutput> {
-        Sparkline::dispatch_event(self, event, &ViewContext::default())
-    }
 }
 
 /// A compact inline data trend display component.
 ///
 /// `Sparkline` renders a series of data points as small bars using ratatui's
 /// `Sparkline` widget. This is a display-only component that does not
-/// implement `Focusable`.
+/// receive keyboard focus.
 ///
 /// # Visual Format
 ///
@@ -560,16 +519,6 @@ impl Component for Sparkline {
                 .with_label(state.title.as_deref().unwrap_or(""));
         let annotated = crate::annotation::Annotate::new(sparkline, annotation);
         frame.render_widget(annotated, area);
-    }
-}
-
-impl Disableable for Sparkline {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 

@@ -13,7 +13,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, Form, FormState, FormMessage,
+//!     Component, Form, FormState, FormMessage,
 //!     FormOutput, FormField, FormFieldKind, FormValue,
 //! };
 //!
@@ -44,8 +44,8 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{
-    Checkbox, CheckboxMessage, CheckboxState, Component, Disableable, Focusable, InputField,
-    InputFieldMessage, InputFieldState, Select, SelectMessage, SelectState, ViewContext,
+    Checkbox, CheckboxMessage, CheckboxState, Component, InputField, InputFieldMessage,
+    InputFieldState, Select, SelectMessage, SelectState, ViewContext,
 };
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
@@ -127,10 +127,6 @@ pub struct FormState {
     states: Vec<FieldState>,
     /// Index of the currently focused field.
     focused_index: usize,
-    /// Whether the form itself is focused.
-    focused: bool,
-    /// Whether the form is disabled.
-    disabled: bool,
 }
 
 impl FormState {
@@ -166,15 +162,11 @@ impl FormState {
             .collect();
 
         // Focus the first field
-        let mut form = Self {
+        Self {
             fields,
             states,
             focused_index: 0,
-            focused: false,
-            disabled: false,
-        };
-        form.sync_field_focus();
-        form
+        }
     }
 
     /// Returns the number of fields.
@@ -225,88 +217,6 @@ impl FormState {
     /// ```
     pub fn focused_field_index(&self) -> usize {
         self.focused_index
-    }
-
-    /// Returns true if the form is focused.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{FormState, FormField};
-    ///
-    /// let state = FormState::new(vec![FormField::text("name", "Name")]);
-    /// assert!(!state.is_focused());
-    /// ```
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{FormState, FormField};
-    ///
-    /// let mut state = FormState::new(vec![FormField::text("name", "Name")]);
-    /// state.set_focused(true);
-    /// assert!(state.is_focused());
-    /// ```
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-        self.sync_field_focus();
-    }
-
-    /// Returns true if the form is disabled.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{FormState, FormField};
-    ///
-    /// let state = FormState::new(vec![FormField::text("name", "Name")]);
-    /// assert!(!state.is_disabled());
-    /// ```
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{FormState, FormField};
-    ///
-    /// let mut state = FormState::new(vec![FormField::text("name", "Name")]);
-    /// state.set_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-        for state in &mut self.states {
-            match state {
-                FieldState::Text(s) => s.set_disabled(disabled),
-                FieldState::Checkbox(s) => s.set_disabled(disabled),
-                FieldState::Select(s) => s.set_disabled(disabled),
-            }
-        }
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{FormState, FormField};
-    ///
-    /// let state = FormState::new(vec![FormField::text("name", "Name")])
-    ///     .with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.set_disabled(disabled);
-        self
     }
 
     /// Returns the value of a field by its ID.
@@ -442,47 +352,6 @@ impl FormState {
         matches!(self.states.get(index), Some(FieldState::Select(_)))
     }
 
-    /// Maps an input event to a form message.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{FormState, FormField, FormMessage};
-    /// use envision::input::{Event, KeyCode};
-    ///
-    /// let mut state = FormState::new(vec![FormField::text("name", "Name")]);
-    /// state.set_focused(true);
-    /// let event = Event::key(KeyCode::Tab);
-    /// assert_eq!(state.handle_event(&event), Some(FormMessage::FocusNext));
-    /// ```
-    pub fn handle_event(&self, event: &Event) -> Option<FormMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Form::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{FormState, FormField, FormOutput, FormValue};
-    /// use envision::input::Event;
-    ///
-    /// let mut state = FormState::new(vec![FormField::text("name", "Name")]);
-    /// state.set_focused(true);
-    /// let event = Event::char('A');
-    /// let output = state.dispatch_event(&event);
-    /// assert!(matches!(output, Some(FormOutput::FieldChanged(_, FormValue::Text(_)))));
-    /// ```
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<FormOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        Form::dispatch_event(self, event, &ctx)
-    }
-
     /// Updates the form state with a message, returning any output.
     ///
     /// # Example
@@ -509,25 +378,12 @@ impl FormState {
         }
     }
 
-    /// Synchronizes focus state to the currently focused field.
-    fn sync_field_focus(&mut self) {
-        for (i, state) in self.states.iter_mut().enumerate() {
-            let should_focus = self.focused && i == self.focused_index;
-            match state {
-                FieldState::Text(s) => s.set_focused(should_focus),
-                FieldState::Checkbox(s) => s.set_focused(should_focus),
-                FieldState::Select(s) => s.set_focused(should_focus),
-            }
-        }
-    }
-
     /// Move focus to the next field, wrapping around.
     fn focus_next(&mut self) {
         if self.fields.is_empty() {
             return;
         }
         self.focused_index = (self.focused_index + 1) % self.fields.len();
-        self.sync_field_focus();
     }
 
     /// Move focus to the previous field, wrapping around.
@@ -540,7 +396,6 @@ impl FormState {
         } else {
             self.focused_index - 1
         };
-        self.sync_field_focus();
     }
 }
 
@@ -566,7 +421,7 @@ impl FormState {
 ///
 /// ```rust
 /// use envision::component::{
-///     Component, Focusable, Form, FormState, FormMessage,
+///     Component, Form, FormState, FormMessage,
 ///     FormOutput, FormField, FormValue,
 /// };
 ///
@@ -660,7 +515,7 @@ impl Component for Form {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.fields.is_empty() {
+        if state.fields.is_empty() {
             return None;
         }
 
@@ -843,13 +698,29 @@ impl Component for Form {
 
             match field_state {
                 FieldState::Text(s) => {
-                    render_text_field(frame, *chunk, field, s, is_field_focused, theme);
+                    render_text_field(
+                        frame,
+                        *chunk,
+                        field,
+                        s,
+                        is_field_focused,
+                        ctx.disabled,
+                        theme,
+                    );
                 }
                 FieldState::Checkbox(s) => {
-                    render_checkbox(frame, *chunk, s, is_field_focused, theme);
+                    render_checkbox(frame, *chunk, s, is_field_focused, ctx.disabled, theme);
                 }
                 FieldState::Select(s) => {
-                    render_select_field(frame, *chunk, field, s, is_field_focused, theme);
+                    render_select_field(
+                        frame,
+                        *chunk,
+                        field,
+                        s,
+                        is_field_focused,
+                        ctx.disabled,
+                        theme,
+                    );
                 }
             }
         }
@@ -867,9 +738,10 @@ fn render_text_field(
     field: &FormField,
     state: &InputFieldState,
     is_focused: bool,
+    disabled: bool,
     theme: &Theme,
 ) {
-    let border_style = if state.is_disabled() {
+    let border_style = if disabled {
         theme.disabled_style()
     } else if is_focused {
         theme.focused_border_style()
@@ -895,7 +767,7 @@ fn render_text_field(
     frame.render_widget(widget, area);
 
     // Show cursor when focused
-    if is_focused && !state.is_disabled() {
+    if is_focused && !disabled {
         let cursor_x = area.x + 1 + state.cursor_display_position() as u16;
         let cursor_y = area.y + 1;
         frame.set_cursor_position(Position::new(cursor_x, cursor_y));
@@ -908,10 +780,11 @@ fn render_checkbox(
     area: Rect,
     state: &CheckboxState,
     is_focused: bool,
+    disabled: bool,
     theme: &Theme,
 ) {
     let check = if state.is_checked() { "[x]" } else { "[ ]" };
-    let style = if state.is_disabled() {
+    let style = if disabled {
         theme.disabled_style()
     } else if is_focused {
         theme.focused_style()
@@ -931,9 +804,10 @@ fn render_select_field(
     field: &FormField,
     state: &SelectState,
     is_focused: bool,
+    disabled: bool,
     theme: &Theme,
 ) {
-    let border_style = if state.is_disabled() {
+    let border_style = if disabled {
         theme.disabled_style()
     } else if is_focused {
         theme.focused_border_style()
@@ -956,27 +830,6 @@ fn render_select_field(
 
     let widget = Paragraph::new(Line::from(display_text)).block(block);
     frame.render_widget(widget, area);
-}
-
-impl Focusable for Form {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-        state.sync_field_focus();
-    }
-}
-
-impl Disableable for Form {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
-    }
 }
 
 #[cfg(test)]

@@ -47,10 +47,6 @@ pub struct LogViewerState {
     pub(super) history_index: Option<usize>,
     /// Internal focus state.
     pub(super) focus: Focus,
-    /// Whether the component is focused.
-    pub(super) focused: bool,
-    /// Whether the component is disabled.
-    pub(super) disabled: bool,
 }
 
 impl Default for LogViewerState {
@@ -74,8 +70,6 @@ impl Default for LogViewerState {
             max_history: 20,
             history_index: None,
             focus: Focus::Log,
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -98,8 +92,6 @@ impl PartialEq for LogViewerState {
             && self.search_history == other.search_history
             && self.max_history == other.max_history
             && self.focus == other.focus
-            && self.focused == other.focused
-            && self.disabled == other.disabled
     }
 }
 
@@ -161,21 +153,6 @@ impl LogViewerState {
     /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LogViewerState;
-    ///
-    /// let state = LogViewerState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -854,42 +831,6 @@ impl LogViewerState {
     }
 
     // ---- Instance methods ----
-
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to a log viewer message.
-    pub fn handle_event(&self, event: &Event) -> Option<LogViewerMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        LogViewer::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<LogViewerOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        LogViewer::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: LogViewerMessage) -> Option<LogViewerOutput> {

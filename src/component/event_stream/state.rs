@@ -1,7 +1,6 @@
 use super::types::{EventLevel, StreamEvent};
 use super::{EventStream, EventStreamMessage, EventStreamOutput, Focus};
-use crate::component::{Component, InputFieldState, ViewContext};
-use crate::input::Event;
+use crate::component::{Component, InputFieldState};
 use crate::scroll::ScrollState;
 
 /// State for an EventStream component.
@@ -60,10 +59,6 @@ pub struct EventStreamState {
     /// The search input field state.
     #[cfg_attr(feature = "serialization", serde(skip))]
     pub(super) search: InputFieldState,
-    /// Whether the component is focused.
-    pub(super) focused: bool,
-    /// Whether the component is disabled.
-    pub(super) disabled: bool,
 }
 
 impl Default for EventStreamState {
@@ -84,8 +79,6 @@ impl Default for EventStreamState {
             title: None,
             focus: Focus::List,
             search: InputFieldState::new(),
-            focused: false,
-            disabled: false,
         }
     }
 }
@@ -106,8 +99,6 @@ impl PartialEq for EventStreamState {
             && self.show_source == other.show_source
             && self.title == other.title
             && self.focus == other.focus
-            && self.focused == other.focused
-            && self.disabled == other.disabled
     }
 }
 
@@ -237,21 +228,6 @@ impl EventStreamState {
     /// ```
     pub fn with_auto_scroll(mut self, auto_scroll: bool) -> Self {
         self.auto_scroll = auto_scroll;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::EventStreamState;
-    ///
-    /// let state = EventStreamState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -674,42 +650,6 @@ impl EventStreamState {
     // =========================================================================
     // Instance methods
     // =========================================================================
-
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
-    /// Maps an input event to an event stream message.
-    pub fn handle_event(&self, event: &Event) -> Option<EventStreamMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        EventStream::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<EventStreamOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        EventStream::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     pub fn update(&mut self, msg: EventStreamMessage) -> Option<EventStreamOutput> {

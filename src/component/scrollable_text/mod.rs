@@ -6,7 +6,6 @@
 //! [`ScrollableTextState`], updated via [`ScrollableTextMessage`], and
 //! produces [`ScrollableTextOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`StyledText`](super::StyledText) for rich text with semantic blocks.
 //!
@@ -14,7 +13,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, Focusable, ScrollableText, ScrollableTextState,
+//!     Component, ScrollableText, ScrollableTextState,
 //!     ScrollableTextMessage, ScrollableTextOutput,
 //! };
 //!
@@ -30,7 +29,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
-use super::{Component, Disableable, Focusable, ViewContext};
+use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -74,10 +73,6 @@ pub struct ScrollableTextState {
     content: String,
     /// Scroll state tracking offset and providing scrollbar support.
     scroll: ScrollState,
-    /// Whether the component is focused.
-    focused: bool,
-    /// Whether the component is disabled.
-    disabled: bool,
     /// Optional title for the border.
     title: Option<String>,
 }
@@ -129,21 +124,6 @@ impl ScrollableTextState {
     /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::ScrollableTextState;
-    ///
-    /// let state = ScrollableTextState::new().with_disabled(true);
-    /// assert!(state.is_disabled());
-    /// ```
-    pub fn with_disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
         self
     }
 
@@ -235,43 +215,7 @@ impl ScrollableTextState {
 
     // ---- State accessors ----
 
-    /// Returns true if the component is focused.
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
-
-    /// Sets the focus state.
-    pub fn set_focused(&mut self, focused: bool) {
-        self.focused = focused;
-    }
-
-    /// Returns true if the component is disabled.
-    pub fn is_disabled(&self) -> bool {
-        self.disabled
-    }
-
-    /// Sets the disabled state.
-    pub fn set_disabled(&mut self, disabled: bool) {
-        self.disabled = disabled;
-    }
-
     // ---- Instance methods ----
-
-    /// Maps an input event to a scrollable text message.
-    pub fn handle_event(&self, event: &Event) -> Option<ScrollableTextMessage> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        ScrollableText::handle_event(self, event, &ctx)
-    }
-
-    /// Dispatches an event, updating state and returning any output.
-    pub fn dispatch_event(&mut self, event: &Event) -> Option<ScrollableTextOutput> {
-        let ctx = ViewContext::new()
-            .focused(self.focused)
-            .disabled(self.disabled);
-        ScrollableText::dispatch_event(self, event, &ctx)
-    }
 
     /// Updates the state with a message, returning any output.
     ///
@@ -456,26 +400,6 @@ impl Component for ScrollableText {
             bar_scroll.set_offset(effective_scroll);
             crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
         }
-    }
-}
-
-impl Focusable for ScrollableText {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
-impl Disableable for ScrollableText {
-    fn is_disabled(state: &Self::State) -> bool {
-        state.disabled
-    }
-
-    fn set_disabled(state: &mut Self::State, disabled: bool) {
-        state.disabled = disabled;
     }
 }
 
