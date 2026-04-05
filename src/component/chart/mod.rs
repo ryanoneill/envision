@@ -33,6 +33,7 @@ use crate::theme::Theme;
 
 mod render;
 mod series;
+pub(crate) mod ticks;
 
 /// A named data series with values and styling.
 #[derive(Clone, Debug, PartialEq)]

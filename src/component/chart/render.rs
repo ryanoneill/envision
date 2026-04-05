@@ -93,10 +93,10 @@ pub(super) fn render_bar_chart(
     frame.render_widget(bar_chart, area);
 }
 
-/// Renders an area or scatter chart using ratatui's Chart widget with shared axes.
+/// Renders a line, area, or scatter chart using ratatui's Chart widget with shared axes.
 ///
-/// This is used for `ChartKind::Area` and `ChartKind::Scatter`, and renders all
-/// series overlaid on shared X and Y axes.
+/// All non-bar chart types are rendered through this path, using braille
+/// markers for high-resolution output with multi-series overlay.
 pub(super) fn render_shared_axis_chart(
     state: &ChartState,
     frame: &mut Frame,
@@ -195,34 +195,52 @@ pub(super) fn render_shared_axis_chart(
         );
     }
 
-    // Build axes
-    let x_axis = if let Some(ref label) = state.x_label {
-        RatatuiAxis::default()
-            .bounds([0.0, max_x])
-            .title(label.as_str())
-            .labels(["0".into(), format!("{:.0}", max_x)])
+    // Build axes with tick labels
+    let max_x_ticks = (area.width / 10).max(2) as usize;
+    let max_y_ticks = (area.height / 3).max(2) as usize;
+
+    let x_ticks = super::ticks::nice_ticks(0.0, max_x, max_x_ticks);
+    let y_ticks = super::ticks::nice_ticks(effective_min, effective_max, max_y_ticks);
+
+    let x_step = if x_ticks.len() >= 2 {
+        x_ticks[1] - x_ticks[0]
     } else {
-        RatatuiAxis::default()
-            .bounds([0.0, max_x])
-            .labels(["0".into(), format!("{:.0}", max_x)])
+        1.0
+    };
+    let y_step = if y_ticks.len() >= 2 {
+        y_ticks[1] - y_ticks[0]
+    } else {
+        1.0
     };
 
-    let y_axis = if let Some(ref label) = state.y_label {
-        RatatuiAxis::default()
-            .bounds([effective_min, effective_max])
-            .title(label.as_str())
-            .labels([
-                format!("{:.0}", effective_min),
-                format!("{:.0}", effective_max),
-            ])
-    } else {
-        RatatuiAxis::default()
-            .bounds([effective_min, effective_max])
-            .labels([
-                format!("{:.0}", effective_min),
-                format!("{:.0}", effective_max),
-            ])
-    };
+    let x_labels: Vec<String> = x_ticks
+        .iter()
+        .map(|v| super::ticks::format_tick(*v, x_step))
+        .collect();
+    let y_labels: Vec<String> = y_ticks
+        .iter()
+        .map(|v| super::ticks::format_tick(*v, y_step))
+        .collect();
+
+    // Use the tick bounds for axis range (may extend slightly beyond data)
+    let x_min_bound = x_ticks.first().copied().unwrap_or(0.0);
+    let x_max_bound = x_ticks.last().copied().unwrap_or(max_x);
+    let y_min_bound = y_ticks.first().copied().unwrap_or(effective_min);
+    let y_max_bound = y_ticks.last().copied().unwrap_or(effective_max);
+
+    let mut x_axis = RatatuiAxis::default()
+        .bounds([x_min_bound, x_max_bound])
+        .labels(x_labels);
+    if let Some(ref label) = state.x_label {
+        x_axis = x_axis.title(label.as_str());
+    }
+
+    let mut y_axis = RatatuiAxis::default()
+        .bounds([y_min_bound, y_max_bound])
+        .labels(y_labels);
+    if let Some(ref label) = state.y_label {
+        y_axis = y_axis.title(label.as_str());
+    }
 
     let chart = RatatuiChart::new(datasets).x_axis(x_axis).y_axis(y_axis);
 
