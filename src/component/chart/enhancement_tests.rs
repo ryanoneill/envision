@@ -457,3 +457,88 @@ fn test_disabled_still_processes_y_range_messages() {
     assert_eq!(state.y_min(), Some(0.0));
     assert_eq!(state.y_max(), Some(100.0));
 }
+
+// =============================================================================
+// Vertical reference lines
+// =============================================================================
+
+#[test]
+fn test_with_vertical_line_builder() {
+    let state = ChartState::line(vec![DataSeries::new("Loss", vec![1.0, 2.0, 3.0])])
+        .with_vertical_line(2.0, "Event", Color::Yellow);
+    assert_eq!(state.vertical_lines().len(), 1);
+    assert_eq!(state.vertical_lines()[0].x_value, 2.0);
+    assert_eq!(state.vertical_lines()[0].label, "Event");
+}
+
+#[test]
+fn test_add_vertical_line() {
+    let mut state = ChartState::line(vec![]);
+    state.add_vertical_line(VerticalLine::new(10.0, "Transition", Color::Cyan));
+    assert_eq!(state.vertical_lines().len(), 1);
+}
+
+#[test]
+fn test_clear_vertical_lines() {
+    let mut state = ChartState::line(vec![])
+        .with_vertical_line(5.0, "A", Color::Red)
+        .with_vertical_line(10.0, "B", Color::Blue);
+    assert_eq!(state.vertical_lines().len(), 2);
+    state.clear_vertical_lines();
+    assert!(state.vertical_lines().is_empty());
+}
+
+#[test]
+fn test_set_vertical_lines_message() {
+    let mut state = ChartState::line(vec![DataSeries::new("X", vec![1.0])]);
+    let lines = vec![
+        VerticalLine::new(5.0, "Start", Color::Green),
+        VerticalLine::new(15.0, "End", Color::Red),
+    ];
+    let output = Chart::update(&mut state, ChartMessage::SetVerticalLines(lines));
+    assert_eq!(output, None);
+    assert_eq!(state.vertical_lines().len(), 2);
+}
+
+#[test]
+fn test_add_vertical_line_message() {
+    let mut state = ChartState::line(vec![DataSeries::new("X", vec![1.0])]);
+    let output = Chart::update(
+        &mut state,
+        ChartMessage::AddVerticalLine(VerticalLine::new(10.0, "Mark", Color::Yellow)),
+    );
+    assert_eq!(output, None);
+    assert_eq!(state.vertical_lines().len(), 1);
+}
+
+#[test]
+fn test_render_chart_with_vertical_lines() {
+    let state = ChartState::line(vec![DataSeries::new(
+        "Loss",
+        vec![100.0, 80.0, 50.0, 20.0, 5.0],
+    )])
+    .with_vertical_line(2.0, "Grokking", Color::Yellow)
+    .with_title("Training");
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_render_chart_with_vertical_and_horizontal_lines() {
+    let state = ChartState::line(vec![DataSeries::new(
+        "Loss",
+        vec![100.0, 80.0, 50.0, 20.0, 5.0],
+    )])
+    .with_vertical_line(3.0, "Epoch 3", Color::Yellow)
+    .with_threshold(50.0, "Target", Color::Green);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}

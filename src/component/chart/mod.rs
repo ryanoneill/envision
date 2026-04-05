@@ -122,6 +122,57 @@ impl ThresholdLine {
     }
 }
 
+/// A vertical reference line rendered on line, area, and scatter charts.
+///
+/// Vertical lines are drawn as vertical lines spanning the full chart height
+/// at a specified x-value, useful for marking events, transitions, or epochs.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::VerticalLine;
+/// use ratatui::style::Color;
+///
+/// let vline = VerticalLine::new(10000.0, "Grokking", Color::Yellow);
+/// assert_eq!(vline.x_value, 10000.0);
+/// assert_eq!(vline.label, "Grokking");
+/// ```
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub struct VerticalLine {
+    /// The x-value for this vertical line.
+    pub x_value: f64,
+    /// Label for the vertical line.
+    pub label: String,
+    /// Color for the vertical line.
+    pub color: Color,
+}
+
+impl VerticalLine {
+    /// Creates a new vertical reference line.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::VerticalLine;
+    /// use ratatui::style::Color;
+    ///
+    /// let v = VerticalLine::new(5000.0, "Transition", Color::Cyan);
+    /// assert_eq!(v.x_value, 5000.0);
+    /// assert_eq!(v.label, "Transition");
+    /// ```
+    pub fn new(x_value: f64, label: impl Into<String>, color: Color) -> Self {
+        Self {
+            x_value,
+            label: label.into(),
+            color,
+        }
+    }
+}
+
 /// Messages that can be sent to a Chart.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
@@ -139,6 +190,10 @@ pub enum ChartMessage {
     AddThreshold(ThresholdLine),
     /// Set the manual Y-axis range. `None` values fall back to auto-scaling.
     SetYRange(Option<f64>, Option<f64>),
+    /// Set vertical reference lines, replacing any existing ones.
+    SetVerticalLines(Vec<VerticalLine>),
+    /// Add a single vertical reference line.
+    AddVerticalLine(VerticalLine),
 }
 
 /// Output messages from a Chart.
@@ -191,6 +246,8 @@ pub struct ChartState {
     pub(crate) y_min: Option<f64>,
     /// Manual Y-axis maximum (None = auto from data).
     pub(crate) y_max: Option<f64>,
+    /// Vertical reference lines.
+    pub(crate) vertical_lines: Vec<VerticalLine>,
 }
 
 impl Default for ChartState {
@@ -211,6 +268,7 @@ impl Default for ChartState {
             thresholds: Vec::new(),
             y_min: None,
             y_max: None,
+            vertical_lines: Vec::new(),
         }
     }
 }
@@ -415,6 +473,29 @@ impl ChartState {
         self
     }
 
+    /// Adds a vertical reference line (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries, VerticalLine};
+    /// use ratatui::style::Color;
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("Loss", vec![1.0, 2.0, 3.0])])
+    ///     .with_vertical_line(2.0, "Event", Color::Yellow);
+    /// assert_eq!(state.vertical_lines().len(), 1);
+    /// ```
+    pub fn with_vertical_line(
+        mut self,
+        x_value: f64,
+        label: impl Into<String>,
+        color: Color,
+    ) -> Self {
+        self.vertical_lines
+            .push(VerticalLine::new(x_value, label, color));
+        self
+    }
+
     // ---- Accessors ----
 
     /// Returns the data series.
@@ -575,6 +656,21 @@ impl ChartState {
     /// Returns the manual Y-axis maximum, if set.
     pub fn y_max(&self) -> Option<f64> {
         self.y_max
+    }
+
+    /// Returns the vertical reference lines.
+    pub fn vertical_lines(&self) -> &[VerticalLine] {
+        &self.vertical_lines
+    }
+
+    /// Adds a vertical reference line.
+    pub fn add_vertical_line(&mut self, line: VerticalLine) {
+        self.vertical_lines.push(line);
+    }
+
+    /// Clears all vertical reference lines.
+    pub fn clear_vertical_lines(&mut self) {
+        self.vertical_lines.clear();
     }
 
     /// Adds a series.
@@ -802,6 +898,14 @@ impl Component for Chart {
             ChartMessage::SetYRange(min, max) => {
                 state.y_min = min;
                 state.y_max = max;
+                None
+            }
+            ChartMessage::SetVerticalLines(lines) => {
+                state.vertical_lines = lines;
+                None
+            }
+            ChartMessage::AddVerticalLine(line) => {
+                state.vertical_lines.push(line);
                 None
             }
             ChartMessage::NextSeries | ChartMessage::PrevSeries => {

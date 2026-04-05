@@ -358,6 +358,7 @@ pub use box_plot::{BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation, Box
 #[cfg(feature = "compound-components")]
 pub use chart::{
     Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, ThresholdLine,
+    VerticalLine,
 };
 #[cfg(feature = "compound-components")]
 pub use chat_view::{
