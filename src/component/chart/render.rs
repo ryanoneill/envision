@@ -1,16 +1,16 @@
 //! Rendering functions for the Chart component.
 //!
 //! Extracted from the main chart module to keep file sizes manageable.
-//! Contains renderers for line (sparkline), bar, area, and scatter charts,
+//! Contains renderers for bar charts and shared-axis charts (line, area, scatter),
 //! as well as legend, axis labels, and threshold line rendering.
 
 use ratatui::prelude::*;
 use ratatui::widgets::{
     Axis as RatatuiAxis, Bar, BarChart, BarGroup, Chart as RatatuiChart, Dataset, GraphType,
-    Paragraph, Sparkline,
+    Paragraph,
 };
 
-use super::{ChartKind, ChartState, DataSeries};
+use super::{ChartKind, ChartState};
 use crate::theme::Theme;
 
 /// Renders the legend showing series labels and colors.
@@ -36,124 +36,6 @@ pub(super) fn render_legend(state: &ChartState, frame: &mut Frame, area: Rect) {
     let line = Line::from(spans);
     let paragraph = Paragraph::new(line).alignment(Alignment::Center);
     frame.render_widget(paragraph, area);
-}
-
-/// Renders a line chart using sparkline.
-pub(super) fn render_line_chart(
-    state: &ChartState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    _focused: bool,
-    disabled: bool,
-) {
-    if state.series.is_empty() {
-        return;
-    }
-
-    // Show y-axis labels on the left
-    let y_label_width = if state.y_label.is_some() { 8u16 } else { 0 };
-
-    let (y_area, chart_area) = if y_label_width > 0 {
-        let chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([Constraint::Length(y_label_width), Constraint::Min(1)])
-            .split(area);
-        (Some(chunks[0]), chunks[1])
-    } else {
-        (None, area)
-    };
-
-    // Render y-axis min/max labels
-    if let Some(y_area) = y_area {
-        let global_max = state.effective_max();
-        let global_min = state.effective_min();
-        let max_text = format!("{:.1}", global_max);
-        let min_text = format!("{:.1}", global_min);
-
-        if y_area.height >= 2 {
-            let p_max = Paragraph::new(max_text)
-                .style(Style::default().fg(Color::DarkGray))
-                .alignment(Alignment::Right);
-            frame.render_widget(p_max, Rect::new(y_area.x, y_area.y, y_area.width, 1));
-
-            let p_min = Paragraph::new(min_text)
-                .style(Style::default().fg(Color::DarkGray))
-                .alignment(Alignment::Right);
-            frame.render_widget(
-                p_min,
-                Rect::new(y_area.x, y_area.y + y_area.height - 1, y_area.width, 1),
-            );
-        }
-    }
-
-    // For multi-series, stack sparklines vertically
-    if state.series.len() == 1 || chart_area.height < 2 {
-        // Single series: full area sparkline
-        let series = &state.series[state.active_series];
-        let data = series_to_sparkline_data(series, state.max_display_points);
-        let style = if disabled {
-            theme.disabled_style()
-        } else {
-            Style::default().fg(series.color())
-        };
-        let sparkline = Sparkline::default().data(&data).style(style);
-        frame.render_widget(sparkline, chart_area);
-    } else {
-        // Multi-series: divide height
-        let count = state.series.len() as u16;
-        let constraints: Vec<Constraint> = (0..count)
-            .map(|_| Constraint::Ratio(1, count as u32))
-            .collect();
-
-        let areas = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(constraints)
-            .split(chart_area);
-
-        for (i, series) in state.series.iter().enumerate() {
-            if let Some(sparkline_area) = areas.get(i) {
-                let data = series_to_sparkline_data(series, state.max_display_points);
-                let style = if disabled {
-                    theme.disabled_style()
-                } else if i == state.active_series {
-                    Style::default()
-                        .fg(series.color())
-                        .add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default().fg(series.color())
-                };
-                let sparkline = Sparkline::default().data(&data).style(style);
-                frame.render_widget(sparkline, *sparkline_area);
-            }
-        }
-    }
-}
-
-/// Converts a data series to sparkline-compatible u64 data.
-pub(super) fn series_to_sparkline_data(series: &DataSeries, max_points: usize) -> Vec<u64> {
-    let values = if series.values().len() > max_points {
-        &series.values()[series.values().len() - max_points..]
-    } else {
-        series.values()
-    };
-
-    if values.is_empty() {
-        return Vec::new();
-    }
-
-    let min = values.iter().copied().reduce(f64::min).unwrap_or(0.0);
-    let max = values.iter().copied().reduce(f64::max).unwrap_or(0.0);
-    let range = max - min;
-
-    if range == 0.0 {
-        return values.iter().map(|_| 50).collect();
-    }
-
-    values
-        .iter()
-        .map(|v| ((v - min) / range * 100.0) as u64)
-        .collect()
 }
 
 /// Renders a bar chart.
@@ -211,10 +93,11 @@ pub(super) fn render_bar_chart(
     frame.render_widget(bar_chart, area);
 }
 
-/// Renders an area or scatter chart using ratatui's Chart widget with shared axes.
+/// Renders a line, area, or scatter chart using ratatui's Chart widget with shared axes.
 ///
-/// This is used for `ChartKind::Area` and `ChartKind::Scatter`, and renders all
-/// series overlaid on shared X and Y axes.
+/// This is used for `ChartKind::Line`, `ChartKind::Area`, and `ChartKind::Scatter`,
+/// and renders all series overlaid on shared X and Y axes. Uses LTTB downsampling
+/// for large datasets and applies scale transforms for logarithmic axes.
 pub(super) fn render_shared_axis_chart(
     state: &ChartState,
     frame: &mut Frame,
@@ -230,52 +113,85 @@ pub(super) fn render_shared_axis_chart(
     let effective_min = state.effective_min();
     let effective_max = state.effective_max();
 
-    // Compute max x value across all series
+    // Compute max x value across all series (using full series length, not truncated)
     let max_x = state
         .series
         .iter()
-        .map(|s| {
-            let len = s.values().len();
-            if len > state.max_display_points {
-                state.max_display_points
-            } else {
-                len
-            }
-        })
+        .map(|s| s.values().len())
         .max()
         .unwrap_or(1)
         .max(1) as f64
         - 1.0;
     let max_x = max_x.max(1.0);
 
+    // Compute effective max points based on render area width
+    let effective_max_points = (area.width as usize * 2).min(state.max_display_points);
+
     let graph_type = match state.kind {
         ChartKind::Scatter => GraphType::Scatter,
         _ => GraphType::Line,
     };
 
-    // Build data vectors that outlive the datasets
+    let is_log = state.y_scale.is_logarithmic();
+
+    // Build data vectors with LTTB downsampling and scale transforms
     let series_data: Vec<Vec<(f64, f64)>> = state
         .series
         .iter()
         .map(|s| {
-            let values = if s.values().len() > state.max_display_points {
-                &s.values()[s.values().len() - state.max_display_points..]
-            } else {
-                s.values()
-            };
-            values
+            // Convert to (x, y) pairs
+            let points: Vec<(f64, f64)> = s
+                .values()
                 .iter()
                 .enumerate()
                 .map(|(i, v)| (i as f64, *v))
-                .collect()
+                .collect();
+
+            // Apply LTTB downsampling
+            let downsampled = if points.len() > effective_max_points {
+                super::downsample::lttb(&points, effective_max_points)
+            } else {
+                points
+            };
+
+            // Apply scale transform to Y values
+            if is_log {
+                downsampled
+                    .into_iter()
+                    .map(|(x, y)| (x, state.y_scale.transform(y)))
+                    .collect()
+            } else {
+                downsampled
+            }
         })
         .collect();
 
-    // Build threshold data vectors
+    // Transform effective min/max through the scale
+    let (y_bound_min, y_bound_max) = if is_log {
+        (
+            state
+                .y_scale
+                .transform(effective_min.max(f64::MIN_POSITIVE)),
+            state
+                .y_scale
+                .transform(effective_max.max(f64::MIN_POSITIVE)),
+        )
+    } else {
+        (effective_min, effective_max)
+    };
+
+    // Build threshold data vectors (with scale transforms)
     let threshold_data: Vec<Vec<(f64, f64)>> = state
         .thresholds
         .iter()
-        .map(|t| vec![(0.0, t.value), (max_x, t.value)])
+        .map(|t| {
+            let y = if is_log {
+                state.y_scale.transform(t.value.max(f64::MIN_POSITIVE))
+            } else {
+                t.value
+            };
+            vec![(0.0, y), (max_x, y)]
+        })
         .collect();
 
     // Build datasets referencing the data vectors
@@ -313,69 +229,75 @@ pub(super) fn render_shared_axis_chart(
         );
     }
 
-    // Build axes
+    // Generate tick labels
+    let max_x_ticks = (area.width / 10).max(2) as usize;
+    let max_y_ticks = (area.height / 3).max(2) as usize;
+
+    let x_ticks = super::ticks::nice_ticks(0.0, max_x, max_x_ticks);
+    let x_labels: Vec<String> = x_ticks
+        .iter()
+        .map(|&v| {
+            super::ticks::format_tick(
+                v,
+                x_ticks.get(1).copied().unwrap_or(1.0) - x_ticks.first().copied().unwrap_or(0.0),
+            )
+        })
+        .collect();
+
+    let x_bound_min = x_ticks.first().copied().unwrap_or(0.0);
+    let x_bound_max = x_ticks.last().copied().unwrap_or(max_x);
+
+    // Generate Y ticks
+    let (y_ticks_values, y_labels) = if is_log {
+        let ticks = super::scale::log_ticks(
+            effective_min.max(f64::MIN_POSITIVE),
+            effective_max.max(f64::MIN_POSITIVE),
+            max_y_ticks,
+        );
+        let labels: Vec<String> = ticks
+            .iter()
+            .map(|&v| super::scale::format_log_tick(v))
+            .collect();
+        let transformed: Vec<f64> = ticks.iter().map(|&v| state.y_scale.transform(v)).collect();
+        (transformed, labels)
+    } else {
+        let ticks = super::ticks::nice_ticks(effective_min, effective_max, max_y_ticks);
+        let step = ticks.get(1).copied().unwrap_or(effective_max)
+            - ticks.first().copied().unwrap_or(effective_min);
+        let labels: Vec<String> = ticks
+            .iter()
+            .map(|&v| super::ticks::format_tick(v, step))
+            .collect();
+        (ticks, labels)
+    };
+
+    let y_axis_min = y_ticks_values.first().copied().unwrap_or(y_bound_min);
+    let y_axis_max = y_ticks_values.last().copied().unwrap_or(y_bound_max);
+
+    // Build axes with tick labels
     let x_axis = if let Some(ref label) = state.x_label {
         RatatuiAxis::default()
-            .bounds([0.0, max_x])
+            .bounds([x_bound_min, x_bound_max])
             .title(label.as_str())
-            .labels(["0".into(), format!("{:.0}", max_x)])
+            .labels(x_labels)
     } else {
         RatatuiAxis::default()
-            .bounds([0.0, max_x])
-            .labels(["0".into(), format!("{:.0}", max_x)])
+            .bounds([x_bound_min, x_bound_max])
+            .labels(x_labels)
     };
 
     let y_axis = if let Some(ref label) = state.y_label {
         RatatuiAxis::default()
-            .bounds([effective_min, effective_max])
+            .bounds([y_axis_min, y_axis_max])
             .title(label.as_str())
-            .labels([
-                format!("{:.0}", effective_min),
-                format!("{:.0}", effective_max),
-            ])
+            .labels(y_labels)
     } else {
         RatatuiAxis::default()
-            .bounds([effective_min, effective_max])
-            .labels([
-                format!("{:.0}", effective_min),
-                format!("{:.0}", effective_max),
-            ])
+            .bounds([y_axis_min, y_axis_max])
+            .labels(y_labels)
     };
 
     let chart = RatatuiChart::new(datasets).x_axis(x_axis).y_axis(y_axis);
 
     frame.render_widget(chart, area);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_series_to_sparkline_data() {
-        let s = DataSeries::new("Test", vec![0.0, 50.0, 100.0]);
-        let data = series_to_sparkline_data(&s, 50);
-        assert_eq!(data, vec![0, 50, 100]);
-    }
-
-    #[test]
-    fn test_series_to_sparkline_data_constant() {
-        let s = DataSeries::new("Test", vec![5.0, 5.0, 5.0]);
-        let data = series_to_sparkline_data(&s, 50);
-        assert_eq!(data, vec![50, 50, 50]);
-    }
-
-    #[test]
-    fn test_series_to_sparkline_data_bounded() {
-        let s = DataSeries::new("Test", vec![1.0, 2.0, 3.0, 4.0, 5.0]);
-        let data = series_to_sparkline_data(&s, 3);
-        assert_eq!(data.len(), 3); // Only last 3 points
-    }
-
-    #[test]
-    fn test_series_to_sparkline_data_empty() {
-        let s = DataSeries::new("Test", vec![]);
-        let data = series_to_sparkline_data(&s, 50);
-        assert!(data.is_empty());
-    }
 }

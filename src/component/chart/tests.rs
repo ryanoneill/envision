@@ -147,7 +147,7 @@ fn test_default() {
     let state = ChartState::default();
     assert!(state.is_empty());
     assert_eq!(state.kind(), &ChartKind::Line);
-    assert_eq!(state.max_display_points(), 50);
+    assert_eq!(state.max_display_points(), 500);
     assert_eq!(state.bar_width(), 3);
     assert_eq!(state.bar_gap(), 1);
     assert!(state.show_legend());
@@ -369,35 +369,37 @@ fn test_backtab_maps_to_prev() {
 }
 
 // =============================================================================
-// Sparkline data conversion (delegated to render module, tested there too)
+// Braille line chart rendering
 // =============================================================================
 
 #[test]
-fn test_series_to_sparkline_data() {
-    let s = DataSeries::new("Test", vec![0.0, 50.0, 100.0]);
-    let data = render::series_to_sparkline_data(&s, 50);
-    assert_eq!(data, vec![0, 50, 100]);
+fn test_render_line_chart_with_thresholds() {
+    let state = ChartState::line(vec![DataSeries::new(
+        "CPU",
+        vec![45.0, 52.0, 80.0, 92.0, 72.0],
+    )])
+    .with_threshold(90.0, "Warning", Color::Yellow);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
 }
 
 #[test]
-fn test_series_to_sparkline_data_constant() {
-    let s = DataSeries::new("Test", vec![5.0, 5.0, 5.0]);
-    let data = render::series_to_sparkline_data(&s, 50);
-    assert_eq!(data, vec![50, 50, 50]);
-}
-
-#[test]
-fn test_series_to_sparkline_data_bounded() {
-    let s = DataSeries::new("Test", vec![1.0, 2.0, 3.0, 4.0, 5.0]);
-    let data = render::series_to_sparkline_data(&s, 3);
-    assert_eq!(data.len(), 3); // Only last 3 points
-}
-
-#[test]
-fn test_series_to_sparkline_data_empty() {
-    let s = DataSeries::new("Test", vec![]);
-    let data = render::series_to_sparkline_data(&s, 50);
-    assert!(data.is_empty());
+fn test_render_line_chart_multi_series_overlay() {
+    let state = ChartState::line(vec![
+        DataSeries::new("Series A", vec![10.0, 20.0, 30.0, 25.0, 15.0]),
+        DataSeries::new("Series B", vec![5.0, 15.0, 10.0, 20.0, 25.0]).with_color(Color::Red),
+        DataSeries::new("Series C", vec![15.0, 10.0, 20.0, 30.0, 20.0]).with_color(Color::Green),
+    ]);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
 }
 
 // =============================================================================
