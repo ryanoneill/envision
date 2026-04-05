@@ -51,8 +51,7 @@ fn test_view_multiple_roots_focused() {
     root2.add_child(TreeNode::new("envision", ()));
     let root3 = TreeNode::new("Downloads", ());
 
-    let mut state = TreeState::new(vec![root1, root2, root3]);
-    state.set_focused(true);
+    let state = TreeState::new(vec![root1, root2, root3]);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
@@ -78,7 +77,6 @@ fn test_view_selection_on_child() {
     root.add_child(TreeNode::new("Child 3", ()));
 
     let mut state = TreeState::new(vec![root]);
-    state.set_focused(true);
     state.selected_index = Some(2); // Select "Child 2"
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
@@ -130,7 +128,6 @@ fn test_view_deep_nesting_selection_at_leaf() {
     level1.add_child(level2);
 
     let mut state = TreeState::new(vec![level1]);
-    state.set_focused(true);
     state.selected_index = Some(3); // Select "Leaf"
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
@@ -199,8 +196,7 @@ fn test_view_disabled_with_children() {
     root.add_child(TreeNode::new("Child 1", ()));
     root.add_child(TreeNode::new("Child 2", ()));
 
-    let mut state = TreeState::new(vec![root]);
-    state.set_disabled(true);
+    let state = TreeState::new(vec![root]);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
@@ -226,8 +222,7 @@ fn test_view_focused_expanded_tree() {
     root.add_child(TreeNode::new("Child 1", ()));
     root.add_child(TreeNode::new("Child 2", ()));
 
-    let mut state = TreeState::new(vec![root]);
-    state.set_focused(true);
+    let state = TreeState::new(vec![root]);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
@@ -251,8 +246,7 @@ fn test_view_unfocused_expanded_tree() {
     root.add_child(TreeNode::new("Child 1", ()));
     root.add_child(TreeNode::new("Child 2", ()));
 
-    let mut state = TreeState::new(vec![root]);
-    state.set_focused(false);
+    let state = TreeState::new(vec![root]);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
@@ -297,7 +291,6 @@ fn test_view_filtered_focused() {
     docs.add_child(TreeNode::new("guide.md", ()));
 
     let mut state = TreeState::new(vec![docs]);
-    state.set_focused(true);
     state.set_filter_text("readme");
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
@@ -362,7 +355,6 @@ fn test_view_selection_on_last_root() {
     let root3 = TreeNode::new("Root 3", ());
 
     let mut state = TreeState::new(vec![root1, root2, root3]);
-    state.set_focused(true);
     state.selected_index = Some(2); // Select "Root 3"
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);

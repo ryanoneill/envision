@@ -7,7 +7,7 @@
 //! and produces [`FileBrowserOutput`]. Entries are represented as
 //! [`FileEntry`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
+//! Focus and disabled state are managed via [`ViewContext`].
 //!
 //! # Example
 //!
@@ -21,8 +21,7 @@
 //!     FileEntry::directory("src", "/src"),
 //!     FileEntry::file("README.md", "/README.md"),
 //! ];
-//! let mut state = FileBrowserState::new("/", entries);
-//! FileBrowser::set_focused(&mut state, true);
+//! let state = FileBrowserState::new("/", entries);
 //!
 //! assert_eq!(state.current_path(), "/");
 //! assert_eq!(state.entries().len(), 2);

@@ -20,8 +20,7 @@ fn test_view_normal() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = NumberInputState::new(42.0);
-    state.set_focused(true);
+    let state = NumberInputState::new(42.0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
 
     terminal
@@ -56,7 +55,6 @@ fn test_view_with_label() {
 #[test]
 fn test_view_editing() {
     let mut state = NumberInputState::new(42.0);
-    state.set_focused(true);
     NumberInput::update(&mut state, NumberInputMessage::StartEdit);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
 
@@ -78,7 +76,6 @@ fn test_view_editing() {
 #[test]
 fn test_view_editing_with_label() {
     let mut state = NumberInputState::new(42.0).with_label("Qty");
-    state.set_focused(true);
     NumberInput::update(&mut state, NumberInputMessage::StartEdit);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
 
@@ -99,7 +96,7 @@ fn test_view_editing_with_label() {
 
 #[test]
 fn test_view_disabled() {
-    let state = NumberInputState::new(42.0).with_disabled(true);
+    let state = NumberInputState::new(42.0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
 
     terminal
@@ -184,8 +181,7 @@ fn test_annotation_emitted() {
 #[test]
 fn test_annotation_focused() {
     use crate::annotation::with_annotations;
-    let mut state = NumberInputState::new(42.0);
-    state.set_focused(true);
+    let state = NumberInputState::new(42.0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
     let registry = with_annotations(|| {
         terminal
@@ -208,7 +204,7 @@ fn test_annotation_focused() {
 #[test]
 fn test_annotation_disabled() {
     use crate::annotation::with_annotations;
-    let state = NumberInputState::new(42.0).with_disabled(true);
+    let state = NumberInputState::new(42.0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
     let registry = with_annotations(|| {
         terminal

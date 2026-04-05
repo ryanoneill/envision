@@ -63,11 +63,10 @@ impl App for TreemapApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut treemap = TreemapState::new()
+        let treemap = TreemapState::new()
             .with_root(build_disk_usage())
             .with_title("Disk Usage (KB)")
             .with_show_values(true);
-        treemap.set_focused(true);
 
         (State { treemap }, Command::none())
     }
@@ -98,7 +97,9 @@ impl App for TreemapApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(msg) = state.treemap.handle_event(event) {
+        if let Some(msg) =
+            Treemap::handle_event(&state.treemap, event, &ViewContext::new().focused(true))
+        {
             return Some(Msg::Treemap(msg));
         }
         None

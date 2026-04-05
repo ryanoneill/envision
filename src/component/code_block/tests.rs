@@ -3,9 +3,7 @@ use super::*;
 use crate::component::test_utils;
 
 fn focused_state() -> CodeBlockState {
-    let mut state = CodeBlockState::new();
-    CodeBlock::set_focused(&mut state, true);
-    state
+    CodeBlockState::new()
 }
 
 fn code_state() -> CodeBlockState {
@@ -34,8 +32,6 @@ fn test_new() {
     let state = CodeBlockState::new();
     assert!(state.code().is_empty());
     assert_eq!(state.scroll_offset(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.title(), None);
     assert_eq!(state.language(), &Language::Plain);
     assert!(!state.show_line_numbers());
@@ -84,27 +80,19 @@ fn test_with_highlight_lines() {
 }
 
 #[test]
-fn test_with_disabled() {
-    let state = CodeBlockState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
 fn test_builder_chaining() {
     let state = CodeBlockState::new()
         .with_code("let x = 1;")
         .with_language(Language::Rust)
         .with_title("test.rs")
         .with_line_numbers(true)
-        .with_highlight_lines(vec![1])
-        .with_disabled(false);
+        .with_highlight_lines(vec![1]);
 
     assert_eq!(state.code(), "let x = 1;");
     assert_eq!(state.language(), &Language::Rust);
     assert_eq!(state.title(), Some("test.rs"));
     assert!(state.show_line_numbers());
     assert!(state.is_line_highlighted(1));
-    assert!(!state.is_disabled());
 }
 
 // =============================================================================
@@ -343,8 +331,7 @@ fn test_update_returns_none() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
+    let state = focused_state();
     let msg = CodeBlock::handle_event(
         &state,
         &Event::key(KeyCode::Up),
@@ -508,57 +495,10 @@ fn test_handle_event_unrecognized() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(CodeBlockMessage::ScrollUp));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = code_state();
-    state.set_scroll_offset(5);
-    state.dispatch_event(&Event::key(KeyCode::Up));
-    assert_eq!(state.scroll_offset(), 4);
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = code_state();
     state.update(CodeBlockMessage::ScrollDown);
     assert_eq!(state.scroll_offset(), 1);
-}
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = CodeBlock::init();
-    assert!(!CodeBlock::is_focused(&state));
-
-    CodeBlock::focus(&mut state);
-    assert!(CodeBlock::is_focused(&state));
-
-    CodeBlock::blur(&mut state);
-    assert!(!CodeBlock::is_focused(&state));
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = CodeBlock::init();
-    assert!(!CodeBlock::is_disabled(&state));
-
-    CodeBlock::disable(&mut state);
-    assert!(CodeBlock::is_disabled(&state));
-
-    CodeBlock::enable(&mut state);
-    assert!(!CodeBlock::is_disabled(&state));
 }
 
 // =============================================================================
@@ -637,8 +577,6 @@ fn test_view_focused() {
     let state = CodeBlockState::new()
         .with_code("let x = 1;")
         .with_language(Language::Rust);
-    let mut state = state;
-    state.set_focused(true);
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
@@ -658,8 +596,7 @@ fn test_view_focused() {
 fn test_view_disabled() {
     let state = CodeBlockState::new()
         .with_code("let x = 1;")
-        .with_language(Language::Rust)
-        .with_disabled(true);
+        .with_language(Language::Rust);
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
@@ -749,8 +686,7 @@ fn test_annotation_emitted() {
 #[test]
 fn test_annotation_focused() {
     use crate::annotation::{with_annotations, WidgetType};
-    let mut state = CodeBlockState::new().with_code("fn main() {}");
-    state.set_focused(true);
+    let state = CodeBlockState::new().with_code("fn main() {}");
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     let registry = with_annotations(|| {
         terminal
@@ -880,9 +816,7 @@ fn test_set_code_resets_horizontal_scroll() {
 
 #[test]
 fn test_horizontal_scroll_key_bindings() {
-    let mut state = CodeBlockState::new().with_code("Long line of code here");
-    CodeBlock::set_focused(&mut state, true);
-
+    let state = CodeBlockState::new().with_code("Long line of code here");
     // Left arrow
     let msg = CodeBlock::handle_event(
         &state,
@@ -918,7 +852,6 @@ fn test_horizontal_scroll_renders_shifted_content() {
     let mut state = CodeBlockState::new()
         .with_code(code)
         .with_language(Language::Hcl);
-    CodeBlock::set_focused(&mut state, true);
     state.set_horizontal_offset(10);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(33, 7);

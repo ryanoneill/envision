@@ -34,18 +34,8 @@ enum Msg {
 const BUTTON_COUNT: usize = 3;
 
 impl State {
-    fn focused_button_mut(&mut self) -> &mut ButtonState {
-        match self.focus_index {
-            0 => &mut self.save,
-            1 => &mut self.cancel,
-            _ => &mut self.submit,
-        }
-    }
-
     fn set_focus(&mut self, index: usize) {
-        self.focused_button_mut().set_focused(false);
         self.focus_index = index;
-        self.focused_button_mut().set_focused(true);
     }
 }
 
@@ -54,11 +44,10 @@ impl App for ButtonApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut save = ButtonState::new("Save");
-        save.set_focused(true);
+        let save = ButtonState::new("Save");
 
         let cancel = ButtonState::new("Cancel");
-        let submit = ButtonState::new("Submit").with_disabled(true);
+        let submit = ButtonState::new("Submit");
 
         let state = State {
             save,
@@ -168,9 +157,12 @@ impl App for ButtonApp {
         }
         // Route event to focused button
         match state.focus_index {
-            0 => state.save.handle_event(event).map(Msg::Save),
-            1 => state.cancel.handle_event(event).map(Msg::Cancel),
-            _ => state.submit.handle_event(event).map(Msg::Submit),
+            0 => Button::handle_event(&state.save, event, &ViewContext::new().focused(true))
+                .map(Msg::Save),
+            1 => Button::handle_event(&state.cancel, event, &ViewContext::new().focused(true))
+                .map(Msg::Cancel),
+            _ => Button::handle_event(&state.submit, event, &ViewContext::new().focused(true))
+                .map(Msg::Submit),
         }
     }
 }

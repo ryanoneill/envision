@@ -4,7 +4,7 @@
 //! application using The Elm Architecture (TEA) pattern. It demonstrates:
 //!
 //! - **Event dispatch**: Using `dispatch_event` to route events to the focused component
-//! - **Instance methods**: Using `state.set_focused()` instead of `Component::set_focused()`
+//! - **ViewContext**: Using `ViewContext::new().focused(true)` to pass focus state
 //! - **Simplified messages**: Global hotkeys only; component events dispatched directly
 //! - **Focus management**: Using `FocusManager` to coordinate keyboard focus
 //! - **Output handling**: Reacting to component outputs (selections, confirmations)
@@ -366,7 +366,11 @@ impl App for ShowcaseApp {
             Msg::ComponentEvent(event) => {
                 // If dialog is visible, route events to it
                 if state.dialog.is_visible() {
-                    if let Some(output) = state.dialog.dispatch_event(&event) {
+                    if let Some(output) = Dialog::dispatch_event(
+                        &mut state.dialog,
+                        &event,
+                        &ViewContext::new().focused(true),
+                    ) {
                         handle_dialog_output(state, output);
                     }
                     return Command::none();
@@ -376,7 +380,11 @@ impl App for ShowcaseApp {
                 let focused = state.focus.focused().cloned();
                 match focused {
                     Some(FocusId::Menu) => {
-                        if let Some(MenuOutput::Selected(idx)) = state.menu.dispatch_event(&event) {
+                        if let Some(MenuOutput::Selected(idx)) = Menu::dispatch_event(
+                            &mut state.menu,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        ) {
                             let label = state.menu.items()[idx].label();
                             push_toast(
                                 &mut state.toast,
@@ -386,28 +394,57 @@ impl App for ShowcaseApp {
                         }
                     }
                     Some(FocusId::Tabs) => {
-                        state.tabs.dispatch_event(&event);
+                        Tabs::dispatch_event(
+                            &mut state.tabs,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        );
                     }
                     Some(FocusId::Input) => {
-                        state.input.dispatch_event(&event);
+                        InputField::dispatch_event(
+                            &mut state.input,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        );
                     }
                     Some(FocusId::Checkbox) => {
-                        state.checkbox.dispatch_event(&event);
+                        Checkbox::dispatch_event(
+                            &mut state.checkbox,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        );
                     }
                     Some(FocusId::Radio) => {
-                        state.radio.dispatch_event(&event);
+                        RadioGroup::<String>::dispatch_event(
+                            &mut state.radio,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        );
                     }
                     Some(FocusId::SubmitButton) => {
-                        if state.submit_button.dispatch_event(&event).is_some() {
+                        if Button::dispatch_event(
+                            &mut state.submit_button,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        )
+                        .is_some()
+                        {
                             Dialog::update(&mut state.dialog, DialogMessage::Open);
                         }
                     }
                     Some(FocusId::List) => {
-                        state.list.dispatch_event(&event);
+                        SelectableList::dispatch_event(
+                            &mut state.list,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        );
                     }
                     Some(FocusId::Table) => {
-                        if let Some(TableOutput::Selected(row)) = state.table.dispatch_event(&event)
-                        {
+                        if let Some(TableOutput::Selected(row)) = Table::dispatch_event(
+                            &mut state.table,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        ) {
                             push_toast(
                                 &mut state.toast,
                                 format!("Selected user: {}", row.name),
@@ -420,16 +457,32 @@ impl App for ShowcaseApp {
                         // could extend to handle +/- keys here.
                     }
                     Some(FocusId::Heatmap) => {
-                        state.heatmap.dispatch_event(&event);
+                        Heatmap::dispatch_event(
+                            &mut state.heatmap,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        );
                     }
                     Some(FocusId::Timeline) => {
-                        state.timeline.dispatch_event(&event);
+                        Timeline::dispatch_event(
+                            &mut state.timeline,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        );
                     }
                     Some(FocusId::CommandPalette) => {
-                        state.command_palette.dispatch_event(&event);
+                        CommandPalette::dispatch_event(
+                            &mut state.command_palette,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        );
                     }
                     Some(FocusId::CodeBlock) => {
-                        state.code_block.dispatch_event(&event);
+                        CodeBlock::dispatch_event(
+                            &mut state.code_block,
+                            &event,
+                            &ViewContext::new().focused(true),
+                        );
                     }
                     None => {}
                 }
@@ -767,33 +820,9 @@ fn render_viz_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme)
 // Helpers
 // ---------------------------------------------------------------------------
 
-/// Synchronizes focus state across all components using instance methods.
-/// No turbofish needed — the type is inferred from the receiver.
-fn sync_focus(state: &mut State) {
-    let focused = state.focus.focused().cloned();
-
-    state.menu.set_focused(focused == Some(FocusId::Menu));
-    state.tabs.set_focused(focused == Some(FocusId::Tabs));
-    state.input.set_focused(focused == Some(FocusId::Input));
-    state
-        .checkbox
-        .set_focused(focused == Some(FocusId::Checkbox));
-    state.radio.set_focused(focused == Some(FocusId::Radio));
-    state
-        .submit_button
-        .set_focused(focused == Some(FocusId::SubmitButton));
-    state.list.set_focused(focused == Some(FocusId::List));
-    state.table.set_focused(focused == Some(FocusId::Table));
-    state.heatmap.set_focused(focused == Some(FocusId::Heatmap));
-    state
-        .timeline
-        .set_focused(focused == Some(FocusId::Timeline));
-    state
-        .command_palette
-        .set_focused(focused == Some(FocusId::CommandPalette));
-    state
-        .code_block
-        .set_focused(focused == Some(FocusId::CodeBlock));
+/// Focus synchronization is now handled via ViewContext in view() and handle_event().
+fn sync_focus(_state: &mut State) {
+    // No-op: focused/disabled state is passed via ViewContext, not stored in component state.
 }
 
 /// Creates a centered rectangle for dialog overlays.

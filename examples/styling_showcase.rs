@@ -268,9 +268,6 @@ impl App for StylingShowcaseApp {
             }
             Msg::TogglePanel => {
                 state.panel = state.panel.toggle();
-                // Update focus on styled text
-                let focused = state.panel == Panel::RichText;
-                state.styled_text.set_focused(focused);
             }
             Msg::StyledText(m) => {
                 StyledText::update(&mut state.styled_text, m);
@@ -329,7 +326,8 @@ impl App for StylingShowcaseApp {
             }
         }
         if state.panel == Panel::RichText {
-            state.styled_text.handle_event(event).map(Msg::StyledText)
+            StyledText::handle_event(&state.styled_text, event, &ViewContext::new().focused(true))
+                .map(Msg::StyledText)
         } else {
             None
         }

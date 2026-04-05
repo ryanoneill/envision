@@ -2,9 +2,7 @@ use super::*;
 use crate::component::test_utils;
 
 fn focused_state() -> MarkdownRendererState {
-    let mut state = MarkdownRendererState::new();
-    MarkdownRenderer::set_focused(&mut state, true);
-    state
+    MarkdownRendererState::new()
 }
 
 fn content_state() -> MarkdownRendererState {
@@ -25,8 +23,6 @@ fn test_new() {
     let state = MarkdownRendererState::new();
     assert!(state.source().is_empty());
     assert_eq!(state.scroll_offset(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.title(), None);
     assert!(!state.show_source());
 }
@@ -55,13 +51,6 @@ fn test_with_show_source() {
     let state = MarkdownRendererState::new().with_show_source(true);
     assert!(state.show_source());
 }
-
-#[test]
-fn test_with_disabled() {
-    let state = MarkdownRendererState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // =============================================================================
 // Source management
 // =============================================================================
@@ -199,8 +188,7 @@ fn test_update_returns_none() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
+    let state = focused_state();
     let msg = MarkdownRenderer::handle_event(
         &state,
         &Event::key(KeyCode::Up),
@@ -378,65 +366,12 @@ fn test_handle_event_unrecognized() {
         None
     );
 }
-
-// =============================================================================
-// Instance methods
-// =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(MarkdownRendererMessage::ScrollUp));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = content_state();
-    state.set_scroll_offset(5);
-    state.dispatch_event(&Event::key(KeyCode::Up));
-    assert_eq!(state.scroll_offset(), 4);
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = content_state();
     state.update(MarkdownRendererMessage::ScrollDown);
     assert_eq!(state.scroll_offset(), 1);
 }
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = MarkdownRenderer::init();
-    assert!(!MarkdownRenderer::is_focused(&state));
-
-    MarkdownRenderer::focus(&mut state);
-    assert!(MarkdownRenderer::is_focused(&state));
-
-    MarkdownRenderer::blur(&mut state);
-    assert!(!MarkdownRenderer::is_focused(&state));
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = MarkdownRenderer::init();
-    assert!(!MarkdownRenderer::is_disabled(&state));
-
-    MarkdownRenderer::disable(&mut state);
-    assert!(MarkdownRenderer::is_disabled(&state));
-
-    MarkdownRenderer::enable(&mut state);
-    assert!(!MarkdownRenderer::is_disabled(&state));
-}
-
 // =============================================================================
 // Snapshot tests (view)
 // =============================================================================
@@ -550,27 +485,6 @@ fn test_view_focused() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
-
-#[test]
-fn test_view_disabled() {
-    let state = MarkdownRendererState::new()
-        .with_source("# Disabled")
-        .with_disabled(true);
-    let (mut terminal, theme) = test_utils::setup_render(40, 10);
-    terminal
-        .draw(|frame| {
-            MarkdownRenderer::view(
-                &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
-            );
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
 #[test]
 fn test_view_with_title() {
     let state = MarkdownRendererState::new()

@@ -195,8 +195,6 @@ fn test_state_new() {
     let state = StyledTextState::new();
     assert!(state.content().is_empty());
     assert_eq!(state.scroll_offset(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.title(), None);
     assert!(state.show_border());
 }
@@ -212,12 +210,6 @@ fn test_state_with_content() {
 fn test_state_with_title() {
     let state = StyledTextState::new().with_title("Preview");
     assert_eq!(state.title(), Some("Preview"));
-}
-
-#[test]
-fn test_state_with_disabled() {
-    let state = StyledTextState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 #[test]
@@ -324,8 +316,7 @@ fn test_set_content_resets_scroll() {
 
 #[test]
 fn test_handle_event_up() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::Up),
@@ -336,8 +327,7 @@ fn test_handle_event_up() {
 
 #[test]
 fn test_handle_event_k() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg =
         StyledText::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StyledTextMessage::ScrollUp));
@@ -345,8 +335,7 @@ fn test_handle_event_k() {
 
 #[test]
 fn test_handle_event_down() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::Down),
@@ -357,8 +346,7 @@ fn test_handle_event_down() {
 
 #[test]
 fn test_handle_event_j() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg =
         StyledText::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StyledTextMessage::ScrollDown));
@@ -366,8 +354,7 @@ fn test_handle_event_j() {
 
 #[test]
 fn test_handle_event_page_up() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::PageUp),
@@ -378,8 +365,7 @@ fn test_handle_event_page_up() {
 
 #[test]
 fn test_handle_event_page_down() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::PageDown),
@@ -390,8 +376,7 @@ fn test_handle_event_page_down() {
 
 #[test]
 fn test_handle_event_ctrl_u() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg =
         StyledText::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StyledTextMessage::PageUp(10)));
@@ -399,8 +384,7 @@ fn test_handle_event_ctrl_u() {
 
 #[test]
 fn test_handle_event_ctrl_d() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg =
         StyledText::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StyledTextMessage::PageDown(10)));
@@ -408,8 +392,7 @@ fn test_handle_event_ctrl_d() {
 
 #[test]
 fn test_handle_event_home() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::Home),
@@ -420,8 +403,7 @@ fn test_handle_event_home() {
 
 #[test]
 fn test_handle_event_g() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg =
         StyledText::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StyledTextMessage::Home));
@@ -429,8 +411,7 @@ fn test_handle_event_g() {
 
 #[test]
 fn test_handle_event_end() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::End),
@@ -448,8 +429,7 @@ fn test_handle_event_unfocused_ignored() {
 
 #[test]
 fn test_handle_event_disabled_ignored() {
-    let mut state = StyledTextState::new().with_disabled(true);
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::Down),
@@ -460,8 +440,7 @@ fn test_handle_event_disabled_ignored() {
 
 #[test]
 fn test_handle_event_unrecognized() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let msg =
         StyledText::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
@@ -472,8 +451,11 @@ fn test_handle_event_unrecognized() {
 #[test]
 fn test_dispatch_event() {
     let mut state = StyledTextState::new();
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
+    let output = StyledText::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(StyledTextOutput::ScrollChanged(1)));
 }
 
@@ -483,46 +465,12 @@ fn test_instance_update() {
     let output = state.update(StyledTextMessage::ScrollDown);
     assert_eq!(output, Some(StyledTextOutput::ScrollChanged(1)));
 }
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(StyledTextMessage::ScrollUp));
-}
-
-// ========== Focusable Trait Tests ==========
-
-#[test]
-fn test_focusable_is_focused() {
-    let state = StyledTextState::new();
-    assert!(!StyledText::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = StyledTextState::new();
-    StyledText::set_focused(&mut state, true);
-    assert!(StyledText::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_focus_blur() {
-    let mut state = StyledTextState::new();
-    StyledText::focus(&mut state);
-    assert!(state.is_focused());
-    StyledText::blur(&mut state);
-    assert!(!state.is_focused());
-}
-
 // ========== Init Test ==========
 
 #[test]
 fn test_init() {
     let state = StyledText::init();
     assert!(state.content().is_empty());
-    assert!(!state.is_focused());
     assert!(state.show_border());
 }
 
@@ -705,8 +653,7 @@ fn test_view_mixed_content() {
 #[test]
 fn test_annotation_emission() {
     use crate::annotation::{with_annotations, WidgetType};
-    let mut state = StyledTextState::new();
-    state.set_focused(true);
+    let state = StyledTextState::new();
     let (mut terminal, theme) = setup_render(40, 5);
     let registry = with_annotations(|| {
         terminal

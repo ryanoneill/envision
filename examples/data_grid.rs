@@ -70,8 +70,7 @@ impl App for DataGridApp {
             Column::new("Role", Constraint::Percentage(40)),
         ];
 
-        let mut grid = DataGridState::new(employees, columns);
-        grid.set_focused(true);
+        let grid = DataGridState::new(employees, columns);
 
         (State { grid }, Command::none())
     }
@@ -119,7 +118,7 @@ impl App for DataGridApp {
                 }
             }
         }
-        state.grid.handle_event(event).map(Msg::Grid)
+        DataGrid::handle_event(&state.grid, event, &ViewContext::new().focused(true)).map(Msg::Grid)
     }
 }
 

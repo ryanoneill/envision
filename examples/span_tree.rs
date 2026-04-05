@@ -59,10 +59,9 @@ impl App for SpanTreeApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut tree = SpanTreeState::new(build_trace())
+        let tree = SpanTreeState::new(build_trace())
             .with_title("HTTP Request Trace")
             .with_label_width(28);
-        tree.set_focused(true);
 
         (State { tree }, Command::none())
     }
@@ -108,7 +107,8 @@ impl App for SpanTreeApp {
                 return Some(Msg::Quit);
             }
         }
-        state.tree.handle_event(event).map(Msg::SpanTree)
+        SpanTree::handle_event(&state.tree, event, &ViewContext::new().focused(true))
+            .map(Msg::SpanTree)
     }
 }
 

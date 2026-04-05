@@ -14,8 +14,6 @@ fn test_new() {
     assert_eq!(state.step(), 1.0);
     assert!(state.show_value());
     assert_eq!(state.label(), None);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -76,13 +74,6 @@ fn test_with_show_value() {
     let state = SliderState::new(0.0, 100.0).with_show_value(false);
     assert!(!state.show_value());
 }
-
-#[test]
-fn test_with_disabled() {
-    let state = SliderState::new(0.0, 100.0).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
 #[test]
 fn test_builder_chaining() {
     let state = SliderState::new(0.0, 100.0)
@@ -90,14 +81,12 @@ fn test_builder_chaining() {
         .with_step(5.0)
         .with_label("Volume")
         .with_orientation(SliderOrientation::Horizontal)
-        .with_show_value(true)
-        .with_disabled(false);
+        .with_show_value(true);
     assert_eq!(state.value(), 50.0);
     assert_eq!(state.step(), 5.0);
     assert_eq!(state.label(), Some("Volume"));
     assert_eq!(state.orientation(), &SliderOrientation::Horizontal);
     assert!(state.show_value());
-    assert!(!state.is_disabled());
 }
 
 // ========================================
@@ -213,17 +202,6 @@ fn test_set_max_already_at_max() {
     let output = Slider::update(&mut state, SliderMessage::SetMax);
     assert_eq!(output, None);
 }
-
-#[test]
-fn test_disabled_prevents_update() {
-    let mut state = SliderState::new(0.0, 100.0)
-        .with_value(50.0)
-        .with_disabled(true);
-    let output = Slider::update(&mut state, SliderMessage::Increment);
-    assert_eq!(output, None);
-    assert_eq!(state.value(), 50.0);
-}
-
 #[test]
 fn test_set_value_method() {
     let mut state = SliderState::new(0.0, 100.0);
@@ -324,8 +302,7 @@ fn test_value_at_boundary_decrement() {
 
 #[test]
 fn test_handle_event_right_horizontal() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Right),
@@ -336,8 +313,7 @@ fn test_handle_event_right_horizontal() {
 
 #[test]
 fn test_handle_event_left_horizontal() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Left),
@@ -348,24 +324,21 @@ fn test_handle_event_left_horizontal() {
 
 #[test]
 fn test_handle_event_l_horizontal() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SliderMessage::Increment));
 }
 
 #[test]
 fn test_handle_event_h_horizontal() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SliderMessage::Decrement));
 }
 
 #[test]
 fn test_handle_event_page_up() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::PageUp),
@@ -376,8 +349,7 @@ fn test_handle_event_page_up() {
 
 #[test]
 fn test_handle_event_page_down() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::PageDown),
@@ -388,8 +360,7 @@ fn test_handle_event_page_down() {
 
 #[test]
 fn test_handle_event_home() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Home),
@@ -400,8 +371,7 @@ fn test_handle_event_home() {
 
 #[test]
 fn test_handle_event_end() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::End),
@@ -416,8 +386,7 @@ fn test_handle_event_end() {
 
 #[test]
 fn test_handle_event_up_vertical() {
-    let mut state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Up),
@@ -428,8 +397,7 @@ fn test_handle_event_up_vertical() {
 
 #[test]
 fn test_handle_event_down_vertical() {
-    let mut state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Down),
@@ -440,24 +408,21 @@ fn test_handle_event_down_vertical() {
 
 #[test]
 fn test_handle_event_k_vertical() {
-    let mut state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SliderMessage::Increment));
 }
 
 #[test]
 fn test_handle_event_j_vertical() {
-    let mut state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SliderMessage::Decrement));
 }
 
 #[test]
 fn test_handle_event_page_up_vertical() {
-    let mut state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::PageUp),
@@ -468,8 +433,7 @@ fn test_handle_event_page_up_vertical() {
 
 #[test]
 fn test_handle_event_home_vertical() {
-    let mut state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Home),
@@ -480,8 +444,7 @@ fn test_handle_event_home_vertical() {
 
 #[test]
 fn test_handle_event_end_vertical() {
-    let mut state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::End),
@@ -500,23 +463,9 @@ fn test_handle_event_unfocused() {
     let msg = Slider::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 }
-
-#[test]
-fn test_handle_event_disabled() {
-    let mut state = SliderState::new(0.0, 100.0).with_disabled(true);
-    state.set_focused(true);
-    let msg = Slider::handle_event(
-        &state,
-        &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true).disabled(true),
-    );
-    assert_eq!(msg, None);
-}
-
 #[test]
 fn test_handle_event_unrelated_key() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(&state, &Event::char('q'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
@@ -528,7 +477,6 @@ fn test_handle_event_unrelated_key() {
 #[test]
 fn test_dispatch_event() {
     let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
     let output = Slider::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
@@ -549,27 +497,6 @@ fn test_dispatch_event_unfocused() {
     assert_eq!(output, None);
     assert_eq!(state.value(), 0.0);
 }
-
-// ========================================
-// Instance Method Tests
-// ========================================
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Right));
-    assert_eq!(msg, Some(SliderMessage::Increment));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = SliderState::new(0.0, 100.0);
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Right));
-    assert_eq!(output, Some(SliderOutput::ValueChanged(1.0)));
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = SliderState::new(0.0, 100.0);
@@ -577,41 +504,6 @@ fn test_instance_update() {
     assert_eq!(output, Some(SliderOutput::ValueChanged(1.0)));
     assert_eq!(state.value(), 1.0);
 }
-
-// ========================================
-// Focusable / Disableable Trait Tests
-// ========================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = SliderState::new(0.0, 100.0);
-    assert!(!Slider::is_focused(&state));
-
-    Slider::set_focused(&mut state, true);
-    assert!(Slider::is_focused(&state));
-
-    Slider::blur(&mut state);
-    assert!(!Slider::is_focused(&state));
-
-    Slider::focus(&mut state);
-    assert!(Slider::is_focused(&state));
-}
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = SliderState::new(0.0, 100.0);
-    assert!(!Slider::is_disabled(&state));
-
-    Slider::set_disabled(&mut state, true);
-    assert!(Slider::is_disabled(&state));
-
-    Slider::enable(&mut state);
-    assert!(!Slider::is_disabled(&state));
-
-    Slider::disable(&mut state);
-    assert!(Slider::is_disabled(&state));
-}
-
 // ========================================
 // Init Test
 // ========================================
@@ -623,8 +515,6 @@ fn test_init() {
     assert_eq!(state.min(), 0.0);
     assert_eq!(state.max(), 100.0);
     assert_eq!(state.step(), 1.0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 // ========================================
@@ -707,8 +597,7 @@ fn test_view_horizontal_no_value_display() {
 
 #[test]
 fn test_view_horizontal_focused() {
-    let mut state = SliderState::new(0.0, 100.0).with_value(50.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0).with_value(50.0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 3);
 
     terminal
@@ -728,9 +617,7 @@ fn test_view_horizontal_focused() {
 
 #[test]
 fn test_view_horizontal_disabled() {
-    let state = SliderState::new(0.0, 100.0)
-        .with_value(50.0)
-        .with_disabled(true);
+    let state = SliderState::new(0.0, 100.0).with_value(50.0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 3);
 
     terminal
@@ -846,8 +733,7 @@ fn test_annotation_emitted() {
 #[test]
 fn test_annotation_focused() {
     use crate::annotation::with_annotations;
-    let mut state = SliderState::new(0.0, 100.0).with_value(50.0);
-    state.set_focused(true);
+    let state = SliderState::new(0.0, 100.0).with_value(50.0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 3);
     let registry = with_annotations(|| {
         terminal
@@ -870,9 +756,7 @@ fn test_annotation_focused() {
 #[test]
 fn test_annotation_disabled() {
     use crate::annotation::with_annotations;
-    let state = SliderState::new(0.0, 100.0)
-        .with_value(50.0)
-        .with_disabled(true);
+    let state = SliderState::new(0.0, 100.0).with_value(50.0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 3);
     let registry = with_annotations(|| {
         terminal

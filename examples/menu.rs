@@ -29,14 +29,13 @@ impl App for MenuApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut menu = MenuState::new(vec![
+        let menu = MenuState::new(vec![
             MenuItem::new("File"),
             MenuItem::new("Edit"),
             MenuItem::new("View"),
             MenuItem::disabled("Tools"),
             MenuItem::new("Help"),
         ]);
-        menu.set_focused(true);
 
         let state = State {
             menu,
@@ -99,7 +98,7 @@ impl App for MenuApp {
                 return Some(Msg::Quit);
             }
         }
-        state.menu.handle_event(event).map(Msg::Menu)
+        Menu::handle_event(&state.menu, event, &ViewContext::new().focused(true)).map(Msg::Menu)
     }
 }
 

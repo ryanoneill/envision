@@ -13,9 +13,7 @@ fn sample_entries() -> Vec<FileEntry> {
 }
 
 fn focused_state() -> FileBrowserState {
-    let mut state = FileBrowserState::new("/", sample_entries());
-    FileBrowser::set_focused(&mut state, true);
-    state
+    FileBrowserState::new("/", sample_entries())
 }
 
 // =============================================================================
@@ -61,8 +59,7 @@ fn test_render_with_filter() {
 
 #[test]
 fn test_render_disabled() {
-    let mut state = FileBrowserState::new("/", sample_entries()).with_disabled(true);
-    FileBrowser::set_focused(&mut state, true);
+    let state = FileBrowserState::new("/", sample_entries());
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
@@ -94,8 +91,7 @@ fn test_render_with_selection_markers() {
 
 #[test]
 fn test_render_empty() {
-    let mut state = FileBrowserState::new("/empty", vec![]);
-    FileBrowser::set_focused(&mut state, true);
+    let state = FileBrowserState::new("/empty", vec![]);
     let (mut terminal, theme) = test_utils::setup_render(60, 8);
     terminal
         .draw(|frame| {

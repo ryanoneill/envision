@@ -28,7 +28,7 @@ impl App for AlertPanelApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut panel = AlertPanelState::new()
+        let panel = AlertPanelState::new()
             .with_metrics(vec![
                 AlertMetric::new("cpu", "CPU Usage", AlertThreshold::new(70.0, 90.0))
                     .with_units("%")
@@ -50,7 +50,6 @@ impl App for AlertPanelApp {
             ])
             .with_columns(3)
             .with_title("Infrastructure Alerts");
-        panel.set_focused(true);
 
         (State { panel }, Command::none())
     }
@@ -99,7 +98,8 @@ impl App for AlertPanelApp {
                 return Some(Msg::Quit);
             }
         }
-        state.panel.handle_event(event).map(Msg::Panel)
+        AlertPanel::handle_event(&state.panel, event, &ViewContext::new().focused(true))
+            .map(Msg::Panel)
     }
 }
 

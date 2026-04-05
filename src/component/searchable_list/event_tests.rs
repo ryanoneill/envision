@@ -12,9 +12,7 @@ fn sample_items() -> Vec<String> {
 }
 
 fn focused_state() -> SearchableListState<String> {
-    let mut state = SearchableListState::new(sample_items());
-    SearchableList::set_focused(&mut state, true);
-    state
+    SearchableListState::new(sample_items())
 }
 
 #[test]

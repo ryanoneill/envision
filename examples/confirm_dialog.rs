@@ -129,7 +129,12 @@ impl App for ConfirmDialogApp {
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         // If dialog is visible, route events to it
         if ConfirmDialog::is_visible(&state.dialog) {
-            return state.dialog.handle_event(event).map(Msg::Dialog);
+            return ConfirmDialog::handle_event(
+                &state.dialog,
+                event,
+                &ViewContext::new().focused(true),
+            )
+            .map(Msg::Dialog);
         }
 
         if let Some(key) = event.as_key() {

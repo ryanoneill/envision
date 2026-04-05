@@ -54,7 +54,7 @@ fn test_snapshot_focused_with_selection() {
         .with_child(FlameNode::new("compute()", 300).with_color(Color::Yellow))
         .with_child(FlameNode::new("io()", 100).with_color(Color::Magenta));
     let mut state = FlameGraphState::with_root(root).with_title("Flame Graph");
-    state.set_focused(true);
+
     // Select compute() at depth 1
     state.select_down();
     let (mut terminal, theme) = test_utils::setup_render(60, 8);
@@ -84,7 +84,7 @@ fn test_snapshot_zoomed() {
         )
         .with_child(FlameNode::new("io()", 100).with_color(Color::Magenta));
     let mut state = FlameGraphState::with_root(root).with_title("Flame Graph");
-    state.set_focused(true);
+
     state.select_down(); // select compute()
     state.zoom_in(); // zoom into compute()
     let (mut terminal, theme) = test_utils::setup_render(60, 8);
@@ -105,9 +105,7 @@ fn test_snapshot_zoomed() {
 #[test]
 fn test_snapshot_disabled() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
-    let state = FlameGraphState::with_root(root)
-        .with_title("Flame Graph")
-        .with_disabled(true);
+    let state = FlameGraphState::with_root(root).with_title("Flame Graph");
     let (mut terminal, theme) = test_utils::setup_render(60, 8);
     terminal
         .draw(|frame| {

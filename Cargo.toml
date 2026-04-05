@@ -113,10 +113,6 @@ name = "line_input"
 required-features = ["input-components"]
 
 [[example]]
-name = "chat_app"
-required-features = ["compound-components"]
-
-[[example]]
 name = "code_block"
 required-features = ["display-components"]
 
@@ -381,10 +377,6 @@ name = "markdown_renderer"
 required-features = ["markdown"]
 
 [[example]]
-name = "chat_markdown_demo"
-required-features = ["compound-components", "markdown"]
-
-[[example]]
 name = "dashboard_builder"
 required-features = ["full"]
 
@@ -403,10 +395,6 @@ required-features = ["input-components"]
 [[example]]
 name = "select"
 required-features = ["input-components"]
-
-[[example]]
-name = "chat_view"
-required-features = ["compound-components"]
 
 [[example]]
 name = "chat_client"

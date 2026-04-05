@@ -85,8 +85,6 @@ fn test_state_new() {
     assert_eq!(state.selected_index(), 0);
     assert_eq!(state.search_query(), "");
     assert_eq!(state.title(), None);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -101,12 +99,6 @@ fn test_state_with_root() {
 fn test_state_with_title() {
     let state = FlameGraphState::with_root(FlameNode::new("main()", 500)).with_title("CPU Profile");
     assert_eq!(state.title(), Some("CPU Profile"));
-}
-
-#[test]
-fn test_state_with_disabled() {
-    let state = FlameGraphState::with_root(FlameNode::new("main()", 500)).with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 #[test]
@@ -133,7 +125,7 @@ fn test_set_root_resets_zoom() {
         FlameNode::new("main()", 500)
             .with_child(FlameNode::new("compute()", 300).with_child(FlameNode::new("sort()", 200))),
     );
-    state.set_focused(true);
+
     state.select_down();
     state.zoom_in();
     assert!(!state.zoom_stack().is_empty());
@@ -162,7 +154,6 @@ fn test_clear() {
 fn test_select_down() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     assert_eq!(state.selected_depth(), 0);
     assert!(state.select_down());
@@ -174,7 +165,6 @@ fn test_select_down() {
 fn test_select_down_no_children() {
     let root = FlameNode::new("main()", 500);
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     assert!(!state.select_down());
     assert_eq!(state.selected_depth(), 0);
@@ -190,7 +180,6 @@ fn test_select_down_empty() {
 fn test_select_up() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     state.select_down();
     assert_eq!(state.selected_depth(), 1);
@@ -203,7 +192,6 @@ fn test_select_up() {
 fn test_select_up_at_root() {
     let root = FlameNode::new("main()", 500);
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     assert!(!state.select_up());
     assert_eq!(state.selected_depth(), 0);
@@ -221,7 +209,6 @@ fn test_select_left() {
         .with_child(FlameNode::new("compute()", 300))
         .with_child(FlameNode::new("io()", 100));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     state.select_down(); // depth 1, index 0
     state.select_right(); // depth 1, index 1
@@ -235,7 +222,6 @@ fn test_select_left() {
 fn test_select_left_at_first() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     state.select_down();
     assert!(!state.select_left());
@@ -254,7 +240,6 @@ fn test_select_right() {
         .with_child(FlameNode::new("compute()", 300))
         .with_child(FlameNode::new("io()", 100));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     state.select_down(); // depth 1, index 0
     assert!(state.select_right());
@@ -265,7 +250,6 @@ fn test_select_right() {
 fn test_select_right_at_last() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     state.select_down();
     assert!(!state.select_right());
@@ -285,7 +269,6 @@ fn test_navigation_deep() {
             .with_child(FlameNode::new("sort()", 200).with_child(FlameNode::new("merge()", 100))),
     );
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     assert!(state.select_down()); // depth 1: compute()
     assert!(state.select_down()); // depth 2: sort()
@@ -306,7 +289,6 @@ fn test_zoom_in() {
     let root = FlameNode::new("main()", 500)
         .with_child(FlameNode::new("compute()", 300).with_child(FlameNode::new("sort()", 200)));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     // Select compute() and zoom in
     state.select_down();
@@ -321,7 +303,6 @@ fn test_zoom_in() {
 fn test_zoom_in_leaf_fails() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("leaf()", 100));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     // Select leaf and try to zoom
     state.select_down();
@@ -334,7 +315,6 @@ fn test_zoom_out() {
     let root = FlameNode::new("main()", 500)
         .with_child(FlameNode::new("compute()", 300).with_child(FlameNode::new("sort()", 200)));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     state.select_down();
     state.zoom_in();
@@ -357,7 +337,6 @@ fn test_reset_zoom() {
             .with_child(FlameNode::new("sort()", 200).with_child(FlameNode::new("merge()", 100))),
     );
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     state.select_down();
     state.zoom_in();
@@ -378,7 +357,6 @@ fn test_zoom_stack_deep() {
             .with_child(FlameNode::new("b()", 300).with_child(FlameNode::new("c()", 200))),
     );
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     // Zoom into a()
     state.select_down();
@@ -436,7 +414,7 @@ fn test_current_view_root_with_zoom() {
     let root = FlameNode::new("main()", 500)
         .with_child(FlameNode::new("compute()", 300).with_child(FlameNode::new("sort()", 200)));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
+
     state.select_down();
     state.zoom_in();
     assert_eq!(state.current_view_root().unwrap().label(), "compute()");
@@ -459,7 +437,6 @@ fn test_selected_frame_after_navigation() {
         .with_child(FlameNode::new("compute()", 300))
         .with_child(FlameNode::new("io()", 100));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     state.select_down();
     assert_eq!(state.selected_frame().unwrap().label(), "compute()");
@@ -513,9 +490,7 @@ fn test_handle_event_not_focused() {
 
 #[test]
 fn test_handle_event_disabled() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
-    state.set_disabled(true);
+    let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     let msg = FlameGraph::handle_event(
         &state,
         &Event::key(KeyCode::Down),
@@ -526,8 +501,8 @@ fn test_handle_event_disabled() {
 
 #[test]
 fn test_handle_event_down() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
+    let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+
     assert_eq!(
         FlameGraph::handle_event(
             &state,
@@ -544,8 +519,8 @@ fn test_handle_event_down() {
 
 #[test]
 fn test_handle_event_up() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
+    let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+
     assert_eq!(
         FlameGraph::handle_event(
             &state,
@@ -562,8 +537,8 @@ fn test_handle_event_up() {
 
 #[test]
 fn test_handle_event_left() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
+    let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+
     assert_eq!(
         FlameGraph::handle_event(
             &state,
@@ -580,8 +555,8 @@ fn test_handle_event_left() {
 
 #[test]
 fn test_handle_event_right() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
+    let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+
     assert_eq!(
         FlameGraph::handle_event(
             &state,
@@ -598,8 +573,8 @@ fn test_handle_event_right() {
 
 #[test]
 fn test_handle_event_enter_zoom_in() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
+    let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+
     assert_eq!(
         FlameGraph::handle_event(
             &state,
@@ -612,8 +587,8 @@ fn test_handle_event_enter_zoom_in() {
 
 #[test]
 fn test_handle_event_escape_zoom_out() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
+    let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+
     assert_eq!(
         FlameGraph::handle_event(
             &state,
@@ -634,8 +609,8 @@ fn test_handle_event_escape_zoom_out() {
 
 #[test]
 fn test_handle_event_home_reset_zoom() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
+    let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+
     assert_eq!(
         FlameGraph::handle_event(
             &state,
@@ -648,8 +623,8 @@ fn test_handle_event_home_reset_zoom() {
 
 #[test]
 fn test_handle_event_slash_search() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
+    let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+
     assert_eq!(
         FlameGraph::handle_event(&state, &Event::char('/'), &ViewContext::new().focused(true)),
         Some(FlameGraphMessage::SetSearch(String::new()))
@@ -658,8 +633,8 @@ fn test_handle_event_slash_search() {
 
 #[test]
 fn test_handle_event_unknown_key() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
+    let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+
     assert_eq!(
         FlameGraph::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
         None
@@ -708,7 +683,6 @@ fn test_update_clear_search() {
 fn test_update_select_down_output() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     let output = FlameGraph::update(&mut state, FlameGraphMessage::SelectDown);
     assert_eq!(
@@ -725,7 +699,7 @@ fn test_update_select_down_output() {
 fn test_update_select_up_output() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
+
     state.select_down();
 
     let output = FlameGraph::update(&mut state, FlameGraphMessage::SelectUp);
@@ -744,7 +718,7 @@ fn test_update_zoom_in_output() {
     let root = FlameNode::new("main()", 500)
         .with_child(FlameNode::new("compute()", 300).with_child(FlameNode::new("sort()", 200)));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
+
     state.select_down();
 
     let output = FlameGraph::update(&mut state, FlameGraphMessage::ZoomIn);
@@ -759,7 +733,7 @@ fn test_update_zoom_out_output() {
     let root = FlameNode::new("main()", 500)
         .with_child(FlameNode::new("compute()", 300).with_child(FlameNode::new("sort()", 200)));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
+
     state.select_down();
     state.zoom_in();
 
@@ -771,25 +745,13 @@ fn test_update_zoom_out_output() {
 fn test_update_reset_zoom() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
+
     state.select_down();
     state.zoom_in();
 
     let output = FlameGraph::update(&mut state, FlameGraphMessage::ResetZoom);
     assert_eq!(output, None);
     assert!(state.zoom_stack().is_empty());
-}
-
-#[test]
-fn test_update_disabled_ignores_navigation() {
-    let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
-    let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
-    state.set_disabled(true);
-
-    let output = FlameGraph::update(&mut state, FlameGraphMessage::SelectDown);
-    assert_eq!(output, None);
-    assert_eq!(state.selected_depth(), 0);
 }
 
 #[test]
@@ -800,43 +762,13 @@ fn test_update_empty_graph_ignores_navigation() {
 }
 
 // =============================================================================
-// Dispatch Event
-// =============================================================================
-
-#[test]
-fn test_dispatch_event() {
-    let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
-    let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
-
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
-    assert_eq!(
-        output,
-        Some(FlameGraphOutput::FrameSelected {
-            label: "compute()".to_string(),
-            value: 300,
-            self_value: 300,
-        })
-    );
-}
-
-// =============================================================================
 // Instance Methods
 // =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Down));
-    assert_eq!(msg, Some(FlameGraphMessage::SelectDown));
-}
 
 #[test]
 fn test_instance_update() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("compute()", 300));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     let output = state.update(FlameGraphMessage::SelectDown);
     assert!(output.is_some());
@@ -853,34 +785,6 @@ fn test_init() {
 }
 
 // =============================================================================
-// Focusable / Disableable
-// =============================================================================
-
-#[test]
-fn test_focusable() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    assert!(!FlameGraph::is_focused(&state));
-    FlameGraph::set_focused(&mut state, true);
-    assert!(FlameGraph::is_focused(&state));
-    FlameGraph::blur(&mut state);
-    assert!(!FlameGraph::is_focused(&state));
-    FlameGraph::focus(&mut state);
-    assert!(FlameGraph::is_focused(&state));
-}
-
-#[test]
-fn test_disableable() {
-    let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    assert!(!FlameGraph::is_disabled(&state));
-    FlameGraph::set_disabled(&mut state, true);
-    assert!(FlameGraph::is_disabled(&state));
-    FlameGraph::enable(&mut state);
-    assert!(!FlameGraph::is_disabled(&state));
-    FlameGraph::disable(&mut state);
-    assert!(FlameGraph::is_disabled(&state));
-}
-
-// =============================================================================
 // Edge Cases
 // =============================================================================
 
@@ -888,7 +792,6 @@ fn test_disableable() {
 fn test_zoom_in_on_root_with_children() {
     let root = FlameNode::new("main()", 500).with_child(FlameNode::new("a()", 300));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     // Zoom into root (which has children)
     assert!(state.zoom_in());
@@ -907,7 +810,6 @@ fn test_select_down_multiple_children() {
         .with_child(FlameNode::new("b()", 150))
         .with_child(FlameNode::new("c()", 100));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     state.select_down(); // depth 1
     assert_eq!(state.selected_frame().unwrap().label(), "a()");
@@ -927,7 +829,6 @@ fn test_navigation_sibling_at_depth_zero() {
     // At depth 0 there's only one frame (the root)
     let root = FlameNode::new("main()", 500);
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     assert!(!state.select_left());
     assert!(!state.select_right());
@@ -942,7 +843,6 @@ fn test_deep_nesting_navigation() {
         ),
     );
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     // Navigate all the way down
     for depth in 1..=4 {
@@ -973,7 +873,6 @@ fn test_select_up_finds_correct_parent() {
         .with_child(FlameNode::new("a()", 200).with_child(FlameNode::new("a1()", 100)))
         .with_child(FlameNode::new("b()", 200).with_child(FlameNode::new("b1()", 100)));
     let mut state = FlameGraphState::with_root(root);
-    state.set_focused(true);
 
     // Go to depth 1, select b()
     state.select_down();

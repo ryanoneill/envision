@@ -36,10 +36,9 @@ impl App for ScrollViewApp {
             .map(|i| format!("Item {:>3}: Configuration setting for module {}", i, i))
             .collect();
 
-        let mut scroll_view = ScrollViewState::new()
+        let scroll_view = ScrollViewState::new()
             .with_content_height(lines.len() as u16)
             .with_title("Configuration Settings");
-        scroll_view.set_focused(true);
 
         (State { scroll_view, lines }, Command::none())
     }
@@ -99,7 +98,8 @@ impl App for ScrollViewApp {
                 return Some(Msg::Quit);
             }
         }
-        state.scroll_view.handle_event(event).map(Msg::ScrollView)
+        ScrollView::handle_event(&state.scroll_view, event, &ViewContext::new().focused(true))
+            .map(Msg::ScrollView)
     }
 }
 

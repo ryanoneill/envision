@@ -51,10 +51,8 @@ impl App for PaneLayoutApp {
                 .with_min_size(10),
         ];
 
-        let mut layout = PaneLayoutState::new(pane_layout::PaneDirection::Horizontal, panes)
+        let layout = PaneLayoutState::new(pane_layout::PaneDirection::Horizontal, panes)
             .with_resize_step(0.05);
-
-        layout.set_focused(true);
 
         (State { layout }, Command::none())
     }
@@ -122,7 +120,8 @@ impl App for PaneLayoutApp {
                 _ => {}
             }
         }
-        state.layout.handle_event(event).map(Msg::Layout)
+        PaneLayout::handle_event(&state.layout, event, &ViewContext::new().focused(true))
+            .map(Msg::Layout)
     }
 }
 

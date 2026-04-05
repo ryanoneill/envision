@@ -53,9 +53,7 @@ fn sample_state_with_sources() -> EventStreamState {
 }
 
 fn focused_state() -> EventStreamState {
-    let mut state = sample_state();
-    EventStream::set_focused(&mut state, true);
-    state
+    sample_state()
 }
 
 // =============================================================================
@@ -361,7 +359,7 @@ fn test_render_with_sources() {
 
 #[test]
 fn test_render_disabled() {
-    let state = EventStreamState::new().with_disabled(true);
+    let state = EventStreamState::new();
     let (mut terminal, theme) = test_utils::setup_render(70, 15);
     terminal
         .draw(|frame| {

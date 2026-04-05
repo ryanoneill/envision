@@ -2,9 +2,7 @@ use super::*;
 use crate::input::{Event, KeyCode};
 
 fn focused_state() -> ConversationViewState {
-    let mut state = ConversationViewState::new();
-    ConversationView::set_focused(&mut state, true);
-    state
+    ConversationViewState::new()
 }
 
 fn state_with_messages() -> ConversationViewState {
@@ -279,8 +277,6 @@ fn test_new() {
     let state = ConversationViewState::new();
     assert_eq!(state.message_count(), 0);
     assert!(state.is_empty());
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert!(state.auto_scroll());
     assert!(!state.show_timestamps());
     assert!(state.show_role_labels());
@@ -318,12 +314,6 @@ fn test_with_timestamps() {
 fn test_with_role_labels() {
     let state = ConversationViewState::new().with_role_labels(false);
     assert!(!state.show_role_labels());
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = ConversationViewState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -522,46 +512,6 @@ fn test_collapse_multiple() {
 // Focus and disabled state
 // =============================================================================
 
-#[test]
-fn test_focused() {
-    let mut state = ConversationViewState::new();
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_disabled() {
-    let mut state = ConversationViewState::new();
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = ConversationView::init();
-    assert!(!ConversationView::is_focused(&state));
-    ConversationView::focus(&mut state);
-    assert!(ConversationView::is_focused(&state));
-    ConversationView::blur(&mut state);
-    assert!(!ConversationView::is_focused(&state));
-}
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = ConversationView::init();
-    assert!(!ConversationView::is_disabled(&state));
-    ConversationView::disable(&mut state);
-    assert!(ConversationView::is_disabled(&state));
-    ConversationView::enable(&mut state);
-    assert!(!ConversationView::is_disabled(&state));
-}
-
 // =============================================================================
 // Event handling
 // =============================================================================
@@ -577,8 +527,7 @@ fn test_unfocused_ignores_events() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
+    let state = focused_state();
     assert_eq!(
         ConversationView::handle_event(
             &state,
@@ -587,14 +536,6 @@ fn test_disabled_ignores_events() {
         ),
         None
     );
-}
-
-#[test]
-fn test_disabled_ignores_updates() {
-    let mut state = focused_state();
-    state.set_disabled(true);
-    let output = ConversationView::update(&mut state, ConversationViewMessage::ScrollUp);
-    assert_eq!(output, None);
 }
 
 #[test]
@@ -809,25 +750,10 @@ fn test_toggle_collapse_via_message() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::char('k'));
-    assert_eq!(msg, Some(ConversationViewMessage::ScrollUp));
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = focused_state();
     state.push_user("Hello");
     let output = state.update(ConversationViewMessage::ScrollDown);
-    assert!(output.is_some());
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = focused_state();
-    state.push_user("Hello");
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
     assert!(output.is_some());
 }
 

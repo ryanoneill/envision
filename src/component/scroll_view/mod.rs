@@ -118,8 +118,6 @@ impl ScrollViewState {
     /// let state = ScrollViewState::new();
     /// assert_eq!(state.content_height(), 0);
     /// assert_eq!(state.scroll_offset(), 0);
-    /// assert!(!state.is_focused());
-    /// assert!(!state.is_disabled());
     /// assert!(state.show_scrollbar());
     /// assert_eq!(state.title(), None);
     /// ```

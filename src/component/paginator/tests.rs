@@ -3,9 +3,7 @@ use crate::component::test_utils;
 use crate::input::{Event, KeyCode};
 
 fn focused_state(total_pages: usize) -> PaginatorState {
-    let mut state = PaginatorState::new(total_pages);
-    state.set_focused(true);
-    state
+    PaginatorState::new(total_pages)
 }
 
 // =============================================================================
@@ -20,8 +18,6 @@ fn test_new() {
     assert_eq!(state.total_pages(), 5);
     assert_eq!(state.page_size(), 10);
     assert_eq!(state.total_items(), 50);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.style(), &PaginatorStyle::PageOfTotal);
 }
 
@@ -103,18 +99,6 @@ fn test_with_current_page() {
 fn test_with_current_page_clamped() {
     let state = PaginatorState::new(5).with_current_page(100);
     assert_eq!(state.current_page(), 4); // Clamped to last page
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = PaginatorState::new(5).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_false() {
-    let state = PaginatorState::new(5).with_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 // =============================================================================
@@ -328,22 +312,6 @@ fn test_set_total_items_zero() {
     assert_eq!(state.current_page(), 0);
 }
 
-#[test]
-fn test_set_focused() {
-    let mut state = PaginatorState::new(5);
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = PaginatorState::new(5);
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // =============================================================================
 // Event handling
 // =============================================================================
@@ -422,8 +390,7 @@ fn test_handle_event_unfocused_ignores() {
 
 #[test]
 fn test_handle_event_disabled_ignores() {
-    let mut state = focused_state(5);
-    state.set_disabled(true);
+    let state = focused_state(5);
     let msg = Paginator::handle_event(
         &state,
         &Event::key(KeyCode::Right),
@@ -439,14 +406,22 @@ fn test_handle_event_disabled_ignores() {
 #[test]
 fn test_instance_handle_event() {
     let state = focused_state(5);
-    let msg = state.handle_event(&Event::key(KeyCode::Right));
+    let msg = Paginator::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(PaginatorMessage::NextPage));
 }
 
 #[test]
 fn test_instance_dispatch_event() {
     let mut state = focused_state(5);
-    let output = state.dispatch_event(&Event::key(KeyCode::Right));
+    let output = Paginator::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(PaginatorOutput::PageChanged(1)));
     assert_eq!(state.current_page(), 1);
 }
@@ -456,38 +431,6 @@ fn test_instance_update() {
     let mut state = PaginatorState::new(5);
     let output = state.update(PaginatorMessage::NextPage);
     assert_eq!(output, Some(PaginatorOutput::PageChanged(1)));
-}
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = Paginator::init();
-    assert!(!Paginator::is_focused(&state));
-
-    Paginator::focus(&mut state);
-    assert!(Paginator::is_focused(&state));
-
-    Paginator::blur(&mut state);
-    assert!(!Paginator::is_focused(&state));
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = Paginator::init();
-    assert!(!Paginator::is_disabled(&state));
-
-    Paginator::disable(&mut state);
-    assert!(Paginator::is_disabled(&state));
-
-    Paginator::enable(&mut state);
-    assert!(!Paginator::is_disabled(&state));
 }
 
 // =============================================================================
@@ -805,7 +748,7 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_disabled() {
-    let state = PaginatorState::new(5).with_disabled(true);
+    let state = PaginatorState::new(5);
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {

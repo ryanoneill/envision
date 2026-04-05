@@ -2,9 +2,7 @@ use super::*;
 use crate::component::test_utils;
 
 fn focused_state() -> ScrollableTextState {
-    let mut state = ScrollableTextState::new();
-    ScrollableText::set_focused(&mut state, true);
-    state
+    ScrollableTextState::new()
 }
 
 fn content_state() -> ScrollableTextState {
@@ -24,8 +22,6 @@ fn test_new() {
     let state = ScrollableTextState::new();
     assert!(state.content().is_empty());
     assert_eq!(state.scroll_offset(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.title(), None);
 }
 
@@ -47,13 +43,6 @@ fn test_with_title() {
     let state = ScrollableTextState::new().with_title("Preview");
     assert_eq!(state.title(), Some("Preview"));
 }
-
-#[test]
-fn test_with_disabled() {
-    let state = ScrollableTextState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // =============================================================================
 // Content management
 // =============================================================================
@@ -203,8 +192,7 @@ fn test_set_content_message() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
+    let state = focused_state();
     let msg = ScrollableText::handle_event(
         &state,
         &Event::key(KeyCode::Up),
@@ -345,50 +333,12 @@ fn test_handle_event_unrecognized() {
         None
     );
 }
-
-// =============================================================================
-// Instance methods
-// =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(ScrollableTextMessage::ScrollUp));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = content_state();
-    state.set_scroll_offset(5);
-    let output = state.dispatch_event(&Event::key(KeyCode::Up));
-    assert_eq!(output, Some(ScrollableTextOutput::ScrollChanged(4)));
-    assert_eq!(state.scroll_offset(), 4);
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = content_state();
     let output = state.update(ScrollableTextMessage::ScrollDown);
     assert_eq!(output, Some(ScrollableTextOutput::ScrollChanged(1)));
 }
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = ScrollableText::init();
-    assert!(!ScrollableText::is_focused(&state));
-
-    ScrollableText::focus(&mut state);
-    assert!(ScrollableText::is_focused(&state));
-
-    ScrollableText::blur(&mut state);
-    assert!(!ScrollableText::is_focused(&state));
-}
-
 // =============================================================================
 // Snapshot tests
 // =============================================================================
@@ -443,27 +393,6 @@ fn test_view_focused() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
-
-#[test]
-fn test_view_disabled() {
-    let state = ScrollableTextState::new()
-        .with_content("Disabled text")
-        .with_disabled(true);
-    let (mut terminal, theme) = test_utils::setup_render(40, 10);
-    terminal
-        .draw(|frame| {
-            ScrollableText::view(
-                &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
-            );
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
 // Annotation tests
 
 #[test]

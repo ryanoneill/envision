@@ -54,8 +54,6 @@ fn test_state_new() {
     let state = StepIndicatorState::new(steps);
     assert_eq!(state.steps().len(), 3);
     assert_eq!(state.focused_index(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.orientation(), &StepOrientation::Horizontal);
     assert_eq!(state.connector(), "───");
     assert_eq!(state.title(), None);
@@ -92,12 +90,6 @@ fn test_state_with_connector() {
 fn test_state_with_show_descriptions() {
     let state = StepIndicatorState::new(vec![Step::new("A")]).with_show_descriptions(true);
     assert!(state.show_descriptions());
-}
-
-#[test]
-fn test_state_with_disabled() {
-    let state = StepIndicatorState::new(vec![Step::new("A")]).with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // ========== Accessor Tests ==========
@@ -394,7 +386,6 @@ fn test_workflow_chain() {
 #[test]
 fn test_focus_next() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B"), Step::new("C")]);
-    state.set_focused(true);
 
     let output = StepIndicator::update(&mut state, StepIndicatorMessage::FocusNext);
     assert_eq!(state.focused_index(), 1);
@@ -404,7 +395,6 @@ fn test_focus_next() {
 #[test]
 fn test_focus_next_wraps() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
     state.focused_index = 1;
 
     let output = StepIndicator::update(&mut state, StepIndicatorMessage::FocusNext);
@@ -415,7 +405,6 @@ fn test_focus_next_wraps() {
 #[test]
 fn test_focus_prev() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B"), Step::new("C")]);
-    state.set_focused(true);
     state.focused_index = 2;
 
     let output = StepIndicator::update(&mut state, StepIndicatorMessage::FocusPrev);
@@ -426,7 +415,6 @@ fn test_focus_prev() {
 #[test]
 fn test_focus_prev_wraps() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
 
     let output = StepIndicator::update(&mut state, StepIndicatorMessage::FocusPrev);
     assert_eq!(state.focused_index(), 1);
@@ -436,7 +424,6 @@ fn test_focus_prev_wraps() {
 #[test]
 fn test_focus_first() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
     state.focused_index = 1;
 
     let output = StepIndicator::update(&mut state, StepIndicatorMessage::First);
@@ -447,7 +434,6 @@ fn test_focus_first() {
 #[test]
 fn test_focus_last() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B"), Step::new("C")]);
-    state.set_focused(true);
 
     let output = StepIndicator::update(&mut state, StepIndicatorMessage::Last);
     assert_eq!(state.focused_index(), 2);
@@ -457,7 +443,6 @@ fn test_focus_last() {
 #[test]
 fn test_select() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
     state.focused_index = 1;
 
     let output = StepIndicator::update(&mut state, StepIndicatorMessage::Select);
@@ -467,42 +452,9 @@ fn test_select() {
 // ========== Guard Tests ==========
 
 #[test]
-fn test_focus_next_unfocused_guard() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    let output = StepIndicator::update(&mut state, StepIndicatorMessage::FocusNext);
-    assert_eq!(output, None);
-    assert_eq!(state.focused_index(), 0);
-}
-
-#[test]
-fn test_focus_next_disabled_guard() {
-    let mut state =
-        StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]).with_disabled(true);
-    state.set_focused(true);
-    let output = StepIndicator::update(&mut state, StepIndicatorMessage::FocusNext);
-    assert_eq!(output, None);
-}
-
-#[test]
 fn test_focus_next_empty_guard() {
     let mut state = StepIndicatorState::new(vec![]);
-    state.set_focused(true);
     let output = StepIndicator::update(&mut state, StepIndicatorMessage::FocusNext);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_select_unfocused_guard() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A")]);
-    let output = StepIndicator::update(&mut state, StepIndicatorMessage::Select);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_select_disabled_guard() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A")]).with_disabled(true);
-    state.set_focused(true);
-    let output = StepIndicator::update(&mut state, StepIndicatorMessage::Select);
     assert_eq!(output, None);
 }
 
@@ -510,8 +462,7 @@ fn test_select_disabled_guard() {
 
 #[test]
 fn test_handle_event_right_arrow() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
+    let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::Right),
@@ -522,8 +473,7 @@ fn test_handle_event_right_arrow() {
 
 #[test]
 fn test_handle_event_l_key() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
+    let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg =
         StepIndicator::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StepIndicatorMessage::FocusNext));
@@ -531,8 +481,7 @@ fn test_handle_event_l_key() {
 
 #[test]
 fn test_handle_event_left_arrow() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
+    let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::Left),
@@ -543,8 +492,7 @@ fn test_handle_event_left_arrow() {
 
 #[test]
 fn test_handle_event_h_key() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
+    let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg =
         StepIndicator::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StepIndicatorMessage::FocusPrev));
@@ -552,8 +500,7 @@ fn test_handle_event_h_key() {
 
 #[test]
 fn test_handle_event_home() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
+    let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::Home),
@@ -564,8 +511,7 @@ fn test_handle_event_home() {
 
 #[test]
 fn test_handle_event_end() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
+    let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::End),
@@ -576,8 +522,7 @@ fn test_handle_event_end() {
 
 #[test]
 fn test_handle_event_enter() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
+    let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
@@ -596,8 +541,7 @@ fn test_handle_event_unfocused_ignored() {
 
 #[test]
 fn test_handle_event_disabled_ignored() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A")]).with_disabled(true);
-    state.set_focused(true);
+    let state = StepIndicatorState::new(vec![Step::new("A")]);
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::Right),
@@ -608,8 +552,7 @@ fn test_handle_event_disabled_ignored() {
 
 #[test]
 fn test_handle_event_unrecognized_key() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A")]);
-    state.set_focused(true);
+    let state = StepIndicatorState::new(vec![Step::new("A")]);
     let msg =
         StepIndicator::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
@@ -620,8 +563,11 @@ fn test_handle_event_unrecognized_key() {
 #[test]
 fn test_dispatch_event() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Right));
+    let output = StepIndicator::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(StepIndicatorOutput::FocusChanged(1)));
     assert_eq!(state.focused_index(), 1);
 }
@@ -629,33 +575,8 @@ fn test_dispatch_event() {
 #[test]
 fn test_instance_update() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    state.set_focused(true);
     let output = state.update(StepIndicatorMessage::FocusNext);
     assert_eq!(output, Some(StepIndicatorOutput::FocusChanged(1)));
-}
-
-// ========== Focusable Trait Tests ==========
-
-#[test]
-fn test_focusable_is_focused() {
-    let state = StepIndicatorState::new(vec![Step::new("A")]);
-    assert!(!StepIndicator::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A")]);
-    StepIndicator::set_focused(&mut state, true);
-    assert!(StepIndicator::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_focus_blur() {
-    let mut state = StepIndicatorState::new(vec![Step::new("A")]);
-    StepIndicator::focus(&mut state);
-    assert!(state.is_focused());
-    StepIndicator::blur(&mut state);
-    assert!(!state.is_focused());
 }
 
 // ========== Rendering Snapshot Tests ==========
@@ -724,7 +645,6 @@ fn test_view_focused_step() {
     let (mut terminal, theme) = setup_render(60, 5);
     let steps = vec![Step::new("A"), Step::new("B"), Step::new("C")];
     let mut state = StepIndicatorState::new(steps);
-    state.set_focused(true);
     state.focused_index = 1;
 
     terminal
@@ -812,8 +732,7 @@ fn test_view_empty_steps() {
 fn test_annotation_emission() {
     use crate::annotation::{with_annotations, WidgetType};
     let steps = vec![Step::new("A"), Step::new("B")];
-    let mut state = StepIndicatorState::new(steps);
-    state.set_focused(true);
+    let state = StepIndicatorState::new(steps);
     let (mut terminal, theme) = setup_render(60, 5);
     let registry = with_annotations(|| {
         terminal
@@ -842,5 +761,4 @@ fn test_annotation_emission() {
 fn test_init() {
     let state = StepIndicator::init();
     assert!(state.steps().is_empty());
-    assert!(!state.is_focused());
 }

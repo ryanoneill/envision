@@ -38,9 +38,7 @@ fn sample_columns() -> Vec<Column> {
 }
 
 fn focused_grid() -> DataGridState<Person> {
-    let mut state = DataGridState::new(sample_rows(), sample_columns());
-    DataGrid::set_focused(&mut state, true);
-    state
+    DataGridState::new(sample_rows(), sample_columns())
 }
 
 // =============================================================================
@@ -69,8 +67,6 @@ fn test_default() {
     let state = DataGridState::<Person>::default();
     assert!(state.is_empty());
     assert_eq!(state.column_count(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 // =============================================================================
@@ -307,29 +303,14 @@ fn test_edit_different_row() {
 // =============================================================================
 
 #[test]
-fn test_disabled_ignores_messages() {
-    let mut state = focused_grid();
-    state.set_disabled(true);
-    let output = DataGrid::update(&mut state, DataGridMessage::Down);
-    assert_eq!(output, None);
-}
-
-#[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_grid();
-    state.set_disabled(true);
+    let state = focused_grid();
     let msg = DataGrid::handle_event(
         &state,
         &Event::key(KeyCode::Down),
         &ViewContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = DataGridState::new(sample_rows(), sample_columns()).with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -548,23 +529,9 @@ fn test_set_rows_clamps_selection() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = focused_grid();
-    let msg = state.handle_event(&Event::key(KeyCode::Down));
-    assert_eq!(msg, Some(DataGridMessage::Down));
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = focused_grid();
     let output = state.update(DataGridMessage::Down);
-    assert_eq!(output, Some(DataGridOutput::SelectionChanged(1)));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = focused_grid();
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
     assert_eq!(output, Some(DataGridOutput::SelectionChanged(1)));
 }
 
@@ -608,7 +575,7 @@ fn test_render_editing() {
 
 #[test]
 fn test_render_disabled() {
-    let state = DataGridState::new(sample_rows(), sample_columns()).with_disabled(true);
+    let state = DataGridState::new(sample_rows(), sample_columns());
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
@@ -638,18 +605,6 @@ fn test_render_empty() {
 // Focusable trait
 // =============================================================================
 
-#[test]
-fn test_focusable_trait() {
-    let mut state = DataGrid::<Person>::init();
-    assert!(!DataGrid::is_focused(&state));
-
-    DataGrid::focus(&mut state);
-    assert!(DataGrid::is_focused(&state));
-
-    DataGrid::blur(&mut state);
-    assert!(!DataGrid::is_focused(&state));
-}
-
 // =============================================================================
 // PartialEq
 // =============================================================================
@@ -668,7 +623,6 @@ fn test_partial_eq() {
 #[test]
 fn test_empty_grid_ignores_navigation() {
     let mut state = DataGridState::<Person>::new(vec![], sample_columns());
-    DataGrid::set_focused(&mut state, true);
 
     let output = DataGrid::update(&mut state, DataGridMessage::Down);
     assert_eq!(output, None);

@@ -466,41 +466,17 @@ fn test_sort_different_column() {
 }
 
 // Disabled State Tests
-
-#[test]
-fn test_disabled() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    state.set_disabled(true);
-
-    assert_eq!(
-        Table::<TestRow>::update(&mut state, TableMessage::Down),
-        None
-    );
-    assert_eq!(Table::<TestRow>::update(&mut state, TableMessage::Up), None);
-    assert_eq!(
-        Table::<TestRow>::update(&mut state, TableMessage::Select),
-        None
-    );
-    assert_eq!(
-        Table::<TestRow>::update(&mut state, TableMessage::SortBy(0)),
-        None
-    );
-}
-
 // Integration Tests
 
 #[test]
 fn test_init() {
     let state: TableState<TestRow> = Table::<TestRow>::init();
     assert!(state.is_empty());
-    assert!(!state.focused);
-    assert!(!state.disabled);
 }
 
 #[test]
 fn test_full_workflow() {
     let mut state = TableState::new(test_rows(), test_columns());
-    Table::<TestRow>::set_focused(&mut state, true);
 
     // Navigate
     Table::<TestRow>::update(&mut state, TableMessage::Down);
@@ -771,8 +747,7 @@ mod handle_event_tests {
 
     #[test]
     fn test_key_bindings_when_focused() {
-        let mut state = TableState::new(test_rows(), test_columns());
-        state.set_focused(true);
+        let state = TableState::new(test_rows(), test_columns());
         let he = |e| Table::<TestRow>::handle_event(&state, &e, &ViewContext::new().focused(true));
         assert_eq!(he(Event::key(KeyCode::Up)), Some(TableMessage::Up));
         assert_eq!(he(Event::key(KeyCode::Down)), Some(TableMessage::Down));
@@ -806,9 +781,7 @@ mod handle_event_tests {
 
     #[test]
     fn test_ignored_when_disabled() {
-        let mut state = TableState::new(test_rows(), test_columns());
-        state.set_focused(true);
-        state.set_disabled(true);
+        let state = TableState::new(test_rows(), test_columns());
         assert_eq!(
             Table::<TestRow>::handle_event(
                 &state,
@@ -822,7 +795,6 @@ mod handle_event_tests {
     #[test]
     fn test_dispatch_event() {
         let mut state = TableState::new(test_rows(), test_columns());
-        state.set_focused(true);
         let output = Table::<TestRow>::dispatch_event(
             &mut state,
             &Event::key(KeyCode::Down),
@@ -835,43 +807,25 @@ mod handle_event_tests {
     #[test]
     fn test_instance_methods() {
         let mut state = TableState::new(test_rows(), test_columns());
-        assert!(!state.is_focused());
-        state.set_focused(true);
-        assert!(state.is_focused());
 
-        let output = state.dispatch_event(&Event::key(KeyCode::Down));
+        let output = Table::<TestRow>::dispatch_event(
+            &mut state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true),
+        );
         assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
 
         let output = state.update(TableMessage::Down);
         assert_eq!(output, Some(TableOutput::SelectionChanged(2)));
 
-        let msg = state.handle_event(&Event::key(KeyCode::Up));
+        let msg = Table::<TestRow>::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true),
+        );
         assert_eq!(msg, Some(TableMessage::Up));
     }
 }
-
-// ========== Builder Tests ==========
-
-#[test]
-fn test_with_disabled_builder() {
-    let state = TableState::new(test_rows(), test_columns()).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_false_builder() {
-    let state = TableState::new(test_rows(), test_columns()).with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_prevents_navigation() {
-    let mut state = TableState::new(test_rows(), test_columns()).with_disabled(true);
-    let output = Table::<TestRow>::update(&mut state, TableMessage::Down);
-    assert_eq!(output, None);
-    assert_eq!(state.selected_index(), Some(0));
-}
-
 #[test]
 fn test_selected_item() {
     let state = TableState::with_selected(test_rows(), test_columns(), 1);

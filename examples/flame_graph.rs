@@ -58,8 +58,7 @@ impl App for FlameGraphApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut graph = FlameGraphState::with_root(build_profile()).with_title("CPU Profile");
-        graph.set_focused(true);
+        let graph = FlameGraphState::with_root(build_profile()).with_title("CPU Profile");
 
         (State { graph }, Command::none())
     }
@@ -117,7 +116,8 @@ impl App for FlameGraphApp {
                 return Some(Msg::Quit);
             }
         }
-        state.graph.handle_event(event).map(Msg::FlameGraph)
+        FlameGraph::handle_event(&state.graph, event, &ViewContext::new().focused(true))
+            .map(Msg::FlameGraph)
     }
 }
 

@@ -40,8 +40,7 @@ fn test_snapshot_populated() {
 
 #[test]
 fn test_snapshot_focused() {
-    let mut state = sample_state();
-    LogViewer::set_focused(&mut state, true);
+    let state = sample_state();
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
@@ -90,7 +89,6 @@ fn test_snapshot_with_timestamps() {
 #[test]
 fn test_snapshot_search_active() {
     let mut state = sample_state();
-    LogViewer::set_focused(&mut state, true);
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     LogViewer::update(&mut state, LogViewerMessage::SearchInput('c'));
     LogViewer::update(&mut state, LogViewerMessage::SearchInput('o'));

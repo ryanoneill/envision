@@ -6,7 +6,6 @@ fn test_new() {
     assert_eq!(state.options().len(), 3);
     assert_eq!(state.selected_index(), None);
     assert!(!state.is_open());
-    assert!(!Select::is_focused(&state));
 }
 
 #[test]
@@ -158,33 +157,9 @@ fn test_confirm_when_closed() {
 }
 
 #[test]
-fn test_disabled_ignores_messages() {
-    let mut state = SelectState::new(vec!["A", "B", "C"]);
-    state.set_disabled(true);
-
-    let output = Select::update(&mut state, SelectMessage::Open);
-    assert_eq!(output, None);
-    assert!(!state.is_open());
-
-    let output = Select::update(&mut state, SelectMessage::Down);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_disabling_closes_dropdown() {
-    let mut state = SelectState::new(vec!["A", "B", "C"]);
-    Select::update(&mut state, SelectMessage::Open);
-    assert!(state.is_open());
-
-    state.set_disabled(true);
-    assert!(!state.is_open());
-}
-
-#[test]
 fn test_init() {
     let state = Select::init();
     assert_eq!(state.options().len(), 0);
-    assert!(!Select::is_focused(&state));
 }
 
 #[test]
@@ -235,8 +210,7 @@ fn test_view_with_selection() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = SelectState::new(vec!["A", "B"]);
-    Select::focus(&mut state);
+    let state = SelectState::new(vec!["A", "B"]);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
 
@@ -292,8 +266,7 @@ use crate::input::{Event, KeyCode};
 
 #[test]
 fn test_handle_event_toggle_when_closed() {
-    let mut state = SelectState::new(vec!["A", "B", "C"]);
-    Select::focus(&mut state);
+    let state = SelectState::new(vec!["A", "B", "C"]);
 
     // Enter when closed -> Toggle
     let msg = Select::handle_event(
@@ -311,7 +284,6 @@ fn test_handle_event_toggle_when_closed() {
 #[test]
 fn test_handle_event_confirm_when_open() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
-    Select::focus(&mut state);
     Select::update(&mut state, SelectMessage::Open);
 
     let msg = Select::handle_event(
@@ -325,7 +297,6 @@ fn test_handle_event_confirm_when_open() {
 #[test]
 fn test_handle_event_close_when_open() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
-    Select::focus(&mut state);
     Select::update(&mut state, SelectMessage::Open);
 
     let msg = Select::handle_event(
@@ -339,7 +310,6 @@ fn test_handle_event_close_when_open() {
 #[test]
 fn test_handle_event_up_when_open() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
-    Select::focus(&mut state);
     Select::update(&mut state, SelectMessage::Open);
 
     let msg = Select::handle_event(
@@ -357,7 +327,6 @@ fn test_handle_event_up_when_open() {
 #[test]
 fn test_handle_event_down_when_open() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
-    Select::focus(&mut state);
     Select::update(&mut state, SelectMessage::Open);
 
     let msg = Select::handle_event(
@@ -381,9 +350,7 @@ fn test_handle_event_ignored_when_unfocused() {
 
 #[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = SelectState::new(vec!["A", "B", "C"]);
-    Select::focus(&mut state);
-    state.set_disabled(true);
+    let state = SelectState::new(vec!["A", "B", "C"]);
     let msg = Select::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
@@ -399,7 +366,6 @@ fn test_handle_event_ignored_when_disabled() {
 #[test]
 fn test_dispatch_event() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
-    Select::focus(&mut state);
     Select::update(&mut state, SelectMessage::Open);
     Select::update(&mut state, SelectMessage::Down);
 
@@ -412,18 +378,16 @@ fn test_dispatch_event() {
     assert_eq!(output, Some(SelectOutput::Selected("B".to_string())));
     assert!(!state.is_open());
 }
-
-// ========================================
-// Instance Method Tests
-// ========================================
-
 #[test]
 fn test_instance_methods() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
-    state.set_focused(true);
 
-    // instance handle_event
-    let msg = state.handle_event(&Event::key(KeyCode::Enter));
+    // static handle_event
+    let msg = Select::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectMessage::Toggle));
 
     // instance update
@@ -431,8 +395,12 @@ fn test_instance_methods() {
     assert!(output.is_none()); // Toggle just opens, returns None
     assert!(state.is_open());
 
-    // instance dispatch_event
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
+    // static dispatch_event
+    let output = Select::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
 }
 
@@ -452,25 +420,6 @@ fn test_selected_item_none() {
 // ========================================
 // Builder Tests
 // ========================================
-
-#[test]
-fn test_with_disabled() {
-    let state = SelectState::new(vec!["A", "B", "C"]).with_disabled(true);
-    assert!(state.is_disabled());
-
-    let state = SelectState::new(vec!["A", "B", "C"]).with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_prevents_open() {
-    let mut state = SelectState::new(vec!["A", "B", "C"]).with_disabled(true);
-    state.set_focused(true);
-    let output = Select::update(&mut state, SelectMessage::Open);
-    assert_eq!(output, None);
-    assert!(!state.is_open());
-}
-
 #[test]
 fn test_with_placeholder() {
     let state = SelectState::new(vec!["A", "B", "C"]).with_placeholder("Pick one...");
@@ -479,11 +428,8 @@ fn test_with_placeholder() {
 
 #[test]
 fn test_with_placeholder_chained() {
-    let state = SelectState::new(vec!["A", "B", "C"])
-        .with_placeholder("Pick one...")
-        .with_disabled(true);
+    let state = SelectState::new(vec!["A", "B", "C"]).with_placeholder("Pick one...");
     assert_eq!(state.placeholder(), "Pick one...");
-    assert!(state.is_disabled());
 }
 
 // Annotation tests

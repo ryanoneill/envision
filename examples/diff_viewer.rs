@@ -54,11 +54,10 @@ fn main() {
     farewell(\"world\");
 }";
 
-        let mut viewer = DiffViewerState::from_texts(old_code, new_code)
+        let viewer = DiffViewerState::from_texts(old_code, new_code)
             .with_title("Code Changes")
             .with_old_label("greet.rs (old)")
             .with_new_label("greet.rs (new)");
-        viewer.set_focused(true);
 
         (State { viewer }, Command::none())
     }
@@ -110,7 +109,8 @@ fn main() {
             }
         }
 
-        state.viewer.handle_event(event).map(Msg::Viewer)
+        DiffViewer::handle_event(&state.viewer, event, &ViewContext::new().focused(true))
+            .map(Msg::Viewer)
     }
 }
 

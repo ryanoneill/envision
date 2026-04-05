@@ -41,8 +41,7 @@ impl App for FormApp {
             ),
         ];
 
-        let mut form = FormState::new(fields);
-        form.set_focused(true);
+        let form = FormState::new(fields);
 
         let state = State {
             form,
@@ -112,7 +111,7 @@ impl App for FormApp {
                 return Some(Msg::Quit);
             }
         }
-        state.form.handle_event(event).map(Msg::Form)
+        Form::handle_event(&state.form, event, &ViewContext::new().focused(true)).map(Msg::Form)
     }
 }
 

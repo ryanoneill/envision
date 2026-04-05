@@ -60,12 +60,11 @@ impl App for TimelineApp {
                 .with_lane(0),
         ];
 
-        let mut timeline = TimelineState::new()
+        let timeline = TimelineState::new()
             .with_events(events)
             .with_spans(spans)
             .with_title("HTTP Request Trace")
             .with_view_range(-50.0, 1050.0);
-        timeline.set_focused(true);
 
         let state = State { timeline };
         (state, Command::none())

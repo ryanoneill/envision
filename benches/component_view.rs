@@ -31,8 +31,7 @@ fn bench_selectable_list_view(c: &mut Criterion) {
                 BenchmarkId::new("render", &label),
                 &(&items, width, height),
                 |b, &(items, w, h)| {
-                    let mut state = SelectableListState::new(items.clone());
-                    state.set_focused(true);
+                    let state = SelectableListState::new(items.clone());
                     let backend = CaptureBackend::new(w, h);
                     let mut terminal = Terminal::new(backend).unwrap();
                     let theme = Theme::default();
@@ -100,8 +99,7 @@ fn bench_table_view(c: &mut Criterion) {
                 BenchmarkId::new("render", &label),
                 &(&rows, &columns, width, height),
                 |b, &(rows, columns, w, h)| {
-                    let mut state = TableState::new(rows.clone(), columns.clone());
-                    state.set_focused(true);
+                    let state = TableState::new(rows.clone(), columns.clone());
                     let backend = CaptureBackend::new(w, h);
                     let mut terminal = Terminal::new(backend).unwrap();
                     let theme = Theme::default();
@@ -173,8 +171,7 @@ fn bench_tree_view(c: &mut Criterion) {
                 BenchmarkId::new("render", &label),
                 &(&roots, width, height),
                 |b, &(roots, w, h)| {
-                    let mut state = TreeState::new(roots.clone());
-                    state.set_focused(true);
+                    let state = TreeState::new(roots.clone());
                     let backend = CaptureBackend::new(w, h);
                     let mut terminal = Terminal::new(backend).unwrap();
                     let theme = Theme::default();
@@ -203,8 +200,7 @@ fn bench_tree_view(c: &mut Criterion) {
         BenchmarkId::new("render", "nested_1111/80x24"),
         &(&nested_roots, 80u16, 24u16),
         |b, &(roots, w, h)| {
-            let mut state = TreeState::new(roots.clone());
-            state.set_focused(true);
+            let state = TreeState::new(roots.clone());
             let backend = CaptureBackend::new(w, h);
             let mut terminal = Terminal::new(backend).unwrap();
             let theme = Theme::default();

@@ -19,12 +19,10 @@ fn sample_spans() -> Vec<TimelineSpan> {
 }
 
 fn focused_timeline() -> TimelineState {
-    let mut state = TimelineState::new()
+    TimelineState::new()
         .with_events(sample_events())
         .with_spans(sample_spans())
-        .with_view_range(0.0, 1000.0);
-    state.set_focused(true);
-    state
+        .with_view_range(0.0, 1000.0)
 }
 
 // =============================================================================
@@ -114,8 +112,6 @@ fn test_new() {
     assert_eq!(state.view_range(), (0.0, 1000.0));
     assert!(state.title().is_none());
     assert!(state.show_labels());
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert!(state.selected_index.is_none());
 }
 
@@ -155,13 +151,6 @@ fn test_with_show_labels() {
     let state = TimelineState::new().with_show_labels(false);
     assert!(!state.show_labels());
 }
-
-#[test]
-fn test_with_disabled() {
-    let state = TimelineState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // =============================================================================
 // Event/span operations
 // =============================================================================
@@ -368,7 +357,6 @@ fn test_select_prev_wraps() {
 #[test]
 fn test_select_empty_timeline() {
     let mut state = TimelineState::new();
-    state.set_focused(true);
     let output = Timeline::update(&mut state, TimelineMessage::SelectNext);
     assert_eq!(output, None);
     assert!(state.selected_index.is_none());
@@ -645,8 +633,7 @@ fn test_home_maps_to_fit_all() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_timeline();
-    state.set_disabled(true);
+    let state = focused_timeline();
     let msg = Timeline::handle_event(
         &state,
         &Event::key(KeyCode::Left),
@@ -663,59 +650,15 @@ fn test_unfocused_ignores_events() {
     let msg = Timeline::handle_event(&state, &Event::key(KeyCode::Left), &ViewContext::default());
     assert_eq!(msg, None);
 }
-
-// =============================================================================
-// Instance methods
-// =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let state = focused_timeline();
-    let msg = state.handle_event(&Event::key(KeyCode::Left));
-    assert_eq!(msg, Some(TimelineMessage::PanLeft));
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = focused_timeline();
     let output = state.update(TimelineMessage::SelectNext);
     assert_eq!(output, Some(TimelineOutput::EventSelected("e1".into())));
 }
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = focused_timeline();
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
-    assert_eq!(output, Some(TimelineOutput::EventSelected("e1".into())));
-}
-
 // =============================================================================
 // Focusable / Disableable
 // =============================================================================
-
-#[test]
-fn test_focusable() {
-    let mut state = TimelineState::new();
-    assert!(!Timeline::is_focused(&state));
-    Timeline::set_focused(&mut state, true);
-    assert!(Timeline::is_focused(&state));
-    Timeline::blur(&mut state);
-    assert!(!Timeline::is_focused(&state));
-    Timeline::focus(&mut state);
-    assert!(Timeline::is_focused(&state));
-}
-
-#[test]
-fn test_disableable() {
-    let mut state = TimelineState::new();
-    assert!(!Timeline::is_disabled(&state));
-    Timeline::set_disabled(&mut state, true);
-    assert!(Timeline::is_disabled(&state));
-    Timeline::enable(&mut state);
-    assert!(!Timeline::is_disabled(&state));
-    Timeline::disable(&mut state);
-    assert!(Timeline::is_disabled(&state));
-}
 
 // =============================================================================
 // Effective lane count
@@ -813,8 +756,7 @@ fn test_render_with_selection() {
 fn test_render_disabled() {
     let state = TimelineState::new()
         .with_events(sample_events())
-        .with_spans(sample_spans())
-        .with_disabled(true);
+        .with_spans(sample_spans());
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
@@ -899,7 +841,6 @@ fn test_annotation_emitted() {
 #[test]
 fn test_events_only_no_spans() {
     let mut state = TimelineState::new().with_events(vec![TimelineEvent::new("e1", 100.0, "Solo")]);
-    state.set_focused(true);
     let output = state.update(TimelineMessage::SelectNext);
     assert_eq!(output, Some(TimelineOutput::EventSelected("e1".into())));
     // Next should wrap back
@@ -911,7 +852,6 @@ fn test_events_only_no_spans() {
 fn test_spans_only_no_events() {
     let mut state =
         TimelineState::new().with_spans(vec![TimelineSpan::new("s1", 0.0, 100.0, "Solo")]);
-    state.set_focused(true);
     let output = state.update(TimelineMessage::SelectNext);
     assert_eq!(output, Some(TimelineOutput::SpanSelected("s1".into())));
 }

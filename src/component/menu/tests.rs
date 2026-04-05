@@ -30,7 +30,6 @@ fn test_new() {
     let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
     assert_eq!(state.items().len(), 2);
     assert_eq!(state.selected_index(), Some(0));
-    assert!(!Menu::is_focused(&state));
 }
 
 #[test]
@@ -304,7 +303,6 @@ fn test_empty_menu_ignores_navigation() {
 fn test_init() {
     let state = Menu::init();
     assert_eq!(state.items().len(), 0);
-    assert!(!Menu::is_focused(&state));
 }
 
 #[test]
@@ -328,8 +326,7 @@ fn test_view() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    Menu::focus(&mut state);
+    let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
 
@@ -355,7 +352,6 @@ fn test_view_selected() {
         MenuItem::new("Edit"),
         MenuItem::new("View"),
     ]);
-    Menu::focus(&mut state);
     state.set_selected(Some(1));
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
@@ -441,8 +437,7 @@ fn test_unicode_labels() {
 
 #[test]
 fn test_handle_event_left_when_focused() {
-    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    Menu::focus(&mut state);
+    let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
 
     let msg = Menu::handle_event(
         &state,
@@ -454,8 +449,7 @@ fn test_handle_event_left_when_focused() {
 
 #[test]
 fn test_handle_event_right_when_focused() {
-    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    Menu::focus(&mut state);
+    let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
 
     let msg = Menu::handle_event(
         &state,
@@ -467,8 +461,7 @@ fn test_handle_event_right_when_focused() {
 
 #[test]
 fn test_handle_event_select_when_focused() {
-    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    Menu::focus(&mut state);
+    let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
 
     let msg = Menu::handle_event(
         &state,
@@ -498,7 +491,6 @@ fn test_handle_event_ignored_when_unfocused() {
 #[test]
 fn test_dispatch_event() {
     let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    Menu::focus(&mut state);
 
     // Dispatch Right: should move selection from 0 to 1
     let output = Menu::dispatch_event(
@@ -524,16 +516,12 @@ fn test_dispatch_event() {
 fn test_instance_methods() {
     let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
 
-    // is_focused / set_focused
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-
-    // dispatch_event via instance method
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Right));
+    // dispatch_event via associated function
+    let output = Menu::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
 
@@ -542,8 +530,12 @@ fn test_instance_methods() {
     assert_eq!(output, Some(MenuOutput::SelectionChanged(0)));
     assert_eq!(state.selected_index(), Some(0));
 
-    // handle_event via instance method
-    let msg = state.handle_event(&Event::key(KeyCode::Enter));
+    // handle_event via associated function
+    let msg = Menu::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(MenuMessage::Select));
 }
 
@@ -573,43 +565,9 @@ fn test_with_selected_empty() {
     assert_eq!(state.selected_index(), None);
 }
 
-// ========== Disabled State Tests ==========
-
-#[test]
-fn test_is_disabled_default() {
-    let state = MenuState::new(vec![MenuItem::new("File")]);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_default_not_disabled() {
-    let state = MenuState::default();
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = MenuState::new(vec![MenuItem::new("File")]);
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = MenuState::new(vec![MenuItem::new("File")]).with_disabled(true);
-    assert!(state.is_disabled());
-
-    let state = MenuState::new(vec![MenuItem::new("File")]).with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
 #[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    state.set_focused(true);
-    state.set_disabled(true);
+    let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
 
     let msg = Menu::handle_event(
         &state,
@@ -634,73 +592,14 @@ fn test_handle_event_ignored_when_disabled() {
 }
 
 #[test]
-fn test_update_ignored_when_disabled() {
-    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    state.set_disabled(true);
-
-    let output = Menu::update(&mut state, MenuMessage::Right);
-    assert_eq!(output, None);
-    assert_eq!(state.selected_index(), Some(0));
-
-    let output = Menu::update(&mut state, MenuMessage::Left);
-    assert_eq!(output, None);
-    assert_eq!(state.selected_index(), Some(0));
-
-    let output = Menu::update(&mut state, MenuMessage::Select);
-    assert_eq!(output, None);
-
-    let output = Menu::update(&mut state, MenuMessage::SelectIndex(1));
-    assert_eq!(output, None);
-    assert_eq!(state.selected_index(), Some(0));
-}
-
-#[test]
 fn test_dispatch_event_ignored_when_disabled() {
     let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    state.set_focused(true);
-    state.set_disabled(true);
 
     let output = Menu::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
         &ViewContext::new().focused(true).disabled(true),
     );
-    assert_eq!(output, None);
-    assert_eq!(state.selected_index(), Some(0));
-}
-
-#[test]
-fn test_instance_is_disabled() {
-    let mut state = MenuState::new(vec![MenuItem::new("File")]);
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_instance_handle_event_disabled() {
-    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    state.set_focused(true);
-    state.set_disabled(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Right));
-    assert_eq!(msg, None);
-}
-
-#[test]
-fn test_instance_dispatch_event_disabled() {
-    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    state.set_focused(true);
-    state.set_disabled(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Right));
-    assert_eq!(output, None);
-    assert_eq!(state.selected_index(), Some(0));
-}
-
-#[test]
-fn test_instance_update_disabled() {
-    let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    state.set_disabled(true);
-    let output = state.update(MenuMessage::Right);
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(0));
 }

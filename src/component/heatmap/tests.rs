@@ -65,8 +65,6 @@ fn test_default() {
     let state = HeatmapState::default();
     assert_eq!(state.rows(), 0);
     assert_eq!(state.cols(), 0);
-    assert!(!state.focused);
-    assert!(!state.disabled);
     assert!(!state.show_values);
     assert_eq!(state.title(), None);
     assert_eq!(state.color_scale(), &HeatmapColorScale::default());
@@ -111,12 +109,6 @@ fn test_with_show_values() {
 fn test_with_title() {
     let state = HeatmapState::new(2, 2).with_title("Test Heatmap");
     assert_eq!(state.title(), Some("Test Heatmap"));
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = HeatmapState::new(2, 2).with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -267,13 +259,11 @@ fn test_intensity_with_rgb_color() {
 // =============================================================================
 
 fn focused_3x3() -> HeatmapState {
-    let mut state = HeatmapState::with_data(vec![
+    HeatmapState::with_data(vec![
         vec![1.0, 2.0, 3.0],
         vec![4.0, 5.0, 6.0],
         vec![7.0, 8.0, 9.0],
-    ]);
-    state.set_focused(true);
-    state
+    ])
 }
 
 #[test]
@@ -467,7 +457,11 @@ fn test_hjkl_keys() {
 #[test]
 fn test_enter_emits_cell_selected() {
     let mut state = focused_3x3();
-    let output = state.dispatch_event(&Event::key(KeyCode::Enter));
+    let output = Heatmap::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(
         output,
         Some(HeatmapOutput::CellSelected {
@@ -484,8 +478,7 @@ fn test_enter_emits_cell_selected() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_3x3();
-    state.set_disabled(true);
+    let state = focused_3x3();
     let msg = Heatmap::handle_event(
         &state,
         &Event::key(KeyCode::Down),
@@ -506,26 +499,9 @@ fn test_unfocused_ignores_events() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = focused_3x3();
-    let msg = state.handle_event(&Event::key(KeyCode::Down));
-    assert_eq!(msg, Some(HeatmapMessage::SelectDown));
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = focused_3x3();
     let output = state.update(HeatmapMessage::SelectDown);
-    assert_eq!(
-        output,
-        Some(HeatmapOutput::SelectionChanged { row: 1, col: 0 })
-    );
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = focused_3x3();
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
     assert_eq!(
         output,
         Some(HeatmapOutput::SelectionChanged { row: 1, col: 0 })
@@ -558,7 +534,7 @@ fn test_set_data_empty() {
 #[test]
 fn test_set_cell_message() {
     let mut state = HeatmapState::new(2, 2);
-    state.set_focused(true);
+
     // Navigate to (1, 1) first
     state.update(HeatmapMessage::SelectDown);
     state.update(HeatmapMessage::SelectRight);
@@ -607,7 +583,7 @@ fn test_set_range_message() {
 #[test]
 fn test_1x1_grid() {
     let mut state = HeatmapState::with_data(vec![vec![42.0]]);
-    state.set_focused(true);
+
     assert_eq!(state.selected(), Some((0, 0)));
     assert_eq!(state.selected_value(), Some(42.0));
 
@@ -625,7 +601,7 @@ fn test_1x1_grid() {
 #[test]
 fn test_empty_grid_navigation() {
     let mut state = HeatmapState::default();
-    state.set_focused(true);
+
     let output = state.update(HeatmapMessage::SelectDown);
     assert_eq!(output, None);
 }
@@ -646,7 +622,7 @@ fn test_uneven_row_navigation() {
         vec![1.0, 2.0, 3.0],
         vec![4.0, 5.0], // shorter row
     ]);
-    state.set_focused(true);
+
     // Navigate to column 2 in row 0
     state.update(HeatmapMessage::SelectRight);
     state.update(HeatmapMessage::SelectRight);
@@ -655,30 +631,6 @@ fn test_uneven_row_navigation() {
     // Move down -- column should clamp to row 1's max
     state.update(HeatmapMessage::SelectDown);
     assert_eq!(state.selected(), Some((1, 1))); // clamped to col 1
-}
-
-// =============================================================================
-// Focus and disabled
-// =============================================================================
-
-#[test]
-fn test_focus_methods() {
-    let mut state = HeatmapState::new(2, 2);
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_disabled_methods() {
-    let mut state = HeatmapState::new(2, 2);
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 // =============================================================================
@@ -760,7 +712,7 @@ fn test_render_with_values() {
 
 #[test]
 fn test_render_disabled() {
-    let state = HeatmapState::with_data(vec![vec![1.0, 2.0]]).with_disabled(true);
+    let state = HeatmapState::with_data(vec![vec![1.0, 2.0]]);
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
@@ -778,7 +730,7 @@ fn test_render_disabled() {
 #[test]
 fn test_render_focused_with_selection() {
     let mut state = HeatmapState::with_data(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
-    state.set_focused(true);
+
     state.update(HeatmapMessage::SelectDown);
     state.update(HeatmapMessage::SelectRight);
     // Selected cell is (1, 1)

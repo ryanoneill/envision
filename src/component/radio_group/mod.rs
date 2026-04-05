@@ -24,11 +24,6 @@
 //! // Confirm selection (e.g., for form submission)
 //! let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Confirm);
 //! assert_eq!(output, Some(RadioGroupOutput::Confirmed("Medium")));
-//!
-//! // Disabled radio groups don't respond
-//! state.set_disabled(true);
-//! let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Down);
-//! assert_eq!(output, None);
 //! ```
 
 use std::marker::PhantomData;
@@ -250,9 +245,6 @@ impl<T: Clone + std::fmt::Display + 'static> RadioGroupState<T> {
 /// // Navigate to select "Medium"
 /// let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Down);
 /// assert_eq!(output, Some(RadioGroupOutput::SelectionChanged(1)));
-///
-/// // Focus the component for visual feedback
-/// RadioGroup::<&str>::set_focused(&mut state, true);
 ///
 /// // Confirm the selection
 /// let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Confirm);

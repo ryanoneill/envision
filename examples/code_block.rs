@@ -70,13 +70,12 @@ fn main() {
     println!("Done!");
 }"#;
 
-        let mut code_state = CodeBlockState::new()
+        let code_state = CodeBlockState::new()
             .with_code(code)
             .with_language(Language::Rust)
             .with_title("store.rs")
             .with_line_numbers(true)
             .with_highlight_lines(vec![4, 5, 6]);
-        code_state.set_focused(true);
 
         (State { code: code_state }, Command::none())
     }
@@ -121,7 +120,8 @@ fn main() {
             }
         }
 
-        state.code.handle_event(event).map(Msg::Code)
+        CodeBlock::handle_event(&state.code, event, &ViewContext::new().focused(true))
+            .map(Msg::Code)
     }
 }
 

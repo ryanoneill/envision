@@ -52,8 +52,7 @@ impl App for FileBrowserApp {
             file_browser::FileEntry::file("rustfmt.toml", "/project/rustfmt.toml").with_size(45),
         ];
 
-        let mut browser = FileBrowserState::new("/project", entries);
-        browser.set_focused(true);
+        let browser = FileBrowserState::new("/project", entries);
 
         (State { browser }, Command::none())
     }
@@ -112,7 +111,8 @@ impl App for FileBrowserApp {
                 return Some(Msg::Quit);
             }
         }
-        state.browser.handle_event(event).map(Msg::Browser)
+        FileBrowser::handle_event(&state.browser, event, &ViewContext::new().focused(true))
+            .map(Msg::Browser)
     }
 }
 

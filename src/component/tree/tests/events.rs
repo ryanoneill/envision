@@ -12,7 +12,6 @@ fn make_tree_state() -> TreeState<&'static str> {
 #[test]
 fn test_handle_event_up_when_focused() {
     let mut state = make_tree_state();
-    state.set_focused(true);
     state.selected_index = Some(1);
 
     let event = Event::key(KeyCode::Up);
@@ -22,8 +21,7 @@ fn test_handle_event_up_when_focused() {
 
 #[test]
 fn test_handle_event_down_when_focused() {
-    let mut state = make_tree_state();
-    state.set_focused(true);
+    let state = make_tree_state();
 
     let event = Event::key(KeyCode::Down);
     let msg = Tree::<&str>::handle_event(&state, &event, &ViewContext::new().focused(true));
@@ -32,8 +30,7 @@ fn test_handle_event_down_when_focused() {
 
 #[test]
 fn test_handle_event_expand_when_focused() {
-    let mut state = make_tree_state();
-    state.set_focused(true);
+    let state = make_tree_state();
 
     let event = Event::key(KeyCode::Right);
     let msg = Tree::<&str>::handle_event(&state, &event, &ViewContext::new().focused(true));
@@ -42,8 +39,7 @@ fn test_handle_event_expand_when_focused() {
 
 #[test]
 fn test_handle_event_collapse_when_focused() {
-    let mut state = make_tree_state();
-    state.set_focused(true);
+    let state = make_tree_state();
 
     let event = Event::key(KeyCode::Left);
     let msg = Tree::<&str>::handle_event(&state, &event, &ViewContext::new().focused(true));
@@ -52,8 +48,7 @@ fn test_handle_event_collapse_when_focused() {
 
 #[test]
 fn test_handle_event_toggle_when_focused() {
-    let mut state = make_tree_state();
-    state.set_focused(true);
+    let state = make_tree_state();
 
     let event = Event::char(' ');
     let msg = Tree::<&str>::handle_event(&state, &event, &ViewContext::new().focused(true));
@@ -62,8 +57,7 @@ fn test_handle_event_toggle_when_focused() {
 
 #[test]
 fn test_handle_event_select_when_focused() {
-    let mut state = make_tree_state();
-    state.set_focused(true);
+    let state = make_tree_state();
 
     let event = Event::key(KeyCode::Enter);
     let msg = Tree::<&str>::handle_event(&state, &event, &ViewContext::new().focused(true));
@@ -72,8 +66,7 @@ fn test_handle_event_select_when_focused() {
 
 #[test]
 fn test_handle_event_vim_keys() {
-    let mut state = make_tree_state();
-    state.set_focused(true);
+    let state = make_tree_state();
 
     let msg_k =
         Tree::<&str>::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
@@ -114,7 +107,6 @@ fn test_handle_event_ignored_when_unfocused() {
 #[test]
 fn test_dispatch_event() {
     let mut state = make_tree_state();
-    state.set_focused(true);
 
     // Dispatch Down: should move selection from 0 to 1
     let output = Tree::<&str>::dispatch_event(
@@ -140,16 +132,12 @@ fn test_dispatch_event() {
 fn test_instance_methods() {
     let mut state = make_tree_state();
 
-    // is_focused / set_focused
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-
-    // dispatch_event via instance method
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
+    // dispatch_event via static method
+    let output = Tree::<&str>::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, None); // Down returns None but updates state
     assert_eq!(state.selected_index(), Some(1));
 
@@ -157,8 +145,12 @@ fn test_instance_methods() {
     let output = state.update(TreeMessage::Select);
     assert_eq!(output, Some(TreeOutput::Selected(vec![0, 0])));
 
-    // handle_event via instance method
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
+    // handle_event via static method
+    let msg = Tree::<&str>::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TreeMessage::Up));
 }
 
@@ -175,37 +167,8 @@ fn test_selected_item() {
 // ========== Disabled State Tests ==========
 
 #[test]
-fn test_disabled_default_false() {
-    let state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    assert!(!state.is_disabled());
-
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = TreeState::new(vec![TreeNode::new("Root", ())]).with_disabled(true);
-    assert!(state.is_disabled());
-
-    let state = TreeState::new(vec![TreeNode::new("Root", ())]).with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = make_tree_state();
-    state.set_focused(true);
-    state.set_disabled(true);
+    let state = make_tree_state();
 
     let msg = Tree::<&str>::handle_event(
         &state,
@@ -258,46 +221,8 @@ fn test_handle_event_ignored_when_disabled() {
 }
 
 #[test]
-fn test_update_ignored_when_disabled() {
-    let mut root = TreeNode::new("Root", ());
-    root.add_child(TreeNode::new("Child", ()));
-
-    let mut state = TreeState::new(vec![root]);
-    state.set_disabled(true);
-
-    // Down should be ignored
-    let output = Tree::update(&mut state, TreeMessage::Down);
-    assert_eq!(output, None);
-    assert_eq!(state.selected_index(), Some(0));
-
-    // Expand should be ignored
-    let output = Tree::update(&mut state, TreeMessage::Expand);
-    assert_eq!(output, None);
-    assert_eq!(state.visible_count(), 1); // Should still be collapsed
-
-    // Select should be ignored
-    let output = Tree::update(&mut state, TreeMessage::Select);
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_update_expand_all_ignored_when_disabled() {
-    let mut root = TreeNode::new("Root", ());
-    root.add_child(TreeNode::new("Child", ()));
-
-    let mut state = TreeState::new(vec![root]);
-    state.set_disabled(true);
-
-    let output = Tree::update(&mut state, TreeMessage::ExpandAll);
-    assert_eq!(output, None);
-    assert_eq!(state.visible_count(), 1); // Should not have expanded
-}
-
-#[test]
 fn test_dispatch_event_ignored_when_disabled() {
     let mut state = make_tree_state();
-    state.set_focused(true);
-    state.set_disabled(true);
 
     let output = Tree::<&str>::dispatch_event(
         &mut state,
@@ -306,58 +231,4 @@ fn test_dispatch_event_ignored_when_disabled() {
     );
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(0)); // Should not have moved
-}
-
-#[test]
-fn test_instance_handle_event_disabled() {
-    let mut state = make_tree_state();
-    state.set_focused(true);
-    state.set_disabled(true);
-
-    let msg = state.handle_event(&Event::key(KeyCode::Down));
-    assert!(msg.is_none());
-}
-
-#[test]
-fn test_instance_update_disabled() {
-    let mut state = make_tree_state();
-    state.set_disabled(true);
-
-    let output = state.update(TreeMessage::Down);
-    assert!(output.is_none());
-    assert_eq!(state.selected_index(), Some(0));
-}
-
-#[test]
-fn test_instance_dispatch_event_disabled() {
-    let mut state = make_tree_state();
-    state.set_focused(true);
-    state.set_disabled(true);
-
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
-    assert!(output.is_none());
-    assert_eq!(state.selected_index(), Some(0));
-}
-
-#[test]
-fn test_view_disabled() {
-    let root = TreeNode::new("Root", ());
-    let mut state = TreeState::new(vec![root]);
-    state.set_disabled(true);
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
-
-    terminal
-        .draw(|frame| {
-            Tree::view(
-                &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
-            );
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
 }

@@ -52,7 +52,7 @@ fn test_render_focused() {
 
 #[test]
 fn test_render_disabled() {
-    let state = ConversationViewState::new().with_disabled(true);
+    let state = ConversationViewState::new();
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {

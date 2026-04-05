@@ -47,8 +47,7 @@ impl App for SearchableListApp {
             "Clojure".to_string(),
         ];
 
-        let mut list = SearchableListState::new(items);
-        list.set_focused(true);
+        let list = SearchableListState::new(items);
 
         let state = State {
             list,
@@ -120,7 +119,8 @@ impl App for SearchableListApp {
                 return Some(Msg::Quit);
             }
         }
-        state.list.handle_event(event).map(Msg::List)
+        SearchableList::handle_event(&state.list, event, &ViewContext::new().focused(true))
+            .map(Msg::List)
     }
 }
 

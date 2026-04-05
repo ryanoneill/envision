@@ -10,8 +10,6 @@ fn test_new() {
     let state = SwitchState::new();
     assert!(!state.is_on());
     assert!(state.label().is_none());
-    assert!(!state.is_disabled());
-    assert!(!state.is_focused());
 }
 
 #[test]
@@ -19,8 +17,6 @@ fn test_default() {
     let state = SwitchState::default();
     assert!(!state.is_on());
     assert!(state.label().is_none());
-    assert!(!state.is_disabled());
-    assert!(!Switch::is_focused(&state));
 }
 
 #[test]
@@ -28,8 +24,6 @@ fn test_init() {
     let state = Switch::init();
     assert!(!state.is_on());
     assert!(state.label().is_none());
-    assert!(!state.is_disabled());
-    assert!(!Switch::is_focused(&state));
 }
 
 #[test]
@@ -61,29 +55,17 @@ fn test_with_off_label() {
     let state = SwitchState::new().with_off_label("NO");
     assert_eq!(state.off_label, "NO");
 }
-
-#[test]
-fn test_with_disabled() {
-    let state = SwitchState::new().with_disabled(true);
-    assert!(state.is_disabled());
-
-    let state = SwitchState::new().with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
 #[test]
 fn test_builder_chaining() {
     let state = SwitchState::new()
         .with_on(true)
         .with_label("Wi-Fi")
         .with_on_label("ENABLED")
-        .with_off_label("DISABLED")
-        .with_disabled(false);
+        .with_off_label("DISABLED");
     assert!(state.is_on());
     assert_eq!(state.label(), Some("Wi-Fi"));
     assert_eq!(state.on_label, "ENABLED");
     assert_eq!(state.off_label, "DISABLED");
-    assert!(!state.is_disabled());
 }
 
 // ========================================
@@ -109,25 +91,6 @@ fn test_toggle_on_to_off() {
     assert_eq!(output, Some(SwitchOutput::Off));
     assert!(!state.is_on());
 }
-
-#[test]
-fn test_toggle_disabled() {
-    let mut state = SwitchState::new().with_disabled(true);
-
-    let output = Switch::update(&mut state, SwitchMessage::Toggle);
-    assert_eq!(output, None);
-    assert!(!state.is_on());
-}
-
-#[test]
-fn test_toggle_disabled_when_on() {
-    let mut state = SwitchState::new().with_on(true).with_disabled(true);
-
-    let output = Switch::update(&mut state, SwitchMessage::Toggle);
-    assert_eq!(output, None);
-    assert!(state.is_on());
-}
-
 #[test]
 fn test_set_on_true() {
     let mut state = SwitchState::new();
@@ -151,15 +114,6 @@ fn test_set_on_same_value() {
     assert_eq!(output, None);
     assert!(!state.is_on());
 }
-
-#[test]
-fn test_set_on_disabled() {
-    let mut state = SwitchState::new().with_disabled(true);
-    let output = Switch::update(&mut state, SwitchMessage::SetOn(true));
-    assert_eq!(output, None);
-    assert!(!state.is_on());
-}
-
 #[test]
 fn test_set_label_message() {
     let mut state = SwitchState::new();
@@ -227,8 +181,7 @@ fn test_multiple_toggles() {
 
 #[test]
 fn test_handle_event_enter_when_focused() {
-    let mut state = SwitchState::new();
-    Switch::set_focused(&mut state, true);
+    let state = SwitchState::new();
     let msg = Switch::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
@@ -239,8 +192,7 @@ fn test_handle_event_enter_when_focused() {
 
 #[test]
 fn test_handle_event_space_when_focused() {
-    let mut state = SwitchState::new();
-    Switch::set_focused(&mut state, true);
+    let state = SwitchState::new();
     let msg = Switch::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SwitchMessage::Toggle));
 }
@@ -254,9 +206,7 @@ fn test_handle_event_ignored_when_unfocused() {
 
 #[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = SwitchState::new();
-    Switch::set_focused(&mut state, true);
-    state.set_disabled(true);
+    let state = SwitchState::new();
     let msg = Switch::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
@@ -267,8 +217,7 @@ fn test_handle_event_ignored_when_disabled() {
 
 #[test]
 fn test_handle_event_other_key_ignored() {
-    let mut state = SwitchState::new();
-    Switch::set_focused(&mut state, true);
+    let state = SwitchState::new();
     let msg = Switch::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
@@ -276,7 +225,6 @@ fn test_handle_event_other_key_ignored() {
 #[test]
 fn test_dispatch_event() {
     let mut state = SwitchState::new();
-    Switch::set_focused(&mut state, true);
     let output = Switch::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
@@ -297,35 +245,6 @@ fn test_dispatch_event_unfocused() {
     assert_eq!(output, None);
     assert!(!state.is_on());
 }
-
-// ========================================
-// Instance Method Tests
-// ========================================
-
-#[test]
-fn test_instance_is_focused() {
-    let mut state = SwitchState::new();
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-}
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = SwitchState::new();
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Enter));
-    assert_eq!(msg, Some(SwitchMessage::Toggle));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = SwitchState::new();
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Enter));
-    assert_eq!(output, Some(SwitchOutput::On));
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = SwitchState::new();
@@ -368,8 +287,7 @@ fn test_view_on() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = SwitchState::new();
-    Switch::set_focused(&mut state, true);
+    let state = SwitchState::new();
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
 
     terminal
@@ -389,8 +307,7 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_focused_on() {
-    let mut state = SwitchState::new().with_on(true);
-    Switch::set_focused(&mut state, true);
+    let state = SwitchState::new().with_on(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
 
     terminal
@@ -407,30 +324,9 @@ fn test_view_focused_on() {
 
     insta::assert_snapshot!(terminal.backend().to_string());
 }
-
-#[test]
-fn test_view_disabled() {
-    let state = SwitchState::new().with_disabled(true);
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
-
-    terminal
-        .draw(|frame| {
-            Switch::view(
-                &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
-            );
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
 #[test]
 fn test_view_disabled_on() {
-    let state = SwitchState::new().with_on(true).with_disabled(true);
+    let state = SwitchState::new().with_on(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
 
     terminal
@@ -543,80 +439,9 @@ fn test_toggleable_show_hide() {
 // ========================================
 // Focusable Trait Tests
 // ========================================
-
-#[test]
-fn test_focusable_is_focused() {
-    let state = SwitchState::new();
-    assert!(!Switch::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = SwitchState::new();
-    Switch::set_focused(&mut state, true);
-    assert!(Switch::is_focused(&state));
-    Switch::set_focused(&mut state, false);
-    assert!(!Switch::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_focus_blur() {
-    let mut state = SwitchState::new();
-    Switch::focus(&mut state);
-    assert!(Switch::is_focused(&state));
-    Switch::blur(&mut state);
-    assert!(!Switch::is_focused(&state));
-}
-
 // ========================================
 // Disableable Trait Tests
 // ========================================
-
-#[test]
-fn test_disableable_is_disabled() {
-    let state = SwitchState::new();
-    assert!(!Switch::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_set_disabled() {
-    let mut state = SwitchState::new();
-    Switch::set_disabled(&mut state, true);
-    assert!(Switch::is_disabled(&state));
-    Switch::set_disabled(&mut state, false);
-    assert!(!Switch::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_disable_enable() {
-    let mut state = SwitchState::new();
-    Switch::disable(&mut state);
-    assert!(Switch::is_disabled(&state));
-    Switch::enable(&mut state);
-    assert!(!Switch::is_disabled(&state));
-}
-
-#[test]
-fn test_with_disabled_prevents_toggle() {
-    let mut state = SwitchState::new().with_disabled(true);
-    state.set_focused(true);
-    let output = Switch::update(&mut state, SwitchMessage::Toggle);
-    assert_eq!(output, None);
-    assert!(!state.is_on());
-}
-
-#[test]
-fn test_with_disabled_prevents_handle_event() {
-    let mut state = SwitchState::new().with_disabled(true);
-    state.set_focused(true);
-    let msg = Switch::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true).disabled(true),
-    );
-    assert_eq!(msg, None);
-}
-
 // ========================================
 // Annotation Tests
 // ========================================

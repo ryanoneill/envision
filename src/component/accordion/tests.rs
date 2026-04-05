@@ -36,7 +36,6 @@ fn test_new() {
     let state = AccordionState::new(panels);
     assert_eq!(state.len(), 2);
     assert_eq!(state.focused_index(), 0);
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -100,14 +99,6 @@ fn test_focused_panel() {
     assert!(empty.focused_panel().is_none());
 }
 
-#[test]
-fn test_is_disabled() {
-    let mut state = AccordionState::default();
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // ========== Mutator Tests ==========
 
 #[test]
@@ -163,15 +154,6 @@ fn test_remove_panel_out_of_bounds() {
     let mut state = AccordionState::from_pairs(vec![("A", "1")]);
     state.remove_panel(5);
     assert_eq!(state.len(), 1); // Unchanged
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = AccordionState::default();
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 // ========== Query Method Tests ==========
@@ -433,31 +415,6 @@ fn test_collapse_all_already_collapsed() {
     assert_eq!(output, None);
 }
 
-// ========== Disabled State Tests ==========
-
-#[test]
-fn test_disabled_ignores_messages() {
-    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    state.set_disabled(true);
-
-    let output = Accordion::update(&mut state, AccordionMessage::Toggle);
-    assert_eq!(output, None);
-    assert!(!state.panels()[0].is_expanded());
-
-    let output = Accordion::update(&mut state, AccordionMessage::Down);
-    assert_eq!(output, None);
-    assert_eq!(state.focused_index(), 0);
-}
-
-#[test]
-fn test_disabling_preserves_state() {
-    let mut state = AccordionState::new(vec![AccordionPanel::new("A", "1").expanded()]);
-    assert!(state.panels()[0].is_expanded());
-
-    state.set_disabled(true);
-    assert!(state.panels()[0].is_expanded()); // Still expanded
-}
-
 // ========== View Tests ==========
 
 #[test]
@@ -523,13 +480,18 @@ fn test_view_mixed() {
 
 #[test]
 fn test_view_focused_highlight() {
-    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::focus(&mut state);
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Accordion::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -560,7 +522,6 @@ fn test_view_long_content() {
 fn test_init() {
     let state = Accordion::init();
     assert!(state.is_empty());
-    assert!(!Accordion::is_focused(&state));
 }
 
 #[test]
@@ -570,7 +531,6 @@ fn test_full_workflow() {
         ("Section 2", "Content 2"),
         ("Section 3", "Content 3"),
     ]);
-    Accordion::focus(&mut state);
 
     // Initially no panels expanded
     assert_eq!(state.expanded_count(), 0);
@@ -604,8 +564,7 @@ fn test_full_workflow() {
 
 #[test]
 fn test_handle_event_up_when_focused() {
-    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::focus(&mut state);
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
     let msg = Accordion::handle_event(
         &state,
@@ -617,8 +576,7 @@ fn test_handle_event_up_when_focused() {
 
 #[test]
 fn test_handle_event_down_when_focused() {
-    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::focus(&mut state);
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
     let msg = Accordion::handle_event(
         &state,
@@ -630,8 +588,7 @@ fn test_handle_event_down_when_focused() {
 
 #[test]
 fn test_handle_event_toggle_when_focused() {
-    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::focus(&mut state);
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
     let msg = Accordion::handle_event(
         &state,
@@ -643,8 +600,7 @@ fn test_handle_event_toggle_when_focused() {
 
 #[test]
 fn test_handle_event_first_when_focused() {
-    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::focus(&mut state);
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
     let msg = Accordion::handle_event(
         &state,
@@ -656,8 +612,7 @@ fn test_handle_event_first_when_focused() {
 
 #[test]
 fn test_handle_event_last_when_focused() {
-    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::focus(&mut state);
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
     let msg = Accordion::handle_event(
         &state,
@@ -669,8 +624,7 @@ fn test_handle_event_last_when_focused() {
 
 #[test]
 fn test_handle_event_vim_keys() {
-    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::focus(&mut state);
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
     let msg_k =
         Accordion::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
@@ -683,8 +637,7 @@ fn test_handle_event_vim_keys() {
 
 #[test]
 fn test_handle_event_space_toggle() {
-    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::focus(&mut state);
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
     let msg = Accordion::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(AccordionMessage::Toggle));
@@ -707,9 +660,7 @@ fn test_handle_event_ignored_when_unfocused() {
 
 #[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::focus(&mut state);
-    state.set_disabled(true);
+    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
     let msg = Accordion::handle_event(
         &state,
@@ -731,7 +682,6 @@ fn test_handle_event_ignored_when_disabled() {
 #[test]
 fn test_dispatch_event() {
     let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    Accordion::focus(&mut state);
 
     // Dispatch Down: should move focus from 0 to 1
     let output = Accordion::dispatch_event(
@@ -755,19 +705,15 @@ fn test_dispatch_event() {
 // ========== Instance Method Tests ==========
 
 #[test]
-fn test_instance_methods() {
+fn test_instance_update() {
     let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
-    // is_focused / set_focused
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-
-    // dispatch_event via instance method
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
+    // Navigate down via dispatch_event
+    let output = Accordion::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(AccordionOutput::FocusChanged(1)));
     assert_eq!(state.focused_index(), 1);
 
@@ -775,10 +721,6 @@ fn test_instance_methods() {
     let output = state.update(AccordionMessage::Toggle);
     assert_eq!(output, Some(AccordionOutput::Expanded(1)));
     assert!(state.panels()[1].is_expanded());
-
-    // handle_event via instance method
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(AccordionMessage::Up));
 }
 
 // ========== Builder Tests ==========
@@ -803,24 +745,10 @@ fn test_with_focused_index_empty() {
 }
 
 #[test]
-fn test_with_disabled() {
-    let state = AccordionState::from_pairs(vec![("A", "1")]).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_false() {
-    let state = AccordionState::from_pairs(vec![("A", "1")]).with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_builder_chaining() {
-    let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")])
-        .with_focused_index(1)
-        .with_disabled(true);
+    let state =
+        AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")]).with_focused_index(1);
     assert_eq!(state.focused_index(), 1);
-    assert!(state.is_disabled());
 }
 
 // Annotation tests
@@ -879,7 +807,6 @@ fn test_selected_index_after_focus_change() {
         AccordionPanel::new("C", "3"),
     ];
     let mut state = AccordionState::new(panels);
-    state.set_focused(true);
     Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected(), Some(1));

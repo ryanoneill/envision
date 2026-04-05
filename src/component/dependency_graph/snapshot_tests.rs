@@ -52,7 +52,6 @@ fn test_snapshot_with_selection() {
         .with_node(GraphNode::new("db", "Database").with_status(NodeStatus::Degraded))
         .with_edge(GraphEdge::new("api", "db"))
         .with_title("Service Topology");
-    state.set_focused(true);
     state.select_next(); // select api
     let (mut terminal, theme) = test_utils::setup_render(80, 12);
     terminal
@@ -95,8 +94,7 @@ fn test_snapshot_disabled() {
         .with_node(GraphNode::new("api", "API").with_status(NodeStatus::Healthy))
         .with_node(GraphNode::new("db", "Database").with_status(NodeStatus::Down))
         .with_edge(GraphEdge::new("api", "db"))
-        .with_title("Disabled Graph")
-        .with_disabled(true);
+        .with_title("Disabled Graph");
     let (mut terminal, theme) = test_utils::setup_render(80, 12);
     terminal
         .draw(|frame| {

@@ -28,13 +28,12 @@ impl App for TabsApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut tabs = TabsState::new(vec![
+        let tabs = TabsState::new(vec![
             "Overview".to_string(),
             "Details".to_string(),
             "Settings".to_string(),
             "Logs".to_string(),
         ]);
-        tabs.set_focused(true);
 
         (State { tabs }, Command::none())
     }
@@ -99,7 +98,7 @@ impl App for TabsApp {
                 return Some(Msg::Quit);
             }
         }
-        state.tabs.handle_event(event).map(Msg::Tabs)
+        Tabs::handle_event(&state.tabs, event, &ViewContext::new().focused(true)).map(Msg::Tabs)
     }
 }
 

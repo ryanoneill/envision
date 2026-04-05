@@ -43,8 +43,7 @@ impl App for TabBarApp {
                 .with_icon("H")
                 .with_closable(true),
         ];
-        let mut tab_bar = TabBarState::new(tabs);
-        tab_bar.set_focused(true);
+        let tab_bar = TabBarState::new(tabs);
 
         (
             State {
@@ -125,7 +124,8 @@ impl App for TabBarApp {
                 return Some(Msg::AddNewTab);
             }
         }
-        state.tab_bar.handle_event(event).map(Msg::TabBar)
+        TabBar::handle_event(&state.tab_bar, event, &ViewContext::new().focused(true))
+            .map(Msg::TabBar)
     }
 }
 

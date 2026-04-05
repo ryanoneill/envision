@@ -11,9 +11,7 @@ fn sample_state() -> LogViewerState {
 }
 
 fn focused_state() -> LogViewerState {
-    let mut state = sample_state();
-    LogViewer::set_focused(&mut state, true);
-    state
+    sample_state()
 }
 
 // =============================================================================
@@ -567,7 +565,6 @@ fn test_clear_search_resets_history_index() {
 #[test]
 fn test_set_max_history_truncates() {
     let mut state = LogViewerState::new();
-    state.set_focused(true);
 
     // Add 5 history entries
     for i in 0..5 {

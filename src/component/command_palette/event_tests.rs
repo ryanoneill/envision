@@ -11,7 +11,6 @@ fn sample_items() -> Vec<PaletteItem> {
 
 fn active_state() -> CommandPaletteState {
     let mut state = CommandPaletteState::new(sample_items());
-    state.set_focused(true);
     state.set_visible(true);
     state
 }
@@ -136,8 +135,7 @@ fn test_unfocused_ignores_all_events() {
 
 #[test]
 fn test_disabled_ignores_all_events() {
-    let mut state = active_state();
-    state.set_disabled(true);
+    let state = active_state();
 
     assert_eq!(
         CommandPalette::handle_event(
@@ -159,8 +157,7 @@ fn test_disabled_ignores_all_events() {
 
 #[test]
 fn test_hidden_ignores_all_events() {
-    let mut state = CommandPaletteState::new(sample_items());
-    state.set_focused(true);
+    let state = CommandPaletteState::new(sample_items());
     // visible is false
 
     assert_eq!(

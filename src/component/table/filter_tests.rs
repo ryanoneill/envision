@@ -120,7 +120,6 @@ fn test_filter_resets_selection_when_row_hidden() {
 #[test]
 fn test_filter_navigation() {
     let mut state = TableState::new(test_rows(), test_columns());
-    state.focused = true;
     state.set_filter_text("ap");
     // Filtered: Apple(0), Apricot(3)
     assert_eq!(state.visible_count(), 2);

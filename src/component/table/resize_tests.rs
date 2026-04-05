@@ -126,14 +126,6 @@ fn test_resize_out_of_bounds_column() {
     assert_eq!(output, None);
 }
 
-#[test]
-fn test_resize_disabled() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    state.set_disabled(true);
-    let output = Table::<TestRow>::update(&mut state, TableMessage::IncreaseColumnWidth(0));
-    assert_eq!(output, None);
-}
-
 // ========== Key Binding Tests for New Features ==========
 
 mod key_binding_tests {
@@ -142,8 +134,7 @@ mod key_binding_tests {
 
     #[test]
     fn test_plus_key_increases_column_width() {
-        let mut state = TableState::new(test_rows(), test_columns());
-        state.set_focused(true);
+        let state = TableState::new(test_rows(), test_columns());
 
         let msg = Table::<TestRow>::handle_event(
             &state,
@@ -155,8 +146,7 @@ mod key_binding_tests {
 
     #[test]
     fn test_minus_key_decreases_column_width() {
-        let mut state = TableState::new(test_rows(), test_columns());
-        state.set_focused(true);
+        let state = TableState::new(test_rows(), test_columns());
 
         let msg = Table::<TestRow>::handle_event(
             &state,
@@ -169,7 +159,6 @@ mod key_binding_tests {
     #[test]
     fn test_plus_key_targets_sort_column() {
         let mut state = TableState::new(test_rows(), test_columns());
-        state.set_focused(true);
 
         // Sort by column 1
         Table::<TestRow>::update(&mut state, TableMessage::SortBy(1));
@@ -197,9 +186,7 @@ mod key_binding_tests {
 
     #[test]
     fn test_resize_keys_ignored_when_disabled() {
-        let mut state = TableState::new(test_rows(), test_columns());
-        state.set_focused(true);
-        state.set_disabled(true);
+        let state = TableState::new(test_rows(), test_columns());
 
         let msg = Table::<TestRow>::handle_event(
             &state,

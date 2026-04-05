@@ -10,7 +10,7 @@ use envision::{
     BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Button, ButtonOutput, ButtonState,
     CaptureBackend, Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState, Column, Command,
     Component, Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Dropdown,
-    DropdownState, Event, FocusManager, Focusable, InputField, InputFieldMessage, InputFieldOutput,
+    DropdownState, Event, FocusManager, InputField, InputFieldMessage, InputFieldOutput,
     InputFieldState, KeyHint, KeyHints, KeyHintsState, LineInput, LineInputState, LoadingList,
     LoadingListState, Menu, MenuItem, MenuState, MultiProgress, MultiProgressState, ProgressBar,
     ProgressBarState, RadioGroup, RadioGroupMessage, RadioGroupOutput, RadioGroupState,
@@ -113,7 +113,6 @@ fn test_dialog_confirm_workflow() {
 #[test]
 fn test_input_field_type_and_submit() {
     let mut state = InputFieldState::new();
-    InputField::set_focused(&mut state, true);
 
     // Type "John"
     InputField::update(&mut state, InputFieldMessage::Insert('J'));
@@ -265,7 +264,7 @@ fn test_dialog_three_button_full_cycle() {
 fn test_checkbox_toggle_sequence() {
     let mut cb1 = CheckboxState::new("Accept Terms");
     let mut cb2 = CheckboxState::new("Subscribe");
-    let mut cb3 = CheckboxState::new("Remember Me");
+    let cb3 = CheckboxState::new("Remember Me");
 
     // All start unchecked
     assert!(!cb1.is_checked());
@@ -291,12 +290,6 @@ fn test_checkbox_toggle_sequence() {
     assert_eq!(output, Some(CheckboxOutput::Toggled(false)));
     assert!(!cb1.is_checked());
     assert!(cb2.is_checked()); // cb2 still checked
-
-    // Disabled checkbox returns None
-    cb3.set_disabled(true);
-    let output = Checkbox::update(&mut cb3, CheckboxMessage::Toggle);
-    assert_eq!(output, None);
-    assert!(!cb3.is_checked()); // Unchanged
 }
 
 // ---------------------------------------------------------------------------
@@ -328,8 +321,6 @@ fn test_form_workflow_with_focus_manager() {
     assert_eq!(focus.focused(), Some(&FormField::Name));
 
     // Set InputField focused since FocusManager says Name is focused
-    InputField::set_focused(&mut input, true);
-    assert!(InputField::is_focused(&input));
 
     // Type "Alice" into the InputField via dispatch_event
     let events = [
@@ -348,12 +339,8 @@ fn test_form_workflow_with_focus_manager() {
     // Tab to Checkbox: advance FocusManager, blur InputField, focus Checkbox
     focus.focus_next();
     assert_eq!(focus.focused(), Some(&FormField::AcceptTerms));
-    InputField::set_focused(&mut input, false);
-    Checkbox::set_focused(&mut checkbox, true);
 
     // Verify InputField is no longer focused and Checkbox is
-    assert!(!InputField::is_focused(&input));
-    assert!(Checkbox::is_focused(&checkbox));
 
     // Toggle checkbox via dispatch_event (Space key)
     let space_event = Event::char(' ');
@@ -368,12 +355,8 @@ fn test_form_workflow_with_focus_manager() {
     // Tab to Button: advance FocusManager, blur Checkbox, focus Button
     focus.focus_next();
     assert_eq!(focus.focused(), Some(&FormField::Submit));
-    Checkbox::set_focused(&mut checkbox, false);
-    Button::set_focused(&mut button, true);
 
     // Verify Checkbox is no longer focused and Button is
-    assert!(!Checkbox::is_focused(&checkbox));
-    assert!(Button::is_focused(&button));
 
     // Press Enter on Button via dispatch_event
     let enter_event = Event::key(crossterm::event::KeyCode::Enter);
@@ -384,7 +367,6 @@ fn test_form_workflow_with_focus_manager() {
     // Final state verification: all components retain their state after the workflow
     assert_eq!(input.value(), "Alice");
     assert!(checkbox.is_checked());
-    assert!(Button::is_focused(&button));
 }
 
 // ---------------------------------------------------------------------------
@@ -395,7 +377,6 @@ fn test_form_workflow_with_focus_manager() {
 fn test_selectable_list_stress_10000_items() {
     let items: Vec<String> = (0..10_000).map(|i| format!("Item {}", i)).collect();
     let mut state = SelectableListState::new(items);
-    state.set_focused(true);
 
     // Should start at index 0
     assert_eq!(state.selected_index(), Some(0));
@@ -403,7 +384,11 @@ fn test_selectable_list_stress_10000_items() {
     // Send 100 Down events via dispatch_event
     let down_event = Event::key(crossterm::event::KeyCode::Down);
     for _ in 0..100 {
-        state.dispatch_event(&down_event);
+        SelectableList::<String>::dispatch_event(
+            &mut state,
+            &down_event,
+            &ViewContext::new().focused(true),
+        );
     }
     assert_eq!(state.selected_index(), Some(100));
 
@@ -729,7 +714,6 @@ fn test_settings_panel_with_tabs_and_components() {
 
     // Start on General tab, type a name
     assert_eq!(focus.focused(), Some(&Panel::General));
-    InputField::set_focused(&mut input, true);
     for c in "MyApp".chars() {
         InputField::update(&mut input, InputFieldMessage::Insert(c));
     }
@@ -739,9 +723,6 @@ fn test_settings_panel_with_tabs_and_components() {
     Tabs::<String>::update(&mut tabs, TabsMessage::Right);
     assert_eq!(tabs.selected_index(), Some(1));
     focus.focus_next();
-    InputField::set_focused(&mut input, false);
-    RadioGroup::<String>::set_focused(&mut radio, true);
-
     // Select "Dark" theme
     RadioGroup::<String>::update(&mut radio, RadioGroupMessage::Down);
     let output = RadioGroup::<String>::update(&mut radio, RadioGroupMessage::Confirm);
@@ -754,9 +735,6 @@ fn test_settings_panel_with_tabs_and_components() {
     // Switch to Keybinds tab
     Tabs::<String>::update(&mut tabs, TabsMessage::Right);
     focus.focus_next();
-    RadioGroup::<String>::set_focused(&mut radio, false);
-    Checkbox::set_focused(&mut checkbox, true);
-
     // Toggle vim mode
     let output = Checkbox::update(&mut checkbox, CheckboxMessage::Toggle);
     assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
@@ -767,8 +745,6 @@ fn test_settings_panel_with_tabs_and_components() {
     Tabs::<String>::update(&mut tabs, TabsMessage::Left);
     assert_eq!(tabs.selected_index(), Some(0));
     focus.focus_first();
-    Checkbox::set_focused(&mut checkbox, false);
-    InputField::set_focused(&mut input, true);
 
     // All states preserved
     assert_eq!(input.value(), "MyApp");
@@ -789,8 +765,6 @@ fn test_master_detail_with_dialog_confirmation() {
         "Document D".to_string(),
         "Document E".to_string(),
     ]);
-    SelectableList::<String>::set_focused(&mut list, true);
-
     // Navigate to item 2
     SelectableList::<String>::update(&mut list, SelectableListMessage::Down);
     SelectableList::<String>::update(&mut list, SelectableListMessage::Down);
@@ -801,8 +775,6 @@ fn test_master_detail_with_dialog_confirmation() {
     let mut dialog = DialogState::confirm("Delete?", "Delete Document C permanently?");
     Dialog::update(&mut dialog, DialogMessage::Open);
     assert!(Dialog::is_visible(&dialog));
-    SelectableList::<String>::set_focused(&mut list, false);
-
     // Navigate to Cancel and press — should close dialog without change
     Dialog::update(&mut dialog, DialogMessage::FocusPrev);
     let output = Dialog::update(&mut dialog, DialogMessage::Press);
@@ -869,7 +841,6 @@ fn test_breadcrumb_tab_navigation_coordination() {
     ]);
 
     // Navigate breadcrumb to "Home" (first segment)
-    Breadcrumb::set_focused(&mut breadcrumb, true);
     Breadcrumb::update(&mut breadcrumb, BreadcrumbMessage::First);
     let output = Breadcrumb::update(&mut breadcrumb, BreadcrumbMessage::Select);
     assert_eq!(output, Some(BreadcrumbOutput::Selected(0)));
@@ -904,8 +875,6 @@ fn test_searchable_list_filter_and_select_workflow() {
         "Grape".to_string(),
     ];
     let mut state = SearchableListState::new(items.clone());
-    SearchableList::<String>::set_focused(&mut state, true);
-
     // Verify all items visible initially
     assert_eq!(state.items().len(), 10);
     assert_eq!(state.filtered_items().len(), 10);

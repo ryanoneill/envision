@@ -13,9 +13,7 @@ fn sample_widgets() -> Vec<MetricWidget> {
 }
 
 fn focused_state() -> MetricsDashboardState {
-    let mut state = MetricsDashboardState::new(sample_widgets(), 3);
-    MetricsDashboard::set_focused(&mut state, true);
-    state
+    MetricsDashboardState::new(sample_widgets(), 3)
 }
 
 // =============================================================================
@@ -28,8 +26,6 @@ fn test_new() {
     assert_eq!(state.widget_count(), 6);
     assert_eq!(state.columns(), 3);
     assert_eq!(state.selected_index(), Some(0));
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -49,12 +45,6 @@ fn test_columns_minimum() {
 fn test_with_title() {
     let state = MetricsDashboardState::new(sample_widgets(), 3).with_title("Dashboard");
     assert_eq!(state.title(), Some("Dashboard"));
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = MetricsDashboardState::new(sample_widgets(), 3).with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -355,17 +345,8 @@ fn test_select() {
 // =============================================================================
 
 #[test]
-fn test_disabled_ignores_messages() {
-    let mut state = focused_state();
-    state.set_disabled(true);
-    let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
-    assert_eq!(output, None);
-}
-
-#[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
+    let state = focused_state();
     let msg = MetricsDashboard::handle_event(
         &state,
         &Event::key(KeyCode::Right),
@@ -544,7 +525,11 @@ fn test_set_columns_minimum() {
 #[test]
 fn test_instance_handle_event() {
     let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Right));
+    let msg = MetricsDashboard::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(MetricsDashboardMessage::Right));
 }
 
@@ -558,7 +543,11 @@ fn test_instance_update() {
 #[test]
 fn test_instance_dispatch_event() {
     let mut state = focused_state();
-    let output = state.dispatch_event(&Event::key(KeyCode::Right));
+    let output = MetricsDashboard::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(1)));
 }
 
@@ -602,7 +591,7 @@ fn test_render_with_widgets() {
 
 #[test]
 fn test_render_disabled() {
-    let state = MetricsDashboardState::new(sample_widgets(), 3).with_disabled(true);
+    let state = MetricsDashboardState::new(sample_widgets(), 3);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -656,22 +645,6 @@ fn test_render_small_area() {
 }
 
 // =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = MetricsDashboard::init();
-    assert!(!MetricsDashboard::is_focused(&state));
-
-    MetricsDashboard::focus(&mut state);
-    assert!(MetricsDashboard::is_focused(&state));
-
-    MetricsDashboard::blur(&mut state);
-    assert!(!MetricsDashboard::is_focused(&state));
-}
-
-// =============================================================================
 // PartialEq
 // =============================================================================
 
@@ -697,7 +670,6 @@ fn test_empty_dashboard_selected_index_is_none() {
 #[test]
 fn test_empty_dashboard_ignores_navigation() {
     let mut state = MetricsDashboardState::default();
-    state.set_focused(true);
     let output = MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right);
     assert_eq!(output, None);
 }
@@ -705,7 +677,6 @@ fn test_empty_dashboard_ignores_navigation() {
 #[test]
 fn test_single_widget_navigation() {
     let mut state = MetricsDashboardState::new(vec![MetricWidget::counter("A", 0)], 1);
-    state.set_focused(true);
     assert_eq!(
         MetricsDashboard::update(&mut state, MetricsDashboardMessage::Right),
         None

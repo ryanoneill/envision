@@ -35,8 +35,6 @@ impl App for MultiProgressApp {
         progress.add("file3", "node-v20.tar.xz");
         progress.add("file4", "gcc-13.2.tar.bz2");
 
-        progress.set_focused(true);
-
         (State { progress }, Command::none())
     }
 
@@ -83,7 +81,8 @@ impl App for MultiProgressApp {
                 return Some(Msg::Quit);
             }
         }
-        state.progress.handle_event(event).map(Msg::Progress)
+        MultiProgress::handle_event(&state.progress, event, &ViewContext::new().focused(true))
+            .map(Msg::Progress)
     }
 }
 

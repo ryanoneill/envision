@@ -1,7 +1,6 @@
 use super::*;
 use crate::component::test_utils::setup_render;
 use crate::component::Component;
-use crate::input::Event;
 
 // ---- Construction / Accessors ----
 
@@ -12,8 +11,6 @@ fn test_new_empty() {
     assert_eq!(state.value(), "");
     assert_eq!(state.len(), 0);
     assert_eq!(state.cursor_byte_offset(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -28,12 +25,6 @@ fn test_with_value() {
 fn test_with_placeholder() {
     let state = LineInputState::new().with_placeholder("Type here...");
     assert_eq!(state.placeholder(), "Type here...");
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = LineInputState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 #[test]
@@ -58,15 +49,6 @@ fn test_set_placeholder() {
 }
 
 #[test]
-fn test_set_disabled() {
-    let mut state = LineInputState::new();
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_display_width() {
     let mut state = LineInputState::new();
     assert_eq!(state.display_width(), 80);
@@ -74,34 +56,12 @@ fn test_display_width() {
     assert_eq!(state.display_width(), 40);
 }
 
-// ---- Focusable ----
-
-#[test]
-fn test_focusable() {
-    let mut state = LineInput::init();
-    assert!(!LineInput::is_focused(&state));
-    LineInput::focus(&mut state);
-    assert!(LineInput::is_focused(&state));
-    LineInput::blur(&mut state);
-    assert!(!LineInput::is_focused(&state));
-}
-
-#[test]
-fn test_focus_instance_methods() {
-    let mut state = LineInputState::new();
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
 // ---- Editing: Insert ----
 
 #[test]
 fn test_insert_char() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Insert('h'));
     assert_eq!(state.value(), "h");
     assert_eq!(state.cursor_byte_offset(), 1);
@@ -111,7 +71,7 @@ fn test_insert_char() {
 #[test]
 fn test_insert_multiple_chars() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     state.update(LineInputMessage::Insert('h'));
     state.update(LineInputMessage::Insert('i'));
     assert_eq!(state.value(), "hi");
@@ -121,7 +81,7 @@ fn test_insert_multiple_chars() {
 #[test]
 fn test_insert_unicode() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     state.update(LineInputMessage::Insert('世'));
     assert_eq!(state.value(), "世");
     assert_eq!(state.cursor_byte_offset(), 3);
@@ -130,7 +90,7 @@ fn test_insert_unicode() {
 #[test]
 fn test_insert_emoji() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     state.update(LineInputMessage::Insert('🎉'));
     assert_eq!(state.value(), "🎉");
     assert_eq!(state.cursor_byte_offset(), 4);
@@ -141,7 +101,7 @@ fn test_insert_emoji() {
 #[test]
 fn test_backspace() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Backspace);
     assert_eq!(state.value(), "hell");
     assert_eq!(state.cursor_byte_offset(), 4);
@@ -151,7 +111,7 @@ fn test_backspace() {
 #[test]
 fn test_backspace_at_start() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Backspace);
     assert_eq!(output, None);
 }
@@ -159,7 +119,7 @@ fn test_backspace_at_start() {
 #[test]
 fn test_backspace_with_selection() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     // Select "ell"
     state.cursor = 1;
     state.selection_anchor = Some(4);
@@ -173,7 +133,7 @@ fn test_backspace_with_selection() {
 #[test]
 fn test_delete() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.cursor = 0;
     let output = state.update(LineInputMessage::Delete);
     assert_eq!(state.value(), "ello");
@@ -183,7 +143,7 @@ fn test_delete() {
 #[test]
 fn test_delete_at_end() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Delete);
     assert_eq!(output, None);
 }
@@ -193,7 +153,7 @@ fn test_delete_at_end() {
 #[test]
 fn test_delete_word_back() {
     let mut state = LineInputState::with_value("hello world");
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::DeleteWordBack);
     assert_eq!(state.value(), "hello ");
     assert_eq!(output, Some(LineInputOutput::Changed("hello ".to_string())));
@@ -202,7 +162,7 @@ fn test_delete_word_back() {
 #[test]
 fn test_delete_word_forward() {
     let mut state = LineInputState::with_value("hello world");
-    state.set_focused(true);
+
     state.cursor = 5;
     let output = state.update(LineInputMessage::DeleteWordForward);
     assert_eq!(state.value(), "helloworld");
@@ -217,7 +177,7 @@ fn test_delete_word_forward() {
 #[test]
 fn test_clear() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Clear);
     assert_eq!(state.value(), "");
     assert_eq!(state.cursor_byte_offset(), 0);
@@ -227,7 +187,7 @@ fn test_clear() {
 #[test]
 fn test_clear_empty() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Clear);
     assert_eq!(output, None);
 }
@@ -237,7 +197,7 @@ fn test_clear_empty() {
 #[test]
 fn test_paste() {
     let mut state = LineInputState::with_value("ab");
-    state.set_focused(true);
+
     state.cursor = 1;
     let output = state.update(LineInputMessage::Paste("xyz".to_string()));
     assert_eq!(state.value(), "axyzb");
@@ -248,7 +208,7 @@ fn test_paste() {
 #[test]
 fn test_paste_strips_newlines() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     state.update(LineInputMessage::Paste("line1\nline2\r\nline3".to_string()));
     assert_eq!(state.value(), "line1line2line3");
 }
@@ -258,7 +218,7 @@ fn test_paste_strips_newlines() {
 #[test]
 fn test_set_value_message() {
     let mut state = LineInputState::with_value("old");
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::SetValue("new".to_string()));
     assert_eq!(state.value(), "new");
     assert_eq!(state.cursor_byte_offset(), 3);
@@ -270,7 +230,7 @@ fn test_set_value_message() {
 #[test]
 fn test_move_left() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.update(LineInputMessage::Left);
     assert_eq!(state.cursor_byte_offset(), 4);
 }
@@ -278,7 +238,7 @@ fn test_move_left() {
 #[test]
 fn test_move_right() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.cursor = 0;
     state.update(LineInputMessage::Right);
     assert_eq!(state.cursor_byte_offset(), 1);
@@ -287,7 +247,7 @@ fn test_move_right() {
 #[test]
 fn test_move_home() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.update(LineInputMessage::Home);
     assert_eq!(state.cursor_byte_offset(), 0);
 }
@@ -295,7 +255,7 @@ fn test_move_home() {
 #[test]
 fn test_move_end() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.cursor = 0;
     state.update(LineInputMessage::End);
     assert_eq!(state.cursor_byte_offset(), 5);
@@ -304,7 +264,7 @@ fn test_move_end() {
 #[test]
 fn test_move_word_left() {
     let mut state = LineInputState::with_value("hello world");
-    state.set_focused(true);
+
     state.update(LineInputMessage::WordLeft);
     assert_eq!(state.cursor_byte_offset(), 6);
 }
@@ -312,7 +272,7 @@ fn test_move_word_left() {
 #[test]
 fn test_move_word_right() {
     let mut state = LineInputState::with_value("hello world");
-    state.set_focused(true);
+
     state.cursor = 0;
     state.update(LineInputMessage::WordRight);
     assert_eq!(state.cursor_byte_offset(), 6);
@@ -321,7 +281,7 @@ fn test_move_word_right() {
 #[test]
 fn test_visual_up() {
     let mut state = LineInputState::with_value("hello world!");
-    state.set_focused(true);
+
     state.set_display_width(5);
     // cursor at end: "hello" | " worl" | "d!"
     // cursor at byte 12 → row 2, col 2
@@ -333,7 +293,7 @@ fn test_visual_up() {
 #[test]
 fn test_visual_down() {
     let mut state = LineInputState::with_value("hello world!");
-    state.set_focused(true);
+
     state.set_display_width(5);
     state.cursor = 0;
     // cursor at byte 0 → row 0, col 0
@@ -345,7 +305,7 @@ fn test_visual_down() {
 #[test]
 fn test_movement_clears_selection() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.selection_anchor = Some(0);
     state.update(LineInputMessage::Left);
     assert!(!state.has_selection());
@@ -356,7 +316,7 @@ fn test_movement_clears_selection() {
 #[test]
 fn test_select_left() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.update(LineInputMessage::SelectLeft);
     assert!(state.has_selection());
     assert_eq!(state.selected_text(), Some("o"));
@@ -365,7 +325,7 @@ fn test_select_left() {
 #[test]
 fn test_select_right() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.cursor = 0;
     state.update(LineInputMessage::SelectRight);
     assert!(state.has_selection());
@@ -375,7 +335,7 @@ fn test_select_right() {
 #[test]
 fn test_select_home() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.update(LineInputMessage::SelectHome);
     assert_eq!(state.selected_text(), Some("hello"));
 }
@@ -383,7 +343,7 @@ fn test_select_home() {
 #[test]
 fn test_select_end() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.cursor = 0;
     state.update(LineInputMessage::SelectEnd);
     assert_eq!(state.selected_text(), Some("hello"));
@@ -392,7 +352,7 @@ fn test_select_end() {
 #[test]
 fn test_select_word_left() {
     let mut state = LineInputState::with_value("hello world");
-    state.set_focused(true);
+
     state.update(LineInputMessage::SelectWordLeft);
     assert_eq!(state.selected_text(), Some("world"));
 }
@@ -400,7 +360,7 @@ fn test_select_word_left() {
 #[test]
 fn test_select_word_right() {
     let mut state = LineInputState::with_value("hello world");
-    state.set_focused(true);
+
     state.cursor = 0;
     state.update(LineInputMessage::SelectWordRight);
     assert_eq!(state.selected_text(), Some("hello "));
@@ -409,7 +369,7 @@ fn test_select_word_right() {
 #[test]
 fn test_select_all() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.update(LineInputMessage::SelectAll);
     assert_eq!(state.selected_text(), Some("hello"));
 }
@@ -417,7 +377,7 @@ fn test_select_all() {
 #[test]
 fn test_select_all_empty() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::SelectAll);
     assert_eq!(output, None);
     assert!(!state.has_selection());
@@ -428,7 +388,7 @@ fn test_select_all_empty() {
 #[test]
 fn test_copy() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.selection_anchor = Some(0);
     // cursor at 5, anchor at 0 → selects "hello"
     let output = state.update(LineInputMessage::Copy);
@@ -441,7 +401,7 @@ fn test_copy() {
 #[test]
 fn test_copy_no_selection() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Copy);
     assert_eq!(output, None);
 }
@@ -449,7 +409,7 @@ fn test_copy_no_selection() {
 #[test]
 fn test_cut() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.selection_anchor = Some(0);
     let output = state.update(LineInputMessage::Cut);
     assert_eq!(state.clipboard(), "hello");
@@ -460,7 +420,7 @@ fn test_cut() {
 #[test]
 fn test_cut_no_selection() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Cut);
     assert_eq!(output, None);
 }
@@ -470,7 +430,7 @@ fn test_cut_no_selection() {
 #[test]
 fn test_submit_pushes_to_history() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Submit);
     assert_eq!(
         output,
@@ -484,7 +444,7 @@ fn test_submit_pushes_to_history() {
 #[test]
 fn test_history_prev_next() {
     let mut state = LineInputState::with_value("first");
-    state.set_focused(true);
+
     state.update(LineInputMessage::Submit);
     state.update(LineInputMessage::Insert('x'));
 
@@ -504,7 +464,7 @@ fn test_history_prev_next() {
 #[test]
 fn test_history_prev_empty() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::HistoryPrev);
     assert_eq!(output, None);
 }
@@ -512,7 +472,7 @@ fn test_history_prev_empty() {
 #[test]
 fn test_history_next_not_browsing() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::HistoryNext);
     assert_eq!(output, None);
 }
@@ -520,7 +480,7 @@ fn test_history_next_not_browsing() {
 #[test]
 fn test_edit_exits_browse() {
     let mut state = LineInputState::with_value("first");
-    state.set_focused(true);
+
     state.update(LineInputMessage::Submit);
 
     // Browse to "first"
@@ -538,7 +498,7 @@ fn test_edit_exits_browse() {
 #[test]
 fn test_undo_insert() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     state.update(LineInputMessage::Insert('a'));
     state.update(LineInputMessage::Insert(' ')); // whitespace breaks group
     state.update(LineInputMessage::Insert('b'));
@@ -560,7 +520,7 @@ fn test_undo_insert() {
 #[test]
 fn test_redo() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     state.update(LineInputMessage::Insert('a'));
     state.update(LineInputMessage::Insert(' '));
     state.update(LineInputMessage::Insert('b'));
@@ -575,7 +535,7 @@ fn test_redo() {
 #[test]
 fn test_undo_empty() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Undo);
     assert_eq!(output, None);
 }
@@ -583,7 +543,7 @@ fn test_undo_empty() {
 #[test]
 fn test_redo_empty() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     let output = state.update(LineInputMessage::Redo);
     assert_eq!(output, None);
 }
@@ -591,7 +551,7 @@ fn test_redo_empty() {
 #[test]
 fn test_undo_clear() {
     let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+
     state.update(LineInputMessage::Clear);
     assert_eq!(state.value(), "");
 
@@ -602,7 +562,7 @@ fn test_undo_clear() {
 #[test]
 fn test_undo_paste() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     state.update(LineInputMessage::Paste("hello world".to_string()));
     assert_eq!(state.value(), "hello world");
 
@@ -613,7 +573,7 @@ fn test_undo_paste() {
 #[test]
 fn test_undo_backspace() {
     let mut state = LineInputState::with_value("hi");
-    state.set_focused(true);
+
     state.update(LineInputMessage::Backspace);
     assert_eq!(state.value(), "h");
 
@@ -622,27 +582,6 @@ fn test_undo_backspace() {
 }
 
 // ---- dispatch_event ----
-
-#[test]
-fn test_dispatch_event() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::char('x'));
-    assert_eq!(output, Some(LineInputOutput::Changed("x".to_string())));
-    assert_eq!(state.value(), "x");
-}
-
-// ---- Disabled update guard ----
-
-#[test]
-fn test_update_disabled() {
-    let mut state = LineInputState::new();
-    state.set_focused(true);
-    state.set_disabled(true);
-    let output = state.update(LineInputMessage::Insert('a'));
-    assert_eq!(output, None);
-    assert_eq!(state.value(), "");
-}
 
 // ---- Cursor visual position ----
 
@@ -659,8 +598,8 @@ fn test_cursor_visual_position() {
 #[test]
 fn test_snapshot_focused() {
     let (mut terminal, theme) = setup_render(20, 3);
-    let mut state = LineInputState::with_value("hello");
-    state.set_focused(true);
+    let state = LineInputState::with_value("hello");
+
     terminal
         .draw(|frame| {
             LineInput::view(
@@ -690,7 +629,7 @@ fn test_snapshot_unfocused() {
 #[test]
 fn test_snapshot_disabled() {
     let (mut terminal, theme) = setup_render(20, 3);
-    let state = LineInputState::with_value("hello").with_disabled(true);
+    let state = LineInputState::with_value("hello");
     terminal
         .draw(|frame| {
             LineInput::view(
@@ -720,8 +659,8 @@ fn test_snapshot_placeholder() {
 #[test]
 fn test_snapshot_wrapped() {
     let (mut terminal, theme) = setup_render(12, 5);
-    let mut state = LineInputState::with_value("hello world!");
-    state.set_focused(true);
+    let state = LineInputState::with_value("hello world!");
+
     terminal
         .draw(|frame| {
             LineInput::view(
@@ -739,8 +678,8 @@ fn test_snapshot_wrapped() {
 #[test]
 fn test_snapshot_wide_chars() {
     let (mut terminal, theme) = setup_render(12, 4);
-    let mut state = LineInputState::with_value("世界你好ab");
-    state.set_focused(true);
+    let state = LineInputState::with_value("世界你好ab");
+
     terminal
         .draw(|frame| {
             LineInput::view(
@@ -759,7 +698,7 @@ fn test_snapshot_wide_chars() {
 fn test_snapshot_selection() {
     let (mut terminal, theme) = setup_render(20, 3);
     let mut state = LineInputState::with_value("hello world");
-    state.set_focused(true);
+
     state.cursor = 0;
     state.selection_anchor = Some(5);
     terminal
@@ -804,7 +743,7 @@ fn test_max_length_setter() {
 #[test]
 fn test_max_length_insert_allowed() {
     let mut state = LineInputState::new().with_max_length(5);
-    state.set_focused(true);
+
     let output = LineInput::update(&mut state, LineInputMessage::Insert('a'));
     assert!(output.is_some());
     assert_eq!(state.value(), "a");
@@ -813,7 +752,7 @@ fn test_max_length_insert_allowed() {
 #[test]
 fn test_max_length_insert_rejected() {
     let mut state = LineInputState::with_value("abcde").with_max_length(5);
-    state.set_focused(true);
+
     let output = LineInput::update(&mut state, LineInputMessage::Insert('f'));
     assert_eq!(output, None);
     assert_eq!(state.value(), "abcde");
@@ -822,7 +761,7 @@ fn test_max_length_insert_rejected() {
 #[test]
 fn test_max_length_none_unlimited() {
     let mut state = LineInputState::new();
-    state.set_focused(true);
+
     for c in "this is a long string that should work fine".chars() {
         LineInput::update(&mut state, LineInputMessage::Insert(c));
     }
@@ -832,7 +771,7 @@ fn test_max_length_none_unlimited() {
 #[test]
 fn test_max_length_paste_truncated() {
     let mut state = LineInputState::with_value("abc").with_max_length(5);
-    state.set_focused(true);
+
     let output = LineInput::update(&mut state, LineInputMessage::Paste("defgh".to_string()));
     assert!(output.is_some());
     assert_eq!(state.value(), "abcde");
@@ -841,7 +780,7 @@ fn test_max_length_paste_truncated() {
 #[test]
 fn test_max_length_paste_at_limit() {
     let mut state = LineInputState::with_value("abcde").with_max_length(5);
-    state.set_focused(true);
+
     let output = LineInput::update(&mut state, LineInputMessage::Paste("f".to_string()));
     assert_eq!(output, None);
     assert_eq!(state.value(), "abcde");
@@ -850,7 +789,7 @@ fn test_max_length_paste_at_limit() {
 #[test]
 fn test_max_length_set_value_truncated() {
     let mut state = LineInputState::new().with_max_length(3);
-    state.set_focused(true);
+
     let output = LineInput::update(&mut state, LineInputMessage::SetValue("abcdef".to_string()));
     assert!(output.is_some());
     assert_eq!(state.value(), "abc");
@@ -860,7 +799,7 @@ fn test_max_length_set_value_truncated() {
 fn test_max_length_unicode() {
     // Unicode chars: each is 1 char but multi-byte
     let mut state = LineInputState::new().with_max_length(3);
-    state.set_focused(true);
+
     LineInput::update(&mut state, LineInputMessage::Insert('e'));
     LineInput::update(&mut state, LineInputMessage::Insert('n'));
     LineInput::update(&mut state, LineInputMessage::Insert('u'));
@@ -878,7 +817,7 @@ fn test_max_length_existing_content_not_truncated() {
     // Existing content is NOT truncated
     assert_eq!(state.value(), "abcdef");
     // But new insertions are rejected
-    state.set_focused(true);
+
     let output = LineInput::update(&mut state, LineInputMessage::Insert('g'));
     assert_eq!(output, None);
 }
@@ -887,7 +826,7 @@ fn test_max_length_existing_content_not_truncated() {
 fn test_max_length_insert_with_selection_replacement() {
     // If text is selected, inserting replaces selection, so effective length may allow it
     let mut state = LineInputState::with_value("abcde").with_max_length(5);
-    state.set_focused(true);
+
     // Select all
     LineInput::update(&mut state, LineInputMessage::SelectAll);
     // Inserting 'x' should work: replaces all 5 chars with 1

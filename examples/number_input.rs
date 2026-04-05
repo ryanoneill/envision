@@ -30,22 +30,6 @@ enum Msg {
     Quit,
 }
 
-impl State {
-    fn focused_input_mut(&mut self) -> &mut NumberInputState {
-        match self.focus_index {
-            0 => &mut self.quantity,
-            1 => &mut self.price,
-            _ => &mut self.temperature,
-        }
-    }
-
-    fn set_all_unfocused(&mut self) {
-        self.quantity.set_focused(false);
-        self.price.set_focused(false);
-        self.temperature.set_focused(false);
-    }
-}
-
 const INPUT_COUNT: usize = 3;
 
 impl App for NumberInputApp {
@@ -53,11 +37,10 @@ impl App for NumberInputApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut quantity = NumberInputState::integer(1)
+        let quantity = NumberInputState::integer(1)
             .with_min(0.0)
             .with_max(100.0)
             .with_label("Quantity");
-        quantity.set_focused(true);
 
         let price = NumberInputState::new(9.99)
             .with_min(0.0)
@@ -93,14 +76,10 @@ impl App for NumberInputApp {
                 NumberInput::update(&mut state.temperature, m);
             }
             Msg::FocusNext => {
-                state.set_all_unfocused();
                 state.focus_index = (state.focus_index + 1) % INPUT_COUNT;
-                state.focused_input_mut().set_focused(true);
             }
             Msg::FocusPrev => {
-                state.set_all_unfocused();
                 state.focus_index = (state.focus_index + INPUT_COUNT - 1) % INPUT_COUNT;
-                state.focused_input_mut().set_focused(true);
             }
             Msg::Quit => return Command::quit(),
         }
@@ -172,9 +151,18 @@ impl App for NumberInputApp {
 
         // Route event to focused input
         match state.focus_index {
-            0 => state.quantity.handle_event(event).map(Msg::Quantity),
-            1 => state.price.handle_event(event).map(Msg::Price),
-            _ => state.temperature.handle_event(event).map(Msg::Temperature),
+            0 => {
+                NumberInput::handle_event(&state.quantity, event, &ViewContext::new().focused(true))
+                    .map(Msg::Quantity)
+            }
+            1 => NumberInput::handle_event(&state.price, event, &ViewContext::new().focused(true))
+                .map(Msg::Price),
+            _ => NumberInput::handle_event(
+                &state.temperature,
+                event,
+                &ViewContext::new().focused(true),
+            )
+            .map(Msg::Temperature),
         }
     }
 }

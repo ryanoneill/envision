@@ -86,8 +86,6 @@ fn test_new() {
     assert_eq!(state.year(), 2026);
     assert_eq!(state.month(), 3);
     assert_eq!(state.selected_day(), None);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.month_name(), "March");
 }
 
@@ -117,25 +115,15 @@ fn test_with_event() {
 }
 
 #[test]
-fn test_with_disabled() {
-    let enabled = CalendarState::new(2026, 3).with_disabled(false);
-    assert!(!enabled.is_disabled());
-    let disabled = CalendarState::new(2026, 3).with_disabled(true);
-    assert!(disabled.is_disabled());
-}
-
-#[test]
 fn test_builder_chaining() {
     let state = CalendarState::new(2026, 3)
         .with_selected_day(10)
         .with_title("Events")
-        .with_event(2026, 3, 15, Color::Red)
-        .with_disabled(false);
+        .with_event(2026, 3, 15, Color::Red);
     assert_eq!(state.year(), 2026);
     assert_eq!(state.month(), 3);
     assert_eq!(state.selected_day(), Some(10));
     assert!(state.has_event(2026, 3, 15));
-    assert!(!state.is_disabled());
 }
 
 // ========== Accessor Tests ==========
@@ -196,25 +184,6 @@ fn test_add_event_overwrites_color() {
     state.add_event(2026, 3, 15, Color::Red);
     state.add_event(2026, 3, 15, Color::Blue);
     assert_eq!(state.events.get(&(2026, 3, 15)), Some(&Color::Blue));
-}
-
-// ========== Focus/Disabled Tests ==========
-
-#[test]
-fn test_focus_and_disabled_accessors() {
-    let mut state = CalendarState::new(2026, 3);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
-
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 // ========== Update Tests: Month Navigation ==========
@@ -539,53 +508,11 @@ fn test_update_clear_events() {
     assert!(!state.has_event(2026, 3, 20));
 }
 
-// ========== Update Tests: Disabled ==========
-
-#[test]
-fn test_update_disabled_ignores_all_messages() {
-    let mut state = CalendarState::new(2026, 3)
-        .with_selected_day(15)
-        .with_disabled(true);
-
-    assert_eq!(
-        Calendar::update(&mut state, CalendarMessage::NextMonth),
-        None
-    );
-    assert_eq!(state.month(), 3);
-
-    assert_eq!(
-        Calendar::update(&mut state, CalendarMessage::PrevMonth),
-        None
-    );
-    assert_eq!(state.month(), 3);
-
-    assert_eq!(
-        Calendar::update(&mut state, CalendarMessage::SelectDay(20)),
-        None
-    );
-    assert_eq!(state.selected_day(), Some(15));
-
-    assert_eq!(
-        Calendar::update(&mut state, CalendarMessage::ConfirmSelection),
-        None
-    );
-
-    let add = CalendarMessage::AddEvent {
-        year: 2026,
-        month: 3,
-        day: 15,
-        color: Color::Red,
-    };
-    assert_eq!(Calendar::update(&mut state, add), None);
-    assert!(!state.has_event(2026, 3, 15));
-}
-
 // ========== handle_event Tests ==========
 
 #[test]
 fn test_handle_event_navigation_keys() {
-    let mut state = CalendarState::new(2026, 3).with_selected_day(15);
-    Calendar::focus(&mut state);
+    let state = CalendarState::new(2026, 3).with_selected_day(15);
 
     assert_eq!(
         Calendar::handle_event(
@@ -655,8 +582,7 @@ fn test_handle_event_navigation_keys() {
 
 #[test]
 fn test_handle_event_confirm_keys() {
-    let mut state = CalendarState::new(2026, 3).with_selected_day(15);
-    Calendar::focus(&mut state);
+    let state = CalendarState::new(2026, 3).with_selected_day(15);
 
     assert_eq!(
         Calendar::handle_event(
@@ -675,7 +601,6 @@ fn test_handle_event_confirm_keys() {
 #[test]
 fn test_handle_event_unfocused_ignores_events() {
     let state = CalendarState::new(2026, 3).with_selected_day(15);
-    assert!(!state.is_focused());
     assert_eq!(
         Calendar::handle_event(&state, &Event::key(KeyCode::Left), &ViewContext::default()),
         None
@@ -696,10 +621,7 @@ fn test_handle_event_unfocused_ignores_events() {
 
 #[test]
 fn test_handle_event_disabled_ignores_events() {
-    let mut state = CalendarState::new(2026, 3)
-        .with_selected_day(15)
-        .with_disabled(true);
-    Calendar::focus(&mut state);
+    let state = CalendarState::new(2026, 3).with_selected_day(15);
     assert_eq!(
         Calendar::handle_event(
             &state,
@@ -720,8 +642,7 @@ fn test_handle_event_disabled_ignores_events() {
 
 #[test]
 fn test_handle_event_unrecognized_key_returns_none() {
-    let mut state = CalendarState::new(2026, 3);
-    Calendar::focus(&mut state);
+    let state = CalendarState::new(2026, 3);
     assert_eq!(
         Calendar::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
         None
@@ -733,8 +654,6 @@ fn test_handle_event_unrecognized_key_returns_none() {
 #[test]
 fn test_dispatch_event_navigation() {
     let mut state = CalendarState::new(2026, 3).with_selected_day(15);
-    Calendar::focus(&mut state);
-
     let output = Calendar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
@@ -755,7 +674,6 @@ fn test_dispatch_event_navigation() {
 #[test]
 fn test_dispatch_event_enter_confirms() {
     let mut state = CalendarState::new(2026, 3).with_selected_day(15);
-    Calendar::focus(&mut state);
     let output = Calendar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
@@ -767,8 +685,6 @@ fn test_dispatch_event_enter_confirms() {
 #[test]
 fn test_dispatch_event_page_navigation() {
     let mut state = CalendarState::new(2026, 3);
-    Calendar::focus(&mut state);
-
     let output = Calendar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::PageUp),
@@ -801,52 +717,11 @@ fn test_dispatch_event_unfocused_returns_none() {
 // ========== Instance Method Tests ==========
 
 #[test]
-fn test_instance_methods() {
+fn test_instance_update() {
     let mut state = CalendarState::new(2026, 3).with_selected_day(15);
-    Calendar::focus(&mut state);
-
-    let msg = state.handle_event(&Event::key(KeyCode::Right));
-    assert_eq!(msg, Some(CalendarMessage::SelectNextDay));
-
-    let output = state.dispatch_event(&Event::key(KeyCode::Enter));
-    assert_eq!(output, Some(CalendarOutput::DateSelected(2026, 3, 15)));
 
     let output = state.update(CalendarMessage::NextMonth);
     assert_eq!(output, Some(CalendarOutput::MonthChanged(2026, 4)));
-}
-
-// ========== Focusable Trait Tests ==========
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = CalendarState::new(2026, 3);
-    assert!(!Calendar::is_focused(&state));
-
-    Calendar::set_focused(&mut state, true);
-    assert!(Calendar::is_focused(&state));
-
-    Calendar::focus(&mut state);
-    assert!(Calendar::is_focused(&state));
-
-    Calendar::blur(&mut state);
-    assert!(!Calendar::is_focused(&state));
-}
-
-// ========== Disableable Trait Tests ==========
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = CalendarState::new(2026, 3);
-    assert!(!Calendar::is_disabled(&state));
-
-    Calendar::set_disabled(&mut state, true);
-    assert!(Calendar::is_disabled(&state));
-
-    Calendar::disable(&mut state);
-    assert!(Calendar::is_disabled(&state));
-
-    Calendar::enable(&mut state);
-    assert!(!Calendar::is_disabled(&state));
 }
 
 // ========== Init Test ==========
@@ -857,8 +732,6 @@ fn test_init() {
     assert_eq!(state.year(), 2026);
     assert_eq!(state.month(), 1);
     assert_eq!(state.selected_day(), None);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 // ========== Edge Case Tests ==========

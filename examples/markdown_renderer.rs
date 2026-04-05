@@ -81,10 +81,9 @@ impl App for MarkdownRendererApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut renderer = MarkdownRendererState::new()
+        let renderer = MarkdownRendererState::new()
             .with_source(SAMPLE_MARKDOWN)
             .with_title("Markdown Preview");
-        renderer.set_focused(true);
 
         (State { renderer }, Command::none())
     }
@@ -133,7 +132,8 @@ impl App for MarkdownRendererApp {
             }
         }
 
-        state.renderer.handle_event(event).map(Msg::Renderer)
+        MarkdownRenderer::handle_event(&state.renderer, event, &ViewContext::new().focused(true))
+            .map(Msg::Renderer)
     }
 }
 

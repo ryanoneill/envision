@@ -110,26 +110,6 @@ fn test_state_not_equal_selected_index() {
 }
 
 #[test]
-fn test_state_not_equal_focused() {
-    let mut state1 = TreeState::new(vec![TreeNode::new("Root", ())]);
-    let mut state2 = TreeState::new(vec![TreeNode::new("Root", ())]);
-
-    state1.set_focused(true);
-    state2.set_focused(false);
-    assert_ne!(state1, state2);
-}
-
-#[test]
-fn test_state_not_equal_disabled() {
-    let mut state1 = TreeState::new(vec![TreeNode::new("Root", ())]);
-    let mut state2 = TreeState::new(vec![TreeNode::new("Root", ())]);
-
-    state1.set_disabled(true);
-    state2.set_disabled(false);
-    assert_ne!(state1, state2);
-}
-
-#[test]
 fn test_state_not_equal_filter_text() {
     let mut state1 = TreeState::new(vec![TreeNode::new("Root", ())]);
     let state2 = TreeState::new(vec![TreeNode::new("Root", ())]);
@@ -153,11 +133,8 @@ fn test_state_equal_complex() {
     let mut root2 = TreeNode::new_expanded("Root", 1);
     root2.add_child(TreeNode::new("Child", 2));
 
-    let mut state1 = TreeState::new(vec![root1]);
-    let mut state2 = TreeState::new(vec![root2]);
-
-    state1.set_focused(true);
-    state2.set_focused(true);
+    let state1 = TreeState::new(vec![root1]);
+    let state2 = TreeState::new(vec![root2]);
 
     assert_eq!(state1, state2);
 }

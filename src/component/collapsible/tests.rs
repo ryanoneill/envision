@@ -9,8 +9,6 @@ fn test_new() {
     assert_eq!(state.header(), "Details");
     assert!(state.expanded());
     assert_eq!(state.content_height(), 5);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -25,8 +23,6 @@ fn test_default() {
     assert_eq!(state.header(), "");
     assert!(state.expanded());
     assert_eq!(state.content_height(), 5);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -48,27 +44,13 @@ fn test_with_content_height() {
 }
 
 #[test]
-fn test_with_disabled_true() {
-    let state = CollapsibleState::new("Details").with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_false() {
-    let state = CollapsibleState::new("Details").with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_builder_chaining() {
     let state = CollapsibleState::new("Settings")
         .with_expanded(false)
-        .with_content_height(8)
-        .with_disabled(true);
+        .with_content_height(8);
     assert_eq!(state.header(), "Settings");
     assert!(!state.expanded());
     assert_eq!(state.content_height(), 8);
-    assert!(state.is_disabled());
 }
 
 // ========== Accessor Tests ==========
@@ -136,36 +118,6 @@ fn test_set_content_height() {
     let mut state = CollapsibleState::new("Details");
     state.set_content_height(12);
     assert_eq!(state.content_height(), 12);
-}
-
-#[test]
-fn test_is_focused() {
-    let state = CollapsibleState::new("Details");
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_set_focused() {
-    let mut state = CollapsibleState::new("Details");
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_is_disabled() {
-    let state = CollapsibleState::new("Details");
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = CollapsibleState::new("Details");
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 // ========== content_area Tests ==========
@@ -292,54 +244,11 @@ fn test_update_set_content_height() {
     assert_eq!(output, None);
 }
 
-#[test]
-fn test_update_disabled_ignores_toggle() {
-    let mut state = CollapsibleState::new("Details").with_disabled(true);
-    let output = Collapsible::update(&mut state, CollapsibleMessage::Toggle);
-    assert!(state.expanded()); // Still expanded
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_update_disabled_ignores_expand() {
-    let mut state = CollapsibleState::new("Details")
-        .with_expanded(false)
-        .with_disabled(true);
-    let output = Collapsible::update(&mut state, CollapsibleMessage::Expand);
-    assert!(!state.expanded());
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_update_disabled_ignores_collapse() {
-    let mut state = CollapsibleState::new("Details").with_disabled(true);
-    let output = Collapsible::update(&mut state, CollapsibleMessage::Collapse);
-    assert!(state.expanded());
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_update_disabled_ignores_set_header() {
-    let mut state = CollapsibleState::new("Old").with_disabled(true);
-    let output = Collapsible::update(&mut state, CollapsibleMessage::SetHeader("New".to_string()));
-    assert_eq!(state.header(), "Old");
-    assert_eq!(output, None);
-}
-
-#[test]
-fn test_update_disabled_ignores_set_content_height() {
-    let mut state = CollapsibleState::new("Details").with_disabled(true);
-    let output = Collapsible::update(&mut state, CollapsibleMessage::SetContentHeight(20));
-    assert_eq!(state.content_height(), 5);
-    assert_eq!(output, None);
-}
-
 // ========== handle_event Tests ==========
 
 #[test]
 fn test_handle_event_space_toggles() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
+    let state = CollapsibleState::new("Details");
     let msg =
         Collapsible::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(CollapsibleMessage::Toggle));
@@ -347,8 +256,7 @@ fn test_handle_event_space_toggles() {
 
 #[test]
 fn test_handle_event_enter_toggles() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
+    let state = CollapsibleState::new("Details");
     let msg = Collapsible::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
@@ -359,8 +267,7 @@ fn test_handle_event_enter_toggles() {
 
 #[test]
 fn test_handle_event_right_expands() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
+    let state = CollapsibleState::new("Details");
     let msg = Collapsible::handle_event(
         &state,
         &Event::key(KeyCode::Right),
@@ -371,8 +278,7 @@ fn test_handle_event_right_expands() {
 
 #[test]
 fn test_handle_event_left_collapses() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
+    let state = CollapsibleState::new("Details");
     let msg = Collapsible::handle_event(
         &state,
         &Event::key(KeyCode::Left),
@@ -384,7 +290,6 @@ fn test_handle_event_left_collapses() {
 #[test]
 fn test_handle_event_unfocused_ignores_events() {
     let state = CollapsibleState::new("Details");
-    assert!(!state.is_focused());
 
     let msg = Collapsible::handle_event(&state, &Event::char(' '), &ViewContext::default());
     assert_eq!(msg, None);
@@ -404,9 +309,7 @@ fn test_handle_event_unfocused_ignores_events() {
 
 #[test]
 fn test_handle_event_disabled_ignores_events() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
-    state.set_disabled(true);
+    let state = CollapsibleState::new("Details");
 
     let msg = Collapsible::handle_event(
         &state,
@@ -439,8 +342,7 @@ fn test_handle_event_disabled_ignores_events() {
 
 #[test]
 fn test_handle_event_unrecognized_key_returns_none() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
+    let state = CollapsibleState::new("Details");
     let msg =
         Collapsible::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
@@ -451,7 +353,6 @@ fn test_handle_event_unrecognized_key_returns_none() {
 #[test]
 fn test_dispatch_event_space_toggles() {
     let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
     let output = Collapsible::dispatch_event(
         &mut state,
         &Event::char(' '),
@@ -464,7 +365,6 @@ fn test_dispatch_event_space_toggles() {
 #[test]
 fn test_dispatch_event_enter_toggles() {
     let mut state = CollapsibleState::new("Details").with_expanded(false);
-    Collapsible::focus(&mut state);
     let output = Collapsible::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
@@ -477,7 +377,6 @@ fn test_dispatch_event_enter_toggles() {
 #[test]
 fn test_dispatch_event_right_expands() {
     let mut state = CollapsibleState::new("Details").with_expanded(false);
-    Collapsible::focus(&mut state);
     let output = Collapsible::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
@@ -490,7 +389,6 @@ fn test_dispatch_event_right_expands() {
 #[test]
 fn test_dispatch_event_left_collapses() {
     let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
     let output = Collapsible::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Left),
@@ -512,22 +410,6 @@ fn test_dispatch_event_unfocused_returns_none() {
 // ========== Instance Method Tests ==========
 
 #[test]
-fn test_instance_handle_event() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
-    let msg = state.handle_event(&Event::char(' '));
-    assert_eq!(msg, Some(CollapsibleMessage::Toggle));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
-    let output = state.dispatch_event(&Event::char(' '));
-    assert_eq!(output, Some(CollapsibleOutput::Toggled(false)));
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = CollapsibleState::new("Details");
     let output = state.update(CollapsibleMessage::Collapse);
@@ -537,63 +419,7 @@ fn test_instance_update() {
 
 // ========== Focusable Trait Tests ==========
 
-#[test]
-fn test_focusable_is_focused() {
-    let state = CollapsibleState::new("Details");
-    assert!(!Collapsible::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::set_focused(&mut state, true);
-    assert!(Collapsible::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_focus() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
-    assert!(Collapsible::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_blur() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
-    Collapsible::blur(&mut state);
-    assert!(!Collapsible::is_focused(&state));
-}
-
 // ========== Disableable Trait Tests ==========
-
-#[test]
-fn test_disableable_is_disabled() {
-    let state = CollapsibleState::new("Details");
-    assert!(!Collapsible::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_set_disabled() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::set_disabled(&mut state, true);
-    assert!(Collapsible::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_disable() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::disable(&mut state);
-    assert!(Collapsible::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_enable() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::disable(&mut state);
-    Collapsible::enable(&mut state);
-    assert!(!Collapsible::is_disabled(&state));
-}
 
 // ========== Toggleable Trait Tests ==========
 
@@ -649,8 +475,6 @@ fn test_init() {
     let state = Collapsible::init();
     assert_eq!(state.header(), "");
     assert!(state.expanded());
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 // ========== View Tests ==========
@@ -685,8 +509,7 @@ fn test_view_collapsed() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = CollapsibleState::new("Details");
-    Collapsible::focus(&mut state);
+    let state = CollapsibleState::new("Details");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
@@ -700,7 +523,7 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_disabled() {
-    let state = CollapsibleState::new("Details").with_disabled(true);
+    let state = CollapsibleState::new("Details");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
@@ -720,8 +543,7 @@ fn test_view_disabled() {
 
 #[test]
 fn test_view_focused_collapsed() {
-    let mut state = CollapsibleState::new("Details").with_expanded(false);
-    Collapsible::focus(&mut state);
+    let state = CollapsibleState::new("Details").with_expanded(false);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
@@ -790,10 +612,7 @@ fn test_annotation_emitted() {
 fn test_annotation_reflects_state() {
     use crate::annotation::with_annotations;
 
-    let mut state = CollapsibleState::new("Details")
-        .with_expanded(false)
-        .with_disabled(true);
-    Collapsible::focus(&mut state);
+    let state = CollapsibleState::new("Details").with_expanded(false);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     let registry = with_annotations(|| {
         terminal

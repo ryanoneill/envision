@@ -7,7 +7,7 @@
 //! [`FormMessage`], and produces [`FormOutput`]. Fields are defined with
 //! [`FormField`] and [`FormFieldKind`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
+//! Focus and disabled state are managed via [`ViewContext`].
 //!
 //! # Example
 //!
@@ -22,7 +22,6 @@
 //!     FormField::checkbox("agree", "I agree to the terms"),
 //!     FormField::select("color", "Favorite color", vec!["Red", "Green", "Blue"]),
 //! ]);
-//! Form::set_focused(&mut state, true);
 //!
 //! // Fill in the name field (first field is focused by default)
 //! Form::update(&mut state, FormMessage::Input('J'));
@@ -430,7 +429,6 @@ impl FormState {
 ///     FormField::checkbox("remember", "Remember me"),
 ///     FormField::select("role", "Role", vec!["User", "Admin"]),
 /// ]);
-/// Form::set_focused(&mut state, true);
 ///
 /// // Type username
 /// Form::update(&mut state, FormMessage::Input('A'));

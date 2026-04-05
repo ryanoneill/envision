@@ -1,9 +1,7 @@
 use super::*;
 
 fn focused_state(value: &str) -> TextAreaState {
-    let mut state = TextAreaState::new().with_value(value);
-    state.set_focused(true);
-    state
+    TextAreaState::new().with_value(value)
 }
 
 // =============================================================================
@@ -258,16 +256,6 @@ fn test_new_edit_clears_redo() {
 // =============================================================================
 // Disabled state
 // =============================================================================
-
-#[test]
-fn test_undo_ignored_when_disabled() {
-    let mut state = TextAreaState::new().with_value("hello");
-    TextArea::update(&mut state, TextAreaMessage::Insert('!'));
-    state.set_disabled(true);
-    let output = TextArea::update(&mut state, TextAreaMessage::Undo);
-    assert_eq!(output, None);
-    assert_eq!(state.value(), "hello!");
-}
 
 // =============================================================================
 // Event mapping

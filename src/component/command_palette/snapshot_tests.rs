@@ -13,7 +13,6 @@ fn sample_items() -> Vec<PaletteItem> {
 
 fn active_state() -> CommandPaletteState {
     let mut state = CommandPaletteState::new(sample_items());
-    state.set_focused(true);
     state.set_visible(true);
     state
 }
@@ -90,7 +89,6 @@ fn test_snapshot_custom_title_and_placeholder() {
     let mut state = CommandPaletteState::new(sample_items())
         .with_title("Actions")
         .with_placeholder("Search actions...");
-    state.set_focused(true);
     state.set_visible(true);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
@@ -110,7 +108,6 @@ fn test_snapshot_custom_title_and_placeholder() {
 #[test]
 fn test_snapshot_empty_items() {
     let mut state = CommandPaletteState::new(vec![]);
-    state.set_focused(true);
     state.set_visible(true);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
@@ -138,7 +135,6 @@ fn test_snapshot_with_descriptions() {
             .with_shortcut("Ctrl+S"),
     ];
     let mut state = CommandPaletteState::new(items);
-    state.set_focused(true);
     state.set_visible(true);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal

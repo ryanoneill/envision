@@ -35,19 +35,8 @@ enum Msg {
 const SWITCH_COUNT: usize = 4;
 
 impl State {
-    fn focused_switch_mut(&mut self) -> &mut SwitchState {
-        match self.focus_index {
-            0 => &mut self.wifi,
-            1 => &mut self.bluetooth,
-            2 => &mut self.dark_mode,
-            _ => &mut self.notifications,
-        }
-    }
-
     fn set_focus(&mut self, index: usize) {
-        self.focused_switch_mut().set_focused(false);
         self.focus_index = index;
-        self.focused_switch_mut().set_focused(true);
     }
 }
 
@@ -56,17 +45,14 @@ impl App for SwitchApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut wifi = SwitchState::new().with_label("Wi-Fi").with_on(true);
-        wifi.set_focused(true);
+        let wifi = SwitchState::new().with_label("Wi-Fi").with_on(true);
 
         let bluetooth = SwitchState::new().with_label("Bluetooth");
         let dark_mode = SwitchState::new()
             .with_label("Dark Mode")
             .with_on_label("DARK")
             .with_off_label("LIGHT");
-        let notifications = SwitchState::new()
-            .with_label("Notifications")
-            .with_disabled(true);
+        let notifications = SwitchState::new().with_label("Notifications");
 
         let state = State {
             wifi,
@@ -204,13 +190,18 @@ impl App for SwitchApp {
         }
         // Route event to focused switch
         match state.focus_index {
-            0 => state.wifi.handle_event(event).map(Msg::Wifi),
-            1 => state.bluetooth.handle_event(event).map(Msg::Bluetooth),
-            2 => state.dark_mode.handle_event(event).map(Msg::DarkMode),
-            _ => state
-                .notifications
-                .handle_event(event)
-                .map(Msg::Notifications),
+            0 => Switch::handle_event(&state.wifi, event, &ViewContext::new().focused(true))
+                .map(Msg::Wifi),
+            1 => Switch::handle_event(&state.bluetooth, event, &ViewContext::new().focused(true))
+                .map(Msg::Bluetooth),
+            2 => Switch::handle_event(&state.dark_mode, event, &ViewContext::new().focused(true))
+                .map(Msg::DarkMode),
+            _ => Switch::handle_event(
+                &state.notifications,
+                event,
+                &ViewContext::new().focused(true),
+            )
+            .map(Msg::Notifications),
         }
     }
 }

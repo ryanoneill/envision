@@ -28,7 +28,7 @@ fn test_snapshot_default_empty() {
 #[test]
 fn test_snapshot_populated() {
     let mut state = sample_form();
-    Form::set_focused(&mut state, true);
+
     // Fill in some values
     Form::update(&mut state, FormMessage::Input('J'));
     Form::update(&mut state, FormMessage::Input('o'));
@@ -53,8 +53,8 @@ fn test_snapshot_populated() {
 
 #[test]
 fn test_snapshot_focused_text_field() {
-    let mut state = sample_form();
-    Form::set_focused(&mut state, true);
+    let state = sample_form();
+
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -73,7 +73,7 @@ fn test_snapshot_focused_text_field() {
 #[test]
 fn test_snapshot_focused_checkbox() {
     let mut state = sample_form();
-    Form::set_focused(&mut state, true);
+
     Form::update(&mut state, FormMessage::FocusNext);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
@@ -93,7 +93,7 @@ fn test_snapshot_focused_checkbox() {
 #[test]
 fn test_snapshot_focused_select() {
     let mut state = sample_form();
-    Form::set_focused(&mut state, true);
+
     Form::update(&mut state, FormMessage::FocusNext);
     Form::update(&mut state, FormMessage::FocusNext);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);

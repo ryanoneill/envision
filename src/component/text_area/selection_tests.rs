@@ -1,9 +1,7 @@
 use super::*;
 
 fn focused_state(value: &str) -> TextAreaState {
-    let mut state = TextAreaState::new().with_value(value);
-    state.set_focused(true);
-    state
+    TextAreaState::new().with_value(value)
 }
 
 // =============================================================================
@@ -372,15 +370,6 @@ fn test_paste_event() {
 // =============================================================================
 // Edge cases
 // =============================================================================
-
-#[test]
-fn test_disabled_ignores_selection() {
-    let mut state = TextAreaState::new().with_value("hello");
-    state.set_disabled(true);
-    let output = TextArea::update(&mut state, TextAreaMessage::SelectAll);
-    assert_eq!(output, None);
-    assert!(!state.has_selection());
-}
 
 #[test]
 fn test_clear_clears_selection() {

@@ -85,8 +85,7 @@ fn test_snapshot_disabled() {
     let state = BoxPlotState::new(vec![BoxPlotData::new(
         "Disabled", 10.0, 20.0, 30.0, 40.0, 50.0,
     )])
-    .with_title("Disabled Box Plot")
-    .with_disabled(true);
+    .with_title("Disabled Box Plot");
     let (mut terminal, theme) = test_utils::setup_render(40, 20);
     terminal
         .draw(|frame| {
@@ -124,8 +123,7 @@ fn test_annotation_emitted() {
 #[test]
 fn test_annotation_with_focus() {
     use crate::annotation::with_annotations;
-    let mut state = BoxPlotState::new(vec![BoxPlotData::new("Test", 1.0, 2.0, 3.0, 4.0, 5.0)]);
-    state.set_focused(true);
+    let state = BoxPlotState::new(vec![BoxPlotData::new("Test", 1.0, 2.0, 3.0, 4.0, 5.0)]);
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     let registry = with_annotations(|| {
         terminal
@@ -147,8 +145,7 @@ fn test_annotation_with_focus() {
 #[test]
 fn test_annotation_with_disabled() {
     use crate::annotation::with_annotations;
-    let state = BoxPlotState::new(vec![BoxPlotData::new("Test", 1.0, 2.0, 3.0, 4.0, 5.0)])
-        .with_disabled(true);
+    let state = BoxPlotState::new(vec![BoxPlotData::new("Test", 1.0, 2.0, 3.0, 4.0, 5.0)]);
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     let registry = with_annotations(|| {
         terminal

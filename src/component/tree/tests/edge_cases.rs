@@ -240,7 +240,6 @@ fn test_clear_filter_when_already_empty() {
 #[test]
 fn test_set_filter_allowed_when_disabled() {
     let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    state.set_disabled(true);
 
     let output = Tree::update(&mut state, TreeMessage::SetFilter("test".into()));
     assert_eq!(output, Some(TreeOutput::FilterChanged("test".into())));
@@ -250,7 +249,6 @@ fn test_set_filter_allowed_when_disabled() {
 #[test]
 fn test_clear_filter_allowed_when_disabled() {
     let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    state.set_disabled(true);
     state.set_filter_text("test");
 
     let output = Tree::update(&mut state, TreeMessage::ClearFilter);
@@ -258,45 +256,11 @@ fn test_clear_filter_allowed_when_disabled() {
     assert_eq!(state.filter_text(), "");
 }
 
-// ========== Focusable Trait Tests ==========
-
-#[test]
-fn test_focus_sets_focused() {
-    let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    assert!(!Tree::<()>::is_focused(&state));
-
-    Tree::focus(&mut state);
-    assert!(Tree::<()>::is_focused(&state));
-    assert!(state.is_focused());
-}
-
-#[test]
-fn test_blur_unsets_focused() {
-    let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    Tree::focus(&mut state);
-    assert!(state.is_focused());
-
-    Tree::blur(&mut state);
-    assert!(!Tree::<()>::is_focused(&state));
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_set_focused_via_trait() {
-    let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    Tree::<()>::set_focused(&mut state, true);
-    assert!(Tree::<()>::is_focused(&state));
-
-    Tree::<()>::set_focused(&mut state, false);
-    assert!(!Tree::<()>::is_focused(&state));
-}
-
 // ========== Node without Children Expand/Collapse Tests ==========
 
 #[test]
 fn test_expand_leaf_via_dispatch_event() {
     let mut state = TreeState::new(vec![TreeNode::new("Leaf", ())]);
-    state.set_focused(true);
 
     let output = Tree::<()>::dispatch_event(
         &mut state,
@@ -309,7 +273,6 @@ fn test_expand_leaf_via_dispatch_event() {
 #[test]
 fn test_collapse_leaf_via_dispatch_event() {
     let mut state = TreeState::new(vec![TreeNode::new("Leaf", ())]);
-    state.set_focused(true);
 
     let output = Tree::<()>::dispatch_event(
         &mut state,
@@ -323,8 +286,7 @@ fn test_collapse_leaf_via_dispatch_event() {
 
 #[test]
 fn test_handle_event_unrecognized_key() {
-    let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    state.set_focused(true);
+    let state = TreeState::new(vec![TreeNode::new("Root", ())]);
 
     let msg =
         Tree::<()>::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
@@ -333,8 +295,7 @@ fn test_handle_event_unrecognized_key() {
 
 #[test]
 fn test_handle_event_tab_key() {
-    let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    state.set_focused(true);
+    let state = TreeState::new(vec![TreeNode::new("Root", ())]);
 
     let msg = Tree::<()>::handle_event(
         &state,
@@ -346,8 +307,7 @@ fn test_handle_event_tab_key() {
 
 #[test]
 fn test_handle_event_escape_key() {
-    let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    state.set_focused(true);
+    let state = TreeState::new(vec![TreeNode::new("Root", ())]);
 
     let msg = Tree::<()>::handle_event(
         &state,
@@ -509,8 +469,6 @@ fn test_default_is_empty() {
     assert!(state.is_empty());
     assert_eq!(state.selected_index(), None);
     assert_eq!(state.visible_count(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.filter_text(), "");
 }
 

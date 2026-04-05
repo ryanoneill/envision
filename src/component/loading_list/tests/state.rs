@@ -249,10 +249,9 @@ fn test_state_with_selected_chained() {
     let state = LoadingListState::with_items(items, |i| i.name.clone())
         .with_selected(1)
         .with_title("My List")
-        .with_disabled(true);
+        .with_title("My List");
     assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.title(), Some("My List"));
-    assert!(state.is_disabled());
 }
 
 // ========================================
@@ -267,8 +266,6 @@ fn test_state_default() {
     assert_eq!(state.selected_index(), None);
     assert!(state.selected_item().is_none());
     assert!(state.selected_data().is_none());
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.spinner_frame(), 0);
     assert!(state.title().is_none());
     assert!(state.show_indicators());
@@ -300,25 +297,6 @@ fn test_state_partial_eq_different_selected() {
     let items_b = make_items();
     let state_a = LoadingListState::with_items(items_a, |i| i.name.clone()).with_selected(0);
     let state_b = LoadingListState::with_items(items_b, |i| i.name.clone()).with_selected(1);
-    assert_ne!(state_a, state_b);
-}
-
-#[test]
-fn test_state_partial_eq_different_focused() {
-    let items_a = make_items();
-    let items_b = make_items();
-    let mut state_a = LoadingListState::with_items(items_a, |i| i.name.clone());
-    let state_b = LoadingListState::with_items(items_b, |i| i.name.clone());
-    state_a.set_focused(true);
-    assert_ne!(state_a, state_b);
-}
-
-#[test]
-fn test_state_partial_eq_different_disabled() {
-    let items_a = make_items();
-    let items_b = make_items();
-    let state_a = LoadingListState::with_items(items_a, |i| i.name.clone()).with_disabled(true);
-    let state_b = LoadingListState::with_items(items_b, |i| i.name.clone());
     assert_ne!(state_a, state_b);
 }
 

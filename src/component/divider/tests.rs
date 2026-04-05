@@ -8,7 +8,6 @@ fn test_new() {
     assert_eq!(state.orientation(), &DividerOrientation::Horizontal);
     assert!(state.label().is_none());
     assert!(state.color().is_none());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -17,7 +16,6 @@ fn test_default() {
     assert_eq!(state.orientation(), &DividerOrientation::Horizontal);
     assert!(state.label().is_none());
     assert!(state.color().is_none());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -51,28 +49,14 @@ fn test_with_orientation() {
 }
 
 #[test]
-fn test_with_disabled() {
-    let state = DividerState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_false() {
-    let state = DividerState::new().with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_builder_chaining() {
     let state = DividerState::new()
         .with_label("Title")
         .with_color(Color::Cyan)
-        .with_orientation(DividerOrientation::Vertical)
-        .with_disabled(true);
+        .with_orientation(DividerOrientation::Vertical);
     assert_eq!(state.label(), Some("Title"));
     assert_eq!(state.color(), Some(Color::Cyan));
     assert_eq!(state.orientation(), &DividerOrientation::Vertical);
-    assert!(state.is_disabled());
 }
 
 // ---- Getter/setter tests ----
@@ -97,18 +81,6 @@ fn test_set_orientation() {
 
     state.set_orientation(DividerOrientation::Horizontal);
     assert_eq!(state.orientation(), &DividerOrientation::Horizontal);
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = DividerState::new();
-    assert!(!state.is_disabled());
-
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 // ---- Update tests ----
@@ -148,7 +120,6 @@ fn test_init() {
     let state = Divider::init();
     assert_eq!(state.orientation(), &DividerOrientation::Horizontal);
     assert!(state.label().is_none());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -159,7 +130,6 @@ fn test_default_matches_init() {
     assert_eq!(default_state.orientation(), init_state.orientation());
     assert_eq!(default_state.label(), init_state.label());
     assert_eq!(default_state.color(), init_state.color());
-    assert_eq!(default_state.is_disabled(), init_state.is_disabled());
 }
 
 // ---- Instance method tests ----
@@ -172,33 +142,7 @@ fn test_instance_update() {
     assert_eq!(state.label(), Some("Via Instance"));
 }
 
-#[test]
-fn test_instance_handle_event() {
-    let state = DividerState::new();
-    let event = crate::input::Event::key(ratatui::crossterm::event::KeyCode::Enter);
-    assert!(state.handle_event(&event).is_none());
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = DividerState::new();
-    let event = crate::input::Event::key(ratatui::crossterm::event::KeyCode::Enter);
-    assert!(state.dispatch_event(&event).is_none());
-}
-
 // ---- Disableable trait tests ----
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = DividerState::new();
-    assert!(!Divider::is_disabled(&state));
-
-    Divider::disable(&mut state);
-    assert!(Divider::is_disabled(&state));
-
-    Divider::enable(&mut state);
-    assert!(!Divider::is_disabled(&state));
-}
 
 // ---- DividerOrientation tests ----
 
@@ -282,9 +226,7 @@ fn test_view_vertical_with_label() {
 
 #[test]
 fn test_view_disabled() {
-    let state = DividerState::new()
-        .with_label("Disabled")
-        .with_disabled(true);
+    let state = DividerState::new().with_label("Disabled");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 3);
 
     terminal
@@ -394,7 +336,7 @@ fn test_annotation_emitted_no_label() {
 fn test_annotation_disabled() {
     use crate::annotation::{with_annotations, WidgetType};
 
-    let state = DividerState::new().with_disabled(true);
+    let state = DividerState::new();
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
 
     let registry = with_annotations(|| {

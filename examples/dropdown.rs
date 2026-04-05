@@ -40,8 +40,7 @@ impl App for DropdownApp {
             "Zig",
         ];
 
-        let mut language = DropdownState::new(languages).with_placeholder("Select language...");
-        language.set_focused(true);
+        let language = DropdownState::new(languages).with_placeholder("Select language...");
 
         (State { language }, Command::none())
     }
@@ -83,7 +82,8 @@ impl App for DropdownApp {
                 return Some(Msg::Quit);
             }
         }
-        state.language.handle_event(event).map(Msg::Language)
+        Dropdown::handle_event(&state.language, event, &ViewContext::new().focused(true))
+            .map(Msg::Language)
     }
 }
 

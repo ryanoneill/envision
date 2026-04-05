@@ -85,8 +85,7 @@ fn test_view_with_sort_indicator() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    state.focused = true;
+    let state = TableState::new(test_rows(), test_columns());
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
@@ -104,29 +103,6 @@ fn test_view_focused() {
 
     insta::assert_snapshot!(terminal.backend().to_string());
 }
-
-#[test]
-fn test_view_disabled() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    state.disabled = true;
-
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
-
-    terminal
-        .draw(|frame| {
-            Table::<TestRow>::view(
-                &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
-            );
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
 #[test]
 fn test_view_empty() {
     let state: TableState<TestRow> = TableState::new(vec![], test_columns());
@@ -162,8 +138,7 @@ fn test_view_descending_sort_indicator() {
 
 #[test]
 fn test_view_unfocused() {
-    let mut state = TableState::new(test_rows(), test_columns());
-    state.focused = false;
+    let state = TableState::new(test_rows(), test_columns());
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 

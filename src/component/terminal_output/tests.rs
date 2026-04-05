@@ -3,9 +3,7 @@ use crate::component::test_utils;
 use crate::input::KeyModifiers;
 
 fn focused_state() -> TerminalOutputState {
-    let mut state = TerminalOutputState::new();
-    TerminalOutput::set_focused(&mut state, true);
-    state
+    TerminalOutputState::new()
 }
 
 fn content_state() -> TerminalOutputState {
@@ -30,8 +28,6 @@ fn test_new() {
     assert!(!state.show_line_numbers());
     assert!(!state.running());
     assert_eq!(state.exit_code(), None);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.title(), None);
     assert_eq!(state.max_lines(), 10_000);
 }
@@ -72,13 +68,6 @@ fn test_with_running() {
     let state = TerminalOutputState::new().with_running(true);
     assert!(state.running());
 }
-
-#[test]
-fn test_with_disabled() {
-    let state = TerminalOutputState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // =============================================================================
 // Line management
 // =============================================================================
@@ -390,8 +379,7 @@ fn test_clear_empty_via_update() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
+    let state = focused_state();
     let msg = TerminalOutput::handle_event(
         &state,
         &Event::key(KeyCode::Up),
@@ -550,67 +538,12 @@ fn test_handle_event_unrecognized() {
         None
     );
 }
-
-// =============================================================================
-// Instance methods
-// =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
-    assert_eq!(msg, Some(TerminalOutputMessage::ScrollUp));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = content_state();
-    state.set_auto_scroll(false);
-    state.set_scroll_offset(5);
-    let output = state.dispatch_event(&Event::key(KeyCode::Up));
-    assert_eq!(output, Some(TerminalOutputOutput::ScrollChanged(4)));
-    assert_eq!(state.scroll_offset(), 4);
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = TerminalOutputState::new();
     let output = state.update(TerminalOutputMessage::PushLine("hello".to_string()));
     assert_eq!(output, Some(TerminalOutputOutput::LineAdded(1)));
 }
-
-// =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = TerminalOutput::init();
-    assert!(!TerminalOutput::is_focused(&state));
-
-    TerminalOutput::focus(&mut state);
-    assert!(TerminalOutput::is_focused(&state));
-
-    TerminalOutput::blur(&mut state);
-    assert!(!TerminalOutput::is_focused(&state));
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = TerminalOutput::init();
-    assert!(!TerminalOutput::is_disabled(&state));
-
-    TerminalOutput::disable(&mut state);
-    assert!(TerminalOutput::is_disabled(&state));
-
-    TerminalOutput::enable(&mut state);
-    assert!(!TerminalOutput::is_disabled(&state));
-}
-
 // =============================================================================
 // Setters
 // =============================================================================
@@ -749,26 +682,6 @@ fn test_view_focused() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
-
-#[test]
-fn test_view_disabled() {
-    let mut state = TerminalOutputState::new().with_disabled(true);
-    state.push_line("Disabled content");
-    let (mut terminal, theme) = test_utils::setup_render(50, 8);
-    terminal
-        .draw(|frame| {
-            TerminalOutput::view(
-                &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
-            );
-        })
-        .unwrap();
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
 // =============================================================================
 // Annotation tests
 // =============================================================================

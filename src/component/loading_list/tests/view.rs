@@ -144,7 +144,6 @@ fn test_view_without_indicators_with_error() {
 fn test_view_focused() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_focused(true);
     state.set_selected(Some(0));
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
@@ -222,7 +221,7 @@ fn test_view_single_item() {
 #[test]
 fn test_view_disabled() {
     let items = make_items();
-    let mut state = LoadingListState::with_items(items, |i| i.name.clone()).with_disabled(true);
+    let mut state = LoadingListState::with_items(items, |i| i.name.clone());
     state.set_selected(Some(1));
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);

@@ -69,20 +69,17 @@ Each component lives in `src/component/{name}/`:
 ### Key Traits
 
 - `Component` - Core trait: `init()`, `update()`, `view()`, `handle_event()`, `dispatch_event()`
-- `Focusable` - Focus management: `is_focused()`, `set_focused()`
 - `Toggleable` - Visibility: `is_visible()`, `set_visible()`
 
 ### Patterns to Follow
 
 Every interactive component should have:
 
-1. **State struct** with `disabled: bool` field
-2. **Accessors**: `is_disabled()`, `set_disabled()`, `with_disabled()`
-3. **Instance methods**: `handle_event()`, `dispatch_event()`, `update()` on the State type
-4. **`selected_item()`** accessor if the component has selection
-5. **Event guards**: `handle_event` checks `focused && !disabled`
-6. **Update guards**: `update` checks `!disabled`
-7. **View disabled style**: Uses `theme.disabled_style()` when disabled
+1. **State struct** with domain-specific fields (no `focused`/`disabled` fields)
+2. **Instance method**: `update()` on the State type
+3. **`selected_item()`** accessor if the component has selection
+4. **Event guards**: `handle_event` checks `ctx.focused && !ctx.disabled` via `ViewContext`
+5. **View style**: Uses `ViewContext` to determine focused/disabled rendering
 
 ## Testing
 
@@ -107,12 +104,11 @@ Use `insta` for view tests:
 #[test]
 fn test_view_focused() {
     let (mut terminal, area) = setup_render(20, 3);
-    let mut state = MyState::new();
-    state.set_focused(true);
+    let state = MyState::new();
     let theme = Theme::default();
 
     terminal.draw(|frame| {
-        MyComponent::view(&state, frame, area, &theme);
+        MyComponent::view(&state, frame, area, &theme, &ViewContext::new().focused(true));
     }).unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -126,10 +122,9 @@ use crate::input::{Event, KeyCode};
 
 #[test]
 fn test_handle_event_focused() {
-    let mut state = MyState::new();
-    state.set_focused(true);
+    let state = MyState::new();
     let event = Event::key(KeyCode::Enter);
-    let msg = MyComponent::handle_event(&state, &event, &ViewContext::default());
+    let msg = MyComponent::handle_event(&state, &event, &ViewContext::new().focused(true));
     assert_eq!(msg, Some(MyMessage::Confirm));
 }
 ```

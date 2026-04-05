@@ -75,11 +75,9 @@ impl Default for State {
             "Fourth item".to_string(),
         ];
         let mut list_state = SelectableListState::with_items(items);
-        SelectableList::<String>::set_focused(&mut list_state, true);
         list_state.select(Some(0));
 
-        let mut button_state = ButtonState::new("Click Me");
-        Button::set_focused(&mut button_state, true);
+        let button_state = ButtonState::new("Click Me");
 
         Self {
             active_theme: ActiveTheme::default(),
@@ -236,14 +234,9 @@ impl App for ThemedApp {
 
         // Selectable list with block wrapper
         let list_area = chunks[4];
-        let is_list_focused = SelectableList::<String>::is_focused(&state.list_state);
         let list_block = Block::default()
             .borders(Borders::ALL)
-            .border_style(if is_list_focused {
-                theme.focused_border_style()
-            } else {
-                theme.border_style()
-            })
+            .border_style(theme.focused_border_style())
             .title("Items");
         let inner_area = list_block.inner(list_area);
         frame.render_widget(list_block, list_area);
@@ -252,7 +245,7 @@ impl App for ThemedApp {
             frame,
             inner_area,
             &theme,
-            &ViewContext::default(),
+            &ViewContext::new().focused(true),
         );
 
         // Controls help

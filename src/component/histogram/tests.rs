@@ -15,8 +15,6 @@ fn test_new() {
     assert_eq!(state.y_label(), None);
     assert_eq!(state.color(), None);
     assert!(!state.show_counts());
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -80,12 +78,6 @@ fn test_with_color() {
 fn test_with_show_counts() {
     let state = HistogramState::new().with_show_counts(true);
     assert!(state.show_counts());
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = HistogramState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -382,50 +374,11 @@ fn test_update_returns_none() {
 // =============================================================================
 
 #[test]
-fn test_instance_handle_event() {
-    let state = HistogramState::new();
-    // Display-only, so all events return None
-    let msg = state.handle_event(&Event::key(crate::input::KeyCode::Enter));
-    assert!(msg.is_none());
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = HistogramState::new();
-    let output = state.dispatch_event(&Event::key(crate::input::KeyCode::Enter));
-    assert!(output.is_none());
-}
-
-#[test]
 fn test_instance_update() {
     let mut state = HistogramState::new();
     let output = state.update(HistogramMessage::PushData(1.0));
     assert!(output.is_none());
     assert_eq!(state.data(), &[1.0]);
-}
-
-// =============================================================================
-// Focus and Disabled traits
-// =============================================================================
-
-#[test]
-fn test_focusable() {
-    let mut state = HistogramState::new();
-    assert!(!Histogram::is_focused(&state));
-    Histogram::set_focused(&mut state, true);
-    assert!(Histogram::is_focused(&state));
-    Histogram::blur(&mut state);
-    assert!(!Histogram::is_focused(&state));
-}
-
-#[test]
-fn test_disableable() {
-    let mut state = HistogramState::new();
-    assert!(!Histogram::is_disabled(&state));
-    Histogram::set_disabled(&mut state, true);
-    assert!(Histogram::is_disabled(&state));
-    Histogram::enable(&mut state);
-    assert!(!Histogram::is_disabled(&state));
 }
 
 // =============================================================================
@@ -505,9 +458,7 @@ fn test_render_with_show_counts() {
 
 #[test]
 fn test_render_disabled() {
-    let state = HistogramState::with_data(vec![1.0, 2.0, 3.0])
-        .with_bin_count(3)
-        .with_disabled(true);
+    let state = HistogramState::with_data(vec![1.0, 2.0, 3.0]).with_bin_count(3);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -524,9 +475,9 @@ fn test_render_disabled() {
 
 #[test]
 fn test_render_focused() {
-    let mut state =
+    let state =
         HistogramState::with_data(vec![1.0, 2.0, 3.0, 4.0, 5.0]).with_title("Focused Histogram");
-    state.set_focused(true);
+
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -614,8 +565,7 @@ fn test_snapshot_with_title() {
 fn test_snapshot_disabled() {
     let state = HistogramState::with_data(vec![1.0, 2.0, 3.0, 4.0, 5.0])
         .with_bin_count(5)
-        .with_title("Disabled Histogram")
-        .with_disabled(true);
+        .with_title("Disabled Histogram");
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {

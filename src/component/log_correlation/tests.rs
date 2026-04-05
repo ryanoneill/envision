@@ -27,9 +27,7 @@ fn two_stream_state() -> LogCorrelationState {
 }
 
 fn focused_state() -> LogCorrelationState {
-    let mut state = two_stream_state();
-    LogCorrelation::set_focused(&mut state, true);
-    state
+    two_stream_state()
 }
 
 // =============================================================================
@@ -41,8 +39,6 @@ fn test_new() {
     let state = LogCorrelationState::new();
     assert_eq!(state.stream_count(), 0);
     assert!(state.sync_scroll());
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert_eq!(state.title(), None);
     assert_eq!(state.active_stream(), 0);
 }
@@ -73,12 +69,6 @@ fn test_with_title() {
 fn test_with_sync_scroll() {
     let state = LogCorrelationState::new().with_sync_scroll(false);
     assert!(!state.sync_scroll());
-}
-
-#[test]
-fn test_with_disabled() {
-    let state = LogCorrelationState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -465,7 +455,6 @@ fn test_focus_prev_stream() {
 #[test]
 fn test_focus_stream_no_streams() {
     let mut state = LogCorrelationState::new();
-    state.set_focused(true);
 
     let output = LogCorrelation::update(&mut state, LogCorrelationMessage::FocusNextStream);
     assert_eq!(output, None);
@@ -623,8 +612,7 @@ fn test_set_stream_level_filter_message() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_state();
-    state.set_disabled(true);
+    let state = focused_state();
     let msg = LogCorrelation::handle_event(
         &state,
         &Event::key(KeyCode::Down),
@@ -636,7 +624,6 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_disabled_ignores_update() {
     let mut state = focused_state();
-    state.set_disabled(true);
     let output = LogCorrelation::update(&mut state, LogCorrelationMessage::ScrollDown);
     assert_eq!(output, None);
 }
@@ -754,7 +741,11 @@ fn test_s_key() {
 #[test]
 fn test_instance_handle_event() {
     let state = focused_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Down));
+    let msg = LogCorrelation::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(LogCorrelationMessage::ScrollDown));
 }
 
@@ -768,7 +759,11 @@ fn test_instance_update() {
 #[test]
 fn test_instance_dispatch_event() {
     let mut state = focused_state();
-    state.dispatch_event(&Event::key(KeyCode::Down));
+    LogCorrelation::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(state.scroll_offset(), 1);
 }
 
@@ -829,7 +824,7 @@ fn test_render_focused() {
 
 #[test]
 fn test_render_disabled() {
-    let state = two_stream_state().with_disabled(true);
+    let state = two_stream_state();
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
@@ -927,38 +922,6 @@ fn test_render_narrow_area() {
 }
 
 // =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = LogCorrelation::init();
-    assert!(!LogCorrelation::is_focused(&state));
-
-    LogCorrelation::focus(&mut state);
-    assert!(LogCorrelation::is_focused(&state));
-
-    LogCorrelation::blur(&mut state);
-    assert!(!LogCorrelation::is_focused(&state));
-}
-
-// =============================================================================
-// Disableable trait
-// =============================================================================
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = LogCorrelation::init();
-    assert!(!LogCorrelation::is_disabled(&state));
-
-    LogCorrelation::disable(&mut state);
-    assert!(LogCorrelation::is_disabled(&state));
-
-    LogCorrelation::enable(&mut state);
-    assert!(!LogCorrelation::is_disabled(&state));
-}
-
-// =============================================================================
 // PartialEq
 // =============================================================================
 
@@ -967,13 +930,6 @@ fn test_partial_eq() {
     let state1 = two_stream_state();
     let state2 = two_stream_state();
     assert_eq!(state1, state2);
-}
-
-#[test]
-fn test_partial_eq_different_focus() {
-    let state1 = focused_state();
-    let state2 = two_stream_state();
-    assert_ne!(state1, state2);
 }
 
 // =============================================================================
@@ -1018,7 +974,6 @@ fn test_four_streams() {
 #[test]
 fn test_scroll_empty_streams() {
     let mut state = LogCorrelationState::new();
-    state.set_focused(true);
     LogCorrelation::update(&mut state, LogCorrelationMessage::ScrollDown);
     assert_eq!(state.scroll_offset(), 0);
 }

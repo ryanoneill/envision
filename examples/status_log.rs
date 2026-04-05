@@ -32,8 +32,6 @@ impl App for StatusLogApp {
             .with_title("Status Log")
             .with_max_entries(20);
 
-        log.set_focused(true);
-
         // Add initial messages
         log.info("Application starting...");
         log.info("Loading configuration");
@@ -79,7 +77,7 @@ impl App for StatusLogApp {
                 return Some(Msg::Quit);
             }
         }
-        state.log.handle_event(event).map(Msg::Log)
+        StatusLog::handle_event(&state.log, event, &ViewContext::new().focused(true)).map(Msg::Log)
     }
 }
 

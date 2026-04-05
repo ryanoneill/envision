@@ -55,12 +55,17 @@ fn test_view_with_title() {
 
 #[test]
 fn test_view_focused() {
-    let mut state = CalendarState::new(2026, 3).with_selected_day(15);
-    Calendar::focus(&mut state);
+    let state = CalendarState::new(2026, 3).with_selected_day(15);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Calendar::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -68,9 +73,7 @@ fn test_view_focused() {
 
 #[test]
 fn test_view_disabled() {
-    let state = CalendarState::new(2026, 3)
-        .with_selected_day(15)
-        .with_disabled(true);
+    let state = CalendarState::new(2026, 3).with_selected_day(15);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     terminal
         .draw(|frame| {
@@ -167,8 +170,7 @@ fn test_annotation_emitted() {
 fn test_annotation_reflects_state() {
     use crate::annotation::with_annotations;
 
-    let mut state = CalendarState::new(2026, 3).with_disabled(true);
-    Calendar::focus(&mut state);
+    let state = CalendarState::new(2026, 3);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
     let registry = with_annotations(|| {
         terminal

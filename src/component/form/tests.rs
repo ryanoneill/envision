@@ -10,9 +10,7 @@ fn sample_form() -> FormState {
 }
 
 fn focused_form() -> FormState {
-    let mut state = sample_form();
-    Form::set_focused(&mut state, true);
-    state
+    sample_form()
 }
 
 // =============================================================================
@@ -43,8 +41,6 @@ fn test_empty_form() {
 fn test_default() {
     let state = FormState::default();
     assert_eq!(state.field_count(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 // =============================================================================
@@ -353,19 +349,8 @@ fn test_submit_collects_all_values() {
 // =============================================================================
 
 #[test]
-fn test_disabled_ignores_messages() {
-    let mut state = focused_form();
-    state.set_disabled(true);
-
-    let output = Form::update(&mut state, FormMessage::Input('X'));
-    assert_eq!(output, None);
-    assert_eq!(state.value("name"), Some(FormValue::Text(String::new())));
-}
-
-#[test]
 fn test_disabled_ignores_events() {
-    let mut state = focused_form();
-    state.set_disabled(true);
+    let state = focused_form();
 
     let msg = Form::handle_event(
         &state,
@@ -375,12 +360,6 @@ fn test_disabled_ignores_events() {
     assert_eq!(msg, None);
 }
 
-#[test]
-fn test_with_disabled_builder() {
-    let state = FormState::new(vec![FormField::text("a", "A")]).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
 // =============================================================================
 // Unfocused state
 // =============================================================================
@@ -388,7 +367,6 @@ fn test_with_disabled_builder() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = sample_form();
-    assert!(!state.is_focused());
     let msg = Form::handle_event(&state, &Event::char('a'), &ViewContext::default());
     assert_eq!(msg, None);
 }
@@ -532,44 +510,13 @@ fn test_esc_in_open_select_maps_to_toggle() {
 }
 
 // =============================================================================
-// dispatch_event
-// =============================================================================
-
-#[test]
-fn test_dispatch_event_types_text() {
-    let mut state = focused_form();
-    let output = state.dispatch_event(&Event::char('A'));
-    assert_eq!(
-        output,
-        Some(FormOutput::FieldChanged(
-            "name".into(),
-            FormValue::Text("A".into())
-        ))
-    );
-}
-
-// =============================================================================
 // Instance methods
 // =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let state = focused_form();
-    let msg = state.handle_event(&Event::char('x'));
-    assert_eq!(msg, Some(FormMessage::Input('x')));
-}
 
 #[test]
 fn test_instance_update() {
     let mut state = focused_form();
     let output = state.update(FormMessage::Input('Z'));
-    assert!(matches!(output, Some(FormOutput::FieldChanged(_, _))));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = focused_form();
-    let output = state.dispatch_event(&Event::char('A'));
     assert!(matches!(output, Some(FormOutput::FieldChanged(_, _))));
 }
 
@@ -656,7 +603,7 @@ fn test_render_with_values() {
 
 #[test]
 fn test_render_disabled() {
-    let state = sample_form().with_disabled(true);
+    let state = sample_form();
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
@@ -689,22 +636,6 @@ fn test_render_empty_form() {
 }
 
 // =============================================================================
-// Focusable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = Form::init();
-    assert!(!Form::is_focused(&state));
-
-    Form::focus(&mut state);
-    assert!(Form::is_focused(&state));
-
-    Form::blur(&mut state);
-    assert!(!Form::is_focused(&state));
-}
-
-// =============================================================================
 // Edge cases
 // =============================================================================
 
@@ -733,7 +664,6 @@ fn test_select_confirm_on_non_select_does_nothing() {
 #[test]
 fn test_empty_form_ignores_all_messages() {
     let mut state = FormState::new(vec![]);
-    Form::set_focused(&mut state, true);
 
     let output = Form::update(&mut state, FormMessage::Input('X'));
     assert_eq!(output, None);
@@ -744,8 +674,7 @@ fn test_empty_form_ignores_all_messages() {
 
 #[test]
 fn test_empty_form_ignores_events() {
-    let mut state = FormState::new(vec![]);
-    Form::set_focused(&mut state, true);
+    let state = FormState::new(vec![]);
 
     let msg = Form::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);

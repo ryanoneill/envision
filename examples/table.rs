@@ -76,8 +76,7 @@ impl App for TableApp {
             Column::new("Paradigm", Constraint::Percentage(50)),
         ];
 
-        let mut table = TableState::new(languages, columns);
-        table.set_focused(true);
+        let table = TableState::new(languages, columns);
 
         (State { table }, Command::none())
     }
@@ -128,7 +127,7 @@ impl App for TableApp {
                 _ => {}
             }
         }
-        state.table.handle_event(event).map(Msg::Table)
+        Table::handle_event(&state.table, event, &ViewContext::new().focused(true)).map(Msg::Table)
     }
 }
 

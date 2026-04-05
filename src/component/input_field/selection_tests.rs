@@ -356,9 +356,7 @@ fn test_cut_then_paste() {
 // =============================================================================
 
 fn focused_state(value: &str) -> InputFieldState {
-    let mut state = InputFieldState::with_value(value);
-    state.set_focused(true);
-    state
+    InputFieldState::with_value(value)
 }
 
 #[test]
@@ -593,15 +591,6 @@ fn test_select_then_reverse_direction() {
     InputField::update(&mut state, InputFieldMessage::SelectLeft);
     assert_eq!(state.selected_text(), Some("e"));
     assert_eq!(state.cursor_position(), 1);
-}
-
-#[test]
-fn test_disabled_ignores_selection() {
-    let mut state = InputFieldState::with_value("hello");
-    state.set_disabled(true);
-    let output = InputField::update(&mut state, InputFieldMessage::SelectAll);
-    assert_eq!(output, None);
-    assert!(!state.has_selection());
 }
 
 #[test]

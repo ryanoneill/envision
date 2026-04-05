@@ -7,8 +7,6 @@ fn test_new() {
     assert_eq!(state.len(), 3);
     assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.selected_item(), Some(&"A"));
-    assert!(!state.is_disabled());
-    assert!(!RadioGroup::<&str>::is_focused(&state));
 }
 
 #[test]
@@ -125,23 +123,6 @@ fn test_confirm_empty() {
     let output = RadioGroup::<String>::update(&mut state, RadioGroupMessage::Confirm);
     assert_eq!(output, None);
 }
-
-#[test]
-fn test_disabled() {
-    let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
-    state.set_disabled(true);
-
-    let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Down);
-    assert_eq!(output, None);
-    assert_eq!(state.selected_index(), Some(0));
-
-    let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Up);
-    assert_eq!(output, None);
-
-    let output = RadioGroup::<&str>::update(&mut state, RadioGroupMessage::Confirm);
-    assert_eq!(output, None);
-}
-
 #[test]
 fn test_empty_navigation() {
     let mut state = RadioGroupState::<String>::new(vec![]);
@@ -165,14 +146,11 @@ fn test_init() {
     let state = RadioGroup::<String>::init();
     assert!(state.is_empty());
     assert_eq!(state.selected_index(), None);
-    assert!(!state.is_disabled());
-    assert!(!RadioGroup::<String>::is_focused(&state));
 }
 
 #[test]
 fn test_view_renders_indicators() {
-    let mut state = RadioGroupState::with_selected(vec!["Option A", "Option B", "Option C"], 1);
-    state.focused = true;
+    let state = RadioGroupState::with_selected(vec!["Option A", "Option B", "Option C"], 1);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
@@ -189,28 +167,6 @@ fn test_view_renders_indicators() {
 
     insta::assert_snapshot!(terminal.backend().to_string());
 }
-
-#[test]
-fn test_view_disabled() {
-    let mut state = RadioGroupState::new(vec!["Test"]);
-    state.set_disabled(true);
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
-
-    terminal
-        .draw(|frame| {
-            RadioGroup::<&str>::view(
-                &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
-            );
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
 #[test]
 fn test_multiple_navigations() {
     let mut state = RadioGroupState::new(vec!["1", "2", "3", "4", "5"]);
@@ -229,8 +185,7 @@ fn test_multiple_navigations() {
 
 #[test]
 fn test_view_unfocused() {
-    let mut state = RadioGroupState::with_selected(vec!["A", "B", "C"], 1);
-    state.focused = false; // Explicitly unfocused
+    let state = RadioGroupState::with_selected(vec!["A", "B", "C"], 1);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
@@ -245,8 +200,7 @@ fn test_view_unfocused() {
 #[test]
 fn test_view_focused_not_selected() {
     // Render with focused but rendering non-selected items
-    let mut state = RadioGroupState::with_selected(vec!["First", "Second", "Third"], 0);
-    state.focused = true;
+    let state = RadioGroupState::with_selected(vec!["First", "Second", "Third"], 0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(50, 10);
 
     terminal
@@ -320,8 +274,7 @@ fn test_large_radio_group_navigation() {
 
 #[test]
 fn test_handle_event_up() {
-    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    state.set_focused(true);
+    let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Up),
@@ -332,8 +285,7 @@ fn test_handle_event_up() {
 
 #[test]
 fn test_handle_event_down() {
-    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    state.set_focused(true);
+    let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Down),
@@ -344,8 +296,7 @@ fn test_handle_event_down() {
 
 #[test]
 fn test_handle_event_k() {
-    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    state.set_focused(true);
+    let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::char('k'),
@@ -356,8 +307,7 @@ fn test_handle_event_k() {
 
 #[test]
 fn test_handle_event_j() {
-    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    state.set_focused(true);
+    let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::char('j'),
@@ -368,8 +318,7 @@ fn test_handle_event_j() {
 
 #[test]
 fn test_handle_event_enter() {
-    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    state.set_focused(true);
+    let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
@@ -391,9 +340,7 @@ fn test_handle_event_ignored_when_unfocused() {
 
 #[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    state.set_focused(true);
-    state.set_disabled(true);
+    let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Up),
@@ -405,7 +352,6 @@ fn test_handle_event_ignored_when_disabled() {
 #[test]
 fn test_dispatch_event_radio() {
     let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    state.set_focused(true);
     let output = RadioGroup::<String>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
@@ -414,61 +360,12 @@ fn test_dispatch_event_radio() {
     assert_eq!(output, Some(RadioGroupOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
 }
-
-#[test]
-fn test_instance_is_focused() {
-    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-}
-
-#[test]
-fn test_instance_handle_event() {
-    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Down));
-    assert_eq!(msg, Some(RadioGroupMessage::Down));
-}
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Down));
-    assert_eq!(output, Some(RadioGroupOutput::SelectionChanged(1)));
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let output = state.update(RadioGroupMessage::Down);
     assert_eq!(output, Some(RadioGroupOutput::SelectionChanged(1)));
 }
-
-// ========== Builder Tests ==========
-
-#[test]
-fn test_with_disabled_builder() {
-    let state = RadioGroupState::new(vec!["A", "B", "C"]).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_false_builder() {
-    let state = RadioGroupState::new(vec!["A", "B", "C"]).with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_prevents_navigation() {
-    let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()])
-        .with_disabled(true);
-    let output = RadioGroup::<String>::update(&mut state, RadioGroupMessage::Down);
-    assert_eq!(output, None);
-    assert_eq!(state.selected_index(), Some(0));
-}
-
 #[test]
 fn test_selected_item() {
     let mut state = RadioGroupState::new(vec!["A", "B", "C"]);

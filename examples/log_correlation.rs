@@ -120,10 +120,9 @@ impl App for LogCorrelationApp {
                 "Connection pool: 5 active",
             ));
 
-        let mut correlation = LogCorrelationState::new()
+        let correlation = LogCorrelationState::new()
             .with_title("Log Correlation")
             .with_streams(vec![api, db]);
-        correlation.set_focused(true);
 
         (State { correlation }, Command::none())
     }
@@ -164,7 +163,8 @@ impl App for LogCorrelationApp {
                 return Some(Msg::Quit);
             }
         }
-        state.correlation.handle_event(event).map(Msg::Correlation)
+        LogCorrelation::handle_event(&state.correlation, event, &ViewContext::new().focused(true))
+            .map(Msg::Correlation)
     }
 }
 

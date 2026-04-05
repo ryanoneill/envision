@@ -8,7 +8,7 @@
 //! State is stored in [`EventStreamState`], updated via [`EventStreamMessage`],
 //! and produces [`EventStreamOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
+//! Focus and disabled state are managed via [`ViewContext`].
 //!
 //! # Example
 //!

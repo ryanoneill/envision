@@ -52,8 +52,7 @@ impl App for LoadingListApp {
             },
         ];
 
-        let mut list = LoadingListState::with_items(tasks, |t| t.name.clone());
-        list.set_focused(true);
+        let list = LoadingListState::with_items(tasks, |t| t.name.clone());
 
         (State { list }, Command::none())
     }
@@ -99,7 +98,8 @@ impl App for LoadingListApp {
                 return Some(Msg::Quit);
             }
         }
-        state.list.handle_event(event).map(Msg::List)
+        LoadingList::<Task>::handle_event(&state.list, event, &ViewContext::new().focused(true))
+            .map(Msg::List)
     }
 }
 

@@ -14,9 +14,7 @@ fn sample_entries() -> Vec<FileEntry> {
 }
 
 fn focused_state() -> FileBrowserState {
-    let mut state = FileBrowserState::new("/", sample_entries());
-    FileBrowser::set_focused(&mut state, true);
-    state
+    FileBrowserState::new("/", sample_entries())
 }
 
 // =============================================================================
@@ -96,8 +94,6 @@ fn test_debug_impl() {
     assert!(debug.contains("selected_paths"));
     assert!(debug.contains("filter_text"));
     assert!(debug.contains("internal_focus"));
-    assert!(debug.contains("focused"));
-    assert!(debug.contains("disabled"));
     assert!(debug.contains("selection_mode"));
     assert!(debug.contains("sort_field"));
     assert!(debug.contains("sort_direction"));
@@ -234,7 +230,6 @@ fn test_with_provider() {
 
     let provider = Arc::new(TestProvider);
     let mut state = FileBrowserState::with_provider("/", provider);
-    FileBrowser::set_focused(&mut state, true);
 
     assert_eq!(state.entries().len(), 2);
     assert_eq!(state.current_path(), "/");

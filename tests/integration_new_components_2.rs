@@ -38,7 +38,6 @@ use envision::component::{
     EventStream,
     EventStreamMessage,
     EventStreamState,
-    Focusable,
     Gauge,
     GaugeMessage,
     GaugeState,
@@ -447,7 +446,6 @@ fn test_tab_bar_add_close_navigate() {
         Tab::new("file3", "test.rs").with_closable(true),
     ];
     let mut state = TabBarState::new(tabs);
-    TabBar::set_focused(&mut state, true);
 
     assert_eq!(state.len(), 3);
     assert_eq!(state.active_index(), Some(0));
@@ -629,7 +627,6 @@ fn test_chart_multi_series_cycling() {
 fn test_calendar_month_boundary_wrapping() {
     // Start at December 2026
     let mut state = CalendarState::new(2026, 12);
-    Calendar::focus(&mut state);
 
     // Next month wraps to January 2027
     let output = Calendar::update(&mut state, CalendarMessage::NextMonth);
@@ -645,7 +642,6 @@ fn test_calendar_month_boundary_wrapping() {
 
     // January -> previous month -> December of previous year
     let mut state = CalendarState::new(2026, 1);
-    Calendar::focus(&mut state);
     let output = Calendar::update(&mut state, CalendarMessage::PrevMonth);
     assert_eq!(output, Some(CalendarOutput::MonthChanged(2025, 12)));
 }
@@ -657,7 +653,6 @@ fn test_calendar_month_boundary_wrapping() {
 #[test]
 fn test_event_stream_structured_fields_and_text_filter() {
     let mut state = EventStreamState::new();
-    state.set_focused(true);
 
     state.push_event_with_fields(
         EventLevel::Info,
@@ -712,7 +707,6 @@ fn test_event_stream_structured_fields_and_text_filter() {
 #[test]
 fn test_slider_dispatch_event_keyboard() {
     let mut state = SliderState::new(0.0, 100.0).with_step(5.0);
-    state.set_focused(true);
 
     // Right arrow should increment
     let event = envision::input::Event::key(crossterm::event::KeyCode::Right);
@@ -821,7 +815,6 @@ fn test_span_tree_deep_nesting() {
     );
 
     let mut state = SpanTreeState::new(vec![root]);
-    state.set_focused(true);
 
     // Selected at root
     assert_eq!(state.selected_index(), Some(0));

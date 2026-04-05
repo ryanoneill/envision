@@ -119,14 +119,6 @@ fn test_focused_segment_empty() {
 }
 
 #[test]
-fn test_is_disabled() {
-    let mut state = BreadcrumbState::default();
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
 fn test_separator() {
     let state = BreadcrumbState::default();
     assert_eq!(state.separator(), " > ");
@@ -210,15 +202,6 @@ fn test_set_max_visible() {
     assert_eq!(state.max_visible(), Some(5));
     state.set_max_visible(None);
     assert_eq!(state.max_visible(), None);
-}
-
-#[test]
-fn test_set_disabled() {
-    let mut state = BreadcrumbState::default();
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
 }
 
 // ==================== Truncation Tests ====================
@@ -407,37 +390,6 @@ fn test_select_empty() {
     assert_eq!(output, None);
 }
 
-// ==================== Disabled State Tests ====================
-
-#[test]
-fn test_disabled_ignores_messages() {
-    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-    state.set_disabled(true);
-
-    assert_eq!(
-        Breadcrumb::update(&mut state, BreadcrumbMessage::Right),
-        None
-    );
-    assert_eq!(
-        Breadcrumb::update(&mut state, BreadcrumbMessage::Left),
-        None
-    );
-    assert_eq!(
-        Breadcrumb::update(&mut state, BreadcrumbMessage::Select),
-        None
-    );
-    assert_eq!(state.focused_index(), 0);
-}
-
-#[test]
-fn test_disabling_preserves_state() {
-    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-    state.focused_index = 1;
-    state.set_disabled(true);
-    assert_eq!(state.focused_index(), 1);
-    assert_eq!(state.len(), 3);
-}
-
 // ==================== View Tests ====================
 
 #[test]
@@ -488,7 +440,6 @@ fn test_view_multiple() {
 #[test]
 fn test_view_focused_highlight() {
     let mut state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
-    state.focused = true;
     state.focused_index = 1;
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
@@ -543,8 +494,7 @@ fn test_view_custom_separator() {
 
 #[test]
 fn test_view_disabled() {
-    let mut state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
-    state.set_disabled(true);
+    let state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
@@ -575,7 +525,6 @@ fn test_init() {
 #[test]
 fn test_full_workflow() {
     let mut state = BreadcrumbState::from_labels(vec!["Home", "Products", "Electronics"]);
-    Breadcrumb::set_focused(&mut state, true);
 
     // Navigate right twice
     Breadcrumb::update(&mut state, BreadcrumbMessage::Right);
@@ -613,7 +562,6 @@ fn test_unicode_segments() {
 #[test]
 fn test_handle_event_left_when_focused() {
     let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-    state.set_focused(true);
     state.focused_index = 1;
 
     let msg = Breadcrumb::handle_event(
@@ -626,8 +574,7 @@ fn test_handle_event_left_when_focused() {
 
 #[test]
 fn test_handle_event_right_when_focused() {
-    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-    state.set_focused(true);
+    let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
 
     let msg = Breadcrumb::handle_event(
         &state,
@@ -639,8 +586,7 @@ fn test_handle_event_right_when_focused() {
 
 #[test]
 fn test_handle_event_first_when_focused() {
-    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-    state.set_focused(true);
+    let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
 
     let msg = Breadcrumb::handle_event(
         &state,
@@ -652,8 +598,7 @@ fn test_handle_event_first_when_focused() {
 
 #[test]
 fn test_handle_event_last_when_focused() {
-    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-    state.set_focused(true);
+    let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
 
     let msg = Breadcrumb::handle_event(
         &state,
@@ -665,8 +610,7 @@ fn test_handle_event_last_when_focused() {
 
 #[test]
 fn test_handle_event_select_when_focused() {
-    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-    state.set_focused(true);
+    let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
 
     let msg = Breadcrumb::handle_event(
         &state,
@@ -678,8 +622,7 @@ fn test_handle_event_select_when_focused() {
 
 #[test]
 fn test_handle_event_vim_keys() {
-    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-    state.set_focused(true);
+    let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
 
     let msg_h =
         Breadcrumb::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
@@ -709,9 +652,7 @@ fn test_handle_event_ignored_when_unfocused() {
 
 #[test]
 fn test_handle_event_ignored_when_disabled() {
-    let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-    state.set_focused(true);
-    state.set_disabled(true);
+    let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
 
     let msg = Breadcrumb::handle_event(
         &state,
@@ -733,7 +674,6 @@ fn test_handle_event_ignored_when_disabled() {
 #[test]
 fn test_dispatch_event() {
     let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-    state.set_focused(true);
 
     // Dispatch Right: should move focus from 0 to 1
     let output = Breadcrumb::dispatch_event(
@@ -756,30 +696,13 @@ fn test_dispatch_event() {
 // ========== Instance Method Tests ==========
 
 #[test]
-fn test_instance_methods() {
+fn test_instance_update() {
     let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
-
-    // is_focused / set_focused
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-
-    // dispatch_event via instance method
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Right));
-    assert_eq!(output, Some(BreadcrumbOutput::FocusChanged(1)));
-    assert_eq!(state.focused_index(), 1);
 
     // update via instance method
     let output = state.update(BreadcrumbMessage::Right);
-    assert_eq!(output, Some(BreadcrumbOutput::FocusChanged(2)));
-    assert_eq!(state.focused_index(), 2);
-
-    // handle_event via instance method
-    let msg = state.handle_event(&Event::key(KeyCode::Left));
-    assert_eq!(msg, Some(BreadcrumbMessage::Left));
+    assert_eq!(output, Some(BreadcrumbOutput::FocusChanged(1)));
+    assert_eq!(state.focused_index(), 1);
 }
 
 // ========== Builder Tests ==========
@@ -806,26 +729,12 @@ fn test_with_max_visible_none() {
 }
 
 #[test]
-fn test_with_disabled_breadcrumb() {
-    let state = BreadcrumbState::from_labels(vec!["Home"]).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_false_breadcrumb() {
-    let state = BreadcrumbState::from_labels(vec!["Home"]).with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_builder_chaining_breadcrumb() {
     let state = BreadcrumbState::from_labels(vec!["A", "B", "C", "D", "E"])
         .with_separator(" / ")
-        .with_max_visible(Some(3))
-        .with_disabled(true);
+        .with_max_visible(Some(3));
     assert_eq!(state.separator(), " / ");
     assert_eq!(state.max_visible(), Some(3));
-    assert!(state.is_disabled());
     assert!(state.is_truncated());
 }
 
@@ -837,8 +746,6 @@ fn test_default_matches_init() {
     assert_eq!(default_state.is_empty(), init_state.is_empty());
     assert_eq!(default_state.len(), init_state.len());
     assert_eq!(default_state.focused_index(), init_state.focused_index());
-    assert_eq!(default_state.is_focused(), init_state.is_focused());
-    assert_eq!(default_state.is_disabled(), init_state.is_disabled());
     assert_eq!(default_state.separator(), init_state.separator());
     assert_eq!(default_state.max_visible(), init_state.max_visible());
 }

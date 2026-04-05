@@ -289,8 +289,6 @@ fn test_state_new_empty() {
     assert!(state.root().is_none());
     assert!(state.show_labels());
     assert!(!state.show_values());
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
     assert!(state.title().is_none());
 }
 
@@ -318,12 +316,6 @@ fn test_state_with_show_labels() {
 fn test_state_with_show_values() {
     let state = TreemapState::new().with_show_values(true);
     assert!(state.show_values());
-}
-
-#[test]
-fn test_state_with_disabled() {
-    let state = TreemapState::new().with_disabled(true);
-    assert!(state.is_disabled());
 }
 
 // =============================================================================
@@ -380,9 +372,8 @@ fn sample_state() -> TreemapState {
         .with_child(TreemapNode::new("b", 30.0).with_color(Color::Green))
         .with_child(TreemapNode::new("c", 20.0).with_color(Color::Blue))
         .with_child(TreemapNode::new("d", 10.0).with_color(Color::Yellow));
-    let mut state = TreemapState::new().with_root(root);
-    state.set_focused(true);
-    state
+
+    TreemapState::new().with_root(root)
 }
 
 #[test]
@@ -442,9 +433,8 @@ fn nested_state() -> TreemapState {
                 .with_child(TreemapNode::new("lib.rs", 20.0).with_color(Color::LightBlue)),
         )
         .with_child(TreemapNode::new("README.md", 10.0).with_color(Color::Green));
-    let mut state = TreemapState::new().with_root(root);
-    state.set_focused(true);
-    state
+
+    TreemapState::new().with_root(root)
 }
 
 #[test]
@@ -668,8 +658,7 @@ fn test_hjkl_keys() {
 
 #[test]
 fn test_disabled_ignores_events() {
-    let mut state = sample_state();
-    state.set_disabled(true);
+    let state = sample_state();
     let msg = Treemap::handle_event(
         &state,
         &Event::key(KeyCode::Right),
@@ -685,75 +674,15 @@ fn test_unfocused_ignores_events() {
     let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 }
-
-// =============================================================================
-// Instance methods
-// =============================================================================
-
-#[test]
-fn test_instance_handle_event() {
-    let state = sample_state();
-    let msg = state.handle_event(&Event::key(KeyCode::Right));
-    assert_eq!(msg, Some(TreemapMessage::SelectNext));
-}
-
 #[test]
 fn test_instance_update() {
     let mut state = sample_state();
     state.update(TreemapMessage::SelectNext);
     assert_eq!(state.selected_node().unwrap().label, "b");
 }
-
-#[test]
-fn test_instance_dispatch_event() {
-    let mut state = sample_state();
-    state.dispatch_event(&Event::key(KeyCode::Right));
-    assert_eq!(state.selected_node().unwrap().label, "b");
-}
-
 // =============================================================================
 // Focus and disabled
 // =============================================================================
-
-#[test]
-fn test_focus_methods() {
-    let mut state = TreemapState::new();
-    assert!(!state.is_focused());
-    state.set_focused(true);
-    assert!(state.is_focused());
-    state.set_focused(false);
-    assert!(!state.is_focused());
-}
-
-#[test]
-fn test_disabled_methods() {
-    let mut state = TreemapState::new();
-    assert!(!state.is_disabled());
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-// =============================================================================
-// Focusable / Disableable trait
-// =============================================================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = TreemapState::new();
-    assert!(!Treemap::is_focused(&state));
-    Treemap::set_focused(&mut state, true);
-    assert!(Treemap::is_focused(&state));
-}
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = TreemapState::new();
-    assert!(!Treemap::is_disabled(&state));
-    Treemap::set_disabled(&mut state, true);
-    assert!(Treemap::is_disabled(&state));
-}
 
 // =============================================================================
 // Message handling: SetRoot / Clear
@@ -809,8 +738,7 @@ fn test_render_focused() {
     let root = TreemapNode::new("root", 0.0)
         .with_child(TreemapNode::new("a", 60.0).with_color(Color::Red))
         .with_child(TreemapNode::new("b", 40.0).with_color(Color::Blue));
-    let mut state = TreemapState::new().with_root(root).with_title("Test");
-    state.set_focused(true);
+    let state = TreemapState::new().with_root(root).with_title("Test");
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
@@ -828,10 +756,7 @@ fn test_render_focused() {
 #[test]
 fn test_render_disabled() {
     let root = TreemapNode::new("root", 0.0).with_child(TreemapNode::new("a", 10.0));
-    let state = TreemapState::new()
-        .with_root(root)
-        .with_disabled(true)
-        .with_title("Disabled");
+    let state = TreemapState::new().with_root(root).with_title("Disabled");
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
@@ -911,7 +836,6 @@ fn test_annotation_emitted() {
 #[test]
 fn test_navigation_on_empty_treemap() {
     let mut state = TreemapState::new();
-    state.set_focused(true);
     let output = state.update(TreemapMessage::SelectNext);
     assert_eq!(output, None);
     let output = state.update(TreemapMessage::SelectPrev);
@@ -925,7 +849,6 @@ fn test_single_child() {
     let root = TreemapNode::new("root", 0.0)
         .with_child(TreemapNode::new("only", 100.0).with_color(Color::Red));
     let mut state = TreemapState::new().with_root(root);
-    state.set_focused(true);
     assert_eq!(state.selected_node().unwrap().label, "only");
     // Can't go next or prev.
     state.update(TreemapMessage::SelectNext);
@@ -943,7 +866,6 @@ fn test_deep_zoom() {
         ),
     );
     let mut state = TreemapState::new().with_root(root);
-    state.set_focused(true);
 
     // Zoom in three levels.
     state.update(TreemapMessage::ZoomIn); // Into level1.

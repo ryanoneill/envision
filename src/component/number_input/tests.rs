@@ -16,8 +16,6 @@ fn test_new() {
     assert_eq!(state.label(), None);
     assert_eq!(state.placeholder(), None);
     assert!(!state.is_editing());
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -118,12 +116,6 @@ fn test_with_placeholder() {
 }
 
 #[test]
-fn test_with_disabled() {
-    let state = NumberInputState::new(0.0).with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
 fn test_builder_chaining() {
     let state = NumberInputState::new(5.0)
         .with_min(0.0)
@@ -131,8 +123,7 @@ fn test_builder_chaining() {
         .with_step(5.0)
         .with_precision(1)
         .with_label("Volume")
-        .with_placeholder("0-100")
-        .with_disabled(false);
+        .with_placeholder("0-100");
     assert_eq!(state.value(), 5.0);
     assert_eq!(state.min(), Some(0.0));
     assert_eq!(state.max(), Some(100.0));
@@ -140,7 +131,6 @@ fn test_builder_chaining() {
     assert_eq!(state.precision(), 1);
     assert_eq!(state.label(), Some("Volume"));
     assert_eq!(state.placeholder(), Some("0-100"));
-    assert!(!state.is_disabled());
 }
 
 // ========================================
@@ -257,14 +247,6 @@ fn test_set_value_method_clamped() {
 
     state.set_value(-10.0);
     assert_eq!(state.value(), 0.0);
-}
-
-#[test]
-fn test_disabled_prevents_update() {
-    let mut state = NumberInputState::new(10.0).with_disabled(true);
-    let output = NumberInput::update(&mut state, NumberInputMessage::Increment);
-    assert_eq!(output, None);
-    assert_eq!(state.value(), 10.0);
 }
 
 // ========================================
@@ -494,8 +476,7 @@ fn test_format_value_zero() {
 
 #[test]
 fn test_handle_event_up_increments() {
-    let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
+    let state = NumberInputState::new(0.0);
     let msg = NumberInput::handle_event(
         &state,
         &Event::key(KeyCode::Up),
@@ -506,8 +487,7 @@ fn test_handle_event_up_increments() {
 
 #[test]
 fn test_handle_event_down_decrements() {
-    let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
+    let state = NumberInputState::new(0.0);
     let msg = NumberInput::handle_event(
         &state,
         &Event::key(KeyCode::Down),
@@ -518,8 +498,7 @@ fn test_handle_event_down_decrements() {
 
 #[test]
 fn test_handle_event_k_increments() {
-    let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
+    let state = NumberInputState::new(0.0);
     let msg =
         NumberInput::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(NumberInputMessage::Increment));
@@ -527,8 +506,7 @@ fn test_handle_event_k_increments() {
 
 #[test]
 fn test_handle_event_j_decrements() {
-    let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
+    let state = NumberInputState::new(0.0);
     let msg =
         NumberInput::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(NumberInputMessage::Decrement));
@@ -536,8 +514,7 @@ fn test_handle_event_j_decrements() {
 
 #[test]
 fn test_handle_event_enter_starts_edit() {
-    let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
+    let state = NumberInputState::new(0.0);
     let msg = NumberInput::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
@@ -548,8 +525,7 @@ fn test_handle_event_enter_starts_edit() {
 
 #[test]
 fn test_handle_event_unrelated_key() {
-    let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
+    let state = NumberInputState::new(0.0);
     let msg =
         NumberInput::handle_event(&state, &Event::char('q'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
@@ -562,7 +538,6 @@ fn test_handle_event_unrelated_key() {
 #[test]
 fn test_handle_event_edit_mode_char() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
     state.editing = true;
     state.edit_buffer.clear();
     let msg =
@@ -573,7 +548,6 @@ fn test_handle_event_edit_mode_char() {
 #[test]
 fn test_handle_event_edit_mode_decimal() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
     state.editing = true;
     state.edit_buffer = "3".to_string();
     let msg =
@@ -584,7 +558,6 @@ fn test_handle_event_edit_mode_decimal() {
 #[test]
 fn test_handle_event_edit_mode_minus() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
     state.editing = true;
     state.edit_buffer.clear();
     let msg =
@@ -595,7 +568,6 @@ fn test_handle_event_edit_mode_minus() {
 #[test]
 fn test_handle_event_edit_mode_enter_confirms() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
     state.editing = true;
     let msg = NumberInput::handle_event(
         &state,
@@ -608,7 +580,6 @@ fn test_handle_event_edit_mode_enter_confirms() {
 #[test]
 fn test_handle_event_edit_mode_escape_cancels() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
     state.editing = true;
     let msg = NumberInput::handle_event(
         &state,
@@ -621,7 +592,6 @@ fn test_handle_event_edit_mode_escape_cancels() {
 #[test]
 fn test_handle_event_edit_mode_backspace() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
     state.editing = true;
     let msg = NumberInput::handle_event(
         &state,
@@ -634,7 +604,6 @@ fn test_handle_event_edit_mode_backspace() {
 #[test]
 fn test_handle_event_edit_mode_rejects_letter() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
     state.editing = true;
     state.edit_buffer.clear();
     let msg =
@@ -645,7 +614,6 @@ fn test_handle_event_edit_mode_rejects_letter() {
 #[test]
 fn test_handle_event_edit_mode_rejects_duplicate_decimal() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
     state.editing = true;
     state.edit_buffer = "3.1".to_string();
     let msg =
@@ -656,7 +624,6 @@ fn test_handle_event_edit_mode_rejects_duplicate_decimal() {
 #[test]
 fn test_handle_event_edit_mode_rejects_non_leading_minus() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
     state.editing = true;
     state.edit_buffer = "5".to_string();
     let msg =
@@ -677,8 +644,7 @@ fn test_handle_event_unfocused() {
 
 #[test]
 fn test_handle_event_disabled() {
-    let mut state = NumberInputState::new(0.0).with_disabled(true);
-    state.set_focused(true);
+    let state = NumberInputState::new(0.0);
     let msg = NumberInput::handle_event(
         &state,
         &Event::key(KeyCode::Up),
@@ -689,8 +655,7 @@ fn test_handle_event_disabled() {
 
 #[test]
 fn test_handle_event_disabled_edit_mode() {
-    let mut state = NumberInputState::new(0.0).with_disabled(true);
-    state.set_focused(true);
+    let mut state = NumberInputState::new(0.0);
     state.editing = true;
     let msg = NumberInput::handle_event(
         &state,
@@ -707,7 +672,6 @@ fn test_handle_event_disabled_edit_mode() {
 #[test]
 fn test_dispatch_event_increment() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
     let output = NumberInput::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Up),
@@ -732,7 +696,6 @@ fn test_dispatch_event_unfocused() {
 #[test]
 fn test_dispatch_event_enter_then_type() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
 
     // Enter edit mode
     let output = NumberInput::dispatch_event(
@@ -759,17 +722,23 @@ fn test_dispatch_event_enter_then_type() {
 
 #[test]
 fn test_instance_handle_event() {
-    let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
-    let msg = state.handle_event(&Event::key(KeyCode::Up));
+    let state = NumberInputState::new(0.0);
+    let msg = NumberInput::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(NumberInputMessage::Increment));
 }
 
 #[test]
 fn test_instance_dispatch_event() {
     let mut state = NumberInputState::new(0.0);
-    state.set_focused(true);
-    let output = state.dispatch_event(&Event::key(KeyCode::Up));
+    let output = NumberInput::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(NumberInputOutput::ValueChanged(1.0)));
 }
 
@@ -782,40 +751,6 @@ fn test_instance_update() {
 }
 
 // ========================================
-// Focusable / Disableable Trait Tests
-// ========================================
-
-#[test]
-fn test_focusable_trait() {
-    let mut state = NumberInputState::new(0.0);
-    assert!(!NumberInput::is_focused(&state));
-
-    NumberInput::set_focused(&mut state, true);
-    assert!(NumberInput::is_focused(&state));
-
-    NumberInput::blur(&mut state);
-    assert!(!NumberInput::is_focused(&state));
-
-    NumberInput::focus(&mut state);
-    assert!(NumberInput::is_focused(&state));
-}
-
-#[test]
-fn test_disableable_trait() {
-    let mut state = NumberInputState::new(0.0);
-    assert!(!NumberInput::is_disabled(&state));
-
-    NumberInput::set_disabled(&mut state, true);
-    assert!(NumberInput::is_disabled(&state));
-
-    NumberInput::enable(&mut state);
-    assert!(!NumberInput::is_disabled(&state));
-
-    NumberInput::disable(&mut state);
-    assert!(NumberInput::is_disabled(&state));
-}
-
-// ========================================
 // Init Test
 // ========================================
 
@@ -825,8 +760,6 @@ fn test_init() {
     assert_eq!(state.value(), 0.0);
     assert_eq!(state.step(), 1.0);
     assert_eq!(state.precision(), 0);
-    assert!(!state.is_focused());
-    assert!(!state.is_disabled());
 }
 
 // ========================================

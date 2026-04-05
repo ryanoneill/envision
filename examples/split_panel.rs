@@ -28,12 +28,10 @@ impl App for SplitPanelApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut split = SplitPanelState::new(SplitOrientation::Vertical)
+        let split = SplitPanelState::new(SplitOrientation::Vertical)
             .with_ratio(0.4)
             .with_resize_step(0.1)
             .with_bounds(0.2, 0.8);
-
-        split.set_focused(true);
 
         (State { split }, Command::none())
     }
@@ -109,7 +107,8 @@ impl App for SplitPanelApp {
                 return Some(Msg::Quit);
             }
         }
-        state.split.handle_event(event).map(Msg::Split)
+        SplitPanel::handle_event(&state.split, event, &ViewContext::new().focused(true))
+            .map(Msg::Split)
     }
 }
 

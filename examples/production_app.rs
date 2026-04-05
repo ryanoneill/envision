@@ -79,7 +79,6 @@ impl ProcessorState {
         let mut log = StatusLogState::new()
             .with_title("Activity Log")
             .with_max_entries(50);
-        log.set_focused(true);
         log.info(format!(
             "Batch started: {} files queued (output: {})",
             config.files.len(),
@@ -267,7 +266,8 @@ impl App for ProcessorApp {
             }
         }
         // Delegate to the status log for scroll events (Up/Down keys).
-        state.log.handle_event(event).map(ProcessorMsg::Log)
+        StatusLog::handle_event(&state.log, event, &ViewContext::new().focused(true))
+            .map(ProcessorMsg::Log)
     }
 }
 

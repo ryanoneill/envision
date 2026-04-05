@@ -32,24 +32,6 @@ enum Msg {
     Quit,
 }
 
-impl State {
-    fn focused_slider_mut(&mut self) -> &mut SliderState {
-        match self.focus_index {
-            0 => &mut self.volume,
-            1 => &mut self.brightness,
-            2 => &mut self.temperature,
-            _ => &mut self.vertical,
-        }
-    }
-
-    fn set_all_unfocused(&mut self) {
-        self.volume.set_focused(false);
-        self.brightness.set_focused(false);
-        self.temperature.set_focused(false);
-        self.vertical.set_focused(false);
-    }
-}
-
 const SLIDER_COUNT: usize = 4;
 
 impl App for SliderApp {
@@ -57,10 +39,9 @@ impl App for SliderApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut volume = SliderState::new(0.0, 100.0)
+        let volume = SliderState::new(0.0, 100.0)
             .with_value(75.0)
             .with_label("Volume");
-        volume.set_focused(true);
 
         let brightness = SliderState::new(0.0, 100.0)
             .with_value(50.0)
@@ -103,14 +84,10 @@ impl App for SliderApp {
                 Slider::update(&mut state.vertical, m);
             }
             Msg::FocusNext => {
-                state.set_all_unfocused();
                 state.focus_index = (state.focus_index + 1) % SLIDER_COUNT;
-                state.focused_slider_mut().set_focused(true);
             }
             Msg::FocusPrev => {
-                state.set_all_unfocused();
                 state.focus_index = (state.focus_index + SLIDER_COUNT - 1) % SLIDER_COUNT;
-                state.focused_slider_mut().set_focused(true);
             }
             Msg::Quit => return Command::quit(),
         }
@@ -183,10 +160,14 @@ impl App for SliderApp {
         }
         // Route event to focused slider
         match state.focus_index {
-            0 => state.volume.handle_event(event).map(Msg::Volume),
-            1 => state.brightness.handle_event(event).map(Msg::Brightness),
-            2 => state.temperature.handle_event(event).map(Msg::Temperature),
-            _ => state.vertical.handle_event(event).map(Msg::Vertical),
+            0 => Slider::handle_event(&state.volume, event, &ViewContext::new().focused(true))
+                .map(Msg::Volume),
+            1 => Slider::handle_event(&state.brightness, event, &ViewContext::new().focused(true))
+                .map(Msg::Brightness),
+            2 => Slider::handle_event(&state.temperature, event, &ViewContext::new().focused(true))
+                .map(Msg::Temperature),
+            _ => Slider::handle_event(&state.vertical, event, &ViewContext::new().focused(true))
+                .map(Msg::Vertical),
         }
     }
 }

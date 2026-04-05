@@ -28,7 +28,7 @@ impl App for MetricsDashboardApp {
     type Message = Msg;
 
     fn init() -> (State, Command<Msg>) {
-        let mut dashboard = MetricsDashboardState::new(
+        let dashboard = MetricsDashboardState::new(
             vec![
                 MetricWidget::counter("Requests", 1284),
                 MetricWidget::gauge("CPU %", 67, 100),
@@ -40,7 +40,6 @@ impl App for MetricsDashboardApp {
             3,
         )
         .with_title("System Metrics");
-        dashboard.set_focused(true);
 
         (State { dashboard }, Command::none())
     }
@@ -86,7 +85,8 @@ impl App for MetricsDashboardApp {
                 return Some(Msg::Quit);
             }
         }
-        state.dashboard.handle_event(event).map(Msg::Dashboard)
+        MetricsDashboard::handle_event(&state.dashboard, event, &ViewContext::new().focused(true))
+            .map(Msg::Dashboard)
     }
 }
 

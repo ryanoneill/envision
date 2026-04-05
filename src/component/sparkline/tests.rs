@@ -10,7 +10,6 @@ fn test_new() {
     assert_eq!(state.title(), None);
     assert_eq!(state.direction(), &SparklineDirection::LeftToRight);
     assert_eq!(state.color(), None);
-    assert!(!state.is_disabled());
     assert_eq!(state.max_display_points(), None);
 }
 
@@ -19,7 +18,6 @@ fn test_default() {
     let state = SparklineState::default();
     assert!(state.is_empty());
     assert_eq!(state.direction(), &SparklineDirection::LeftToRight);
-    assert!(!state.is_disabled());
 }
 
 #[test]
@@ -31,7 +29,6 @@ fn test_default_matches_init() {
     assert_eq!(default_state.title(), init_state.title());
     assert_eq!(default_state.direction(), init_state.direction());
     assert_eq!(default_state.color(), init_state.color());
-    assert_eq!(default_state.is_disabled(), init_state.is_disabled());
     assert_eq!(
         default_state.max_display_points(),
         init_state.max_display_points()
@@ -71,32 +68,18 @@ fn test_with_max_display_points() {
 }
 
 #[test]
-fn test_with_disabled() {
-    let state = SparklineState::new().with_disabled(true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_with_disabled_false() {
-    let state = SparklineState::new().with_disabled(false);
-    assert!(!state.is_disabled());
-}
-
-#[test]
 fn test_builder_chaining() {
     let state = SparklineState::with_data(vec![1, 2, 3])
         .with_title("Metrics")
         .with_direction(SparklineDirection::RightToLeft)
         .with_max_display_points(50)
-        .with_color(Color::Cyan)
-        .with_disabled(false);
+        .with_color(Color::Cyan);
 
     assert_eq!(state.data(), &[1, 2, 3]);
     assert_eq!(state.title(), Some("Metrics"));
     assert_eq!(state.direction(), &SparklineDirection::RightToLeft);
     assert_eq!(state.max_display_points(), Some(50));
     assert_eq!(state.color(), Some(Color::Cyan));
-    assert!(!state.is_disabled());
 }
 
 // --- Direction tests ---
@@ -228,19 +211,6 @@ fn test_min_max_single_element() {
     assert_eq!(state.min(), Some(42));
     assert_eq!(state.max(), Some(42));
 }
-
-#[test]
-fn test_set_disabled() {
-    let mut state = SparklineState::new();
-    assert!(!state.is_disabled());
-
-    state.set_disabled(true);
-    assert!(state.is_disabled());
-
-    state.set_disabled(false);
-    assert!(!state.is_disabled());
-}
-
 // --- Update/message tests ---
 
 #[test]
@@ -352,27 +322,6 @@ fn test_view_with_title() {
 
     insta::assert_snapshot!(terminal.backend().to_string());
 }
-
-#[test]
-fn test_view_disabled() {
-    let state = SparklineState::with_data(vec![1, 3, 5, 7, 5, 3, 1]).with_disabled(true);
-    let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 1);
-
-    terminal
-        .draw(|frame| {
-            Sparkline::view(
-                &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
-            );
-        })
-        .unwrap();
-
-    insta::assert_snapshot!(terminal.backend().to_string());
-}
-
 #[test]
 fn test_view_right_to_left() {
     let state = SparklineState::with_data(vec![0, 1, 2, 3, 4, 5, 6, 7, 8])

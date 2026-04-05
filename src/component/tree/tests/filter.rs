@@ -186,7 +186,6 @@ fn test_filter_preserves_expand_state() {
 #[test]
 fn test_filter_navigation() {
     let mut state = TreeState::new(test_tree());
-    state.focused = true;
     state.set_filter_text("readme");
     // Should show: Documents, readme.md
     assert_eq!(state.visible_count(), 2);
@@ -276,7 +275,6 @@ fn test_set_roots_clears_filter() {
 #[test]
 fn test_filter_disabled_still_allows_filter_change() {
     let mut state = TreeState::new(test_tree());
-    state.set_disabled(true);
 
     let output = Tree::update(&mut state, TreeMessage::SetFilter("readme".into()));
     assert_eq!(state.filter_text(), "readme");
@@ -286,7 +284,6 @@ fn test_filter_disabled_still_allows_filter_change() {
 #[test]
 fn test_filter_disabled_blocks_navigation() {
     let mut state = TreeState::new(test_tree());
-    state.set_disabled(true);
     state.set_filter_text("readme");
 
     let output = Tree::update(&mut state, TreeMessage::Down);
