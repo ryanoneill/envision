@@ -128,6 +128,46 @@ impl ThresholdLine {
     }
 }
 
+/// A vertical reference line rendered on line, area, and scatter charts.
+///
+/// Vertical lines are drawn as vertical lines spanning the full chart height
+/// at a specified x-value, useful for marking events, transitions, or epochs.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::VerticalLine;
+/// use ratatui::style::Color;
+///
+/// let vline = VerticalLine::new(10000.0, "Grokking", Color::Yellow);
+/// assert_eq!(vline.x_value, 10000.0);
+/// assert_eq!(vline.label, "Grokking");
+/// ```
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub struct VerticalLine {
+    /// The x-value for this vertical line.
+    pub x_value: f64,
+    /// Label for the vertical line.
+    pub label: String,
+    /// Color for the vertical line.
+    pub color: Color,
+}
+
+impl VerticalLine {
+    /// Creates a new vertical reference line.
+    pub fn new(x_value: f64, label: impl Into<String>, color: Color) -> Self {
+        Self {
+            x_value,
+            label: label.into(),
+            color,
+        }
+    }
+}
+
 /// Messages that can be sent to a Chart.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
@@ -147,6 +187,10 @@ pub enum ChartMessage {
     SetYRange(Option<f64>, Option<f64>),
     /// Set the Y-axis scale (Linear, Log10, or SymLog).
     SetYScale(Scale),
+    /// Set vertical reference lines, replacing any existing ones.
+    SetVerticalLines(Vec<VerticalLine>),
+    /// Add a single vertical reference line.
+    AddVerticalLine(VerticalLine),
 }
 
 /// Output messages from a Chart.
@@ -197,6 +241,8 @@ pub struct ChartState {
     pub(crate) y_max: Option<f64>,
     /// Y-axis scale transformation.
     pub(crate) y_scale: Scale,
+    /// Vertical reference lines.
+    pub(crate) vertical_lines: Vec<VerticalLine>,
 }
 
 impl Default for ChartState {
@@ -216,6 +262,7 @@ impl Default for ChartState {
             y_min: None,
             y_max: None,
             y_scale: Scale::default(),
+            vertical_lines: Vec::new(),
         }
     }
 }
@@ -429,6 +476,29 @@ impl ChartState {
         self.y_scale = scale;
         self
     }
+
+    /// Adds a vertical reference line (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 60.0, 70.0])])
+    ///     .with_vertical_line(1.0, "Deploy", Color::Yellow);
+    /// assert_eq!(state.vertical_lines().len(), 1);
+    /// ```
+    pub fn with_vertical_line(
+        mut self,
+        x_value: f64,
+        label: impl Into<String>,
+        color: Color,
+    ) -> Self {
+        self.vertical_lines
+            .push(VerticalLine::new(x_value, label, color));
+        self
+    }
 }
 
 /// A chart component for data visualization.
@@ -488,6 +558,14 @@ impl Component for Chart {
             }
             ChartMessage::SetYScale(scale) => {
                 state.y_scale = scale;
+                None
+            }
+            ChartMessage::SetVerticalLines(lines) => {
+                state.vertical_lines = lines;
+                None
+            }
+            ChartMessage::AddVerticalLine(line) => {
+                state.vertical_lines.push(line);
                 None
             }
             ChartMessage::NextSeries | ChartMessage::PrevSeries => {

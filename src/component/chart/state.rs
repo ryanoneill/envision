@@ -4,6 +4,7 @@
 
 use super::{
     Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, Scale, ThresholdLine,
+    VerticalLine,
 };
 use crate::component::Component;
 
@@ -256,6 +257,44 @@ impl ChartState {
     /// ```
     pub fn clear_thresholds(&mut self) {
         self.thresholds.clear();
+    }
+
+    /// Returns the vertical reference lines.
+    pub fn vertical_lines(&self) -> &[VerticalLine] {
+        &self.vertical_lines
+    }
+
+    /// Adds a vertical reference line.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries, VerticalLine};
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 60.0])]);
+    /// state.add_vertical_line(VerticalLine::new(1.0, "Deploy", Color::Yellow));
+    /// assert_eq!(state.vertical_lines().len(), 1);
+    /// ```
+    pub fn add_vertical_line(&mut self, line: VerticalLine) {
+        self.vertical_lines.push(line);
+    }
+
+    /// Clears all vertical reference lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 60.0])])
+    ///     .with_vertical_line(1.0, "Deploy", Color::Yellow);
+    /// state.clear_vertical_lines();
+    /// assert!(state.vertical_lines().is_empty());
+    /// ```
+    pub fn clear_vertical_lines(&mut self) {
+        self.vertical_lines.clear();
     }
 
     /// Sets the manual Y-axis range.

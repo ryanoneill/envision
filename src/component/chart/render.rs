@@ -106,7 +106,7 @@ pub(super) fn render_shared_axis_chart(
     _focused: bool,
     disabled: bool,
 ) {
-    if state.series.is_empty() && state.thresholds.is_empty() {
+    if state.series.is_empty() && state.thresholds.is_empty() && state.vertical_lines.is_empty() {
         return;
     }
 
@@ -194,6 +194,18 @@ pub(super) fn render_shared_axis_chart(
         })
         .collect();
 
+    // Build vertical line data vectors (with scale transforms)
+    let scale = &state.y_scale;
+    let vline_data: Vec<Vec<(f64, f64)>> = state
+        .vertical_lines
+        .iter()
+        .map(|v| {
+            let tv_min = scale.transform(effective_min);
+            let tv_max = scale.transform(effective_max);
+            vec![(v.x_value, tv_min), (v.x_value, tv_max)]
+        })
+        .collect();
+
     // Build datasets referencing the data vectors
     let mut datasets: Vec<Dataset> = state
         .series
@@ -223,6 +235,19 @@ pub(super) fn render_shared_axis_chart(
             Dataset::default()
                 .name(threshold.label.as_str())
                 .data(&threshold_data[i])
+                .marker(symbols::Marker::Braille)
+                .graph_type(GraphType::Line)
+                .style(style),
+        );
+    }
+
+    // Add vertical reference lines as additional datasets
+    for (i, vline) in state.vertical_lines.iter().enumerate() {
+        let style = Style::default().fg(vline.color);
+        datasets.push(
+            Dataset::default()
+                .name(vline.label.as_str())
+                .data(&vline_data[i])
                 .marker(symbols::Marker::Braille)
                 .graph_type(GraphType::Line)
                 .style(style),
