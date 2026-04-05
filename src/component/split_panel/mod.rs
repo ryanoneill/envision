@@ -400,10 +400,6 @@ impl Component for SplitPanel {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             SplitPanelMessage::FocusOther => {
                 state.focused_pane = match state.focused_pane {

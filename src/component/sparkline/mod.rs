@@ -35,7 +35,6 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, RenderDirection, Sparkline as RatatuiSparkline};
 
 use super::{Component, ViewContext};
-use crate::input::Event;
 use crate::theme::Theme;
 
 /// The direction in which sparkline data is rendered.

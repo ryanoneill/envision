@@ -545,7 +545,7 @@ impl Component for MetricsDashboard {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.widgets.is_empty() {
+        if state.widgets.is_empty() {
             return None;
         }
 
@@ -659,7 +659,7 @@ impl Component for MetricsDashboard {
                 let widget_idx = row_idx * cols + col_idx;
                 if let Some(widget) = state.widgets.get(widget_idx) {
                     let is_selected = state.selected == Some(widget_idx);
-                    render_widget(widget, is_selected, state, frame, *col_area, theme);
+                    render_widget(widget, is_selected, frame, *col_area, theme, ctx);
                 }
             }
         }
@@ -670,14 +670,14 @@ impl Component for MetricsDashboard {
 fn render_widget(
     widget: &MetricWidget,
     is_selected: bool,
-    state: &MetricsDashboardState,
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    ctx: &ViewContext,
 ) {
-    let border_style = if state.disabled {
+    let border_style = if ctx.disabled {
         theme.disabled_style()
-    } else if is_selected && state.focused {
+    } else if is_selected && ctx.focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -695,7 +695,7 @@ fn render_widget(
         return;
     }
 
-    let value_style = if state.disabled {
+    let value_style = if ctx.disabled {
         theme.disabled_style()
     } else {
         value_color(widget, theme)

@@ -823,7 +823,7 @@ impl Component for PaneLayout {
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
         match msg {
             PaneLayoutMessage::FocusNext => {
-                if !state.focused || state.disabled || state.panes.is_empty() {
+                if state.panes.is_empty() {
                     return None;
                 }
                 state.focused_pane = (state.focused_pane + 1) % state.panes.len();
@@ -833,7 +833,7 @@ impl Component for PaneLayout {
                 })
             }
             PaneLayoutMessage::FocusPrev => {
-                if !state.focused || state.disabled || state.panes.is_empty() {
+                if state.panes.is_empty() {
                     return None;
                 }
                 state.focused_pane = state
@@ -846,9 +846,6 @@ impl Component for PaneLayout {
                 })
             }
             PaneLayoutMessage::FocusPane(id) => {
-                if !state.focused || state.disabled {
-                    return None;
-                }
                 if let Some(index) = state.panes.iter().position(|p| p.id == id) {
                     state.focused_pane = index;
                     Some(PaneLayoutOutput::FocusChanged { pane_id: id, index })
@@ -857,7 +854,7 @@ impl Component for PaneLayout {
                 }
             }
             PaneLayoutMessage::FocusPaneIndex(index) => {
-                if !state.focused || state.disabled || index >= state.panes.len() {
+                if index >= state.panes.len() {
                     return None;
                 }
                 state.focused_pane = index;
@@ -867,16 +864,10 @@ impl Component for PaneLayout {
                 })
             }
             PaneLayoutMessage::GrowFocused => {
-                if !state.focused || state.disabled {
-                    return None;
-                }
                 let index = state.focused_pane;
                 state.grow_pane(index)
             }
             PaneLayoutMessage::ShrinkFocused => {
-                if !state.focused || state.disabled {
-                    return None;
-                }
                 let index = state.focused_pane;
                 state.shrink_pane(index)
             }

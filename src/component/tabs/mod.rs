@@ -312,7 +312,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.tabs.is_empty() {
+        if state.tabs.is_empty() {
             return None;
         }
 

@@ -2,8 +2,7 @@ use super::{
     Focus, InputFieldState, LogViewer, LogViewerMessage, LogViewerOutput, StatusLogEntry,
     StatusLogLevel,
 };
-use crate::component::{Component, ViewContext};
-use crate::input::Event;
+use crate::component::Component;
 use crate::scroll::ScrollState;
 
 /// State for a LogViewer component.

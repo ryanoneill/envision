@@ -549,7 +549,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             _ => {}
         }
 
-        if state.disabled || state.filtered_indices.is_empty() {
+        if state.filtered_indices.is_empty() {
             return None;
         }
 

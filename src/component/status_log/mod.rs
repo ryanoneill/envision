@@ -638,9 +638,6 @@ impl Component for StatusLog {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
         match msg {
             StatusLogMessage::Push {
                 message,

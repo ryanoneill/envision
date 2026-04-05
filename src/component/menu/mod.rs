@@ -352,9 +352,6 @@ impl Component for Menu {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
         if state.items.is_empty() {
             return None;
         }

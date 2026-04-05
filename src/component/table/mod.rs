@@ -633,7 +633,7 @@ impl<T: TableRow + 'static> Component for Table<T> {
             _ => {}
         }
 
-        if state.disabled || state.display_order.is_empty() {
+        if state.display_order.is_empty() {
             return None;
         }
 

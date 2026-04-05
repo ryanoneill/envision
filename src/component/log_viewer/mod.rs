@@ -240,10 +240,6 @@ impl Component for LogViewer {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             LogViewerMessage::ScrollUp => {
                 state.follow = false;
@@ -277,12 +273,10 @@ impl Component for LogViewer {
             }
             LogViewerMessage::FocusSearch => {
                 state.focus = Focus::Search;
-                state.search.set_focused(true);
                 None
             }
             LogViewerMessage::FocusLog => {
                 state.focus = Focus::Log;
-                state.search.set_focused(false);
                 state.history_index = None;
                 None
             }
@@ -325,7 +319,6 @@ impl Component for LogViewer {
                 state.search_text.clear();
                 state.scroll.set_offset(0);
                 state.focus = Focus::Log;
-                state.search.set_focused(false);
                 state.history_index = None;
                 Some(LogViewerOutput::SearchChanged(String::new()))
             }
@@ -398,7 +391,6 @@ impl Component for LogViewer {
                 }
                 state.history_index = None;
                 state.focus = Focus::Log;
-                state.search.set_focused(false);
                 None
             }
             LogViewerMessage::SearchHistoryUp => {
@@ -481,13 +473,13 @@ impl Component for LogViewer {
         let log_area = chunks[2];
 
         // Render search bar
-        view::render_search_bar(state, frame, search_area, theme);
+        view::render_search_bar(state, frame, search_area, theme, ctx);
 
         // Render filter bar
-        view::render_filter_bar(state, frame, filter_area, theme);
+        view::render_filter_bar(state, frame, filter_area, theme, ctx);
 
         // Render log entries
-        view::render_log(state, frame, log_area, theme);
+        view::render_log(state, frame, log_area, theme, ctx);
     }
 }
 

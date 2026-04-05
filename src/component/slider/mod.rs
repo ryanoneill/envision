@@ -411,10 +411,6 @@ impl Component for Slider {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         let old_value = state.value;
 
         match msg {
@@ -483,22 +479,28 @@ impl Component for Slider {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         match state.orientation {
-            SliderOrientation::Horizontal => view_horizontal(state, frame, area, theme),
-            SliderOrientation::Vertical => view_vertical(state, frame, area, theme),
+            SliderOrientation::Horizontal => view_horizontal(state, frame, area, theme, ctx),
+            SliderOrientation::Vertical => view_vertical(state, frame, area, theme, ctx),
         }
     }
 }
 
 /// Renders the slider in horizontal orientation.
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-fn view_horizontal(state: &SliderState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn view_horizontal(
+    state: &SliderState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    ctx: &ViewContext,
+) {
     if area.height == 0 || area.width == 0 {
         return;
     }
 
-    let (label_style, filled_style, empty_style) = compute_styles(state, theme);
+    let (label_style, filled_style, empty_style) = compute_styles(theme, ctx);
 
     let mut lines = Vec::new();
 
@@ -539,19 +541,25 @@ fn view_horizontal(state: &SliderState, frame: &mut Frame, area: Rect, theme: &T
     };
 
     let annotated = crate::annotation::Annotate::new(paragraph, annotation)
-        .focused(state.focused)
-        .disabled(state.disabled);
+        .focused(ctx.focused)
+        .disabled(ctx.disabled);
     frame.render_widget(annotated, area);
 }
 
 /// Renders the slider in vertical orientation.
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-fn view_vertical(state: &SliderState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn view_vertical(
+    state: &SliderState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    ctx: &ViewContext,
+) {
     if area.height == 0 || area.width == 0 {
         return;
     }
 
-    let (label_style, filled_style, empty_style) = compute_styles(state, theme);
+    let (label_style, filled_style, empty_style) = compute_styles(theme, ctx);
 
     let mut lines = Vec::new();
 
@@ -599,17 +607,17 @@ fn view_vertical(state: &SliderState, frame: &mut Frame, area: Rect, theme: &The
     };
 
     let annotated = crate::annotation::Annotate::new(paragraph, annotation)
-        .focused(state.focused)
-        .disabled(state.disabled);
+        .focused(ctx.focused)
+        .disabled(ctx.disabled);
     frame.render_widget(annotated, area);
 }
 
 /// Computes the styles for label, filled, and empty portions.
-fn compute_styles(state: &SliderState, theme: &Theme) -> (Style, Style, Style) {
-    if state.disabled {
+fn compute_styles(theme: &Theme, ctx: &ViewContext) -> (Style, Style, Style) {
+    if ctx.disabled {
         let disabled = theme.disabled_style();
         (disabled, disabled, disabled)
-    } else if state.focused {
+    } else if ctx.focused {
         let label_style = theme.focused_style();
         let filled_style = theme.focused_style();
         let empty_style = theme.normal_style();

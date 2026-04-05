@@ -598,7 +598,7 @@ impl Component for Paginator {
 
         // For Compact style, we need special span-based rendering for arrow dimming
         if state.style == PaginatorStyle::Compact {
-            let spans = render_compact_spans(state, theme);
+            let spans = render_compact_spans(state, theme, ctx);
             let line = Line::from(spans);
             let paragraph = Paragraph::new(line).alignment(Alignment::Center);
             frame.render_widget(paragraph, area);
@@ -711,16 +711,20 @@ fn render_compact(state: &PaginatorState, _theme: &Theme) -> String {
 }
 
 /// Renders the compact style with styled spans for arrow dimming.
-fn render_compact_spans<'a>(state: &PaginatorState, theme: &Theme) -> Vec<Span<'a>> {
-    let text_style = if state.disabled {
+fn render_compact_spans<'a>(
+    state: &PaginatorState,
+    theme: &Theme,
+    ctx: &ViewContext,
+) -> Vec<Span<'a>> {
+    let text_style = if ctx.disabled {
         theme.disabled_style()
-    } else if state.focused {
+    } else if ctx.focused {
         theme.focused_style()
     } else {
         theme.normal_style()
     };
 
-    let dim_style = if state.disabled {
+    let dim_style = if ctx.disabled {
         theme.disabled_style()
     } else {
         theme.border_style()

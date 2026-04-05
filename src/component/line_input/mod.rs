@@ -597,10 +597,6 @@ impl Component for LineInput {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             LineInputMessage::Insert(c) => {
                 // Check max_length before inserting.
@@ -945,7 +941,7 @@ impl Component for LineInput {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
-        view_helpers::render(state, frame, area, theme);
+    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+        view_helpers::render(state, frame, area, theme, ctx);
     }
 }

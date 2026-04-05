@@ -300,20 +300,6 @@ fn test_instance_update() {
     assert_eq!(state.last(), Some(42));
 }
 
-#[test]
-fn test_instance_handle_event_returns_none() {
-    let state = SparklineState::new();
-    let event = Event::key(crossterm::event::KeyCode::Char('a'));
-    assert_eq!(state.handle_event(&event), None);
-}
-
-#[test]
-fn test_instance_dispatch_event_returns_none() {
-    let mut state = SparklineState::new();
-    let event = Event::key(crossterm::event::KeyCode::Char('a'));
-    assert_eq!(state.dispatch_event(&event), None);
-}
-
 // --- Component trait tests ---
 
 #[test]
@@ -321,53 +307,6 @@ fn test_init() {
     let state = Sparkline::init();
     assert!(state.is_empty());
     assert_eq!(state.direction(), &SparklineDirection::LeftToRight);
-    assert!(!state.is_disabled());
-}
-
-#[test]
-fn test_handle_event_returns_none() {
-    let state = SparklineState::with_data(vec![1, 2, 3]);
-    let event = Event::key(crossterm::event::KeyCode::Enter);
-    assert_eq!(
-        Sparkline::handle_event(&state, &event, &ViewContext::default()),
-        None
-    );
-}
-
-#[test]
-fn test_dispatch_event_returns_none() {
-    let mut state = SparklineState::with_data(vec![1, 2, 3]);
-    let event = Event::key(crossterm::event::KeyCode::Char('q'));
-    assert_eq!(
-        Sparkline::dispatch_event(&mut state, &event, &ViewContext::default()),
-        None
-    );
-}
-
-// --- Disableable trait tests ---
-
-#[test]
-fn test_disableable_is_disabled() {
-    let state = SparklineState::new().with_disabled(true);
-    assert!(Sparkline::is_disabled(&state));
-}
-
-#[test]
-fn test_disableable_set_disabled() {
-    let mut state = SparklineState::new();
-    Sparkline::set_disabled(&mut state, true);
-    assert!(state.is_disabled());
-}
-
-#[test]
-fn test_disableable_disable_enable() {
-    let mut state = SparklineState::new();
-
-    Sparkline::disable(&mut state);
-    assert!(Sparkline::is_disabled(&state));
-
-    Sparkline::enable(&mut state);
-    assert!(!Sparkline::is_disabled(&state));
 }
 
 // --- View/snapshot tests ---

@@ -677,10 +677,6 @@ impl Component for SpanTree {
                 None
             }
             _ => {
-                if state.disabled {
-                    return None;
-                }
-
                 let flat = state.flatten();
                 if flat.is_empty() {
                     return None;

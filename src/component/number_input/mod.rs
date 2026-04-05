@@ -462,10 +462,6 @@ impl Component for NumberInput {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             NumberInputMessage::Increment => {
                 let old = state.value;

@@ -15,10 +15,6 @@ impl TextAreaState {
     /// This is the core update logic, extracted from the `Component` impl
     /// for file size management.
     pub(super) fn apply_update(&mut self, msg: TextAreaMessage) -> Option<TextAreaOutput> {
-        if self.disabled {
-            return None;
-        }
-
         match msg {
             // Editing (replaces selection if active)
             TextAreaMessage::Insert(c) => {

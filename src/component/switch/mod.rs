@@ -306,21 +306,14 @@ impl Component for Switch {
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
         match msg {
             SwitchMessage::Toggle => {
-                if state.disabled {
-                    None
+                state.on = !state.on;
+                if state.on {
+                    Some(SwitchOutput::On)
                 } else {
-                    state.on = !state.on;
-                    if state.on {
-                        Some(SwitchOutput::On)
-                    } else {
-                        Some(SwitchOutput::Off)
-                    }
+                    Some(SwitchOutput::Off)
                 }
             }
             SwitchMessage::SetOn(on) => {
-                if state.disabled {
-                    return None;
-                }
                 let changed = state.on != on;
                 state.on = on;
                 if changed {

@@ -2,6 +2,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 use super::{LogViewerState, StatusLogLevel};
+use crate::component::ViewContext;
 use crate::theme::Theme;
 
 /// Renders the search bar area.
@@ -10,8 +11,9 @@ pub(super) fn render_search_bar(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    ctx: &ViewContext,
 ) {
-    let search_style = if state.is_disabled() {
+    let search_style = if ctx.disabled {
         theme.disabled_style()
     } else if state.is_search_focused() {
         theme.focused_style()
@@ -36,7 +38,7 @@ pub(super) fn render_search_bar(
     frame.render_widget(paragraph, area);
 
     // Show cursor when search is focused
-    if state.is_focused() && state.is_search_focused() && !state.is_disabled() {
+    if ctx.focused && state.is_search_focused() && !ctx.disabled {
         let prefix_len = prefix.len() as u16;
         let cursor_x = area.x + prefix_len + state.search_cursor_position() as u16;
         if cursor_x < area.right() {
@@ -51,8 +53,9 @@ pub(super) fn render_filter_bar(
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
+    ctx: &ViewContext,
 ) {
-    let filter_style = if state.is_disabled() {
+    let filter_style = if ctx.disabled {
         theme.disabled_style()
     } else {
         theme.normal_style()
@@ -68,7 +71,7 @@ pub(super) fn render_filter_bar(
     let spans = vec![
         Span::styled(
             format!("1:{} Info ", info_marker),
-            if state.is_disabled() {
+            if ctx.disabled {
                 filter_style
             } else {
                 Style::default().fg(StatusLogLevel::Info.color())
@@ -76,7 +79,7 @@ pub(super) fn render_filter_bar(
         ),
         Span::styled(
             format!("2:{} Success ", success_marker),
-            if state.is_disabled() {
+            if ctx.disabled {
                 filter_style
             } else {
                 Style::default().fg(StatusLogLevel::Success.color())
@@ -84,7 +87,7 @@ pub(super) fn render_filter_bar(
         ),
         Span::styled(
             format!("3:{} Warning ", warning_marker),
-            if state.is_disabled() {
+            if ctx.disabled {
                 filter_style
             } else {
                 Style::default().fg(StatusLogLevel::Warning.color())
@@ -92,7 +95,7 @@ pub(super) fn render_filter_bar(
         ),
         Span::styled(
             format!("4:{} Error", error_marker),
-            if state.is_disabled() {
+            if ctx.disabled {
                 filter_style
             } else {
                 Style::default().fg(StatusLogLevel::Error.color())
@@ -100,7 +103,7 @@ pub(super) fn render_filter_bar(
         ),
         Span::styled(
             follow_indicator,
-            if state.is_disabled() {
+            if ctx.disabled {
                 filter_style
             } else {
                 Style::default()
@@ -116,12 +119,18 @@ pub(super) fn render_filter_bar(
 }
 
 /// Renders the log entries area.
-pub(super) fn render_log(state: &LogViewerState, frame: &mut Frame, area: Rect, theme: &Theme) {
+pub(super) fn render_log(
+    state: &LogViewerState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    ctx: &ViewContext,
+) {
     let visible = state.visible_entries();
 
-    let border_style = if state.is_disabled() {
+    let border_style = if ctx.disabled {
         theme.disabled_style()
-    } else if state.is_focused() && !state.is_search_focused() {
+    } else if ctx.focused && !state.is_search_focused() {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -148,12 +157,13 @@ pub(super) fn render_log(state: &LogViewerState, frame: &mut Frame, area: Rect, 
         return;
     }
 
+    let disabled = ctx.disabled;
     let items: Vec<ListItem> = visible
         .iter()
         .skip(state.scroll_offset())
         .take(inner.height as usize)
         .map(|entry| {
-            let style = if state.is_disabled() {
+            let style = if disabled {
                 theme.disabled_style()
             } else {
                 Style::default().fg(entry.level().color())
@@ -173,7 +183,7 @@ pub(super) fn render_log(state: &LogViewerState, frame: &mut Frame, area: Rect, 
             text.push_str(entry.message());
 
             // Highlight search matches
-            if !state.search_text().is_empty() && !state.is_disabled() {
+            if !state.search_text().is_empty() && !disabled {
                 let is_match = {
                     #[cfg(feature = "regex")]
                     {

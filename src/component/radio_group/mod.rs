@@ -290,7 +290,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled || state.options.is_empty() {
+        if state.options.is_empty() {
             return None;
         }
 

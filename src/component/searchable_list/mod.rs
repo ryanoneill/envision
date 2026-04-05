@@ -786,10 +786,6 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             SearchableListMessage::FilterChanged(text) => {
                 state.filter_text = text.clone();

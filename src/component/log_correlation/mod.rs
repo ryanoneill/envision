@@ -676,10 +676,6 @@ impl Component for LogCorrelation {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             LogCorrelationMessage::AddStream(stream) => {
                 state.streams.push(stream);

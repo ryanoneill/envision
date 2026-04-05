@@ -796,19 +796,6 @@ impl<T: Clone> Component for LoadingList<T> {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        // Block user-initiated navigation/selection when disabled.
-        // Programmatic state changes (SetItems, SetLoading, etc.) still work.
-        if state.disabled {
-            match msg {
-                LoadingListMessage::Up
-                | LoadingListMessage::Down
-                | LoadingListMessage::First
-                | LoadingListMessage::Last
-                | LoadingListMessage::Select => return None,
-                _ => {}
-            }
-        }
-
         match msg {
             LoadingListMessage::SetItems(items) => {
                 // Convert items without a label function - uses Debug if available

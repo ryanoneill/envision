@@ -476,10 +476,6 @@ impl Component for ScrollView {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             ScrollViewMessage::ScrollUp => {
                 if state.scroll.scroll_up() {

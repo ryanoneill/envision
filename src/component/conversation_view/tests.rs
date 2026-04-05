@@ -1,5 +1,4 @@
 use super::*;
-use crate::component::Focusable;
 use crate::input::{Event, KeyCode};
 
 fn focused_state() -> ConversationViewState {

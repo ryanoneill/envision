@@ -785,10 +785,6 @@ impl Component for MultiProgress {
     }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        if state.disabled {
-            return None;
-        }
-
         match msg {
             MultiProgressMessage::Add { id, label } => {
                 if state.add(&id, label) {

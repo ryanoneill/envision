@@ -178,7 +178,7 @@ impl Component for Button {
         ButtonState::default()
     }
 
-    fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
+    fn update(_state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
         match msg {
             ButtonMessage::Press => Some(ButtonOutput::Pressed),
         }

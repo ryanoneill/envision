@@ -612,7 +612,12 @@ pub struct Tree<T>(std::marker::PhantomData<T>);
 
 impl<T: Clone + 'static> Tree<T> {
     /// Renders the tree to a list of styled lines.
-    fn render_lines(state: &TreeState<T>, width: u16, theme: &Theme) -> Vec<Line<'static>> {
+    fn render_lines(
+        state: &TreeState<T>,
+        width: u16,
+        theme: &Theme,
+        ctx: &ViewContext,
+    ) -> Vec<Line<'static>> {
         let flat = state.flatten();
         let mut lines = Vec::with_capacity(flat.len());
 
@@ -622,13 +627,13 @@ impl<T: Clone + 'static> Tree<T> {
 
         // Pre-compute styles to avoid per-node method calls.
         let normal_style = theme.normal_style();
-        let disabled_style = if state.disabled {
+        let disabled_style = if ctx.disabled {
             Some(theme.disabled_style())
         } else {
             None
         };
-        let highlight_style = if !state.disabled {
-            Some(theme.selected_highlight_style(state.focused))
+        let highlight_style = if !ctx.disabled {
+            Some(theme.selected_highlight_style(ctx.focused))
         } else {
             None
         };
@@ -696,10 +701,6 @@ impl<T: Clone + 'static> Component for Tree<T> {
                 return Some(TreeOutput::FilterChanged(String::new()));
             }
             _ => {}
-        }
-
-        if state.disabled {
-            return None;
         }
 
         let flat = state.flatten();
@@ -820,7 +821,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
     }
 
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        let all_lines = Self::render_lines(state, area.width, theme);
+        let all_lines = Self::render_lines(state, area.width, theme, ctx);
         let viewport_height = area.height as usize;
 
         // Use a local ScrollState for scrollbar rendering and virtual scrolling

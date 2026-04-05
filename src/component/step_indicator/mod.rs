@@ -573,14 +573,14 @@ impl Component for StepIndicator {
                 Some(StepIndicatorOutput::Reset)
             }
             StepIndicatorMessage::FocusNext => {
-                if !state.focused || state.disabled || state.steps.is_empty() {
+                if state.steps.is_empty() {
                     return None;
                 }
                 state.focused_index = (state.focused_index + 1) % state.steps.len();
                 Some(StepIndicatorOutput::FocusChanged(state.focused_index))
             }
             StepIndicatorMessage::FocusPrev => {
-                if !state.focused || state.disabled || state.steps.is_empty() {
+                if state.steps.is_empty() {
                     return None;
                 }
                 state.focused_index = state
@@ -590,20 +590,20 @@ impl Component for StepIndicator {
                 Some(StepIndicatorOutput::FocusChanged(state.focused_index))
             }
             StepIndicatorMessage::Select => {
-                if !state.focused || state.disabled || state.steps.is_empty() {
+                if state.steps.is_empty() {
                     return None;
                 }
                 Some(StepIndicatorOutput::Selected(state.focused_index))
             }
             StepIndicatorMessage::First => {
-                if !state.focused || state.disabled || state.steps.is_empty() {
+                if state.steps.is_empty() {
                     return None;
                 }
                 state.focused_index = 0;
                 Some(StepIndicatorOutput::FocusChanged(0))
             }
             StepIndicatorMessage::Last => {
-                if !state.focused || state.disabled || state.steps.is_empty() {
+                if state.steps.is_empty() {
                     return None;
                 }
                 state.focused_index = state.steps.len() - 1;
@@ -673,10 +673,10 @@ impl Component for StepIndicator {
 
         match state.orientation {
             StepOrientation::Horizontal => {
-                render_horizontal(state, frame, inner, theme);
+                render_horizontal(state, frame, inner, theme, ctx.focused);
             }
             StepOrientation::Vertical => {
-                render_vertical(state, frame, inner, theme);
+                render_vertical(state, frame, inner, theme, ctx.focused);
             }
         }
     }
@@ -697,7 +697,13 @@ fn step_style(status: &StepStatus, is_focused_step: bool, theme: &Theme) -> Styl
     }
 }
 
-fn render_horizontal(state: &StepIndicatorState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_horizontal(
+    state: &StepIndicatorState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+) {
     let mut spans = Vec::new();
 
     for (i, step) in state.steps.iter().enumerate() {
@@ -708,7 +714,7 @@ fn render_horizontal(state: &StepIndicatorState, frame: &mut Frame, area: Rect, 
             ));
         }
 
-        let is_focused_step = state.focused && i == state.focused_index;
+        let is_focused_step = focused && i == state.focused_index;
         let style = step_style(&step.status, is_focused_step, theme);
 
         spans.push(Span::styled(
@@ -722,7 +728,13 @@ fn render_horizontal(state: &StepIndicatorState, frame: &mut Frame, area: Rect, 
     frame.render_widget(paragraph, area);
 }
 
-fn render_vertical(state: &StepIndicatorState, frame: &mut Frame, area: Rect, theme: &Theme) {
+fn render_vertical(
+    state: &StepIndicatorState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    focused: bool,
+) {
     let mut lines = Vec::new();
 
     for (i, step) in state.steps.iter().enumerate() {
@@ -730,7 +742,7 @@ fn render_vertical(state: &StepIndicatorState, frame: &mut Frame, area: Rect, th
             lines.push(Line::from(Span::styled("│", theme.normal_style())));
         }
 
-        let is_focused_step = state.focused && i == state.focused_index;
+        let is_focused_step = focused && i == state.focused_index;
         let style = step_style(&step.status, is_focused_step, theme);
 
         lines.push(Line::from(Span::styled(

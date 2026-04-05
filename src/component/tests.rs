@@ -8,7 +8,6 @@ struct TestCounter;
 #[derive(Clone, Default)]
 struct TestCounterState {
     value: i32,
-    focused: bool,
     visible: bool,
 }
 
@@ -31,7 +30,6 @@ impl Component for TestCounter {
     fn init() -> Self::State {
         TestCounterState {
             value: 0,
-            focused: false,
             visible: true,
         }
     }
@@ -56,16 +54,6 @@ impl Component for TestCounter {
     }
 }
 
-impl Focusable for TestCounter {
-    fn is_focused(state: &Self::State) -> bool {
-        state.focused
-    }
-
-    fn set_focused(state: &mut Self::State, focused: bool) {
-        state.focused = focused;
-    }
-}
-
 impl Toggleable for TestCounter {
     fn is_visible(state: &Self::State) -> bool {
         state.visible
@@ -82,7 +70,6 @@ impl Toggleable for TestCounter {
 fn test_component_init() {
     let state = TestCounter::init();
     assert_eq!(state.value, 0);
-    assert!(!state.focused);
     assert!(state.visible);
 }
 
@@ -118,42 +105,6 @@ fn test_component_view() {
     assert!(text.contains("Count: 0"));
 }
 
-// Focusable trait tests
-
-#[test]
-fn test_focusable_is_focused() {
-    let state = TestCounter::init();
-    assert!(!TestCounter::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_set_focused() {
-    let mut state = TestCounter::init();
-
-    TestCounter::set_focused(&mut state, true);
-    assert!(TestCounter::is_focused(&state));
-
-    TestCounter::set_focused(&mut state, false);
-    assert!(!TestCounter::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_focus() {
-    let mut state = TestCounter::init();
-
-    TestCounter::focus(&mut state);
-    assert!(TestCounter::is_focused(&state));
-}
-
-#[test]
-fn test_focusable_blur() {
-    let mut state = TestCounter::init();
-    TestCounter::set_focused(&mut state, true);
-
-    TestCounter::blur(&mut state);
-    assert!(!TestCounter::is_focused(&state));
-}
-
 // Toggleable trait tests
 
 #[test]
@@ -186,123 +137,12 @@ fn test_toggleable_toggle() {
 }
 
 #[test]
-fn test_toggleable_show() {
-    let mut state = TestCounter::init();
-    TestCounter::set_visible(&mut state, false);
-
-    TestCounter::show(&mut state);
-    assert!(TestCounter::is_visible(&state));
-}
-
-#[test]
-fn test_toggleable_hide() {
+fn test_toggleable_show_hide() {
     let mut state = TestCounter::init();
 
     TestCounter::hide(&mut state);
     assert!(!TestCounter::is_visible(&state));
-}
 
-// Test component with unit Output type
-struct NoOutputComponent;
-
-#[derive(Clone, Default)]
-struct NoOutputState {
-    data: String,
-}
-
-#[derive(Clone)]
-enum NoOutputMsg {
-    SetData(String),
-}
-
-impl Component for NoOutputComponent {
-    type State = NoOutputState;
-    type Message = NoOutputMsg;
-    type Output = ();
-
-    fn init() -> Self::State {
-        NoOutputState::default()
-    }
-
-    fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-        match msg {
-            NoOutputMsg::SetData(data) => state.data = data,
-        }
-        None // No output needed
-    }
-
-    fn view(
-        _state: &Self::State,
-        _frame: &mut Frame,
-        _area: Rect,
-        _theme: &Theme,
-        _ctx: &ViewContext,
-    ) {
-    }
-}
-
-#[test]
-fn test_component_non_clone_state() {
-    // Verify that Component::State does not require Clone
-    struct NonCloneComponent;
-
-    // Intentionally does NOT derive Clone
-    struct NonCloneState {
-        value: i32,
-    }
-
-    #[derive(Clone)]
-    enum NonCloneMsg {
-        Set(i32),
-    }
-
-    #[derive(Clone)]
-    enum NonCloneOutput {
-        Changed(i32),
-    }
-
-    impl Component for NonCloneComponent {
-        type State = NonCloneState;
-        type Message = NonCloneMsg;
-        type Output = NonCloneOutput;
-
-        fn init() -> Self::State {
-            NonCloneState { value: 0 }
-        }
-
-        fn update(state: &mut Self::State, msg: Self::Message) -> Option<Self::Output> {
-            match msg {
-                NonCloneMsg::Set(v) => {
-                    state.value = v;
-                    Some(NonCloneOutput::Changed(v))
-                }
-            }
-        }
-
-        fn view(
-            state: &Self::State,
-            frame: &mut Frame,
-            area: Rect,
-            _theme: &Theme,
-            _ctx: &ViewContext,
-        ) {
-            let text = format!("Value: {}", state.value);
-            frame.render_widget(Paragraph::new(text), area);
-        }
-    }
-
-    let mut state = NonCloneComponent::init();
-    assert_eq!(state.value, 0);
-
-    let output = NonCloneComponent::update(&mut state, NonCloneMsg::Set(42));
-    assert_eq!(state.value, 42);
-    assert!(matches!(output, Some(NonCloneOutput::Changed(42))));
-}
-
-#[test]
-fn test_component_no_output() {
-    let mut state = NoOutputComponent::init();
-    let output = NoOutputComponent::update(&mut state, NoOutputMsg::SetData("test".into()));
-    assert!(output.is_none());
-    assert_eq!(state.data, "test");
+    TestCounter::show(&mut state);
+    assert!(TestCounter::is_visible(&state));
 }

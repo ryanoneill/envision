@@ -1,11 +1,8 @@
 use super::*;
 use crate::component::test_utils;
-use crate::component::Focusable;
 
 fn focused_state() -> ConversationViewState {
-    let mut state = ConversationViewState::new();
-    ConversationView::set_focused(&mut state, true);
-    state
+    ConversationViewState::new()
 }
 
 // =============================================================================

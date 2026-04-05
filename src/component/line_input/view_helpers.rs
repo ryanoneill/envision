@@ -5,6 +5,7 @@ use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::chunking::{chunk_buffer, cursor_to_visual};
 use super::LineInputState;
+use crate::component::ViewContext;
 use crate::theme::Theme;
 
 /// Renders the LineInput component.
@@ -13,18 +14,19 @@ pub(super) fn render(
     frame: &mut Frame,
     area: ratatui::layout::Rect,
     theme: &Theme,
+    ctx: &ViewContext,
 ) {
     crate::annotation::with_registry(|reg| {
         reg.register(
             area,
             crate::annotation::Annotation::line_input("line_input")
                 .with_value(state.value())
-                .with_focus(state.focused)
-                .with_disabled(state.disabled),
+                .with_focus(ctx.focused)
+                .with_disabled(ctx.disabled),
         );
     });
 
-    let border_style = if state.focused {
+    let border_style = if ctx.focused {
         theme.focused_border_style()
     } else {
         theme.border_style()
@@ -43,9 +45,9 @@ pub(super) fn render(
     let width = inner.width as usize;
     let is_placeholder = state.buffer.is_empty();
 
-    let base_style = if state.disabled {
+    let base_style = if ctx.disabled {
         theme.disabled_style()
-    } else if state.focused {
+    } else if ctx.focused {
         theme.focused_style()
     } else if is_placeholder {
         theme.placeholder_style()
@@ -100,7 +102,7 @@ pub(super) fn render(
     frame.render_widget(paragraph, area);
 
     // Set cursor position when focused
-    if state.focused && !state.disabled && inner.width > 0 && inner.height > 0 {
+    if ctx.focused && !ctx.disabled && inner.width > 0 && inner.height > 0 {
         let (cursor_row, cursor_col) = cursor_to_visual(&state.buffer, state.cursor, width);
 
         let cursor_x = inner.x + cursor_col as u16;
