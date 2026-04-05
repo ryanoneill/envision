@@ -464,12 +464,18 @@ impl LineInputState {
 
     /// Maps an input event to a message (instance method).
     pub fn handle_event(&self, event: &Event) -> Option<LineInputMessage> {
-        LineInput::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        LineInput::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event by mapping and updating (instance method).
     pub fn dispatch_event(&mut self, event: &Event) -> Option<LineInputOutput> {
-        LineInput::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        LineInput::dispatch_event(self, event, &ctx)
     }
 
     /// Updates state with a message (instance method).

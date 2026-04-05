@@ -537,12 +537,18 @@ impl CanvasState {
 
     /// Maps an input event to a canvas message.
     pub fn handle_event(&self, event: &crate::input::Event) -> Option<CanvasMessage> {
-        Canvas::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Canvas::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &crate::input::Event) -> Option<()> {
-        Canvas::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Canvas::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.

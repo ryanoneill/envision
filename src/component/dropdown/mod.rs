@@ -509,7 +509,10 @@ impl DropdownState {
     /// assert_eq!(state.handle_event(&event), Some(DropdownMessage::Down));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<DropdownMessage> {
-        Dropdown::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Dropdown::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -528,7 +531,10 @@ impl DropdownState {
     /// assert_eq!(output, Some(DropdownOutput::SelectionChanged(1)));
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<DropdownOutput> {
-        Dropdown::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Dropdown::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the dropdown state with a message, returning any output.

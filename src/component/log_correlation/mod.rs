@@ -651,12 +651,18 @@ impl LogCorrelationState {
 
     /// Maps an input event to a log correlation message.
     pub fn handle_event(&self, event: &Event) -> Option<LogCorrelationMessage> {
-        LogCorrelation::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        LogCorrelation::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<LogCorrelationOutput> {
-        LogCorrelation::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        LogCorrelation::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.

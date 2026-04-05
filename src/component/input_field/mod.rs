@@ -443,12 +443,18 @@ impl InputFieldState {
 
     /// Maps an input event to an input field message.
     pub fn handle_event(&self, event: &Event) -> Option<InputFieldMessage> {
-        InputField::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        InputField::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<InputFieldOutput> {
-        InputField::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        InputField::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the input field state with a message, returning any output.

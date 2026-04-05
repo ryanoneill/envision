@@ -376,7 +376,7 @@ impl BigTextState {
     /// assert_eq!(state.handle_event(&Event::key(KeyCode::Enter)), None);
     /// ```
     pub fn handle_event(&self, event: &crate::input::Event) -> Option<BigTextMessage> {
-        BigText::handle_event(self, event)
+        BigText::handle_event(self, event, &ViewContext::default())
     }
 
     /// Updates the state with a message, returning any output (instance method).
@@ -410,7 +410,7 @@ impl BigTextState {
     /// assert_eq!(state.dispatch_event(&Event::key(KeyCode::Enter)), None);
     /// ```
     pub fn dispatch_event(&mut self, event: &crate::input::Event) -> Option<()> {
-        BigText::dispatch_event(self, event)
+        BigText::dispatch_event(self, event, &ViewContext::default())
     }
 }
 

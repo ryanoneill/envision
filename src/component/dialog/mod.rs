@@ -508,12 +508,12 @@ impl DialogState {
 
     /// Maps an input event to a dialog message.
     pub fn handle_event(&self, event: &Event) -> Option<DialogMessage> {
-        Dialog::handle_event(self, event)
+        Dialog::handle_event(self, event, &ViewContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<DialogOutput> {
-        Dialog::dispatch_event(self, event)
+        Dialog::dispatch_event(self, event, &ViewContext::default())
     }
 
     /// Updates the dialog state with a message, returning any output.
@@ -624,7 +624,11 @@ impl Component for Dialog {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        _ctx: &ViewContext,
+    ) -> Option<Self::Message> {
         if !state.visible || state.disabled {
             return None;
         }

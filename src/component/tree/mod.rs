@@ -635,12 +635,18 @@ impl<T: Clone + 'static> TreeState<T> {
 
     /// Maps an input event to a tree message.
     pub fn handle_event(&self, event: &Event) -> Option<TreeMessage> {
-        Tree::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Tree::<T>::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<TreeOutput> {
-        Tree::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Tree::<T>::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the tree state with a message, returning any output.
@@ -879,17 +885,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         _state: &Self::State,
         event: &Event,
         ctx: &ViewContext,

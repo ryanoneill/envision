@@ -704,7 +704,10 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
     /// assert_eq!(state.handle_event(&event), Some(SearchableListMessage::FilterClear));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<SearchableListMessage> {
-        SearchableList::<T>::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        SearchableList::<T>::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -724,7 +727,10 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
     /// assert!(matches!(output, Some(SearchableListOutput::FilterChanged(_))));
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<SearchableListOutput<T>> {
-        SearchableList::<T>::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        SearchableList::<T>::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.
@@ -845,17 +851,7 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
         SearchableListState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         state: &Self::State,
         event: &Event,
         ctx: &ViewContext,

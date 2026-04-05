@@ -640,12 +640,18 @@ impl TimelineState {
 
     /// Maps an input event to a timeline message.
     pub fn handle_event(&self, event: &Event) -> Option<TimelineMessage> {
-        Timeline::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Timeline::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<TimelineOutput> {
-        Timeline::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Timeline::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.
@@ -680,17 +686,7 @@ impl Component for Timeline {
         TimelineState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         state: &Self::State,
         event: &Event,
         ctx: &ViewContext,

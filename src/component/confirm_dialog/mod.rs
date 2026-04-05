@@ -500,7 +500,7 @@ impl ConfirmDialogState {
     /// assert_eq!(state.handle_event(&event), Some(ConfirmDialogMessage::Close));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<ConfirmDialogMessage> {
-        ConfirmDialog::handle_event(self, event)
+        ConfirmDialog::handle_event(self, event, &ViewContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -519,7 +519,7 @@ impl ConfirmDialogState {
     /// assert!(!state.is_visible());
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<ConfirmDialogOutput> {
-        ConfirmDialog::dispatch_event(self, event)
+        ConfirmDialog::dispatch_event(self, event, &ViewContext::default())
     }
 
     /// Updates the dialog state with a message, returning any output.
@@ -648,7 +648,11 @@ impl Component for ConfirmDialog {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
+    fn handle_event(
+        state: &Self::State,
+        event: &Event,
+        _ctx: &ViewContext,
+    ) -> Option<Self::Message> {
         if !state.visible || state.disabled {
             return None;
         }

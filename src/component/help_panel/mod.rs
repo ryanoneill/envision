@@ -496,12 +496,18 @@ impl HelpPanelState {
 
     /// Maps an input event to a help panel message.
     pub fn handle_event(&self, event: &Event) -> Option<HelpPanelMessage> {
-        HelpPanel::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        HelpPanel::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
-        HelpPanel::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        HelpPanel::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.

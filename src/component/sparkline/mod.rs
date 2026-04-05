@@ -442,14 +442,14 @@ impl SparklineState {
     ///
     /// Always returns `None` because sparkline is display-only.
     pub fn handle_event(&self, event: &Event) -> Option<SparklineMessage> {
-        Sparkline::handle_event(self, event)
+        Sparkline::handle_event(self, event, &ViewContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
     ///
     /// Always returns `None` because sparkline is display-only.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<SparklineOutput> {
-        Sparkline::dispatch_event(self, event)
+        Sparkline::dispatch_event(self, event, &ViewContext::default())
     }
 }
 

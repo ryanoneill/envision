@@ -2,7 +2,7 @@ use super::{
     Focus, InputFieldState, LogViewer, LogViewerMessage, LogViewerOutput, StatusLogEntry,
     StatusLogLevel,
 };
-use crate::component::Component;
+use crate::component::{Component, ViewContext};
 use crate::input::Event;
 use crate::scroll::ScrollState;
 
@@ -877,12 +877,18 @@ impl LogViewerState {
 
     /// Maps an input event to a log viewer message.
     pub fn handle_event(&self, event: &Event) -> Option<LogViewerMessage> {
-        LogViewer::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        LogViewer::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<LogViewerOutput> {
-        LogViewer::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        LogViewer::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.

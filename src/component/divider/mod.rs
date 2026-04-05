@@ -378,7 +378,7 @@ impl DividerState {
     /// assert!(state.handle_event(&Event::key(KeyCode::Enter)).is_none());
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<DividerMessage> {
-        Divider::handle_event(self, event)
+        Divider::handle_event(self, event, &ViewContext::default())
     }
 
     /// Dispatches an event by mapping it to a message and updating state.
@@ -397,7 +397,7 @@ impl DividerState {
     /// assert!(state.dispatch_event(&Event::key(KeyCode::Enter)).is_none());
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
-        Divider::dispatch_event(self, event)
+        Divider::dispatch_event(self, event, &ViewContext::default())
     }
 }
 

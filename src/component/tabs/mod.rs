@@ -301,12 +301,18 @@ impl<T: Clone + std::fmt::Display + 'static> TabsState<T> {
 
     /// Maps an input event to a tabs message.
     pub fn handle_event(&self, event: &Event) -> Option<TabsMessage> {
-        Tabs::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Tabs::<T>::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<TabsOutput<T>> {
-        Tabs::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Tabs::<T>::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the tabs state with a message, returning any output.
@@ -428,17 +434,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         _state: &Self::State,
         event: &Event,
         ctx: &ViewContext,

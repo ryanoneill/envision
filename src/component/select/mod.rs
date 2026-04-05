@@ -445,7 +445,10 @@ impl SelectState {
     /// assert_eq!(state.handle_event(&event), Some(SelectMessage::Toggle));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<SelectMessage> {
-        Select::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Select::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -464,7 +467,10 @@ impl SelectState {
     /// assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<SelectOutput> {
-        Select::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Select::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the select state with a message, returning any output.
@@ -614,17 +620,7 @@ impl Component for Select {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         state: &Self::State,
         event: &Event,
         ctx: &ViewContext,

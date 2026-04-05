@@ -816,12 +816,18 @@ impl<T: Clone + 'static> LoadingListState<T> {
 
     /// Maps an input event to a loading list message.
     pub fn handle_event(&self, event: &Event) -> Option<LoadingListMessage<T>> {
-        LoadingList::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        LoadingList::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<LoadingListOutput<T>> {
-        LoadingList::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        LoadingList::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the loading list state with a message, returning any output.

@@ -557,12 +557,12 @@ impl HistogramState {
 
     /// Maps an input event to a histogram message.
     pub fn handle_event(&self, event: &Event) -> Option<HistogramMessage> {
-        Histogram::handle_event(self, event)
+        Histogram::handle_event(self, event, &ViewContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
-        Histogram::dispatch_event(self, event)
+        Histogram::dispatch_event(self, event, &ViewContext::default())
     }
 
     /// Updates the state with a message, returning any output.
@@ -621,7 +621,11 @@ impl Component for Histogram {
         HistogramState::default()
     }
 
-    fn handle_event(_state: &Self::State, _event: &Event) -> Option<Self::Message> {
+    fn handle_event(
+        _state: &Self::State,
+        _event: &Event,
+        _ctx: &ViewContext,
+    ) -> Option<Self::Message> {
         // Display-only component; no event handling.
         None
     }

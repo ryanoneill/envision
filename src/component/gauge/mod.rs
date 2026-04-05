@@ -502,14 +502,14 @@ impl GaugeState {
     ///
     /// Since Gauge is display-only, this always returns `None`.
     pub fn handle_event(&self, event: &crate::input::Event) -> Option<GaugeMessage> {
-        Gauge::handle_event(self, event)
+        Gauge::handle_event(self, event, &ViewContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
     ///
     /// Since Gauge is display-only, this always returns `None`.
     pub fn dispatch_event(&mut self, event: &crate::input::Event) -> Option<GaugeOutput> {
-        Gauge::dispatch_event(self, event)
+        Gauge::dispatch_event(self, event, &ViewContext::default())
     }
 }
 

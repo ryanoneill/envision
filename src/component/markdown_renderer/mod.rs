@@ -337,7 +337,10 @@ impl MarkdownRendererState {
     /// assert_eq!(msg, Some(MarkdownRendererMessage::ScrollDown));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<MarkdownRendererMessage> {
-        MarkdownRenderer::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        MarkdownRenderer::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -355,7 +358,10 @@ impl MarkdownRendererState {
     /// assert_eq!(state.scroll_offset(), 1);
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) {
-        MarkdownRenderer::dispatch_event(self, event);
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        MarkdownRenderer::dispatch_event(self, event, &ctx);
     }
 
     /// Updates the state with a message.

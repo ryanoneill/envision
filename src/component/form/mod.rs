@@ -456,7 +456,10 @@ impl FormState {
     /// assert_eq!(state.handle_event(&event), Some(FormMessage::FocusNext));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<FormMessage> {
-        Form::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Form::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -474,7 +477,10 @@ impl FormState {
     /// assert!(matches!(output, Some(FormOutput::FieldChanged(_, FormValue::Text(_)))));
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<FormOutput> {
-        Form::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Form::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the form state with a message, returning any output.

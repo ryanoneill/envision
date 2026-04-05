@@ -559,12 +559,18 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
 
     /// Maps an input event to a selectable list message.
     pub fn handle_event(&self, event: &Event) -> Option<SelectableListMessage> {
-        SelectableList::<T>::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        SelectableList::<T>::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<SelectableListOutput<T>> {
-        SelectableList::<T>::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        SelectableList::<T>::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the selectable list state with a message, returning any output.
@@ -595,17 +601,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
         SelectableListState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         _state: &Self::State,
         event: &Event,
         ctx: &ViewContext,

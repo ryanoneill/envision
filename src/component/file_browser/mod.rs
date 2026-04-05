@@ -549,12 +549,18 @@ impl FileBrowserState {
 
     /// Maps an input event to a file browser message.
     pub fn handle_event(&self, event: &Event) -> Option<FileBrowserMessage> {
-        FileBrowser::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        FileBrowser::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<FileBrowserOutput> {
-        FileBrowser::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        FileBrowser::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.

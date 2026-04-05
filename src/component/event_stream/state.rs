@@ -1,6 +1,6 @@
 use super::types::{EventLevel, StreamEvent};
 use super::{EventStream, EventStreamMessage, EventStreamOutput, Focus};
-use crate::component::{Component, InputFieldState};
+use crate::component::{Component, InputFieldState, ViewContext};
 use crate::input::Event;
 use crate::scroll::ScrollState;
 
@@ -697,12 +697,18 @@ impl EventStreamState {
 
     /// Maps an input event to an event stream message.
     pub fn handle_event(&self, event: &Event) -> Option<EventStreamMessage> {
-        EventStream::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        EventStream::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<EventStreamOutput> {
-        EventStream::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        EventStream::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.
