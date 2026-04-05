@@ -374,38 +374,6 @@ fn test_backtab_maps_to_prev() {
 }
 
 // =============================================================================
-// Sparkline data conversion (delegated to render module, tested there too)
-// =============================================================================
-
-#[test]
-fn test_series_to_sparkline_data() {
-    let s = DataSeries::new("Test", vec![0.0, 50.0, 100.0]);
-    let data = render::series_to_sparkline_data(&s, 50);
-    assert_eq!(data, vec![0, 50, 100]);
-}
-
-#[test]
-fn test_series_to_sparkline_data_constant() {
-    let s = DataSeries::new("Test", vec![5.0, 5.0, 5.0]);
-    let data = render::series_to_sparkline_data(&s, 50);
-    assert_eq!(data, vec![50, 50, 50]);
-}
-
-#[test]
-fn test_series_to_sparkline_data_bounded() {
-    let s = DataSeries::new("Test", vec![1.0, 2.0, 3.0, 4.0, 5.0]);
-    let data = render::series_to_sparkline_data(&s, 3);
-    assert_eq!(data.len(), 3); // Only last 3 points
-}
-
-#[test]
-fn test_series_to_sparkline_data_empty() {
-    let s = DataSeries::new("Test", vec![]);
-    let data = render::series_to_sparkline_data(&s, 50);
-    assert!(data.is_empty());
-}
-
-// =============================================================================
 // Instance methods
 // =============================================================================
 
@@ -564,6 +532,33 @@ fn test_single_series_cycling() {
     let output = Chart::update(&mut state, ChartMessage::NextSeries);
     assert_eq!(state.active_series(), 0);
     assert_eq!(output, Some(ChartOutput::ActiveSeriesChanged(0)));
+}
+
+// =============================================================================
+// Line chart with thresholds (now supported via shared-axis rendering)
+// =============================================================================
+
+#[test]
+fn test_render_line_chart_with_thresholds() {
+    let state = ChartState::line(sample_series()).with_threshold(25.0, "Target", Color::Yellow);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_render_line_chart_multi_series_overlay() {
+    // Verify multi-series line chart renders (overlay, not stacked)
+    let state = ChartState::line(sample_series()).with_title("Multi-Series Line");
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
 }
 
 // Annotation tests

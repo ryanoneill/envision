@@ -1,9 +1,11 @@
 //! Chart components for data visualization.
 //!
-//! Provides line charts (sparkline with labels), bar charts
-//! (horizontal/vertical), area charts, and scatter plots with data series,
-//! labels, colors, threshold lines, manual scaling, and auto-scaling axes.
-//! State is stored in [`ChartState`] and updated via [`ChartMessage`].
+//! Provides line charts, bar charts (horizontal/vertical), area charts,
+//! and scatter plots with data series, labels, colors, threshold lines,
+//! manual scaling, and auto-scaling axes. Line, area, and scatter charts
+//! use braille markers for high-resolution rendering with multi-series
+//! overlay on shared axes. State is stored in [`ChartState`] and updated
+//! via [`ChartMessage`].
 //!
 //! # Example
 //!
@@ -56,7 +58,7 @@ pub struct DataSeries {
     derive(serde::Serialize, serde::Deserialize)
 )]
 pub enum ChartKind {
-    /// A line chart (sparkline-style).
+    /// A line chart using braille markers with shared axes.
     Line,
     /// A vertical bar chart.
     BarVertical,
@@ -752,9 +754,11 @@ impl ChartState {
 
 /// A chart component for data visualization.
 ///
-/// Supports line charts (sparkline-style), vertical bar charts, horizontal
-/// bar charts, area charts (filled line), and scatter plots with multiple
-/// data series, threshold lines, and manual Y-axis scaling.
+/// Supports line charts, vertical bar charts, horizontal bar charts,
+/// area charts (filled line), and scatter plots with multiple data series,
+/// threshold lines, and manual Y-axis scaling. Line, area, and scatter
+/// charts use braille markers for high-resolution rendering with
+/// multi-series overlay on shared axes.
 ///
 /// # Key Bindings
 ///
@@ -903,14 +907,6 @@ impl Component for Chart {
         };
 
         match state.kind {
-            ChartKind::Line => render::render_line_chart(
-                state,
-                frame,
-                chart_area,
-                theme,
-                ctx.focused,
-                ctx.disabled,
-            ),
             ChartKind::BarVertical => render::render_bar_chart(
                 state,
                 frame,
@@ -929,14 +925,16 @@ impl Component for Chart {
                 ctx.focused,
                 ctx.disabled,
             ),
-            ChartKind::Area | ChartKind::Scatter => render::render_shared_axis_chart(
-                state,
-                frame,
-                chart_area,
-                theme,
-                ctx.focused,
-                ctx.disabled,
-            ),
+            ChartKind::Line | ChartKind::Area | ChartKind::Scatter => {
+                render::render_shared_axis_chart(
+                    state,
+                    frame,
+                    chart_area,
+                    theme,
+                    ctx.focused,
+                    ctx.disabled,
+                )
+            }
         }
     }
 }

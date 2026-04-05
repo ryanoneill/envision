@@ -1,16 +1,16 @@
 //! Rendering functions for the Chart component.
 //!
 //! Extracted from the main chart module to keep file sizes manageable.
-//! Contains renderers for line (sparkline), bar, area, and scatter charts,
-//! as well as legend, axis labels, and threshold line rendering.
+//! Contains renderers for bar charts and shared-axis charts (line, area,
+//! scatter) using braille markers, as well as legend and threshold rendering.
 
 use ratatui::prelude::*;
 use ratatui::widgets::{
     Axis as RatatuiAxis, Bar, BarChart, BarGroup, Chart as RatatuiChart, Dataset, GraphType,
-    Paragraph, Sparkline,
+    Paragraph,
 };
 
-use super::{ChartKind, ChartState, DataSeries};
+use super::{ChartKind, ChartState};
 use crate::theme::Theme;
 
 /// Renders the legend showing series labels and colors.
@@ -36,124 +36,6 @@ pub(super) fn render_legend(state: &ChartState, frame: &mut Frame, area: Rect) {
     let line = Line::from(spans);
     let paragraph = Paragraph::new(line).alignment(Alignment::Center);
     frame.render_widget(paragraph, area);
-}
-
-/// Renders a line chart using sparkline.
-pub(super) fn render_line_chart(
-    state: &ChartState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    _focused: bool,
-    disabled: bool,
-) {
-    if state.series.is_empty() {
-        return;
-    }
-
-    // Show y-axis labels on the left
-    let y_label_width = if state.y_label.is_some() { 8u16 } else { 0 };
-
-    let (y_area, chart_area) = if y_label_width > 0 {
-        let chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([Constraint::Length(y_label_width), Constraint::Min(1)])
-            .split(area);
-        (Some(chunks[0]), chunks[1])
-    } else {
-        (None, area)
-    };
-
-    // Render y-axis min/max labels
-    if let Some(y_area) = y_area {
-        let global_max = state.effective_max();
-        let global_min = state.effective_min();
-        let max_text = format!("{:.1}", global_max);
-        let min_text = format!("{:.1}", global_min);
-
-        if y_area.height >= 2 {
-            let p_max = Paragraph::new(max_text)
-                .style(Style::default().fg(Color::DarkGray))
-                .alignment(Alignment::Right);
-            frame.render_widget(p_max, Rect::new(y_area.x, y_area.y, y_area.width, 1));
-
-            let p_min = Paragraph::new(min_text)
-                .style(Style::default().fg(Color::DarkGray))
-                .alignment(Alignment::Right);
-            frame.render_widget(
-                p_min,
-                Rect::new(y_area.x, y_area.y + y_area.height - 1, y_area.width, 1),
-            );
-        }
-    }
-
-    // For multi-series, stack sparklines vertically
-    if state.series.len() == 1 || chart_area.height < 2 {
-        // Single series: full area sparkline
-        let series = &state.series[state.active_series];
-        let data = series_to_sparkline_data(series, state.max_display_points);
-        let style = if disabled {
-            theme.disabled_style()
-        } else {
-            Style::default().fg(series.color())
-        };
-        let sparkline = Sparkline::default().data(&data).style(style);
-        frame.render_widget(sparkline, chart_area);
-    } else {
-        // Multi-series: divide height
-        let count = state.series.len() as u16;
-        let constraints: Vec<Constraint> = (0..count)
-            .map(|_| Constraint::Ratio(1, count as u32))
-            .collect();
-
-        let areas = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(constraints)
-            .split(chart_area);
-
-        for (i, series) in state.series.iter().enumerate() {
-            if let Some(sparkline_area) = areas.get(i) {
-                let data = series_to_sparkline_data(series, state.max_display_points);
-                let style = if disabled {
-                    theme.disabled_style()
-                } else if i == state.active_series {
-                    Style::default()
-                        .fg(series.color())
-                        .add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default().fg(series.color())
-                };
-                let sparkline = Sparkline::default().data(&data).style(style);
-                frame.render_widget(sparkline, *sparkline_area);
-            }
-        }
-    }
-}
-
-/// Converts a data series to sparkline-compatible u64 data.
-pub(super) fn series_to_sparkline_data(series: &DataSeries, max_points: usize) -> Vec<u64> {
-    let values = if series.values().len() > max_points {
-        &series.values()[series.values().len() - max_points..]
-    } else {
-        series.values()
-    };
-
-    if values.is_empty() {
-        return Vec::new();
-    }
-
-    let min = values.iter().copied().reduce(f64::min).unwrap_or(0.0);
-    let max = values.iter().copied().reduce(f64::max).unwrap_or(0.0);
-    let range = max - min;
-
-    if range == 0.0 {
-        return values.iter().map(|_| 50).collect();
-    }
-
-    values
-        .iter()
-        .map(|v| ((v - min) / range * 100.0) as u64)
-        .collect()
 }
 
 /// Renders a bar chart.
@@ -345,37 +227,4 @@ pub(super) fn render_shared_axis_chart(
     let chart = RatatuiChart::new(datasets).x_axis(x_axis).y_axis(y_axis);
 
     frame.render_widget(chart, area);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_series_to_sparkline_data() {
-        let s = DataSeries::new("Test", vec![0.0, 50.0, 100.0]);
-        let data = series_to_sparkline_data(&s, 50);
-        assert_eq!(data, vec![0, 50, 100]);
-    }
-
-    #[test]
-    fn test_series_to_sparkline_data_constant() {
-        let s = DataSeries::new("Test", vec![5.0, 5.0, 5.0]);
-        let data = series_to_sparkline_data(&s, 50);
-        assert_eq!(data, vec![50, 50, 50]);
-    }
-
-    #[test]
-    fn test_series_to_sparkline_data_bounded() {
-        let s = DataSeries::new("Test", vec![1.0, 2.0, 3.0, 4.0, 5.0]);
-        let data = series_to_sparkline_data(&s, 3);
-        assert_eq!(data.len(), 3); // Only last 3 points
-    }
-
-    #[test]
-    fn test_series_to_sparkline_data_empty() {
-        let s = DataSeries::new("Test", vec![]);
-        let data = series_to_sparkline_data(&s, 50);
-        assert!(data.is_empty());
-    }
 }
