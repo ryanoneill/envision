@@ -452,3 +452,94 @@ fn test_disabled_still_processes_y_range_messages() {
     assert_eq!(state.y_min(), Some(0.0));
     assert_eq!(state.y_max(), Some(100.0));
 }
+
+// =============================================================================
+// VerticalLine
+// =============================================================================
+
+#[test]
+fn test_with_vertical_line_builder() {
+    let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 60.0, 70.0])])
+        .with_vertical_line(1.0, "Deploy", Color::Yellow)
+        .with_vertical_line(2.0, "Rollback", Color::Red);
+    assert_eq!(state.vertical_lines().len(), 2);
+    assert_eq!(state.vertical_lines()[0].x_value, 1.0);
+    assert_eq!(state.vertical_lines()[0].label, "Deploy");
+    assert_eq!(state.vertical_lines()[0].color, Color::Yellow);
+    assert_eq!(state.vertical_lines()[1].x_value, 2.0);
+    assert_eq!(state.vertical_lines()[1].label, "Rollback");
+}
+
+#[test]
+fn test_add_vertical_line() {
+    let mut state = ChartState::line(vec![]);
+    state.add_vertical_line(VerticalLine::new(5.0, "Event", Color::Cyan));
+    assert_eq!(state.vertical_lines().len(), 1);
+    assert_eq!(state.vertical_lines()[0].x_value, 5.0);
+}
+
+#[test]
+fn test_clear_vertical_lines() {
+    let mut state = ChartState::line(vec![])
+        .with_vertical_line(1.0, "A", Color::Red)
+        .with_vertical_line(2.0, "B", Color::Blue);
+    assert_eq!(state.vertical_lines().len(), 2);
+    state.clear_vertical_lines();
+    assert!(state.vertical_lines().is_empty());
+}
+
+#[test]
+fn test_set_vertical_lines_message() {
+    let mut state = ChartState::line(vec![DataSeries::new("X", vec![1.0])]);
+    let lines = vec![
+        VerticalLine::new(1.0, "Start", Color::Green),
+        VerticalLine::new(3.0, "End", Color::Red),
+    ];
+    let output = Chart::update(&mut state, ChartMessage::SetVerticalLines(lines));
+    assert_eq!(output, None);
+    assert_eq!(state.vertical_lines().len(), 2);
+    assert_eq!(state.vertical_lines()[0].x_value, 1.0);
+    assert_eq!(state.vertical_lines()[1].x_value, 3.0);
+}
+
+#[test]
+fn test_add_vertical_line_message() {
+    let mut state = ChartState::line(vec![DataSeries::new("X", vec![1.0])]);
+    let output = Chart::update(
+        &mut state,
+        ChartMessage::AddVerticalLine(VerticalLine::new(2.0, "Midpoint", Color::Cyan)),
+    );
+    assert_eq!(output, None);
+    assert_eq!(state.vertical_lines().len(), 1);
+}
+
+#[test]
+fn test_render_chart_with_vertical_lines() {
+    let state = ChartState::line(vec![DataSeries::new(
+        "CPU",
+        vec![45.0, 52.0, 48.0, 65.0, 72.0],
+    )])
+    .with_vertical_line(2.0, "Deploy", Color::Yellow);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_render_chart_with_vertical_and_horizontal_lines() {
+    let state = ChartState::line(vec![DataSeries::new(
+        "CPU",
+        vec![45.0, 52.0, 48.0, 65.0, 72.0],
+    )])
+    .with_threshold(60.0, "Warning", Color::Red)
+    .with_vertical_line(2.0, "Deploy", Color::Yellow);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
