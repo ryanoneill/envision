@@ -217,7 +217,10 @@ impl ButtonState {
     /// assert_eq!(state.handle_event(&event), Some(ButtonMessage::Press));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<ButtonMessage> {
-        Button::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Button::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -234,7 +237,10 @@ impl ButtonState {
     /// assert_eq!(state.dispatch_event(&event), Some(ButtonOutput::Pressed));
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<ButtonOutput> {
-        Button::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Button::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the button state with a message, returning any output.
@@ -305,18 +311,7 @@ impl Component for Button {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        // Delegates to handle_event_with_ctx using state for focus/disabled
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         _state: &Self::State,
         event: &Event,
         ctx: &ViewContext,

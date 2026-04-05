@@ -478,12 +478,18 @@ impl AccordionState {
 
     /// Maps an input event to an accordion message.
     pub fn handle_event(&self, event: &Event) -> Option<AccordionMessage> {
-        Accordion::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Accordion::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<AccordionOutput> {
-        Accordion::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Accordion::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the accordion state with a message, returning any output.
@@ -686,17 +692,7 @@ impl Component for Accordion {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         _state: &Self::State,
         event: &Event,
         ctx: &ViewContext,

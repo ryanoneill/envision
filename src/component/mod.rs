@@ -655,36 +655,23 @@ pub trait Component: Sized {
     /// Maps an input event to a component message.
     ///
     /// This is the read-only half of event handling. It inspects the
-    /// component's state and the incoming event, and returns an appropriate
-    /// message if the event is relevant to this component.
+    /// component's state, the incoming event, and the [`ViewContext`]
+    /// (which carries focused/disabled state from the parent), and
+    /// returns an appropriate message if the event is relevant.
+    ///
+    /// Components should check `ctx.focused` and `ctx.disabled` to
+    /// decide whether to process the event. The same `ctx` should be
+    /// passed to both `handle_event` and [`view`](Component::view) so
+    /// that visual state and event routing are always consistent.
     ///
     /// The default implementation returns `None` (ignores all events).
-    /// Components should override this to handle keyboard input when focused.
-    ///
-    /// **Note:** This method checks `state.focused` / `state.disabled` internally.
-    /// Prefer [`handle_event_with_ctx`](Component::handle_event_with_ctx) for
-    /// context-driven event routing where the parent controls focus.
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        let _ = (state, event);
-        None
-    }
-
-    /// Maps an input event to a component message using a [`ViewContext`].
-    ///
-    /// Like [`handle_event`](Component::handle_event) but uses `ctx.focused`
-    /// and `ctx.disabled` instead of reading from state. This allows the parent
-    /// to control which component receives events without mutating child state.
-    ///
-    /// The default implementation delegates to `handle_event`, ignoring the
-    /// context. Components that opt into context-driven focus should override
-    /// this method and check `ctx.focused` / `ctx.disabled` instead of state.
-    fn handle_event_with_ctx(
+    fn handle_event(
         state: &Self::State,
         event: &Event,
         ctx: &ViewContext,
     ) -> Option<Self::Message> {
-        let _ = ctx;
-        Self::handle_event(state, event)
+        let _ = (state, event, ctx);
+        None
     }
 
     /// Dispatches an event by mapping it to a message and updating state.
@@ -695,7 +682,11 @@ pub trait Component: Sized {
     /// output is returned.
     ///
     /// This is the primary method users should call for event routing.
-    fn dispatch_event(state: &mut Self::State, event: &Event) -> Option<Self::Output> {
+    fn dispatch_event(
+        state: &mut Self::State,
+        event: &Event,
+        ctx: &ViewContext,
+    ) -> Option<Self::Output> {
         #[cfg(feature = "tracing")]
         let _span = tracing::debug_span!(
             "component_dispatch",
@@ -704,7 +695,7 @@ pub trait Component: Sized {
         )
         .entered();
 
-        let msg = Self::handle_event(state, event);
+        let msg = Self::handle_event(state, event, ctx);
 
         #[cfg(feature = "tracing")]
         tracing::trace!(produced_message = msg.is_some(), "handle_event complete");
@@ -714,22 +705,6 @@ pub trait Component: Sized {
             #[cfg(feature = "tracing")]
             tracing::trace!(has_output = output.is_some(), "update complete");
             output
-        } else {
-            None
-        }
-    }
-
-    /// Dispatches an event using a [`ViewContext`] for focus/disabled state.
-    ///
-    /// Like [`dispatch_event`](Component::dispatch_event) but uses
-    /// [`handle_event_with_ctx`](Component::handle_event_with_ctx).
-    fn dispatch_event_with_ctx(
-        state: &mut Self::State,
-        event: &Event,
-        ctx: &ViewContext,
-    ) -> Option<Self::Output> {
-        if let Some(msg) = Self::handle_event_with_ctx(state, event, ctx) {
-            Self::update(state, msg)
         } else {
             None
         }
