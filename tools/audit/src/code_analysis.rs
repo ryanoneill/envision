@@ -91,11 +91,10 @@ fn analyze_single_component(dir: &Path) -> ComponentInfo {
     let (pub_fn_count, pub_fn_with_doctest) = count_doctest_coverage(&mod_content);
 
     let test_content = read_test_files(dir);
-    let unit_test_count = test_content.matches("#[test]").count()
-        + test_content.matches("#[tokio::test]").count();
+    let unit_test_count =
+        test_content.matches("#[test]").count() + test_content.matches("#[tokio::test]").count();
 
-    let snapshot_content =
-        fs::read_to_string(dir.join("snapshot_tests.rs")).unwrap_or_default();
+    let snapshot_content = fs::read_to_string(dir.join("snapshot_tests.rs")).unwrap_or_default();
     let snapshot_test_count = snapshot_content.matches("#[test]").count();
 
     // Instance method checks (methods that take &self or &mut self)
@@ -285,7 +284,10 @@ fn print_doctest_summary(components: &BTreeMap<String, ComponentInfo>) {
     entries.sort_by(|a, b| b.3.partial_cmp(&a.3).unwrap_or(std::cmp::Ordering::Equal));
 
     for (name, with_dt, total, pct) in &entries {
-        println!("  {:>30}: {:>3}/{:<3} ({:>5.1}%)", name, with_dt, total, pct);
+        println!(
+            "  {:>30}: {:>3}/{:<3} ({:>5.1}%)",
+            name, with_dt, total, pct
+        );
         total_with += with_dt;
         total_pub += total;
     }
@@ -374,10 +376,7 @@ fn print_instance_methods(components: &BTreeMap<String, ComponentInfo>) {
     println!("\nInstance Methods on State Types:");
 
     // Only check components that have Focusable (interactive components)
-    let interactive: Vec<_> = components
-        .iter()
-        .filter(|(_, i)| i.has_focusable)
-        .collect();
+    let interactive: Vec<_> = components.iter().filter(|(_, i)| i.has_focusable).collect();
 
     let checks = [
         ("handle_event", "has_instance_handle_event"),
@@ -388,13 +387,11 @@ fn print_instance_methods(components: &BTreeMap<String, ComponentInfo>) {
     for (method_name, field_name) in &checks {
         let missing: Vec<_> = interactive
             .iter()
-            .filter(|(_, i)| {
-                !match *field_name {
-                    "has_instance_handle_event" => i.has_instance_handle_event,
-                    "has_instance_dispatch_event" => i.has_instance_dispatch_event,
-                    "has_instance_update" => i.has_instance_update,
-                    _ => false,
-                }
+            .filter(|(_, i)| !match *field_name {
+                "has_instance_handle_event" => i.has_instance_handle_event,
+                "has_instance_dispatch_event" => i.has_instance_dispatch_event,
+                "has_instance_update" => i.has_instance_update,
+                _ => false,
             })
             .map(|(n, _)| n.as_str())
             .collect();
@@ -433,8 +430,7 @@ fn print_trait_derives(components: &BTreeMap<String, ComponentInfo>) {
         let missing: Vec<_> = components
             .iter()
             .filter(|(_, i)| {
-                !i.state_derives.is_empty()
-                    && !i.state_derives.iter().any(|d| d == *trait_name)
+                !i.state_derives.is_empty() && !i.state_derives.iter().any(|d| d == *trait_name)
             })
             .map(|(n, _)| n.as_str())
             .collect();
@@ -464,7 +460,10 @@ fn print_module_doc_coverage(src: &Path, root: &Path) {
     let mut missing_module_docs: Vec<PathBuf> = Vec::new();
 
     for (path, content) in &all_files {
-        if path.file_name().is_some_and(|n| n == "mod.rs" || n == "lib.rs") {
+        if path
+            .file_name()
+            .is_some_and(|n| n == "mod.rs" || n == "lib.rs")
+        {
             total_modules += 1;
             if content.lines().any(|l| l.trim().starts_with("//!")) {
                 with_module_docs += 1;
@@ -493,10 +492,7 @@ fn print_module_doc_coverage(src: &Path, root: &Path) {
         for path in missing_module_docs.iter().take(10) {
             println!("    missing: {}", path.display());
         }
-        println!(
-            "    ... and {} more",
-            missing_module_docs.len() - 10
-        );
+        println!("    ... and {} more", missing_module_docs.len() - 10);
     }
 
     // Check for /// docs on public structs/enums/traits
@@ -668,10 +664,8 @@ fn print_quality_checks(src: &Path, root: &Path) {
 
     // Public items count
     let mut pub_item_count = 0;
-    let pub_re = Regex::new(
-        r"(?m)^\s*pub\s+(?:fn|struct|enum|trait|type|const|static|mod|use)\b"
-    )
-    .unwrap();
+    let pub_re =
+        Regex::new(r"(?m)^\s*pub\s+(?:fn|struct|enum|trait|type|const|static|mod|use)\b").unwrap();
     let pub_crate_re = Regex::new(r"pub\s*\((?:crate|super|self)\)").unwrap();
     for (_path, content) in &all_files {
         for line in content.lines() {
