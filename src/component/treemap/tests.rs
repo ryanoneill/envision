@@ -556,56 +556,88 @@ fn test_select_parent_at_root() {
 #[test]
 fn test_right_maps_to_select_next() {
     let state = sample_state();
-    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Treemap::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TreemapMessage::SelectNext));
 }
 
 #[test]
 fn test_left_maps_to_select_prev() {
     let state = sample_state();
-    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = Treemap::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TreemapMessage::SelectPrev));
 }
 
 #[test]
 fn test_down_maps_to_select_child() {
     let state = sample_state();
-    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = Treemap::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TreemapMessage::SelectChild));
 }
 
 #[test]
 fn test_up_maps_to_select_parent() {
     let state = sample_state();
-    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = Treemap::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TreemapMessage::SelectParent));
 }
 
 #[test]
 fn test_enter_maps_to_zoom_in() {
     let state = sample_state();
-    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Treemap::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TreemapMessage::ZoomIn));
 }
 
 #[test]
 fn test_esc_maps_to_zoom_out() {
     let state = sample_state();
-    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = Treemap::handle_event(
+        &state,
+        &Event::key(KeyCode::Esc),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TreemapMessage::ZoomOut));
 }
 
 #[test]
 fn test_backspace_maps_to_zoom_out() {
     let state = sample_state();
-    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Backspace));
+    let msg = Treemap::handle_event(
+        &state,
+        &Event::key(KeyCode::Backspace),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TreemapMessage::ZoomOut));
 }
 
 #[test]
 fn test_home_maps_to_reset_zoom() {
     let state = sample_state();
-    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Home));
+    let msg = Treemap::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TreemapMessage::ResetZoom));
 }
 
@@ -613,19 +645,19 @@ fn test_home_maps_to_reset_zoom() {
 fn test_hjkl_keys() {
     let state = sample_state();
     assert_eq!(
-        Treemap::handle_event(&state, &Event::char('h')),
+        Treemap::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
         Some(TreemapMessage::SelectPrev)
     );
     assert_eq!(
-        Treemap::handle_event(&state, &Event::char('l')),
+        Treemap::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
         Some(TreemapMessage::SelectNext)
     );
     assert_eq!(
-        Treemap::handle_event(&state, &Event::char('j')),
+        Treemap::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(TreemapMessage::SelectChild)
     );
     assert_eq!(
-        Treemap::handle_event(&state, &Event::char('k')),
+        Treemap::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(TreemapMessage::SelectParent)
     );
 }
@@ -638,7 +670,11 @@ fn test_hjkl_keys() {
 fn test_disabled_ignores_events() {
     let mut state = sample_state();
     state.set_disabled(true);
-    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Treemap::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -646,7 +682,7 @@ fn test_disabled_ignores_events() {
 fn test_unfocused_ignores_events() {
     let root = TreemapNode::new("root", 0.0).with_child(TreemapNode::new("a", 10.0));
     let state = TreemapState::new().with_root(root);
-    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Treemap::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 }
 

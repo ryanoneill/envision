@@ -502,19 +502,35 @@ fn test_handle_event_navigation_keys() {
     let mut state = TabBarState::new(vec![Tab::new("a", "A"), Tab::new("b", "B")]);
     state.set_focused(true);
     assert_eq!(
-        TabBar::handle_event(&state, &Event::key(KeyCode::Right)),
+        TabBar::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &ViewContext::new().focused(true)
+        ),
         Some(TabBarMessage::NextTab)
     );
     assert_eq!(
-        TabBar::handle_event(&state, &Event::key(KeyCode::Left)),
+        TabBar::handle_event(
+            &state,
+            &Event::key(KeyCode::Left),
+            &ViewContext::new().focused(true)
+        ),
         Some(TabBarMessage::PrevTab)
     );
     assert_eq!(
-        TabBar::handle_event(&state, &Event::key(KeyCode::Home)),
+        TabBar::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(TabBarMessage::First)
     );
     assert_eq!(
-        TabBar::handle_event(&state, &Event::key(KeyCode::End)),
+        TabBar::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(TabBarMessage::Last)
     );
 }
@@ -524,11 +540,11 @@ fn test_handle_event_vim_keys() {
     let mut state = TabBarState::new(vec![Tab::new("a", "A"), Tab::new("b", "B")]);
     state.set_focused(true);
     assert_eq!(
-        TabBar::handle_event(&state, &Event::char('h')),
+        TabBar::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
         Some(TabBarMessage::PrevTab)
     );
     assert_eq!(
-        TabBar::handle_event(&state, &Event::char('l')),
+        TabBar::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
         Some(TabBarMessage::NextTab)
     );
 }
@@ -538,7 +554,7 @@ fn test_handle_event_close_key() {
     let mut state = TabBarState::new(vec![Tab::new("a", "A").with_closable(true)]);
     state.set_focused(true);
     assert_eq!(
-        TabBar::handle_event(&state, &Event::char('w')),
+        TabBar::handle_event(&state, &Event::char('w'), &ViewContext::new().focused(true)),
         Some(TabBarMessage::CloseActiveTab)
     );
 }
@@ -547,10 +563,13 @@ fn test_handle_event_close_key() {
 fn test_handle_event_unfocused() {
     let state = TabBarState::new(vec![Tab::new("a", "A")]);
     assert_eq!(
-        TabBar::handle_event(&state, &Event::key(KeyCode::Right)),
+        TabBar::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default()),
         None
     );
-    assert_eq!(TabBar::handle_event(&state, &Event::char('l')), None);
+    assert_eq!(
+        TabBar::handle_event(&state, &Event::char('l'), &ViewContext::default()),
+        None
+    );
 }
 
 #[test]
@@ -559,7 +578,11 @@ fn test_handle_event_disabled() {
     state.set_focused(true);
     state.set_disabled(true);
     assert_eq!(
-        TabBar::handle_event(&state, &Event::key(KeyCode::Right)),
+        TabBar::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &ViewContext::new().focused(true).disabled(true)
+        ),
         None
     );
 }
@@ -568,7 +591,10 @@ fn test_handle_event_disabled() {
 fn test_handle_event_unrecognized_key() {
     let mut state = TabBarState::new(vec![Tab::new("a", "A")]);
     state.set_focused(true);
-    assert_eq!(TabBar::handle_event(&state, &Event::char('z')), None);
+    assert_eq!(
+        TabBar::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true)),
+        None
+    );
 }
 
 // ========== dispatch_event Tests ==========
@@ -577,7 +603,11 @@ fn test_handle_event_unrecognized_key() {
 fn test_dispatch_event_next() {
     let mut state = TabBarState::new(vec![Tab::new("a", "A"), Tab::new("b", "B")]);
     state.set_focused(true);
-    let output = TabBar::dispatch_event(&mut state, &Event::key(KeyCode::Right));
+    let output = TabBar::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
     assert_eq!(state.active_index(), Some(1));
 }
@@ -589,7 +619,11 @@ fn test_dispatch_event_close() {
         Tab::new("b", "B"),
     ]);
     state.set_focused(true);
-    let output = TabBar::dispatch_event(&mut state, &Event::char('w'));
+    let output = TabBar::dispatch_event(
+        &mut state,
+        &Event::char('w'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(TabBarOutput::TabClosed(0)));
     assert_eq!(state.len(), 1);
 }

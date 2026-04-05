@@ -143,10 +143,24 @@ fn test_pathbar_focus_only_handles_tab() {
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     // In PathBar focus, regular keys shouldn't map
-    assert!(FileBrowser::handle_event(&state, &Event::char('j')).is_none());
-    assert!(FileBrowser::handle_event(&state, &Event::key(KeyCode::Enter)).is_none());
+    assert!(FileBrowser::handle_event(
+        &state,
+        &Event::char('j'),
+        &ViewContext::new().focused(true)
+    )
+    .is_none());
+    assert!(FileBrowser::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true)
+    )
+    .is_none());
     // Tab still works
-    let msg = FileBrowser::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::CycleFocus));
 }
 
@@ -160,7 +174,8 @@ fn test_filter_focus_handles_chars() {
     // Cycle to Filter
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     // In Filter focus, chars should map to FilterChar
-    let msg = FileBrowser::handle_event(&state, &Event::char('z'));
+    let msg =
+        FileBrowser::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(FileBrowserMessage::FilterChar('z')));
 }
 
@@ -168,7 +183,11 @@ fn test_filter_focus_handles_chars() {
 fn test_filter_focus_backspace() {
     let mut state = focused_state();
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
-    let msg = FileBrowser::handle_event(&state, &Event::key(KeyCode::Backspace));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::key(KeyCode::Backspace),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::FilterBackspace));
 }
 
@@ -176,7 +195,11 @@ fn test_filter_focus_backspace() {
 fn test_filter_focus_esc() {
     let mut state = focused_state();
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
-    let msg = FileBrowser::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::key(KeyCode::Esc),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::FilterClear));
 }
 

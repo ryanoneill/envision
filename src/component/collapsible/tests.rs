@@ -340,7 +340,8 @@ fn test_update_disabled_ignores_set_content_height() {
 fn test_handle_event_space_toggles() {
     let mut state = CollapsibleState::new("Details");
     Collapsible::focus(&mut state);
-    let msg = Collapsible::handle_event(&state, &Event::char(' '));
+    let msg =
+        Collapsible::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(CollapsibleMessage::Toggle));
 }
 
@@ -348,7 +349,11 @@ fn test_handle_event_space_toggles() {
 fn test_handle_event_enter_toggles() {
     let mut state = CollapsibleState::new("Details");
     Collapsible::focus(&mut state);
-    let msg = Collapsible::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CollapsibleMessage::Toggle));
 }
 
@@ -356,7 +361,11 @@ fn test_handle_event_enter_toggles() {
 fn test_handle_event_right_expands() {
     let mut state = CollapsibleState::new("Details");
     Collapsible::focus(&mut state);
-    let msg = Collapsible::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CollapsibleMessage::Expand));
 }
 
@@ -364,7 +373,11 @@ fn test_handle_event_right_expands() {
 fn test_handle_event_left_collapses() {
     let mut state = CollapsibleState::new("Details");
     Collapsible::focus(&mut state);
-    let msg = Collapsible::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CollapsibleMessage::Collapse));
 }
 
@@ -373,16 +386,19 @@ fn test_handle_event_unfocused_ignores_events() {
     let state = CollapsibleState::new("Details");
     assert!(!state.is_focused());
 
-    let msg = Collapsible::handle_event(&state, &Event::char(' '));
+    let msg = Collapsible::handle_event(&state, &Event::char(' '), &ViewContext::default());
     assert_eq!(msg, None);
 
-    let msg = Collapsible::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg =
+        Collapsible::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 
-    let msg = Collapsible::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg =
+        Collapsible::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 
-    let msg = Collapsible::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg =
+        Collapsible::handle_event(&state, &Event::key(KeyCode::Left), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -392,16 +408,32 @@ fn test_handle_event_disabled_ignores_events() {
     Collapsible::focus(&mut state);
     state.set_disabled(true);
 
-    let msg = Collapsible::handle_event(&state, &Event::char(' '));
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::char(' '),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = Collapsible::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = Collapsible::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = Collapsible::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -409,7 +441,8 @@ fn test_handle_event_disabled_ignores_events() {
 fn test_handle_event_unrecognized_key_returns_none() {
     let mut state = CollapsibleState::new("Details");
     Collapsible::focus(&mut state);
-    let msg = Collapsible::handle_event(&state, &Event::char('x'));
+    let msg =
+        Collapsible::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
@@ -419,7 +452,11 @@ fn test_handle_event_unrecognized_key_returns_none() {
 fn test_dispatch_event_space_toggles() {
     let mut state = CollapsibleState::new("Details");
     Collapsible::focus(&mut state);
-    let output = Collapsible::dispatch_event(&mut state, &Event::char(' '));
+    let output = Collapsible::dispatch_event(
+        &mut state,
+        &Event::char(' '),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(CollapsibleOutput::Toggled(false)));
     assert!(!state.expanded());
 }
@@ -428,7 +465,11 @@ fn test_dispatch_event_space_toggles() {
 fn test_dispatch_event_enter_toggles() {
     let mut state = CollapsibleState::new("Details").with_expanded(false);
     Collapsible::focus(&mut state);
-    let output = Collapsible::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = Collapsible::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(CollapsibleOutput::Toggled(true)));
     assert!(state.expanded());
 }
@@ -437,7 +478,11 @@ fn test_dispatch_event_enter_toggles() {
 fn test_dispatch_event_right_expands() {
     let mut state = CollapsibleState::new("Details").with_expanded(false);
     Collapsible::focus(&mut state);
-    let output = Collapsible::dispatch_event(&mut state, &Event::key(KeyCode::Right));
+    let output = Collapsible::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(CollapsibleOutput::Expanded));
     assert!(state.expanded());
 }
@@ -446,7 +491,11 @@ fn test_dispatch_event_right_expands() {
 fn test_dispatch_event_left_collapses() {
     let mut state = CollapsibleState::new("Details");
     Collapsible::focus(&mut state);
-    let output = Collapsible::dispatch_event(&mut state, &Event::key(KeyCode::Left));
+    let output = Collapsible::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(CollapsibleOutput::Collapsed));
     assert!(!state.expanded());
 }
@@ -454,7 +503,8 @@ fn test_dispatch_event_left_collapses() {
 #[test]
 fn test_dispatch_event_unfocused_returns_none() {
     let mut state = CollapsibleState::new("Details");
-    let output = Collapsible::dispatch_event(&mut state, &Event::char(' '));
+    let output =
+        Collapsible::dispatch_event(&mut state, &Event::char(' '), &ViewContext::default());
     assert_eq!(output, None);
     assert!(state.expanded()); // Unchanged
 }

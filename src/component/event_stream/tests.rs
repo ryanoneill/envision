@@ -751,14 +751,19 @@ fn test_disabled_ignores_messages() {
 fn test_disabled_ignores_events() {
     let mut state = focused_state();
     state.set_disabled(true);
-    let msg = EventStream::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = EventStream::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_unfocused_ignores_events() {
     let state = sample_state();
-    let msg = EventStream::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg =
+        EventStream::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
     assert_eq!(msg, None);
 }
 

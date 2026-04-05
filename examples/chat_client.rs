@@ -391,7 +391,8 @@ impl App for ChatClient {
 
         // Command palette gets priority
         if state.palette.is_visible() {
-            return CommandPalette::handle_event(&state.palette, event).map(Msg::Palette);
+            return CommandPalette::handle_event(&state.palette, event, &ViewContext::default())
+                .map(Msg::Palette);
         }
 
         // Global shortcuts
@@ -416,16 +417,22 @@ impl App for ChatClient {
             if ctrl && key.code == KeyCode::Enter {
                 return Some(Msg::SubmitInput);
             }
-            return TextArea::handle_event(&state.input, event).map(Msg::Input);
+            return TextArea::handle_event(&state.input, event, &ViewContext::default())
+                .map(Msg::Input);
         }
 
         // Conversation-focused: route to ConversationView
         if state.focus.is_focused(&Focus::Conversation) {
-            return ConversationView::handle_event(&state.active_conv().view, event).map(Msg::Conv);
+            return ConversationView::handle_event(
+                &state.active_conv().view,
+                event,
+                &ViewContext::default(),
+            )
+            .map(Msg::Conv);
         }
 
         // Fall through: route to TabBar for left/right tab switching
-        TabBar::handle_event(&state.tab_bar, event).map(Msg::TabBar)
+        TabBar::handle_event(&state.tab_bar, event, &ViewContext::default()).map(Msg::TabBar)
     }
 }
 

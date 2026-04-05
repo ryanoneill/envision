@@ -347,14 +347,19 @@ impl App for Dashboard {
                 // Route to active tab's component
                 let active_tab = state.tabs.selected_item();
                 match active_tab {
-                    Some(DashTab::Overview) => {
-                        MetricsDashboard::handle_event(&state.metrics, event).map(Msg::Metrics)
-                    }
+                    Some(DashTab::Overview) => MetricsDashboard::handle_event(
+                        &state.metrics,
+                        event,
+                        &ViewContext::default(),
+                    )
+                    .map(Msg::Metrics),
                     Some(DashTab::Alerts) => {
-                        AlertPanel::handle_event(&state.alerts, event).map(Msg::Alert)
+                        AlertPanel::handle_event(&state.alerts, event, &ViewContext::default())
+                            .map(Msg::Alert)
                     }
                     Some(DashTab::Heatmap) => {
-                        Heatmap::handle_event(&state.heatmap, event).map(Msg::Heatmap)
+                        Heatmap::handle_event(&state.heatmap, event, &ViewContext::default())
+                            .map(Msg::Heatmap)
                     }
                     None => None,
                 }

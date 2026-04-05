@@ -372,7 +372,8 @@ fn test_selected_node_some() {
 #[test]
 fn test_handle_event_not_focused() {
     let state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
-    let msg = DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg =
+        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -381,7 +382,8 @@ fn test_handle_event_disabled() {
     let state = DependencyGraphState::new()
         .with_node(GraphNode::new("a", "A"))
         .with_disabled(true);
-    let msg = DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg =
+        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -390,7 +392,11 @@ fn test_handle_event_down() {
     let mut state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     state.set_focused(true);
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down)),
+        DependencyGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(DependencyGraphMessage::SelectNext)
     );
 }
@@ -400,7 +406,7 @@ fn test_handle_event_j() {
     let mut state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     state.set_focused(true);
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::char('j')),
+        DependencyGraph::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(DependencyGraphMessage::SelectNext)
     );
 }
@@ -410,7 +416,11 @@ fn test_handle_event_tab() {
     let mut state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     state.set_focused(true);
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Tab)),
+        DependencyGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Tab),
+            &ViewContext::new().focused(true)
+        ),
         Some(DependencyGraphMessage::SelectNext)
     );
 }
@@ -420,7 +430,11 @@ fn test_handle_event_up() {
     let mut state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     state.set_focused(true);
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Up)),
+        DependencyGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(DependencyGraphMessage::SelectPrev)
     );
 }
@@ -430,7 +444,7 @@ fn test_handle_event_k() {
     let mut state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     state.set_focused(true);
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::char('k')),
+        DependencyGraph::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(DependencyGraphMessage::SelectPrev)
     );
 }
@@ -440,7 +454,11 @@ fn test_handle_event_backtab() {
     let mut state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     state.set_focused(true);
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::key(KeyCode::BackTab)),
+        DependencyGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::BackTab),
+            &ViewContext::new().focused(true)
+        ),
         Some(DependencyGraphMessage::SelectPrev)
     );
 }
@@ -450,7 +468,11 @@ fn test_handle_event_enter() {
     let mut state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     state.set_focused(true);
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Enter)),
+        DependencyGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &ViewContext::new().focused(true)
+        ),
         Some(DependencyGraphMessage::SelectConnected)
     );
 }
@@ -460,7 +482,7 @@ fn test_handle_event_l() {
     let mut state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     state.set_focused(true);
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::char('l')),
+        DependencyGraph::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
         Some(DependencyGraphMessage::SelectConnected)
     );
 }
@@ -470,7 +492,11 @@ fn test_handle_event_right() {
     let mut state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     state.set_focused(true);
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Right)),
+        DependencyGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &ViewContext::new().focused(true)
+        ),
         Some(DependencyGraphMessage::SelectConnected)
     );
 }
@@ -480,7 +506,7 @@ fn test_handle_event_unknown_key() {
     let mut state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     state.set_focused(true);
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::char('x')),
+        DependencyGraph::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
         None
     );
 }

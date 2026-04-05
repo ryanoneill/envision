@@ -366,7 +366,11 @@ fn test_disabled_ignores_messages() {
 fn test_disabled_ignores_events() {
     let mut state = focused_state();
     state.set_disabled(true);
-    let msg = MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = MetricsDashboard::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -377,7 +381,11 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = MetricsDashboardState::new(sample_widgets(), 3);
-    let msg = MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = MetricsDashboard::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -389,31 +397,59 @@ fn test_unfocused_ignores_events() {
 fn test_key_maps() {
     let state = focused_state();
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Left)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Left),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Left)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Right)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Right)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Up)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Up)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Down)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Down)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Home)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::First)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::End)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Last)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::key(KeyCode::Enter)),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Select)
     );
 }
@@ -422,19 +458,35 @@ fn test_key_maps() {
 fn test_vim_key_maps() {
     let state = focused_state();
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::char('h')),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::char('h'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Left)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::char('l')),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::char('l'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Right)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::char('k')),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::char('k'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Up)
     );
     assert_eq!(
-        MetricsDashboard::handle_event(&state, &Event::char('j')),
+        MetricsDashboard::handle_event(
+            &state,
+            &Event::char('j'),
+            &ViewContext::new().focused(true)
+        ),
         Some(MetricsDashboardMessage::Down)
     );
 }
@@ -520,7 +572,13 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -531,7 +589,13 @@ fn test_render_with_widgets() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -563,7 +627,13 @@ fn test_render_with_history() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -574,7 +644,13 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -664,7 +740,7 @@ fn test_annotation_emitted() {
                     frame,
                     frame.area(),
                     &theme,
-                    &ViewContext::default(),
+                    &ViewContext::new().focused(true),
                 );
             })
             .unwrap();

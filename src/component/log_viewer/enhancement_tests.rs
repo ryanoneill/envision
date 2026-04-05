@@ -59,7 +59,7 @@ fn test_toggle_follow() {
 fn test_follow_key_binding() {
     let state = focused_state();
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::char('f')),
+        LogViewer::handle_event(&state, &Event::char('f'), &ViewContext::new().focused(true)),
         Some(LogViewerMessage::ToggleFollow)
     );
 }
@@ -188,7 +188,7 @@ fn test_toggle_regex_key_binding() {
     let mut state = focused_state();
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::ctrl('r')),
+        LogViewer::handle_event(&state, &Event::ctrl('r'), &ViewContext::new().focused(true)),
         Some(LogViewerMessage::ToggleRegex)
     );
 }
@@ -388,7 +388,11 @@ fn test_search_history_up_key_binding() {
     let mut state = focused_state();
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Up)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::SearchHistoryUp)
     );
 }
@@ -398,7 +402,11 @@ fn test_search_history_down_key_binding() {
     let mut state = focused_state();
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Down)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::SearchHistoryDown)
     );
 }
@@ -590,7 +598,13 @@ fn test_render_with_follow() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -602,7 +616,13 @@ fn test_render_without_follow() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -614,7 +634,13 @@ fn test_render_with_regex() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }

@@ -289,7 +289,7 @@ impl App for DashboardApp {
             Msg::ChartNextSeries => {
                 // Toggle active series via chart message
                 let event = Event::key(KeyCode::Tab);
-                Chart::dispatch_event(&mut state.chart, &event);
+                Chart::dispatch_event(&mut state.chart, &event, &ViewContext::default());
             }
             Msg::Quit => {
                 return Command::quit();

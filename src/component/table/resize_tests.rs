@@ -145,7 +145,11 @@ mod key_binding_tests {
         let mut state = TableState::new(test_rows(), test_columns());
         state.set_focused(true);
 
-        let msg = Table::<TestRow>::handle_event(&state, &Event::char('+'));
+        let msg = Table::<TestRow>::handle_event(
+            &state,
+            &Event::char('+'),
+            &ViewContext::new().focused(true),
+        );
         assert_eq!(msg, Some(TableMessage::IncreaseColumnWidth(0)));
     }
 
@@ -154,7 +158,11 @@ mod key_binding_tests {
         let mut state = TableState::new(test_rows(), test_columns());
         state.set_focused(true);
 
-        let msg = Table::<TestRow>::handle_event(&state, &Event::char('-'));
+        let msg = Table::<TestRow>::handle_event(
+            &state,
+            &Event::char('-'),
+            &ViewContext::new().focused(true),
+        );
         assert_eq!(msg, Some(TableMessage::DecreaseColumnWidth(0)));
     }
 
@@ -166,7 +174,11 @@ mod key_binding_tests {
         // Sort by column 1
         Table::<TestRow>::update(&mut state, TableMessage::SortBy(1));
 
-        let msg = Table::<TestRow>::handle_event(&state, &Event::char('+'));
+        let msg = Table::<TestRow>::handle_event(
+            &state,
+            &Event::char('+'),
+            &ViewContext::new().focused(true),
+        );
         assert_eq!(msg, Some(TableMessage::IncreaseColumnWidth(1)));
     }
 
@@ -174,10 +186,12 @@ mod key_binding_tests {
     fn test_resize_keys_ignored_when_unfocused() {
         let state = TableState::new(test_rows(), test_columns());
 
-        let msg = Table::<TestRow>::handle_event(&state, &Event::char('+'));
+        let msg =
+            Table::<TestRow>::handle_event(&state, &Event::char('+'), &ViewContext::default());
         assert_eq!(msg, None);
 
-        let msg = Table::<TestRow>::handle_event(&state, &Event::char('-'));
+        let msg =
+            Table::<TestRow>::handle_event(&state, &Event::char('-'), &ViewContext::default());
         assert_eq!(msg, None);
     }
 
@@ -187,7 +201,11 @@ mod key_binding_tests {
         state.set_focused(true);
         state.set_disabled(true);
 
-        let msg = Table::<TestRow>::handle_event(&state, &Event::char('+'));
+        let msg = Table::<TestRow>::handle_event(
+            &state,
+            &Event::char('+'),
+            &ViewContext::new().focused(true).disabled(true),
+        );
         assert_eq!(msg, None);
     }
 }

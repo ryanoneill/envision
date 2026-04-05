@@ -164,14 +164,17 @@ fn test_instance_dispatch_event() {
 fn test_handle_event_returns_none() {
     let state = BigTextState::new("42");
     assert_eq!(
-        BigText::handle_event(&state, &Event::key(KeyCode::Up)),
+        BigText::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default()),
         None
     );
     assert_eq!(
-        BigText::handle_event(&state, &Event::key(KeyCode::Enter)),
+        BigText::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default()),
         None
     );
-    assert_eq!(BigText::handle_event(&state, &Event::char('a')), None);
+    assert_eq!(
+        BigText::handle_event(&state, &Event::char('a'), &ViewContext::default()),
+        None
+    );
 }
 
 // =============================================================================

@@ -296,11 +296,15 @@ fn test_handle_event_toggle_when_closed() {
     Select::focus(&mut state);
 
     // Enter when closed -> Toggle
-    let msg = Select::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Select::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectMessage::Toggle));
 
     // Space when closed -> Toggle
-    let msg = Select::handle_event(&state, &Event::char(' '));
+    let msg = Select::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SelectMessage::Toggle));
 }
 
@@ -310,7 +314,11 @@ fn test_handle_event_confirm_when_open() {
     Select::focus(&mut state);
     Select::update(&mut state, SelectMessage::Open);
 
-    let msg = Select::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Select::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectMessage::Confirm));
 }
 
@@ -320,7 +328,11 @@ fn test_handle_event_close_when_open() {
     Select::focus(&mut state);
     Select::update(&mut state, SelectMessage::Open);
 
-    let msg = Select::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = Select::handle_event(
+        &state,
+        &Event::key(KeyCode::Esc),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectMessage::Close));
 }
 
@@ -330,11 +342,15 @@ fn test_handle_event_up_when_open() {
     Select::focus(&mut state);
     Select::update(&mut state, SelectMessage::Open);
 
-    let msg = Select::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = Select::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectMessage::Up));
 
     // Vim 'k' also maps to Up
-    let msg = Select::handle_event(&state, &Event::char('k'));
+    let msg = Select::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SelectMessage::Up));
 }
 
@@ -344,18 +360,22 @@ fn test_handle_event_down_when_open() {
     Select::focus(&mut state);
     Select::update(&mut state, SelectMessage::Open);
 
-    let msg = Select::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = Select::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectMessage::Down));
 
     // Vim 'j' also maps to Down
-    let msg = Select::handle_event(&state, &Event::char('j'));
+    let msg = Select::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SelectMessage::Down));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = SelectState::new(vec!["A", "B", "C"]);
-    let msg = Select::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Select::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -364,7 +384,11 @@ fn test_handle_event_ignored_when_disabled() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
     Select::focus(&mut state);
     state.set_disabled(true);
-    let msg = Select::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Select::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -380,7 +404,11 @@ fn test_dispatch_event() {
     Select::update(&mut state, SelectMessage::Down);
 
     // Enter when open dispatches Confirm, which selects the item
-    let output = Select::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = Select::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(SelectOutput::Selected("B".to_string())));
     assert!(!state.is_open());
 }

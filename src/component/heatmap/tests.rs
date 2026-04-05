@@ -402,28 +402,44 @@ fn test_effective_range_empty() {
 #[test]
 fn test_arrow_up_maps_to_select_up() {
     let state = focused_3x3();
-    let msg = Heatmap::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = Heatmap::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(HeatmapMessage::SelectUp));
 }
 
 #[test]
 fn test_arrow_down_maps_to_select_down() {
     let state = focused_3x3();
-    let msg = Heatmap::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = Heatmap::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(HeatmapMessage::SelectDown));
 }
 
 #[test]
 fn test_arrow_left_maps_to_select_left() {
     let state = focused_3x3();
-    let msg = Heatmap::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = Heatmap::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(HeatmapMessage::SelectLeft));
 }
 
 #[test]
 fn test_arrow_right_maps_to_select_right() {
     let state = focused_3x3();
-    let msg = Heatmap::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Heatmap::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(HeatmapMessage::SelectRight));
 }
 
@@ -431,19 +447,19 @@ fn test_arrow_right_maps_to_select_right() {
 fn test_hjkl_keys() {
     let state = focused_3x3();
     assert_eq!(
-        Heatmap::handle_event(&state, &Event::char('k')),
+        Heatmap::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(HeatmapMessage::SelectUp)
     );
     assert_eq!(
-        Heatmap::handle_event(&state, &Event::char('j')),
+        Heatmap::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(HeatmapMessage::SelectDown)
     );
     assert_eq!(
-        Heatmap::handle_event(&state, &Event::char('h')),
+        Heatmap::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
         Some(HeatmapMessage::SelectLeft)
     );
     assert_eq!(
-        Heatmap::handle_event(&state, &Event::char('l')),
+        Heatmap::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
         Some(HeatmapMessage::SelectRight)
     );
 }
@@ -470,14 +486,18 @@ fn test_enter_emits_cell_selected() {
 fn test_disabled_ignores_events() {
     let mut state = focused_3x3();
     state.set_disabled(true);
-    let msg = Heatmap::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = Heatmap::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_unfocused_ignores_events() {
     let state = HeatmapState::with_data(vec![vec![1.0]]);
-    let msg = Heatmap::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = Heatmap::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -671,7 +691,13 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Heatmap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -682,7 +708,13 @@ fn test_render_small_grid() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Heatmap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -696,7 +728,13 @@ fn test_render_with_labels() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Heatmap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -709,7 +747,13 @@ fn test_render_with_values() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Heatmap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -758,7 +802,13 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(5, 2);
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Heatmap::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -832,7 +882,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Heatmap::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });

@@ -340,7 +340,7 @@ fn test_form_workflow_with_focus_manager() {
         Event::char('e'),
     ];
     for event in &events {
-        InputField::dispatch_event(&mut input, event);
+        InputField::dispatch_event(&mut input, event, &ViewContext::new().focused(true));
     }
     assert_eq!(input.value(), "Alice");
     assert_eq!(input.cursor_position(), 5);
@@ -357,7 +357,11 @@ fn test_form_workflow_with_focus_manager() {
 
     // Toggle checkbox via dispatch_event (Space key)
     let space_event = Event::char(' ');
-    let output = Checkbox::dispatch_event(&mut checkbox, &space_event);
+    let output = Checkbox::dispatch_event(
+        &mut checkbox,
+        &space_event,
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
     assert!(checkbox.is_checked());
 
@@ -373,7 +377,8 @@ fn test_form_workflow_with_focus_manager() {
 
     // Press Enter on Button via dispatch_event
     let enter_event = Event::key(crossterm::event::KeyCode::Enter);
-    let output = Button::dispatch_event(&mut button, &enter_event);
+    let output =
+        Button::dispatch_event(&mut button, &enter_event, &ViewContext::new().focused(true));
     assert_eq!(output, Some(ButtonOutput::Pressed));
 
     // Final state verification: all components retain their state after the workflow

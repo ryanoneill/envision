@@ -700,7 +700,7 @@ fn test_view_zero_height() {
 fn test_handle_event_returns_none() {
     let state = UsageDisplayState::new().metric(UsageMetric::new("CPU", "45%"));
     let event = crate::input::Event::key(crate::input::KeyCode::Char('q'));
-    let msg = UsageDisplay::handle_event(&state, &event);
+    let msg = UsageDisplay::handle_event(&state, &event, &ViewContext::default());
     assert!(msg.is_none());
 }
 
@@ -708,7 +708,7 @@ fn test_handle_event_returns_none() {
 fn test_dispatch_event_returns_none() {
     let mut state = UsageDisplayState::new().metric(UsageMetric::new("CPU", "45%"));
     let event = crate::input::Event::key(crate::input::KeyCode::Enter);
-    let output = UsageDisplay::dispatch_event(&mut state, &event);
+    let output = UsageDisplay::dispatch_event(&mut state, &event, &ViewContext::default());
     assert!(output.is_none());
 }
 

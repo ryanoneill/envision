@@ -229,7 +229,11 @@ fn test_multiple_toggles() {
 fn test_handle_event_enter_when_focused() {
     let mut state = SwitchState::new();
     Switch::set_focused(&mut state, true);
-    let msg = Switch::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Switch::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SwitchMessage::Toggle));
 }
 
@@ -237,14 +241,14 @@ fn test_handle_event_enter_when_focused() {
 fn test_handle_event_space_when_focused() {
     let mut state = SwitchState::new();
     Switch::set_focused(&mut state, true);
-    let msg = Switch::handle_event(&state, &Event::char(' '));
+    let msg = Switch::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SwitchMessage::Toggle));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = SwitchState::new();
-    let msg = Switch::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Switch::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -253,7 +257,11 @@ fn test_handle_event_ignored_when_disabled() {
     let mut state = SwitchState::new();
     Switch::set_focused(&mut state, true);
     state.set_disabled(true);
-    let msg = Switch::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Switch::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -261,7 +269,7 @@ fn test_handle_event_ignored_when_disabled() {
 fn test_handle_event_other_key_ignored() {
     let mut state = SwitchState::new();
     Switch::set_focused(&mut state, true);
-    let msg = Switch::handle_event(&state, &Event::char('a'));
+    let msg = Switch::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
@@ -269,7 +277,11 @@ fn test_handle_event_other_key_ignored() {
 fn test_dispatch_event() {
     let mut state = SwitchState::new();
     Switch::set_focused(&mut state, true);
-    let output = Switch::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = Switch::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(SwitchOutput::On));
     assert!(state.is_on());
 }
@@ -277,7 +289,11 @@ fn test_dispatch_event() {
 #[test]
 fn test_dispatch_event_unfocused() {
     let mut state = SwitchState::new();
-    let output = Switch::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = Switch::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::default(),
+    );
     assert_eq!(output, None);
     assert!(!state.is_on());
 }
@@ -593,7 +609,11 @@ fn test_with_disabled_prevents_toggle() {
 fn test_with_disabled_prevents_handle_event() {
     let mut state = SwitchState::new().with_disabled(true);
     state.set_focused(true);
-    let msg = Switch::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Switch::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 

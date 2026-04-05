@@ -336,7 +336,11 @@ fn test_disabled_ignores_messages() {
 fn test_disabled_ignores_events() {
     let mut state = focused_line_chart();
     state.set_disabled(true);
-    let msg = Chart::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = Chart::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -347,7 +351,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = ChartState::line(sample_series());
-    let msg = Chart::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = Chart::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -359,7 +363,11 @@ fn test_unfocused_ignores_events() {
 fn test_tab_maps_to_next() {
     let state = focused_line_chart();
     assert_eq!(
-        Chart::handle_event(&state, &Event::key(KeyCode::Tab)),
+        Chart::handle_event(
+            &state,
+            &Event::key(KeyCode::Tab),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChartMessage::NextSeries)
     );
 }
@@ -368,7 +376,11 @@ fn test_tab_maps_to_next() {
 fn test_backtab_maps_to_prev() {
     let state = focused_line_chart();
     assert_eq!(
-        Chart::handle_event(&state, &Event::key(KeyCode::BackTab)),
+        Chart::handle_event(
+            &state,
+            &Event::key(KeyCode::BackTab),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChartMessage::PrevSeries)
     );
 }

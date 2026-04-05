@@ -507,7 +507,7 @@ fn test_max_depth_empty() {
 #[test]
 fn test_handle_event_not_focused() {
     let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    let msg = FlameGraph::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = FlameGraph::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -516,7 +516,11 @@ fn test_handle_event_disabled() {
     let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     state.set_focused(true);
     state.set_disabled(true);
-    let msg = FlameGraph::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = FlameGraph::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -525,11 +529,15 @@ fn test_handle_event_down() {
     let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     state.set_focused(true);
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::key(KeyCode::Down)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::SelectDown)
     );
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('j')),
+        FlameGraph::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(FlameGraphMessage::SelectDown)
     );
 }
@@ -539,11 +547,15 @@ fn test_handle_event_up() {
     let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     state.set_focused(true);
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::key(KeyCode::Up)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::SelectUp)
     );
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('k')),
+        FlameGraph::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(FlameGraphMessage::SelectUp)
     );
 }
@@ -553,11 +565,15 @@ fn test_handle_event_left() {
     let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     state.set_focused(true);
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::key(KeyCode::Left)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Left),
+            &ViewContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::SelectLeft)
     );
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('h')),
+        FlameGraph::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
         Some(FlameGraphMessage::SelectLeft)
     );
 }
@@ -567,11 +583,15 @@ fn test_handle_event_right() {
     let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     state.set_focused(true);
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::key(KeyCode::Right)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &ViewContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::SelectRight)
     );
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('l')),
+        FlameGraph::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
         Some(FlameGraphMessage::SelectRight)
     );
 }
@@ -581,7 +601,11 @@ fn test_handle_event_enter_zoom_in() {
     let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     state.set_focused(true);
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::key(KeyCode::Enter)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &ViewContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::ZoomIn)
     );
 }
@@ -591,11 +615,19 @@ fn test_handle_event_escape_zoom_out() {
     let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     state.set_focused(true);
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::key(KeyCode::Esc)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Esc),
+            &ViewContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::ZoomOut)
     );
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::key(KeyCode::Backspace)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Backspace),
+            &ViewContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::ZoomOut)
     );
 }
@@ -605,7 +637,11 @@ fn test_handle_event_home_reset_zoom() {
     let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     state.set_focused(true);
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::key(KeyCode::Home)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::ResetZoom)
     );
 }
@@ -615,7 +651,7 @@ fn test_handle_event_slash_search() {
     let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     state.set_focused(true);
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('/')),
+        FlameGraph::handle_event(&state, &Event::char('/'), &ViewContext::new().focused(true)),
         Some(FlameGraphMessage::SetSearch(String::new()))
     );
 }
@@ -624,7 +660,10 @@ fn test_handle_event_slash_search() {
 fn test_handle_event_unknown_key() {
     let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     state.set_focused(true);
-    assert_eq!(FlameGraph::handle_event(&state, &Event::char('x')), None);
+    assert_eq!(
+        FlameGraph::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        None
+    );
 }
 
 // =============================================================================

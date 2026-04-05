@@ -599,11 +599,15 @@ fn test_handle_event_scroll_up() {
     state.set_focused(true);
 
     // Up arrow -> ScrollUp
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
 
     // Vim 'k' -> ScrollUp
-    let msg = StatusLog::handle_event(&state, &Event::char('k'));
+    let msg = StatusLog::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
 }
 
@@ -613,11 +617,15 @@ fn test_handle_event_scroll_down() {
     state.set_focused(true);
 
     // Down arrow -> ScrollDown
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollDown));
 
     // Vim 'j' -> ScrollDown
-    let msg = StatusLog::handle_event(&state, &Event::char('j'));
+    let msg = StatusLog::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StatusLogMessage::ScrollDown));
 }
 
@@ -626,7 +634,11 @@ fn test_handle_event_scroll_to_top() {
     let mut state = StatusLogState::new();
     state.set_focused(true);
 
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Home));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollToTop));
 }
 
@@ -635,14 +647,18 @@ fn test_handle_event_scroll_to_bottom() {
     let mut state = StatusLogState::new();
     state.set_focused(true);
 
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::End));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollToBottom));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = StatusLogState::new();
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -660,7 +676,11 @@ fn test_dispatch_event() {
     state.set_scroll_offset(3);
 
     // Down arrow dispatches ScrollDown
-    StatusLog::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+    StatusLog::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(state.scroll_offset(), 4);
 }
 
@@ -730,19 +750,39 @@ fn test_handle_event_ignored_when_disabled() {
     state.set_focused(true);
     state.set_disabled(true);
 
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = StatusLog::handle_event(&state, &Event::char('k'));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::char('k'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Home));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::End));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -784,7 +824,11 @@ fn test_dispatch_event_ignored_when_disabled() {
     }
     state.set_scroll_offset(2);
 
-    let output = StatusLog::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+    let output = StatusLog::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(output, None);
     assert_eq!(state.scroll_offset(), 2);
 }

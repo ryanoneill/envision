@@ -364,8 +364,11 @@ fn focused_state(value: &str) -> InputFieldState {
 #[test]
 fn test_shift_left_event() {
     let state = focused_state("hello");
-    let msg =
-        InputField::handle_event(&state, &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::SelectLeft));
 }
 
@@ -375,6 +378,7 @@ fn test_shift_right_event() {
     let msg = InputField::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::SHIFT),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::SelectRight));
 }
@@ -382,15 +386,22 @@ fn test_shift_right_event() {
 #[test]
 fn test_shift_home_event() {
     let state = focused_state("hello");
-    let msg =
-        InputField::handle_event(&state, &Event::key_with(KeyCode::Home, KeyModifiers::SHIFT));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key_with(KeyCode::Home, KeyModifiers::SHIFT),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::SelectHome));
 }
 
 #[test]
 fn test_shift_end_event() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(&state, &Event::key_with(KeyCode::End, KeyModifiers::SHIFT));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key_with(KeyCode::End, KeyModifiers::SHIFT),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::SelectEnd));
 }
 
@@ -400,6 +411,7 @@ fn test_ctrl_shift_left_event() {
     let msg = InputField::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL | KeyModifiers::SHIFT),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::SelectWordLeft));
 }
@@ -410,6 +422,7 @@ fn test_ctrl_shift_right_event() {
     let msg = InputField::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL | KeyModifiers::SHIFT),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::SelectWordRight));
 }
@@ -417,14 +430,16 @@ fn test_ctrl_shift_right_event() {
 #[test]
 fn test_ctrl_c_event() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(&state, &Event::ctrl('c'));
+    let msg =
+        InputField::handle_event(&state, &Event::ctrl('c'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(InputFieldMessage::Copy));
 }
 
 #[test]
 fn test_ctrl_x_event() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(&state, &Event::ctrl('x'));
+    let msg =
+        InputField::handle_event(&state, &Event::ctrl('x'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(InputFieldMessage::Cut));
 }
 
@@ -436,7 +451,8 @@ fn test_ctrl_x_event() {
 fn test_ctrl_v_event_with_clipboard() {
     let mut state = focused_state("hello");
     state.clipboard = "world".into();
-    let msg = InputField::handle_event(&state, &Event::ctrl('v'));
+    let msg =
+        InputField::handle_event(&state, &Event::ctrl('v'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(InputFieldMessage::Paste("world".into())));
 }
 
@@ -447,7 +463,8 @@ fn test_ctrl_v_event_with_clipboard() {
 #[test]
 fn test_ctrl_v_event_empty_clipboard() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(&state, &Event::ctrl('v'));
+    let msg =
+        InputField::handle_event(&state, &Event::ctrl('v'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
@@ -458,7 +475,8 @@ fn test_ctrl_v_event_empty_clipboard() {
 fn test_ctrl_v_event_with_internal_clipboard() {
     let mut state = focused_state("hello");
     state.clipboard = "world".into();
-    let msg = InputField::handle_event(&state, &Event::ctrl('v'));
+    let msg =
+        InputField::handle_event(&state, &Event::ctrl('v'), &ViewContext::new().focused(true));
     // System clipboard may override internal, but should still produce a Paste
     assert!(matches!(msg, Some(InputFieldMessage::Paste(_))));
 }
@@ -466,14 +484,19 @@ fn test_ctrl_v_event_with_internal_clipboard() {
 #[test]
 fn test_ctrl_a_event() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(&state, &Event::ctrl('a'));
+    let msg =
+        InputField::handle_event(&state, &Event::ctrl('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(InputFieldMessage::SelectAll));
 }
 
 #[test]
 fn test_paste_event() {
     let state = focused_state("hello");
-    let msg = InputField::handle_event(&state, &Event::Paste("pasted text".into()));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::Paste("pasted text".into()),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Paste("pasted text".into())));
 }
 

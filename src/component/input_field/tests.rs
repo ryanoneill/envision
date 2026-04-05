@@ -280,7 +280,13 @@ fn test_view_unfocused() {
 
     terminal
         .draw(|frame| {
-            InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            InputField::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -316,7 +322,13 @@ fn test_view_placeholder() {
 
     terminal
         .draw(|frame| {
-            InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            InputField::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -398,7 +410,8 @@ fn test_word_nav_with_emoji() {
 fn test_handle_event_char_insert() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::char('a'));
+    let msg =
+        InputField::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(InputFieldMessage::Insert('a')));
 }
 
@@ -406,7 +419,11 @@ fn test_handle_event_char_insert() {
 fn test_handle_event_backspace() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Backspace));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Backspace),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Backspace));
 }
 
@@ -414,7 +431,11 @@ fn test_handle_event_backspace() {
 fn test_handle_event_delete() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Delete));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Delete),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Delete));
 }
 
@@ -422,7 +443,11 @@ fn test_handle_event_delete() {
 fn test_handle_event_left() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Left));
 }
 
@@ -430,7 +455,11 @@ fn test_handle_event_left() {
 fn test_handle_event_right() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Right));
 }
 
@@ -438,7 +467,11 @@ fn test_handle_event_right() {
 fn test_handle_event_home() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Home));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Home));
 }
 
@@ -446,7 +479,11 @@ fn test_handle_event_home() {
 fn test_handle_event_end() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::End));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::End));
 }
 
@@ -454,7 +491,11 @@ fn test_handle_event_end() {
 fn test_handle_event_enter() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(InputFieldMessage::Submit));
 }
 
@@ -465,6 +506,7 @@ fn test_handle_event_ctrl_left() {
     let msg = InputField::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::WordLeft));
 }
@@ -476,6 +518,7 @@ fn test_handle_event_ctrl_right() {
     let msg = InputField::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::WordRight));
 }
@@ -483,7 +526,7 @@ fn test_handle_event_ctrl_right() {
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = InputField::init();
-    let msg = InputField::handle_event(&state, &Event::char('a'));
+    let msg = InputField::handle_event(&state, &Event::char('a'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -491,7 +534,11 @@ fn test_handle_event_ignored_when_unfocused() {
 fn test_dispatch_event_char() {
     let mut state = InputField::init();
     InputField::set_focused(&mut state, true);
-    let output = InputField::dispatch_event(&mut state, &Event::char('a'));
+    let output = InputField::dispatch_event(
+        &mut state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(InputFieldOutput::Changed("a".to_string())));
 }
 
@@ -563,16 +610,32 @@ fn test_handle_event_ignored_when_disabled() {
     state.set_focused(true);
     state.set_disabled(true);
 
-    let msg = InputField::handle_event(&state, &Event::char('a'));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Backspace));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Backspace),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = InputField::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = InputField::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -603,7 +666,11 @@ fn test_dispatch_event_ignored_when_disabled() {
     state.set_focused(true);
     state.set_disabled(true);
 
-    let output = InputField::dispatch_event(&mut state, &Event::char('a'));
+    let output = InputField::dispatch_event(
+        &mut state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(output, None);
     assert!(state.is_empty());
 }
@@ -710,7 +777,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                InputField::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                InputField::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });

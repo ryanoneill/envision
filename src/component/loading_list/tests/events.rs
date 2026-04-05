@@ -10,7 +10,11 @@ fn test_handle_event_up() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
     state.set_focused(true);
 
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(LoadingListMessage::Up));
 }
 
@@ -20,7 +24,11 @@ fn test_handle_event_down() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
     state.set_focused(true);
 
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(LoadingListMessage::Down));
 }
 
@@ -30,7 +38,11 @@ fn test_handle_event_select() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
     state.set_focused(true);
 
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(LoadingListMessage::Select));
 }
 
@@ -41,11 +53,19 @@ fn test_handle_event_vim_keys() {
     state.set_focused(true);
 
     // 'k' -> Up
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::char('k'));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::char('k'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(LoadingListMessage::Up));
 
     // 'j' -> Down
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::char('j'));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::char('j'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(LoadingListMessage::Down));
 }
 
@@ -54,7 +74,11 @@ fn test_handle_event_ignored_when_unfocused() {
     let items = make_items();
     let state = LoadingListState::with_items(items, |i| i.name.clone());
     // Not focused by default
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -69,7 +93,11 @@ fn test_dispatch_event() {
     state.set_focused(true);
 
     // Down dispatches Down message, which selects the first item
-    let output = LoadingList::<TestItem>::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+    let output = LoadingList::<TestItem>::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert!(matches!(
         output,
         Some(LoadingListOutput::SelectionChanged(0))
@@ -140,7 +168,11 @@ fn test_disabled_prevents_handle_event() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
     state.set_focused(true);
     state.set_disabled(true);
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -225,16 +257,32 @@ fn test_handle_event_unrecognized_key() {
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
     state.set_focused(true);
 
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::char('a'));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::char('x'));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::char('x'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = LoadingList::<TestItem>::handle_event(
+        &state,
+        &Event::key(KeyCode::Esc),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -282,23 +330,35 @@ fn test_handle_event_all_keys_ignored_when_unfocused() {
     // Not focused (default)
 
     assert_eq!(
-        LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Up)),
+        LoadingList::<TestItem>::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::default()
+        ),
         None
     );
     assert_eq!(
-        LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Down)),
+        LoadingList::<TestItem>::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::default()
+        ),
         None
     );
     assert_eq!(
-        LoadingList::<TestItem>::handle_event(&state, &Event::key(KeyCode::Enter)),
+        LoadingList::<TestItem>::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &ViewContext::default()
+        ),
         None
     );
     assert_eq!(
-        LoadingList::<TestItem>::handle_event(&state, &Event::char('k')),
+        LoadingList::<TestItem>::handle_event(&state, &Event::char('k'), &ViewContext::default()),
         None
     );
     assert_eq!(
-        LoadingList::<TestItem>::handle_event(&state, &Event::char('j')),
+        LoadingList::<TestItem>::handle_event(&state, &Event::char('j'), &ViewContext::default()),
         None
     );
 }

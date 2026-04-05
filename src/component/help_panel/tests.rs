@@ -321,7 +321,11 @@ fn test_update_returns_none() {
 fn test_handle_event_up() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::Up)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::ScrollUp)
     );
 }
@@ -330,7 +334,11 @@ fn test_handle_event_up() {
 fn test_handle_event_down() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::Down)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::ScrollDown)
     );
 }
@@ -339,11 +347,11 @@ fn test_handle_event_down() {
 fn test_handle_event_k_j() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::char('k')),
+        HelpPanel::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(HelpPanelMessage::ScrollUp)
     );
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::char('j')),
+        HelpPanel::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(HelpPanelMessage::ScrollDown)
     );
 }
@@ -352,11 +360,19 @@ fn test_handle_event_k_j() {
 fn test_handle_event_page_up_down() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::PageUp)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::PageUp),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::PageUp(10))
     );
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::PageDown)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::PageDown),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::PageDown(10))
     );
 }
@@ -365,11 +381,11 @@ fn test_handle_event_page_up_down() {
 fn test_handle_event_ctrl_u_d() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::ctrl('u')),
+        HelpPanel::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true)),
         Some(HelpPanelMessage::PageUp(10))
     );
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::ctrl('d')),
+        HelpPanel::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true)),
         Some(HelpPanelMessage::PageDown(10))
     );
 }
@@ -378,11 +394,19 @@ fn test_handle_event_ctrl_u_d() {
 fn test_handle_event_home_end() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::Home)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::Home)
     );
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::End)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(HelpPanelMessage::End)
     );
 }
@@ -392,13 +416,14 @@ fn test_handle_event_home_end() {
 fn test_handle_event_g_and_G() {
     let state = focused_state();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::char('g')),
+        HelpPanel::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true)),
         Some(HelpPanelMessage::Home)
     );
     assert_eq!(
         HelpPanel::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT)
+            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &ViewContext::new().focused(true)
         ),
         Some(HelpPanelMessage::End)
     );
@@ -407,7 +432,10 @@ fn test_handle_event_g_and_G() {
 #[test]
 fn test_handle_event_unrecognized() {
     let state = focused_state();
-    assert_eq!(HelpPanel::handle_event(&state, &Event::char('x')), None);
+    assert_eq!(
+        HelpPanel::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        None
+    );
 }
 
 // =============================================================================
@@ -419,7 +447,11 @@ fn test_disabled_ignores_events() {
     let mut state = focused_state();
     state.set_disabled(true);
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::Up)),
+        HelpPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true).disabled(true)
+        ),
         None
     );
 }
@@ -428,7 +460,7 @@ fn test_disabled_ignores_events() {
 fn test_unfocused_ignores_events() {
     let state = HelpPanelState::new();
     assert_eq!(
-        HelpPanel::handle_event(&state, &Event::key(KeyCode::Up)),
+        HelpPanel::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default()),
         None
     );
 }
@@ -563,7 +595,13 @@ fn test_view_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            HelpPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -575,7 +613,13 @@ fn test_view_with_groups() {
     let (mut terminal, theme) = test_utils::setup_render(40, 16);
     terminal
         .draw(|frame| {
-            HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            HelpPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -587,7 +631,13 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 16);
     terminal
         .draw(|frame| {
-            HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            HelpPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -624,7 +674,13 @@ fn test_view_scrolled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            HelpPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            HelpPanel::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

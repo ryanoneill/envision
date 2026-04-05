@@ -168,7 +168,8 @@ fn test_y_shortcut_yes_no() {
     let mut state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
     state.set_focused(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::char('y'));
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::char('y'), &ViewContext::new().focused(true));
     assert_eq!(
         msg,
         Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes))
@@ -180,7 +181,8 @@ fn test_n_shortcut_yes_no() {
     let mut state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
     state.set_focused(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::char('n'));
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true));
     assert_eq!(
         msg,
         Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::No))
@@ -192,7 +194,8 @@ fn test_y_shortcut_uppercase() {
     let mut state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
     state.set_focused(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::char('Y'));
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::char('Y'), &ViewContext::new().focused(true));
     assert_eq!(
         msg,
         Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes))
@@ -204,7 +207,8 @@ fn test_y_shortcut_not_in_ok_config() {
     let mut state = ConfirmDialogState::ok("T", "M").with_visible(true);
     state.set_focused(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::char('y'));
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::char('y'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
@@ -213,7 +217,11 @@ fn test_tab_key() {
     let mut state = ConfirmDialogState::ok_cancel("T", "M").with_visible(true);
     state.set_focused(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ConfirmDialogMessage::FocusNext));
 }
 
@@ -222,7 +230,11 @@ fn test_backtab_key() {
     let mut state = ConfirmDialogState::ok_cancel("T", "M").with_visible(true);
     state.set_focused(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::BackTab));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::key(KeyCode::BackTab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ConfirmDialogMessage::FocusPrev));
 }
 
@@ -231,7 +243,11 @@ fn test_enter_key() {
     let mut state = ConfirmDialogState::ok("T", "M").with_visible(true);
     state.set_focused(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ConfirmDialogMessage::Press));
 }
 
@@ -240,7 +256,11 @@ fn test_esc_key() {
     let mut state = ConfirmDialogState::ok("T", "M").with_visible(true);
     state.set_focused(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::key(KeyCode::Esc),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ConfirmDialogMessage::Close));
 }
 
@@ -283,7 +303,8 @@ fn test_open_resets_focus() {
 #[test]
 fn test_not_visible_ignores_events() {
     let state = ConfirmDialogState::ok("T", "M");
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -294,7 +315,11 @@ fn test_disabled_ignores_events() {
         .with_disabled(true);
     state.set_focused(true);
 
-    let msg = ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 

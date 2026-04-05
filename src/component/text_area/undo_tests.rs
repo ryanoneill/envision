@@ -276,14 +276,14 @@ fn test_undo_ignored_when_disabled() {
 #[test]
 fn test_ctrl_z_maps_to_undo() {
     let state = focused_state("hello");
-    let msg = TextArea::handle_event(&state, &Event::ctrl('z'));
+    let msg = TextArea::handle_event(&state, &Event::ctrl('z'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(TextAreaMessage::Undo));
 }
 
 #[test]
 fn test_ctrl_y_maps_to_redo() {
     let state = focused_state("hello");
-    let msg = TextArea::handle_event(&state, &Event::ctrl('y'));
+    let msg = TextArea::handle_event(&state, &Event::ctrl('y'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(TextAreaMessage::Redo));
 }
 

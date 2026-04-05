@@ -328,14 +328,20 @@ fn test_init() {
 fn test_handle_event_returns_none() {
     let state = SparklineState::with_data(vec![1, 2, 3]);
     let event = Event::key(crossterm::event::KeyCode::Enter);
-    assert_eq!(Sparkline::handle_event(&state, &event), None);
+    assert_eq!(
+        Sparkline::handle_event(&state, &event, &ViewContext::default()),
+        None
+    );
 }
 
 #[test]
 fn test_dispatch_event_returns_none() {
     let mut state = SparklineState::with_data(vec![1, 2, 3]);
     let event = Event::key(crossterm::event::KeyCode::Char('q'));
-    assert_eq!(Sparkline::dispatch_event(&mut state, &event), None);
+    assert_eq!(
+        Sparkline::dispatch_event(&mut state, &event, &ViewContext::default()),
+        None
+    );
 }
 
 // --- Disableable trait tests ---

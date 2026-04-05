@@ -554,7 +554,11 @@ fn test_disabled_ignores_messages() {
 fn test_disabled_ignores_events() {
     let mut state = focused_state();
     state.set_disabled(true);
-    let msg = LogViewer::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = LogViewer::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -565,7 +569,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = sample_state();
-    let msg = LogViewer::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = LogViewer::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -577,11 +581,15 @@ fn test_unfocused_ignores_events() {
 fn test_log_mode_up_key() {
     let state = focused_state();
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Up)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::ScrollUp)
     );
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::char('k')),
+        LogViewer::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(LogViewerMessage::ScrollUp)
     );
 }
@@ -590,11 +598,15 @@ fn test_log_mode_up_key() {
 fn test_log_mode_down_key() {
     let state = focused_state();
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Down)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::ScrollDown)
     );
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::char('j')),
+        LogViewer::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(LogViewerMessage::ScrollDown)
     );
 }
@@ -603,11 +615,19 @@ fn test_log_mode_down_key() {
 fn test_log_mode_home_end() {
     let state = focused_state();
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Home)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::ScrollToTop)
     );
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::End)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::ScrollToBottom)
     );
 }
@@ -616,7 +636,7 @@ fn test_log_mode_home_end() {
 fn test_log_mode_slash() {
     let state = focused_state();
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::char('/')),
+        LogViewer::handle_event(&state, &Event::char('/'), &ViewContext::new().focused(true)),
         Some(LogViewerMessage::FocusSearch)
     );
 }
@@ -625,19 +645,19 @@ fn test_log_mode_slash() {
 fn test_log_mode_number_keys() {
     let state = focused_state();
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::char('1')),
+        LogViewer::handle_event(&state, &Event::char('1'), &ViewContext::new().focused(true)),
         Some(LogViewerMessage::ToggleInfo)
     );
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::char('2')),
+        LogViewer::handle_event(&state, &Event::char('2'), &ViewContext::new().focused(true)),
         Some(LogViewerMessage::ToggleSuccess)
     );
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::char('3')),
+        LogViewer::handle_event(&state, &Event::char('3'), &ViewContext::new().focused(true)),
         Some(LogViewerMessage::ToggleWarning)
     );
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::char('4')),
+        LogViewer::handle_event(&state, &Event::char('4'), &ViewContext::new().focused(true)),
         Some(LogViewerMessage::ToggleError)
     );
 }
@@ -651,7 +671,7 @@ fn test_search_mode_char_input() {
     let mut state = focused_state();
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::char('a')),
+        LogViewer::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true)),
         Some(LogViewerMessage::SearchInput('a'))
     );
 }
@@ -661,7 +681,11 @@ fn test_search_mode_esc() {
     let mut state = focused_state();
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Esc)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Esc),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::ClearSearch)
     );
 }
@@ -671,7 +695,11 @@ fn test_search_mode_enter() {
     let mut state = focused_state();
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Enter)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::ConfirmSearch)
     );
 }
@@ -681,7 +709,11 @@ fn test_search_mode_backspace() {
     let mut state = focused_state();
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Backspace)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Backspace),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::SearchBackspace)
     );
 }
@@ -691,7 +723,11 @@ fn test_search_mode_delete() {
     let mut state = focused_state();
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Delete)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Delete),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::SearchDelete)
     );
 }
@@ -701,11 +737,19 @@ fn test_search_mode_left_right() {
     let mut state = focused_state();
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Left)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Left),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::SearchLeft)
     );
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Right)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::SearchRight)
     );
 }
@@ -715,11 +759,19 @@ fn test_search_mode_home_end() {
     let mut state = focused_state();
     LogViewer::update(&mut state, LogViewerMessage::FocusSearch);
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::Home)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::SearchHome)
     );
     assert_eq!(
-        LogViewer::handle_event(&state, &Event::key(KeyCode::End)),
+        LogViewer::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogViewerMessage::SearchEnd)
     );
 }
@@ -759,7 +811,13 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -770,7 +828,13 @@ fn test_render_with_entries() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -781,7 +845,13 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -795,7 +865,13 @@ fn test_render_search_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -825,7 +901,13 @@ fn test_render_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -838,7 +920,13 @@ fn test_render_with_timestamps() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -849,7 +937,13 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -973,7 +1067,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                LogViewer::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });

@@ -515,7 +515,11 @@ fn test_disabled_ignores_events() {
     let mut state = focused_state();
     state.set_disabled(true);
 
-    let msg = SearchableList::handle_event(&state, &Event::char('a'));
+    let msg = SearchableList::handle_event(
+        &state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -528,7 +532,7 @@ fn test_unfocused_ignores_events() {
     let state = SearchableListState::new(sample_items());
     assert!(!state.is_focused());
 
-    let msg = SearchableList::handle_event(&state, &Event::char('a'));
+    let msg = SearchableList::handle_event(&state, &Event::char('a'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 

@@ -494,7 +494,7 @@ state types.
 **Static trait method (works, but verbose with generics):**
 
 ```rust
-let msg = SelectableList::<String>::handle_event(&state, &event);
+let msg = SelectableList::<String>::handle_event(&state, &event, &ViewContext::default());
 if let Some(msg) = msg {
     let output = SelectableList::<String>::update(&mut state, msg);
 }
@@ -596,7 +596,7 @@ Static trait methods work but are verbose, especially with generic components:
 
 ```rust
 // Works but verbose (especially with generics requiring turbofish)
-let msg = SelectableList::<String>::handle_event(&state, &event);
+let msg = SelectableList::<String>::handle_event(&state, &event, &ViewContext::default());
 if let Some(msg) = msg {
     SelectableList::<String>::update(&mut state, msg);
 }

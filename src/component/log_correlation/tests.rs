@@ -625,7 +625,11 @@ fn test_set_stream_level_filter_message() {
 fn test_disabled_ignores_events() {
     let mut state = focused_state();
     state.set_disabled(true);
-    let msg = LogCorrelation::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = LogCorrelation::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -644,7 +648,8 @@ fn test_disabled_ignores_update() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = two_stream_state();
-    let msg = LogCorrelation::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg =
+        LogCorrelation::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -656,11 +661,15 @@ fn test_unfocused_ignores_events() {
 fn test_up_key() {
     let state = focused_state();
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::key(KeyCode::Up)),
+        LogCorrelation::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogCorrelationMessage::ScrollUp)
     );
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::char('k')),
+        LogCorrelation::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(LogCorrelationMessage::ScrollUp)
     );
 }
@@ -669,11 +678,15 @@ fn test_up_key() {
 fn test_down_key() {
     let state = focused_state();
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::key(KeyCode::Down)),
+        LogCorrelation::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogCorrelationMessage::ScrollDown)
     );
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::char('j')),
+        LogCorrelation::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(LogCorrelationMessage::ScrollDown)
     );
 }
@@ -682,11 +695,19 @@ fn test_down_key() {
 fn test_home_end_keys() {
     let state = focused_state();
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::key(KeyCode::Home)),
+        LogCorrelation::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogCorrelationMessage::ScrollToTop)
     );
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::key(KeyCode::End)),
+        LogCorrelation::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogCorrelationMessage::ScrollToBottom)
     );
 }
@@ -695,7 +716,11 @@ fn test_home_end_keys() {
 fn test_tab_key() {
     let state = focused_state();
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::key(KeyCode::Tab)),
+        LogCorrelation::handle_event(
+            &state,
+            &Event::key(KeyCode::Tab),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogCorrelationMessage::FocusNextStream)
     );
 }
@@ -704,7 +729,11 @@ fn test_tab_key() {
 fn test_backtab_key() {
     let state = focused_state();
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::key(KeyCode::BackTab)),
+        LogCorrelation::handle_event(
+            &state,
+            &Event::key(KeyCode::BackTab),
+            &ViewContext::new().focused(true)
+        ),
         Some(LogCorrelationMessage::FocusPrevStream)
     );
 }
@@ -713,7 +742,7 @@ fn test_backtab_key() {
 fn test_s_key() {
     let state = focused_state();
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::char('s')),
+        LogCorrelation::handle_event(&state, &Event::char('s'), &ViewContext::new().focused(true)),
         Some(LogCorrelationMessage::ToggleSyncScroll)
     );
 }
@@ -753,7 +782,13 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogCorrelation::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -764,7 +799,13 @@ fn test_render_two_streams() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogCorrelation::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -775,7 +816,13 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogCorrelation::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -816,7 +863,13 @@ fn test_render_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogCorrelation::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -828,7 +881,13 @@ fn test_render_with_filter() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogCorrelation::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -839,7 +898,13 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(80, 2);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogCorrelation::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -850,7 +915,13 @@ fn test_render_narrow_area() {
     let (mut terminal, theme) = test_utils::setup_render(20, 10);
     terminal
         .draw(|frame| {
-            LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogCorrelation::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -964,7 +1035,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                LogCorrelation::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                LogCorrelation::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });

@@ -512,7 +512,11 @@ fn test_select_disabled_guard() {
 fn test_handle_event_right_arrow() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     state.set_focused(true);
-    let msg = StepIndicator::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = StepIndicator::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StepIndicatorMessage::FocusNext));
 }
 
@@ -520,7 +524,8 @@ fn test_handle_event_right_arrow() {
 fn test_handle_event_l_key() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     state.set_focused(true);
-    let msg = StepIndicator::handle_event(&state, &Event::char('l'));
+    let msg =
+        StepIndicator::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StepIndicatorMessage::FocusNext));
 }
 
@@ -528,7 +533,11 @@ fn test_handle_event_l_key() {
 fn test_handle_event_left_arrow() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     state.set_focused(true);
-    let msg = StepIndicator::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = StepIndicator::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StepIndicatorMessage::FocusPrev));
 }
 
@@ -536,7 +545,8 @@ fn test_handle_event_left_arrow() {
 fn test_handle_event_h_key() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     state.set_focused(true);
-    let msg = StepIndicator::handle_event(&state, &Event::char('h'));
+    let msg =
+        StepIndicator::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(StepIndicatorMessage::FocusPrev));
 }
 
@@ -544,7 +554,11 @@ fn test_handle_event_h_key() {
 fn test_handle_event_home() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     state.set_focused(true);
-    let msg = StepIndicator::handle_event(&state, &Event::key(KeyCode::Home));
+    let msg = StepIndicator::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StepIndicatorMessage::First));
 }
 
@@ -552,7 +566,11 @@ fn test_handle_event_home() {
 fn test_handle_event_end() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     state.set_focused(true);
-    let msg = StepIndicator::handle_event(&state, &Event::key(KeyCode::End));
+    let msg = StepIndicator::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StepIndicatorMessage::Last));
 }
 
@@ -560,14 +578,19 @@ fn test_handle_event_end() {
 fn test_handle_event_enter() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     state.set_focused(true);
-    let msg = StepIndicator::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = StepIndicator::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StepIndicatorMessage::Select));
 }
 
 #[test]
 fn test_handle_event_unfocused_ignored() {
     let state = StepIndicatorState::new(vec![Step::new("A")]);
-    let msg = StepIndicator::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg =
+        StepIndicator::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -575,7 +598,11 @@ fn test_handle_event_unfocused_ignored() {
 fn test_handle_event_disabled_ignored() {
     let mut state = StepIndicatorState::new(vec![Step::new("A")]).with_disabled(true);
     state.set_focused(true);
-    let msg = StepIndicator::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = StepIndicator::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -583,7 +610,8 @@ fn test_handle_event_disabled_ignored() {
 fn test_handle_event_unrecognized_key() {
     let mut state = StepIndicatorState::new(vec![Step::new("A")]);
     state.set_focused(true);
-    let msg = StepIndicator::handle_event(&state, &Event::char('z'));
+    let msg =
+        StepIndicator::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 

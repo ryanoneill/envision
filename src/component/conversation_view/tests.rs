@@ -571,7 +571,7 @@ fn test_disableable_trait() {
 fn test_unfocused_ignores_events() {
     let state = ConversationViewState::new();
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::char('k')),
+        ConversationView::handle_event(&state, &Event::char('k'), &ViewContext::default()),
         None
     );
 }
@@ -581,7 +581,11 @@ fn test_disabled_ignores_events() {
     let mut state = focused_state();
     state.set_disabled(true);
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::char('k')),
+        ConversationView::handle_event(
+            &state,
+            &Event::char('k'),
+            &ViewContext::new().focused(true).disabled(true)
+        ),
         None
     );
 }
@@ -598,11 +602,19 @@ fn test_disabled_ignores_updates() {
 fn test_scroll_up_event() {
     let state = focused_state();
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::key(KeyCode::Up)),
+        ConversationView::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(ConversationViewMessage::ScrollUp)
     );
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::char('k')),
+        ConversationView::handle_event(
+            &state,
+            &Event::char('k'),
+            &ViewContext::new().focused(true)
+        ),
         Some(ConversationViewMessage::ScrollUp)
     );
 }
@@ -611,11 +623,19 @@ fn test_scroll_up_event() {
 fn test_scroll_down_event() {
     let state = focused_state();
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::key(KeyCode::Down)),
+        ConversationView::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(ConversationViewMessage::ScrollDown)
     );
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::char('j')),
+        ConversationView::handle_event(
+            &state,
+            &Event::char('j'),
+            &ViewContext::new().focused(true)
+        ),
         Some(ConversationViewMessage::ScrollDown)
     );
 }
@@ -624,11 +644,19 @@ fn test_scroll_down_event() {
 fn test_scroll_to_top_event() {
     let state = focused_state();
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::key(KeyCode::Home)),
+        ConversationView::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(ConversationViewMessage::ScrollToTop)
     );
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::char('g')),
+        ConversationView::handle_event(
+            &state,
+            &Event::char('g'),
+            &ViewContext::new().focused(true)
+        ),
         Some(ConversationViewMessage::ScrollToTop)
     );
 }
@@ -637,11 +665,19 @@ fn test_scroll_to_top_event() {
 fn test_scroll_to_bottom_event() {
     let state = focused_state();
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::key(KeyCode::End)),
+        ConversationView::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(ConversationViewMessage::ScrollToBottom)
     );
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::char('G')),
+        ConversationView::handle_event(
+            &state,
+            &Event::char('G'),
+            &ViewContext::new().focused(true)
+        ),
         Some(ConversationViewMessage::ScrollToBottom)
     );
 }
@@ -650,7 +686,11 @@ fn test_scroll_to_bottom_event() {
 fn test_page_up_event() {
     let state = focused_state();
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::key(KeyCode::PageUp)),
+        ConversationView::handle_event(
+            &state,
+            &Event::key(KeyCode::PageUp),
+            &ViewContext::new().focused(true)
+        ),
         Some(ConversationViewMessage::PageUp)
     );
 }
@@ -659,7 +699,11 @@ fn test_page_up_event() {
 fn test_page_down_event() {
     let state = focused_state();
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::key(KeyCode::PageDown)),
+        ConversationView::handle_event(
+            &state,
+            &Event::key(KeyCode::PageDown),
+            &ViewContext::new().focused(true)
+        ),
         Some(ConversationViewMessage::PageDown)
     );
 }
@@ -668,7 +712,11 @@ fn test_page_down_event() {
 fn test_unrecognized_key_ignored() {
     let state = focused_state();
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::char('x')),
+        ConversationView::handle_event(
+            &state,
+            &Event::char('x'),
+            &ViewContext::new().focused(true)
+        ),
         None
     );
 }

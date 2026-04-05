@@ -346,7 +346,11 @@ fn test_large_list_navigation() {
 fn test_handle_event_up() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::Up));
 }
 
@@ -354,7 +358,11 @@ fn test_handle_event_up() {
 fn test_handle_event_down() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::Down));
 }
 
@@ -362,7 +370,11 @@ fn test_handle_event_down() {
 fn test_handle_event_home() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::key(KeyCode::Home));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::First));
 }
 
@@ -370,7 +382,11 @@ fn test_handle_event_home() {
 fn test_handle_event_end() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::key(KeyCode::End));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::Last));
 }
 
@@ -378,7 +394,11 @@ fn test_handle_event_end() {
 fn test_handle_event_enter() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::Select));
 }
 
@@ -386,7 +406,11 @@ fn test_handle_event_enter() {
 fn test_handle_event_page_up() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::key(KeyCode::PageUp));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::key(KeyCode::PageUp),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::PageUp(10)));
 }
 
@@ -394,7 +418,11 @@ fn test_handle_event_page_up() {
 fn test_handle_event_page_down() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::key(KeyCode::PageDown));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::key(KeyCode::PageDown),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::PageDown(10)));
 }
 
@@ -402,7 +430,11 @@ fn test_handle_event_page_down() {
 fn test_handle_event_vim_k() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::char('k'));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::char('k'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::Up));
 }
 
@@ -410,7 +442,11 @@ fn test_handle_event_vim_k() {
 fn test_handle_event_vim_j() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::char('j'));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::char('j'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::Down));
 }
 
@@ -418,7 +454,11 @@ fn test_handle_event_vim_j() {
 fn test_handle_event_vim_g() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::char('g'));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::char('g'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::First));
 }
 
@@ -426,14 +466,22 @@ fn test_handle_event_vim_g() {
 fn test_handle_event_vim_shift_g() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::char('G'));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::char('G'),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectableListMessage::Last));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
-    let msg = SelectableList::<String>::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = SelectableList::<String>::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -441,7 +489,11 @@ fn test_handle_event_ignored_when_unfocused() {
 fn test_dispatch_event_selectable_list() {
     let mut state = SelectableListState::new(vec!["one".to_string(), "two".to_string()]);
     state.set_focused(true);
-    let output = SelectableList::<String>::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+    let output = SelectableList::<String>::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(SelectableListOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
 }

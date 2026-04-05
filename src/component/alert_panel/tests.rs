@@ -594,23 +594,43 @@ fn test_set_columns_minimum_message() {
 fn test_key_maps() {
     let state = focused_state();
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Left)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Left),
+            &ViewContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectPrev)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Right)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &ViewContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectNext)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Up)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectUp)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Down)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectDown)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Enter)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &ViewContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::Select)
     );
 }
@@ -619,19 +639,19 @@ fn test_key_maps() {
 fn test_vim_key_maps() {
     let state = focused_state();
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('h')),
+        AlertPanel::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
         Some(AlertPanelMessage::SelectPrev)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('l')),
+        AlertPanel::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
         Some(AlertPanelMessage::SelectNext)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('k')),
+        AlertPanel::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(AlertPanelMessage::SelectUp)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('j')),
+        AlertPanel::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(AlertPanelMessage::SelectDown)
     );
 }
@@ -644,7 +664,11 @@ fn test_vim_key_maps() {
 fn test_disabled_ignores_events() {
     let mut state = focused_state();
     state.set_disabled(true);
-    let msg = AlertPanel::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = AlertPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -655,7 +679,8 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = AlertPanelState::new().with_metrics(sample_metrics());
-    let msg = AlertPanel::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg =
+        AlertPanel::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 }
 

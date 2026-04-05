@@ -467,7 +467,11 @@ fn test_handle_event_left_when_focused() {
     let mut state = TabsState::with_selected(vec!["A", "B", "C"], 1);
     state.focused = true;
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = Tabs::<&str>::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TabsMessage::Left));
 }
 
@@ -476,7 +480,11 @@ fn test_handle_event_right_when_focused() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     state.focused = true;
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Tabs::<&str>::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TabsMessage::Right));
 }
 
@@ -485,7 +493,11 @@ fn test_handle_event_first_when_focused() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     state.focused = true;
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Home));
+    let msg = Tabs::<&str>::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TabsMessage::First));
 }
 
@@ -494,7 +506,11 @@ fn test_handle_event_last_when_focused() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     state.focused = true;
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::End));
+    let msg = Tabs::<&str>::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TabsMessage::Last));
 }
 
@@ -503,7 +519,11 @@ fn test_handle_event_confirm_when_focused() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     state.focused = true;
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Tabs::<&str>::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TabsMessage::Confirm));
 }
 
@@ -512,10 +532,12 @@ fn test_handle_event_vim_keys() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     state.focused = true;
 
-    let msg_h = Tabs::<&str>::handle_event(&state, &Event::char('h'));
+    let msg_h =
+        Tabs::<&str>::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
     assert_eq!(msg_h, Some(TabsMessage::Left));
 
-    let msg_l = Tabs::<&str>::handle_event(&state, &Event::char('l'));
+    let msg_l =
+        Tabs::<&str>::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
     assert_eq!(msg_l, Some(TabsMessage::Right));
 }
 
@@ -524,13 +546,15 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = TabsState::new(vec!["A", "B", "C"]);
     // focused is false by default
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg =
+        Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg =
+        Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::char('l'));
+    let msg = Tabs::<&str>::handle_event(&state, &Event::char('l'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -540,10 +564,18 @@ fn test_handle_event_ignored_when_disabled() {
     state.focused = true;
     state.set_disabled(true);
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Tabs::<&str>::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Tabs::<&str>::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -555,12 +587,20 @@ fn test_dispatch_event() {
     state.focused = true;
 
     // Dispatch Right: should move selection from 0 to 1
-    let output = Tabs::<&str>::dispatch_event(&mut state, &Event::key(KeyCode::Right));
+    let output = Tabs::<&str>::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
 
     // Dispatch Enter: should confirm the current selection
-    let output = Tabs::<&str>::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = Tabs::<&str>::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(TabsOutput::Confirmed("B")));
 }
 

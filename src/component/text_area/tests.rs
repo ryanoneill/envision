@@ -805,7 +805,7 @@ fn test_multiline_mixed_unicode() {
 fn test_handle_event_char_insert() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::char('a'));
+    let msg = TextArea::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(TextAreaMessage::Insert('a')));
 }
 
@@ -813,7 +813,11 @@ fn test_handle_event_char_insert() {
 fn test_handle_event_enter() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::NewLine));
 }
 
@@ -821,7 +825,11 @@ fn test_handle_event_enter() {
 fn test_handle_event_arrow_up() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Up));
 }
 
@@ -829,7 +837,11 @@ fn test_handle_event_arrow_up() {
 fn test_handle_event_arrow_down() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Down));
 }
 
@@ -837,7 +849,11 @@ fn test_handle_event_arrow_down() {
 fn test_handle_event_arrow_left() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Left));
 }
 
@@ -845,7 +861,11 @@ fn test_handle_event_arrow_left() {
 fn test_handle_event_arrow_right() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Right));
 }
 
@@ -856,6 +876,7 @@ fn test_handle_event_ctrl_home() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key_with(KeyCode::Home, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::TextStart));
 }
@@ -867,6 +888,7 @@ fn test_handle_event_ctrl_end() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key_with(KeyCode::End, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::TextEnd));
 }
@@ -875,7 +897,7 @@ fn test_handle_event_ctrl_end() {
 fn test_handle_event_ctrl_k() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::ctrl('k'));
+    let msg = TextArea::handle_event(&state, &Event::ctrl('k'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(TextAreaMessage::DeleteToEnd));
 }
 
@@ -883,14 +905,14 @@ fn test_handle_event_ctrl_k() {
 fn test_handle_event_ctrl_u() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let msg = TextArea::handle_event(&state, &Event::ctrl('u'));
+    let msg = TextArea::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(TextAreaMessage::DeleteToStart));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = TextArea::init();
-    let msg = TextArea::handle_event(&state, &Event::char('a'));
+    let msg = TextArea::handle_event(&state, &Event::char('a'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -898,7 +920,11 @@ fn test_handle_event_ignored_when_unfocused() {
 fn test_dispatch_event_insert() {
     let mut state = TextArea::init();
     TextArea::set_focused(&mut state, true);
-    let output = TextArea::dispatch_event(&mut state, &Event::char('a'));
+    let output = TextArea::dispatch_event(
+        &mut state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true),
+    );
     assert!(matches!(output, Some(TextAreaOutput::Changed(_))));
     assert_eq!(state.value(), "a");
 }

@@ -466,7 +466,11 @@ fn test_component_init() {
 #[test]
 fn test_handle_event_not_focused() {
     let state = BoxPlotState::default();
-    let msg = BoxPlot::handle_event(&state, &Event::key(crate::input::KeyCode::Right));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::key(crate::input::KeyCode::Right),
+        &ViewContext::default(),
+    );
     assert!(msg.is_none());
 }
 
@@ -475,7 +479,11 @@ fn test_handle_event_disabled() {
     let mut state = BoxPlotState::default();
     state.set_focused(true);
     state.set_disabled(true);
-    let msg = BoxPlot::handle_event(&state, &Event::key(crate::input::KeyCode::Right));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::key(crate::input::KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert!(msg.is_none());
 }
 
@@ -486,7 +494,11 @@ fn test_handle_event_right_arrow() {
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
     ]);
     state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::key(crate::input::KeyCode::Right));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::key(crate::input::KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BoxPlotMessage::NextDataset));
 }
 
@@ -497,7 +509,11 @@ fn test_handle_event_left_arrow() {
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
     ]);
     state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::key(crate::input::KeyCode::Left));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::key(crate::input::KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BoxPlotMessage::PrevDataset));
 }
 
@@ -505,7 +521,7 @@ fn test_handle_event_left_arrow() {
 fn test_handle_event_l_key() {
     let mut state = BoxPlotState::default();
     state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::char('l'));
+    let msg = BoxPlot::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(BoxPlotMessage::NextDataset));
 }
 
@@ -513,7 +529,7 @@ fn test_handle_event_l_key() {
 fn test_handle_event_h_key() {
     let mut state = BoxPlotState::default();
     state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::char('h'));
+    let msg = BoxPlot::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(BoxPlotMessage::PrevDataset));
 }
 
@@ -521,7 +537,7 @@ fn test_handle_event_h_key() {
 fn test_handle_event_o_key() {
     let mut state = BoxPlotState::default();
     state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::char('o'));
+    let msg = BoxPlot::handle_event(&state, &Event::char('o'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(BoxPlotMessage::ToggleOutliers));
 }
 
@@ -529,7 +545,7 @@ fn test_handle_event_o_key() {
 fn test_handle_event_unhandled_key() {
     let mut state = BoxPlotState::default();
     state.set_focused(true);
-    let msg = BoxPlot::handle_event(&state, &Event::char('z'));
+    let msg = BoxPlot::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
     assert!(msg.is_none());
 }
 

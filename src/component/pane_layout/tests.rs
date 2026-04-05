@@ -547,7 +547,11 @@ fn test_handle_event_tab() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     state.set_focused(true);
-    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = PaneLayout::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(PaneLayoutMessage::FocusNext));
 }
 
@@ -556,7 +560,11 @@ fn test_handle_event_backtab() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     state.set_focused(true);
-    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::BackTab));
+    let msg = PaneLayout::handle_event(
+        &state,
+        &Event::key(KeyCode::BackTab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(PaneLayoutMessage::FocusPrev));
 }
 
@@ -568,6 +576,7 @@ fn test_handle_event_ctrl_right() {
     let msg = PaneLayout::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::GrowFocused));
 }
@@ -580,6 +589,7 @@ fn test_handle_event_ctrl_left() {
     let msg = PaneLayout::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::ShrinkFocused));
 }
@@ -589,7 +599,8 @@ fn test_handle_event_ctrl_0() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     state.set_focused(true);
-    let msg = PaneLayout::handle_event(&state, &Event::ctrl('0'));
+    let msg =
+        PaneLayout::handle_event(&state, &Event::ctrl('0'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(PaneLayoutMessage::ResetProportions));
 }
 
@@ -597,7 +608,7 @@ fn test_handle_event_ctrl_0() {
 fn test_handle_event_unfocused_ignored() {
     let panes = vec![PaneConfig::new("a")];
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -606,7 +617,11 @@ fn test_handle_event_disabled_ignored() {
     let panes = vec![PaneConfig::new("a")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes).with_disabled(true);
     state.set_focused(true);
-    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = PaneLayout::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -615,7 +630,8 @@ fn test_handle_event_unrecognized() {
     let panes = vec![PaneConfig::new("a")];
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     state.set_focused(true);
-    let msg = PaneLayout::handle_event(&state, &Event::char('z'));
+    let msg =
+        PaneLayout::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 

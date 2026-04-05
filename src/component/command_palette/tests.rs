@@ -533,7 +533,11 @@ fn test_disabled_ignores_all_messages() {
 fn test_disabled_ignores_events() {
     let mut state = active_state();
     state.set_disabled(true);
-    let msg = CommandPalette::handle_event(&state, &Event::char('a'));
+    let msg = CommandPalette::handle_event(
+        &state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -546,7 +550,7 @@ fn test_unfocused_ignores_events() {
     let mut state = CommandPaletteState::new(sample_items());
     state.set_visible(true);
     // focused is false by default
-    let msg = CommandPalette::handle_event(&state, &Event::char('a'));
+    let msg = CommandPalette::handle_event(&state, &Event::char('a'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -559,7 +563,8 @@ fn test_hidden_ignores_events() {
     let mut state = CommandPaletteState::new(sample_items());
     state.set_focused(true);
     // visible is false by default
-    let msg = CommandPalette::handle_event(&state, &Event::char('a'));
+    let msg =
+        CommandPalette::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 

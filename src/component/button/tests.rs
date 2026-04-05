@@ -104,7 +104,11 @@ fn test_view_disabled() {
 fn test_handle_event_enter_when_focused() {
     let mut state = ButtonState::new("OK");
     Button::set_focused(&mut state, true);
-    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Button::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ButtonMessage::Press));
 }
 
@@ -112,14 +116,14 @@ fn test_handle_event_enter_when_focused() {
 fn test_handle_event_space_when_focused() {
     let mut state = ButtonState::new("OK");
     Button::set_focused(&mut state, true);
-    let msg = Button::handle_event(&state, &Event::char(' '));
+    let msg = Button::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(ButtonMessage::Press));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = ButtonState::new("OK");
-    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -128,7 +132,11 @@ fn test_handle_event_ignored_when_disabled() {
     let mut state = ButtonState::new("OK");
     Button::set_focused(&mut state, true);
     state.set_disabled(true);
-    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Button::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -136,7 +144,7 @@ fn test_handle_event_ignored_when_disabled() {
 fn test_handle_event_irrelevant_key() {
     let mut state = ButtonState::new("OK");
     Button::set_focused(&mut state, true);
-    let msg = Button::handle_event(&state, &Event::char('x'));
+    let msg = Button::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
@@ -144,7 +152,11 @@ fn test_handle_event_irrelevant_key() {
 fn test_dispatch_event() {
     let mut state = ButtonState::new("OK");
     Button::set_focused(&mut state, true);
-    let output = Button::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = Button::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(ButtonOutput::Pressed));
 }
 

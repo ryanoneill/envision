@@ -282,7 +282,11 @@ fn test_disabled_ignores_events() {
     let mut state = vertical_state();
     state.set_disabled(true);
 
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -294,7 +298,7 @@ fn test_disabled_ignores_events() {
 fn test_unfocused_ignores_events() {
     let state = SplitPanelState::new(SplitOrientation::Vertical);
     assert!(!state.is_focused());
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -305,14 +309,22 @@ fn test_unfocused_ignores_events() {
 #[test]
 fn test_tab_maps_to_focus_other() {
     let state = vertical_state();
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SplitPanelMessage::FocusOther));
 }
 
 #[test]
 fn test_backtab_maps_to_focus_other() {
     let state = vertical_state();
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::BackTab));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::BackTab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SplitPanelMessage::FocusOther));
 }
 
@@ -322,6 +334,7 @@ fn test_ctrl_right_maps_to_grow_first() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::GrowFirst));
 }
@@ -332,6 +345,7 @@ fn test_ctrl_left_maps_to_shrink_first() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::ShrinkFirst));
 }
@@ -342,6 +356,7 @@ fn test_ctrl_down_maps_to_grow_first() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key_with(KeyCode::Down, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::GrowFirst));
 }
@@ -349,22 +364,30 @@ fn test_ctrl_down_maps_to_grow_first() {
 #[test]
 fn test_ctrl_up_maps_to_shrink_first() {
     let state = vertical_state();
-    let msg =
-        SplitPanel::handle_event(&state, &Event::key_with(KeyCode::Up, KeyModifiers::CONTROL));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::key_with(KeyCode::Up, KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SplitPanelMessage::ShrinkFirst));
 }
 
 #[test]
 fn test_ctrl_0_maps_to_reset_ratio() {
     let state = vertical_state();
-    let msg = SplitPanel::handle_event(&state, &Event::ctrl('0'));
+    let msg =
+        SplitPanel::handle_event(&state, &Event::ctrl('0'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(SplitPanelMessage::ResetRatio));
 }
 
 #[test]
 fn test_arrow_without_ctrl_ignored() {
     let state = vertical_state();
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 

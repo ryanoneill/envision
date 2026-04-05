@@ -773,7 +773,7 @@ mod handle_event_tests {
     fn test_key_bindings_when_focused() {
         let mut state = TableState::new(test_rows(), test_columns());
         state.set_focused(true);
-        let he = |e| Table::<TestRow>::handle_event(&state, &e);
+        let he = |e| Table::<TestRow>::handle_event(&state, &e, &ViewContext::new().focused(true));
         assert_eq!(he(Event::key(KeyCode::Up)), Some(TableMessage::Up));
         assert_eq!(he(Event::key(KeyCode::Down)), Some(TableMessage::Down));
         assert_eq!(he(Event::key(KeyCode::Home)), Some(TableMessage::First));
@@ -787,11 +787,19 @@ mod handle_event_tests {
     fn test_ignored_when_unfocused() {
         let state = TableState::new(test_rows(), test_columns());
         assert_eq!(
-            Table::<TestRow>::handle_event(&state, &Event::key(KeyCode::Down)),
+            Table::<TestRow>::handle_event(
+                &state,
+                &Event::key(KeyCode::Down),
+                &ViewContext::default()
+            ),
             None
         );
         assert_eq!(
-            Table::<TestRow>::handle_event(&state, &Event::key(KeyCode::Enter)),
+            Table::<TestRow>::handle_event(
+                &state,
+                &Event::key(KeyCode::Enter),
+                &ViewContext::default()
+            ),
             None
         );
     }
@@ -802,7 +810,11 @@ mod handle_event_tests {
         state.set_focused(true);
         state.set_disabled(true);
         assert_eq!(
-            Table::<TestRow>::handle_event(&state, &Event::key(KeyCode::Down)),
+            Table::<TestRow>::handle_event(
+                &state,
+                &Event::key(KeyCode::Down),
+                &ViewContext::new().focused(true).disabled(true)
+            ),
             None
         );
     }
@@ -811,7 +823,11 @@ mod handle_event_tests {
     fn test_dispatch_event() {
         let mut state = TableState::new(test_rows(), test_columns());
         state.set_focused(true);
-        let output = Table::<TestRow>::dispatch_event(&mut state, &Event::key(KeyCode::Down));
+        let output = Table::<TestRow>::dispatch_event(
+            &mut state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true),
+        );
         assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
         assert_eq!(state.selected_index(), Some(1));
     }

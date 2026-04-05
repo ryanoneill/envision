@@ -129,7 +129,7 @@ fn test_handle_event_focused() {
     let mut state = MyState::new();
     state.set_focused(true);
     let event = Event::key(KeyCode::Enter);
-    let msg = MyComponent::handle_event(&state, &event);
+    let msg = MyComponent::handle_event(&state, &event, &ViewContext::default());
     assert_eq!(msg, Some(MyMessage::Confirm));
 }
 ```

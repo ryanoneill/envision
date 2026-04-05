@@ -383,7 +383,13 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            Menu::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Menu::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 
@@ -438,7 +444,11 @@ fn test_handle_event_left_when_focused() {
     let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
     Menu::focus(&mut state);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = Menu::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(MenuMessage::Left));
 }
 
@@ -447,7 +457,11 @@ fn test_handle_event_right_when_focused() {
     let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
     Menu::focus(&mut state);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Menu::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(MenuMessage::Right));
 }
 
@@ -456,7 +470,11 @@ fn test_handle_event_select_when_focused() {
     let mut state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
     Menu::focus(&mut state);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Menu::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(MenuMessage::Select));
 }
 
@@ -465,13 +483,13 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
     // Not focused by default
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Left), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -483,12 +501,20 @@ fn test_dispatch_event() {
     Menu::focus(&mut state);
 
     // Dispatch Right: should move selection from 0 to 1
-    let output = Menu::dispatch_event(&mut state, &Event::key(KeyCode::Right));
+    let output = Menu::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
 
     // Dispatch Enter: should select the current item
-    let output = Menu::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = Menu::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(MenuOutput::Selected(1)));
 }
 
@@ -585,13 +611,25 @@ fn test_handle_event_ignored_when_disabled() {
     state.set_focused(true);
     state.set_disabled(true);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Menu::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = Menu::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Menu::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -622,7 +660,11 @@ fn test_dispatch_event_ignored_when_disabled() {
     state.set_focused(true);
     state.set_disabled(true);
 
-    let output = Menu::dispatch_event(&mut state, &Event::key(KeyCode::Right));
+    let output = Menu::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(0));
 }
@@ -673,7 +715,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Menu::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Menu::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });

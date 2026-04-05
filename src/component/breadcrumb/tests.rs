@@ -616,7 +616,11 @@ fn test_handle_event_left_when_focused() {
     state.set_focused(true);
     state.focused_index = 1;
 
-    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = Breadcrumb::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BreadcrumbMessage::Left));
 }
 
@@ -625,7 +629,11 @@ fn test_handle_event_right_when_focused() {
     let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
     state.set_focused(true);
 
-    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Breadcrumb::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BreadcrumbMessage::Right));
 }
 
@@ -634,7 +642,11 @@ fn test_handle_event_first_when_focused() {
     let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
     state.set_focused(true);
 
-    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Home));
+    let msg = Breadcrumb::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BreadcrumbMessage::First));
 }
 
@@ -643,7 +655,11 @@ fn test_handle_event_last_when_focused() {
     let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
     state.set_focused(true);
 
-    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::End));
+    let msg = Breadcrumb::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BreadcrumbMessage::Last));
 }
 
@@ -652,7 +668,11 @@ fn test_handle_event_select_when_focused() {
     let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
     state.set_focused(true);
 
-    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Breadcrumb::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BreadcrumbMessage::Select));
 }
 
@@ -661,10 +681,12 @@ fn test_handle_event_vim_keys() {
     let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
     state.set_focused(true);
 
-    let msg_h = Breadcrumb::handle_event(&state, &Event::char('h'));
+    let msg_h =
+        Breadcrumb::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
     assert_eq!(msg_h, Some(BreadcrumbMessage::Left));
 
-    let msg_l = Breadcrumb::handle_event(&state, &Event::char('l'));
+    let msg_l =
+        Breadcrumb::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
     assert_eq!(msg_l, Some(BreadcrumbMessage::Right));
 }
 
@@ -673,13 +695,15 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
     // Not focused by default
 
-    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg =
+        Breadcrumb::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 
-    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg =
+        Breadcrumb::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
     assert_eq!(msg, None);
 
-    let msg = Breadcrumb::handle_event(&state, &Event::char('l'));
+    let msg = Breadcrumb::handle_event(&state, &Event::char('l'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -689,10 +713,18 @@ fn test_handle_event_ignored_when_disabled() {
     state.set_focused(true);
     state.set_disabled(true);
 
-    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Breadcrumb::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 
-    let msg = Breadcrumb::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Breadcrumb::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -704,12 +736,20 @@ fn test_dispatch_event() {
     state.set_focused(true);
 
     // Dispatch Right: should move focus from 0 to 1
-    let output = Breadcrumb::dispatch_event(&mut state, &Event::key(KeyCode::Right));
+    let output = Breadcrumb::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(BreadcrumbOutput::FocusChanged(1)));
     assert_eq!(state.focused_index(), 1);
 
     // Dispatch Enter: should select the focused segment
-    let output = Breadcrumb::dispatch_event(&mut state, &Event::key(KeyCode::Enter));
+    let output = Breadcrumb::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, Some(BreadcrumbOutput::Selected(1)));
 }
 

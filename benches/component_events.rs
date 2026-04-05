@@ -7,7 +7,7 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use envision::component::{
     Column, Component, InputField, InputFieldState, SelectableList, SelectableListState, Table,
-    TableRow, TableState, TextArea, TextAreaState,
+    TableRow, TableState, TextArea, TextAreaState, ViewContext,
 };
 use envision::input::{Event, KeyCode};
 use ratatui::layout::Constraint;
@@ -67,7 +67,11 @@ fn bench_handle_event(c: &mut Criterion) {
             &size,
             |b, _| {
                 b.iter(|| {
-                    SelectableList::<String>::handle_event(black_box(&state), black_box(&event))
+                    SelectableList::<String>::handle_event(
+                        black_box(&state),
+                        black_box(&event),
+                        &ViewContext::new().focused(true),
+                    )
                 })
             },
         );
@@ -79,7 +83,11 @@ fn bench_handle_event(c: &mut Criterion) {
             &size,
             |b, _| {
                 b.iter(|| {
-                    SelectableList::<String>::handle_event(black_box(&state), black_box(&event))
+                    SelectableList::<String>::handle_event(
+                        black_box(&state),
+                        black_box(&event),
+                        &ViewContext::default(),
+                    )
                 })
             },
         );
@@ -93,13 +101,25 @@ fn bench_handle_event(c: &mut Criterion) {
         let mut state = TableState::new(rows.clone(), columns.clone());
         state.set_focused(true);
         group.bench_with_input(BenchmarkId::new("table/focused", size), &size, |b, _| {
-            b.iter(|| Table::<BenchRow>::handle_event(black_box(&state), black_box(&event)))
+            b.iter(|| {
+                Table::<BenchRow>::handle_event(
+                    black_box(&state),
+                    black_box(&event),
+                    &ViewContext::new().focused(true),
+                )
+            })
         });
 
         // Unfocused
         state.set_focused(false);
         group.bench_with_input(BenchmarkId::new("table/unfocused", size), &size, |b, _| {
-            b.iter(|| Table::<BenchRow>::handle_event(black_box(&state), black_box(&event)))
+            b.iter(|| {
+                Table::<BenchRow>::handle_event(
+                    black_box(&state),
+                    black_box(&event),
+                    &ViewContext::default(),
+                )
+            })
         });
 
         // ---- TextArea ----
@@ -116,7 +136,15 @@ fn bench_handle_event(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::new("text_area/focused", size),
             &size,
-            |b, _| b.iter(|| TextArea::handle_event(black_box(&state), black_box(&event))),
+            |b, _| {
+                b.iter(|| {
+                    TextArea::handle_event(
+                        black_box(&state),
+                        black_box(&event),
+                        &ViewContext::new().focused(true),
+                    )
+                })
+            },
         );
 
         // Unfocused
@@ -124,7 +152,15 @@ fn bench_handle_event(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::new("text_area/unfocused", size),
             &size,
-            |b, _| b.iter(|| TextArea::handle_event(black_box(&state), black_box(&event))),
+            |b, _| {
+                b.iter(|| {
+                    TextArea::handle_event(
+                        black_box(&state),
+                        black_box(&event),
+                        &ViewContext::default(),
+                    )
+                })
+            },
         );
     }
 
@@ -142,7 +178,15 @@ fn bench_handle_event(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::new("input_field/focused/insert", size),
             &size,
-            |b, _| b.iter(|| InputField::handle_event(black_box(&state), black_box(&event_insert))),
+            |b, _| {
+                b.iter(|| {
+                    InputField::handle_event(
+                        black_box(&state),
+                        black_box(&event_insert),
+                        &ViewContext::new().focused(true),
+                    )
+                })
+            },
         );
 
         // Backspace event (focused)
@@ -151,7 +195,13 @@ fn bench_handle_event(c: &mut Criterion) {
             BenchmarkId::new("input_field/focused/backspace", size),
             &size,
             |b, _| {
-                b.iter(|| InputField::handle_event(black_box(&state), black_box(&event_backspace)))
+                b.iter(|| {
+                    InputField::handle_event(
+                        black_box(&state),
+                        black_box(&event_backspace),
+                        &ViewContext::new().focused(true),
+                    )
+                })
             },
         );
 
@@ -160,7 +210,15 @@ fn bench_handle_event(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::new("input_field/unfocused", size),
             &size,
-            |b, _| b.iter(|| InputField::handle_event(black_box(&state), black_box(&event_insert))),
+            |b, _| {
+                b.iter(|| {
+                    InputField::handle_event(
+                        black_box(&state),
+                        black_box(&event_insert),
+                        &ViewContext::default(),
+                    )
+                })
+            },
         );
     }
 
@@ -189,6 +247,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
                     SelectableList::<String>::dispatch_event(
                         black_box(&mut state),
                         black_box(&event),
+                        &ViewContext::new().focused(true),
                     )
                 })
             },
@@ -202,7 +261,13 @@ fn bench_dispatch_event(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::new("table/focused", size), &size, |b, _| {
             let mut state = TableState::new(rows.clone(), columns.clone());
             state.set_focused(true);
-            b.iter(|| Table::<BenchRow>::dispatch_event(black_box(&mut state), black_box(&event)))
+            b.iter(|| {
+                Table::<BenchRow>::dispatch_event(
+                    black_box(&mut state),
+                    black_box(&event),
+                    &ViewContext::new().focused(true),
+                )
+            })
         });
 
         // ---- TextArea ----
@@ -220,7 +285,13 @@ fn bench_dispatch_event(c: &mut Criterion) {
                 state.set_focused(true);
                 // Start at top so Down always moves
                 state.set_cursor_position(0, 0);
-                b.iter(|| TextArea::dispatch_event(black_box(&mut state), black_box(&event_down)))
+                b.iter(|| {
+                    TextArea::dispatch_event(
+                        black_box(&mut state),
+                        black_box(&event_down),
+                        &ViewContext::new().focused(true),
+                    )
+                })
             },
         );
     }
@@ -239,7 +310,11 @@ fn bench_dispatch_event(c: &mut Criterion) {
                 state.set_focused(true);
                 state.set_cursor_position(size / 2);
                 b.iter(|| {
-                    InputField::dispatch_event(black_box(&mut state), black_box(&event_insert))
+                    InputField::dispatch_event(
+                        black_box(&mut state),
+                        black_box(&event_insert),
+                        &ViewContext::new().focused(true),
+                    )
                 })
             },
         );
@@ -254,7 +329,11 @@ fn bench_dispatch_event(c: &mut Criterion) {
                 state.set_focused(true);
                 state.set_cursor_position(size / 2);
                 b.iter(|| {
-                    InputField::dispatch_event(black_box(&mut state), black_box(&event_backspace))
+                    InputField::dispatch_event(
+                        black_box(&mut state),
+                        black_box(&event_backspace),
+                        &ViewContext::new().focused(true),
+                    )
                 })
             },
         );

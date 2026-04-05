@@ -351,56 +351,72 @@ fn test_set_disabled() {
 #[test]
 fn test_handle_event_right_next() {
     let state = focused_state(5);
-    let msg = Paginator::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Paginator::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(PaginatorMessage::NextPage));
 }
 
 #[test]
 fn test_handle_event_l_next() {
     let state = focused_state(5);
-    let msg = Paginator::handle_event(&state, &Event::char('l'));
+    let msg = Paginator::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(PaginatorMessage::NextPage));
 }
 
 #[test]
 fn test_handle_event_left_prev() {
     let state = focused_state(5);
-    let msg = Paginator::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = Paginator::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(PaginatorMessage::PrevPage));
 }
 
 #[test]
 fn test_handle_event_h_prev() {
     let state = focused_state(5);
-    let msg = Paginator::handle_event(&state, &Event::char('h'));
+    let msg = Paginator::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(PaginatorMessage::PrevPage));
 }
 
 #[test]
 fn test_handle_event_home() {
     let state = focused_state(5);
-    let msg = Paginator::handle_event(&state, &Event::key(KeyCode::Home));
+    let msg = Paginator::handle_event(
+        &state,
+        &Event::key(KeyCode::Home),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(PaginatorMessage::FirstPage));
 }
 
 #[test]
 fn test_handle_event_end() {
     let state = focused_state(5);
-    let msg = Paginator::handle_event(&state, &Event::key(KeyCode::End));
+    let msg = Paginator::handle_event(
+        &state,
+        &Event::key(KeyCode::End),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(PaginatorMessage::LastPage));
 }
 
 #[test]
 fn test_handle_event_unrecognized() {
     let state = focused_state(5);
-    let msg = Paginator::handle_event(&state, &Event::char('x'));
+    let msg = Paginator::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_handle_event_unfocused_ignores() {
     let state = PaginatorState::new(5);
-    let msg = Paginator::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Paginator::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -408,7 +424,11 @@ fn test_handle_event_unfocused_ignores() {
 fn test_handle_event_disabled_ignores() {
     let mut state = focused_state(5);
     state.set_disabled(true);
-    let msg = Paginator::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = Paginator::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 

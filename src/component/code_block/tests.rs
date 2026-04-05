@@ -345,14 +345,18 @@ fn test_update_returns_none() {
 fn test_disabled_ignores_events() {
     let mut state = focused_state();
     state.set_disabled(true);
-    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = CodeBlock::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
 #[test]
 fn test_unfocused_ignores_events() {
     let state = CodeBlockState::new();
-    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -364,7 +368,11 @@ fn test_unfocused_ignores_events() {
 fn test_handle_event_up() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::Up)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::ScrollUp)
     );
 }
@@ -373,7 +381,11 @@ fn test_handle_event_up() {
 fn test_handle_event_down() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::Down)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::ScrollDown)
     );
 }
@@ -382,11 +394,11 @@ fn test_handle_event_down() {
 fn test_handle_event_k_j() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('k')),
+        CodeBlock::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::ScrollUp)
     );
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('j')),
+        CodeBlock::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::ScrollDown)
     );
 }
@@ -395,11 +407,19 @@ fn test_handle_event_k_j() {
 fn test_handle_event_page_up_down() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::PageUp)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::PageUp),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::PageUp(10))
     );
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::PageDown)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::PageDown),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::PageDown(10))
     );
 }
@@ -408,11 +428,11 @@ fn test_handle_event_page_up_down() {
 fn test_handle_event_ctrl_u_d() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::ctrl('u')),
+        CodeBlock::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::PageUp(10))
     );
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::ctrl('d')),
+        CodeBlock::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::PageDown(10))
     );
 }
@@ -421,11 +441,19 @@ fn test_handle_event_ctrl_u_d() {
 fn test_handle_event_home_end() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::Home)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::Home)
     );
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::key(KeyCode::End)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::End)
     );
 }
@@ -435,13 +463,14 @@ fn test_handle_event_home_end() {
 fn test_handle_event_g_and_G() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('g')),
+        CodeBlock::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::Home)
     );
     assert_eq!(
         CodeBlock::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT)
+            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &ViewContext::new().focused(true),
         ),
         Some(CodeBlockMessage::End)
     );
@@ -451,7 +480,7 @@ fn test_handle_event_g_and_G() {
 fn test_handle_event_l_scroll_right() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('l')),
+        CodeBlock::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::ScrollRight)
     );
 }
@@ -460,7 +489,7 @@ fn test_handle_event_l_scroll_right() {
 fn test_handle_event_n_toggle_line_numbers() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('n')),
+        CodeBlock::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true)),
         Some(CodeBlockMessage::ToggleLineNumbers)
     );
 }
@@ -468,7 +497,10 @@ fn test_handle_event_n_toggle_line_numbers() {
 #[test]
 fn test_handle_event_unrecognized() {
     let state = focused_state();
-    assert_eq!(CodeBlock::handle_event(&state, &Event::char('x')), None);
+    assert_eq!(
+        CodeBlock::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        None
+    );
 }
 
 // =============================================================================
@@ -852,23 +884,31 @@ fn test_horizontal_scroll_key_bindings() {
     CodeBlock::set_focused(&mut state, true);
 
     // Left arrow
-    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Left));
+    let msg = CodeBlock::handle_event(
+        &state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CodeBlockMessage::ScrollLeft));
 
     // Right arrow
-    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Right));
+    let msg = CodeBlock::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CodeBlockMessage::ScrollRight));
 
     // h key
-    let msg = CodeBlock::handle_event(&state, &Event::char('h'));
+    let msg = CodeBlock::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(CodeBlockMessage::ScrollLeft));
 
     // l key (now horizontal scroll, not toggle line numbers)
-    let msg = CodeBlock::handle_event(&state, &Event::char('l'));
+    let msg = CodeBlock::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(CodeBlockMessage::ScrollRight));
 
     // n key (toggle line numbers)
-    let msg = CodeBlock::handle_event(&state, &Event::char('n'));
+    let msg = CodeBlock::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(CodeBlockMessage::ToggleLineNumbers));
 }
 

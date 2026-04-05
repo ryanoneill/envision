@@ -298,7 +298,11 @@ fn test_expand_leaf_via_dispatch_event() {
     let mut state = TreeState::new(vec![TreeNode::new("Leaf", ())]);
     state.set_focused(true);
 
-    let output = Tree::<()>::dispatch_event(&mut state, &Event::key(KeyCode::Right));
+    let output = Tree::<()>::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Right),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, None);
 }
 
@@ -307,7 +311,11 @@ fn test_collapse_leaf_via_dispatch_event() {
     let mut state = TreeState::new(vec![TreeNode::new("Leaf", ())]);
     state.set_focused(true);
 
-    let output = Tree::<()>::dispatch_event(&mut state, &Event::key(KeyCode::Left));
+    let output = Tree::<()>::dispatch_event(
+        &mut state,
+        &Event::key(KeyCode::Left),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(output, None);
 }
 
@@ -318,7 +326,8 @@ fn test_handle_event_unrecognized_key() {
     let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
     state.set_focused(true);
 
-    let msg = Tree::<()>::handle_event(&state, &Event::char('z'));
+    let msg =
+        Tree::<()>::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
@@ -327,7 +336,11 @@ fn test_handle_event_tab_key() {
     let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
     state.set_focused(true);
 
-    let msg = Tree::<()>::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = Tree::<()>::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -336,7 +349,11 @@ fn test_handle_event_escape_key() {
     let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
     state.set_focused(true);
 
-    let msg = Tree::<()>::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = Tree::<()>::handle_event(
+        &state,
+        &Event::key(KeyCode::Esc),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 

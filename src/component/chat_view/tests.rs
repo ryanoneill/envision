@@ -389,7 +389,11 @@ fn test_disabled_ignores_messages() {
 fn test_disabled_ignores_events() {
     let mut state = focused_state();
     state.set_disabled(true);
-    let msg = ChatView::handle_event(&state, &Event::char('a'));
+    let msg = ChatView::handle_event(
+        &state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -400,7 +404,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = ChatViewState::new();
-    let msg = ChatView::handle_event(&state, &Event::char('a'));
+    let msg = ChatView::handle_event(&state, &Event::char('a'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -412,7 +416,7 @@ fn test_unfocused_ignores_events() {
 fn test_input_mode_char() {
     let state = focused_state();
     assert_eq!(
-        ChatView::handle_event(&state, &Event::char('a')),
+        ChatView::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true)),
         Some(ChatViewMessage::Input('a'))
     );
 }
@@ -421,7 +425,11 @@ fn test_input_mode_char() {
 fn test_input_mode_enter() {
     let state = focused_state();
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Enter)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::NewLine)
     );
 }
@@ -432,7 +440,8 @@ fn test_input_mode_ctrl_enter() {
     assert_eq!(
         ChatView::handle_event(
             &state,
-            &Event::key_with(KeyCode::Enter, KeyModifiers::CONTROL)
+            &Event::key_with(KeyCode::Enter, KeyModifiers::CONTROL),
+            &ViewContext::new().focused(true),
         ),
         Some(ChatViewMessage::Submit)
     );
@@ -442,7 +451,11 @@ fn test_input_mode_ctrl_enter() {
 fn test_input_mode_tab() {
     let state = focused_state();
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Tab)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Tab),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::ToggleFocus)
     );
 }
@@ -451,7 +464,11 @@ fn test_input_mode_tab() {
 fn test_input_mode_backspace() {
     let state = focused_state();
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Backspace)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Backspace),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::Backspace)
     );
 }
@@ -460,7 +477,11 @@ fn test_input_mode_backspace() {
 fn test_input_mode_delete() {
     let state = focused_state();
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Delete)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Delete),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::Delete)
     );
 }
@@ -469,19 +490,35 @@ fn test_input_mode_delete() {
 fn test_input_mode_arrows() {
     let state = focused_state();
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Left)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Left),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::Left)
     );
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Right)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::Right)
     );
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Up)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::Up)
     );
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Down)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::Down)
     );
 }
@@ -490,11 +527,19 @@ fn test_input_mode_arrows() {
 fn test_input_mode_home_end() {
     let state = focused_state();
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Home)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::Home)
     );
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::End)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::End)
     );
 }
@@ -505,14 +550,16 @@ fn test_input_mode_ctrl_home_end() {
     assert_eq!(
         ChatView::handle_event(
             &state,
-            &Event::key_with(KeyCode::Home, KeyModifiers::CONTROL)
+            &Event::key_with(KeyCode::Home, KeyModifiers::CONTROL),
+            &ViewContext::new().focused(true),
         ),
         Some(ChatViewMessage::InputStart)
     );
     assert_eq!(
         ChatView::handle_event(
             &state,
-            &Event::key_with(KeyCode::End, KeyModifiers::CONTROL)
+            &Event::key_with(KeyCode::End, KeyModifiers::CONTROL),
+            &ViewContext::new().focused(true),
         ),
         Some(ChatViewMessage::InputEnd)
     );
@@ -527,19 +574,27 @@ fn test_history_mode_up_down() {
     let mut state = focused_state();
     ChatView::update(&mut state, ChatViewMessage::FocusHistory);
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Up)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Up),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::ScrollUp)
     );
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Down)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Down),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::ScrollDown)
     );
     assert_eq!(
-        ChatView::handle_event(&state, &Event::char('k')),
+        ChatView::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
         Some(ChatViewMessage::ScrollUp)
     );
     assert_eq!(
-        ChatView::handle_event(&state, &Event::char('j')),
+        ChatView::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
         Some(ChatViewMessage::ScrollDown)
     );
 }
@@ -549,11 +604,19 @@ fn test_history_mode_home_end() {
     let mut state = focused_state();
     ChatView::update(&mut state, ChatViewMessage::FocusHistory);
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Home)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Home),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::ScrollToTop)
     );
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::End)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::End),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::ScrollToBottom)
     );
 }
@@ -563,7 +626,11 @@ fn test_history_mode_tab() {
     let mut state = focused_state();
     ChatView::update(&mut state, ChatViewMessage::FocusHistory);
     assert_eq!(
-        ChatView::handle_event(&state, &Event::key(KeyCode::Tab)),
+        ChatView::handle_event(
+            &state,
+            &Event::key(KeyCode::Tab),
+            &ViewContext::new().focused(true)
+        ),
         Some(ChatViewMessage::ToggleFocus)
     );
 }

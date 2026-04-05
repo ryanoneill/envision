@@ -367,7 +367,11 @@ fn test_disabled_ignores_events() {
     let mut state = focused_form();
     state.set_disabled(true);
 
-    let msg = Form::handle_event(&state, &Event::char('a'));
+    let msg = Form::handle_event(
+        &state,
+        &Event::char('a'),
+        &ViewContext::new().focused(true).disabled(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -385,7 +389,7 @@ fn test_with_disabled_builder() {
 fn test_unfocused_ignores_events() {
     let state = sample_form();
     assert!(!state.is_focused());
-    let msg = Form::handle_event(&state, &Event::char('a'));
+    let msg = Form::handle_event(&state, &Event::char('a'), &ViewContext::default());
     assert_eq!(msg, None);
 }
 
@@ -396,25 +400,38 @@ fn test_unfocused_ignores_events() {
 #[test]
 fn test_tab_maps_to_focus_next() {
     let state = focused_form();
-    let msg = Form::handle_event(&state, &Event::key(KeyCode::Tab));
+    let msg = Form::handle_event(
+        &state,
+        &Event::key(KeyCode::Tab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FormMessage::FocusNext));
 }
 
 #[test]
 fn test_backtab_maps_to_focus_prev() {
     let state = focused_form();
-    let msg = Form::handle_event(&state, &Event::key(KeyCode::BackTab));
+    let msg = Form::handle_event(
+        &state,
+        &Event::key(KeyCode::BackTab),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FormMessage::FocusPrev));
 }
 
 #[test]
 fn test_ctrl_enter_maps_to_submit() {
     let state = focused_form();
-    let _msg = Form::handle_event(&state, &Event::ctrl('\n'));
+    let _msg = Form::handle_event(
+        &state,
+        &Event::ctrl('\n'),
+        &ViewContext::new().focused(true),
+    );
     // Ctrl+Enter on terminal may send ctrl('\n'). Test via explicit key_with.
     let msg = Form::handle_event(
         &state,
         &Event::key_with(KeyCode::Enter, crate::input::KeyModifiers::CONTROL),
+        &ViewContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::Submit));
 }
@@ -422,14 +439,18 @@ fn test_ctrl_enter_maps_to_submit() {
 #[test]
 fn test_char_in_text_field_maps_to_input() {
     let state = focused_form();
-    let msg = Form::handle_event(&state, &Event::char('x'));
+    let msg = Form::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(FormMessage::Input('x')));
 }
 
 #[test]
 fn test_backspace_in_text_field_maps() {
     let state = focused_form();
-    let msg = Form::handle_event(&state, &Event::key(KeyCode::Backspace));
+    let msg = Form::handle_event(
+        &state,
+        &Event::key(KeyCode::Backspace),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FormMessage::Backspace));
 }
 
@@ -437,7 +458,7 @@ fn test_backspace_in_text_field_maps() {
 fn test_space_in_checkbox_maps_to_toggle() {
     let mut state = focused_form();
     Form::update(&mut state, FormMessage::FocusNext); // Move to checkbox
-    let msg = Form::handle_event(&state, &Event::char(' '));
+    let msg = Form::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
     assert_eq!(msg, Some(FormMessage::Toggle));
 }
 
@@ -445,7 +466,11 @@ fn test_space_in_checkbox_maps_to_toggle() {
 fn test_enter_in_checkbox_maps_to_toggle() {
     let mut state = focused_form();
     Form::update(&mut state, FormMessage::FocusNext);
-    let msg = Form::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Form::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FormMessage::Toggle));
 }
 
@@ -454,7 +479,11 @@ fn test_enter_in_closed_select_maps_to_toggle() {
     let mut state = focused_form();
     Form::update(&mut state, FormMessage::FocusNext);
     Form::update(&mut state, FormMessage::FocusNext);
-    let msg = Form::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Form::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FormMessage::Toggle));
 }
 
@@ -465,13 +494,25 @@ fn test_arrow_keys_in_open_select() {
     Form::update(&mut state, FormMessage::FocusNext);
     Form::update(&mut state, FormMessage::Toggle); // Open select
 
-    let msg = Form::handle_event(&state, &Event::key(KeyCode::Down));
+    let msg = Form::handle_event(
+        &state,
+        &Event::key(KeyCode::Down),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FormMessage::SelectDown));
 
-    let msg = Form::handle_event(&state, &Event::key(KeyCode::Up));
+    let msg = Form::handle_event(
+        &state,
+        &Event::key(KeyCode::Up),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FormMessage::SelectUp));
 
-    let msg = Form::handle_event(&state, &Event::key(KeyCode::Enter));
+    let msg = Form::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FormMessage::SelectConfirm));
 }
 
@@ -482,7 +523,11 @@ fn test_esc_in_open_select_maps_to_toggle() {
     Form::update(&mut state, FormMessage::FocusNext);
     Form::update(&mut state, FormMessage::Toggle);
 
-    let msg = Form::handle_event(&state, &Event::key(KeyCode::Esc));
+    let msg = Form::handle_event(
+        &state,
+        &Event::key(KeyCode::Esc),
+        &ViewContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FormMessage::Toggle));
 }
 
@@ -561,7 +606,13 @@ fn test_render_unfocused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            Form::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Form::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -572,7 +623,13 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            Form::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Form::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -586,7 +643,13 @@ fn test_render_with_values() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            Form::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Form::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -614,7 +677,13 @@ fn test_render_empty_form() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            Form::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Form::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
         })
         .unwrap();
 }
@@ -678,7 +747,7 @@ fn test_empty_form_ignores_events() {
     let mut state = FormState::new(vec![]);
     Form::set_focused(&mut state, true);
 
-    let msg = Form::handle_event(&state, &Event::char('a'));
+    let msg = Form::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
     assert_eq!(msg, None);
 }
 
@@ -692,7 +761,13 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Form::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Form::view(
+                    &state,
+                    frame,
+                    frame.area(),
+                    &theme,
+                    &ViewContext::new().focused(true),
+                );
             })
             .unwrap();
     });
