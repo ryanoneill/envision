@@ -7,6 +7,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-04-05
+
+### Breaking
+
+- **`Focusable` and `Disableable` traits deleted.** Focus and disabled
+  state is now exclusively controlled via `ViewContext` passed to
+  `handle_event()` and `view()`. Components no longer store
+  `focused: bool` or `disabled: bool` fields. Remove all calls to
+  `set_focused()`, `is_focused()`, `set_disabled()`, `is_disabled()`.
+
+- **`Component::handle_event` signature changed** from
+  `(state, event)` to `(state, event, ctx: &ViewContext)`. Same for
+  `dispatch_event`. Pass `&ViewContext::new().focused(true)` for
+  focused components, `&ViewContext::default()` for unfocused.
+
+- **`ChatView` component deleted.** Use `ConversationView` instead.
+  ChatView examples (`chat_app`, `chat_markdown_demo`, `chat_view`)
+  also removed.
+
+- **Instance method bridges deleted.** `state.handle_event(&event)`
+  and `state.dispatch_event(&event)` no longer exist. Use the static
+  `Component::handle_event(&state, &event, &ctx)` form instead.
+  `state.update(msg)` is preserved.
+
+- **`#[non_exhaustive]` removed from all Output enums.** Downstream
+  `match` is now exhaustive — the compiler will tell you about new
+  variants on upgrade.
+
+- **Edition 2024 and MSRV 1.85.** Bumped from edition 2021 / MSRV 1.81.
+
+### Added
+
+- **`MessageSource` trait**: `ConversationView::view_from()` renders
+  from external message stores without mirroring into state.
+
+- **`ConversationView::set_status()`**: Status line inside the border
+  for transient info like rate-limit backoff.
+
+- **`Language::Hcl`**: HCL/Terraform syntax highlighting in CodeBlock.
+
+- **Horizontal scroll in CodeBlock**: `ScrollLeft`/`ScrollRight`
+  messages, Left/Right/h/l key bindings. Long lines render with
+  character offset instead of wrapping.
+
+- **`MetricsDashboard::widget_by_label()`**: Look up metrics by name.
+
+- **`LogViewerState::push_entry()` now public.**
+
+- **`render_diff()` and `render_to_string()` test utilities** for
+  visual regression testing.
+
+- **Chart rendering improvements**: Braille line rendering, axis tick
+  marks, log scale, LTTB downsampling, vertical reference lines,
+  cursor/crosshair for interactive exploration.
+
+- **`FileEntry`, `FileSortField`, `Language`** re-exported in prelude.
+
+### Fixed
+
+- **StatusBar overflow**: Center section truncates with ellipsis when
+  content exceeds terminal width, preserving left and right sections.
+
+- **`view_with_focus` and `view_with_disabled` removed** (dead code,
+  superseded by ViewContext in v0.10.0).
+
+- **Calendar panic replaced** with safe fallback for invalid months.
+
+### Internal
+
+- **cargo-nextest** for CI test execution (Windows: 21min → 9min).
+- 4 oversized test files split into submodules.
+- 15,137 tests, zero clippy warnings, zero unsafe code.
+- Audit tool fixed: type-level doc coverage correctly reports 100%.
+
 ## [0.11.0] - 2026-04-04
 
 ### Breaking
@@ -786,7 +860,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renders to both a real terminal and CaptureBackend
   - Useful for visual debugging while testing
 
-[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/ryanoneill/envision/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/ryanoneill/envision/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/ryanoneill/envision/compare/v0.10.3...v0.11.0
 [0.10.3]: https://github.com/ryanoneill/envision/compare/v0.10.2...v0.10.3
 [0.10.2]: https://github.com/ryanoneill/envision/compare/v0.10.1...v0.10.2
