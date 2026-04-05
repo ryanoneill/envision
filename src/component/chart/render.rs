@@ -111,6 +111,7 @@ pub(super) fn render_shared_axis_chart(
 
     let effective_min = state.effective_min();
     let effective_max = state.effective_max();
+    let scale = &state.y_scale;
 
     // Compute max x value across all series
     let max_x = state
@@ -135,7 +136,7 @@ pub(super) fn render_shared_axis_chart(
         _ => GraphType::Line,
     };
 
-    // Build data vectors that outlive the datasets
+    // Build data vectors, applying Y-axis scale transform
     let series_data: Vec<Vec<(f64, f64)>> = state
         .series
         .iter()
@@ -148,16 +149,19 @@ pub(super) fn render_shared_axis_chart(
             values
                 .iter()
                 .enumerate()
-                .map(|(i, v)| (i as f64, *v))
+                .map(|(i, v)| (i as f64, scale.transform(*v)))
                 .collect()
         })
         .collect();
 
-    // Build threshold data vectors
+    // Build threshold data vectors with scale transform
     let threshold_data: Vec<Vec<(f64, f64)>> = state
         .thresholds
         .iter()
-        .map(|t| vec![(0.0, t.value), (max_x, t.value)])
+        .map(|t| {
+            let tv = scale.transform(t.value);
+            vec![(0.0, tv), (max_x, tv)]
+        })
         .collect();
 
     // Build datasets referencing the data vectors
@@ -200,33 +204,51 @@ pub(super) fn render_shared_axis_chart(
     let max_y_ticks = (area.height / 3).max(2) as usize;
 
     let x_ticks = super::ticks::nice_ticks(0.0, max_x, max_x_ticks);
-    let y_ticks = super::ticks::nice_ticks(effective_min, effective_max, max_y_ticks);
+
+    // For logarithmic scales, generate ticks in data space then transform
+    let (y_tick_positions, y_labels) = if scale.is_logarithmic() {
+        let data_ticks = super::scale::log_ticks(effective_min, effective_max, max_y_ticks);
+        let labels: Vec<String> = data_ticks
+            .iter()
+            .map(|v| super::scale::format_log_tick(*v))
+            .collect();
+        let positions: Vec<f64> = data_ticks.iter().map(|v| scale.transform(*v)).collect();
+        (positions, labels)
+    } else {
+        let y_ticks = super::ticks::nice_ticks(effective_min, effective_max, max_y_ticks);
+        let y_step = if y_ticks.len() >= 2 {
+            y_ticks[1] - y_ticks[0]
+        } else {
+            1.0
+        };
+        let labels: Vec<String> = y_ticks
+            .iter()
+            .map(|v| super::ticks::format_tick(*v, y_step))
+            .collect();
+        (y_ticks, labels)
+    };
 
     let x_step = if x_ticks.len() >= 2 {
         x_ticks[1] - x_ticks[0]
     } else {
         1.0
     };
-    let y_step = if y_ticks.len() >= 2 {
-        y_ticks[1] - y_ticks[0]
-    } else {
-        1.0
-    };
-
     let x_labels: Vec<String> = x_ticks
         .iter()
         .map(|v| super::ticks::format_tick(*v, x_step))
-        .collect();
-    let y_labels: Vec<String> = y_ticks
-        .iter()
-        .map(|v| super::ticks::format_tick(*v, y_step))
         .collect();
 
     // Use the tick bounds for axis range (may extend slightly beyond data)
     let x_min_bound = x_ticks.first().copied().unwrap_or(0.0);
     let x_max_bound = x_ticks.last().copied().unwrap_or(max_x);
-    let y_min_bound = y_ticks.first().copied().unwrap_or(effective_min);
-    let y_max_bound = y_ticks.last().copied().unwrap_or(effective_max);
+    let y_min_bound = y_tick_positions
+        .first()
+        .copied()
+        .unwrap_or(scale.transform(effective_min));
+    let y_max_bound = y_tick_positions
+        .last()
+        .copied()
+        .unwrap_or(scale.transform(effective_max));
 
     let mut x_axis = RatatuiAxis::default()
         .bounds([x_min_bound, x_max_bound])

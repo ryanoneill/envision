@@ -33,8 +33,11 @@ use crate::theme::Theme;
 
 pub(crate) mod format;
 mod render;
+pub(crate) mod scale;
 mod series;
 pub(crate) mod ticks;
+
+pub use scale::Scale;
 
 /// A named data series with values and styling.
 #[derive(Clone, Debug, PartialEq)]
@@ -141,6 +144,8 @@ pub enum ChartMessage {
     AddThreshold(ThresholdLine),
     /// Set the manual Y-axis range. `None` values fall back to auto-scaling.
     SetYRange(Option<f64>, Option<f64>),
+    /// Set the Y-axis scale (linear, log10, or symmetric log).
+    SetYScale(Scale),
 }
 
 /// Output messages from a Chart.
@@ -193,6 +198,8 @@ pub struct ChartState {
     pub(crate) y_min: Option<f64>,
     /// Manual Y-axis maximum (None = auto from data).
     pub(crate) y_max: Option<f64>,
+    /// Y-axis scale (linear, log10, or symmetric log).
+    pub(crate) y_scale: Scale,
 }
 
 impl Default for ChartState {
@@ -213,6 +220,7 @@ impl Default for ChartState {
             thresholds: Vec::new(),
             y_min: None,
             y_max: None,
+            y_scale: Scale::default(),
         }
     }
 }
@@ -417,6 +425,22 @@ impl ChartState {
         self
     }
 
+    /// Sets the Y-axis scale (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries, Scale};
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("Loss", vec![4.7, 0.1, 0.001])])
+    ///     .with_y_scale(Scale::Log10);
+    /// assert_eq!(state.y_scale(), &Scale::Log10);
+    /// ```
+    pub fn with_y_scale(mut self, scale: Scale) -> Self {
+        self.y_scale = scale;
+        self
+    }
+
     // ---- Accessors ----
 
     /// Returns the data series.
@@ -577,6 +601,26 @@ impl ChartState {
     /// Returns the manual Y-axis maximum, if set.
     pub fn y_max(&self) -> Option<f64> {
         self.y_max
+    }
+
+    /// Returns the Y-axis scale.
+    pub fn y_scale(&self) -> &Scale {
+        &self.y_scale
+    }
+
+    /// Sets the Y-axis scale.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, Scale};
+    ///
+    /// let mut state = ChartState::line(vec![]);
+    /// state.set_y_scale(Scale::Log10);
+    /// assert_eq!(state.y_scale(), &Scale::Log10);
+    /// ```
+    pub fn set_y_scale(&mut self, scale: Scale) {
+        self.y_scale = scale;
     }
 
     /// Adds a series.
@@ -804,6 +848,10 @@ impl Component for Chart {
             ChartMessage::SetYRange(min, max) => {
                 state.y_min = min;
                 state.y_max = max;
+                None
+            }
+            ChartMessage::SetYScale(scale) => {
+                state.y_scale = scale;
                 None
             }
             ChartMessage::NextSeries | ChartMessage::PrevSeries => {

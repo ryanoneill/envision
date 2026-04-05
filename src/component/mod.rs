@@ -357,7 +357,7 @@ pub use alert_panel::{
 pub use box_plot::{BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation, BoxPlotState};
 #[cfg(feature = "compound-components")]
 pub use chart::{
-    Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, ThresholdLine,
+    Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, Scale, ThresholdLine,
 };
 #[cfg(feature = "compound-components")]
 pub use chat_view::{

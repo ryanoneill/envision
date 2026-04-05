@@ -457,3 +457,80 @@ fn test_disabled_still_processes_y_range_messages() {
     assert_eq!(state.y_min(), Some(0.0));
     assert_eq!(state.y_max(), Some(100.0));
 }
+
+// =============================================================================
+// Y-axis scale
+// =============================================================================
+
+#[test]
+fn test_with_y_scale_builder() {
+    let state = ChartState::line(vec![DataSeries::new("Loss", vec![4.7, 0.1, 0.001])])
+        .with_y_scale(Scale::Log10);
+    assert_eq!(state.y_scale(), &Scale::Log10);
+}
+
+#[test]
+fn test_set_y_scale() {
+    let mut state = ChartState::line(vec![]);
+    state.set_y_scale(Scale::SymLog);
+    assert_eq!(state.y_scale(), &Scale::SymLog);
+}
+
+#[test]
+fn test_set_y_scale_message() {
+    let mut state = ChartState::line(vec![DataSeries::new("X", vec![1.0])]);
+    let output = Chart::update(&mut state, ChartMessage::SetYScale(Scale::Log10));
+    assert_eq!(output, None);
+    assert_eq!(state.y_scale(), &Scale::Log10);
+}
+
+#[test]
+fn test_default_y_scale_is_linear() {
+    let state = ChartState::default();
+    assert_eq!(state.y_scale(), &Scale::Linear);
+}
+
+#[test]
+fn test_render_log_scale_chart() {
+    let state = ChartState::line(vec![DataSeries::new(
+        "Loss",
+        vec![100.0, 10.0, 1.0, 0.1, 0.01],
+    )])
+    .with_y_scale(Scale::Log10)
+    .with_title("Log Scale");
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_render_symlog_scale_chart() {
+    let state = ChartState::line(vec![DataSeries::new(
+        "Values",
+        vec![-100.0, -10.0, 0.0, 10.0, 100.0],
+    )])
+    .with_y_scale(Scale::SymLog)
+    .with_title("SymLog Scale");
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_render_log_scale_with_thresholds() {
+    let state = ChartState::line(vec![DataSeries::new("Loss", vec![100.0, 10.0, 1.0, 0.1])])
+        .with_y_scale(Scale::Log10)
+        .with_threshold(1.0, "Converged", Color::Green);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
