@@ -514,25 +514,8 @@ fn print_module_doc_coverage(src: &Path, root: &Path) {
                 && !trimmed.contains("pub(super)")
             {
                 total_types += 1;
-                // Check if there's a /// doc comment above
-                if i > 0 {
-                    let mut j = i;
-                    let mut found_doc = false;
-                    while j > 0 {
-                        j -= 1;
-                        let prev = lines[j].trim();
-                        if prev.starts_with("///") {
-                            found_doc = true;
-                            break;
-                        } else if prev.starts_with("#[") || prev.is_empty() {
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-                    if found_doc {
-                        with_type_docs += 1;
-                    }
+                if has_doc_comment_above(&lines, i) {
+                    with_type_docs += 1;
                 }
             }
         }
@@ -548,6 +531,92 @@ fn print_module_doc_coverage(src: &Path, root: &Path) {
             0.0
         }
     );
+}
+
+/// Checks whether a `pub struct/enum/trait` at `lines[idx]` has a `///` doc
+/// comment above it, correctly traversing multi-line attributes like:
+///
+/// ```text
+/// /// Doc comment here.
+/// #[derive(Clone, Debug)]
+/// #[cfg_attr(
+///     feature = "serialization",
+///     derive(serde::Serialize, serde::Deserialize)
+/// )]
+/// pub struct Foo { ... }
+/// ```
+fn has_doc_comment_above(lines: &[&str], idx: usize) -> bool {
+    if idx == 0 {
+        return false;
+    }
+
+    let mut j = idx;
+    // Track whether we are inside a multi-line attribute.
+    // When we see a line ending with `)]` or `]` that closes an attribute
+    // opened with `#[`, we need to skip upwards through the attribute body.
+    let mut attr_depth: i32 = 0;
+
+    while j > 0 {
+        j -= 1;
+        let prev = lines[j].trim();
+
+        // Doc comment found
+        if prev.starts_with("///") {
+            return true;
+        }
+
+        // Empty lines are fine to skip
+        if prev.is_empty() {
+            continue;
+        }
+
+        // Single-line attribute: #[...] on one line
+        if prev.starts_with("#[") && prev.ends_with(']') {
+            continue;
+        }
+
+        // Start of a multi-line attribute: #[... without closing ]
+        if prev.starts_with("#[") && !prev.ends_with(']') {
+            // We've reached the opening of a multi-line attribute.
+            // If we were tracking depth, decrement. Either way, continue up.
+            if attr_depth > 0 {
+                attr_depth -= 1;
+            }
+            continue;
+        }
+
+        // End of a multi-line attribute: line ending with )] or ]
+        // but not starting with #[ (that would be single-line)
+        if (prev.ends_with(")]") || prev.ends_with(']')) && !prev.starts_with("#[") {
+            attr_depth += 1;
+            continue;
+        }
+
+        // Inside a multi-line attribute body (e.g. `feature = "serialization",`
+        // or `derive(serde::Serialize, serde::Deserialize)`)
+        if attr_depth > 0 {
+            continue;
+        }
+
+        // Heuristic: if we haven't hit a code boundary, check common
+        // attribute continuation patterns (lines that are clearly part of
+        // an attribute but don't match the depth tracking above).
+        if prev.ends_with(',')
+            || prev.ends_with(')')
+            || prev.starts_with("derive(")
+            || prev.starts_with("feature")
+            || prev.starts_with("serde(")
+            || prev.starts_with("cfg(")
+            || prev.starts_with("cfg_attr(")
+        {
+            continue;
+        }
+
+        // Any other line is a code boundary -- stop
+        break;
+    }
+
+    false
 }
 
 fn print_quality_checks(src: &Path, root: &Path) {
