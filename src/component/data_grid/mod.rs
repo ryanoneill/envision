@@ -494,12 +494,18 @@ impl<T: TableRow + 'static> DataGridState<T> {
 
     /// Maps an input event to a data grid message.
     pub fn handle_event(&self, event: &Event) -> Option<DataGridMessage> {
-        DataGrid::<T>::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        DataGrid::<T>::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<DataGridOutput<T>> {
-        DataGrid::<T>::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        DataGrid::<T>::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the state with a message, returning any output.
@@ -558,17 +564,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         DataGridState::default()
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         state: &Self::State,
         event: &Event,
         ctx: &ViewContext,

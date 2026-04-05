@@ -411,7 +411,10 @@ impl CollapsibleState {
     /// assert_eq!(msg, Some(CollapsibleMessage::Toggle));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<CollapsibleMessage> {
-        Collapsible::handle_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Collapsible::handle_event(self, event, &ctx)
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -429,7 +432,10 @@ impl CollapsibleState {
     /// assert_eq!(output, Some(CollapsibleOutput::Toggled(false)));
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<CollapsibleOutput> {
-        Collapsible::dispatch_event(self, event)
+        let ctx = ViewContext::new()
+            .focused(self.focused)
+            .disabled(self.disabled);
+        Collapsible::dispatch_event(self, event, &ctx)
     }
 
     /// Updates the collapsible state with a message, returning any output.
@@ -537,17 +543,7 @@ impl Component for Collapsible {
         }
     }
 
-    fn handle_event(state: &Self::State, event: &Event) -> Option<Self::Message> {
-        Self::handle_event_with_ctx(
-            state,
-            event,
-            &ViewContext::new()
-                .focused(state.focused)
-                .disabled(state.disabled),
-        )
-    }
-
-    fn handle_event_with_ctx(
+    fn handle_event(
         _state: &Self::State,
         event: &Event,
         ctx: &ViewContext,
