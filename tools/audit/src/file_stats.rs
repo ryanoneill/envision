@@ -10,7 +10,12 @@ pub fn run(root: &Path) {
     println!("FILE STATISTICS");
     println!("{}", "-".repeat(70));
 
-    let categories = [("src", 30usize), ("tests", 20), ("benches", 10), ("examples", 10)];
+    let categories = [
+        ("src", 30usize),
+        ("tests", 20),
+        ("benches", 10),
+        ("examples", 10),
+    ];
 
     let mut grand_files = 0;
     let mut grand_lines = 0;

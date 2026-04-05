@@ -34,7 +34,10 @@ fn print_project_files(root: &Path) {
             let lines = fs::read_to_string(&path)
                 .map(|c| c.lines().count())
                 .unwrap_or(0);
-            println!("  {} {} ({} bytes, {} lines)", name, description, size, lines);
+            println!(
+                "  {} {} ({} bytes, {} lines)",
+                name, description, size, lines
+            );
         } else {
             println!("  {} {} -- MISSING", name, description);
         }

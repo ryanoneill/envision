@@ -7,10 +7,7 @@ pub fn run(root: &Path) {
     println!();
 
     let checks: &[(&str, &[&str])] = &[
-        (
-            "cargo test --all-features",
-            &["test", "--all-features"],
-        ),
+        ("cargo test --all-features", &["test", "--all-features"]),
         (
             "cargo clippy --all-features",
             &["clippy", "--all-features", "--", "-D", "warnings"],
@@ -40,10 +37,7 @@ pub fn run(root: &Path) {
 fn run_check(name: &str, args: &[&str], root: &Path) {
     print!("  {} ... ", name);
 
-    let output = Command::new("cargo")
-        .args(args)
-        .current_dir(root)
-        .output();
+    let output = Command::new("cargo").args(args).current_dir(root).output();
 
     match output {
         Ok(o) => {
@@ -72,7 +66,11 @@ fn run_check(name: &str, args: &[&str], root: &Path) {
                     stderr.to_string()
                 };
                 let lines: Vec<&str> = output_text.lines().collect();
-                let start = if lines.len() > 20 { lines.len() - 20 } else { 0 };
+                let start = if lines.len() > 20 {
+                    lines.len() - 20
+                } else {
+                    0
+                };
                 for line in &lines[start..] {
                     println!("    {}", line);
                 }
@@ -151,10 +149,7 @@ fn print_test_breakdown(root: &Path) {
 }
 
 fn run_test_count(root: &Path, args: &[&str]) -> (usize, usize, usize) {
-    let output = Command::new("cargo")
-        .args(args)
-        .current_dir(root)
-        .output();
+    let output = Command::new("cargo").args(args).current_dir(root).output();
 
     match output {
         Ok(o) => {
