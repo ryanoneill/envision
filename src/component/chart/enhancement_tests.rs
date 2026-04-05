@@ -542,3 +542,152 @@ fn test_render_chart_with_vertical_and_horizontal_lines() {
         })
         .unwrap();
 }
+
+// =============================================================================
+// Cursor / Crosshair
+// =============================================================================
+
+#[test]
+fn test_toggle_crosshair() {
+    let mut state = ChartState::line(sample_series());
+    state.set_focused(true);
+    let output = Chart::update(&mut state, ChartMessage::ToggleCrosshair);
+    assert!(state.show_crosshair());
+    assert_eq!(state.cursor_position(), Some(0));
+    assert_eq!(output, Some(ChartOutput::CrosshairToggled(true)));
+
+    let output = Chart::update(&mut state, ChartMessage::ToggleCrosshair);
+    assert!(!state.show_crosshair());
+    assert_eq!(output, Some(ChartOutput::CrosshairToggled(false)));
+}
+
+#[test]
+fn test_cursor_left_right() {
+    let mut state = ChartState::line(sample_series());
+    state.set_focused(true);
+
+    // Move right from 0
+    let output = Chart::update(&mut state, ChartMessage::CursorRight);
+    assert_eq!(state.cursor_position(), Some(1));
+    assert_eq!(output, Some(ChartOutput::CursorMoved(1)));
+
+    // Move left from 1
+    let output = Chart::update(&mut state, ChartMessage::CursorLeft);
+    assert_eq!(state.cursor_position(), Some(0));
+    assert_eq!(output, Some(ChartOutput::CursorMoved(0)));
+}
+
+#[test]
+fn test_cursor_bounds_clamping() {
+    let mut state = ChartState::line(sample_series());
+    state.set_focused(true);
+
+    // Can't go below 0
+    Chart::update(&mut state, ChartMessage::CursorLeft);
+    assert_eq!(state.cursor_position(), Some(0));
+
+    // Can't go above max
+    Chart::update(&mut state, ChartMessage::CursorEnd);
+    let max_pos = state.cursor_position().unwrap();
+    Chart::update(&mut state, ChartMessage::CursorRight);
+    assert_eq!(state.cursor_position(), Some(max_pos));
+}
+
+#[test]
+fn test_cursor_home_end() {
+    let mut state = ChartState::line(sample_series());
+    state.set_focused(true);
+
+    Chart::update(&mut state, ChartMessage::CursorEnd);
+    assert_eq!(state.cursor_position(), Some(4)); // 5 data points, max idx = 4
+
+    Chart::update(&mut state, ChartMessage::CursorHome);
+    assert_eq!(state.cursor_position(), Some(0));
+}
+
+#[test]
+fn test_cursor_key_bindings() {
+    let state = ChartState::line(sample_series());
+    let mut focused = state;
+    focused.set_focused(true);
+
+    assert_eq!(
+        Chart::handle_event(&focused, &Event::key(KeyCode::Left)),
+        Some(ChartMessage::CursorLeft)
+    );
+    assert_eq!(
+        Chart::handle_event(&focused, &Event::key(KeyCode::Right)),
+        Some(ChartMessage::CursorRight)
+    );
+    assert_eq!(
+        Chart::handle_event(&focused, &Event::char('h')),
+        Some(ChartMessage::CursorLeft)
+    );
+    assert_eq!(
+        Chart::handle_event(&focused, &Event::char('l')),
+        Some(ChartMessage::CursorRight)
+    );
+    assert_eq!(
+        Chart::handle_event(&focused, &Event::key(KeyCode::Home)),
+        Some(ChartMessage::CursorHome)
+    );
+    assert_eq!(
+        Chart::handle_event(&focused, &Event::key(KeyCode::End)),
+        Some(ChartMessage::CursorEnd)
+    );
+    assert_eq!(
+        Chart::handle_event(&focused, &Event::char('c')),
+        Some(ChartMessage::ToggleCrosshair)
+    );
+}
+
+#[test]
+fn test_cursor_unfocused_ignored() {
+    let state = ChartState::line(sample_series());
+    assert_eq!(
+        Chart::handle_event(&state, &Event::key(KeyCode::Left)),
+        None
+    );
+}
+
+#[test]
+fn test_cursor_enables_crosshair() {
+    // Moving cursor should auto-enable crosshair
+    let mut state = ChartState::line(sample_series());
+    state.set_focused(true);
+    assert!(!state.show_crosshair());
+
+    Chart::update(&mut state, ChartMessage::CursorRight);
+    assert!(state.show_crosshair());
+}
+
+#[test]
+fn test_render_chart_with_crosshair() {
+    let mut state = ChartState::line(sample_series()).with_title("With Crosshair");
+    state.set_focused(true);
+    state.set_show_crosshair(true);
+    state.set_cursor_position(Some(2));
+
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(
+                &state,
+                frame,
+                frame.area(),
+                &theme,
+                &ViewContext::new().focused(true),
+            );
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_focusable_trait() {
+    use crate::component::Focusable;
+
+    let mut state = ChartState::line(vec![]);
+    assert!(!Chart::is_focused(&state));
+    Chart::set_focused(&mut state, true);
+    assert!(Chart::is_focused(&state));
+}

@@ -27,7 +27,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Disableable, ViewContext};
+use super::{Component, Disableable, Focusable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -195,6 +195,16 @@ pub enum ChartMessage {
     SetVerticalLines(Vec<VerticalLine>),
     /// Add a single vertical reference line.
     AddVerticalLine(VerticalLine),
+    /// Move the crosshair cursor left.
+    CursorLeft,
+    /// Move the crosshair cursor right.
+    CursorRight,
+    /// Move the crosshair cursor to the start.
+    CursorHome,
+    /// Move the crosshair cursor to the end.
+    CursorEnd,
+    /// Toggle the crosshair cursor visibility.
+    ToggleCrosshair,
 }
 
 /// Output messages from a Chart.
@@ -206,6 +216,10 @@ pub enum ChartMessage {
 pub enum ChartOutput {
     /// The active series changed.
     ActiveSeriesChanged(usize),
+    /// The crosshair cursor moved to a new position.
+    CursorMoved(usize),
+    /// The crosshair was toggled on or off.
+    CrosshairToggled(bool),
 }
 
 /// State for a Chart component.
@@ -249,6 +263,10 @@ pub struct ChartState {
     pub(crate) y_max: Option<f64>,
     /// Vertical reference lines.
     pub(crate) vertical_lines: Vec<VerticalLine>,
+    /// Cursor position (data index) for crosshair mode.
+    pub(crate) cursor_position: Option<usize>,
+    /// Whether to show the crosshair cursor.
+    pub(crate) show_crosshair: bool,
 }
 
 impl Default for ChartState {
@@ -270,6 +288,8 @@ impl Default for ChartState {
             y_min: None,
             y_max: None,
             vertical_lines: Vec::new(),
+            cursor_position: None,
+            show_crosshair: false,
         }
     }
 }
@@ -510,6 +530,11 @@ impl ChartState {
 ///
 /// - `Tab` — Cycle to next series
 /// - `BackTab` — Cycle to previous series
+/// - `Left` / `h` — Move crosshair cursor left
+/// - `Right` / `l` — Move crosshair cursor right
+/// - `Home` — Move cursor to start
+/// - `End` — Move cursor to end
+/// - `c` — Toggle crosshair visibility
 pub struct Chart(PhantomData<()>);
 
 impl Component for Chart {
@@ -531,6 +556,11 @@ impl Component for Chart {
         match key.code {
             KeyCode::Tab => Some(ChartMessage::NextSeries),
             KeyCode::BackTab => Some(ChartMessage::PrevSeries),
+            KeyCode::Left | KeyCode::Char('h') => Some(ChartMessage::CursorLeft),
+            KeyCode::Right | KeyCode::Char('l') => Some(ChartMessage::CursorRight),
+            KeyCode::Home => Some(ChartMessage::CursorHome),
+            KeyCode::End => Some(ChartMessage::CursorEnd),
+            KeyCode::Char('c') => Some(ChartMessage::ToggleCrosshair),
             _ => None,
         }
     }
@@ -557,6 +587,49 @@ impl Component for Chart {
             ChartMessage::AddVerticalLine(line) => {
                 state.vertical_lines.push(line);
                 None
+            }
+            ChartMessage::ToggleCrosshair => {
+                state.show_crosshair = !state.show_crosshair;
+                if state.show_crosshair && state.cursor_position.is_none() {
+                    state.cursor_position = Some(0);
+                }
+                Some(ChartOutput::CrosshairToggled(state.show_crosshair))
+            }
+            ChartMessage::CursorLeft
+            | ChartMessage::CursorRight
+            | ChartMessage::CursorHome
+            | ChartMessage::CursorEnd => {
+                let max_idx = state
+                    .series
+                    .iter()
+                    .map(|s| s.values().len())
+                    .max()
+                    .unwrap_or(1)
+                    .saturating_sub(1);
+
+                if max_idx == 0 {
+                    return None;
+                }
+
+                let current = state.cursor_position.unwrap_or(0);
+
+                let new_pos = match msg {
+                    ChartMessage::CursorLeft => current.saturating_sub(1),
+                    ChartMessage::CursorRight => (current + 1).min(max_idx),
+                    ChartMessage::CursorHome => 0,
+                    ChartMessage::CursorEnd => max_idx,
+                    _ => unreachable!(),
+                };
+
+                if new_pos != current || state.cursor_position.is_none() {
+                    state.cursor_position = Some(new_pos);
+                    if !state.show_crosshair {
+                        state.show_crosshair = true;
+                    }
+                    Some(ChartOutput::CursorMoved(new_pos))
+                } else {
+                    None
+                }
             }
             ChartMessage::NextSeries | ChartMessage::PrevSeries => {
                 if state.disabled || state.series.is_empty() {
@@ -687,9 +760,26 @@ impl Component for Chart {
                     theme,
                     ctx.focused,
                     ctx.disabled,
-                )
+                );
+
+                // Render crosshair value readout overlay
+                if state.show_crosshair {
+                    if let Some(pos) = state.cursor_position {
+                        render::render_crosshair_readout(state, frame, chart_area, pos);
+                    }
+                }
             }
         }
+    }
+}
+
+impl Focusable for Chart {
+    fn is_focused(state: &Self::State) -> bool {
+        state.focused
+    }
+
+    fn set_focused(state: &mut Self::State, focused: bool) {
+        state.focused = focused;
     }
 }
 

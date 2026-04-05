@@ -215,6 +215,26 @@ pub(super) fn render_shared_axis_chart(
         );
     }
 
+    // Add crosshair cursor as a vertical line dataset
+    let crosshair_data = if state.show_crosshair {
+        state.cursor_position.map(|pos| {
+            let x = pos as f64;
+            vec![(x, effective_min), (x, effective_max)]
+        })
+    } else {
+        None
+    };
+    if let Some(ref data) = crosshair_data {
+        datasets.push(
+            Dataset::default()
+                .name("")
+                .data(data)
+                .marker(symbols::Marker::Braille)
+                .graph_type(GraphType::Line)
+                .style(Style::default().fg(Color::White)),
+        );
+    }
+
     // Build axes
     let x_axis = if let Some(ref label) = state.x_label {
         RatatuiAxis::default()
@@ -247,4 +267,44 @@ pub(super) fn render_shared_axis_chart(
     let chart = RatatuiChart::new(datasets).x_axis(x_axis).y_axis(y_axis);
 
     frame.render_widget(chart, area);
+}
+
+/// Renders the crosshair value readout overlay at the top of the chart area.
+///
+/// Shows the cursor position and the value of each series at that position.
+pub(super) fn render_crosshair_readout(
+    state: &ChartState,
+    frame: &mut Frame,
+    area: Rect,
+    cursor_pos: usize,
+) {
+    if area.height < 2 || area.width < 10 {
+        return;
+    }
+
+    let mut spans = vec![Span::styled(
+        format!("x:{}", cursor_pos),
+        Style::default()
+            .fg(Color::White)
+            .add_modifier(Modifier::BOLD),
+    )];
+
+    for series in &state.series {
+        if let Some(&value) = series.values().get(cursor_pos) {
+            spans.push(Span::raw(" | "));
+            spans.push(Span::styled(
+                format!("{}: {:.4}", series.label(), value),
+                Style::default().fg(series.color()),
+            ));
+        }
+    }
+
+    let line = Line::from(spans);
+    let readout = Paragraph::new(line)
+        .style(Style::default().bg(Color::DarkGray).fg(Color::White))
+        .alignment(Alignment::Left);
+
+    // Render at the top of the chart area, 1 line high
+    let readout_area = Rect::new(area.x, area.y, area.width, 1);
+    frame.render_widget(readout, readout_area);
 }

@@ -347,6 +347,26 @@ impl super::ChartState {
         self.disabled = disabled;
     }
 
+    /// Returns the cursor position (data index), if set.
+    pub fn cursor_position(&self) -> Option<usize> {
+        self.cursor_position
+    }
+
+    /// Sets the cursor position.
+    pub fn set_cursor_position(&mut self, position: Option<usize>) {
+        self.cursor_position = position;
+    }
+
+    /// Returns whether the crosshair is visible.
+    pub fn show_crosshair(&self) -> bool {
+        self.show_crosshair
+    }
+
+    /// Sets crosshair visibility.
+    pub fn set_show_crosshair(&mut self, show: bool) {
+        self.show_crosshair = show;
+    }
+
     /// Maps an input event to a chart message.
     pub fn handle_event(&self, event: &Event) -> Option<ChartMessage> {
         Chart::handle_event(self, event)
