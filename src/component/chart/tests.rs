@@ -149,7 +149,7 @@ fn test_default() {
     let state = ChartState::default();
     assert!(state.is_empty());
     assert_eq!(state.kind(), &ChartKind::Line);
-    assert_eq!(state.max_display_points(), 50);
+    assert_eq!(state.max_display_points(), 500);
     assert_eq!(state.bar_width(), 3);
     assert_eq!(state.bar_gap(), 1);
     assert!(state.show_legend());

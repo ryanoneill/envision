@@ -31,6 +31,7 @@ use super::{Component, Disableable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
+pub(crate) mod downsample;
 mod render;
 mod series;
 
@@ -203,7 +204,7 @@ impl Default for ChartState {
             x_label: None,
             y_label: None,
             show_legend: true,
-            max_display_points: 50,
+            max_display_points: 500,
             bar_width: 3,
             bar_gap: 1,
             focused: false,

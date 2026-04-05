@@ -112,18 +112,12 @@ pub(super) fn render_shared_axis_chart(
     let effective_min = state.effective_min();
     let effective_max = state.effective_max();
 
-    // Compute max x value across all series
+    // Compute max x value across all series (use full series length since
+    // LTTB preserves original x coordinates)
     let max_x = state
         .series
         .iter()
-        .map(|s| {
-            let len = s.values().len();
-            if len > state.max_display_points {
-                state.max_display_points
-            } else {
-                len
-            }
-        })
+        .map(|s| s.values().len())
         .max()
         .unwrap_or(1)
         .max(1) as f64
@@ -135,21 +129,25 @@ pub(super) fn render_shared_axis_chart(
         _ => GraphType::Line,
     };
 
-    // Build data vectors that outlive the datasets
+    // Build data vectors, using LTTB downsampling for large datasets.
+    // Width-adaptive: braille gives 2x horizontal resolution per character.
+    let effective_max_points = (area.width as usize * 2).min(state.max_display_points);
+
     let series_data: Vec<Vec<(f64, f64)>> = state
         .series
         .iter()
         .map(|s| {
-            let values = if s.values().len() > state.max_display_points {
-                &s.values()[s.values().len() - state.max_display_points..]
-            } else {
-                s.values()
-            };
-            values
+            let indexed: Vec<(f64, f64)> = s
+                .values()
                 .iter()
                 .enumerate()
                 .map(|(i, v)| (i as f64, *v))
-                .collect()
+                .collect();
+            if indexed.len() > effective_max_points {
+                super::downsample::lttb(&indexed, effective_max_points)
+            } else {
+                indexed
+            }
         })
         .collect();
 
