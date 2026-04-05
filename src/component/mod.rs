@@ -10,8 +10,8 @@
 //! # Core Traits
 //!
 //! - [`Component`]: The base trait for all components
-//! - [`Focusable`]: Components that can receive keyboard focus
 //! - [`Toggleable`]: Components that can be shown or hidden
+//! - [`ViewContext`]: Focus and disabled state passed to `handle_event` and `view`
 //!
 //! # Built-in Components
 //!
@@ -34,7 +34,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Component, Focusable, ViewContext};
+//! use envision::component::{Component, ViewContext};
 //! use envision::theme::Theme;
 //! use ratatui::prelude::*;
 //!
@@ -43,7 +43,6 @@
 //! #[derive(Clone, Default)]
 //! struct CounterState {
 //!     value: i32,
-//!     focused: bool,
 //! }
 //!
 //! #[derive(Clone)]
@@ -87,16 +86,6 @@
 //!         );
 //!     }
 //! }
-//!
-//! impl Focusable for Counter {
-//!     fn is_focused(state: &Self::State) -> bool {
-//!         state.focused
-//!     }
-//!
-//!     fn set_focused(state: &mut Self::State, focused: bool) {
-//!         state.focused = focused;
-//!     }
-//! }
 //! ```
 
 use ratatui::prelude::*;
@@ -135,8 +124,6 @@ mod alert_panel;
 mod box_plot;
 #[cfg(feature = "compound-components")]
 mod chart;
-#[cfg(feature = "compound-components")]
-mod chat_view;
 #[cfg(feature = "compound-components")]
 mod conversation_view;
 #[cfg(feature = "compound-components")]
@@ -358,10 +345,6 @@ pub use box_plot::{BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation, Box
 #[cfg(feature = "compound-components")]
 pub use chart::{
     Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, ThresholdLine,
-};
-#[cfg(feature = "compound-components")]
-pub use chat_view::{
-    ChatMessage, ChatRole, ChatView, ChatViewMessage, ChatViewOutput, ChatViewState,
 };
 #[cfg(feature = "compound-components")]
 pub use conversation_view::{
@@ -711,80 +694,6 @@ pub trait Component: Sized {
     }
 }
 
-/// A component that can receive keyboard focus.
-///
-/// Focus is used to determine which component receives keyboard input
-/// when multiple components are on screen. Only one component should
-/// typically be focused at a time.
-///
-/// # Visual Feedback
-///
-/// Components should provide visual feedback when focused, such as:
-/// - Highlighted borders
-/// - Changed colors
-/// - Cursor visibility
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::{Component, Focusable, ViewContext};
-/// use envision::theme::Theme;
-/// use ratatui::prelude::*;
-///
-/// struct TextInput;
-///
-/// #[derive(Clone, Default)]
-/// struct TextInputState {
-///     value: String,
-///     focused: bool,
-/// }
-///
-/// # #[derive(Clone)]
-/// # enum TextInputMsg {}
-/// # #[derive(Clone)]
-/// # enum TextInputOutput {}
-/// #
-/// # impl Component for TextInput {
-/// #     type State = TextInputState;
-/// #     type Message = TextInputMsg;
-/// #     type Output = TextInputOutput;
-/// #     fn init() -> Self::State { TextInputState::default() }
-/// #     fn update(_: &mut Self::State, _: Self::Message) -> Option<Self::Output> { None }
-/// #     fn view(_: &Self::State, _: &mut Frame, _: Rect, _: &Theme, _: &ViewContext) {}
-/// # }
-/// #
-/// impl Focusable for TextInput {
-///     fn is_focused(state: &Self::State) -> bool {
-///         state.focused
-///     }
-///
-///     fn set_focused(state: &mut Self::State, focused: bool) {
-///         state.focused = focused;
-///     }
-/// }
-/// ```
-pub trait Focusable: Component {
-    /// Returns true if this component is currently focused.
-    fn is_focused(state: &Self::State) -> bool;
-
-    /// Sets the focus state of this component.
-    fn set_focused(state: &mut Self::State, focused: bool);
-
-    /// Gives focus to this component.
-    ///
-    /// Convenience method equivalent to `set_focused(state, true)`.
-    fn focus(state: &mut Self::State) {
-        Self::set_focused(state, true);
-    }
-
-    /// Removes focus from this component.
-    ///
-    /// Convenience method equivalent to `set_focused(state, false)`.
-    fn blur(state: &mut Self::State) {
-        Self::set_focused(state, false);
-    }
-}
-
 /// A component that can be shown or hidden.
 ///
 /// This is useful for panels, dialogs, and other UI elements that
@@ -865,50 +774,6 @@ pub trait Toggleable: Component {
     /// Convenience method equivalent to `set_visible(state, false)`.
     fn hide(state: &mut Self::State) {
         Self::set_visible(state, false);
-    }
-}
-
-/// A component that can be disabled.
-///
-/// When disabled, a component should render in a visually distinct style
-/// (e.g., grayed out) and ignore interactive input events.
-///
-/// # Example
-///
-/// ```rust
-/// # #[cfg(feature = "input-components")]
-/// # {
-/// use envision::component::{Button, Component, Disableable, Focusable};
-///
-/// let mut state = Button::init();
-/// assert!(!Button::is_disabled(&state));
-///
-/// Button::disable(&mut state);
-/// assert!(Button::is_disabled(&state));
-///
-/// Button::enable(&mut state);
-/// assert!(!Button::is_disabled(&state));
-/// # }
-/// ```
-pub trait Disableable: Component {
-    /// Returns true if this component is currently disabled.
-    fn is_disabled(state: &Self::State) -> bool;
-
-    /// Sets the disabled state of this component.
-    fn set_disabled(state: &mut Self::State, disabled: bool);
-
-    /// Disables this component.
-    ///
-    /// Convenience method equivalent to `set_disabled(state, true)`.
-    fn disable(state: &mut Self::State) {
-        Self::set_disabled(state, true);
-    }
-
-    /// Enables this component.
-    ///
-    /// Convenience method equivalent to `set_disabled(state, false)`.
-    fn enable(state: &mut Self::State) {
-        Self::set_disabled(state, false);
     }
 }
 
