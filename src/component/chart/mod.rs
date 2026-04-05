@@ -31,6 +31,7 @@ use super::{Component, Disableable, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
+pub(crate) mod format;
 mod render;
 mod series;
 pub(crate) mod ticks;

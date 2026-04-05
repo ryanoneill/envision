@@ -75,11 +75,19 @@ fn round_to_precision(value: f64, step: f64) -> f64 {
 
 /// Formats a tick value for display on an axis.
 ///
-/// Chooses a format based on the step size: integers when the step is
-/// whole, otherwise enough decimal places to distinguish values.
+/// Uses smart formatting for large/small values (SI suffixes, scientific
+/// notation) and step-aware precision for moderate values.
 pub fn format_tick(value: f64, step: f64) -> String {
-    if step >= 1.0 && value == value.round() {
-        format!("{}", value as i64)
+    let abs = value.abs();
+
+    // For large values, use smart_format which provides SI suffixes
+    if abs >= 10_000.0 || (abs > 0.0 && abs < 0.001) {
+        return super::format::smart_format(value, None);
+    }
+
+    // For moderate values, use step-aware precision
+    if step >= 1.0 && (value - value.round()).abs() < 1e-9 {
+        format!("{}", value.round() as i64)
     } else {
         let decimals = (-step.log10()).ceil().max(0.0) as usize;
         format!("{:.prec$}", value, prec = decimals)
@@ -195,7 +203,18 @@ mod tests {
 
     #[test]
     fn test_format_tick_small_values() {
+        // Values >= 0.001 use step-aware decimal precision
         assert_eq!(format_tick(0.002, 0.002), "0.002");
+        // Values < 0.001 use scientific notation via smart_format
+        assert_eq!(format_tick(0.0002, 0.0001), "2.00e-4");
+    }
+
+    #[test]
+    fn test_format_tick_large_values() {
+        // Large values use SI suffixes via smart_format
+        assert_eq!(format_tick(10000.0, 5000.0), "10K");
+        assert_eq!(format_tick(25000.0, 5000.0), "25K");
+        assert_eq!(format_tick(1000000.0, 500000.0), "1M");
     }
 
     #[test]
