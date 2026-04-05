@@ -41,7 +41,6 @@
 //! ];
 //!
 //! let mut state = TableState::new(users, columns);
-//! Table::set_focused(&mut state, true);
 //!
 //! // Navigate down
 //! let output = Table::<User>::update(&mut state, TableMessage::Down);

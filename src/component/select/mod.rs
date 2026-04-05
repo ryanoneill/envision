@@ -17,8 +17,7 @@
 //! let mut state = SelectState::new(vec!["Red", "Green", "Blue"]);
 //! state.set_placeholder("Choose a color");
 //!
-//! // Focus and open it
-//! Select::focus(&mut state);
+//! // Open it
 //! let _ = Select::update(&mut state, SelectMessage::Open);
 //!
 //! // Select an option (navigating to index 1, then confirming)

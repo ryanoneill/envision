@@ -6,7 +6,6 @@
 //! [`AccordionState`], updated via [`AccordionMessage`], and produces
 //! [`AccordionOutput`]. Panels are defined with [`AccordionPanel`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -21,7 +20,6 @@
 //! ];
 //!
 //! let mut state = AccordionState::new(panels);
-//! Accordion::focus(&mut state);
 //!
 //! // Toggle first panel (expands it)
 //! let output = Accordion::update(&mut state, AccordionMessage::Toggle);

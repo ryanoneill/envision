@@ -80,7 +80,6 @@ pub enum MarkdownRendererMessage {
 ///
 /// assert_eq!(state.source(), "# Title\n\nBody text.");
 /// assert_eq!(state.title(), Some("Document"));
-/// assert!(!state.is_focused());
 /// ```
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(

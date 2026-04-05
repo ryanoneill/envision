@@ -5,7 +5,7 @@
 //! Enter. State is stored in [`CommandPaletteState`], updated via
 //! [`CommandPaletteMessage`], and produces [`CommandPaletteOutput`].
 //!
-//! Implements [`Focusable`], [`Disableable`], and [`Toggleable`].
+//! Implements [`Toggleable`].
 //!
 //! # Example
 //!
@@ -22,7 +22,6 @@
 //! ];
 //!
 //! let mut state = CommandPaletteState::new(items);
-//! state.set_focused(true);
 //! state.set_visible(true);
 //!
 //! // Type to filter
@@ -351,7 +350,6 @@ impl CommandPaletteState {
     /// let mut state = CommandPaletteState::new(vec![]);
     /// state.show();
     /// assert!(state.is_visible());
-    /// assert!(state.is_focused());
     /// ```
     pub fn show(&mut self) {
         self.visible = true;
@@ -537,7 +535,6 @@ impl CommandPaletteState {
     /// use envision::component::{CommandPaletteState, CommandPaletteMessage, CommandPaletteOutput, PaletteItem};
     ///
     /// let mut state = CommandPaletteState::new(vec![PaletteItem::new("a", "Alpha")]);
-    /// state.set_focused(true);
     /// state.set_visible(true);
     /// let output = state.update(CommandPaletteMessage::TypeChar('a'));
     /// assert!(matches!(output, Some(CommandPaletteOutput::QueryChanged(_))));
@@ -601,7 +598,6 @@ impl CommandPaletteState {
 ///     PaletteItem::new("save", "Save File"),
 /// ];
 /// let mut state = CommandPaletteState::new(items);
-/// state.set_focused(true);
 /// state.set_visible(true);
 ///
 /// // Filter to "save"

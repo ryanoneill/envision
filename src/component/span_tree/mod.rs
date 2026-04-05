@@ -24,7 +24,6 @@
 //!             .with_color(Color::Green),
 //!     );
 //! let mut state = SpanTreeState::new(vec![root]);
-//! state.set_focused(true);
 //!
 //! // Navigate down
 //! SpanTree::update(&mut state, SpanTreeMessage::SelectDown);
@@ -54,7 +53,6 @@ pub use types::{FlatSpan, SpanNode};
 ///
 /// let root = SpanNode::new("r", "root", 0.0, 100.0);
 /// let mut state = SpanTreeState::new(vec![root]);
-/// state.set_focused(true);
 /// SpanTree::update(&mut state, SpanTreeMessage::SelectDown);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
@@ -95,7 +93,6 @@ pub enum SpanTreeMessage {
 /// let root = SpanNode::new("r", "root", 0.0, 100.0)
 ///     .with_child(SpanNode::new("c", "child", 10.0, 50.0));
 /// let mut state = SpanTreeState::new(vec![root]);
-/// state.set_focused(true);
 ///
 /// let output = SpanTree::update(&mut state, SpanTreeMessage::Collapse);
 /// assert_eq!(output, Some(SpanTreeOutput::Collapsed("r".into())));
@@ -641,7 +638,6 @@ impl SpanTreeState {
 ///     );
 ///
 /// let mut state = SpanTreeState::new(vec![root]);
-/// state.set_focused(true);
 ///
 /// // Navigate through spans
 /// SpanTree::update(&mut state, SpanTreeMessage::SelectDown);

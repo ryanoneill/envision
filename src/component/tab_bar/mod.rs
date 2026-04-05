@@ -19,7 +19,6 @@
 //!     Tab::new("file3", "test.rs").with_closable(true),
 //! ];
 //! let mut state = TabBarState::new(tabs);
-//! TabBar::set_focused(&mut state, true);
 //!
 //! assert_eq!(state.active_index(), Some(0));
 //! assert_eq!(state.active_tab().map(|t| t.label()), Some("main.rs"));
@@ -595,7 +594,6 @@ impl TabBarState {
 ///     Tab::new("2", "Details").with_closable(true),
 /// ];
 /// let mut state = TabBarState::new(tabs);
-/// TabBar::set_focused(&mut state, true);
 ///
 /// let output = TabBar::update(&mut state, TabBarMessage::NextTab);
 /// assert_eq!(output, Some(TabBarOutput::TabSelected(1)));

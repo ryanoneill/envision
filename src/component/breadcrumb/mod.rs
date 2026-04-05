@@ -6,7 +6,6 @@
 //! [`BreadcrumbState`], updated via [`BreadcrumbMessage`], and produces
 //! [`BreadcrumbOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -23,7 +22,6 @@
 //!     BreadcrumbSegment::new("Electronics"),
 //! ];
 //! let mut state = BreadcrumbState::new(segments);
-//! Breadcrumb::set_focused(&mut state, true);
 //!
 //! // Navigate right
 //! let output = Breadcrumb::update(&mut state, BreadcrumbMessage::Right);
@@ -439,7 +437,6 @@ impl BreadcrumbState {
 /// };
 ///
 /// let mut state = BreadcrumbState::from_labels(vec!["Home", "Products", "Item"]);
-/// Breadcrumb::set_focused(&mut state, true);
 ///
 /// // Navigate to Products
 /// let output = Breadcrumb::update(&mut state, BreadcrumbMessage::Right);

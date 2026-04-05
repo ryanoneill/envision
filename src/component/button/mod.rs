@@ -4,7 +4,6 @@
 //! (Enter or Space) when focused. State is stored in [`ButtonState`],
 //! updated via [`ButtonMessage`], and produces [`ButtonOutput`] on activation.
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`Checkbox`](super::Checkbox) for a boolean toggle input.
 //!
@@ -16,17 +15,9 @@
 //! // Create a button
 //! let mut state = ButtonState::new("Submit");
 //!
-//! // Focus it
-//! Button::set_focused(&mut state, true);
-//!
 //! // Press it
 //! let output = Button::update(&mut state, ButtonMessage::Press);
 //! assert_eq!(output, Some(ButtonOutput::Pressed));
-//!
-//! // Disabled buttons don't emit output
-//! state.set_disabled(true);
-//! let output = Button::update(&mut state, ButtonMessage::Press);
-//! assert_eq!(output, None);
 //! ```
 
 use ratatui::prelude::*;

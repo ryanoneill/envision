@@ -414,7 +414,6 @@ impl TimelineState {
     ///
     /// let mut state = TimelineState::new()
     ///     .with_events(vec![TimelineEvent::new("e1", 100.0, "Start")]);
-    /// state.set_focused(true);
     /// state.update(TimelineMessage::SelectNext);
     /// assert_eq!(state.selected_event().unwrap().id, "e1");
     /// ```
@@ -435,7 +434,6 @@ impl TimelineState {
     ///
     /// let mut state = TimelineState::new()
     ///     .with_spans(vec![TimelineSpan::new("s1", 0.0, 200.0, "Init")]);
-    /// state.set_focused(true);
     /// state.update(TimelineMessage::SelectNext);
     /// assert_eq!(state.selected_span().unwrap().id, "s1");
     /// ```

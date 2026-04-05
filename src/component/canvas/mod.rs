@@ -506,8 +506,8 @@ impl CanvasState {
 /// rectangles, circles, points, labels). It wraps ratatui's `Canvas`
 /// widget and serves as the foundation for custom visualizations.
 ///
-/// The canvas is display-only for now but implements `Focusable` for
-/// future pan/zoom functionality.
+/// The canvas is display-only for now but may support pan/zoom
+/// functionality in the future.
 ///
 /// # Example
 ///

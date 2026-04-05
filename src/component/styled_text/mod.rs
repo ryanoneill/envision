@@ -118,7 +118,6 @@ impl Default for StyledTextState {
     /// let state = StyledTextState::default();
     /// assert_eq!(state.scroll_offset(), 0);
     /// assert!(state.show_border());
-    /// assert!(!state.is_focused());
     /// ```
     fn default() -> Self {
         Self {
@@ -141,7 +140,6 @@ impl StyledTextState {
     /// let state = StyledTextState::new();
     /// assert_eq!(state.scroll_offset(), 0);
     /// assert!(state.show_border());
-    /// assert!(!state.is_focused());
     /// ```
     pub fn new() -> Self {
         Self::default()

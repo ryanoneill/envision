@@ -232,7 +232,6 @@ impl TreemapNode {
 ///     .with_child(TreemapNode::new("b", 20.0).with_color(Color::Blue));
 ///
 /// let mut state = TreemapState::new().with_root(root);
-/// state.set_focused(true);
 /// state.update(TreemapMessage::SelectNext);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
@@ -267,7 +266,7 @@ pub enum TreemapMessage {
 ///
 /// ```rust
 /// use envision::component::{
-///     Component, Treemap, TreemapState, TreemapNode, TreemapOutput,
+///     Component, Treemap, TreemapState, TreemapNode, TreemapMessage, TreemapOutput,
 /// };
 /// use ratatui::style::Color;
 ///
@@ -279,11 +278,8 @@ pub enum TreemapMessage {
 ///             .with_child(TreemapNode::new("y", 15.0)),
 ///     );
 /// let mut state = TreemapState::new().with_root(root);
-/// state.set_focused(true);
 ///
-/// let output = state.dispatch_event(&envision::input::Event::key(
-///     envision::input::KeyCode::Enter,
-/// ));
+/// let output = Treemap::update(&mut state, TreemapMessage::ZoomIn);
 /// assert_eq!(
 ///     output,
 ///     Some(TreemapOutput::ZoomedIn("a".to_string()))

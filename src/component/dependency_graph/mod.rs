@@ -8,7 +8,6 @@
 //! State is stored in [`DependencyGraphState`], updated via
 //! [`DependencyGraphMessage`], and produces [`DependencyGraphOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -22,7 +21,6 @@
 //!     .with_node(GraphNode::new("api", "API Gateway").with_status(NodeStatus::Healthy))
 //!     .with_node(GraphNode::new("db", "Database").with_status(NodeStatus::Degraded))
 //!     .with_edge(GraphEdge::new("api", "db"));
-//! state.set_focused(true);
 //!
 //! // Select and navigate
 //! DependencyGraph::update(&mut state, DependencyGraphMessage::SelectNext);
@@ -59,7 +57,6 @@ pub use types::{GraphEdge, GraphNode, GraphOrientation, NodeStatus};
 /// let mut state = DependencyGraphState::new()
 ///     .with_node(GraphNode::new("a", "Node A"))
 ///     .with_node(GraphNode::new("b", "Node B"));
-/// state.set_focused(true);
 /// DependencyGraph::update(&mut state, DependencyGraphMessage::SelectNext);
 /// assert_eq!(state.selected(), Some(0));
 /// ```
@@ -106,7 +103,6 @@ pub enum DependencyGraphMessage {
 ///
 /// let mut state = DependencyGraphState::new()
 ///     .with_node(GraphNode::new("a", "Node A"));
-/// state.set_focused(true);
 ///
 /// let output = DependencyGraph::update(&mut state, DependencyGraphMessage::SelectNext);
 /// assert!(matches!(output, Some(DependencyGraphOutput::NodeSelected(_))));
@@ -666,7 +662,6 @@ impl DependencyGraphState {
     ///
     /// let mut state = DependencyGraphState::new()
     ///     .with_node(GraphNode::new("a", "A"));
-    /// state.set_focused(true);
     /// let output = state.update(DependencyGraphMessage::SelectNext);
     /// assert!(output.is_some());
     /// ```
@@ -719,7 +714,6 @@ impl DependencyGraphState {
 ///     .with_node(GraphNode::new("db", "Database").with_status(NodeStatus::Degraded))
 ///     .with_edge(GraphEdge::new("api", "db"))
 ///     .with_title("Service Topology");
-/// state.set_focused(true);
 ///
 /// DependencyGraph::update(&mut state, DependencyGraphMessage::SelectNext);
 /// assert_eq!(state.selected_node().unwrap().id, "api");

@@ -18,7 +18,6 @@
 //! };
 //!
 //! let mut state = SplitPanelState::new(SplitOrientation::Vertical);
-//! SplitPanel::set_focused(&mut state, true);
 //!
 //! assert_eq!(state.ratio(), 0.5);
 //! assert!(state.is_first_pane_focused());
@@ -349,7 +348,6 @@ impl SplitPanelState {
 /// };
 ///
 /// let mut state = SplitPanelState::new(SplitOrientation::Vertical);
-/// SplitPanel::set_focused(&mut state, true);
 ///
 /// // Get layout areas for rendering
 /// let area = ratatui::layout::Rect::new(0, 0, 80, 24);

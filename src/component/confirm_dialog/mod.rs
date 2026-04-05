@@ -7,7 +7,7 @@
 //! [`ConfirmDialogOutput`] containing a [`ConfirmDialogResult`].
 //! Button layouts are configured with [`ButtonConfig`].
 //!
-//! Implements [`Focusable`], [`Disableable`](super::Disableable), and [`Toggleable`].
+//! Implements [`Toggleable`].
 //!
 //! See also [`Dialog`](super::Dialog) for a general-purpose modal dialog.
 //!
@@ -468,7 +468,6 @@ impl ConfirmDialogState {
 /// `ConfirmDialog` displays a centered overlay with a title, message,
 /// and configurable buttons. It implements:
 /// - [`Component`] for update/view logic
-/// - [`Focusable`] for keyboard focus
 /// - [`Toggleable`] for visibility control
 ///
 /// # Visual Format

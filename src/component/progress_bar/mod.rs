@@ -388,7 +388,7 @@ pub fn format_eta(duration: Duration) -> String {
 /// A progress indicator component.
 ///
 /// `ProgressBar` displays progress visually using ratatui's `Gauge` widget.
-/// This is a display-only component that does not implement `Focusable`.
+/// This is a display-only component that does not receive keyboard focus.
 ///
 /// # Visual Format
 ///

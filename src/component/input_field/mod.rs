@@ -5,7 +5,6 @@
 //! [`InputFieldState`], updated via [`InputFieldMessage`], and produces
 //! [`InputFieldOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`LineInput`](super::LineInput) for a multi-row wrapping input,
 //! and [`TextArea`](super::TextArea) for multi-line editing.

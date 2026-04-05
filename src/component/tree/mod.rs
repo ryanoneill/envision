@@ -19,7 +19,6 @@
 //! root.add_child(TreeNode::new("Child 2", "child2"));
 //!
 //! let mut state = TreeState::new(vec![root]);
-//! Tree::focus(&mut state);
 //!
 //! // Navigate and expand
 //! Tree::update(&mut state, TreeMessage::Expand);

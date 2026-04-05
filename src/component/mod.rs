@@ -498,12 +498,11 @@ pub use focus_manager::FocusManager;
 /// render-time concerns from persistent component state, allowing parents
 /// to control visual appearance without mutating component state.
 ///
-/// # Precedence
+/// # Usage
 ///
-/// `ctx` values are authoritative for rendering. Components read
-/// `ctx.focused` / `ctx.disabled` for visual appearance (border style,
-/// text color, cursor). `state.focused` / `state.disabled` remain the
-/// source of truth for behavior (`handle_event` guards).
+/// `ctx` values are authoritative for both rendering and event handling.
+/// Components read `ctx.focused` / `ctx.disabled` for visual appearance
+/// (border style, text color, cursor) and to guard `handle_event`.
 ///
 /// # Example
 ///

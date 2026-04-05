@@ -399,7 +399,7 @@ impl TitleCardState {
 /// A stylish display-only component for application titles.
 ///
 /// Renders a centered title with optional decorations, subtitle, and borders.
-/// This is a display-only component and does not implement [`Focusable`](super::Focusable).
+/// This is a display-only component that does not receive keyboard focus.
 ///
 /// # Example
 ///

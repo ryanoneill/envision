@@ -5,7 +5,6 @@
 //! State is stored in [`CalendarState`], updated via [`CalendarMessage`],
 //! and produces [`CalendarOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -17,7 +16,6 @@
 //! let mut state = CalendarState::new(2026, 3)
 //!     .with_selected_day(20)
 //!     .with_title("My Calendar");
-//! Calendar::focus(&mut state);
 //!
 //! assert_eq!(state.year(), 2026);
 //! assert_eq!(state.month(), 3);
@@ -499,7 +497,6 @@ impl CalendarState {
 /// use envision::component::{Calendar, CalendarMessage, CalendarState, Component};
 ///
 /// let mut state = CalendarState::new(2026, 3).with_selected_day(1);
-/// Calendar::focus(&mut state);
 ///
 /// // Navigate forward
 /// let output = Calendar::update(&mut state, CalendarMessage::NextMonth);

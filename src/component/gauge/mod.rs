@@ -489,7 +489,7 @@ impl GaugeState {
 ///
 /// `Gauge` displays a visual fill bar for ratios and measurements using
 /// ratatui's `Gauge` (full variant) or `LineGauge` (line variant) widgets.
-/// This is a display-only component that does not implement `Focusable`.
+/// This is a display-only component that does not receive keyboard focus.
 ///
 /// Unlike [`ProgressBar`](super::ProgressBar) which tracks task completion
 /// with progress from 0% to 100%, `Gauge` shows a current value relative to

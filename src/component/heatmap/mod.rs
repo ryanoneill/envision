@@ -6,7 +6,6 @@
 //! visualizations. State is stored in [`HeatmapState`], updated via
 //! [`HeatmapMessage`], and produces [`HeatmapOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -78,7 +77,6 @@ pub enum HeatmapColorScale {
 /// };
 ///
 /// let mut state = HeatmapState::new(3, 3);
-/// state.set_focused(true);
 /// state.update(HeatmapMessage::SelectDown);
 /// assert_eq!(state.selected(), Some((1, 0)));
 /// ```
@@ -128,18 +126,16 @@ pub enum HeatmapMessage {
 ///     Component, Heatmap, HeatmapState, HeatmapOutput,
 /// };
 ///
+/// use envision::component::HeatmapMessage;
+///
 /// let mut state = HeatmapState::with_data(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
-/// state.set_focused(true);
-/// // Navigate to select a cell, then Enter to confirm
-/// let output = state.dispatch_event(&envision::input::Event::key(
-///     envision::input::KeyCode::Enter,
-/// ));
+/// // Navigate to second row
+/// let output = Heatmap::update(&mut state, HeatmapMessage::SelectDown);
 /// assert_eq!(
 ///     output,
-///     Some(HeatmapOutput::CellSelected {
-///         row: 0,
+///     Some(HeatmapOutput::SelectionChanged {
+///         row: 1,
 ///         col: 0,
-///         value: 1.0,
 ///     })
 /// );
 /// ```

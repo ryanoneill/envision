@@ -23,7 +23,6 @@
 //! let mut state = ScrollViewState::new()
 //!     .with_content_height(100)
 //!     .with_title("Log Output");
-//! ScrollView::focus(&mut state);
 //!
 //! // Scroll down
 //! let output = ScrollView::update(&mut state, ScrollViewMessage::ScrollDown);
@@ -426,7 +425,6 @@ impl ScrollViewState {
 /// let mut state = ScrollViewState::new()
 ///     .with_content_height(200)
 ///     .with_title("Log Output");
-/// ScrollView::focus(&mut state);
 ///
 /// ScrollView::update(&mut state, ScrollViewMessage::ScrollDown);
 /// assert_eq!(state.scroll_offset(), 1);

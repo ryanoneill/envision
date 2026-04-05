@@ -5,7 +5,7 @@
 //! [`DialogMessage`], and produces [`DialogOutput`]. Buttons are configured
 //! with [`DialogButton`].
 //!
-//! Implements [`Focusable`], [`Disableable`], and [`Toggleable`].
+//! Implements [`Toggleable`].
 //!
 //! See also [`ConfirmDialog`](super::ConfirmDialog) for a purpose-built
 //! confirmation dialog with preset button configurations.
@@ -474,7 +474,6 @@ impl DialogState {
 /// `Dialog` displays a centered overlay with a title, message, and
 /// configurable buttons. It implements:
 /// - [`Component`] for update/view logic
-/// - [`Focusable`] for keyboard focus
 /// - [`Toggleable`] for visibility control
 ///
 /// # Visual Format

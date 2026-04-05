@@ -26,11 +26,6 @@
 //! let output = Switch::update(&mut state, SwitchMessage::Toggle);
 //! assert_eq!(output, Some(SwitchOutput::Off));
 //! assert!(!state.is_on());
-//!
-//! // Disabled switches don't toggle
-//! state.set_disabled(true);
-//! let output = Switch::update(&mut state, SwitchMessage::Toggle);
-//! assert_eq!(output, None);
 //! ```
 
 use ratatui::prelude::*;

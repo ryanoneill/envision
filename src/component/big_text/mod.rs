@@ -172,7 +172,6 @@ impl BigTextState {
     /// let state = BigTextState::new("42");
     /// assert_eq!(state.text(), "42");
     /// assert_eq!(state.color(), None);
-    /// assert!(!state.is_disabled());
     /// ```
     pub fn new(text: impl Into<String>) -> Self {
         Self {

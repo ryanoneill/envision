@@ -73,7 +73,6 @@ pub enum DividerMessage {
 ///
 /// let state = DividerState::new();
 /// assert!(state.label().is_none());
-/// assert!(!state.is_disabled());
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(
@@ -360,8 +359,7 @@ impl DividerState {
 /// `│` for vertical) to visually separate content areas. An optional label
 /// can be centered on the divider line.
 ///
-/// This is a display-only component and does not implement
-/// [`Focusable`](super::Focusable).
+/// This is a display-only component that does not receive keyboard focus.
 ///
 /// # Example
 ///

@@ -7,7 +7,6 @@
 //! State is stored in [`FlameGraphState`], updated via [`FlameGraphMessage`],
 //! and produces [`FlameGraphOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -25,7 +24,6 @@
 //!     )
 //!     .with_child(FlameNode::new("io()", 100));
 //! let mut state = FlameGraphState::with_root(root);
-//! state.set_focused(true);
 //!
 //! // Navigate down into children
 //! FlameGraph::update(&mut state, FlameGraphMessage::SelectDown);
@@ -55,7 +53,6 @@ pub use node::FlameNode;
 /// let root = FlameNode::new("main()", 500)
 ///     .with_child(FlameNode::new("compute()", 300));
 /// let mut state = FlameGraphState::with_root(root);
-/// state.set_focused(true);
 /// FlameGraph::update(&mut state, FlameGraphMessage::SelectDown);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
@@ -100,7 +97,6 @@ pub enum FlameGraphMessage {
 /// let root = FlameNode::new("main()", 500)
 ///     .with_child(FlameNode::new("compute()", 300));
 /// let mut state = FlameGraphState::with_root(root);
-/// state.set_focused(true);
 ///
 /// let output = FlameGraph::update(&mut state, FlameGraphMessage::SelectDown);
 /// assert!(matches!(output, Some(FlameGraphOutput::FrameSelected { .. })));
@@ -450,7 +446,6 @@ impl FlameGraphState {
     ///     .with_child(FlameNode::new("compute()", 300)
     ///         .with_child(FlameNode::new("sort()", 200)));
     /// let mut state = FlameGraphState::with_root(root);
-    /// state.set_focused(true);
     ///
     /// // Select compute() (depth 1, index 0)
     /// state.select_down();
@@ -483,7 +478,6 @@ impl FlameGraphState {
     ///     .with_child(FlameNode::new("compute()", 300)
     ///         .with_child(FlameNode::new("sort()", 200)));
     /// let mut state = FlameGraphState::with_root(root);
-    /// state.set_focused(true);
     /// state.select_down();
     /// state.zoom_in();
     /// assert!(state.zoom_out());
@@ -510,7 +504,6 @@ impl FlameGraphState {
     ///     .with_child(FlameNode::new("compute()", 300)
     ///         .with_child(FlameNode::new("sort()", 200)));
     /// let mut state = FlameGraphState::with_root(root);
-    /// state.set_focused(true);
     /// state.select_down();
     /// state.zoom_in();
     /// state.reset_zoom();
@@ -744,7 +737,6 @@ impl FlameGraphState {
 ///     .with_child(FlameNode::new("io()", 100));
 ///
 /// let mut state = FlameGraphState::with_root(root);
-/// state.set_focused(true);
 ///
 /// // Navigate and zoom
 /// FlameGraph::update(&mut state, FlameGraphMessage::SelectDown);

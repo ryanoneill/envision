@@ -25,7 +25,6 @@
 //!     PaneConfig::new("right").with_proportion(0.2),
 //! ];
 //! let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-//! PaneLayout::set_focused(&mut state, true);
 //!
 //! // Get layout rects for a given area
 //! let area = Rect::new(0, 0, 100, 40);
@@ -641,8 +640,6 @@ impl PaneLayoutState {
     ///     PaneConfig::new("left"),
     ///     PaneConfig::new("right"),
     /// ]);
-    /// state.set_focused(true);
-    ///
     /// let output = state.update(PaneLayoutMessage::FocusNext);
     /// assert_eq!(state.focused_pane_id(), Some("right"));
     /// ```
@@ -781,7 +778,6 @@ impl PaneLayoutState {
 ///     PaneConfig::new("right"),
 /// ];
 /// let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-/// PaneLayout::set_focused(&mut state, true);
 ///
 /// let area = Rect::new(0, 0, 80, 24);
 /// let rects = state.layout(area);

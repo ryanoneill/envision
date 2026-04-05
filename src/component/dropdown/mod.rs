@@ -5,7 +5,6 @@
 //! using keyboard controls. State is stored in [`DropdownState`], updated via
 //! [`DropdownMessage`], and produces [`DropdownOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`Select`](super::Select) for a simpler dropdown without filtering.
 //!
@@ -18,8 +17,7 @@
 //! let mut state = DropdownState::new(vec!["Apple", "Banana", "Cherry", "Date"]);
 //! state.set_placeholder("Search fruits...");
 //!
-//! // Focus and open it
-//! Dropdown::focus(&mut state);
+//! // Open it
 //! let _ = Dropdown::update(&mut state, DropdownMessage::Open);
 //!
 //! // Type to filter (shows Apple, Banana, Date - all contain 'a')

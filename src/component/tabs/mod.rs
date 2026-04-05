@@ -13,7 +13,6 @@
 //!
 //! // Create tabs with string labels
 //! let mut state = TabsState::new(vec!["Home", "Settings", "Help"]);
-//! Tabs::set_focused(&mut state, true);
 //!
 //! assert_eq!(state.selected_index(), Some(0));
 //! assert_eq!(state.selected_item(), Some(&"Home"));

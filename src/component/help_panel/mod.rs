@@ -8,7 +8,7 @@
 //! `HelpPanel` is a full overlay/panel showing **all** keybindings in a
 //! categorized, multi-line format with scroll support.
 //!
-//! Implements [`Focusable`], [`Disableable`], and [`Toggleable`].
+//! Implements [`Toggleable`].
 //!
 //! # Example
 //!
@@ -560,7 +560,6 @@ impl HelpPanelState {
 ///         ]),
 ///     ]);
 ///
-/// state.set_focused(true);
 /// state.update(HelpPanelMessage::ScrollDown);
 /// ```
 pub struct HelpPanel;

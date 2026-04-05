@@ -4,7 +4,6 @@
 //! (Enter or Space) when focused. State is stored in [`CheckboxState`],
 //! updated via [`CheckboxMessage`], and produces [`CheckboxOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! See also [`Button`](super::Button) for a press-only action.
 //!
@@ -25,11 +24,6 @@
 //! let output = Checkbox::update(&mut state, CheckboxMessage::Toggle);
 //! assert_eq!(output, Some(CheckboxOutput::Toggled(false)));
 //! assert!(!state.is_checked());
-//!
-//! // Disabled checkboxes don't toggle
-//! state.set_disabled(true);
-//! let output = Checkbox::update(&mut state, CheckboxMessage::Toggle);
-//! assert_eq!(output, None);
 //! ```
 
 use ratatui::prelude::*;

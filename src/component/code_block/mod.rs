@@ -6,7 +6,6 @@
 //! State is stored in [`CodeBlockState`], updated via
 //! [`CodeBlockMessage`], and produces no output (unit type).
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Supported Languages
 //!

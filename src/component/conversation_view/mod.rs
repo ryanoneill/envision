@@ -12,7 +12,6 @@
 //! State is stored in [`ConversationViewState`], updated via [`ConversationViewMessage`],
 //! and produces [`ConversationViewOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!

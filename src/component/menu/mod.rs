@@ -18,8 +18,7 @@
 //!     MenuItem::new("View"),
 //! ]);
 //!
-//! // Focus and activate
-//! Menu::focus(&mut state);
+//! // Activate
 //! let output = Menu::update(&mut state, MenuMessage::Select);
 //! assert_eq!(output, Some(MenuOutput::Selected(0)));
 //! ```

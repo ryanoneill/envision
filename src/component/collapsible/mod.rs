@@ -13,7 +13,7 @@
 //! State is stored in [`CollapsibleState`], updated via [`CollapsibleMessage`],
 //! and produces [`CollapsibleOutput`].
 //!
-//! Implements [`Focusable`], [`Disableable`], and [`Toggleable`].
+//! Implements [`Toggleable`].
 //!
 //! # Example
 //!
@@ -21,7 +21,6 @@
 //! use envision::component::{Collapsible, CollapsibleMessage, CollapsibleOutput, CollapsibleState, Component};
 //!
 //! let mut state = CollapsibleState::new("Details");
-//! Collapsible::focus(&mut state);
 //!
 //! // Toggle the section (collapses it, since default is expanded)
 //! let output = Collapsible::update(&mut state, CollapsibleMessage::Toggle);
@@ -364,7 +363,6 @@ impl CollapsibleState {
 /// use envision::component::{Collapsible, CollapsibleMessage, CollapsibleState, Component};
 ///
 /// let mut state = CollapsibleState::new("Advanced Settings");
-/// Collapsible::focus(&mut state);
 ///
 /// // Collapse
 /// Collapsible::update(&mut state, CollapsibleMessage::Collapse);

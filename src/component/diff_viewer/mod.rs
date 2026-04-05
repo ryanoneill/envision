@@ -5,7 +5,6 @@
 //! modes. State is stored in [`DiffViewerState`], updated via
 //! [`DiffViewerMessage`], and produces [`DiffViewerOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Constructing a Diff
 //!

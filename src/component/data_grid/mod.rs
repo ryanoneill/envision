@@ -5,7 +5,6 @@
 //! Enter again to confirm the edit. State is stored in [`DataGridState<T>`],
 //! updated via [`DataGridMessage`], and produces [`DataGridOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -34,7 +33,6 @@
 //!     Column::new("Age", Constraint::Min(5)),
 //! ];
 //! let mut state = DataGridState::new(rows, columns);
-//! DataGrid::set_focused(&mut state, true);
 //!
 //! assert_eq!(state.selected_column(), 0);
 //! assert!(!state.is_editing());

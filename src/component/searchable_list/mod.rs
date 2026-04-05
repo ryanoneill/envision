@@ -22,7 +22,6 @@
 //!     "Cherry".to_string(),
 //!     "Date".to_string(),
 //! ]);
-//! SearchableList::set_focused(&mut state, true);
 //!
 //! // Type "an" to filter
 //! SearchableList::update(&mut state, SearchableListMessage::FilterChanged("an".into()));
@@ -698,7 +697,6 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
 ///
 /// let items = vec!["Apple".to_string(), "Banana".to_string(), "Cherry".to_string()];
 /// let mut state = SearchableListState::new(items);
-/// SearchableList::set_focused(&mut state, true);
 ///
 /// // Filter to items containing "an"
 /// SearchableList::update(&mut state, SearchableListMessage::FilterChanged("an".into()));

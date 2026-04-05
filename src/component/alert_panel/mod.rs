@@ -8,7 +8,6 @@
 //! State is stored in [`AlertPanelState`], updated via [`AlertPanelMessage`],
 //! and produces [`AlertPanelOutput`].
 //!
-//! Implements [`Focusable`] and [`Disableable`].
 //!
 //! # Example
 //!
@@ -62,7 +61,6 @@ use crate::theme::Theme;
 /// let mut state = AlertPanelState::new().with_metrics(vec![
 ///     AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)).with_value(50.0),
 /// ]);
-/// state.set_focused(true);
 /// let output = state.update(AlertPanelMessage::UpdateMetric {
 ///     id: "cpu".into(),
 ///     value: 80.0,
