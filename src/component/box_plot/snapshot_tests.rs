@@ -66,10 +66,10 @@ fn test_snapshot_horizontal() {
 
 #[test]
 fn test_snapshot_with_outliers() {
-    let state = BoxPlotState::new(vec![BoxPlotData::new(
-        "Response", 10.0, 25.0, 35.0, 45.0, 55.0,
-    )
-    .with_outliers(vec![2.0, 70.0, 80.0])])
+    let state = BoxPlotState::new(vec![
+        BoxPlotData::new("Response", 10.0, 25.0, 35.0, 45.0, 55.0)
+            .with_outliers(vec![2.0, 70.0, 80.0]),
+    ])
     .with_title("With Outliers");
     let (mut terminal, theme) = test_utils::setup_render(40, 20);
     terminal

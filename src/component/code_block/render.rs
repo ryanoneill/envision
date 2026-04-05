@@ -7,8 +7,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::highlight::highlight_line;
 use super::CodeBlockState;
+use super::highlight::highlight_line;
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
 

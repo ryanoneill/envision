@@ -162,13 +162,11 @@ fn test_snapshot_with_sparklines() {
 #[test]
 fn test_snapshot_single_metric() {
     let state = AlertPanelState::new()
-        .with_metrics(vec![AlertMetric::new(
-            "cpu",
-            "CPU Usage",
-            AlertThreshold::new(70.0, 90.0),
-        )
-        .with_units("%")
-        .with_value(50.0)])
+        .with_metrics(vec![
+            AlertMetric::new("cpu", "CPU Usage", AlertThreshold::new(70.0, 90.0))
+                .with_units("%")
+                .with_value(50.0),
+        ])
         .with_columns(1);
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal

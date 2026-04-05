@@ -292,7 +292,7 @@ fn test_view_narrow_with_long_label() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
 
     let state = DividerState::new().with_label("Section");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
@@ -313,7 +313,7 @@ fn test_annotation_emitted() {
 
 #[test]
 fn test_annotation_emitted_no_label() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
 
     let state = DividerState::new();
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
@@ -334,7 +334,7 @@ fn test_annotation_emitted_no_label() {
 
 #[test]
 fn test_annotation_disabled() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
 
     let state = DividerState::new();
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);

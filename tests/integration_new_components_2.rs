@@ -4,6 +4,8 @@
 //! This file is split from integration_new_components.rs to comply with
 //! the 1000-line file limit. Tests 15-30 live here.
 
+use envision::CaptureBackend;
+use envision::ViewContext;
 use envision::component::code_block::highlight::Language;
 use envision::component::{
     // Observability
@@ -77,10 +79,8 @@ use envision::component::{
     TerminalOutputState,
     ThresholdZone,
 };
-use envision::CaptureBackend;
-use envision::ViewContext;
-use ratatui::prelude::*;
 use ratatui::Terminal;
+use ratatui::prelude::*;
 
 // ============================================================================
 // 15. Paginator: navigate pages, verify boundary behavior

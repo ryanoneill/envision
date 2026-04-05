@@ -639,7 +639,7 @@ fn test_set_tabs_selection_at_boundary() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = TabsState::new(vec!["Tab1".to_string(), "Tab2".to_string()]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 3);
     let registry = with_annotations(|| {

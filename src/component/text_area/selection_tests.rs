@@ -114,7 +114,7 @@ fn test_multiline_selection() {
 fn test_select_across_lines() {
     let mut state = TextAreaState::new().with_value("abc\ndef");
     state.set_cursor_position(0, 1); // After 'a'
-                                     // Select from (0,1) to (1,2) using SelectDown then SelectRight
+    // Select from (0,1) to (1,2) using SelectDown then SelectRight
     TextArea::update(&mut state, TextAreaMessage::SelectDown);
     TextArea::update(&mut state, TextAreaMessage::SelectRight);
     let text = state.selected_text().unwrap();

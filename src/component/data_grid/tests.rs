@@ -642,7 +642,7 @@ fn test_navigation_does_not_change_edit_state() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = DataGridState::new(sample_rows(), sample_columns());
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     let registry = with_annotations(|| {

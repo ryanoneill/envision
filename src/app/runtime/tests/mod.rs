@@ -644,8 +644,8 @@ mod overlay_tests {
     use crate::overlay::{Overlay, OverlayAction};
     use crate::theme::Theme;
     use crossterm::event::KeyCode;
-    use ratatui::layout::Rect;
     use ratatui::Frame;
+    use ratatui::layout::Rect;
 
     /// An overlay that consumes all events.
     struct ConsumeOverlay;

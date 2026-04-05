@@ -4,7 +4,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 use super::types::FileBrowserFocus;
-use super::{format_size, FileBrowserState};
+use super::{FileBrowserState, format_size};
 use crate::theme::Theme;
 
 /// Renders the file browser component into the given frame area.

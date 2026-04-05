@@ -33,6 +33,6 @@ mod test_harness;
 pub use app_harness::AppHarness;
 pub use assertions::{Assertion, AssertionError, AssertionResult};
 pub use snapshot::{
-    assert_snapshot_eq, assert_snapshot_text, Snapshot, SnapshotFormat, SnapshotTest,
+    Snapshot, SnapshotFormat, SnapshotTest, assert_snapshot_eq, assert_snapshot_text,
 };
 pub use test_harness::TestHarness;

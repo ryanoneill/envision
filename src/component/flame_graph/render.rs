@@ -3,8 +3,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::node::FlameNode;
 use super::FlameGraphState;
+use super::node::FlameNode;
 use crate::theme::Theme;
 
 /// Renders the full flame graph including border, depth rows, and detail bar.

@@ -1,6 +1,6 @@
 //! Benchmarks for runtime performance.
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use envision::app::{
     App, Command, CommandHandler, Runtime, RuntimeConfig, TickSubscription, TimerSubscription,
 };

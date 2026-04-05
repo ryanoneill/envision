@@ -291,15 +291,15 @@ pub use selectable_list::{
 };
 #[cfg(feature = "data-components")]
 pub use table::{
-    date_comparator, numeric_comparator, Column, SortComparator, SortDirection, Table,
-    TableMessage, TableOutput, TableRow, TableState,
+    Column, SortComparator, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState,
+    date_comparator, numeric_comparator,
 };
 #[cfg(feature = "data-components")]
 pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
 
 // Display components
 #[cfg(feature = "display-components")]
-pub use big_text::{big_char, big_char_width, BigText, BigTextMessage, BigTextState};
+pub use big_text::{BigText, BigTextMessage, BigTextState, big_char, big_char_width};
 #[cfg(feature = "display-components")]
 pub use calendar::{Calendar, CalendarMessage, CalendarOutput, CalendarState};
 #[cfg(feature = "display-components")]
@@ -325,7 +325,7 @@ pub use multi_progress::{
 pub use paginator::{Paginator, PaginatorMessage, PaginatorOutput, PaginatorState, PaginatorStyle};
 #[cfg(feature = "display-components")]
 pub use progress_bar::{
-    format_eta, ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState,
+    ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState, format_eta,
 };
 #[cfg(feature = "display-components")]
 pub use sparkline::{
@@ -356,10 +356,10 @@ pub use conversation_view::{
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
 #[cfg(feature = "compound-components")]
 pub use dependency_graph::{
+    DependencyGraph, DependencyGraphMessage, DependencyGraphOutput, DependencyGraphState,
+    GraphEdge, GraphNode, GraphOrientation, NodeStatus,
     layout::LayoutEdge as DependencyGraphLayoutEdge,
-    layout::LayoutNode as DependencyGraphLayoutNode, DependencyGraph, DependencyGraphMessage,
-    DependencyGraphOutput, DependencyGraphState, GraphEdge, GraphNode, GraphOrientation,
-    NodeStatus,
+    layout::LayoutNode as DependencyGraphLayoutNode,
 };
 #[cfg(feature = "compound-components")]
 pub use diff_viewer::{
@@ -383,7 +383,7 @@ pub use flame_graph::{
 pub use form::{Form, FormField, FormFieldKind, FormMessage, FormOutput, FormState, FormValue};
 #[cfg(feature = "compound-components")]
 pub use heatmap::{
-    value_to_color, Heatmap, HeatmapColorScale, HeatmapMessage, HeatmapOutput, HeatmapState,
+    Heatmap, HeatmapColorScale, HeatmapMessage, HeatmapOutput, HeatmapState, value_to_color,
 };
 #[cfg(feature = "compound-components")]
 pub use histogram::{Histogram, HistogramMessage, HistogramState};
@@ -438,8 +438,8 @@ pub use status_log::{
 pub use styled_text::{StyledText, StyledTextMessage, StyledTextOutput, StyledTextState};
 #[cfg(feature = "display-components")]
 pub use terminal_output::{
-    parse_ansi, AnsiSegment, TerminalOutput, TerminalOutputMessage, TerminalOutputOutput,
-    TerminalOutputState,
+    AnsiSegment, TerminalOutput, TerminalOutputMessage, TerminalOutputOutput, TerminalOutputState,
+    parse_ansi,
 };
 #[cfg(feature = "display-components")]
 pub use title_card::{TitleCard, TitleCardMessage, TitleCardState};

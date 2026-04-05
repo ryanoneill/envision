@@ -3,8 +3,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::chunking::{chunk_buffer, cursor_to_visual};
 use super::LineInputState;
+use super::chunking::{chunk_buffer, cursor_to_visual};
 use crate::component::ViewContext;
 use crate::theme::Theme;
 

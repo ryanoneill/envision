@@ -61,7 +61,7 @@ impl App for StatusBarApp {
                 StatusBar::update(
                     &mut state.status,
                     StatusBarMessage::SetLeftItems(vec![
-                        StatusBarItem::new("INSERT").with_style(StatusBarStyle::Success)
+                        StatusBarItem::new("INSERT").with_style(StatusBarStyle::Success),
                     ]),
                 );
             }
@@ -70,7 +70,7 @@ impl App for StatusBarApp {
                 StatusBar::update(
                     &mut state.status,
                     StatusBarMessage::SetLeftItems(vec![
-                        StatusBarItem::new("NORMAL").with_style(StatusBarStyle::Info)
+                        StatusBarItem::new("NORMAL").with_style(StatusBarStyle::Info),
                     ]),
                 );
             }

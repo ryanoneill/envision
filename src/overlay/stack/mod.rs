@@ -1,7 +1,7 @@
 //! Overlay stack implementation.
 
-use ratatui::layout::Rect;
 use ratatui::Frame;
+use ratatui::layout::Rect;
 
 use crate::input::Event;
 use crate::theme::Theme;

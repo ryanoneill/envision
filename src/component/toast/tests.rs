@@ -633,7 +633,7 @@ fn test_default_matches_init() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let mut state = ToastState::new();
     state.push("Hello".into(), ToastLevel::Info, Some(5000));
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);

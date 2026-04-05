@@ -370,7 +370,7 @@ fn test_view_with_color() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
 
     let state = SparklineState::with_data(vec![1, 2, 3]).with_title("Metrics");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
@@ -389,7 +389,7 @@ fn test_annotation_emitted() {
 
 #[test]
 fn test_annotation_emitted_no_title() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
 
     let state = SparklineState::with_data(vec![1, 2, 3]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 1);

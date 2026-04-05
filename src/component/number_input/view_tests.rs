@@ -161,7 +161,7 @@ fn test_view_zero_area() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = NumberInputState::new(42.0).with_label("Quantity");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
     let registry = with_annotations(|| {

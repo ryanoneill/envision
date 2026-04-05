@@ -511,7 +511,7 @@ fn test_init_returns_empty_state() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = StatusBarState::new();
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 1);
     let registry = with_annotations(|| {

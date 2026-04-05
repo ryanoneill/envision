@@ -74,8 +74,8 @@ use std::io::Stdout;
 use crate::error;
 use std::pin::Pin;
 
-use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::Terminal;
+use ratatui::backend::{Backend, CrosstermBackend};
 use tokio::sync::mpsc;
 use tokio_stream::StreamExt;
 use tokio_util::sync::CancellationToken;

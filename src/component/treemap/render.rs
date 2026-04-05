@@ -3,8 +3,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::layout::{squarified_layout, LayoutRect};
 use super::TreemapState;
+use super::layout::{LayoutRect, squarified_layout};
 use crate::theme::Theme;
 
 /// Renders the treemap inside the border area.

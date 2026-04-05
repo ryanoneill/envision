@@ -647,7 +647,7 @@ fn test_cursor_display_position_empty() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let mut state = InputFieldState::new();
     InputField::update(&mut state, InputFieldMessage::Insert('H'));
     InputField::update(&mut state, InputFieldMessage::Insert('i'));

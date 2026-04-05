@@ -52,11 +52,13 @@ fn test_level_filter() {
 
 #[test]
 fn test_level_filter_excludes_lower() {
-    let mut state = LogCorrelationState::new().with_streams(vec![LogStream::new("A")
-        .with_entry(CorrelationEntry::new(1.0, CorrelationLevel::Debug, "dbg"))
-        .with_entry(CorrelationEntry::new(2.0, CorrelationLevel::Info, "inf"))
-        .with_entry(CorrelationEntry::new(3.0, CorrelationLevel::Warning, "wrn"))
-        .with_entry(CorrelationEntry::new(4.0, CorrelationLevel::Error, "err"))]);
+    let mut state = LogCorrelationState::new().with_streams(vec![
+        LogStream::new("A")
+            .with_entry(CorrelationEntry::new(1.0, CorrelationLevel::Debug, "dbg"))
+            .with_entry(CorrelationEntry::new(2.0, CorrelationLevel::Info, "inf"))
+            .with_entry(CorrelationEntry::new(3.0, CorrelationLevel::Warning, "wrn"))
+            .with_entry(CorrelationEntry::new(4.0, CorrelationLevel::Error, "err")),
+    ]);
 
     state.streams[0].min_level = Some(CorrelationLevel::Info);
     let filtered = state.streams[0].filtered_entries();
@@ -69,22 +71,24 @@ fn test_level_filter_excludes_lower() {
 
 #[test]
 fn test_combined_text_and_level_filter() {
-    let mut state = LogCorrelationState::new().with_streams(vec![LogStream::new("A")
-        .with_entry(CorrelationEntry::new(
-            1.0,
-            CorrelationLevel::Debug,
-            "debug query",
-        ))
-        .with_entry(CorrelationEntry::new(
-            2.0,
-            CorrelationLevel::Info,
-            "info query",
-        ))
-        .with_entry(CorrelationEntry::new(
-            3.0,
-            CorrelationLevel::Warning,
-            "warn other",
-        ))]);
+    let mut state = LogCorrelationState::new().with_streams(vec![
+        LogStream::new("A")
+            .with_entry(CorrelationEntry::new(
+                1.0,
+                CorrelationLevel::Debug,
+                "debug query",
+            ))
+            .with_entry(CorrelationEntry::new(
+                2.0,
+                CorrelationLevel::Info,
+                "info query",
+            ))
+            .with_entry(CorrelationEntry::new(
+                3.0,
+                CorrelationLevel::Warning,
+                "warn other",
+            )),
+    ]);
 
     state.streams[0].filter = "query".to_string();
     state.streams[0].min_level = Some(CorrelationLevel::Info);

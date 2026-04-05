@@ -192,7 +192,7 @@ fn test_instance_update() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = CheckboxState::new("Accept TOS");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
     let registry = with_annotations(|| {
@@ -211,7 +211,7 @@ fn test_annotation_emitted() {
 
 #[test]
 fn test_annotation_checked() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let mut state = CheckboxState::new("Accept");
     Checkbox::update(&mut state, CheckboxMessage::Toggle);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);

@@ -38,7 +38,7 @@ use crate::theme::Theme;
 pub mod layout;
 mod render;
 
-pub use layout::{squarified_layout, LayoutRect};
+pub use layout::{LayoutRect, squarified_layout};
 
 /// A node in the treemap hierarchy.
 ///

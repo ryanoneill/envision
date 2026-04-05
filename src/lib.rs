@@ -156,13 +156,13 @@ pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
 #[cfg(feature = "serialization")]
 pub use app::load_state;
 pub use app::{
-    batch, interval_immediate, terminal_events, tick, App, BatchSubscription, BoxedSubscription,
-    ChannelSubscription, Command, CommandHandler, DebounceSubscription, FilterSubscription,
-    FnUpdate, IntervalImmediateBuilder, IntervalImmediateSubscription, MappedSubscription, Runtime,
-    RuntimeConfig, StateExt, StreamSubscription, Subscription, SubscriptionExt, TakeSubscription,
-    TerminalEventSubscription, TerminalHook, TerminalRuntime, ThrottleSubscription,
-    TickSubscription, TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription,
-    Update, UpdateResult, VirtualRuntime,
+    App, BatchSubscription, BoxedSubscription, ChannelSubscription, Command, CommandHandler,
+    DebounceSubscription, FilterSubscription, FnUpdate, IntervalImmediateBuilder,
+    IntervalImmediateSubscription, MappedSubscription, Runtime, RuntimeConfig, StateExt,
+    StreamSubscription, Subscription, SubscriptionExt, TakeSubscription, TerminalEventSubscription,
+    TerminalHook, TerminalRuntime, ThrottleSubscription, TickSubscription, TickSubscriptionBuilder,
+    TimerSubscription, UnboundedChannelSubscription, Update, UpdateResult, VirtualRuntime, batch,
+    interval_immediate, terminal_events, tick,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 // Core component traits and utilities (always available)
@@ -184,34 +184,36 @@ pub use component::{
 // Data components
 #[cfg(feature = "data-components")]
 pub use component::{
-    date_comparator, numeric_comparator, Column, ItemState, LoadingList, LoadingListItem,
-    LoadingListMessage, LoadingListOutput, LoadingListState, SelectableList, SelectableListMessage,
-    SelectableListOutput, SelectableListState, SortComparator, SortDirection, Table, TableMessage,
-    TableOutput, TableRow, TableState, Tree, TreeMessage, TreeNode, TreeOutput, TreeState,
+    Column, ItemState, LoadingList, LoadingListItem, LoadingListMessage, LoadingListOutput,
+    LoadingListState, SelectableList, SelectableListMessage, SelectableListOutput,
+    SelectableListState, SortComparator, SortDirection, Table, TableMessage, TableOutput, TableRow,
+    TableState, Tree, TreeMessage, TreeNode, TreeOutput, TreeState, date_comparator,
+    numeric_comparator,
 };
 
 // Display components
 #[cfg(feature = "display-components")]
 pub use component::{
-    big_char, big_char_width, format_eta, BigText, BigTextMessage, BigTextState, Calendar,
-    CalendarMessage, CalendarOutput, CalendarState, Canvas, CanvasMarker, CanvasMessage,
-    CanvasShape, CanvasState, CodeBlock, CodeBlockMessage, CodeBlockState, Collapsible,
-    CollapsibleMessage, CollapsibleOutput, CollapsibleState, Divider, DividerMessage,
-    DividerOrientation, DividerState, Gauge, GaugeMessage, GaugeOutput, GaugeState, GaugeVariant,
-    HelpPanel, HelpPanelMessage, HelpPanelState, KeyBinding, KeyBindingGroup, KeyHint, KeyHints,
-    KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress, MultiProgressMessage,
-    MultiProgressOutput, MultiProgressState, Paginator, PaginatorMessage, PaginatorOutput,
-    PaginatorState, PaginatorStyle, ProgressBar, ProgressBarMessage, ProgressBarOutput,
-    ProgressBarState, ProgressItem, ProgressItemStatus, ScrollView, ScrollViewMessage,
-    ScrollViewState, ScrollableText, ScrollableTextMessage, ScrollableTextOutput,
-    ScrollableTextState, Section, Sparkline, SparklineDirection, SparklineMessage, SparklineOutput,
-    SparklineState, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem,
-    StatusBarItemContent, StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog,
-    StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState, StyledText,
-    StyledTextMessage, StyledTextOutput, StyledTextState, TerminalOutput, TerminalOutputMessage,
-    TerminalOutputOutput, TerminalOutputState, ThresholdZone, TitleCard, TitleCardMessage,
-    TitleCardState, Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
-    UsageDisplay, UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric,
+    BigText, BigTextMessage, BigTextState, Calendar, CalendarMessage, CalendarOutput,
+    CalendarState, Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState, CodeBlock,
+    CodeBlockMessage, CodeBlockState, Collapsible, CollapsibleMessage, CollapsibleOutput,
+    CollapsibleState, Divider, DividerMessage, DividerOrientation, DividerState, Gauge,
+    GaugeMessage, GaugeOutput, GaugeState, GaugeVariant, HelpPanel, HelpPanelMessage,
+    HelpPanelState, KeyBinding, KeyBindingGroup, KeyHint, KeyHints, KeyHintsLayout,
+    KeyHintsMessage, KeyHintsState, MultiProgress, MultiProgressMessage, MultiProgressOutput,
+    MultiProgressState, Paginator, PaginatorMessage, PaginatorOutput, PaginatorState,
+    PaginatorStyle, ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState,
+    ProgressItem, ProgressItemStatus, ScrollView, ScrollViewMessage, ScrollViewState,
+    ScrollableText, ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section,
+    Sparkline, SparklineDirection, SparklineMessage, SparklineOutput, SparklineState, Spinner,
+    SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
+    StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
+    StatusLogMessage, StatusLogOutput, StatusLogState, StyledText, StyledTextMessage,
+    StyledTextOutput, StyledTextState, TerminalOutput, TerminalOutputMessage, TerminalOutputOutput,
+    TerminalOutputState, ThresholdZone, TitleCard, TitleCardMessage, TitleCardState, Toast,
+    ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, UsageDisplay,
+    UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric, big_char, big_char_width,
+    format_eta,
 };
 
 // Navigation components
@@ -267,7 +269,7 @@ pub use error::{BoxedError, EnvisionError, Result};
 pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
 pub use input::{Event, EventQueue};
 pub use overlay::{Overlay, OverlayAction, OverlayStack};
-pub use scroll::{render_scrollbar, render_scrollbar_inside_border, ScrollState};
+pub use scroll::{ScrollState, render_scrollbar, render_scrollbar_inside_border};
 pub use theme::Theme;
 
 /// Prelude module for convenient imports.
@@ -287,8 +289,8 @@ pub mod prelude {
 
     // Subscriptions
     pub use crate::app::{
-        batch, interval_immediate, tick, BoxedSubscription, ChannelSubscription, Subscription,
-        SubscriptionExt, Update,
+        BoxedSubscription, ChannelSubscription, Subscription, SubscriptionExt, Update, batch,
+        interval_immediate, tick,
     };
 
     // Input

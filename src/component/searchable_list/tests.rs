@@ -774,8 +774,8 @@ fn test_custom_matcher_empty_filter_shows_all() {
 
 #[test]
 fn test_custom_matcher_receives_original_query() {
-    use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::Arc;
+    use std::sync::atomic::{AtomicBool, Ordering};
 
     let received_uppercase = Arc::new(AtomicBool::new(false));
     let received_uppercase_clone = received_uppercase.clone();
@@ -866,7 +866,7 @@ fn test_debug_without_matcher() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = SearchableListState::new(sample_items());
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     let registry = with_annotations(|| {

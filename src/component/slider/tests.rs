@@ -711,7 +711,7 @@ fn test_format_value_negative() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = SliderState::new(0.0, 100.0)
         .with_value(42.0)
         .with_label("Volume");

@@ -218,7 +218,7 @@ impl App for DashboardApp {
                 StatusBar::update(
                     &mut state.status_bar,
                     StatusBarMessage::SetLeftItems(vec![
-                        StatusBarItem::new("BUILDING").with_style(StatusBarStyle::Warning)
+                        StatusBarItem::new("BUILDING").with_style(StatusBarStyle::Warning),
                     ]),
                 );
                 StatusBar::update(
@@ -286,7 +286,7 @@ impl App for DashboardApp {
                 StatusBar::update(
                     &mut state.status_bar,
                     StatusBarMessage::SetLeftItems(vec![
-                        StatusBarItem::new("IDLE").with_style(StatusBarStyle::Success)
+                        StatusBarItem::new("IDLE").with_style(StatusBarStyle::Success),
                     ]),
                 );
             }
@@ -577,7 +577,7 @@ impl App for DashboardChannelApp {
                 StatusBar::update(
                     &mut state.inner.status_bar,
                     StatusBarMessage::SetLeftItems(vec![
-                        StatusBarItem::new("BUILDING").with_style(StatusBarStyle::Warning)
+                        StatusBarItem::new("BUILDING").with_style(StatusBarStyle::Warning),
                     ]),
                 );
                 StatusBar::update(

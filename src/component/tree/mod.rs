@@ -644,11 +644,7 @@ impl<T: Clone + 'static> Tree<T> {
             let is_selected = state.selected_index == Some(idx);
 
             let indicator = if node.has_children {
-                if node.is_expanded {
-                    "▼ "
-                } else {
-                    "▶ "
-                }
+                if node.is_expanded { "▼ " } else { "▶ " }
             } else {
                 "  "
             };

@@ -37,17 +37,19 @@ fn test_aligned_rows_empty() {
 
 #[test]
 fn test_aligned_rows_single_stream() {
-    let state = LogCorrelationState::new().with_streams(vec![LogStream::new("API")
-        .with_entry(CorrelationEntry::new(
-            1.0,
-            CorrelationLevel::Info,
-            "entry 1",
-        ))
-        .with_entry(CorrelationEntry::new(
-            2.0,
-            CorrelationLevel::Info,
-            "entry 2",
-        ))]);
+    let state = LogCorrelationState::new().with_streams(vec![
+        LogStream::new("API")
+            .with_entry(CorrelationEntry::new(
+                1.0,
+                CorrelationLevel::Info,
+                "entry 1",
+            ))
+            .with_entry(CorrelationEntry::new(
+                2.0,
+                CorrelationLevel::Info,
+                "entry 2",
+            )),
+    ]);
 
     let rows = state.aligned_rows();
     assert_eq!(rows.len(), 2);

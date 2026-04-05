@@ -20,8 +20,8 @@ use envision::{
     TabsMessage, TabsOutput, TabsState, TextArea, TextAreaState, Theme, TitleCard, TitleCardState,
     Toast, ToastState, Toggleable, Tooltip, TooltipState, Tree, TreeNode, TreeState,
 };
-use ratatui::prelude::*;
 use ratatui::Terminal;
+use ratatui::prelude::*;
 
 #[test]
 fn test_focus_manager_tab_navigation() {

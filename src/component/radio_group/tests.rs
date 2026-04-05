@@ -446,7 +446,7 @@ fn test_set_options_selection_at_boundary() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string()]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
     let registry = with_annotations(|| {

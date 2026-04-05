@@ -535,7 +535,7 @@ impl Component for TextArea {
         if !ctx.focused || ctx.disabled {
             return None;
         }
-        if let Event::Paste(ref text) = event {
+        if let Event::Paste(text) = event {
             return Some(TextAreaMessage::Paste(text.clone()));
         }
         if let Some(key) = event.as_key() {

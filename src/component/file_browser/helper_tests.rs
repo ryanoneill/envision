@@ -139,18 +139,18 @@ fn test_pathbar_focus_only_handles_tab() {
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     // In PathBar focus, regular keys shouldn't map
-    assert!(FileBrowser::handle_event(
-        &state,
-        &Event::char('j'),
-        &ViewContext::new().focused(true)
-    )
-    .is_none());
-    assert!(FileBrowser::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true)
-    )
-    .is_none());
+    assert!(
+        FileBrowser::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true))
+            .is_none()
+    );
+    assert!(
+        FileBrowser::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &ViewContext::new().focused(true)
+        )
+        .is_none()
+    );
     // Tab still works
     let msg = FileBrowser::handle_event(
         &state,

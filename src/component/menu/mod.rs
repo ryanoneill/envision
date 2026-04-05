@@ -181,7 +181,7 @@ impl MenuState {
         self.items = items;
         if self.items.is_empty() {
             self.selected_index = None;
-        } else if self.selected_index.map_or(true, |i| i >= self.items.len()) {
+        } else if self.selected_index.is_none_or(|i| i >= self.items.len()) {
             self.selected_index = Some(0);
         }
     }

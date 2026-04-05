@@ -33,4 +33,4 @@ mod widget;
 
 pub use registry::{AnnotationRegistry, RegionInfo, SerializableRect};
 pub use types::{Annotation, WidgetType};
-pub use widget::{with_annotations, with_registry, Annotate, AnnotateContainer};
+pub use widget::{Annotate, AnnotateContainer, with_annotations, with_registry};

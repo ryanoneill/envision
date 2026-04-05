@@ -409,7 +409,7 @@ fn test_view_yes_no_dialog() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let mut state = ConfirmDialogState::yes_no("Delete?", "Sure?");
     state.set_visible(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 20);

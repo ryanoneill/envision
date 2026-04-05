@@ -1,6 +1,6 @@
 use super::*;
-use crate::app::command::BoxedError;
 use crate::app::Command;
+use crate::app::command::BoxedError;
 use std::time::Duration;
 
 // =========================================================================

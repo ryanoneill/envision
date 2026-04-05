@@ -754,7 +754,7 @@ fn test_default_matches_init() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = BreadcrumbState::new(vec![
         BreadcrumbSegment::new("Home"),
         BreadcrumbSegment::new("Products"),

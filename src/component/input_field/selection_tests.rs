@@ -579,7 +579,7 @@ fn test_selection_preserved_across_multiple_shifts() {
 fn test_select_then_reverse_direction() {
     let mut state = InputFieldState::with_value("hello");
     state.set_cursor_position(2); // After "he"
-                                  // Select right twice: anchor=2, cursor=4, selected "ll"
+    // Select right twice: anchor=2, cursor=4, selected "ll"
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     InputField::update(&mut state, InputFieldMessage::SelectRight);
     assert_eq!(state.selected_text(), Some("ll"));

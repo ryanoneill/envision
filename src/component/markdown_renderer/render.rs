@@ -319,7 +319,7 @@ impl<'t> MarkdownLineRenderer<'t> {
         } else {
             1
         };
-        let rule_text: String = std::iter::repeat(rule_char).take(rule_width).collect();
+        let rule_text: String = std::iter::repeat_n(rule_char, rule_width).collect();
         let style = Style::default().fg(self.theme.border);
         self.lines.push(Line::from(Span::styled(rule_text, style)));
         self.lines.push(Line::from(""));
@@ -719,9 +719,11 @@ mod tests {
         let texts: Vec<String> = lines.iter().map(|l| plain_text(l)).collect();
         assert!(texts.iter().any(|t| t.contains("- ") && t.contains("one")));
         assert!(texts.iter().any(|t| t.contains("- ") && t.contains("two")));
-        assert!(texts
-            .iter()
-            .any(|t| t.contains("- ") && t.contains("three")));
+        assert!(
+            texts
+                .iter()
+                .any(|t| t.contains("- ") && t.contains("three"))
+        );
     }
 
     #[test]
@@ -735,12 +737,16 @@ mod tests {
             "texts: {:?}",
             texts
         );
-        assert!(texts
-            .iter()
-            .any(|t| t.contains("2.") && t.contains("second")));
-        assert!(texts
-            .iter()
-            .any(|t| t.contains("3.") && t.contains("third")));
+        assert!(
+            texts
+                .iter()
+                .any(|t| t.contains("2.") && t.contains("second"))
+        );
+        assert!(
+            texts
+                .iter()
+                .any(|t| t.contains("3.") && t.contains("third"))
+        );
     }
 
     #[test]

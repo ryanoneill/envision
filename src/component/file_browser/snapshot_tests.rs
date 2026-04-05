@@ -1,5 +1,5 @@
 use super::*;
-use crate::annotation::{with_annotations, WidgetType};
+use crate::annotation::{WidgetType, with_annotations};
 use crate::component::test_utils;
 
 fn sample_entries() -> Vec<FileEntry> {

@@ -43,7 +43,7 @@
 pub mod ansi;
 mod render;
 
-pub use ansi::{parse_ansi, AnsiSegment};
+pub use ansi::{AnsiSegment, parse_ansi};
 
 use ratatui::prelude::*;
 

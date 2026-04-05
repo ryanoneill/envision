@@ -115,7 +115,7 @@ impl App for PaneLayoutApp {
             match key.code {
                 KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
                 KeyCode::Char('r') => {
-                    return Some(Msg::Layout(PaneLayoutMessage::ResetProportions))
+                    return Some(Msg::Layout(PaneLayoutMessage::ResetProportions));
                 }
                 _ => {}
             }

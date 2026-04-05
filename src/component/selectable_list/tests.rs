@@ -54,7 +54,7 @@ fn test_set_items_clamps_selection() {
     let mut state = SelectableListState::with_items(vec!["a", "b", "c"]);
     state.select(Some(2));
     state.set_items(vec!["x"]); // Only one item now
-                                // Selection should be clamped to last valid index
+    // Selection should be clamped to last valid index
     assert_eq!(state.selected_index(), Some(0));
 }
 
@@ -813,7 +813,7 @@ fn test_with_selected_chained() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = SelectableListState::new(vec!["a".to_string(), "b".to_string()]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
     let registry = with_annotations(|| {

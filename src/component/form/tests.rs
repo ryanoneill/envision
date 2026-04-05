@@ -684,7 +684,7 @@ fn test_empty_form_ignores_events() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = sample_form();
     let (mut terminal, theme) = test_utils::setup_render(40, 20);
     let registry = with_annotations(|| {

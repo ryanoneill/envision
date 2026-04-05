@@ -613,7 +613,7 @@ fn test_view_scrolled() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = HelpPanelState::new().with_groups(sample_groups());
     let (mut terminal, theme) = test_utils::setup_render(40, 16);
     let registry = with_annotations(|| {
@@ -632,7 +632,7 @@ fn test_annotation_emitted() {
 
 #[test]
 fn test_annotation_focused() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = focused_state_with_groups();
     let (mut terminal, theme) = test_utils::setup_render(40, 16);
     let registry = with_annotations(|| {

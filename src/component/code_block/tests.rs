@@ -666,7 +666,7 @@ fn test_view_python_code() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = CodeBlockState::new().with_code("fn main() {}");
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     let registry = with_annotations(|| {
@@ -685,7 +685,7 @@ fn test_annotation_emitted() {
 
 #[test]
 fn test_annotation_focused() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = CodeBlockState::new().with_code("fn main() {}");
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     let registry = with_annotations(|| {

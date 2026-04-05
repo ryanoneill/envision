@@ -21,11 +21,7 @@ impl TextAreaState {
         }
         let a = (ar, ac);
         let b = (self.cursor_row, self.cursor_col);
-        if a < b {
-            Some((a, b))
-        } else {
-            Some((b, a))
-        }
+        if a < b { Some((a, b)) } else { Some((b, a)) }
     }
 
     /// Returns the selected text, or None if no selection.

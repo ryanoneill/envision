@@ -436,7 +436,7 @@ fn test_with_placeholder_chained() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = SelectState::new(vec!["A".to_string(), "B".to_string()]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
     let registry = with_annotations(|| {

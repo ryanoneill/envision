@@ -4,7 +4,7 @@ use ratatui::Terminal;
 
 use crate::error;
 
-use crate::annotation::{with_annotations, AnnotationRegistry, RegionInfo, WidgetType};
+use crate::annotation::{AnnotationRegistry, RegionInfo, WidgetType, with_annotations};
 use crate::backend::CaptureBackend;
 use crate::input::{Event, EventQueue};
 

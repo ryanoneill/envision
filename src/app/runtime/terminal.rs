@@ -7,17 +7,17 @@ use std::io::{self, Stdout};
 
 use crate::error;
 
+use crossterm::ExecutableCommand;
 use crossterm::event::{
     DisableMouseCapture, EnableMouseCapture, Event as CrosstermEvent, KeyEventKind,
 };
 use crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
+    EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
-use crossterm::ExecutableCommand;
 use ratatui::backend::CrosstermBackend;
 
-use super::config::RuntimeConfig;
 use super::Runtime;
+use super::config::RuntimeConfig;
 use crate::app::command::Command;
 use crate::app::model::App;
 use crate::input::Event;

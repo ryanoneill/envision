@@ -3,8 +3,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::ansi::parse_ansi;
 use super::TerminalOutputState;
+use super::ansi::parse_ansi;
 use crate::theme::Theme;
 
 /// Renders the terminal output component.

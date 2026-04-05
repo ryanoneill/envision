@@ -557,7 +557,7 @@ fn test_view_with_eta_and_rate() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let mut state = ProgressBarState::with_label("Downloading");
     state.set_progress(0.5);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);

@@ -795,7 +795,7 @@ fn test_view_without_line_numbers() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
 
     let state = DiffViewerState::from_diff(sample_diff_text());
     let (mut terminal, theme) = test_utils::setup_render(60, 12);

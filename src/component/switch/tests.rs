@@ -448,7 +448,7 @@ fn test_toggleable_show_hide() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = SwitchState::new();
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
     let registry = with_annotations(|| {
@@ -466,7 +466,7 @@ fn test_annotation_emitted() {
 
 #[test]
 fn test_annotation_on() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = SwitchState::new().with_on(true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
     let registry = with_annotations(|| {
@@ -482,7 +482,7 @@ fn test_annotation_on() {
 
 #[test]
 fn test_annotation_with_label() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = SwitchState::new().with_label("Dark Mode");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
     let registry = with_annotations(|| {
