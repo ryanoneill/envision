@@ -57,9 +57,7 @@ fn is_leap_year(year: i32) -> bool {
 
 /// Returns the number of days in the given month (1-12) of `year`.
 ///
-/// # Panics
-///
-/// Panics if `month` is not in the range 1..=12.
+/// Returns 30 for out-of-range months as a safe fallback.
 fn days_in_month(year: i32, month: u32) -> u32 {
     match month {
         1 => 31,
@@ -80,7 +78,7 @@ fn days_in_month(year: i32, month: u32) -> u32 {
         10 => 31,
         11 => 30,
         12 => 31,
-        _ => panic!("Invalid month: {month}"),
+        _ => 30, // Safe fallback for out-of-range months
     }
 }
 

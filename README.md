@@ -10,7 +10,7 @@ A [ratatui](https://github.com/ratatui/ratatui) framework for collaborative TUI 
 
 ## Features
 
-- **Component Library** - 42 ready-to-use UI components following TEA pattern
+- **Component Library** - 73 ready-to-use UI components following TEA pattern
 - **Headless Testing** - Render your TUI without a terminal using `CaptureBackend`
 - **TEA Architecture** - The Elm Architecture pattern with `App`, `Runtime`, and `Command`
 - **Async Runtime** - Full async support with subscriptions, timers, and async commands
@@ -154,7 +154,7 @@ cargo run --example component_showcase
 
 ## Components
 
-Envision provides a comprehensive library of 42 reusable UI components, all following the TEA (The Elm Architecture) pattern with `Component`, `Focusable`, `Disableable`, and `Toggleable` traits.
+Envision provides a comprehensive library of 73 reusable UI components, all following the TEA (The Elm Architecture) pattern with `Component`, `ViewContext`, and `Toggleable` traits.
 
 ### Input Components
 
@@ -277,7 +277,7 @@ Envision follows The Elm Architecture (TEA) pattern:
 
 | Module | Description |
 |--------|-------------|
-| `component` | 42 reusable UI components with `Component`, `Focusable`, `Toggleable` traits |
+| `component` | 73 reusable UI components with `Component`, `ViewContext`, `Toggleable` traits |
 | `backend` | `CaptureBackend` for headless rendering |
 | `app` | TEA architecture: `App`, `Runtime`, `Command`, subscriptions |
 | `harness` | `TestHarness` and `AppHarness` for testing |
