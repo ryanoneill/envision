@@ -576,7 +576,7 @@ fn test_unicode_node_labels() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = TreeState::new(vec![TreeNode::new("Root", ())]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     let registry = with_annotations(|| {

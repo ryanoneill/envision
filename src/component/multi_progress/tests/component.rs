@@ -579,7 +579,7 @@ fn test_set_progress_no_auto_activate_if_zero() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let mut state = MultiProgressState::new();
     state.add("id1", "Item 1");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);

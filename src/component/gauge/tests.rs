@@ -627,7 +627,7 @@ fn test_view_full_percent() {
 
 #[test]
 fn test_annotation_emitted_full() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = GaugeState::new(50.0, 100.0);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
     let registry = with_annotations(|| {
@@ -645,7 +645,7 @@ fn test_annotation_emitted_full() {
 
 #[test]
 fn test_annotation_emitted_line() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = GaugeState::new(75.0, 100.0).with_variant(GaugeVariant::Line);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 5);
     let registry = with_annotations(|| {

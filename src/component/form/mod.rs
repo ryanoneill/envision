@@ -531,8 +531,7 @@ impl Component for Form {
                 Some(FormOutput::Submitted(values))
             }
             FormMessage::Input(c) => {
-                if let Some(FieldState::Text(ref mut s)) = state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Text(s)) = state.states.get_mut(state.focused_index) {
                     InputField::update(s, InputFieldMessage::Insert(c));
                     let id = state.fields[state.focused_index].id.clone();
                     let value = FormValue::Text(s.value().to_string());
@@ -542,8 +541,7 @@ impl Component for Form {
                 }
             }
             FormMessage::Backspace => {
-                if let Some(FieldState::Text(ref mut s)) = state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Text(s)) = state.states.get_mut(state.focused_index) {
                     InputField::update(s, InputFieldMessage::Backspace);
                     let id = state.fields[state.focused_index].id.clone();
                     let value = FormValue::Text(s.value().to_string());
@@ -553,8 +551,7 @@ impl Component for Form {
                 }
             }
             FormMessage::Delete => {
-                if let Some(FieldState::Text(ref mut s)) = state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Text(s)) = state.states.get_mut(state.focused_index) {
                     InputField::update(s, InputFieldMessage::Delete);
                     let id = state.fields[state.focused_index].id.clone();
                     let value = FormValue::Text(s.value().to_string());
@@ -564,36 +561,31 @@ impl Component for Form {
                 }
             }
             FormMessage::Left => {
-                if let Some(FieldState::Text(ref mut s)) = state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Text(s)) = state.states.get_mut(state.focused_index) {
                     InputField::update(s, InputFieldMessage::Left);
                 }
                 None
             }
             FormMessage::Right => {
-                if let Some(FieldState::Text(ref mut s)) = state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Text(s)) = state.states.get_mut(state.focused_index) {
                     InputField::update(s, InputFieldMessage::Right);
                 }
                 None
             }
             FormMessage::Home => {
-                if let Some(FieldState::Text(ref mut s)) = state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Text(s)) = state.states.get_mut(state.focused_index) {
                     InputField::update(s, InputFieldMessage::Home);
                 }
                 None
             }
             FormMessage::End => {
-                if let Some(FieldState::Text(ref mut s)) = state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Text(s)) = state.states.get_mut(state.focused_index) {
                     InputField::update(s, InputFieldMessage::End);
                 }
                 None
             }
             FormMessage::Clear => {
-                if let Some(FieldState::Text(ref mut s)) = state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Text(s)) = state.states.get_mut(state.focused_index) {
                     InputField::update(s, InputFieldMessage::Clear);
                     let id = state.fields[state.focused_index].id.clone();
                     Some(FormOutput::FieldChanged(id, FormValue::Text(String::new())))
@@ -605,14 +597,14 @@ impl Component for Form {
                 let field_state = state.states.get_mut(state.focused_index)?;
                 let id = state.fields[state.focused_index].id.clone();
                 match field_state {
-                    FieldState::Checkbox(ref mut s) => {
+                    FieldState::Checkbox(s) => {
                         Checkbox::update(s, CheckboxMessage::Toggle);
                         Some(FormOutput::FieldChanged(
                             id,
                             FormValue::Bool(s.is_checked()),
                         ))
                     }
-                    FieldState::Select(ref mut s) => {
+                    FieldState::Select(s) => {
                         if s.is_open() {
                             Select::update(s, SelectMessage::Close);
                         } else {
@@ -624,25 +616,19 @@ impl Component for Form {
                 }
             }
             FormMessage::SelectUp => {
-                if let Some(FieldState::Select(ref mut s)) =
-                    state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Select(s)) = state.states.get_mut(state.focused_index) {
                     Select::update(s, SelectMessage::Up);
                 }
                 None
             }
             FormMessage::SelectDown => {
-                if let Some(FieldState::Select(ref mut s)) =
-                    state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Select(s)) = state.states.get_mut(state.focused_index) {
                     Select::update(s, SelectMessage::Down);
                 }
                 None
             }
             FormMessage::SelectConfirm => {
-                if let Some(FieldState::Select(ref mut s)) =
-                    state.states.get_mut(state.focused_index)
-                {
+                if let Some(FieldState::Select(s)) = state.states.get_mut(state.focused_index) {
                     Select::update(s, SelectMessage::Confirm);
                     let id = state.fields[state.focused_index].id.clone();
                     let value = FormValue::Selected(s.selected_item().map(|v| v.to_string()));

@@ -157,11 +157,7 @@ pub fn wrapped_line_count(s: &str, width: usize) -> usize {
     }
 
     // Handle case where s is completely empty (split produces one empty item)
-    if total_lines == 0 {
-        1
-    } else {
-        total_lines
-    }
+    if total_lines == 0 { 1 } else { total_lines }
 }
 
 /// Calculates a centered rectangle within the given area.

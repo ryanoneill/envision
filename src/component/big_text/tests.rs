@@ -481,7 +481,7 @@ fn test_view_date() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = BigTextState::new("42");
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     let registry = with_annotations(|| {
@@ -500,7 +500,7 @@ fn test_annotation_emitted() {
 
 #[test]
 fn test_annotation_disabled() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = BigTextState::new("OFF");
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     let registry = with_annotations(|| {

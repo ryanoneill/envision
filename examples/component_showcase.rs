@@ -943,7 +943,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     vt.dispatch(Msg::FocusNext); // -> CodeBlock
     vt.dispatch(Msg::FocusNext); // -> Menu (wraps)
     vt.dispatch(Msg::FocusNext); // -> Tabs
-                                 // Navigate right three times to reach Viz tab
+    // Navigate right three times to reach Viz tab
     vt.dispatch(Msg::ComponentEvent(Event::key(
         crossterm::event::KeyCode::Right,
     )));

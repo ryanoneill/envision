@@ -93,12 +93,16 @@ fn test_assertion_widget_count() {
         })
         .unwrap();
 
-    assert!(Assertion::widget_count(WidgetType::Button, 2)
-        .check(&harness)
-        .is_ok());
-    assert!(Assertion::widget_count(WidgetType::Button, 1)
-        .check(&harness)
-        .is_err());
+    assert!(
+        Assertion::widget_count(WidgetType::Button, 2)
+            .check(&harness)
+            .is_ok()
+    );
+    assert!(
+        Assertion::widget_count(WidgetType::Button, 1)
+            .check(&harness)
+            .is_err()
+    );
 }
 
 #[test]
@@ -186,13 +190,17 @@ fn test_assertion_widget_not_exists() {
         .unwrap();
 
     // Should pass when widget doesn't exist
-    assert!(Assertion::widget_not_exists("cancel")
-        .check(&harness)
-        .is_ok());
+    assert!(
+        Assertion::widget_not_exists("cancel")
+            .check(&harness)
+            .is_ok()
+    );
     // Should fail when widget exists
-    assert!(Assertion::widget_not_exists("submit")
-        .check(&harness)
-        .is_err());
+    assert!(
+        Assertion::widget_not_exists("submit")
+            .check(&harness)
+            .is_err()
+    );
 }
 
 #[test]
@@ -220,17 +228,23 @@ fn test_assertion_widget_disabled() {
         .unwrap();
 
     // Should pass when widget is disabled
-    assert!(Assertion::widget_disabled("disabled_btn")
-        .check(&harness)
-        .is_ok());
+    assert!(
+        Assertion::widget_disabled("disabled_btn")
+            .check(&harness)
+            .is_ok()
+    );
     // Should fail when widget is not disabled
-    assert!(Assertion::widget_disabled("enabled_btn")
-        .check(&harness)
-        .is_err());
+    assert!(
+        Assertion::widget_disabled("enabled_btn")
+            .check(&harness)
+            .is_err()
+    );
     // Should fail when widget doesn't exist
-    assert!(Assertion::widget_disabled("nonexistent")
-        .check(&harness)
-        .is_err());
+    assert!(
+        Assertion::widget_disabled("nonexistent")
+            .check(&harness)
+            .is_err()
+    );
 }
 
 #[test]
@@ -258,21 +272,29 @@ fn test_assertion_widget_value() {
         .unwrap();
 
     // Should pass when widget has the expected value
-    assert!(Assertion::widget_value("name", "John")
-        .check(&harness)
-        .is_ok());
+    assert!(
+        Assertion::widget_value("name", "John")
+            .check(&harness)
+            .is_ok()
+    );
     // Should fail when widget has different value
-    assert!(Assertion::widget_value("name", "Jane")
-        .check(&harness)
-        .is_err());
+    assert!(
+        Assertion::widget_value("name", "Jane")
+            .check(&harness)
+            .is_err()
+    );
     // Should fail when widget has no value
-    assert!(Assertion::widget_value("empty", "anything")
-        .check(&harness)
-        .is_err());
+    assert!(
+        Assertion::widget_value("empty", "anything")
+            .check(&harness)
+            .is_err()
+    );
     // Should fail when widget doesn't exist
-    assert!(Assertion::widget_value("nonexistent", "test")
-        .check(&harness)
-        .is_err());
+    assert!(
+        Assertion::widget_value("nonexistent", "test")
+            .check(&harness)
+            .is_err()
+    );
 }
 
 #[test]
@@ -290,9 +312,11 @@ fn test_assertion_screen_equals() {
     // Should pass when screen matches exactly
     assert!(Assertion::screen_equals(&screen).check(&harness).is_ok());
     // Should fail when screen doesn't match
-    assert!(Assertion::screen_equals("Different content")
-        .check(&harness)
-        .is_err());
+    assert!(
+        Assertion::screen_equals("Different content")
+            .check(&harness)
+            .is_err()
+    );
 }
 
 #[test]
@@ -303,9 +327,11 @@ fn test_assertion_row_equals() {
     let row = harness.row(0);
     assert!(Assertion::row_equals(0, row).check(&harness).is_ok());
     // Should fail when row doesn't match
-    assert!(Assertion::row_equals(0, "Different")
-        .check(&harness)
-        .is_err());
+    assert!(
+        Assertion::row_equals(0, "Different")
+            .check(&harness)
+            .is_err()
+    );
 }
 
 #[test]

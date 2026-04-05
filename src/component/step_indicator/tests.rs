@@ -1,6 +1,6 @@
 use super::*;
-use crate::component::test_utils::setup_render;
 use crate::component::Component;
+use crate::component::test_utils::setup_render;
 use crate::input::{Event, KeyCode};
 
 // ========== Step Tests ==========
@@ -730,7 +730,7 @@ fn test_view_empty_steps() {
 
 #[test]
 fn test_annotation_emission() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let steps = vec![Step::new("A"), Step::new("B")];
     let state = StepIndicatorState::new(steps);
     let (mut terminal, theme) = setup_render(60, 5);

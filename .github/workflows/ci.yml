@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        rust: [stable, "1.81"]
+        rust: [stable, "1.85"]
     steps:
       - uses: actions/checkout@v4
 
@@ -38,13 +38,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.rust }}-
 
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
+
       - name: Run tests
         shell: bash
         run: |
           if [ "${{ matrix.rust }}" = "stable" ]; then
-            cargo test --all-features --verbose
+            cargo nextest run --all-features --profile ci
           else
-            cargo test --no-default-features --features serialization,input-components,data-components,display-components,navigation-components,overlay-components,compound-components --verbose
+            cargo nextest run --no-default-features --features serialization,input-components,data-components,display-components,navigation-components,overlay-components,compound-components --profile ci
+          fi
+
+      - name: Run doc tests
+        shell: bash
+        run: |
+          if [ "${{ matrix.rust }}" = "stable" ]; then
+            cargo test --doc --all-features
+          else
+            cargo test --doc --no-default-features --features serialization,input-components,data-components,display-components,navigation-components,overlay-components,compound-components
           fi
 
       - name: Build examples
@@ -81,8 +95,16 @@ jobs:
       - name: Check without default features
         run: cargo check --no-default-features
 
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
+
       - name: Test without default features
-        run: cargo test --no-default-features
+        run: cargo nextest run --no-default-features --profile ci
+
+      - name: Run doc tests without default features
+        run: cargo test --doc --no-default-features
 
   clippy:
     name: Clippy

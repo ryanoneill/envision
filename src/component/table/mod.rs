@@ -58,8 +58,8 @@ mod render;
 mod types;
 
 pub use types::{
-    date_comparator, numeric_comparator, Column, SortComparator, SortDirection, TableMessage,
-    TableOutput, TableRow,
+    Column, SortComparator, SortDirection, TableMessage, TableOutput, TableRow, date_comparator,
+    numeric_comparator,
 };
 
 use std::marker::PhantomData;

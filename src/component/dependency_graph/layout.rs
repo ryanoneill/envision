@@ -78,7 +78,7 @@ fn assign_layers(nodes: &[GraphNode], edges: &[GraphEdge]) -> HashMap<String, us
     // Find roots: nodes with no incoming edges
     let roots: Vec<&str> = node_ids
         .iter()
-        .filter(|id| incoming.get(*id).map_or(true, |s| s.is_empty()))
+        .filter(|id| incoming.get(*id).is_none_or(|s| s.is_empty()))
         .copied()
         .collect();
 

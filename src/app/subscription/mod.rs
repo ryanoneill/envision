@@ -20,18 +20,18 @@ mod ext;
 mod interval;
 mod terminal;
 
-pub use batch::{batch, BatchSubscription};
+pub use batch::{BatchSubscription, batch};
 pub use combinators::{
     DebounceSubscription, FilterSubscription, MappedSubscription, TakeSubscription,
     ThrottleSubscription,
 };
 pub use core::{
-    tick, BoxedSubscription, ChannelSubscription, StreamSubscription, Subscription,
-    TickSubscription, TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription,
+    BoxedSubscription, ChannelSubscription, StreamSubscription, Subscription, TickSubscription,
+    TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription, tick,
 };
 pub use ext::SubscriptionExt;
-pub use interval::{interval_immediate, IntervalImmediateBuilder, IntervalImmediateSubscription};
-pub use terminal::{terminal_events, TerminalEventSubscription};
+pub use interval::{IntervalImmediateBuilder, IntervalImmediateSubscription, interval_immediate};
+pub use terminal::{TerminalEventSubscription, terminal_events};
 
 #[cfg(test)]
 pub(crate) use tokio::sync::mpsc;

@@ -601,13 +601,11 @@ impl LogCorrelationState {
         let rows = self.aligned_rows();
         rows.iter()
             .map(|row| {
-                let max_entries = row
-                    .stream_entries
+                row.stream_entries
                     .iter()
                     .map(|indices| indices.len().max(1))
                     .max()
-                    .unwrap_or(1);
-                max_entries
+                    .unwrap_or(1)
             })
             .sum()
     }

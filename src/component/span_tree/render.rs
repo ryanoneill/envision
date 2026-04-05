@@ -305,11 +305,7 @@ fn render_row(
     // Build label text with indent and expand/collapse indicator
     let indent = "  ".repeat(span.depth);
     let indicator = if span.has_children {
-        if span.is_expanded {
-            "▾ "
-        } else {
-            "▸ "
-        }
+        if span.is_expanded { "▾ " } else { "▸ " }
     } else {
         "  "
     };

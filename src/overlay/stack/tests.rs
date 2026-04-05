@@ -178,8 +178,8 @@ fn test_stack_render_empty() {
 
 #[test]
 fn test_stack_render_with_overlays() {
-    use std::sync::atomic::{AtomicU32, Ordering};
     use std::sync::Arc;
+    use std::sync::atomic::{AtomicU32, Ordering};
 
     // An overlay that tracks how many times view() is called
     struct TrackingOverlay {

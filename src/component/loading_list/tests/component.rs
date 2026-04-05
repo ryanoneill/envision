@@ -790,7 +790,7 @@ fn test_clear_error_on_ready_item() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let items = make_items();
     let state = LoadingListState::with_items(items, |i| i.name.clone());
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);

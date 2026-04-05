@@ -51,9 +51,9 @@ mod tests;
 
 use std::ops::Range;
 
+use ratatui::Frame;
 use ratatui::layout::Rect;
 use ratatui::widgets::{Scrollbar, ScrollbarOrientation, ScrollbarState};
-use ratatui::Frame;
 
 use crate::theme::Theme;
 

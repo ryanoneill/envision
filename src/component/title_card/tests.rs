@@ -318,7 +318,7 @@ fn test_view_small_area() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = TitleCardState::new("Hello");
     let (mut terminal, theme) = test_utils::setup_render(40, 7);
     let registry = with_annotations(|| {

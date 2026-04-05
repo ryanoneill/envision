@@ -1,10 +1,10 @@
 use std::time::Duration;
 
+use super::Subscription;
 use super::combinators::{
     DebounceSubscription, FilterSubscription, MappedSubscription, TakeSubscription,
     ThrottleSubscription,
 };
-use super::Subscription;
 
 /// Extension trait for subscriptions.
 ///

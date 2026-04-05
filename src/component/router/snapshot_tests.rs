@@ -1,6 +1,6 @@
 use super::*;
-use crate::component::test_utils;
 use crate::component::ViewContext;
+use crate::component::test_utils;
 
 /// Router is a state-only component with no visual output.
 /// These tests verify that `Router::view()` is a no-op and

@@ -1,6 +1,6 @@
 use super::*;
-use crate::component::test_utils::setup_render;
 use crate::component::Component;
+use crate::component::test_utils::setup_render;
 use crate::input::{Event, KeyCode};
 
 // ========== StyledContent Builder Tests ==========
@@ -652,7 +652,7 @@ fn test_view_mixed_content() {
 
 #[test]
 fn test_annotation_emission() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = StyledTextState::new();
     let (mut terminal, theme) = setup_render(40, 5);
     let registry = with_annotations(|| {

@@ -1,6 +1,6 @@
 use super::*;
-use crate::component::test_utils::setup_render;
 use crate::component::Component;
+use crate::component::test_utils::setup_render;
 
 // ---- Construction / Accessors ----
 
@@ -839,7 +839,7 @@ fn test_max_length_insert_with_selection_replacement() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = LineInputState::new();
     let (mut terminal, theme) = setup_render(30, 5);
     let registry = with_annotations(|| {

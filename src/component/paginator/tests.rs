@@ -770,7 +770,7 @@ fn test_view_disabled() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = PaginatorState::new(5).with_current_page(2);
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     let registry = with_annotations(|| {
@@ -790,7 +790,7 @@ fn test_annotation_emitted() {
 
 #[test]
 fn test_annotation_focused() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = focused_state(5);
     let (mut terminal, theme) = test_utils::setup_render(40, 1);
     let registry = with_annotations(|| {

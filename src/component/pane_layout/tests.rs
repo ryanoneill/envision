@@ -1,6 +1,6 @@
 use super::*;
-use crate::component::test_utils::setup_render;
 use crate::component::Component;
+use crate::component::test_utils::setup_render;
 use crate::input::{Event, KeyCode, KeyModifiers};
 use ratatui::prelude::Rect;
 
@@ -698,7 +698,7 @@ fn test_view_empty_panes() {
 
 #[test]
 fn test_annotation_emission() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     let (mut terminal, theme) = setup_render(60, 10);

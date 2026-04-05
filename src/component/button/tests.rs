@@ -148,7 +148,7 @@ fn test_instance_update() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = ButtonState::new("Submit");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
     let registry = with_annotations(|| {
@@ -168,7 +168,7 @@ fn test_annotation_emitted() {
 
 #[test]
 fn test_annotation_focused() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = ButtonState::new("OK");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
     let registry = with_annotations(|| {

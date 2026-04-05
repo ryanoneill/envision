@@ -36,7 +36,7 @@
 mod item;
 mod render;
 
-pub use item::{fuzzy_score, PaletteItem};
+pub use item::{PaletteItem, fuzzy_score};
 
 use ratatui::prelude::*;
 

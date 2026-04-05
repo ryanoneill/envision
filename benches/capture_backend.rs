@@ -1,6 +1,6 @@
 //! Benchmarks for CaptureBackend performance.
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
 use envision::backend::CaptureBackend;
 use ratatui::backend::Backend;
 use ratatui::buffer::Cell;

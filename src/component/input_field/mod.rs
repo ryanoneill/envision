@@ -664,7 +664,7 @@ impl Component for InputField {
         }
 
         // Handle paste events from terminal (bracketed paste)
-        if let Event::Paste(ref text) = event {
+        if let Event::Paste(text) = event {
             return Some(InputFieldMessage::Paste(text.clone()));
         }
 

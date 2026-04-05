@@ -246,24 +246,18 @@ fn test_add_metric_preserves_selection() {
 
 #[test]
 fn test_update_metric_state_change() {
-    let mut state = AlertPanelState::new().with_metrics(vec![AlertMetric::new(
-        "cpu",
-        "CPU",
-        AlertThreshold::new(70.0, 90.0),
-    )
-    .with_value(50.0)]);
+    let mut state = AlertPanelState::new().with_metrics(vec![
+        AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)).with_value(50.0),
+    ]);
     let result = state.update_metric("cpu", 80.0);
     assert_eq!(result, Some((AlertState::Ok, AlertState::Warning)));
 }
 
 #[test]
 fn test_update_metric_no_state_change() {
-    let mut state = AlertPanelState::new().with_metrics(vec![AlertMetric::new(
-        "cpu",
-        "CPU",
-        AlertThreshold::new(70.0, 90.0),
-    )
-    .with_value(50.0)]);
+    let mut state = AlertPanelState::new().with_metrics(vec![
+        AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)).with_value(50.0),
+    ]);
     let result = state.update_metric("cpu", 60.0);
     assert_eq!(result, None);
 }
@@ -289,36 +283,27 @@ fn test_metric_by_id() {
 
 #[test]
 fn test_state_change_ok_to_warning() {
-    let mut state = AlertPanelState::new().with_metrics(vec![AlertMetric::new(
-        "cpu",
-        "CPU",
-        AlertThreshold::new(70.0, 90.0),
-    )
-    .with_value(50.0)]);
+    let mut state = AlertPanelState::new().with_metrics(vec![
+        AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)).with_value(50.0),
+    ]);
     let result = state.update_metric("cpu", 75.0);
     assert_eq!(result, Some((AlertState::Ok, AlertState::Warning)));
 }
 
 #[test]
 fn test_state_change_warning_to_critical() {
-    let mut state = AlertPanelState::new().with_metrics(vec![AlertMetric::new(
-        "cpu",
-        "CPU",
-        AlertThreshold::new(70.0, 90.0),
-    )
-    .with_value(75.0)]);
+    let mut state = AlertPanelState::new().with_metrics(vec![
+        AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)).with_value(75.0),
+    ]);
     let result = state.update_metric("cpu", 95.0);
     assert_eq!(result, Some((AlertState::Warning, AlertState::Critical)));
 }
 
 #[test]
 fn test_state_change_critical_to_ok() {
-    let mut state = AlertPanelState::new().with_metrics(vec![AlertMetric::new(
-        "cpu",
-        "CPU",
-        AlertThreshold::new(70.0, 90.0),
-    )
-    .with_value(95.0)]);
+    let mut state = AlertPanelState::new().with_metrics(vec![
+        AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)).with_value(95.0),
+    ]);
     let result = state.update_metric("cpu", 50.0);
     assert_eq!(result, Some((AlertState::Critical, AlertState::Ok)));
 }
@@ -456,12 +441,9 @@ fn test_select_enter() {
 
 #[test]
 fn test_update_metric_message() {
-    let mut state = AlertPanelState::new().with_metrics(vec![AlertMetric::new(
-        "cpu",
-        "CPU",
-        AlertThreshold::new(70.0, 90.0),
-    )
-    .with_value(50.0)]);
+    let mut state = AlertPanelState::new().with_metrics(vec![
+        AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)).with_value(50.0),
+    ]);
     let output = AlertPanel::update(
         &mut state,
         AlertPanelMessage::UpdateMetric {
@@ -482,12 +464,9 @@ fn test_update_metric_message() {
 
 #[test]
 fn test_update_metric_message_no_state_change() {
-    let mut state = AlertPanelState::new().with_metrics(vec![AlertMetric::new(
-        "cpu",
-        "CPU",
-        AlertThreshold::new(70.0, 90.0),
-    )
-    .with_value(50.0)]);
+    let mut state = AlertPanelState::new().with_metrics(vec![
+        AlertMetric::new("cpu", "CPU", AlertThreshold::new(70.0, 90.0)).with_value(50.0),
+    ]);
     let output = AlertPanel::update(
         &mut state,
         AlertPanelMessage::UpdateMetric {

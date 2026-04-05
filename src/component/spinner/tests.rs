@@ -277,7 +277,7 @@ fn test_default_matches_init() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = SpinnerState::with_label("Loading");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
     let registry = with_annotations(|| {

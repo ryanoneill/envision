@@ -44,7 +44,7 @@ fn test_handle_noop_after_eviction() {
     let handle = state.push_user("a");
     state.push_user("b");
     state.push_user("c"); // "a" is evicted
-                          // handle points to evicted message, should no-op
+    // handle points to evicted message, should no-op
     state.update_by_handle(handle, |_msg| {
         panic!("should not be called on evicted message");
     });

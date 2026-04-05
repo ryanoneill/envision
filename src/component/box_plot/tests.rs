@@ -347,7 +347,7 @@ fn test_global_max_multiple_datasets() {
 #[test]
 fn test_global_min_with_outliers_shown() {
     let state = BoxPlotState::new(vec![
-        BoxPlotData::new("A", 5.0, 10.0, 20.0, 30.0, 40.0).with_outliers(vec![1.0, 60.0])
+        BoxPlotData::new("A", 5.0, 10.0, 20.0, 30.0, 40.0).with_outliers(vec![1.0, 60.0]),
     ]);
     assert_eq!(state.global_min(), 1.0);
 }
@@ -355,7 +355,7 @@ fn test_global_min_with_outliers_shown() {
 #[test]
 fn test_global_max_with_outliers_shown() {
     let state = BoxPlotState::new(vec![
-        BoxPlotData::new("A", 5.0, 10.0, 20.0, 30.0, 40.0).with_outliers(vec![1.0, 60.0])
+        BoxPlotData::new("A", 5.0, 10.0, 20.0, 30.0, 40.0).with_outliers(vec![1.0, 60.0]),
     ]);
     assert_eq!(state.global_max(), 60.0);
 }
@@ -363,7 +363,7 @@ fn test_global_max_with_outliers_shown() {
 #[test]
 fn test_global_min_with_outliers_hidden() {
     let state = BoxPlotState::new(vec![
-        BoxPlotData::new("A", 5.0, 10.0, 20.0, 30.0, 40.0).with_outliers(vec![1.0, 60.0])
+        BoxPlotData::new("A", 5.0, 10.0, 20.0, 30.0, 40.0).with_outliers(vec![1.0, 60.0]),
     ])
     .with_show_outliers(false);
     assert_eq!(state.global_min(), 5.0);
@@ -372,7 +372,7 @@ fn test_global_min_with_outliers_hidden() {
 #[test]
 fn test_global_max_with_outliers_hidden() {
     let state = BoxPlotState::new(vec![
-        BoxPlotData::new("A", 5.0, 10.0, 20.0, 30.0, 40.0).with_outliers(vec![1.0, 60.0])
+        BoxPlotData::new("A", 5.0, 10.0, 20.0, 30.0, 40.0).with_outliers(vec![1.0, 60.0]),
     ])
     .with_show_outliers(false);
     assert_eq!(state.global_max(), 40.0);
@@ -713,10 +713,10 @@ fn test_render_multiple_datasets() {
 
 #[test]
 fn test_render_with_outliers() {
-    let state = BoxPlotState::new(vec![BoxPlotData::new(
-        "Response", 10.0, 20.0, 30.0, 40.0, 50.0,
-    )
-    .with_outliers(vec![2.0, 65.0, 70.0])]);
+    let state = BoxPlotState::new(vec![
+        BoxPlotData::new("Response", 10.0, 20.0, 30.0, 40.0, 50.0)
+            .with_outliers(vec![2.0, 65.0, 70.0]),
+    ]);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -727,10 +727,9 @@ fn test_render_with_outliers() {
 
 #[test]
 fn test_render_without_outliers() {
-    let state = BoxPlotState::new(vec![BoxPlotData::new(
-        "Response", 10.0, 20.0, 30.0, 40.0, 50.0,
-    )
-    .with_outliers(vec![2.0, 65.0])])
+    let state = BoxPlotState::new(vec![
+        BoxPlotData::new("Response", 10.0, 20.0, 30.0, 40.0, 50.0).with_outliers(vec![2.0, 65.0]),
+    ])
     .with_show_outliers(false);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
@@ -833,10 +832,9 @@ fn test_render_horizontal_multiple() {
 
 #[test]
 fn test_render_horizontal_with_outliers() {
-    let state = BoxPlotState::new(vec![BoxPlotData::new(
-        "Response", 10.0, 20.0, 30.0, 40.0, 50.0,
-    )
-    .with_outliers(vec![2.0, 65.0])])
+    let state = BoxPlotState::new(vec![
+        BoxPlotData::new("Response", 10.0, 20.0, 30.0, 40.0, 50.0).with_outliers(vec![2.0, 65.0]),
+    ])
     .with_orientation(BoxPlotOrientation::Horizontal);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal

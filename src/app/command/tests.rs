@@ -550,8 +550,8 @@ async fn test_command_spawn_produces_no_message() {
 
 #[tokio::test]
 async fn test_command_spawn_executes_side_effect() {
-    use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::Arc;
+    use std::sync::atomic::{AtomicBool, Ordering};
 
     let executed = Arc::new(AtomicBool::new(false));
     let executed_clone = executed.clone();
@@ -624,8 +624,8 @@ fn test_command_spawn_map() {
 
 #[tokio::test]
 async fn test_command_spawn_respects_cancellation() {
-    use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::Arc;
+    use std::sync::atomic::{AtomicBool, Ordering};
 
     let reached = Arc::new(AtomicBool::new(false));
     let reached_clone = reached.clone();
@@ -662,8 +662,8 @@ mod overlay_tests {
     use crate::input::Event;
     use crate::overlay::{Overlay, OverlayAction};
     use crate::theme::Theme;
-    use ratatui::layout::Rect;
     use ratatui::Frame;
+    use ratatui::layout::Rect;
 
     struct TestOverlay;
 

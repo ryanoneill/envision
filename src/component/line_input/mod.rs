@@ -505,7 +505,7 @@ impl Component for LineInput {
         }
 
         // Handle paste events
-        if let Event::Paste(ref text) = event {
+        if let Event::Paste(text) = event {
             return Some(LineInputMessage::Paste(text.clone()));
         }
 

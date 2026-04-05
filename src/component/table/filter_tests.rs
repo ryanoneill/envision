@@ -113,7 +113,7 @@ fn test_filter_resets_selection_when_row_hidden() {
     // Filter to "fruit" — Carrot is "Vegetable", gets filtered out
     state.set_filter_text("fruit");
     assert_eq!(state.visible_count(), 3); // Apple, Banana, Apricot
-                                          // Selection moves to first visible
+    // Selection moves to first visible
     assert_eq!(state.selected_row().unwrap().name, "Apple");
 }
 

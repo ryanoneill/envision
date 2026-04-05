@@ -448,7 +448,7 @@ fn test_view_collapsed() {
 #[test]
 fn test_view_expanded() {
     let state = AccordionState::new(vec![
-        AccordionPanel::new("Section 1", "Content 1").expanded()
+        AccordionPanel::new("Section 1", "Content 1").expanded(),
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
@@ -500,11 +500,9 @@ fn test_view_focused_highlight() {
 
 #[test]
 fn test_view_long_content() {
-    let state = AccordionState::new(vec![AccordionPanel::new(
-        "Multi-line",
-        "Line 1\nLine 2\nLine 3",
-    )
-    .expanded()]);
+    let state = AccordionState::new(vec![
+        AccordionPanel::new("Multi-line", "Line 1\nLine 2\nLine 3").expanded(),
+    ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
@@ -755,7 +753,7 @@ fn test_builder_chaining() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state =
         AccordionState::from_pairs(vec![("Panel A", "Content A"), ("Panel B", "Content B")]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);

@@ -608,7 +608,7 @@ fn test_dispatch_event_ignored_when_disabled() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 24);
     let registry = with_annotations(|| {

@@ -119,10 +119,11 @@ pub use model::App;
 pub use persistence::load_state;
 pub use runtime::{Runtime, RuntimeConfig, TerminalHook, TerminalRuntime, VirtualRuntime};
 pub use subscription::{
-    batch, interval_immediate, terminal_events, tick, BatchSubscription, BoxedSubscription,
-    ChannelSubscription, DebounceSubscription, FilterSubscription, IntervalImmediateBuilder,
-    IntervalImmediateSubscription, MappedSubscription, StreamSubscription, Subscription,
-    SubscriptionExt, TakeSubscription, TerminalEventSubscription, ThrottleSubscription,
-    TickSubscription, TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription,
+    BatchSubscription, BoxedSubscription, ChannelSubscription, DebounceSubscription,
+    FilterSubscription, IntervalImmediateBuilder, IntervalImmediateSubscription,
+    MappedSubscription, StreamSubscription, Subscription, SubscriptionExt, TakeSubscription,
+    TerminalEventSubscription, ThrottleSubscription, TickSubscription, TickSubscriptionBuilder,
+    TimerSubscription, UnboundedChannelSubscription, batch, interval_immediate, terminal_events,
+    tick,
 };
 pub use update::{FnUpdate, StateExt, Update, UpdateResult};

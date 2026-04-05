@@ -976,7 +976,7 @@ fn test_cursor_display_position_empty() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = TextAreaState::new();
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 10);
     let registry = with_annotations(|| {

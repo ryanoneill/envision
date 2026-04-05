@@ -315,9 +315,5 @@ fn render_status_bar(
 
 /// Truncates a string to at most `max_len` characters.
 fn truncate(s: &str, max_len: usize) -> &str {
-    if s.len() <= max_len {
-        s
-    } else {
-        &s[..max_len]
-    }
+    if s.len() <= max_len { s } else { &s[..max_len] }
 }

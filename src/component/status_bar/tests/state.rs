@@ -175,7 +175,7 @@ fn test_update_mode_indicator() {
     StatusBar::update(
         &mut state,
         StatusBarMessage::SetLeftItems(vec![
-            StatusBarItem::new("INSERT").with_style(StatusBarStyle::Success)
+            StatusBarItem::new("INSERT").with_style(StatusBarStyle::Success),
         ]),
     );
 

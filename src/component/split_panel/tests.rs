@@ -492,7 +492,7 @@ fn test_partial_eq_different_ratio() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = SplitPanelState::new(SplitOrientation::Vertical);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     let registry = with_annotations(|| {

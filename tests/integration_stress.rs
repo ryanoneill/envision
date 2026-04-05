@@ -9,8 +9,8 @@ use envision::{
     SelectableListState, Table, TableMessage, TableRow, TableState, Theme, Tree, TreeMessage,
     TreeNode, TreeState,
 };
-use ratatui::prelude::*;
 use ratatui::Terminal;
+use ratatui::prelude::*;
 
 // ---------------------------------------------------------------------------
 // Shared helpers

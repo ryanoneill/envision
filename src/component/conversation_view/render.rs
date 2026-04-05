@@ -3,11 +3,11 @@
 use super::types::{ConversationMessage, MessageBlock};
 use super::{ConversationViewState, MessageSource};
 
+use ratatui::Frame;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, List, ListItem};
-use ratatui::Frame;
 
 use unicode_width::UnicodeWidthChar;
 use unicode_width::UnicodeWidthStr;

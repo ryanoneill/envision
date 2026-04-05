@@ -5,6 +5,8 @@
 //!
 //! Tests 1-14 live here. Tests 15-30 are in integration_new_components_2.rs.
 
+use envision::CaptureBackend;
+use envision::ViewContext;
 use envision::component::{
     // Observability
     AlertMetric,
@@ -76,10 +78,8 @@ use envision::component::{
     TimelineSpan,
     TimelineState,
 };
-use envision::CaptureBackend;
-use envision::ViewContext;
-use ratatui::prelude::*;
 use ratatui::Terminal;
+use ratatui::prelude::*;
 
 // ============================================================================
 // 1. Sparkline: push data, verify view updates

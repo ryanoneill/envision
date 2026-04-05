@@ -6,8 +6,8 @@
 
 use crate::error;
 
-use super::config::RuntimeConfig;
 use super::Runtime;
+use super::config::RuntimeConfig;
 use crate::app::command::Command;
 use crate::app::model::App;
 use crate::backend::CaptureBackend;

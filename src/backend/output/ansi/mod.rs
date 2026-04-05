@@ -4,8 +4,8 @@
 //! and text modifiers. The output can be displayed in any terminal
 //! that supports ANSI escape sequences.
 
-use crate::backend::cell::SerializableColor;
 use crate::backend::CaptureBackend;
+use crate::backend::cell::SerializableColor;
 
 /// ANSI reset sequence
 const RESET: &str = "\x1b[0m";

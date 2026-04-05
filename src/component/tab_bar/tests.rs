@@ -792,7 +792,7 @@ fn test_single_tab() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = TabBarState::new(vec![Tab::new("a", "Tab1"), Tab::new("b", "Tab2")]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     let registry = with_annotations(|| {

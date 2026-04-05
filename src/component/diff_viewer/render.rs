@@ -257,7 +257,7 @@ fn render_side_line(
     prefer_new: bool,
     disabled: bool,
 ) {
-    if let Some(ref diff_line) = line {
+    if let Some(diff_line) = line {
         let style = match diff_line.line_type {
             DiffLineType::Header => header_style(theme),
             DiffLineType::Added => added_style(state, theme, disabled),

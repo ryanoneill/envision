@@ -4,8 +4,8 @@
 //! and methods used by `Runtime`. It manages terminal, state, event queue,
 //! overlays, theme, and rendering.
 
-use ratatui::backend::Backend;
 use ratatui::Terminal;
+use ratatui::backend::Backend;
 
 use super::model::App;
 use crate::input::EventQueue;

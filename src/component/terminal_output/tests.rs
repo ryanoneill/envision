@@ -688,7 +688,7 @@ fn test_view_focused() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = TerminalOutputState::new();
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     let registry = with_annotations(|| {
@@ -707,7 +707,7 @@ fn test_annotation_emitted() {
 
 #[test]
 fn test_annotation_focused() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let state = focused_state();
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     let registry = with_annotations(|| {

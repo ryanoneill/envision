@@ -641,7 +641,7 @@ fn test_default_matches_init() {
 
 #[test]
 fn test_annotation_emitted() {
-    use crate::annotation::{with_annotations, WidgetType};
+    use crate::annotation::{WidgetType, with_annotations};
     let mut state = TooltipState::new("Helpful tip");
     Tooltip::set_visible(&mut state, true);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
