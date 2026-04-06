@@ -231,7 +231,7 @@ pub use component::{
 #[cfg(feature = "compound-components")]
 pub use component::{
     AlertMetric, AlertPanel, AlertPanelMessage, AlertPanelOutput, AlertPanelState, AlertState,
-    AlertThreshold, BinMethod, BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation,
+    AlertThreshold, BarMode, BinMethod, BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation,
     BoxPlotState, Chart, ChartKind, ChartMessage, ChartOutput, ChartState, ConversationMessage,
     ConversationRole, ConversationView, ConversationViewMessage, ConversationViewOutput,
     ConversationViewState, DataGrid, DataGridMessage, DataGridOutput, DataGridState, DataSeries,

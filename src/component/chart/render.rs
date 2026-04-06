@@ -11,7 +11,7 @@ use ratatui::widgets::{
 };
 
 use super::format::smart_format;
-use super::{ChartKind, ChartState};
+use super::{BarMode, ChartKind, ChartState};
 use crate::theme::Theme;
 
 /// Renders the legend showing series labels and colors.
@@ -73,7 +73,7 @@ pub(super) fn render_legend(state: &ChartState, frame: &mut Frame, area: Rect) {
     frame.render_widget(paragraph, area);
 }
 
-/// Renders a bar chart.
+/// Renders a bar chart supporting Single, Grouped, and Stacked modes.
 pub(super) fn render_bar_chart(
     state: &ChartState,
     frame: &mut Frame,
@@ -87,49 +87,320 @@ pub(super) fn render_bar_chart(
         return;
     }
 
-    // For bar charts, use the first series (or active series)
+    match state.bar_mode {
+        BarMode::Single => {
+            render_bar_chart_single(state, frame, area, theme, horizontal, disabled);
+        }
+        BarMode::Grouped => {
+            render_bar_chart_grouped(state, frame, area, theme, horizontal, disabled);
+        }
+        BarMode::Stacked => {
+            render_bar_chart_stacked(state, frame, area, theme, horizontal, disabled);
+        }
+    }
+}
+
+/// Renders a bar chart in Single mode: only the active series is shown.
+fn render_bar_chart_single(
+    state: &ChartState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    horizontal: bool,
+    disabled: bool,
+) {
     let series = &state.series[state.active_series];
     if series.is_empty() {
         return;
     }
-
     let style = if disabled {
         theme.disabled_style()
     } else {
         Style::default().fg(series.color())
     };
-
-    // Create bars from the series values, using category labels when available
     let bars: Vec<Bar> = series
         .values()
         .iter()
         .enumerate()
         .map(|(i, &v)| {
-            let label = if i < state.categories().len() {
-                state.categories()[i].clone()
-            } else {
-                format!("{}", i + 1)
-            };
+            let label = category_label(state, i);
             Bar::default()
                 .value(v.max(0.0) as u64)
                 .label(Line::from(label))
                 .style(style)
         })
         .collect();
-
+    let bar_width = auto_bar_width(area, bars.len(), 1, horizontal, state.bar_width);
     let group = BarGroup::default().bars(&bars);
-
     let mut bar_chart = BarChart::default()
         .data(group)
-        .bar_width(state.bar_width)
+        .bar_width(bar_width)
         .bar_gap(state.bar_gap)
         .bar_style(style);
-
     if horizontal {
         bar_chart = bar_chart.direction(Direction::Horizontal);
     }
-
     frame.render_widget(bar_chart, area);
+}
+
+/// Renders a bar chart in Grouped mode: all series side-by-side at each position.
+fn render_bar_chart_grouped(
+    state: &ChartState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    horizontal: bool,
+    disabled: bool,
+) {
+    let num_series = state.series.len();
+    let num_positions = state
+        .series
+        .iter()
+        .map(|s| s.values().len())
+        .max()
+        .unwrap_or(0);
+    if num_positions == 0 {
+        return;
+    }
+    let bar_width = auto_bar_width(area, num_positions, num_series, horizontal, state.bar_width);
+    let groups: Vec<BarGroup> = (0..num_positions)
+        .map(|pos| {
+            let label = category_label(state, pos);
+            let bars: Vec<Bar> = state
+                .series
+                .iter()
+                .map(|s| {
+                    let value = s.values().get(pos).copied().unwrap_or(0.0).max(0.0) as u64;
+                    let style = if disabled {
+                        theme.disabled_style()
+                    } else {
+                        Style::default().fg(s.color())
+                    };
+                    Bar::default().value(value).style(style)
+                })
+                .collect();
+            BarGroup::default().label(Line::from(label)).bars(&bars)
+        })
+        .collect();
+    let mut bar_chart = BarChart::default()
+        .bar_width(bar_width)
+        .bar_gap(state.bar_gap)
+        .group_gap(state.bar_gap.saturating_add(1));
+    for group in &groups {
+        bar_chart = bar_chart.data(group.clone());
+    }
+    if horizontal {
+        bar_chart = bar_chart.direction(Direction::Horizontal);
+    }
+    frame.render_widget(bar_chart, area);
+}
+
+/// Renders a bar chart in Stacked mode: series values stacked vertically.
+fn render_bar_chart_stacked(
+    state: &ChartState,
+    frame: &mut Frame,
+    area: Rect,
+    theme: &Theme,
+    horizontal: bool,
+    disabled: bool,
+) {
+    let np = state
+        .series
+        .iter()
+        .map(|s| s.values().len())
+        .max()
+        .unwrap_or(0);
+    if np == 0 {
+        return;
+    }
+    let bar_width = auto_bar_width(area, np, 1, horizontal, state.bar_width);
+    let bars: Vec<Bar> = (0..np)
+        .map(|pos| {
+            let label = category_label(state, pos);
+            let total: f64 = state
+                .series
+                .iter()
+                .map(|s| s.values().get(pos).copied().unwrap_or(0.0).max(0.0))
+                .sum();
+            let color = if disabled {
+                theme
+                    .disabled_style()
+                    .fg
+                    .unwrap_or(ratatui::style::Color::DarkGray)
+            } else {
+                state
+                    .series
+                    .iter()
+                    .find(|s| s.values().get(pos).copied().unwrap_or(0.0) > 0.0)
+                    .unwrap_or(&state.series[0])
+                    .color()
+            };
+            Bar::default()
+                .value(total as u64)
+                .label(Line::from(label))
+                .style(Style::default().fg(color))
+        })
+        .collect();
+    let group = BarGroup::default().bars(&bars);
+    let mut bar_chart = BarChart::default()
+        .data(group)
+        .bar_width(bar_width)
+        .bar_gap(state.bar_gap);
+    if horizontal {
+        bar_chart = bar_chart.direction(Direction::Horizontal);
+    }
+    frame.render_widget(bar_chart, area);
+    if !disabled && state.series.len() > 1 {
+        render_stacked_segments(state, frame, area, np, bar_width, horizontal);
+    }
+}
+
+fn render_stacked_segments(
+    state: &ChartState,
+    frame: &mut Frame,
+    area: Rect,
+    np: usize,
+    bar_width: u16,
+    horizontal: bool,
+) {
+    let max_total: f64 = (0..np)
+        .map(|p| {
+            state
+                .series
+                .iter()
+                .map(|s| s.values().get(p).copied().unwrap_or(0.0).max(0.0))
+                .sum::<f64>()
+        })
+        .reduce(f64::max)
+        .unwrap_or(1.0)
+        .max(1.0);
+    let buf = frame.buffer_mut();
+    for pos in 0..np {
+        let total: f64 = state
+            .series
+            .iter()
+            .map(|s| s.values().get(pos).copied().unwrap_or(0.0).max(0.0))
+            .sum();
+        if total <= 0.0 {
+            continue;
+        }
+        if horizontal {
+            paint_h_stack(state, buf, area, pos, bar_width, total, max_total);
+        } else {
+            paint_v_stack(state, buf, area, pos, bar_width, total, max_total);
+        }
+    }
+}
+
+fn paint_v_stack(
+    state: &ChartState,
+    buf: &mut Buffer,
+    area: Rect,
+    pos: usize,
+    bw: u16,
+    total: f64,
+    max_total: f64,
+) {
+    let step = bw + state.bar_gap;
+    let xs = area.x + (pos as u16) * step;
+    let xe = (xs + bw).min(area.right());
+    if xs >= area.right() {
+        return;
+    }
+    let uh = area.height.saturating_sub(1);
+    let bh = ((total / max_total) * (uh as f64)).round() as u16;
+    let bb = area.bottom().saturating_sub(1);
+    let mut filled: u16 = 0;
+    for s in &state.series {
+        let v = s.values().get(pos).copied().unwrap_or(0.0).max(0.0);
+        if v <= 0.0 {
+            continue;
+        }
+        let seg = ((v / total) * bh as f64).round().max(1.0) as u16;
+        let seg = seg.min(bh.saturating_sub(filled));
+        if seg == 0 {
+            continue;
+        }
+        let top = bb.saturating_sub(filled + seg - 1);
+        let bot = bb.saturating_sub(filled);
+        for y in top..=bot {
+            for x in xs..xe {
+                if let Some(cell) = buf.cell_mut(Position::new(x, y)) {
+                    cell.set_fg(s.color());
+                }
+            }
+        }
+        filled += seg;
+    }
+}
+
+fn paint_h_stack(
+    state: &ChartState,
+    buf: &mut Buffer,
+    area: Rect,
+    pos: usize,
+    bw: u16,
+    total: f64,
+    max_total: f64,
+) {
+    let step = bw + state.bar_gap;
+    let ys = area.y + (pos as u16) * step;
+    let ye = (ys + bw).min(area.bottom());
+    if ys >= area.bottom() {
+        return;
+    }
+    let bl = ((total / max_total) * (area.width.saturating_sub(1) as f64)).round() as u16;
+    let mut filled: u16 = 0;
+    for s in &state.series {
+        let v = s.values().get(pos).copied().unwrap_or(0.0).max(0.0);
+        if v <= 0.0 {
+            continue;
+        }
+        let seg = ((v / total) * bl as f64).round().max(1.0) as u16;
+        let seg = seg.min(bl.saturating_sub(filled));
+        if seg == 0 {
+            continue;
+        }
+        let left = area.x + filled;
+        let right = left + seg;
+        for y in ys..ye {
+            for x in left..right {
+                if let Some(cell) = buf.cell_mut(Position::new(x, y)) {
+                    cell.set_fg(s.color());
+                }
+            }
+        }
+        filled += seg;
+    }
+}
+
+fn category_label(state: &ChartState, pos: usize) -> String {
+    if pos < state.categories().len() {
+        state.categories()[pos].clone()
+    } else {
+        format!("{}", pos + 1)
+    }
+}
+
+fn auto_bar_width(area: Rect, np: usize, bpp: usize, horizontal: bool, hint: u16) -> u16 {
+    if np == 0 || bpp == 0 {
+        return hint.max(1);
+    }
+    let avail = if horizontal {
+        area.height as usize
+    } else {
+        area.width as usize
+    };
+    let total_bars = np * bpp;
+    let gaps = np.saturating_sub(1);
+    let usable = avail.saturating_sub(gaps);
+    let auto_w = (usable / total_bars).max(1) as u16;
+    let max_w = if horizontal {
+        area.height.max(1)
+    } else {
+        area.width.max(1)
+    };
+    auto_w.max(hint).min(max_w)
 }
 
 /// Renders a line, area, or scatter chart using ratatui's Chart widget with shared axes.
@@ -570,7 +841,7 @@ fn fill_column(buf: &mut Buffer, x: u16, y_start: u16, y_end: u16, color: Color)
 }
 
 /// Linearly interpolates the Y value for a given X within a sorted data series.
-fn interpolate_y(data: &[(f64, f64)], x: f64) -> Option<f64> {
+pub(super) fn interpolate_y(data: &[(f64, f64)], x: f64) -> Option<f64> {
     if data.is_empty() {
         return None;
     }
