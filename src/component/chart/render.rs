@@ -722,6 +722,20 @@ pub(super) fn render_shared_axis_chart(
     if state.show_grid {
         render_grid_lines(frame, area, &y_ticks_values, y_axis_min, y_axis_max);
     }
+
+    // Render annotations after all other chart content
+    super::annotations::render_annotations(
+        state,
+        frame,
+        area,
+        &y_labels_for_layout,
+        &x_labels_for_layout,
+        x_bound_min,
+        x_bound_max,
+        y_axis_min,
+        y_axis_max,
+        is_log,
+    );
 }
 
 /// Renders the crosshair value readout overlay at the top of the chart area.
@@ -762,7 +776,7 @@ pub(super) fn render_crosshair_readout(
 }
 
 /// Computes the graph area by replicating ratatui's internal Chart layout logic.
-fn compute_graph_area(area: Rect, y_labels: &[String], x_labels: &[String]) -> Rect {
+pub(super) fn compute_graph_area(area: Rect, y_labels: &[String], x_labels: &[String]) -> Rect {
     if area.height == 0 || area.width == 0 {
         return Rect::default();
     }

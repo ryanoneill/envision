@@ -30,6 +30,7 @@ use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
+mod annotations;
 pub(crate) mod downsample;
 mod error_bands;
 pub(crate) mod format;
@@ -39,6 +40,7 @@ mod series;
 mod state;
 pub(crate) mod ticks;
 
+pub use annotations::ChartAnnotation;
 pub use scale::Scale;
 pub use series::{DEFAULT_PALETTE, chart_palette_color};
 
@@ -310,6 +312,8 @@ pub struct ChartState {
     pub(crate) categories: Vec<String>,
     /// Bar rendering mode (Single, Grouped, or Stacked).
     pub(crate) bar_mode: BarMode,
+    /// Text annotations at specific data coordinates.
+    pub(crate) annotations: Vec<ChartAnnotation>,
 }
 
 impl Default for ChartState {
@@ -335,6 +339,7 @@ impl Default for ChartState {
             show_grid: false,
             categories: Vec::new(),
             bar_mode: BarMode::default(),
+            annotations: Vec::new(),
         }
     }
 }
@@ -633,6 +638,37 @@ impl ChartState {
         self.show_grid = show;
         self
     }
+
+    /// Adds a text annotation at a data coordinate (builder pattern).
+    ///
+    /// Annotations are rendered as text labels near the specified (x, y)
+    /// position in the chart's data space. Useful for labeling notable
+    /// data points such as peaks, anomalies, or events.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let state = ChartState::line(vec![
+    ///     DataSeries::new("CPU", vec![50.0, 90.0, 60.0]),
+    /// ])
+    /// .with_annotation(1.0, 90.0, "Peak", Color::Yellow);
+    /// assert_eq!(state.annotations().len(), 1);
+    /// assert_eq!(state.annotations()[0].label, "Peak");
+    /// ```
+    pub fn with_annotation(
+        mut self,
+        x: f64,
+        y: f64,
+        label: impl Into<String>,
+        color: Color,
+    ) -> Self {
+        self.annotations
+            .push(ChartAnnotation::new(x, y, label, color));
+        self
+    }
 }
 
 /// A chart component for data visualization.
@@ -909,6 +945,8 @@ impl Component for Chart {
     }
 }
 
+#[cfg(test)]
+mod annotation_tests;
 #[cfg(test)]
 mod area_fill_tests;
 #[cfg(test)]

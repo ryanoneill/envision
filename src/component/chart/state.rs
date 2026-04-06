@@ -3,8 +3,8 @@
 //! Extracted from the main chart module to keep file sizes manageable.
 
 use super::{
-    BarMode, Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, Scale,
-    ThresholdLine, VerticalLine,
+    BarMode, Chart, ChartAnnotation, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries,
+    Scale, ThresholdLine, VerticalLine,
 };
 use crate::component::Component;
 
@@ -404,6 +404,56 @@ impl ChartState {
     /// ```
     pub fn clear_vertical_lines(&mut self) {
         self.vertical_lines.clear();
+    }
+
+    /// Returns the annotations.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartAnnotation, ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 90.0])])
+    ///     .with_annotation(1.0, 90.0, "Peak", Color::Yellow);
+    /// assert_eq!(state.annotations().len(), 1);
+    /// assert_eq!(state.annotations()[0].label, "Peak");
+    /// ```
+    pub fn annotations(&self) -> &[ChartAnnotation] {
+        &self.annotations
+    }
+
+    /// Adds an annotation at a data coordinate.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartAnnotation, ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 90.0])]);
+    /// state.add_annotation(ChartAnnotation::new(1.0, 90.0, "Peak", Color::Yellow));
+    /// assert_eq!(state.annotations().len(), 1);
+    /// ```
+    pub fn add_annotation(&mut self, annotation: ChartAnnotation) {
+        self.annotations.push(annotation);
+    }
+
+    /// Clears all annotations.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 90.0])])
+    ///     .with_annotation(1.0, 90.0, "Peak", Color::Yellow);
+    /// state.clear_annotations();
+    /// assert!(state.annotations().is_empty());
+    /// ```
+    pub fn clear_annotations(&mut self) {
+        self.annotations.clear();
     }
 
     /// Sets the manual Y-axis range.
