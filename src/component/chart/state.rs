@@ -146,6 +146,44 @@ impl ChartState {
         self.bar_gap = gap;
     }
 
+    /// Returns the category labels for bar chart x-axis.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::bar_vertical(vec![
+    ///     DataSeries::new("Sales", vec![10.0, 20.0, 30.0]),
+    /// ])
+    /// .with_categories(vec!["Q1", "Q2", "Q3"]);
+    /// assert_eq!(state.categories(), &["Q1", "Q2", "Q3"]);
+    /// ```
+    pub fn categories(&self) -> &[String] {
+        &self.categories
+    }
+
+    /// Sets the category labels for bar chart x-axis.
+    ///
+    /// When set, these labels replace numeric indices on the x-axis of bar charts.
+    /// If fewer categories are provided than data points, remaining bars fall back
+    /// to numeric labels. Extra categories beyond the data length are ignored.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let mut state = ChartState::bar_vertical(vec![
+    ///     DataSeries::new("Sales", vec![10.0, 20.0, 30.0]),
+    /// ]);
+    /// state.set_categories(vec!["Q1", "Q2", "Q3"]);
+    /// assert_eq!(state.categories(), &["Q1", "Q2", "Q3"]);
+    /// ```
+    pub fn set_categories(&mut self, categories: Vec<impl Into<String>>) {
+        self.categories = categories.into_iter().map(Into::into).collect();
+    }
+
     /// Returns the number of series.
     pub fn series_count(&self) -> usize {
         self.series.len()
@@ -195,6 +233,10 @@ impl ChartState {
 
     /// Adds a series.
     ///
+    /// If the series color is the default (Cyan) and there are already series
+    /// with Cyan, a color is automatically assigned from the default palette
+    /// based on the series index.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -204,7 +246,12 @@ impl ChartState {
     /// state.add_series(DataSeries::new("CPU", vec![50.0]));
     /// assert_eq!(state.series_count(), 1);
     /// ```
-    pub fn add_series(&mut self, series: DataSeries) {
+    pub fn add_series(&mut self, mut series: DataSeries) {
+        if series.color() == ratatui::style::Color::Cyan {
+            let idx = self.series.len();
+            let palette = super::DEFAULT_PALETTE;
+            series.set_color(palette[idx % palette.len()]);
+        }
         self.series.push(series);
     }
 
