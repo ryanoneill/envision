@@ -321,7 +321,7 @@ mod tests {
 
     #[test]
     fn test_format_log_tick_thousand() {
-        assert_eq!(format_log_tick(1000.0), "1000");
+        assert_eq!(format_log_tick(1000.0), "1K");
     }
 
     #[test]

@@ -40,6 +40,21 @@ pub(crate) mod ticks;
 
 pub use scale::Scale;
 
+/// Default color palette for auto-assigning colors to multi-series charts.
+///
+/// When series are added without explicit colors (defaulting to Cyan),
+/// colors are picked from this palette in order to visually distinguish them.
+pub(crate) const DEFAULT_PALETTE: &[Color] = &[
+    Color::Cyan,
+    Color::Magenta,
+    Color::Yellow,
+    Color::Green,
+    Color::Red,
+    Color::Blue,
+    Color::LightCyan,
+    Color::LightMagenta,
+];
+
 /// A named data series with values and styling.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
@@ -288,6 +303,16 @@ impl Default for ChartState {
 }
 
 impl ChartState {
+    /// Applies default palette colors to series that have the default Cyan color.
+    fn apply_palette_colors(mut series: Vec<DataSeries>) -> Vec<DataSeries> {
+        for (i, s) in series.iter_mut().enumerate() {
+            if s.color() == Color::Cyan {
+                s.set_color(DEFAULT_PALETTE[i % DEFAULT_PALETTE.len()]);
+            }
+        }
+        series
+    }
+
     /// Creates a line chart state with the given series.
     ///
     /// # Example
@@ -302,7 +327,7 @@ impl ChartState {
     /// ```
     pub fn line(series: Vec<DataSeries>) -> Self {
         Self {
-            series,
+            series: Self::apply_palette_colors(series),
             kind: ChartKind::Line,
             ..Default::default()
         }
@@ -322,7 +347,7 @@ impl ChartState {
     /// ```
     pub fn bar_vertical(series: Vec<DataSeries>) -> Self {
         Self {
-            series,
+            series: Self::apply_palette_colors(series),
             kind: ChartKind::BarVertical,
             ..Default::default()
         }
@@ -331,7 +356,7 @@ impl ChartState {
     /// Creates a horizontal bar chart state.
     pub fn bar_horizontal(series: Vec<DataSeries>) -> Self {
         Self {
-            series,
+            series: Self::apply_palette_colors(series),
             kind: ChartKind::BarHorizontal,
             ..Default::default()
         }
@@ -353,7 +378,7 @@ impl ChartState {
     /// ```
     pub fn area(series: Vec<DataSeries>) -> Self {
         Self {
-            series,
+            series: Self::apply_palette_colors(series),
             kind: ChartKind::Area,
             ..Default::default()
         }
@@ -375,7 +400,7 @@ impl ChartState {
     /// ```
     pub fn scatter(series: Vec<DataSeries>) -> Self {
         Self {
-            series,
+            series: Self::apply_palette_colors(series),
             kind: ChartKind::Scatter,
             ..Default::default()
         }
@@ -704,8 +729,12 @@ impl Component for Chart {
             return;
         }
 
-        // Reserve space for legend and axis labels
-        let legend_height = if state.show_legend && state.series.len() > 1 {
+        // Reserve space for title padding, legend, and axis labels
+        let title_padding = if state.title.is_some() { 1u16 } else { 0 };
+
+        let legend_entry_count =
+            state.series.len() + state.thresholds.len() + state.vertical_lines.len();
+        let legend_height = if state.show_legend && legend_entry_count > 1 {
             1u16
         } else {
             0
@@ -713,10 +742,12 @@ impl Component for Chart {
 
         let x_label_height = if state.x_label.is_some() { 1u16 } else { 0 };
 
-        let chart_area = if legend_height + x_label_height > 0 {
+        let has_extras = title_padding + legend_height + x_label_height > 0;
+        let chart_area = if has_extras {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
+                    Constraint::Length(title_padding),
                     Constraint::Min(1),
                     Constraint::Length(legend_height),
                     Constraint::Length(x_label_height),
@@ -725,7 +756,7 @@ impl Component for Chart {
 
             // Render legend
             if legend_height > 0 {
-                render::render_legend(state, frame, chunks[1]);
+                render::render_legend(state, frame, chunks[2]);
             }
 
             // Render x-axis label
@@ -734,11 +765,11 @@ impl Component for Chart {
                     let p = Paragraph::new(label.as_str())
                         .alignment(Alignment::Center)
                         .style(Style::default().fg(Color::DarkGray));
-                    frame.render_widget(p, chunks[2]);
+                    frame.render_widget(p, chunks[3]);
                 }
             }
 
-            chunks[0]
+            chunks[1]
         } else {
             inner
         };

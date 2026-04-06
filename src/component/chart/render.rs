@@ -10,12 +10,16 @@ use ratatui::widgets::{
     Paragraph,
 };
 
+use super::format::smart_format;
 use super::{ChartKind, ChartState};
 use crate::theme::Theme;
 
 /// Renders the legend showing series labels and colors.
 pub(super) fn render_legend(state: &ChartState, frame: &mut Frame, area: Rect) {
-    let spans: Vec<Span> = state
+    let total_entries = state.series.len() + state.thresholds.len() + state.vertical_lines.len();
+    let mut entry_index = 0;
+
+    let mut spans: Vec<Span> = state
         .series
         .iter()
         .enumerate()
@@ -25,13 +29,44 @@ pub(super) fn render_legend(state: &ChartState, frame: &mut Frame, area: Rect) {
             } else {
                 "○"
             };
-            let separator = if i < state.series.len() - 1 { "  " } else { "" };
+            entry_index += 1;
+            let separator = if entry_index < total_entries {
+                "  "
+            } else {
+                ""
+            };
             vec![Span::styled(
                 format!("{} {}{}", marker, s.label(), separator),
                 Style::default().fg(s.color()),
             )]
         })
         .collect();
+
+    for threshold in &state.thresholds {
+        entry_index += 1;
+        let separator = if entry_index < total_entries {
+            "  "
+        } else {
+            ""
+        };
+        spans.push(Span::styled(
+            format!("── {}{}", threshold.label, separator),
+            Style::default().fg(threshold.color),
+        ));
+    }
+
+    for vline in &state.vertical_lines {
+        entry_index += 1;
+        let separator = if entry_index < total_entries {
+            "  "
+        } else {
+            ""
+        };
+        spans.push(Span::styled(
+            format!("│ {}{}", vline.label, separator),
+            Style::default().fg(vline.color),
+        ));
+    }
 
     let line = Line::from(spans);
     let paragraph = Paragraph::new(line).alignment(Alignment::Center);
@@ -219,8 +254,10 @@ pub(super) fn render_shared_axis_chart(
             } else {
                 Style::default().fg(s.color())
             };
+            // Use empty name to suppress ratatui's internal legend box;
+            // our custom legend below the chart handles all entries.
             Dataset::default()
-                .name(s.label())
+                .name("")
                 .data(&series_data[i])
                 .marker(symbols::Marker::Braille)
                 .graph_type(graph_type)
@@ -233,7 +270,7 @@ pub(super) fn render_shared_axis_chart(
         let style = Style::default().fg(threshold.color);
         datasets.push(
             Dataset::default()
-                .name(threshold.label.as_str())
+                .name("")
                 .data(&threshold_data[i])
                 .marker(symbols::Marker::Braille)
                 .graph_type(GraphType::Line)
@@ -246,7 +283,7 @@ pub(super) fn render_shared_axis_chart(
         let style = Style::default().fg(vline.color);
         datasets.push(
             Dataset::default()
-                .name(vline.label.as_str())
+                .name("")
                 .data(&vline_data[i])
                 .marker(symbols::Marker::Braille)
                 .graph_type(GraphType::Line)
@@ -322,27 +359,14 @@ pub(super) fn render_shared_axis_chart(
     let y_axis_max = y_ticks_values.last().copied().unwrap_or(y_bound_max);
 
     // Build axes with tick labels
-    let x_axis = if let Some(ref label) = state.x_label {
-        RatatuiAxis::default()
-            .bounds([x_bound_min, x_bound_max])
-            .title(label.as_str())
-            .labels(x_labels)
-    } else {
-        RatatuiAxis::default()
-            .bounds([x_bound_min, x_bound_max])
-            .labels(x_labels)
-    };
+    let x_axis = RatatuiAxis::default()
+        .bounds([x_bound_min, x_bound_max])
+        .labels(x_labels);
 
-    let y_axis = if let Some(ref label) = state.y_label {
-        RatatuiAxis::default()
-            .bounds([y_axis_min, y_axis_max])
-            .title(label.as_str())
-            .labels(y_labels)
-    } else {
-        RatatuiAxis::default()
-            .bounds([y_axis_min, y_axis_max])
-            .labels(y_labels)
-    };
+    let y_axis = RatatuiAxis::default()
+        .bounds([y_axis_min, y_axis_max])
+        .labels(y_labels)
+        .labels_alignment(Alignment::Right);
 
     let chart = RatatuiChart::new(datasets).x_axis(x_axis).y_axis(y_axis);
 
@@ -371,7 +395,7 @@ pub(super) fn render_crosshair_readout(
         if let Some(&value) = series.values().get(cursor_pos) {
             spans.push(Span::raw(" | "));
             spans.push(Span::styled(
-                format!("{}: {:.4}", series.label(), value),
+                format!("{}: {}", series.label(), smart_format(value, None)),
                 Style::default().fg(series.color()),
             ));
         }

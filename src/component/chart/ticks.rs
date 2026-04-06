@@ -143,12 +143,12 @@ fn round_to_precision(value: f64, step: f64) -> f64 {
 /// ```ignore
 /// use envision::component::chart::ticks::format_tick;
 ///
-/// assert_eq!(format_tick(1000.0, 500.0), "1000");
+/// assert_eq!(format_tick(1000.0, 500.0), "1K");
 /// assert_eq!(format_tick(50000.0, 10000.0), "50K");
 /// ```
 pub fn format_tick(value: f64, step: f64) -> String {
     // Use smart_format for large or very small values
-    if value.abs() >= 10_000.0 || (value.abs() > 0.0 && value.abs() < 0.001) {
+    if value.abs() >= 1_000.0 || (value.abs() > 0.0 && value.abs() < 0.001) {
         return smart_format(value, None);
     }
 
