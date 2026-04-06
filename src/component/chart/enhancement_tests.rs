@@ -698,3 +698,42 @@ fn test_render_chart_with_crosshair() {
         })
         .unwrap();
 }
+
+#[test]
+fn test_with_grid_builder() {
+    let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0])]).with_grid(true);
+    assert!(state.show_grid());
+}
+
+#[test]
+fn test_toggle_grid_message() {
+    let mut state = ChartState::line(sample_series());
+    let output = Chart::update(&mut state, ChartMessage::ToggleGrid);
+    assert!(state.show_grid());
+    assert_eq!(output, Some(ChartOutput::GridToggled(true)));
+    let output = Chart::update(&mut state, ChartMessage::ToggleGrid);
+    assert!(!state.show_grid());
+    assert_eq!(output, Some(ChartOutput::GridToggled(false)));
+}
+
+#[test]
+fn test_toggle_grid_key_binding() {
+    let state = ChartState::line(sample_series());
+    let ctx = ViewContext::new().focused(true);
+    assert_eq!(
+        Chart::handle_event(&state, &Event::char('g'), &ctx),
+        Some(ChartMessage::ToggleGrid)
+    );
+}
+
+#[test]
+fn test_render_line_chart_with_grid() {
+    let state =
+        ChartState::line(vec![DataSeries::new("CPU", vec![45.0, 52.0, 48.0])]).with_grid(true);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
