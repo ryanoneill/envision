@@ -388,6 +388,10 @@ pub(super) fn render_shared_axis_chart(
     let y_axis_min = y_ticks_values.first().copied().unwrap_or(y_bound_min);
     let y_axis_max = y_ticks_values.last().copied().unwrap_or(y_bound_max);
 
+    // Save label strings for graph area computation before axes consume them
+    let x_labels_for_layout = x_labels.clone();
+    let y_labels_for_layout = y_labels.clone();
+
     // Build axes with tick labels
     let x_axis = RatatuiAxis::default()
         .bounds([x_bound_min, x_bound_max])
@@ -401,6 +405,25 @@ pub(super) fn render_shared_axis_chart(
     let chart = RatatuiChart::new(datasets).x_axis(x_axis).y_axis(y_axis);
 
     frame.render_widget(chart, area);
+
+    // For area charts, fill below the curve after the line has been rendered.
+    if state.kind == ChartKind::Area && !state.series.is_empty() {
+        let graph_area = compute_graph_area(area, &y_labels_for_layout, &x_labels_for_layout);
+        if graph_area.width > 0 && graph_area.height > 0 {
+            fill_area_below_curve(
+                state,
+                frame,
+                graph_area,
+                &series_data,
+                x_bound_min,
+                x_bound_max,
+                y_axis_min,
+                y_axis_max,
+                disabled,
+                theme,
+            );
+        }
+    }
 
     if state.show_grid {
         render_grid_lines(frame, area, &y_ticks_values, y_axis_min, y_axis_max);
@@ -442,6 +465,132 @@ pub(super) fn render_crosshair_readout(
 
     let readout_area = Rect::new(area.x, area.y, area.width, 1);
     frame.render_widget(readout, readout_area);
+}
+
+/// Computes the graph area by replicating ratatui's internal Chart layout logic.
+fn compute_graph_area(area: Rect, y_labels: &[String], x_labels: &[String]) -> Rect {
+    if area.height == 0 || area.width == 0 {
+        return Rect::default();
+    }
+    let mut x = area.left();
+    let mut y = area.bottom().saturating_sub(1);
+    let has_x_labels = !x_labels.is_empty();
+    if has_x_labels && y > area.top() {
+        y = y.saturating_sub(1);
+    }
+    let has_y_labels = !y_labels.is_empty();
+    let y_label_max_width = y_labels.iter().map(|l| l.len() as u16).max().unwrap_or(0);
+    let first_x_label_width = x_labels.first().map(|l| l.len() as u16).unwrap_or(0);
+    let x_label_left_width = if has_y_labels {
+        first_x_label_width.saturating_sub(1)
+    } else {
+        first_x_label_width
+    };
+    let max_label_width = y_label_max_width.max(x_label_left_width);
+    let capped_label_width = max_label_width.min(area.width / 3);
+    x += capped_label_width;
+    if has_x_labels && y > area.top() {
+        y = y.saturating_sub(1);
+    }
+    if has_y_labels && x + 1 < area.right() {
+        x += 1;
+    }
+    let graph_width = area.right().saturating_sub(x);
+    let graph_height = y.saturating_sub(area.top()).saturating_add(1);
+    Rect::new(x, area.top(), graph_width, graph_height)
+}
+
+/// Fills the area below each series curve for area charts.
+#[allow(clippy::too_many_arguments)]
+fn fill_area_below_curve(
+    state: &ChartState,
+    frame: &mut Frame,
+    graph_area: Rect,
+    series_data: &[Vec<(f64, f64)>],
+    x_min: f64,
+    x_max: f64,
+    y_min: f64,
+    y_max: f64,
+    disabled: bool,
+    theme: &Theme,
+) {
+    let x_range = x_max - x_min;
+    let y_range = y_max - y_min;
+    if x_range <= 0.0 || y_range <= 0.0 {
+        return;
+    }
+    let buf = frame.buffer_mut();
+    for (series_idx, series) in state.series.iter().enumerate() {
+        let color = if disabled {
+            theme.disabled_style().fg.unwrap_or(Color::DarkGray)
+        } else {
+            series.color()
+        };
+        let data = &series_data[series_idx];
+        if data.len() < 2 {
+            if let Some(&(dx, dy)) = data.first() {
+                let x_frac = (dx - x_min) / x_range;
+                let screen_x = graph_area.x + (x_frac * (graph_area.width as f64 - 1.0)) as u16;
+                let y_frac = (dy - y_min) / y_range;
+                let line_y = graph_area
+                    .bottom()
+                    .saturating_sub(1)
+                    .saturating_sub((y_frac * (graph_area.height as f64 - 1.0)) as u16);
+                fill_column(buf, screen_x, line_y + 1, graph_area.bottom(), color);
+            }
+            continue;
+        }
+        for screen_x in graph_area.x..graph_area.right() {
+            let x_frac =
+                (screen_x - graph_area.x) as f64 / (graph_area.width as f64 - 1.0).max(1.0);
+            let data_x = x_min + x_frac * x_range;
+            let data_y = interpolate_y(data, data_x);
+            if let Some(dy) = data_y {
+                let y_frac = ((dy - y_min) / y_range).clamp(0.0, 1.0);
+                let line_y = graph_area
+                    .bottom()
+                    .saturating_sub(1)
+                    .saturating_sub((y_frac * (graph_area.height as f64 - 1.0)) as u16);
+                fill_column(buf, screen_x, line_y + 1, graph_area.bottom(), color);
+            }
+        }
+    }
+}
+
+/// Fills a single column of cells with the area fill character.
+fn fill_column(buf: &mut Buffer, x: u16, y_start: u16, y_end: u16, color: Color) {
+    for y in y_start..y_end {
+        if let Some(cell) = buf.cell_mut(Position::new(x, y)) {
+            if cell.symbol() == " " {
+                cell.set_char('\u{2591}');
+                cell.set_fg(color);
+            }
+        }
+    }
+}
+
+/// Linearly interpolates the Y value for a given X within a sorted data series.
+fn interpolate_y(data: &[(f64, f64)], x: f64) -> Option<f64> {
+    if data.is_empty() {
+        return None;
+    }
+    let (first_x, _) = data[0];
+    let (last_x, _) = data[data.len() - 1];
+    if x < first_x || x > last_x {
+        return None;
+    }
+    for window in data.windows(2) {
+        let (x0, y0) = window[0];
+        let (x1, y1) = window[1];
+        if x >= x0 && x <= x1 {
+            if (x1 - x0).abs() < f64::EPSILON {
+                return Some(y0);
+            }
+            let t = (x - x0) / (x1 - x0);
+            return Some(y0 + t * (y1 - y0));
+        }
+    }
+    Some(data[data.len() - 1].1)
 }
 
 /// Renders horizontal grid lines at Y-axis tick positions.
