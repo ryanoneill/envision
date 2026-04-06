@@ -34,6 +34,63 @@ pub enum HeatmapColorScale {
     CoolToWarm,
     /// Single color with varying intensity (dim to bright).
     Intensity(Color),
+    /// Perceptually uniform Viridis color scale (purple to yellow).
+    ///
+    /// Based on the matplotlib Viridis colormap, this scale provides
+    /// perceptually uniform color mapping ideal for scientific visualization.
+    /// The colors remain distinguishable under common forms of color blindness.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{HeatmapColorScale, value_to_color};
+    /// use ratatui::style::Color;
+    ///
+    /// let color = value_to_color(0.0, 0.0, 1.0, &HeatmapColorScale::Viridis);
+    /// assert_eq!(color, Color::Rgb(68, 1, 84));
+    ///
+    /// let color = value_to_color(1.0, 0.0, 1.0, &HeatmapColorScale::Viridis);
+    /// assert_eq!(color, Color::Rgb(253, 231, 37));
+    /// ```
+    Viridis,
+    /// Perceptually uniform Inferno color scale (black to yellow).
+    ///
+    /// Based on the matplotlib Inferno colormap, this scale ranges from
+    /// near-black through reds and oranges to bright yellow. Perceptually
+    /// uniform and colorblind-friendly.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{HeatmapColorScale, value_to_color};
+    /// use ratatui::style::Color;
+    ///
+    /// let color = value_to_color(0.0, 0.0, 1.0, &HeatmapColorScale::Inferno);
+    /// assert_eq!(color, Color::Rgb(0, 0, 4));
+    ///
+    /// let color = value_to_color(1.0, 0.0, 1.0, &HeatmapColorScale::Inferno);
+    /// assert_eq!(color, Color::Rgb(252, 255, 164));
+    /// ```
+    Inferno,
+    /// Perceptually uniform Plasma color scale (purple to yellow).
+    ///
+    /// Based on the matplotlib Plasma colormap, this scale ranges from
+    /// deep purple through pinks and oranges to bright yellow. Perceptually
+    /// uniform and colorblind-friendly.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{HeatmapColorScale, value_to_color};
+    /// use ratatui::style::Color;
+    ///
+    /// let color = value_to_color(0.0, 0.0, 1.0, &HeatmapColorScale::Plasma);
+    /// assert_eq!(color, Color::Rgb(13, 8, 135));
+    ///
+    /// let color = value_to_color(1.0, 0.0, 1.0, &HeatmapColorScale::Plasma);
+    /// assert_eq!(color, Color::Rgb(240, 249, 33));
+    /// ```
+    Plasma,
     /// Blue (negative) to White (zero) to Red (positive) diverging scale.
     ///
     /// Ideal for ML visualizations such as attention maps, weight matrices,
@@ -174,9 +231,103 @@ pub fn value_to_color(value: f64, min: f64, max: f64, scale: &HeatmapColorScale)
             let b = (bb as f64 * factor) as u8;
             Color::Rgb(r, g, b)
         }
+        HeatmapColorScale::Viridis => lookup_color(&VIRIDIS_LUT, t),
+        HeatmapColorScale::Inferno => lookup_color(&INFERNO_LUT, t),
+        HeatmapColorScale::Plasma => lookup_color(&PLASMA_LUT, t),
         HeatmapColorScale::BlueWhiteRed => diverging_color(t, 0, 0, 255, 255, 0, 0),
         HeatmapColorScale::RedWhiteBlue => diverging_color(t, 255, 0, 0, 0, 0, 255),
     }
+}
+
+// =============================================================================
+// Perceptually uniform color scale lookup tables
+// =============================================================================
+
+/// Viridis colormap: 16 evenly spaced samples from the matplotlib Viridis scale.
+const VIRIDIS_LUT: [(u8, u8, u8); 16] = [
+    (68, 1, 84),
+    (72, 26, 108),
+    (71, 47, 126),
+    (65, 68, 135),
+    (57, 86, 140),
+    (48, 103, 141),
+    (39, 119, 142),
+    (31, 135, 141),
+    (30, 150, 138),
+    (44, 166, 130),
+    (73, 181, 117),
+    (110, 196, 98),
+    (155, 208, 72),
+    (199, 217, 46),
+    (238, 224, 29),
+    (253, 231, 37),
+];
+
+/// Inferno colormap: 16 evenly spaced samples from the matplotlib Inferno scale.
+const INFERNO_LUT: [(u8, u8, u8); 16] = [
+    (0, 0, 4),
+    (11, 7, 36),
+    (32, 12, 74),
+    (59, 15, 99),
+    (87, 16, 110),
+    (114, 17, 112),
+    (140, 25, 101),
+    (165, 44, 81),
+    (187, 65, 58),
+    (205, 92, 35),
+    (219, 122, 12),
+    (230, 155, 0),
+    (237, 189, 12),
+    (239, 222, 52),
+    (237, 249, 121),
+    (252, 255, 164),
+];
+
+/// Plasma colormap: 16 evenly spaced samples from the matplotlib Plasma scale.
+const PLASMA_LUT: [(u8, u8, u8); 16] = [
+    (13, 8, 135),
+    (49, 4, 150),
+    (80, 2, 162),
+    (108, 1, 168),
+    (134, 2, 166),
+    (156, 23, 158),
+    (177, 42, 144),
+    (195, 63, 126),
+    (210, 84, 107),
+    (222, 107, 87),
+    (231, 131, 67),
+    (238, 157, 46),
+    (242, 183, 28),
+    (243, 210, 22),
+    (238, 236, 38),
+    (240, 249, 33),
+];
+
+/// Looks up a color from a lookup table with linear interpolation between entries.
+///
+/// `t` is a normalized value in [0.0, 1.0]. Values outside this range are clamped.
+/// The function finds the two nearest LUT entries and linearly interpolates each
+/// RGB channel between them.
+fn lookup_color(lut: &[(u8, u8, u8)], t: f64) -> Color {
+    let t = t.clamp(0.0, 1.0);
+    let idx = t * (lut.len() - 1) as f64;
+    let lo = idx.floor() as usize;
+    let hi = (lo + 1).min(lut.len() - 1);
+    let frac = idx - lo as f64;
+    let (r1, g1, b1) = lut[lo];
+    let (r2, g2, b2) = lut[hi];
+    Color::Rgb(
+        lerp_u8(r1, r2, frac),
+        lerp_u8(g1, g2, frac),
+        lerp_u8(b1, b2, frac),
+    )
+}
+
+/// Linearly interpolates between two `u8` values.
+///
+/// `t` is the interpolation fraction in [0.0, 1.0].
+fn lerp_u8(a: u8, b: u8, t: f64) -> u8 {
+    (a as f64 + (b as f64 - a as f64) * t).round() as u8
 }
 
 /// Computes a diverging color for a normalized value `t` in [0.0, 1.0].
