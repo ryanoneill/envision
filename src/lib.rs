@@ -152,7 +152,10 @@ pub mod util;
 
 // Re-export commonly used types
 pub use adapter::{DualBackend, DualBackendBuilder};
-pub use annotation::{Annotate, Annotation, AnnotationRegistry, WidgetType};
+pub use annotation::{
+    Annotate, AnnotatedOutput, Annotation, AnnotationArea, AnnotationRegistry, WidgetAnnotation,
+    WidgetType,
+};
 #[cfg(feature = "serialization")]
 pub use app::load_state;
 pub use app::{
