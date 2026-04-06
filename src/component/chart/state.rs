@@ -3,8 +3,8 @@
 //! Extracted from the main chart module to keep file sizes manageable.
 
 use super::{
-    BarMode, Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, Scale,
-    ThresholdLine, VerticalLine,
+    BarMode, Chart, ChartAnnotation, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries,
+    Scale, ThresholdLine, VerticalLine,
 };
 use crate::component::Component;
 
@@ -216,6 +216,46 @@ impl ChartState {
         self.categories = categories.into_iter().map(Into::into).collect();
     }
 
+    /// Returns the custom X-axis labels, if set.
+    ///
+    /// When present, these labels replace the numeric tick labels on the X-axis
+    /// of line, area, and scatter charts.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 60.0])])
+    ///     .with_x_labels(vec!["09:00", "10:00"]);
+    /// assert_eq!(state.x_labels().unwrap(), &["09:00", "10:00"]);
+    /// ```
+    pub fn x_labels(&self) -> Option<&[String]> {
+        self.x_labels.as_deref()
+    }
+
+    /// Sets custom string labels for the X-axis.
+    ///
+    /// When set to `Some`, these labels replace the numeric tick labels on the
+    /// X-axis of line, area, and scatter charts. Pass `None` to revert to
+    /// numeric tick labels.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let mut state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 60.0, 70.0])]);
+    /// state.set_x_labels(Some(vec!["Mon", "Tue", "Wed"]));
+    /// assert_eq!(state.x_labels().unwrap(), &["Mon", "Tue", "Wed"]);
+    ///
+    /// state.set_x_labels(None::<Vec<String>>);
+    /// assert!(state.x_labels().is_none());
+    /// ```
+    pub fn set_x_labels(&mut self, labels: Option<Vec<impl Into<String>>>) {
+        self.x_labels = labels.map(|v| v.into_iter().map(Into::into).collect());
+    }
+
     /// Returns the number of series.
     pub fn series_count(&self) -> usize {
         self.series.len()
@@ -404,6 +444,56 @@ impl ChartState {
     /// ```
     pub fn clear_vertical_lines(&mut self) {
         self.vertical_lines.clear();
+    }
+
+    /// Returns the annotations.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartAnnotation, ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 90.0])])
+    ///     .with_annotation(1.0, 90.0, "Peak", Color::Yellow);
+    /// assert_eq!(state.annotations().len(), 1);
+    /// assert_eq!(state.annotations()[0].label, "Peak");
+    /// ```
+    pub fn annotations(&self) -> &[ChartAnnotation] {
+        &self.annotations
+    }
+
+    /// Adds an annotation at a data coordinate.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartAnnotation, ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 90.0])]);
+    /// state.add_annotation(ChartAnnotation::new(1.0, 90.0, "Peak", Color::Yellow));
+    /// assert_eq!(state.annotations().len(), 1);
+    /// ```
+    pub fn add_annotation(&mut self, annotation: ChartAnnotation) {
+        self.annotations.push(annotation);
+    }
+
+    /// Clears all annotations.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0, 90.0])])
+    ///     .with_annotation(1.0, 90.0, "Peak", Color::Yellow);
+    /// state.clear_annotations();
+    /// assert!(state.annotations().is_empty());
+    /// ```
+    pub fn clear_annotations(&mut self) {
+        self.annotations.clear();
     }
 
     /// Sets the manual Y-axis range.
