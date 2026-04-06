@@ -34,6 +34,7 @@ mod annotations;
 pub(crate) mod downsample;
 mod error_bands;
 pub(crate) mod format;
+mod grid;
 mod render;
 pub(crate) mod scale;
 mod series;
@@ -41,6 +42,7 @@ mod state;
 pub(crate) mod ticks;
 
 pub use annotations::ChartAnnotation;
+pub use grid::ChartGrid;
 pub use scale::Scale;
 pub use series::{DEFAULT_PALETTE, chart_palette_color};
 
