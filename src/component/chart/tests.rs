@@ -563,3 +563,115 @@ fn test_annotation_emitted() {
     });
     assert!(registry.get_by_id("chart").is_some());
 }
+
+// =============================================================================
+// Category labels
+// =============================================================================
+
+#[test]
+fn test_with_categories_builder() {
+    let state = ChartState::bar_vertical(vec![DataSeries::new("Sales", vec![10.0, 20.0, 30.0])])
+        .with_categories(vec!["Q1", "Q2", "Q3"]);
+    assert_eq!(state.categories(), &["Q1", "Q2", "Q3"]);
+}
+
+#[test]
+fn test_categories_accessor_empty_by_default() {
+    let state = ChartState::bar_vertical(vec![]);
+    assert!(state.categories().is_empty());
+}
+
+#[test]
+fn test_set_categories() {
+    let mut state = ChartState::bar_vertical(vec![DataSeries::new("Sales", vec![10.0, 20.0])]);
+    assert!(state.categories().is_empty());
+    state.set_categories(vec!["A", "B"]);
+    assert_eq!(state.categories(), &["A", "B"]);
+}
+
+#[test]
+fn test_categories_with_string_type() {
+    let state = ChartState::bar_vertical(vec![])
+        .with_categories(vec![String::from("Alpha"), String::from("Beta")]);
+    assert_eq!(state.categories(), &["Alpha", "Beta"]);
+}
+
+#[test]
+fn test_render_bar_chart_with_categories() {
+    let state = ChartState::bar_vertical(vec![DataSeries::new(
+        "Importance",
+        vec![85.0, 72.0, 64.0, 51.0],
+    )])
+    .with_categories(vec!["Income", "Education", "Age", "Hours"])
+    .with_title("Feature Importance");
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+    // Verify no panic and rendering succeeds
+}
+
+#[test]
+fn test_render_bar_chart_falls_back_to_numeric_without_categories() {
+    let state = ChartState::bar_vertical(vec![DataSeries::new("Values", vec![10.0, 20.0, 30.0])]);
+    assert!(state.categories().is_empty());
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+    // Verify no panic and rendering succeeds with numeric fallback
+}
+
+#[test]
+fn test_categories_fewer_than_data_points() {
+    // 2 categories but 4 data points: bars 3 and 4 should use numeric labels
+    let state = ChartState::bar_vertical(vec![DataSeries::new(
+        "Values",
+        vec![10.0, 20.0, 30.0, 40.0],
+    )])
+    .with_categories(vec!["A", "B"]);
+    assert_eq!(state.categories().len(), 2);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_categories_more_than_data_points() {
+    // 5 categories but only 3 data points: extra categories are simply ignored
+    let state = ChartState::bar_vertical(vec![DataSeries::new("Values", vec![10.0, 20.0, 30.0])])
+        .with_categories(vec!["A", "B", "C", "D", "E"]);
+    assert_eq!(state.categories().len(), 5);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_render_horizontal_bar_chart_with_categories() {
+    let state =
+        ChartState::bar_horizontal(vec![DataSeries::new("Revenue", vec![100.0, 200.0, 150.0])])
+            .with_categories(vec!["East", "West", "Central"]);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_default_state_has_empty_categories() {
+    let state = ChartState::default();
+    assert!(state.categories().is_empty());
+}

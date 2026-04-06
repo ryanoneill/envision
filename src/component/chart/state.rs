@@ -146,6 +146,44 @@ impl ChartState {
         self.bar_gap = gap;
     }
 
+    /// Returns the category labels for bar chart x-axis.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::bar_vertical(vec![
+    ///     DataSeries::new("Sales", vec![10.0, 20.0, 30.0]),
+    /// ])
+    /// .with_categories(vec!["Q1", "Q2", "Q3"]);
+    /// assert_eq!(state.categories(), &["Q1", "Q2", "Q3"]);
+    /// ```
+    pub fn categories(&self) -> &[String] {
+        &self.categories
+    }
+
+    /// Sets the category labels for bar chart x-axis.
+    ///
+    /// When set, these labels replace numeric indices on the x-axis of bar charts.
+    /// If fewer categories are provided than data points, remaining bars fall back
+    /// to numeric labels. Extra categories beyond the data length are ignored.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let mut state = ChartState::bar_vertical(vec![
+    ///     DataSeries::new("Sales", vec![10.0, 20.0, 30.0]),
+    /// ]);
+    /// state.set_categories(vec!["Q1", "Q2", "Q3"]);
+    /// assert_eq!(state.categories(), &["Q1", "Q2", "Q3"]);
+    /// ```
+    pub fn set_categories(&mut self, categories: Vec<impl Into<String>>) {
+        self.categories = categories.into_iter().map(Into::into).collect();
+    }
+
     /// Returns the number of series.
     pub fn series_count(&self) -> usize {
         self.series.len()

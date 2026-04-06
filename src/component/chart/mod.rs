@@ -276,6 +276,8 @@ pub struct ChartState {
     pub(crate) cursor_position: Option<usize>,
     /// Whether to show the crosshair cursor.
     pub(crate) show_crosshair: bool,
+    /// Category labels for bar chart x-axis (e.g., ["Q1", "Q2", "Q3"]).
+    pub(crate) categories: Vec<String>,
 }
 
 impl Default for ChartState {
@@ -298,6 +300,7 @@ impl Default for ChartState {
             vertical_lines: Vec::new(),
             cursor_position: None,
             show_crosshair: false,
+            categories: Vec::new(),
         }
     }
 }
@@ -465,6 +468,28 @@ impl ChartState {
     /// Sets the bar gap (builder pattern).
     pub fn with_bar_gap(mut self, gap: u16) -> Self {
         self.bar_gap = gap;
+        self
+    }
+
+    /// Sets the category labels for bar chart x-axis (builder pattern).
+    ///
+    /// When set, these labels replace numeric indices on the x-axis of bar charts.
+    /// If fewer categories are provided than data points, remaining bars fall back
+    /// to numeric labels. Extra categories beyond the data length are ignored.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::bar_vertical(vec![
+    ///     DataSeries::new("Importance", vec![0.85, 0.72, 0.64, 0.51]),
+    /// ])
+    /// .with_categories(vec!["Income", "Education", "Age", "Hours/Week"]);
+    /// assert_eq!(state.categories(), &["Income", "Education", "Age", "Hours/Week"]);
+    /// ```
+    pub fn with_categories(mut self, categories: Vec<impl Into<String>>) -> Self {
+        self.categories = categories.into_iter().map(Into::into).collect();
         self
     }
 
