@@ -3,8 +3,8 @@
 //! Extracted from the main chart module to keep file sizes manageable.
 
 use super::{
-    Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, Scale, ThresholdLine,
-    VerticalLine,
+    BarMode, Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DataSeries, Scale,
+    ThresholdLine, VerticalLine,
 };
 use crate::component::Component;
 
@@ -144,6 +144,38 @@ impl ChartState {
     /// ```
     pub fn set_bar_gap(&mut self, gap: u16) {
         self.bar_gap = gap;
+    }
+
+    /// Returns the bar rendering mode.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BarMode, ChartState, DataSeries};
+    ///
+    /// let state = ChartState::bar_vertical(vec![
+    ///     DataSeries::new("Sales", vec![10.0, 20.0]),
+    /// ])
+    /// .with_bar_mode(BarMode::Grouped);
+    /// assert_eq!(state.bar_mode(), &BarMode::Grouped);
+    /// ```
+    pub fn bar_mode(&self) -> &BarMode {
+        &self.bar_mode
+    }
+
+    /// Sets the bar rendering mode.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BarMode, ChartState};
+    ///
+    /// let mut state = ChartState::bar_vertical(vec![]);
+    /// state.set_bar_mode(BarMode::Stacked);
+    /// assert_eq!(state.bar_mode(), &BarMode::Stacked);
+    /// ```
+    pub fn set_bar_mode(&mut self, mode: BarMode) {
+        self.bar_mode = mode;
     }
 
     /// Returns the category labels for bar chart x-axis.

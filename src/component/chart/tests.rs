@@ -928,3 +928,188 @@ fn test_xy_clear_clears_y_values_only() {
     // x_values should still be present after clear (clear only affects values)
     assert!(series.x_values().is_some());
 }
+
+// =============================================================================
+// BarMode
+// =============================================================================
+
+#[test]
+fn test_bar_mode_default_is_single() {
+    assert_eq!(BarMode::default(), BarMode::Single);
+}
+
+#[test]
+fn test_bar_mode_builder() {
+    let state = ChartState::bar_vertical(vec![DataSeries::new("A", vec![1.0])])
+        .with_bar_mode(BarMode::Grouped);
+    assert_eq!(state.bar_mode(), &BarMode::Grouped);
+}
+
+#[test]
+fn test_bar_mode_builder_stacked() {
+    let state = ChartState::bar_vertical(vec![DataSeries::new("A", vec![1.0])])
+        .with_bar_mode(BarMode::Stacked);
+    assert_eq!(state.bar_mode(), &BarMode::Stacked);
+}
+
+#[test]
+fn test_bar_mode_setter() {
+    let mut state = ChartState::bar_vertical(vec![]);
+    assert_eq!(state.bar_mode(), &BarMode::Single);
+    state.set_bar_mode(BarMode::Grouped);
+    assert_eq!(state.bar_mode(), &BarMode::Grouped);
+}
+
+#[test]
+fn test_bar_mode_default_state() {
+    assert_eq!(ChartState::default().bar_mode(), &BarMode::Single);
+}
+
+#[test]
+fn test_bar_mode_clone_eq() {
+    assert_eq!(BarMode::Grouped.clone(), BarMode::Grouped);
+    assert_ne!(BarMode::Single, BarMode::Stacked);
+}
+
+#[test]
+fn test_render_single_mode() {
+    let state = ChartState::bar_vertical(vec![
+        DataSeries::new("A", vec![10.0, 20.0]),
+        DataSeries::new("B", vec![5.0, 15.0]).with_color(Color::Red),
+    ]);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .unwrap();
+}
+
+#[test]
+fn test_render_grouped_vertical() {
+    let state = ChartState::bar_vertical(vec![
+        DataSeries::new("Q1", vec![10.0, 20.0]),
+        DataSeries::new("Q2", vec![15.0, 25.0]).with_color(Color::Red),
+    ])
+    .with_bar_mode(BarMode::Grouped)
+    .with_categories(vec!["A", "B"]);
+    let (mut terminal, theme) = test_utils::setup_render(80, 20);
+    terminal
+        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .unwrap();
+}
+
+#[test]
+fn test_render_grouped_horizontal() {
+    let state = ChartState::bar_horizontal(vec![
+        DataSeries::new("2023", vec![100.0, 200.0]),
+        DataSeries::new("2024", vec![120.0, 180.0]).with_color(Color::Red),
+    ])
+    .with_bar_mode(BarMode::Grouped);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .unwrap();
+}
+
+#[test]
+fn test_render_stacked_vertical() {
+    let state = ChartState::bar_vertical(vec![
+        DataSeries::new("Rev", vec![100.0, 200.0]),
+        DataSeries::new("Cost", vec![60.0, 120.0]).with_color(Color::Red),
+    ])
+    .with_bar_mode(BarMode::Stacked)
+    .with_categories(vec!["Q1", "Q2"]);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .unwrap();
+}
+
+#[test]
+fn test_render_stacked_horizontal() {
+    let state = ChartState::bar_horizontal(vec![
+        DataSeries::new("A", vec![50.0, 30.0]),
+        DataSeries::new("B", vec![30.0, 40.0]).with_color(Color::Red),
+    ])
+    .with_bar_mode(BarMode::Stacked);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .unwrap();
+}
+
+#[test]
+fn test_stacked_sums_values() {
+    let state = ChartState::bar_vertical(vec![
+        DataSeries::new("A", vec![10.0, 20.0]),
+        DataSeries::new("B", vec![5.0, 10.0]).with_color(Color::Red),
+    ])
+    .with_bar_mode(BarMode::Stacked);
+    let (mut terminal, theme) = test_utils::setup_render(40, 15);
+    terminal
+        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .unwrap();
+}
+
+#[test]
+fn test_bar_width_auto_scales() {
+    let state = ChartState::bar_vertical(vec![DataSeries::new("A", vec![10.0, 20.0])]);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .unwrap();
+}
+
+#[test]
+fn test_render_grouped_disabled() {
+    let state = ChartState::bar_vertical(vec![
+        DataSeries::new("A", vec![10.0]),
+        DataSeries::new("B", vec![15.0]).with_color(Color::Red),
+    ])
+    .with_bar_mode(BarMode::Grouped);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|f| {
+            Chart::view(
+                &state,
+                f,
+                f.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_render_stacked_disabled() {
+    let state = ChartState::bar_vertical(vec![
+        DataSeries::new("A", vec![10.0]),
+        DataSeries::new("B", vec![15.0]).with_color(Color::Red),
+    ])
+    .with_bar_mode(BarMode::Stacked);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|f| {
+            Chart::view(
+                &state,
+                f,
+                f.area(),
+                &theme,
+                &ViewContext::new().disabled(true),
+            );
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_render_stacked_zero_values() {
+    let state = ChartState::bar_vertical(vec![
+        DataSeries::new("A", vec![0.0, 10.0]),
+        DataSeries::new("B", vec![5.0, 0.0]).with_color(Color::Red),
+    ])
+    .with_bar_mode(BarMode::Stacked);
+    let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .unwrap();
+}

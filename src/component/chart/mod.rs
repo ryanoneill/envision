@@ -66,6 +66,36 @@ pub struct DataSeries {
 
 // DataSeries methods are in series.rs
 
+/// The bar rendering mode for bar charts.
+///
+/// Controls how multiple series are displayed in bar charts:
+/// - `Single`: Only the active series is shown (default, backwards-compatible).
+/// - `Grouped`: All series are shown side-by-side at each position.
+/// - `Stacked`: All series are stacked vertically at each position.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::BarMode;
+///
+/// let mode = BarMode::default();
+/// assert_eq!(mode, BarMode::Single);
+/// ```
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub enum BarMode {
+    /// Render only the active series (default).
+    #[default]
+    Single,
+    /// Render all series side-by-side at each position.
+    Grouped,
+    /// Stack all series vertically at each position.
+    Stacked,
+}
+
 /// The kind of chart to display.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(
@@ -278,6 +308,8 @@ pub struct ChartState {
     pub(crate) show_grid: bool,
     /// Category labels for bar chart x-axis (e.g., ["Q1", "Q2", "Q3"]).
     pub(crate) categories: Vec<String>,
+    /// Bar rendering mode (Single, Grouped, or Stacked).
+    pub(crate) bar_mode: BarMode,
 }
 
 impl Default for ChartState {
@@ -302,6 +334,7 @@ impl Default for ChartState {
             show_crosshair: false,
             show_grid: false,
             categories: Vec::new(),
+            bar_mode: BarMode::default(),
         }
     }
 }
@@ -469,6 +502,30 @@ impl ChartState {
     /// Sets the bar gap (builder pattern).
     pub fn with_bar_gap(mut self, gap: u16) -> Self {
         self.bar_gap = gap;
+        self
+    }
+
+    /// Sets the bar rendering mode (builder pattern).
+    ///
+    /// Controls how multiple series are displayed in bar charts:
+    /// - [`BarMode::Single`]: Only the active series is shown (default).
+    /// - [`BarMode::Grouped`]: All series are shown side-by-side at each position.
+    /// - [`BarMode::Stacked`]: All series are stacked vertically at each position.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BarMode, ChartState, DataSeries};
+    ///
+    /// let state = ChartState::bar_vertical(vec![
+    ///     DataSeries::new("Q1", vec![10.0, 20.0]),
+    ///     DataSeries::new("Q2", vec![15.0, 25.0]),
+    /// ])
+    /// .with_bar_mode(BarMode::Grouped);
+    /// assert_eq!(state.bar_mode(), &BarMode::Grouped);
+    /// ```
+    pub fn with_bar_mode(mut self, mode: BarMode) -> Self {
+        self.bar_mode = mode;
         self
     }
 
