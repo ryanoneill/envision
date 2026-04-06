@@ -1,14 +1,80 @@
 //! DataSeries implementation methods.
 //!
 //! Extracted from the main chart module to keep file sizes manageable.
-//! Contains the builder, accessor, and mutation methods for [`DataSeries`].
+//! Contains the builder, accessor, and mutation methods for [`DataSeries`],
+//! and the 20-color Tableau palette for categorical data visualization.
 
 use ratatui::style::Color;
 
 use super::DataSeries;
 
+/// A 20-color categorical palette based on Tableau 20 / D3's categorical scale.
+///
+/// The first 10 colors are saturated variants optimized for dark terminal
+/// backgrounds. The second 10 are lighter tints of each, giving 20 visually
+/// distinct series before any color repeats.
+///
+/// Colors cycle when the series index exceeds 20 (i.e., index % 20).
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::chart_palette_color;
+/// use ratatui::style::Color;
+///
+/// // First color is Tableau blue
+/// assert_eq!(chart_palette_color(0), Color::Rgb(31, 119, 180));
+/// // Wraps around after 20
+/// assert_eq!(chart_palette_color(20), Color::Rgb(31, 119, 180));
+/// ```
+pub const DEFAULT_PALETTE: &[Color] = &[
+    Color::Rgb(31, 119, 180),  // blue
+    Color::Rgb(255, 127, 14),  // orange
+    Color::Rgb(44, 160, 44),   // green
+    Color::Rgb(214, 39, 40),   // red
+    Color::Rgb(148, 103, 189), // purple
+    Color::Rgb(140, 86, 75),   // brown
+    Color::Rgb(227, 119, 194), // pink
+    Color::Rgb(127, 127, 127), // gray
+    Color::Rgb(188, 189, 34),  // olive
+    Color::Rgb(23, 190, 207),  // teal
+    // Lighter variants for 11-20
+    Color::Rgb(174, 199, 232), // light blue
+    Color::Rgb(255, 187, 120), // light orange
+    Color::Rgb(152, 223, 138), // light green
+    Color::Rgb(255, 152, 150), // light red
+    Color::Rgb(197, 176, 213), // light purple
+    Color::Rgb(196, 156, 148), // light brown
+    Color::Rgb(247, 182, 210), // light pink
+    Color::Rgb(199, 199, 199), // light gray
+    Color::Rgb(219, 219, 141), // light olive
+    Color::Rgb(158, 218, 229), // light teal
+];
+
+/// Returns the palette color at the given index, wrapping around after 20.
+///
+/// This is useful for assigning distinct colors to chart series automatically.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::chart_palette_color;
+/// use ratatui::style::Color;
+///
+/// let color = chart_palette_color(3);
+/// assert_eq!(color, Color::Rgb(214, 39, 40)); // red
+/// ```
+pub fn chart_palette_color(index: usize) -> Color {
+    DEFAULT_PALETTE[index % DEFAULT_PALETTE.len()]
+}
+
 impl DataSeries {
     /// Creates a new data series.
+    ///
+    /// The default color is the first color from the Tableau 20 palette (blue).
+    /// Use [`with_color`](DataSeries::with_color) to override, or
+    /// [`chart_palette_color`](crate::component::chart_palette_color) to assign
+    /// distinct colors by series index.
     ///
     /// # Example
     ///
@@ -23,7 +89,7 @@ impl DataSeries {
         Self {
             label: label.into(),
             values,
-            color: Color::Cyan,
+            color: DEFAULT_PALETTE[0],
         }
     }
 

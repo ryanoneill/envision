@@ -39,6 +39,7 @@ mod state;
 pub(crate) mod ticks;
 
 pub use scale::Scale;
+pub use series::{DEFAULT_PALETTE, chart_palette_color};
 
 /// A named data series with values and styling.
 #[derive(Clone, Debug, PartialEq)]
