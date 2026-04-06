@@ -31,7 +31,6 @@ use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 pub(crate) mod downsample;
-mod error_bands;
 pub(crate) mod format;
 mod render;
 pub(crate) mod scale;
@@ -60,8 +59,6 @@ pub struct DataSeries {
     /// sequential indices (0, 1, 2, ...). Useful for ROC curves, scatter plots
     /// with non-uniform spacing, and parametric curves.
     x_values: Option<Vec<f64>>,
-    upper_bound: Option<Vec<f64>>,
-    lower_bound: Option<Vec<f64>>,
 }
 
 // DataSeries methods are in series.rs
@@ -913,8 +910,6 @@ impl Component for Chart {
 mod area_fill_tests;
 #[cfg(test)]
 mod enhancement_tests;
-#[cfg(test)]
-mod error_band_tests;
 #[cfg(test)]
 mod snapshot_tests;
 #[cfg(test)]
