@@ -91,6 +91,8 @@ impl DataSeries {
             values,
             color: DEFAULT_PALETTE[0],
             x_values: None,
+            upper_bound: None,
+            lower_bound: None,
         }
     }
 
@@ -120,6 +122,8 @@ impl DataSeries {
             values: y,
             color: DEFAULT_PALETTE[0],
             x_values: Some(x),
+            upper_bound: None,
+            lower_bound: None,
         }
     }
 
@@ -160,6 +164,25 @@ impl DataSeries {
         self
     }
 
+    /// Sets the upper bound values for error bands (builder pattern).
+    pub fn with_upper_bound(mut self, upper: Vec<f64>) -> Self {
+        self.upper_bound = Some(upper);
+        self
+    }
+
+    /// Sets the lower bound values for error bands (builder pattern).
+    pub fn with_lower_bound(mut self, lower: Vec<f64>) -> Self {
+        self.lower_bound = Some(lower);
+        self
+    }
+
+    /// Sets both upper and lower bound values for error bands (builder pattern).
+    pub fn with_bounds(mut self, lower: Vec<f64>, upper: Vec<f64>) -> Self {
+        self.lower_bound = Some(lower);
+        self.upper_bound = Some(upper);
+        self
+    }
+
     /// Returns the label.
     pub fn label(&self) -> &str {
         &self.label
@@ -193,6 +216,16 @@ impl DataSeries {
     /// ```
     pub fn x_values(&self) -> Option<&[f64]> {
         self.x_values.as_deref()
+    }
+
+    /// Returns the upper bound values, if set.
+    pub fn upper_bound(&self) -> Option<&[f64]> {
+        self.upper_bound.as_deref()
+    }
+
+    /// Returns the lower bound values, if set.
+    pub fn lower_bound(&self) -> Option<&[f64]> {
+        self.lower_bound.as_deref()
     }
 
     /// Appends a value.
@@ -312,5 +345,15 @@ impl DataSeries {
     /// ```
     pub fn set_x_values(&mut self, x: Option<Vec<f64>>) {
         self.x_values = x;
+    }
+
+    /// Sets the upper bound values for error bands.
+    pub fn set_upper_bound(&mut self, upper: Option<Vec<f64>>) {
+        self.upper_bound = upper;
+    }
+
+    /// Sets the lower bound values for error bands.
+    pub fn set_lower_bound(&mut self, lower: Option<Vec<f64>>) {
+        self.lower_bound = lower;
     }
 }
