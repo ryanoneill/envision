@@ -386,7 +386,7 @@ pub use heatmap::{
     Heatmap, HeatmapColorScale, HeatmapMessage, HeatmapOutput, HeatmapState, value_to_color,
 };
 #[cfg(feature = "compound-components")]
-pub use histogram::{Histogram, HistogramMessage, HistogramState};
+pub use histogram::{BinMethod, Histogram, HistogramMessage, HistogramState};
 #[cfg(feature = "compound-components")]
 pub use log_correlation::{
     CorrelationEntry, CorrelationLevel, LogCorrelation, LogCorrelationMessage,
