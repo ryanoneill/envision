@@ -383,7 +383,8 @@ pub use flame_graph::{
 pub use form::{Form, FormField, FormFieldKind, FormMessage, FormOutput, FormState, FormValue};
 #[cfg(feature = "compound-components")]
 pub use heatmap::{
-    Heatmap, HeatmapColorScale, HeatmapMessage, HeatmapOutput, HeatmapState, value_to_color,
+    DistributionMap, Heatmap, HeatmapColorScale, HeatmapMessage, HeatmapOutput, HeatmapState,
+    value_to_color,
 };
 #[cfg(feature = "compound-components")]
 pub use histogram::{BinMethod, Histogram, HistogramMessage, HistogramState};
