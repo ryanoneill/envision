@@ -1,6 +1,5 @@
 ---
 source: src/component/sparkline/tests.rs
-assertion_line: 394
 expression: terminal.backend().to_string()
 ---
- ▁▂▃▄▅▆▇█
+  ▂▂▄▄▆▆█

@@ -233,9 +233,10 @@ impl Default for State {
         let toast = ToastState::with_max_visible(3);
 
         // Viz panel components
-        let sparkline =
-            SparklineState::with_data(vec![2, 5, 8, 12, 7, 4, 9, 15, 11, 6, 3, 8, 10, 14, 9, 5])
-                .with_title("Request Rate");
+        let sparkline = SparklineState::with_data(vec![
+            2.0, 5.0, 8.0, 12.0, 7.0, 4.0, 9.0, 15.0, 11.0, 6.0, 3.0, 8.0, 10.0, 14.0, 9.0, 5.0,
+        ])
+        .with_title("Request Rate");
 
         let gauge = GaugeState::new(73.0, 100.0)
             .with_label("CPU Usage")

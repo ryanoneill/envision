@@ -37,8 +37,8 @@ fn test_default_matches_init() {
 
 #[test]
 fn test_with_data() {
-    let state = SparklineState::with_data(vec![1, 2, 3, 4, 5]);
-    assert_eq!(state.data(), &[1, 2, 3, 4, 5]);
+    let state = SparklineState::with_data(vec![1.0, 2.0, 3.0, 4.0, 5.0]);
+    assert_eq!(state.data(), &[1.0, 2.0, 3.0, 4.0, 5.0]);
     assert_eq!(state.len(), 5);
     assert!(!state.is_empty());
 }
@@ -69,13 +69,13 @@ fn test_with_max_display_points() {
 
 #[test]
 fn test_builder_chaining() {
-    let state = SparklineState::with_data(vec![1, 2, 3])
+    let state = SparklineState::with_data(vec![1.0, 2.0, 3.0])
         .with_title("Metrics")
         .with_direction(SparklineDirection::RightToLeft)
         .with_max_display_points(50)
         .with_color(Color::Cyan);
 
-    assert_eq!(state.data(), &[1, 2, 3]);
+    assert_eq!(state.data(), &[1.0, 2.0, 3.0]);
     assert_eq!(state.title(), Some("Metrics"));
     assert_eq!(state.direction(), &SparklineDirection::RightToLeft);
     assert_eq!(state.max_display_points(), Some(50));
@@ -111,41 +111,41 @@ fn test_direction_into_render_direction() {
 #[test]
 fn test_push() {
     let mut state = SparklineState::new();
-    state.push(10);
-    state.push(20);
-    state.push(30);
-    assert_eq!(state.data(), &[10, 20, 30]);
+    state.push(10.0);
+    state.push(20.0);
+    state.push(30.0);
+    assert_eq!(state.data(), &[10.0, 20.0, 30.0]);
     assert_eq!(state.len(), 3);
 }
 
 #[test]
 fn test_push_bounded_within_limit() {
     let mut state = SparklineState::new();
-    state.push_bounded(1, 5);
-    state.push_bounded(2, 5);
-    state.push_bounded(3, 5);
-    assert_eq!(state.data(), &[1, 2, 3]);
+    state.push_bounded(1.0, 5);
+    state.push_bounded(2.0, 5);
+    state.push_bounded(3.0, 5);
+    assert_eq!(state.data(), &[1.0, 2.0, 3.0]);
     assert_eq!(state.len(), 3);
 }
 
 #[test]
 fn test_push_bounded_exceeds_limit() {
-    let mut state = SparklineState::with_data(vec![1, 2, 3]);
-    state.push_bounded(4, 3);
-    assert_eq!(state.data(), &[2, 3, 4]);
+    let mut state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
+    state.push_bounded(4.0, 3);
+    assert_eq!(state.data(), &[2.0, 3.0, 4.0]);
     assert_eq!(state.len(), 3);
 }
 
 #[test]
 fn test_push_bounded_max_one() {
-    let mut state = SparklineState::with_data(vec![1, 2, 3]);
-    state.push_bounded(99, 1);
-    assert_eq!(state.data(), &[99]);
+    let mut state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
+    state.push_bounded(99.0, 1);
+    assert_eq!(state.data(), &[99.0]);
 }
 
 #[test]
 fn test_clear() {
-    let mut state = SparklineState::with_data(vec![1, 2, 3]);
+    let mut state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
     state.clear();
     assert!(state.is_empty());
     assert_eq!(state.len(), 0);
@@ -153,7 +153,7 @@ fn test_clear() {
 
 #[test]
 fn test_len() {
-    let state = SparklineState::with_data(vec![1, 2, 3, 4]);
+    let state = SparklineState::with_data(vec![1.0, 2.0, 3.0, 4.0]);
     assert_eq!(state.len(), 4);
 }
 
@@ -165,14 +165,14 @@ fn test_is_empty_true() {
 
 #[test]
 fn test_is_empty_false() {
-    let state = SparklineState::with_data(vec![1]);
+    let state = SparklineState::with_data(vec![1.0]);
     assert!(!state.is_empty());
 }
 
 #[test]
 fn test_last() {
-    let state = SparklineState::with_data(vec![1, 2, 3]);
-    assert_eq!(state.last(), Some(3));
+    let state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
+    assert_eq!(state.last(), Some(3.0));
 }
 
 #[test]
@@ -183,8 +183,8 @@ fn test_last_empty() {
 
 #[test]
 fn test_min() {
-    let state = SparklineState::with_data(vec![5, 3, 7, 1, 9]);
-    assert_eq!(state.min(), Some(1));
+    let state = SparklineState::with_data(vec![5.0, 3.0, 7.0, 1.0, 9.0]);
+    assert_eq!(state.min(), Some(1.0));
 }
 
 #[test]
@@ -195,8 +195,8 @@ fn test_min_empty() {
 
 #[test]
 fn test_max() {
-    let state = SparklineState::with_data(vec![5, 3, 7, 1, 9]);
-    assert_eq!(state.max(), Some(9));
+    let state = SparklineState::with_data(vec![5.0, 3.0, 7.0, 1.0, 9.0]);
+    assert_eq!(state.max(), Some(9.0));
 }
 
 #[test]
@@ -207,39 +207,39 @@ fn test_max_empty() {
 
 #[test]
 fn test_min_max_single_element() {
-    let state = SparklineState::with_data(vec![42]);
-    assert_eq!(state.min(), Some(42));
-    assert_eq!(state.max(), Some(42));
+    let state = SparklineState::with_data(vec![42.0]);
+    assert_eq!(state.min(), Some(42.0));
+    assert_eq!(state.max(), Some(42.0));
 }
 // --- Update/message tests ---
 
 #[test]
 fn test_update_push() {
     let mut state = SparklineState::new();
-    let output = Sparkline::update(&mut state, SparklineMessage::Push(42));
+    let output = Sparkline::update(&mut state, SparklineMessage::Push(42.0));
     assert_eq!(output, None);
-    assert_eq!(state.data(), &[42]);
+    assert_eq!(state.data(), &[42.0]);
 }
 
 #[test]
 fn test_update_push_bounded() {
-    let mut state = SparklineState::with_data(vec![1, 2, 3]);
-    let output = Sparkline::update(&mut state, SparklineMessage::PushBounded(4, 3));
+    let mut state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
+    let output = Sparkline::update(&mut state, SparklineMessage::PushBounded(4.0, 3));
     assert_eq!(output, None);
-    assert_eq!(state.data(), &[2, 3, 4]);
+    assert_eq!(state.data(), &[2.0, 3.0, 4.0]);
 }
 
 #[test]
 fn test_update_set_data() {
-    let mut state = SparklineState::with_data(vec![1, 2, 3]);
-    let output = Sparkline::update(&mut state, SparklineMessage::SetData(vec![10, 20]));
+    let mut state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
+    let output = Sparkline::update(&mut state, SparklineMessage::SetData(vec![10.0, 20.0]));
     assert_eq!(output, None);
-    assert_eq!(state.data(), &[10, 20]);
+    assert_eq!(state.data(), &[10.0, 20.0]);
 }
 
 #[test]
 fn test_update_clear() {
-    let mut state = SparklineState::with_data(vec![1, 2, 3]);
+    let mut state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
     let output = Sparkline::update(&mut state, SparklineMessage::Clear);
     assert_eq!(output, None);
     assert!(state.is_empty());
@@ -265,9 +265,9 @@ fn test_update_set_max_display_points_none() {
 #[test]
 fn test_instance_update() {
     let mut state = SparklineState::new();
-    let output = state.update(SparklineMessage::Push(42));
+    let output = state.update(SparklineMessage::Push(42.0));
     assert_eq!(output, None);
-    assert_eq!(state.last(), Some(42));
+    assert_eq!(state.last(), Some(42.0));
 }
 
 // --- Component trait tests ---
@@ -297,7 +297,7 @@ fn test_view_empty() {
 
 #[test]
 fn test_view_with_data() {
-    let state = SparklineState::with_data(vec![0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    let state = SparklineState::with_data(vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 1);
 
     terminal
@@ -311,7 +311,8 @@ fn test_view_with_data() {
 
 #[test]
 fn test_view_with_title() {
-    let state = SparklineState::with_data(vec![1, 3, 5, 7, 5, 3, 1]).with_title("CPU");
+    let state =
+        SparklineState::with_data(vec![1.0, 3.0, 5.0, 7.0, 5.0, 3.0, 1.0]).with_title("CPU");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 3);
 
     terminal
@@ -324,7 +325,7 @@ fn test_view_with_title() {
 }
 #[test]
 fn test_view_right_to_left() {
-    let state = SparklineState::with_data(vec![0, 1, 2, 3, 4, 5, 6, 7, 8])
+    let state = SparklineState::with_data(vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
         .with_direction(SparklineDirection::RightToLeft);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 1);
 
@@ -339,8 +340,8 @@ fn test_view_right_to_left() {
 
 #[test]
 fn test_view_with_max_display_points() {
-    let state =
-        SparklineState::with_data(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).with_max_display_points(5);
+    let state = SparklineState::with_data(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
+        .with_max_display_points(5);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 1);
 
     terminal
@@ -354,7 +355,7 @@ fn test_view_with_max_display_points() {
 
 #[test]
 fn test_view_with_color() {
-    let state = SparklineState::with_data(vec![1, 3, 5, 7]).with_color(Color::Red);
+    let state = SparklineState::with_data(vec![1.0, 3.0, 5.0, 7.0]).with_color(Color::Red);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 1);
 
     terminal
@@ -372,7 +373,7 @@ fn test_view_with_color() {
 fn test_annotation_emitted() {
     use crate::annotation::{WidgetType, with_annotations};
 
-    let state = SparklineState::with_data(vec![1, 2, 3]).with_title("Metrics");
+    let state = SparklineState::with_data(vec![1.0, 2.0, 3.0]).with_title("Metrics");
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 3);
     let registry = with_annotations(|| {
         terminal
@@ -391,7 +392,7 @@ fn test_annotation_emitted() {
 fn test_annotation_emitted_no_title() {
     use crate::annotation::{WidgetType, with_annotations};
 
-    let state = SparklineState::with_data(vec![1, 2, 3]);
+    let state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 1);
     let registry = with_annotations(|| {
         terminal
