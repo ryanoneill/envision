@@ -51,10 +51,14 @@ pub use series::{DEFAULT_PALETTE, chart_palette_color};
 pub struct DataSeries {
     /// The series label.
     label: String,
-    /// The data values.
+    /// The data values (Y-axis values).
     values: Vec<f64>,
     /// The display color.
     color: Color,
+    /// Optional explicit X-axis values. When present, these are used instead of
+    /// sequential indices (0, 1, 2, ...). Useful for ROC curves, scatter plots
+    /// with non-uniform spacing, and parametric curves.
+    x_values: Option<Vec<f64>>,
 }
 
 // DataSeries methods are in series.rs

@@ -152,16 +152,35 @@ pub(super) fn render_shared_axis_chart(
     let effective_min = state.effective_min();
     let effective_max = state.effective_max();
 
-    // Compute max x value across all series (using full series length, not truncated)
-    let max_x = state
-        .series
-        .iter()
-        .map(|s| s.values().len())
-        .max()
-        .unwrap_or(1)
-        .max(1) as f64
-        - 1.0;
-    let max_x = max_x.max(1.0);
+    // Compute X-axis bounds across all series.
+    // For series with explicit x_values, use those min/max values.
+    // For series with implicit indices, use 0..len-1.
+    let (min_x_data, max_x_data) = {
+        let mut overall_min = f64::INFINITY;
+        let mut overall_max = f64::NEG_INFINITY;
+        for s in &state.series {
+            if let Some(x_vals) = s.x_values() {
+                if let Some(&x_min) = x_vals.iter().reduce(|a, b| if a < b { a } else { b }) {
+                    overall_min = overall_min.min(x_min);
+                }
+                if let Some(&x_max) = x_vals.iter().reduce(|a, b| if a > b { a } else { b }) {
+                    overall_max = overall_max.max(x_max);
+                }
+            } else {
+                let len = s.values().len();
+                if len > 0 {
+                    overall_min = overall_min.min(0.0);
+                    overall_max = overall_max.max((len - 1) as f64);
+                }
+            }
+        }
+        if overall_min.is_infinite() {
+            (0.0, 1.0)
+        } else {
+            (overall_min, overall_max.max(overall_min + 1.0))
+        }
+    };
+    let max_x = max_x_data;
 
     // Compute effective max points based on render area width
     let effective_max_points = (area.width as usize * 2).min(state.max_display_points);
@@ -178,13 +197,20 @@ pub(super) fn render_shared_axis_chart(
         .series
         .iter()
         .map(|s| {
-            // Convert to (x, y) pairs
-            let points: Vec<(f64, f64)> = s
-                .values()
-                .iter()
-                .enumerate()
-                .map(|(i, v)| (i as f64, *v))
-                .collect();
+            // Convert to (x, y) pairs, using explicit x_values if available
+            let points: Vec<(f64, f64)> = if let Some(x_vals) = s.x_values() {
+                x_vals
+                    .iter()
+                    .zip(s.values())
+                    .map(|(&x, &y)| (x, y))
+                    .collect()
+            } else {
+                s.values()
+                    .iter()
+                    .enumerate()
+                    .map(|(i, &v)| (i as f64, v))
+                    .collect()
+            };
 
             // Apply LTTB downsampling
             let downsampled = if points.len() > effective_max_points {
@@ -321,7 +347,7 @@ pub(super) fn render_shared_axis_chart(
     let max_x_ticks = (area.width / 10).max(2) as usize;
     let max_y_ticks = (area.height / 3).max(2) as usize;
 
-    let x_ticks = super::ticks::nice_ticks(0.0, max_x, max_x_ticks);
+    let x_ticks = super::ticks::nice_ticks(min_x_data, max_x, max_x_ticks);
     let x_labels: Vec<String> = x_ticks
         .iter()
         .map(|&v| {
