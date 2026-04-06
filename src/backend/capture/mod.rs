@@ -391,6 +391,98 @@ impl CaptureBackend {
         self.render(OutputFormat::Ansi)
     }
 
+    /// Creates an [`AnnotatedOutput`] combining the visual text and structured annotations.
+    ///
+    /// This pairs the plain text representation of the current buffer with
+    /// the annotation data collected during rendering.
+    ///
+    /// # Arguments
+    ///
+    /// * `registry` - The annotation registry populated during rendering
+    ///   (typically obtained via [`with_annotations`]).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::annotation::{Annotate, Annotation, with_annotations};
+    /// use envision::backend::CaptureBackend;
+    /// use ratatui::Terminal;
+    /// use ratatui::widgets::Paragraph;
+    ///
+    /// let backend = CaptureBackend::new(80, 24);
+    /// let mut terminal = Terminal::new(backend).unwrap();
+    ///
+    /// let registry = with_annotations(|| {
+    ///     terminal.draw(|frame| {
+    ///         let widget = Annotate::new(
+    ///             Paragraph::new("Submit"),
+    ///             Annotation::button("submit").with_label("Submit Order"),
+    ///         );
+    ///         frame.render_widget(widget, frame.area());
+    ///     }).unwrap();
+    /// });
+    ///
+    /// let output = terminal.backend().to_annotated_output(&registry);
+    /// assert!(output.visual.contains("Submit"));
+    /// assert_eq!(output.annotation_count(), 1);
+    /// assert_eq!(output.find_by_id("submit").unwrap().widget_type, "Button");
+    /// ```
+    ///
+    /// [`AnnotatedOutput`]: crate::annotation::AnnotatedOutput
+    /// [`with_annotations`]: crate::annotation::with_annotations
+    pub fn to_annotated_output(
+        &self,
+        registry: &crate::annotation::AnnotationRegistry,
+    ) -> crate::annotation::AnnotatedOutput {
+        crate::annotation::AnnotatedOutput::from_backend_and_registry(self, registry)
+    }
+
+    /// Serializes the annotation registry contents as a pretty-printed JSON string.
+    ///
+    /// This produces structured semantic data about the widgets rendered
+    /// in the current frame, suitable for AI consumption or automated
+    /// analysis. The output includes both the visual text and annotation
+    /// metadata in a single JSON document.
+    ///
+    /// # Arguments
+    ///
+    /// * `registry` - The annotation registry populated during rendering
+    ///   (typically obtained via [`with_annotations`]).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::annotation::{Annotate, Annotation, with_annotations};
+    /// use envision::backend::CaptureBackend;
+    /// use ratatui::Terminal;
+    /// use ratatui::widgets::Paragraph;
+    ///
+    /// let backend = CaptureBackend::new(80, 24);
+    /// let mut terminal = Terminal::new(backend).unwrap();
+    ///
+    /// let registry = with_annotations(|| {
+    ///     terminal.draw(|frame| {
+    ///         let widget = Annotate::new(
+    ///             Paragraph::new("Hello"),
+    ///             Annotation::button("btn"),
+    ///         );
+    ///         frame.render_widget(widget, frame.area());
+    ///     }).unwrap();
+    /// });
+    ///
+    /// let json = terminal.backend().to_semantic_json(&registry);
+    /// assert!(json.contains("Button"));
+    /// assert!(json.contains("btn"));
+    /// ```
+    ///
+    /// [`with_annotations`]: crate::annotation::with_annotations
+    #[cfg(feature = "serialization")]
+    pub fn to_semantic_json(&self, registry: &crate::annotation::AnnotationRegistry) -> String {
+        let output = self.to_annotated_output(registry);
+        serde_json::to_string_pretty(&output)
+            .unwrap_or_else(|e| format!("{{\"error\": \"serialization failed: {}\"}}", e))
+    }
+
     /// Renders the buffer as JSON.
     #[cfg(feature = "serialization")]
     pub fn to_json(&self) -> String {
