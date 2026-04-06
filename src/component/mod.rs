@@ -344,8 +344,8 @@ pub use alert_panel::{
 pub use box_plot::{BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation, BoxPlotState};
 #[cfg(feature = "compound-components")]
 pub use chart::{
-    BarMode, Chart, ChartKind, ChartMessage, ChartOutput, ChartState, DEFAULT_PALETTE, DataSeries,
-    Scale, ThresholdLine, VerticalLine, chart_palette_color,
+    BarMode, Chart, ChartAnnotation, ChartKind, ChartMessage, ChartOutput, ChartState,
+    DEFAULT_PALETTE, DataSeries, Scale, ThresholdLine, VerticalLine, chart_palette_color,
 };
 #[cfg(feature = "compound-components")]
 pub use conversation_view::{
