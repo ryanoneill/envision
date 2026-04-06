@@ -39,22 +39,9 @@ mod state;
 pub(crate) mod ticks;
 
 pub use scale::Scale;
+pub use series::{DEFAULT_PALETTE, chart_palette_color};
 
 /// Default color palette for auto-assigning colors to multi-series charts.
-///
-/// When series are added without explicit colors (defaulting to Cyan),
-/// colors are picked from this palette in order to visually distinguish them.
-pub(crate) const DEFAULT_PALETTE: &[Color] = &[
-    Color::Cyan,
-    Color::Magenta,
-    Color::Yellow,
-    Color::Green,
-    Color::Red,
-    Color::Blue,
-    Color::LightCyan,
-    Color::LightMagenta,
-];
-
 /// A named data series with values and styling.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(

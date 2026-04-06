@@ -21,7 +21,8 @@ fn test_data_series_new() {
     let s = DataSeries::new("CPU", vec![1.0, 2.0, 3.0]);
     assert_eq!(s.label(), "CPU");
     assert_eq!(s.values(), &[1.0, 2.0, 3.0]);
-    assert_eq!(s.color(), Color::Cyan);
+    // Default color is the first Tableau 20 palette color (blue)
+    assert_eq!(s.color(), Color::Rgb(31, 119, 180));
 }
 
 #[test]
@@ -445,7 +446,7 @@ fn test_render_line_chart_with_labels() {
     let state = ChartState::line(sample_series())
         .with_title("Temperature")
         .with_x_label("Time")
-        .with_y_label("°C");
+        .with_y_label("\u{b0}C");
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -563,6 +564,50 @@ fn test_annotation_emitted() {
             .unwrap();
     });
     assert!(registry.get_by_id("chart").is_some());
+}
+
+// =============================================================================
+// Palette
+// =============================================================================
+
+#[test]
+fn test_default_palette_has_20_colors() {
+    assert_eq!(DEFAULT_PALETTE.len(), 20);
+}
+
+#[test]
+fn test_default_palette_colors_are_all_distinct() {
+    for (i, color_i) in DEFAULT_PALETTE.iter().enumerate() {
+        for (j, color_j) in DEFAULT_PALETTE.iter().enumerate().skip(i + 1) {
+            assert_ne!(
+                color_i, color_j,
+                "Palette colors at index {} and {} should be distinct",
+                i, j
+            );
+        }
+    }
+}
+
+#[test]
+fn test_chart_palette_color_returns_correct_values() {
+    assert_eq!(chart_palette_color(0), Color::Rgb(31, 119, 180)); // blue
+    assert_eq!(chart_palette_color(1), Color::Rgb(255, 127, 14)); // orange
+    assert_eq!(chart_palette_color(9), Color::Rgb(23, 190, 207)); // teal
+    assert_eq!(chart_palette_color(10), Color::Rgb(174, 199, 232)); // light blue
+    assert_eq!(chart_palette_color(19), Color::Rgb(158, 218, 229)); // light teal
+}
+
+#[test]
+fn test_chart_palette_color_wraps_around() {
+    assert_eq!(chart_palette_color(20), chart_palette_color(0));
+    assert_eq!(chart_palette_color(21), chart_palette_color(1));
+    assert_eq!(chart_palette_color(40), chart_palette_color(0));
+}
+
+#[test]
+fn test_default_series_color_matches_palette() {
+    let series = DataSeries::new("Test", vec![]);
+    assert_eq!(series.color(), chart_palette_color(0));
 }
 
 // =============================================================================
