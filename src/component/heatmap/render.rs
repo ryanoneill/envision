@@ -3,7 +3,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{HeatmapState, value_to_color};
+use super::HeatmapState;
+use super::color::value_to_color;
 use crate::theme::Theme;
 
 /// Renders the heatmap grid inside the border.
