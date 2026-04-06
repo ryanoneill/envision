@@ -32,9 +32,11 @@ use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
 mod color;
+pub mod distribution;
 mod render;
 
 pub use color::{HeatmapColorScale, value_to_color};
+pub use distribution::DistributionMap;
 
 /// Messages that can be sent to a Heatmap.
 ///
