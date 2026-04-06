@@ -753,7 +753,7 @@ where
 fn test_new_components_handle_zero_size_area() {
     // Sparkline
     assert_view_zero_size("Sparkline", |frame, area, theme| {
-        let state = SparklineState::with_data(vec![1, 2, 3]);
+        let state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
         Sparkline::view(&state, frame, area, theme, &ViewContext::default());
     });
 
@@ -886,7 +886,7 @@ fn test_dashboard_workflow_with_mixed_new_components() {
 
     // Simulate metric updates over time
     let cpu_values = [25.0, 45.0, 60.0, 72.0, 85.0, 91.0, 78.0, 55.0];
-    let mem_values = [40u64, 42, 45, 50, 55, 60, 62, 65];
+    let mem_values = [40.0, 42.0, 45.0, 50.0, 55.0, 60.0, 62.0, 65.0];
 
     for (i, (&cpu, &mem)) in cpu_values.iter().zip(mem_values.iter()).enumerate() {
         // Update gauge
@@ -909,7 +909,7 @@ fn test_dashboard_workflow_with_mixed_new_components() {
             &mut alerts,
             AlertPanelMessage::UpdateMetric {
                 id: "mem".into(),
-                value: mem as f64,
+                value: mem,
             },
         );
     }
@@ -918,7 +918,7 @@ fn test_dashboard_workflow_with_mixed_new_components() {
     assert_eq!(cpu_gauge.value(), 55.0);
     assert_eq!(cpu_gauge.current_color(), Color::Green); // 55% is below 70%
     assert_eq!(mem_sparkline.len(), 8);
-    assert_eq!(mem_sparkline.last(), Some(65));
+    assert_eq!(mem_sparkline.last(), Some(65.0));
 
     // All metrics should be OK at these values
     assert_eq!(alerts.ok_count(), 2);

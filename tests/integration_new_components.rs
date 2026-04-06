@@ -87,22 +87,22 @@ use ratatui::prelude::*;
 
 #[test]
 fn test_sparkline_push_data_and_bounded_eviction() {
-    let mut state = SparklineState::with_data(vec![1, 2, 3]);
+    let mut state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
     assert_eq!(state.len(), 3);
-    assert_eq!(state.data(), &[1, 2, 3]);
+    assert_eq!(state.data(), &[1.0, 2.0, 3.0]);
 
     // Push a new data point
-    Sparkline::update(&mut state, SparklineMessage::Push(4));
+    Sparkline::update(&mut state, SparklineMessage::Push(4.0));
     assert_eq!(state.len(), 4);
-    assert_eq!(state.data()[3], 4);
-    assert_eq!(state.last(), Some(4));
+    assert_eq!(state.data()[3], 4.0);
+    assert_eq!(state.last(), Some(4.0));
 
     // Push with bounded capacity, should evict oldest
-    Sparkline::update(&mut state, SparklineMessage::PushBounded(9, 3));
+    Sparkline::update(&mut state, SparklineMessage::PushBounded(9.0, 3));
     assert_eq!(state.len(), 3);
-    assert_eq!(state.data(), &[3, 4, 9]);
-    assert_eq!(state.min(), Some(3));
-    assert_eq!(state.max(), Some(9));
+    assert_eq!(state.data(), &[3.0, 4.0, 9.0]);
+    assert_eq!(state.min(), Some(3.0));
+    assert_eq!(state.max(), Some(9.0));
 
     // Clear all data
     Sparkline::update(&mut state, SparklineMessage::Clear);
@@ -110,9 +110,12 @@ fn test_sparkline_push_data_and_bounded_eviction() {
     assert_eq!(state.min(), None);
 
     // Replace data
-    Sparkline::update(&mut state, SparklineMessage::SetData(vec![10, 20, 30]));
+    Sparkline::update(
+        &mut state,
+        SparklineMessage::SetData(vec![10.0, 20.0, 30.0]),
+    );
     assert_eq!(state.len(), 3);
-    assert_eq!(state.last(), Some(30));
+    assert_eq!(state.last(), Some(30.0));
 
     // Verify rendering does not panic
     let backend = CaptureBackend::new(60, 5);

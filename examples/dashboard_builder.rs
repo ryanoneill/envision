@@ -153,7 +153,8 @@ impl App for Dashboard {
             .with_label("Disk")
             .with_variant(GaugeVariant::Line);
 
-        let cpu_spark = SparklineState::with_data(vec![30, 35, 42, 38, 45, 50, 48, 45]);
+        let cpu_spark =
+            SparklineState::with_data(vec![30.0, 35.0, 42.0, 38.0, 45.0, 50.0, 48.0, 45.0]);
 
         // Status bar
         let mut status = StatusBarState::new();
@@ -397,7 +398,7 @@ fn simulate_data_update(state: &mut State) {
         .set_value(35.0 + (t as f64 * 0.05).sin() * 10.0);
 
     // Update sparkline with CPU values
-    Sparkline::update(&mut state.cpu_spark, SparklineMessage::Push(cpu as u64));
+    Sparkline::update(&mut state.cpu_spark, SparklineMessage::Push(cpu));
 
     // Update alert metrics
     state.alerts.update_metric("cpu", cpu);

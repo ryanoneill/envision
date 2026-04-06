@@ -14,16 +14,16 @@
 //! use envision::component::{Sparkline, SparklineMessage, SparklineState, Component};
 //!
 //! // Create a sparkline with data
-//! let mut state = SparklineState::with_data(vec![1, 3, 7, 2, 5, 8, 4]);
+//! let mut state = SparklineState::with_data(vec![1.0, 3.0, 7.0, 2.0, 5.0, 8.0, 4.0]);
 //! assert_eq!(state.len(), 7);
 //!
 //! // Push a new data point
-//! Sparkline::update(&mut state, SparklineMessage::Push(6));
+//! Sparkline::update(&mut state, SparklineMessage::Push(6.0));
 //! assert_eq!(state.len(), 8);
-//! assert_eq!(state.last(), Some(6));
+//! assert_eq!(state.last(), Some(6.0));
 //!
 //! // Push with bounded capacity
-//! Sparkline::update(&mut state, SparklineMessage::PushBounded(9, 5));
+//! Sparkline::update(&mut state, SparklineMessage::PushBounded(9.0, 5));
 //! assert_eq!(state.len(), 5);
 //!
 //! // Clear all data
@@ -70,14 +70,14 @@ impl From<SparklineDirection> for RenderDirection {
 }
 
 /// Messages that can be sent to a Sparkline.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum SparklineMessage {
     /// Append a data point.
-    Push(u64),
+    Push(f64),
     /// Append a data point with a maximum capacity, evicting the oldest if exceeded.
-    PushBounded(u64, usize),
+    PushBounded(f64, usize),
     /// Replace all data.
-    SetData(Vec<u64>),
+    SetData(Vec<f64>),
     /// Clear all data.
     Clear,
     /// Set the maximum number of displayed data points.
@@ -96,11 +96,11 @@ pub type SparklineOutput = ();
 /// ```rust
 /// use envision::component::SparklineState;
 ///
-/// let state = SparklineState::with_data(vec![1, 2, 3, 4, 5]);
+/// let state = SparklineState::with_data(vec![1.0, 2.0, 3.0, 4.0, 5.0]);
 /// assert_eq!(state.len(), 5);
-/// assert_eq!(state.min(), Some(1));
-/// assert_eq!(state.max(), Some(5));
-/// assert_eq!(state.last(), Some(5));
+/// assert_eq!(state.min(), Some(1.0));
+/// assert_eq!(state.max(), Some(5.0));
+/// assert_eq!(state.last(), Some(5.0));
 /// ```
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
@@ -109,7 +109,7 @@ pub type SparklineOutput = ();
 )]
 pub struct SparklineState {
     /// The data points.
-    data: Vec<u64>,
+    data: Vec<f64>,
     /// Limit the number of displayed data points (shows last N).
     max_display_points: Option<usize>,
     /// Optional title/label.
@@ -142,11 +142,11 @@ impl SparklineState {
     /// ```rust
     /// use envision::component::SparklineState;
     ///
-    /// let state = SparklineState::with_data(vec![1, 2, 3]);
+    /// let state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
     /// assert_eq!(state.len(), 3);
-    /// assert_eq!(state.data(), &[1, 2, 3]);
+    /// assert_eq!(state.data(), &[1.0, 2.0, 3.0]);
     /// ```
-    pub fn with_data(data: Vec<u64>) -> Self {
+    pub fn with_data(data: Vec<f64>) -> Self {
         Self {
             data,
             ..Self::default()
@@ -193,7 +193,7 @@ impl SparklineState {
     /// ```rust
     /// use envision::component::SparklineState;
     ///
-    /// let state = SparklineState::with_data(vec![1, 2, 3, 4, 5])
+    /// let state = SparklineState::with_data(vec![1.0, 2.0, 3.0, 4.0, 5.0])
     ///     .with_max_display_points(3);
     /// assert_eq!(state.max_display_points(), Some(3));
     /// ```
@@ -219,7 +219,7 @@ impl SparklineState {
     }
 
     /// Returns the data points.
-    pub fn data(&self) -> &[u64] {
+    pub fn data(&self) -> &[f64] {
         &self.data
     }
 
@@ -231,10 +231,10 @@ impl SparklineState {
     /// use envision::component::SparklineState;
     ///
     /// let mut state = SparklineState::new();
-    /// state.push(42);
-    /// assert_eq!(state.data(), &[42]);
+    /// state.push(42.0);
+    /// assert_eq!(state.data(), &[42.0]);
     /// ```
-    pub fn push(&mut self, value: u64) {
+    pub fn push(&mut self, value: f64) {
         self.data.push(value);
     }
 
@@ -245,11 +245,11 @@ impl SparklineState {
     /// ```rust
     /// use envision::component::SparklineState;
     ///
-    /// let mut state = SparklineState::with_data(vec![1, 2, 3]);
-    /// state.push_bounded(4, 3);
-    /// assert_eq!(state.data(), &[2, 3, 4]);
+    /// let mut state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
+    /// state.push_bounded(4.0, 3);
+    /// assert_eq!(state.data(), &[2.0, 3.0, 4.0]);
     /// ```
-    pub fn push_bounded(&mut self, value: u64, max_len: usize) {
+    pub fn push_bounded(&mut self, value: f64, max_len: usize) {
         self.data.push(value);
         if self.data.len() > max_len {
             let excess = self.data.len() - max_len;
@@ -264,7 +264,7 @@ impl SparklineState {
     /// ```rust
     /// use envision::component::SparklineState;
     ///
-    /// let mut state = SparklineState::with_data(vec![1, 2, 3]);
+    /// let mut state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
     /// state.clear();
     /// assert!(state.is_empty());
     /// ```
@@ -289,13 +289,13 @@ impl SparklineState {
     /// ```rust
     /// use envision::component::SparklineState;
     ///
-    /// let state = SparklineState::with_data(vec![1, 2, 3]);
-    /// assert_eq!(state.last(), Some(3));
+    /// let state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
+    /// assert_eq!(state.last(), Some(3.0));
     ///
     /// let empty = SparklineState::new();
     /// assert_eq!(empty.last(), None);
     /// ```
-    pub fn last(&self) -> Option<u64> {
+    pub fn last(&self) -> Option<f64> {
         self.data.last().copied()
     }
 
@@ -306,11 +306,11 @@ impl SparklineState {
     /// ```rust
     /// use envision::component::SparklineState;
     ///
-    /// let state = SparklineState::with_data(vec![3, 1, 2]);
-    /// assert_eq!(state.min(), Some(1));
+    /// let state = SparklineState::with_data(vec![3.0, 1.0, 2.0]);
+    /// assert_eq!(state.min(), Some(1.0));
     /// ```
-    pub fn min(&self) -> Option<u64> {
-        self.data.iter().copied().min()
+    pub fn min(&self) -> Option<f64> {
+        self.data.iter().copied().reduce(f64::min)
     }
 
     /// Returns the maximum data point, if any.
@@ -320,11 +320,11 @@ impl SparklineState {
     /// ```rust
     /// use envision::component::SparklineState;
     ///
-    /// let state = SparklineState::with_data(vec![3, 1, 2]);
-    /// assert_eq!(state.max(), Some(3));
+    /// let state = SparklineState::with_data(vec![3.0, 1.0, 2.0]);
+    /// assert_eq!(state.max(), Some(3.0));
     /// ```
-    pub fn max(&self) -> Option<u64> {
-        self.data.iter().copied().max()
+    pub fn max(&self) -> Option<f64> {
+        self.data.iter().copied().reduce(f64::max)
     }
 
     /// Returns the title, if set.
@@ -403,8 +403,8 @@ impl SparklineState {
     /// use envision::component::{SparklineMessage, SparklineState};
     ///
     /// let mut state = SparklineState::new();
-    /// state.update(SparklineMessage::Push(42));
-    /// assert_eq!(state.last(), Some(42));
+    /// state.update(SparklineMessage::Push(42.0));
+    /// assert_eq!(state.last(), Some(42.0));
     /// ```
     pub fn update(&mut self, msg: SparklineMessage) -> Option<SparklineOutput> {
         Sparkline::update(self, msg)
@@ -433,9 +433,9 @@ impl SparklineState {
 ///
 /// # Messages
 ///
-/// - `Push(u64)` - Append a data point
-/// - `PushBounded(u64, usize)` - Append with max capacity
-/// - `SetData(Vec<u64>)` - Replace all data
+/// - `Push(f64)` - Append a data point
+/// - `PushBounded(f64, usize)` - Append with max capacity
+/// - `SetData(Vec<f64>)` - Replace all data
 /// - `Clear` - Clear all data
 /// - `SetMaxDisplayPoints(Option<usize>)` - Set display limit
 ///
@@ -444,14 +444,14 @@ impl SparklineState {
 /// ```rust
 /// use envision::component::{Sparkline, SparklineMessage, SparklineState, Component};
 ///
-/// let mut state = SparklineState::with_data(vec![1, 3, 7, 2, 5, 8, 4]);
+/// let mut state = SparklineState::with_data(vec![1.0, 3.0, 7.0, 2.0, 5.0, 8.0, 4.0]);
 ///
 /// // Append new data
-/// Sparkline::update(&mut state, SparklineMessage::Push(6));
+/// Sparkline::update(&mut state, SparklineMessage::Push(6.0));
 /// assert_eq!(state.len(), 8);
 ///
 /// // Replace data
-/// Sparkline::update(&mut state, SparklineMessage::SetData(vec![10, 20, 30]));
+/// Sparkline::update(&mut state, SparklineMessage::SetData(vec![10.0, 20.0, 30.0]));
 /// assert_eq!(state.len(), 3);
 /// ```
 pub struct Sparkline;
@@ -492,6 +492,19 @@ impl Component for Sparkline {
             _ => &state.data,
         };
 
+        // Normalize f64 data to u64 for ratatui's Sparkline widget.
+        let normalized: Vec<u64> = if display_data.is_empty() {
+            Vec::new()
+        } else {
+            let min_val = display_data.iter().copied().reduce(f64::min).unwrap_or(0.0);
+            let max_val = display_data.iter().copied().reduce(f64::max).unwrap_or(1.0);
+            let range = (max_val - min_val).max(f64::EPSILON);
+            display_data
+                .iter()
+                .map(|&v| ((v - min_val) / range * 100.0) as u64)
+                .collect()
+        };
+
         let style = if ctx.disabled {
             theme.disabled_style()
         } else if let Some(color) = state.color {
@@ -503,7 +516,7 @@ impl Component for Sparkline {
         let direction: RenderDirection = state.direction.clone().into();
 
         let mut sparkline = RatatuiSparkline::default()
-            .data(display_data)
+            .data(&normalized)
             .direction(direction)
             .style(style);
 
