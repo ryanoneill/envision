@@ -195,6 +195,10 @@ impl ChartState {
 
     /// Adds a series.
     ///
+    /// If the series color is the default (Cyan) and there are already series
+    /// with Cyan, a color is automatically assigned from the default palette
+    /// based on the series index.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -204,7 +208,12 @@ impl ChartState {
     /// state.add_series(DataSeries::new("CPU", vec![50.0]));
     /// assert_eq!(state.series_count(), 1);
     /// ```
-    pub fn add_series(&mut self, series: DataSeries) {
+    pub fn add_series(&mut self, mut series: DataSeries) {
+        if series.color() == ratatui::style::Color::Cyan {
+            let idx = self.series.len();
+            let palette = super::DEFAULT_PALETTE;
+            series.set_color(palette[idx % palette.len()]);
+        }
         self.series.push(series);
     }
 

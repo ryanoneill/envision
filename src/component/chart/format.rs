@@ -9,7 +9,7 @@
 /// - Integers are formatted without decimals.
 /// - Values >= 1,000,000,000 use "B" suffix.
 /// - Values >= 1,000,000 use "M" suffix.
-/// - Values >= 10,000 use "K" suffix.
+/// - Values >= 1,000 use "K" suffix.
 /// - Values with absolute value < 0.001 (but non-zero) use scientific notation.
 /// - Other values use the given precision (default 2).
 ///
@@ -47,7 +47,7 @@ pub fn smart_format(value: f64, precision: Option<usize>) -> String {
     }
 
     // Large values with SI suffixes
-    if abs >= 10_000.0 {
+    if abs >= 1_000.0 {
         return format_with_suffix(value);
     }
 
@@ -55,7 +55,15 @@ pub fn smart_format(value: f64, precision: Option<usize>) -> String {
     let prec = precision.unwrap_or(2);
     let formatted = format!("{:.prec$}", value);
     // Trim trailing zeros after decimal point
-    trim_trailing_zeros(&formatted)
+    let trimmed = trim_trailing_zeros(&formatted);
+
+    // If the value is non-zero but formatted to "0", use scientific notation
+    // to avoid losing information
+    if value != 0.0 && trimmed.trim_start_matches('-') == "0" {
+        return format_scientific(value);
+    }
+
+    trimmed
 }
 
 /// Formats a value using SI suffixes (K, M, B).
@@ -81,7 +89,7 @@ fn format_with_suffix(value: f64) -> String {
 /// Formats an integer value with SI suffixes if large enough.
 fn format_si(value: f64) -> String {
     let abs = value.abs();
-    if abs >= 10_000.0 {
+    if abs >= 1_000.0 {
         format_with_suffix(value)
     } else {
         format!("{}", value as i64)
@@ -164,7 +172,7 @@ mod tests {
 
     #[test]
     fn test_integer_large_below_si() {
-        assert_eq!(smart_format(9999.0, None), "9999");
+        assert_eq!(smart_format(999.0, None), "999");
     }
 
     // =========================================================================
@@ -173,7 +181,7 @@ mod tests {
 
     #[test]
     fn test_si_thousands() {
-        assert_eq!(smart_format(10_000.0, None), "10K");
+        assert_eq!(smart_format(1_000.0, None), "1K");
     }
 
     #[test]
@@ -275,12 +283,12 @@ mod tests {
 
     #[test]
     fn test_just_above_threshold() {
-        // 0.001 should NOT trigger scientific notation
-        assert_eq!(smart_format(0.001, None), "0");
+        // 0.001 would format to "0" with precision 2, so use scientific notation
+        assert_eq!(smart_format(0.001, None), "1e-3");
     }
 
     #[test]
     fn test_just_below_si_threshold() {
-        assert_eq!(smart_format(9999.99, None), "9999.99");
+        assert_eq!(smart_format(999.99, None), "999.99");
     }
 }
