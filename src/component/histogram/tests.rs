@@ -10,6 +10,7 @@ fn test_new() {
     let state = HistogramState::new();
     assert!(state.data().is_empty());
     assert_eq!(state.bin_count(), 10);
+    assert_eq!(state.bin_method(), &BinMethod::Fixed(10));
     assert_eq!(state.title(), None);
     assert_eq!(state.x_label(), None);
     assert_eq!(state.y_label(), None);
@@ -22,6 +23,7 @@ fn test_default() {
     let state = HistogramState::default();
     assert!(state.data().is_empty());
     assert_eq!(state.bin_count(), 10);
+    assert_eq!(state.bin_method(), &BinMethod::Fixed(10));
 }
 
 #[test]
@@ -35,6 +37,7 @@ fn test_with_data() {
 fn test_with_bin_count() {
     let state = HistogramState::new().with_bin_count(5);
     assert_eq!(state.bin_count(), 5);
+    assert_eq!(state.bin_method(), &BinMethod::Fixed(5));
 }
 
 #[test]
@@ -80,6 +83,32 @@ fn test_with_show_counts() {
     assert!(state.show_counts());
 }
 
+#[test]
+fn test_with_bin_method() {
+    let state = HistogramState::with_data(vec![1.0, 2.0, 3.0]).with_bin_method(BinMethod::Sturges);
+    assert_eq!(state.bin_method(), &BinMethod::Sturges);
+}
+
+#[test]
+fn test_with_bin_method_square_root() {
+    let state =
+        HistogramState::with_data(vec![1.0, 2.0, 3.0]).with_bin_method(BinMethod::SquareRoot);
+    assert_eq!(state.bin_method(), &BinMethod::SquareRoot);
+}
+
+#[test]
+fn test_with_bin_method_scott() {
+    let state = HistogramState::with_data(vec![1.0, 2.0, 3.0]).with_bin_method(BinMethod::Scott);
+    assert_eq!(state.bin_method(), &BinMethod::Scott);
+}
+
+#[test]
+fn test_with_bin_method_freedman_diaconis() {
+    let state =
+        HistogramState::with_data(vec![1.0, 2.0, 3.0]).with_bin_method(BinMethod::FreedmanDiaconis);
+    assert_eq!(state.bin_method(), &BinMethod::FreedmanDiaconis);
+}
+
 // =============================================================================
 // Data operations
 // =============================================================================
@@ -114,6 +143,7 @@ fn test_set_bin_count() {
     let mut state = HistogramState::new();
     state.set_bin_count(20);
     assert_eq!(state.bin_count(), 20);
+    assert_eq!(state.bin_method(), &BinMethod::Fixed(20));
 }
 
 #[test]
@@ -121,6 +151,235 @@ fn test_set_bin_count_zero_clamped() {
     let mut state = HistogramState::new();
     state.set_bin_count(0);
     assert_eq!(state.bin_count(), 1);
+}
+
+#[test]
+fn test_set_bin_method() {
+    let mut state = HistogramState::new();
+    state.set_bin_method(BinMethod::Scott);
+    assert_eq!(state.bin_method(), &BinMethod::Scott);
+}
+
+// =============================================================================
+// BinMethod algorithms
+// =============================================================================
+
+#[test]
+fn test_bin_method_default_is_fixed_10() {
+    assert_eq!(BinMethod::default(), BinMethod::Fixed(10));
+}
+
+#[test]
+fn test_bin_method_fixed_returns_value() {
+    assert_eq!(BinMethod::Fixed(10).compute_bin_count(&[1.0, 2.0, 3.0]), 10);
+}
+
+#[test]
+fn test_bin_method_fixed_zero_clamped() {
+    assert_eq!(BinMethod::Fixed(0).compute_bin_count(&[1.0, 2.0, 3.0]), 1);
+}
+
+#[test]
+fn test_bin_method_fixed_empty_data() {
+    assert_eq!(BinMethod::Fixed(5).compute_bin_count(&[]), 5);
+}
+
+#[test]
+fn test_sturges_empty() {
+    assert_eq!(BinMethod::Sturges.compute_bin_count(&[]), 1);
+}
+
+#[test]
+fn test_sturges_single_point() {
+    assert_eq!(BinMethod::Sturges.compute_bin_count(&[5.0]), 1);
+}
+
+#[test]
+fn test_sturges_two_points() {
+    assert_eq!(BinMethod::Sturges.compute_bin_count(&[1.0, 2.0]), 2);
+}
+
+#[test]
+fn test_sturges_eight_points() {
+    let data: Vec<f64> = (1..=8).map(|i| i as f64).collect();
+    assert_eq!(BinMethod::Sturges.compute_bin_count(&data), 4);
+}
+
+#[test]
+fn test_sturges_hundred_points() {
+    let data: Vec<f64> = (0..100).map(|i| i as f64).collect();
+    assert_eq!(BinMethod::Sturges.compute_bin_count(&data), 8);
+}
+
+#[test]
+fn test_sturges_thousand_points() {
+    let data: Vec<f64> = (0..1000).map(|i| i as f64).collect();
+    assert_eq!(BinMethod::Sturges.compute_bin_count(&data), 11);
+}
+
+#[test]
+fn test_square_root_empty() {
+    assert_eq!(BinMethod::SquareRoot.compute_bin_count(&[]), 1);
+}
+
+#[test]
+fn test_square_root_single_point() {
+    assert_eq!(BinMethod::SquareRoot.compute_bin_count(&[5.0]), 1);
+}
+
+#[test]
+fn test_square_root_four_points() {
+    assert_eq!(
+        BinMethod::SquareRoot.compute_bin_count(&[1.0, 2.0, 3.0, 4.0]),
+        2
+    );
+}
+
+#[test]
+fn test_square_root_hundred_points() {
+    let data: Vec<f64> = (0..100).map(|i| i as f64).collect();
+    assert_eq!(BinMethod::SquareRoot.compute_bin_count(&data), 10);
+}
+
+#[test]
+fn test_square_root_thousand_points() {
+    let data: Vec<f64> = (0..1000).map(|i| i as f64).collect();
+    assert_eq!(BinMethod::SquareRoot.compute_bin_count(&data), 32);
+}
+
+#[test]
+fn test_square_root_nine_points() {
+    let data: Vec<f64> = (0..9).map(|i| i as f64).collect();
+    assert_eq!(BinMethod::SquareRoot.compute_bin_count(&data), 3);
+}
+
+#[test]
+fn test_scott_empty() {
+    assert_eq!(BinMethod::Scott.compute_bin_count(&[]), 1);
+}
+
+#[test]
+fn test_scott_single_point() {
+    assert_eq!(BinMethod::Scott.compute_bin_count(&[5.0]), 1);
+}
+
+#[test]
+fn test_scott_all_same_value() {
+    assert_eq!(BinMethod::Scott.compute_bin_count(&[3.0, 3.0, 3.0, 3.0]), 1);
+}
+
+#[test]
+fn test_scott_uniform_hundred() {
+    let data: Vec<f64> = (0..100).map(|i| i as f64).collect();
+    let bins = BinMethod::Scott.compute_bin_count(&data);
+    assert!(bins >= 3);
+    assert!(bins <= 30);
+}
+
+#[test]
+fn test_scott_returns_at_least_one() {
+    let bins = BinMethod::Scott.compute_bin_count(&[1.0, 2.0]);
+    assert!(bins >= 1);
+}
+
+#[test]
+fn test_freedman_diaconis_empty() {
+    assert_eq!(BinMethod::FreedmanDiaconis.compute_bin_count(&[]), 1);
+}
+
+#[test]
+fn test_freedman_diaconis_single_point() {
+    assert_eq!(BinMethod::FreedmanDiaconis.compute_bin_count(&[5.0]), 1);
+}
+
+#[test]
+fn test_freedman_diaconis_all_same_value() {
+    assert_eq!(
+        BinMethod::FreedmanDiaconis.compute_bin_count(&[3.0, 3.0, 3.0, 3.0]),
+        1
+    );
+}
+
+#[test]
+fn test_freedman_diaconis_uniform_hundred() {
+    let data: Vec<f64> = (0..100).map(|i| i as f64).collect();
+    let bins = BinMethod::FreedmanDiaconis.compute_bin_count(&data);
+    assert!(bins >= 3);
+    assert!(bins <= 50);
+}
+
+#[test]
+fn test_freedman_diaconis_returns_at_least_one() {
+    let bins = BinMethod::FreedmanDiaconis.compute_bin_count(&[1.0, 2.0, 3.0, 4.0]);
+    assert!(bins >= 1);
+}
+
+#[test]
+fn test_freedman_diaconis_with_outliers() {
+    let mut data: Vec<f64> = (0..100).map(|i| i as f64).collect();
+    let bins_no_outliers = BinMethod::FreedmanDiaconis.compute_bin_count(&data);
+    data.push(10000.0);
+    data.push(-10000.0);
+    let bins_with_outliers = BinMethod::FreedmanDiaconis.compute_bin_count(&data);
+    assert!(bins_with_outliers > bins_no_outliers);
+}
+
+#[test]
+fn test_bin_count_clamped_to_max_200() {
+    let data: Vec<f64> = (0..100_000).map(|i| i as f64).collect();
+    assert!(BinMethod::SquareRoot.compute_bin_count(&data) <= 200);
+    assert!(BinMethod::Sturges.compute_bin_count(&data) <= 200);
+    assert!(BinMethod::Scott.compute_bin_count(&data) <= 200);
+    assert!(BinMethod::FreedmanDiaconis.compute_bin_count(&data) <= 200);
+}
+
+#[test]
+fn test_bin_count_at_least_one() {
+    let data: Vec<f64> = vec![];
+    assert!(BinMethod::SquareRoot.compute_bin_count(&data) >= 1);
+    assert!(BinMethod::Sturges.compute_bin_count(&data) >= 1);
+    assert!(BinMethod::Scott.compute_bin_count(&data) >= 1);
+    assert!(BinMethod::FreedmanDiaconis.compute_bin_count(&data) >= 1);
+}
+
+// =============================================================================
+// Adaptive bin_count through HistogramState
+// =============================================================================
+
+#[test]
+fn test_bin_count_with_sturges_method() {
+    let data: Vec<f64> = (0..100).map(|i| i as f64).collect();
+    let state = HistogramState::with_data(data).with_bin_method(BinMethod::Sturges);
+    assert_eq!(state.bin_count(), 8);
+}
+
+#[test]
+fn test_bin_count_with_square_root_method() {
+    let data: Vec<f64> = (0..100).map(|i| i as f64).collect();
+    let state = HistogramState::with_data(data).with_bin_method(BinMethod::SquareRoot);
+    assert_eq!(state.bin_count(), 10);
+}
+
+#[test]
+fn test_bin_count_adapts_when_data_changes() {
+    let mut state = HistogramState::new().with_bin_method(BinMethod::SquareRoot);
+    assert_eq!(state.bin_count(), 1);
+    state.push_batch(&[1.0, 2.0, 3.0, 4.0]);
+    assert_eq!(state.bin_count(), 2);
+    for i in 5..=100 {
+        state.push(i as f64);
+    }
+    assert_eq!(state.bin_count(), 10);
+}
+
+#[test]
+fn test_compute_bins_uses_adaptive_count() {
+    let data: Vec<f64> = (0..100).map(|i| i as f64).collect();
+    let state = HistogramState::with_data(data).with_bin_method(BinMethod::SquareRoot);
+    let bins = state.compute_bins();
+    assert_eq!(bins.len(), 10);
+    let total: usize = bins.iter().map(|(_, _, c)| *c).sum();
+    assert_eq!(total, 100);
 }
 
 // =============================================================================
@@ -164,44 +423,39 @@ fn test_effective_max_empty_no_manual() {
 }
 
 // =============================================================================
-// Binning: compute_bins with known data
+// Binning: compute_bins
 // =============================================================================
 
 #[test]
 fn test_compute_bins_uniform() {
-    // 5 data points uniformly distributed in 5 bins from 1.0 to 5.0
     let state = HistogramState::with_data(vec![1.0, 2.0, 3.0, 4.0, 5.0])
         .with_bin_count(5)
         .with_range(0.0, 5.0);
     let bins = state.compute_bins();
     assert_eq!(bins.len(), 5);
-    // Total count should equal data length
     let total: usize = bins.iter().map(|(_, _, c)| *c).sum();
     assert_eq!(total, 5);
 }
 
 #[test]
 fn test_compute_bins_all_in_one() {
-    // All values in the range [0, 1), bin count = 3, range [0, 3)
     let state = HistogramState::with_data(vec![0.1, 0.2, 0.3, 0.4, 0.5])
         .with_bin_count(3)
         .with_range(0.0, 3.0);
     let bins = state.compute_bins();
     assert_eq!(bins.len(), 3);
-    assert_eq!(bins[0].2, 5); // All in first bin
+    assert_eq!(bins[0].2, 5);
     assert_eq!(bins[1].2, 0);
     assert_eq!(bins[2].2, 0);
 }
 
 #[test]
 fn test_compute_bins_max_value_in_last_bin() {
-    // The maximum value should be included in the last bin
     let state = HistogramState::with_data(vec![0.0, 5.0, 10.0])
         .with_bin_count(2)
         .with_range(0.0, 10.0);
     let bins = state.compute_bins();
     assert_eq!(bins.len(), 2);
-    // 0.0 => bin 0, 5.0 => bin 1, 10.0 => bin 1 (clamped to last)
     assert_eq!(bins[0].2, 1);
     assert_eq!(bins[1].2, 2);
 }
@@ -213,7 +467,6 @@ fn test_compute_bins_bin_edges() {
         .with_range(1.0, 4.0);
     let bins = state.compute_bins();
     assert_eq!(bins.len(), 3);
-    // Verify edges
     assert!((bins[0].0 - 1.0).abs() < f64::EPSILON);
     assert!((bins[0].1 - 2.0).abs() < f64::EPSILON);
     assert!((bins[1].0 - 2.0).abs() < f64::EPSILON);
@@ -221,10 +474,6 @@ fn test_compute_bins_bin_edges() {
     assert!((bins[2].0 - 3.0).abs() < f64::EPSILON);
     assert!((bins[2].1 - 4.0).abs() < f64::EPSILON);
 }
-
-// =============================================================================
-// Binning edge cases
-// =============================================================================
 
 #[test]
 fn test_compute_bins_empty_data() {
@@ -254,7 +503,6 @@ fn test_compute_bins_empty_data_with_range() {
 fn test_compute_bins_single_point() {
     let state = HistogramState::with_data(vec![5.0]).with_bin_count(3);
     let bins = state.compute_bins();
-    // All same value means zero range => single bin
     assert_eq!(bins.len(), 1);
     assert_eq!(bins[0].2, 1);
 }
@@ -263,10 +511,8 @@ fn test_compute_bins_single_point() {
 fn test_compute_bins_all_same_value() {
     let state = HistogramState::with_data(vec![7.0, 7.0, 7.0, 7.0]).with_bin_count(5);
     let bins = state.compute_bins();
-    // Zero range => single bin with all data
     assert_eq!(bins.len(), 1);
     assert_eq!(bins[0].2, 4);
-    // Bin should span around the value
     assert!((bins[0].0 - 6.5).abs() < f64::EPSILON);
     assert!((bins[0].1 - 7.5).abs() < f64::EPSILON);
 }
@@ -278,7 +524,6 @@ fn test_compute_bins_negative_values() {
     assert_eq!(bins.len(), 5);
     let total: usize = bins.iter().map(|(_, _, c)| *c).sum();
     assert_eq!(total, 6);
-    // Verify range covers negative to positive
     assert!(bins[0].0 < 0.0);
     assert!(bins[4].1 > 0.0);
 }
@@ -293,13 +538,77 @@ fn test_compute_bins_bin_count_one() {
 
 #[test]
 fn test_compute_bins_auto_range() {
-    // Without manual range, should use data min/max
     let state = HistogramState::with_data(vec![10.0, 20.0, 30.0]).with_bin_count(3);
     let bins = state.compute_bins();
     assert_eq!(bins.len(), 3);
     assert!((bins[0].0 - 10.0).abs() < f64::EPSILON);
     let total: usize = bins.iter().map(|(_, _, c)| *c).sum();
     assert_eq!(total, 3);
+}
+
+// =============================================================================
+// Adaptive binning edge cases
+// =============================================================================
+
+#[test]
+fn test_adaptive_empty_data_produces_one_bin() {
+    for method in [
+        BinMethod::Sturges,
+        BinMethod::SquareRoot,
+        BinMethod::Scott,
+        BinMethod::FreedmanDiaconis,
+    ] {
+        let state = HistogramState::new().with_bin_method(method.clone());
+        let bins = state.compute_bins();
+        assert_eq!(
+            bins.len(),
+            1,
+            "method {:?} should produce 1 bin for empty data",
+            method
+        );
+        assert_eq!(bins[0].2, 0);
+    }
+}
+
+#[test]
+fn test_adaptive_single_point_produces_one_bin() {
+    for method in [
+        BinMethod::Sturges,
+        BinMethod::SquareRoot,
+        BinMethod::Scott,
+        BinMethod::FreedmanDiaconis,
+    ] {
+        let state = HistogramState::with_data(vec![42.0]).with_bin_method(method.clone());
+        let bins = state.compute_bins();
+        assert_eq!(
+            bins.len(),
+            1,
+            "method {:?} should produce 1 bin for single point",
+            method
+        );
+        assert_eq!(bins[0].2, 1);
+    }
+}
+
+#[test]
+fn test_adaptive_all_same_value() {
+    for method in [
+        BinMethod::Sturges,
+        BinMethod::SquareRoot,
+        BinMethod::Scott,
+        BinMethod::FreedmanDiaconis,
+    ] {
+        let state =
+            HistogramState::with_data(vec![5.0, 5.0, 5.0, 5.0]).with_bin_method(method.clone());
+        let bins = state.compute_bins();
+        assert_eq!(
+            bins.len(),
+            1,
+            "method {:?} should produce 1 bin for same values",
+            method
+        );
+        assert_eq!(bins[0].2, 4);
+    }
 }
 
 // =============================================================================
@@ -342,6 +651,7 @@ fn test_update_set_bin_count() {
     let mut state = HistogramState::new();
     Histogram::update(&mut state, HistogramMessage::SetBinCount(20));
     assert_eq!(state.bin_count(), 20);
+    assert_eq!(state.bin_method(), &BinMethod::Fixed(20));
 }
 
 #[test]
@@ -349,6 +659,17 @@ fn test_update_set_bin_count_zero_clamped() {
     let mut state = HistogramState::new();
     Histogram::update(&mut state, HistogramMessage::SetBinCount(0));
     assert_eq!(state.bin_count(), 1);
+}
+
+#[test]
+fn test_update_set_bin_method() {
+    let mut state = HistogramState::with_data(vec![1.0, 2.0, 3.0, 4.0]);
+    Histogram::update(
+        &mut state,
+        HistogramMessage::SetBinMethod(BinMethod::SquareRoot),
+    );
+    assert_eq!(state.bin_method(), &BinMethod::SquareRoot);
+    assert_eq!(state.bin_count(), 2);
 }
 
 #[test]
@@ -397,6 +718,21 @@ fn test_partial_eq_different_data() {
     let state1 = HistogramState::with_data(vec![1.0, 2.0]);
     let state2 = HistogramState::with_data(vec![3.0, 4.0]);
     assert_ne!(state1, state2);
+}
+
+#[test]
+fn test_partial_eq_different_bin_method() {
+    let state1 = HistogramState::new().with_bin_method(BinMethod::Sturges);
+    let state2 = HistogramState::new().with_bin_method(BinMethod::Scott);
+    assert_ne!(state1, state2);
+}
+
+#[test]
+fn test_bin_method_partial_eq() {
+    assert_eq!(BinMethod::Sturges, BinMethod::Sturges);
+    assert_eq!(BinMethod::Fixed(5), BinMethod::Fixed(5));
+    assert_ne!(BinMethod::Fixed(5), BinMethod::Fixed(10));
+    assert_ne!(BinMethod::Sturges, BinMethod::Scott);
 }
 
 // =============================================================================
@@ -477,7 +813,6 @@ fn test_render_disabled() {
 fn test_render_focused() {
     let state =
         HistogramState::with_data(vec![1.0, 2.0, 3.0, 4.0, 5.0]).with_title("Focused Histogram");
-
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
@@ -509,6 +844,20 @@ fn test_render_with_color() {
         .with_bin_count(4)
         .with_color(Color::Green);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
+    terminal
+        .draw(|frame| {
+            Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_render_with_adaptive_binning() {
+    let data: Vec<f64> = (0..100).map(|i| i as f64).collect();
+    let state = HistogramState::with_data(data)
+        .with_bin_method(BinMethod::SquareRoot)
+        .with_title("Adaptive Bins");
+    let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
             Histogram::view(&state, frame, frame.area(), &theme, &ViewContext::default());
