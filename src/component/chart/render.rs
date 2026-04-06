@@ -618,19 +618,25 @@ pub(super) fn render_shared_axis_chart(
     let max_x_ticks = (area.width / 10).max(2) as usize;
     let max_y_ticks = (area.height / 3).max(2) as usize;
 
-    let x_ticks = super::ticks::nice_ticks(min_x_data, max_x, max_x_ticks);
-    let x_labels: Vec<String> = x_ticks
-        .iter()
-        .map(|&v| {
-            super::ticks::format_tick(
-                v,
-                x_ticks.get(1).copied().unwrap_or(1.0) - x_ticks.first().copied().unwrap_or(0.0),
-            )
-        })
-        .collect();
-
-    let x_bound_min = x_ticks.first().copied().unwrap_or(0.0);
-    let x_bound_max = x_ticks.last().copied().unwrap_or(max_x);
+    let (x_labels, x_bound_min, x_bound_max) = if let Some(custom_labels) = &state.x_labels {
+        let labels = select_x_labels(custom_labels, max_x_ticks);
+        (labels, min_x_data, max_x_data)
+    } else {
+        let x_ticks = super::ticks::nice_ticks(min_x_data, max_x, max_x_ticks);
+        let labels: Vec<String> = x_ticks
+            .iter()
+            .map(|&v| {
+                super::ticks::format_tick(
+                    v,
+                    x_ticks.get(1).copied().unwrap_or(1.0)
+                        - x_ticks.first().copied().unwrap_or(0.0),
+                )
+            })
+            .collect();
+        let bound_min = x_ticks.first().copied().unwrap_or(0.0);
+        let bound_max = x_ticks.last().copied().unwrap_or(max_x);
+        (labels, bound_min, bound_max)
+    };
 
     // Generate Y ticks
     let (y_ticks_values, y_labels) = if is_log {
@@ -899,6 +905,31 @@ pub(super) fn interpolate_y(data: &[(f64, f64)], x: f64) -> Option<f64> {
         }
     }
     Some(data[data.len() - 1].1)
+}
+
+/// Selects a subset of custom X-axis labels that fit within `max_labels` slots.
+///
+/// If all labels fit, they are returned as-is. Otherwise, labels are sampled
+/// at evenly spaced intervals, always including the first and last label.
+pub(super) fn select_x_labels(labels: &[String], max_labels: usize) -> Vec<String> {
+    if labels.is_empty() {
+        return Vec::new();
+    }
+    let count = labels.len();
+    if count <= max_labels {
+        return labels.to_vec();
+    }
+    // Always include first and last; sample evenly in between
+    let mut result = Vec::with_capacity(max_labels);
+    for i in 0..max_labels {
+        let idx = if max_labels <= 1 {
+            0
+        } else {
+            (i * (count - 1)) / (max_labels - 1)
+        };
+        result.push(labels[idx].clone());
+    }
+    result
 }
 
 /// Renders horizontal grid lines at Y-axis tick positions.

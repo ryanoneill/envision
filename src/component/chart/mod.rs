@@ -312,6 +312,10 @@ pub struct ChartState {
     pub(crate) categories: Vec<String>,
     /// Bar rendering mode (Single, Grouped, or Stacked).
     pub(crate) bar_mode: BarMode,
+    /// Optional string labels for the X-axis of line, area, and scatter charts.
+    /// When present, these replace the numeric tick labels on the X-axis.
+    /// Useful for displaying dates, timestamps, or durations without a datetime dependency.
+    pub(crate) x_labels: Option<Vec<String>>,
     /// Text annotations at specific data coordinates.
     pub(crate) annotations: Vec<ChartAnnotation>,
 }
@@ -339,6 +343,7 @@ impl Default for ChartState {
             show_grid: false,
             categories: Vec::new(),
             bar_mode: BarMode::default(),
+            x_labels: None,
             annotations: Vec::new(),
         }
     }
@@ -636,6 +641,31 @@ impl ChartState {
     /// Sets whether to show grid lines at tick positions (builder pattern).
     pub fn with_grid(mut self, show: bool) -> Self {
         self.show_grid = show;
+        self
+    }
+
+    /// Sets custom string labels for the X-axis (builder pattern).
+    ///
+    /// When set, these labels replace the numeric tick labels on the X-axis
+    /// of line, area, and scatter charts. The caller is responsible for
+    /// formatting the labels (e.g., formatting timestamps as strings).
+    ///
+    /// Labels are spaced evenly across the X-axis width. If there are more
+    /// labels than can fit, a subset is displayed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let series = DataSeries::new("Requests", vec![100.0, 250.0, 180.0, 320.0, 90.0]);
+    /// let state = ChartState::line(vec![series])
+    ///     .with_x_labels(vec!["00:00", "06:00", "12:00", "18:00", "24:00"])
+    ///     .with_title("Request Rate (24h)");
+    /// assert_eq!(state.x_labels().unwrap(), &["00:00", "06:00", "12:00", "18:00", "24:00"]);
+    /// ```
+    pub fn with_x_labels(mut self, labels: Vec<impl Into<String>>) -> Self {
+        self.x_labels = Some(labels.into_iter().map(Into::into).collect());
         self
     }
 
@@ -957,3 +987,5 @@ mod error_band_tests;
 mod snapshot_tests;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod x_labels_tests;
