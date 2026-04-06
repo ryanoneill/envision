@@ -64,13 +64,17 @@ pub(super) fn render_bar_chart(
         Style::default().fg(series.color())
     };
 
-    // Create bars from the series values
+    // Create bars from the series values, using category labels when available
     let bars: Vec<Bar> = series
         .values()
         .iter()
         .enumerate()
         .map(|(i, &v)| {
-            let label = format!("{}", i + 1);
+            let label = if i < state.categories().len() {
+                state.categories()[i].clone()
+            } else {
+                format!("{}", i + 1)
+            };
             Bar::default()
                 .value(v.max(0.0) as u64)
                 .label(Line::from(label))
