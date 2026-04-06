@@ -846,6 +846,8 @@ impl Component for Chart {
 }
 
 #[cfg(test)]
+mod area_fill_tests;
+#[cfg(test)]
 mod enhancement_tests;
 #[cfg(test)]
 mod snapshot_tests;
