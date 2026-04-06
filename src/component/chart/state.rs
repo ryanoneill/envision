@@ -279,6 +279,16 @@ impl ChartState {
         self.show_crosshair = show;
     }
 
+    /// Returns whether grid lines are visible.
+    pub fn show_grid(&self) -> bool {
+        self.show_grid
+    }
+
+    /// Sets grid line visibility.
+    pub fn set_show_grid(&mut self, show: bool) {
+        self.show_grid = show;
+    }
+
     /// Returns the vertical reference lines.
     pub fn vertical_lines(&self) -> &[VerticalLine] {
         &self.vertical_lines

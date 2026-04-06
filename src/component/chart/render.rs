@@ -347,6 +347,10 @@ pub(super) fn render_shared_axis_chart(
     let chart = RatatuiChart::new(datasets).x_axis(x_axis).y_axis(y_axis);
 
     frame.render_widget(chart, area);
+
+    if state.show_grid {
+        render_grid_lines(frame, area, &y_ticks_values, y_axis_min, y_axis_max);
+    }
 }
 
 /// Renders the crosshair value readout overlay at the top of the chart area.
@@ -384,4 +388,34 @@ pub(super) fn render_crosshair_readout(
 
     let readout_area = Rect::new(area.x, area.y, area.width, 1);
     frame.render_widget(readout, readout_area);
+}
+
+/// Renders horizontal grid lines at Y-axis tick positions.
+fn render_grid_lines(
+    frame: &mut Frame,
+    area: Rect,
+    y_ticks_values: &[f64],
+    y_axis_min: f64,
+    y_axis_max: f64,
+) {
+    let y_range = y_axis_max - y_axis_min;
+    if y_range <= 0.0 || area.height < 2 {
+        return;
+    }
+    for &tick_val in y_ticks_values {
+        let y_frac = (tick_val - y_axis_min) / y_range;
+        let screen_y =
+            area.bottom().saturating_sub(1) - (y_frac * (area.height as f64 - 1.0)) as u16;
+        if screen_y > area.y && screen_y < area.bottom().saturating_sub(1) {
+            for x in area.x..area.right() {
+                let cell = frame.buffer_mut().cell_mut(Position::new(x, screen_y));
+                if let Some(cell) = cell {
+                    if cell.symbol() == " " {
+                        cell.set_char('·');
+                        cell.set_fg(Color::DarkGray);
+                    }
+                }
+            }
+        }
+    }
 }

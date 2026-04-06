@@ -154,6 +154,7 @@ fn test_default() {
     assert!(state.thresholds().is_empty());
     assert_eq!(state.y_min(), None);
     assert_eq!(state.y_max(), None);
+    assert!(!state.show_grid());
 }
 
 #[test]

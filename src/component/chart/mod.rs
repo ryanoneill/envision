@@ -201,6 +201,8 @@ pub enum ChartMessage {
     CursorEnd,
     /// Toggle the crosshair cursor visibility.
     ToggleCrosshair,
+    /// Toggle grid line visibility.
+    ToggleGrid,
 }
 
 /// Output messages from a Chart.
@@ -216,6 +218,8 @@ pub enum ChartOutput {
     CursorMoved(usize),
     /// The crosshair was toggled on or off.
     CrosshairToggled(bool),
+    /// Grid lines were toggled on or off.
+    GridToggled(bool),
 }
 
 /// State for a Chart component.
@@ -261,6 +265,8 @@ pub struct ChartState {
     pub(crate) cursor_position: Option<usize>,
     /// Whether to show the crosshair cursor.
     pub(crate) show_crosshair: bool,
+    /// Whether to show grid lines at tick positions.
+    pub(crate) show_grid: bool,
 }
 
 impl Default for ChartState {
@@ -283,6 +289,7 @@ impl Default for ChartState {
             vertical_lines: Vec::new(),
             cursor_position: None,
             show_crosshair: false,
+            show_grid: false,
         }
     }
 }
@@ -519,6 +526,12 @@ impl ChartState {
             .push(VerticalLine::new(x_value, label, color));
         self
     }
+
+    /// Sets whether to show grid lines at tick positions (builder pattern).
+    pub fn with_grid(mut self, show: bool) -> Self {
+        self.show_grid = show;
+        self
+    }
 }
 
 /// A chart component for data visualization.
@@ -537,6 +550,7 @@ impl ChartState {
 /// - `Home` — Move crosshair cursor to start
 /// - `End` — Move crosshair cursor to end
 /// - `c` — Toggle crosshair cursor visibility
+/// - `g` — Toggle grid line visibility
 pub struct Chart(PhantomData<()>);
 
 impl Component for Chart {
@@ -567,6 +581,7 @@ impl Component for Chart {
             KeyCode::Home => Some(ChartMessage::CursorHome),
             KeyCode::End => Some(ChartMessage::CursorEnd),
             KeyCode::Char('c') => Some(ChartMessage::ToggleCrosshair),
+            KeyCode::Char('g') => Some(ChartMessage::ToggleGrid),
             _ => None,
         }
     }
@@ -604,6 +619,10 @@ impl Component for Chart {
                     state.cursor_position = Some(0);
                 }
                 Some(ChartOutput::CrosshairToggled(state.show_crosshair))
+            }
+            ChartMessage::ToggleGrid => {
+                state.show_grid = !state.show_grid;
+                Some(ChartOutput::GridToggled(state.show_grid))
             }
             ChartMessage::CursorLeft
             | ChartMessage::CursorRight
