@@ -406,6 +406,29 @@ pub(super) fn render_shared_axis_chart(
 
     frame.render_widget(chart, area);
 
+    // Render error bands / confidence intervals for series that have bounds.
+    let has_bounds = state
+        .series
+        .iter()
+        .any(|s| s.upper_bound().is_some() || s.lower_bound().is_some());
+    if has_bounds {
+        let graph_area = compute_graph_area(area, &y_labels_for_layout, &x_labels_for_layout);
+        if graph_area.width > 0 && graph_area.height > 0 {
+            super::error_bands::fill_error_bands(
+                state,
+                frame,
+                graph_area,
+                x_bound_min,
+                x_bound_max,
+                y_axis_min,
+                y_axis_max,
+                disabled,
+                theme,
+                is_log,
+            );
+        }
+    }
+
     // For area charts, fill below the curve after the line has been rendered.
     if state.kind == ChartKind::Area && !state.series.is_empty() {
         let graph_area = compute_graph_area(area, &y_labels_for_layout, &x_labels_for_layout);
@@ -570,7 +593,7 @@ fn fill_column(buf: &mut Buffer, x: u16, y_start: u16, y_end: u16, color: Color)
 }
 
 /// Linearly interpolates the Y value for a given X within a sorted data series.
-fn interpolate_y(data: &[(f64, f64)], x: f64) -> Option<f64> {
+pub(super) fn interpolate_y(data: &[(f64, f64)], x: f64) -> Option<f64> {
     if data.is_empty() {
         return None;
     }

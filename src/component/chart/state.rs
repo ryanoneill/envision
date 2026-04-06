@@ -426,14 +426,20 @@ impl ChartState {
                 .map(|t| t.value)
                 .reduce(f64::min)
                 .unwrap_or(data_min);
-            f64::min(data_min, threshold_min)
+            let bounds_min = self
+                .series
+                .iter()
+                .filter_map(|s| {
+                    s.lower_bound()
+                        .and_then(|lb| lb.iter().copied().reduce(f64::min))
+                })
+                .reduce(f64::min)
+                .unwrap_or(data_min);
+            f64::min(f64::min(data_min, threshold_min), bounds_min)
         })
     }
 
     /// Computes the effective maximum for the Y-axis, considering manual override.
-    ///
-    /// If `y_max` is set, uses that value. Otherwise auto-scales from data,
-    /// also considering threshold line values.
     pub fn effective_max(&self) -> f64 {
         self.y_max.unwrap_or_else(|| {
             let data_max = self.global_max();
@@ -443,7 +449,16 @@ impl ChartState {
                 .map(|t| t.value)
                 .reduce(f64::max)
                 .unwrap_or(data_max);
-            f64::max(data_max, threshold_max)
+            let bounds_max = self
+                .series
+                .iter()
+                .filter_map(|s| {
+                    s.upper_bound()
+                        .and_then(|ub| ub.iter().copied().reduce(f64::max))
+                })
+                .reduce(f64::max)
+                .unwrap_or(data_max);
+            f64::max(f64::max(data_max, threshold_max), bounds_max)
         })
     }
 
