@@ -31,41 +31,10 @@ use super::{Component, ViewContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
+mod color;
 mod render;
 
-/// Color scale for the heatmap.
-///
-/// Determines how values are mapped to colors. Each variant defines a
-/// different color gradient from low to high values.
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::HeatmapColorScale;
-/// use ratatui::style::Color;
-///
-/// let scale = HeatmapColorScale::GreenToRed;
-/// assert_eq!(scale, HeatmapColorScale::default());
-///
-/// let custom = HeatmapColorScale::Intensity(Color::Cyan);
-/// assert_ne!(custom, HeatmapColorScale::GreenToRed);
-/// ```
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-#[cfg_attr(
-    feature = "serialization",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-pub enum HeatmapColorScale {
-    /// Green (low) to Red (high), passing through yellow.
-    #[default]
-    GreenToRed,
-    /// Blue (low) to Red (high), passing through magenta.
-    BlueToRed,
-    /// Cool blue (low) to warm yellow (high), passing through gray.
-    CoolToWarm,
-    /// Single color with varying intensity (dim to bright).
-    Intensity(Color),
-}
+pub use color::{HeatmapColorScale, value_to_color};
 
 /// Messages that can be sent to a Heatmap.
 ///
@@ -621,99 +590,6 @@ impl HeatmapState {
     }
 }
 
-/// Maps a value to a color based on the heatmap color scale.
-///
-/// The value is normalized to the range [0.0, 1.0] based on the given
-/// min and max, then mapped to an RGB color according to the scale.
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::{HeatmapColorScale, value_to_color};
-/// use ratatui::style::Color;
-///
-/// let color = value_to_color(0.0, 0.0, 1.0, &HeatmapColorScale::GreenToRed);
-/// assert_eq!(color, Color::Rgb(0, 255, 0));
-///
-/// let color = value_to_color(1.0, 0.0, 1.0, &HeatmapColorScale::GreenToRed);
-/// assert_eq!(color, Color::Rgb(255, 0, 0));
-/// ```
-pub fn value_to_color(value: f64, min: f64, max: f64, scale: &HeatmapColorScale) -> Color {
-    let t = if (max - min).abs() < f64::EPSILON {
-        0.5
-    } else {
-        ((value - min) / (max - min)).clamp(0.0, 1.0)
-    };
-
-    match scale {
-        HeatmapColorScale::GreenToRed => {
-            // Green -> Yellow -> Red
-            if t <= 0.5 {
-                let s = t * 2.0; // 0..1 within first half
-                let r = (255.0 * s) as u8;
-                let g = 255u8;
-                Color::Rgb(r, g, 0)
-            } else {
-                let s = (t - 0.5) * 2.0; // 0..1 within second half
-                let r = 255u8;
-                let g = (255.0 * (1.0 - s)) as u8;
-                Color::Rgb(r, g, 0)
-            }
-        }
-        HeatmapColorScale::BlueToRed => {
-            // Blue -> Magenta -> Red
-            if t <= 0.5 {
-                let s = t * 2.0;
-                let r = (255.0 * s) as u8;
-                let b = 255u8;
-                Color::Rgb(r, 0, b)
-            } else {
-                let s = (t - 0.5) * 2.0;
-                let r = 255u8;
-                let b = (255.0 * (1.0 - s)) as u8;
-                Color::Rgb(r, 0, b)
-            }
-        }
-        HeatmapColorScale::CoolToWarm => {
-            // Blue(0,0,200) -> Gray(200,200,200) -> Yellow(200,200,0)
-            if t <= 0.5 {
-                let s = t * 2.0;
-                let r = (200.0 * s) as u8;
-                let g = (200.0 * s) as u8;
-                let b = 200u8;
-                Color::Rgb(r, g, b)
-            } else {
-                let s = (t - 0.5) * 2.0;
-                let r = 200u8;
-                let g = 200u8;
-                let b = (200.0 * (1.0 - s)) as u8;
-                Color::Rgb(r, g, b)
-            }
-        }
-        HeatmapColorScale::Intensity(base_color) => {
-            // Extract the base RGB and scale brightness
-            let (br, bg, bb) = match base_color {
-                Color::Rgb(r, g, b) => (*r, *g, *b),
-                Color::Red => (255, 0, 0),
-                Color::Green => (0, 255, 0),
-                Color::Blue => (0, 0, 255),
-                Color::Yellow => (255, 255, 0),
-                Color::Cyan => (0, 255, 255),
-                Color::Magenta => (255, 0, 255),
-                Color::White => (255, 255, 255),
-                _ => (128, 128, 128),
-            };
-            // Scale from dim (t=0) to full brightness (t=1)
-            // Minimum brightness of ~20% so cells are always visible
-            let factor = 0.2 + 0.8 * t;
-            let r = (br as f64 * factor) as u8;
-            let g = (bg as f64 * factor) as u8;
-            let b = (bb as f64 * factor) as u8;
-            Color::Rgb(r, g, b)
-        }
-    }
-}
-
 /// A heatmap component for 2D color-intensity grid display.
 ///
 /// Renders a grid of cells where each cell's background color represents
@@ -932,6 +808,8 @@ fn navigate_selection(state: &mut HeatmapState, direction: Direction) -> Option<
     })
 }
 
+#[cfg(test)]
+mod color_tests;
 #[cfg(test)]
 mod snapshot_tests;
 #[cfg(test)]
