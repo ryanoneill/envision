@@ -760,6 +760,118 @@ fn test_view_empty_steps() {
     insta::assert_snapshot!("view_empty", display);
 }
 
+#[test]
+fn test_view_borderless_horizontal() {
+    let (mut terminal, theme) = setup_render(60, 3);
+    let steps = vec![
+        Step::new("Build").with_status(StepStatus::Completed),
+        Step::new("Test").with_status(StepStatus::Active),
+        Step::new("Deploy"),
+    ];
+    let state = StepIndicatorState::new(steps).with_show_border(false);
+
+    terminal
+        .draw(|frame| {
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+
+    let display = terminal.backend().to_string();
+    insta::assert_snapshot!("view_borderless_horizontal", display);
+}
+
+#[test]
+fn test_view_borderless_vertical() {
+    let (mut terminal, theme) = setup_render(20, 8);
+    let steps = vec![
+        Step::new("Build").with_status(StepStatus::Completed),
+        Step::new("Test").with_status(StepStatus::Active),
+        Step::new("Deploy"),
+    ];
+    let state = StepIndicatorState::new(steps)
+        .with_orientation(StepOrientation::Vertical)
+        .with_show_border(false);
+
+    terminal
+        .draw(|frame| {
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+
+    let display = terminal.backend().to_string();
+    insta::assert_snapshot!("view_borderless_vertical", display);
+}
+
+#[test]
+fn test_view_borderless_one_row() {
+    // The canonical breadcrumb use case: a single row of steps
+    // inline in a larger layout, with no surrounding box.
+    // Before this feature, a 1-row area rendered nothing because
+    // the border consumed all vertical space.
+    let (mut terminal, theme) = setup_render(60, 1);
+    let steps = vec![
+        Step::new("Home"),
+        Step::new("Docs").with_status(StepStatus::Active),
+        Step::new("Guide"),
+    ];
+    let state = StepIndicatorState::new(steps).with_show_border(false);
+
+    terminal
+        .draw(|frame| {
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+
+    let display = terminal.backend().to_string();
+    insta::assert_snapshot!("view_borderless_one_row", display);
+}
+
+#[test]
+fn test_view_borderless_drops_title() {
+    // Locks in the design decision that the title is silently
+    // suppressed when show_border is false. The title field still
+    // exists on the state; only the rendering is suppressed.
+    let (mut terminal, theme) = setup_render(60, 3);
+    let steps = vec![
+        Step::new("Build").with_status(StepStatus::Completed),
+        Step::new("Test").with_status(StepStatus::Active),
+    ];
+    let state = StepIndicatorState::new(steps)
+        .with_title("Pipeline")
+        .with_show_border(false);
+
+    // Sanity: the title IS still stored on the state; it's only
+    // rendering that drops it.
+    assert_eq!(state.title(), Some("Pipeline"));
+
+    terminal
+        .draw(|frame| {
+            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+        })
+        .unwrap();
+
+    let display = terminal.backend().to_string();
+
+    // The rendered output must contain the step labels but NOT the
+    // title text. We check this explicitly (in addition to the
+    // snapshot) because the title-drop behavior is the whole point
+    // of this test.
+    assert!(
+        display.contains("Build"),
+        "step label 'Build' must be visible"
+    );
+    assert!(
+        display.contains("Test"),
+        "step label 'Test' must be visible"
+    );
+    assert!(
+        !display.contains("Pipeline"),
+        "title must not be rendered when show_border is false, but display was:\n{display}",
+    );
+
+    insta::assert_snapshot!("view_borderless_drops_title", display);
+}
+
 // ========== Annotation Tests ==========
 
 #[test]

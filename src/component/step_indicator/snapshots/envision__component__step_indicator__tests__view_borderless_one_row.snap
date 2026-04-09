@@ -1,0 +1,6 @@
+---
+source: src/component/step_indicator/tests.rs
+assertion_line: 826
+expression: display
+---
+○ Home ─── ● Docs ─── ○ Guide
