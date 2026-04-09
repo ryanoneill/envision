@@ -708,27 +708,23 @@ impl Component for StepIndicator {
             );
         });
 
-        let block = if let Some(title) = &state.title {
-            Block::default()
-                .title(format!(" {} ", title))
+        let inner = if state.show_border {
+            let mut block = Block::default()
                 .borders(Borders::ALL)
                 .border_style(if ctx.focused {
                     theme.focused_border_style()
                 } else {
                     theme.border_style()
-                })
+                });
+            if let Some(title) = &state.title {
+                block = block.title(format!(" {} ", title));
+            }
+            let inner = block.inner(area);
+            frame.render_widget(block, area);
+            inner
         } else {
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(if ctx.focused {
-                    theme.focused_border_style()
-                } else {
-                    theme.border_style()
-                })
+            area
         };
-
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
 
         if state.steps.is_empty() {
             return;
