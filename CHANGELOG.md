@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `StepIndicatorState::with_show_border(bool)`, `show_border()`, and
+  `set_show_border(bool)` for opting out of the border box. When the
+  border is disabled, `StepIndicator` becomes usable as an inline
+  breadcrumb in a single-row area. Defaults to `true` so existing
+  callers see no change. Matches the naming convention of
+  `StyledTextState::with_show_border`. Note: when the border is
+  hidden, the state's title is not rendered (the title is drawn as
+  part of the border block).
+
 ## [0.12.0] - 2026-04-05
 
 ### Breaking

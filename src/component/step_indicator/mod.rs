@@ -221,6 +221,7 @@ pub struct StepIndicatorState {
     show_descriptions: bool,
     title: Option<String>,
     connector: String,
+    show_border: bool,
 }
 
 impl Default for StepIndicatorState {
@@ -232,6 +233,7 @@ impl Default for StepIndicatorState {
             show_descriptions: false,
             title: None,
             connector: "───".to_string(),
+            show_border: true,
         }
     }
 }
@@ -314,6 +316,34 @@ impl StepIndicatorState {
     /// Sets whether descriptions are shown (builder pattern).
     pub fn with_show_descriptions(mut self, show: bool) -> Self {
         self.show_descriptions = show;
+        self
+    }
+
+    /// Sets whether the border is shown (builder pattern).
+    ///
+    /// Defaults to `true`. When set to `false`, the `StepIndicator` renders
+    /// its steps directly into the full widget area with no surrounding
+    /// box — useful for inline breadcrumbs and single-row layouts.
+    ///
+    /// # Title interaction
+    ///
+    /// When the border is hidden, the state's [`title`](Self::title) is
+    /// **not rendered**. The title is drawn as part of the border block,
+    /// so disabling the border silently suppresses it. If you want this
+    /// to be explicit, set the title to `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A")])
+    ///     .with_show_border(false);
+    /// assert!(!state.show_border());
+    /// ```
+    pub fn with_show_border(mut self, show: bool) -> Self {
+        self.show_border = show;
         self
     }
 
@@ -411,6 +441,20 @@ impl StepIndicatorState {
         self.show_descriptions
     }
 
+    /// Returns whether the border is shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::default();
+    /// assert!(state.show_border());
+    /// ```
+    pub fn show_border(&self) -> bool {
+        self.show_border
+    }
+
     /// Sets whether descriptions are shown.
     ///
     /// # Example
@@ -441,6 +485,25 @@ impl StepIndicatorState {
     /// ```
     pub fn set_orientation(&mut self, orientation: StepOrientation) {
         self.orientation = orientation;
+    }
+
+    /// Sets whether the border is shown.
+    ///
+    /// See [`with_show_border`](Self::with_show_border) for the title
+    /// interaction when `show` is `false`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StepIndicatorState;
+    /// use envision::component::step_indicator::Step;
+    ///
+    /// let mut state = StepIndicatorState::new(vec![Step::new("A")]);
+    /// state.set_show_border(false);
+    /// assert!(!state.show_border());
+    /// ```
+    pub fn set_show_border(&mut self, show: bool) {
+        self.show_border = show;
     }
 
     /// Updates the state with a message, returning any output.
@@ -645,27 +708,23 @@ impl Component for StepIndicator {
             );
         });
 
-        let block = if let Some(title) = &state.title {
-            Block::default()
-                .title(format!(" {} ", title))
+        let inner = if state.show_border {
+            let mut block = Block::default()
                 .borders(Borders::ALL)
                 .border_style(if ctx.focused {
                     theme.focused_border_style()
                 } else {
                     theme.border_style()
-                })
+                });
+            if let Some(title) = &state.title {
+                block = block.title(format!(" {} ", title));
+            }
+            let inner = block.inner(area);
+            frame.render_widget(block, area);
+            inner
         } else {
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(if ctx.focused {
-                    theme.focused_border_style()
-                } else {
-                    theme.border_style()
-                })
+            area
         };
-
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
 
         if state.steps.is_empty() {
             return;
