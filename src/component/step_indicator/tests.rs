@@ -58,6 +58,7 @@ fn test_state_new() {
     assert_eq!(state.connector(), "───");
     assert_eq!(state.title(), None);
     assert!(!state.show_descriptions());
+    assert!(state.show_border());
 }
 
 #[test]
@@ -90,6 +91,39 @@ fn test_state_with_connector() {
 fn test_state_with_show_descriptions() {
     let state = StepIndicatorState::new(vec![Step::new("A")]).with_show_descriptions(true);
     assert!(state.show_descriptions());
+}
+
+#[test]
+fn test_state_default_show_border() {
+    let state = StepIndicatorState::default();
+    assert!(
+        state.show_border(),
+        "show_border must default to true for backwards compatibility",
+    );
+}
+
+#[test]
+fn test_state_with_show_border() {
+    let state = StepIndicatorState::new(vec![Step::new("A")]).with_show_border(false);
+    assert!(!state.show_border());
+
+    // Chaining with other builders works and does not interfere.
+    let state = StepIndicatorState::new(vec![Step::new("A")])
+        .with_title("Pipeline")
+        .with_show_border(false);
+    assert!(!state.show_border());
+    // Title is still stored on the state; only rendering is suppressed.
+    assert_eq!(state.title(), Some("Pipeline"));
+}
+
+#[test]
+fn test_state_set_show_border() {
+    let mut state = StepIndicatorState::new(vec![Step::new("A")]);
+    assert!(state.show_border());
+    state.set_show_border(false);
+    assert!(!state.show_border());
+    state.set_show_border(true);
+    assert!(state.show_border());
 }
 
 // ========== Accessor Tests ==========
