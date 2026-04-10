@@ -986,6 +986,8 @@ mod enhancement_tests;
 #[cfg(test)]
 mod error_band_tests;
 #[cfg(test)]
+mod render_tests;
+#[cfg(test)]
 mod snapshot_tests;
 #[cfg(test)]
 mod tests;
