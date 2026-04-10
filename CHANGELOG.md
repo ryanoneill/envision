@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-04-09
+
 ### Added
 
 - Per-role style overrides in `ConversationView` via
@@ -33,7 +35,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hidden, the state's title is not rendered (the title is drawn as
   part of the border block).
 
+- `DistributionMap` convenience API for visualizing distribution
+  evolution over time via `Heatmap`.
+
+- `ChartGrid` convenience component for multi-chart dashboard layouts
+  with automatic grid sizing.
+
+- Structured semantic output for `CaptureBackend` for AI consumption,
+  including cell-level style metadata and widget annotation data.
+
+- Point annotations and text callouts for `Chart` component via
+  `ChartAnnotation` and `with_annotation()`.
+
+- Time-axis support with custom X-axis labels for `Chart` via
+  `with_x_labels()`.
+
+- Multi-series bar chart support with grouped and stacked modes via
+  `BarMode::Grouped` and `BarMode::Stacked`.
+
+- Error bars and confidence intervals for `Chart` line/scatter series.
+
+- Viridis, Inferno, and Plasma perceptual color scales for `Heatmap`.
+
+- Diverging color scales (BlueWhiteRed, RedWhiteBlue) for `Heatmap`.
+
+- Adaptive binning for `Histogram` via `BinMethod::Sturges`,
+  `BinMethod::Scott`, and `BinMethod::FreedmanDiaconis`.
+
+- Area chart fill below the curve for `Chart`.
+
+- XY-pair support for `Chart` `DataSeries`, allowing explicit
+  (x, y) coordinates instead of implicit index-based x values.
+
+- Optional grid lines for `Chart` via `with_grid()`.
+
+- Categorical labels for bar chart x-axis.
+
+- Expanded chart color palette from 8 to 20 Tableau-inspired colors.
+
+### Breaking
+
+- `Sparkline` data type changed from `u64` to `f64` for scientific
+  and ML use cases. Update calls to `SparklineState::new()` and
+  `with_data()` to use `f64` values.
+
 ### Changed
+
+- Chart rendering polish: improved legend placement, axis alignment,
+  number formatting, and palette cycling.
 
 - Split `chart/tests.rs` into two files to stay under the 1000-line
   limit. No behavioral changes.
@@ -45,6 +94,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   discarded in the markdown branch of `format_text_block`, causing all body
   text to render in the terminal default foreground regardless of role.
   Markdown-specific styling (bold, inline code) is preserved where set.
+
+### Documentation
+
+- Added doc tests to 12 under-documented components (key_hints, router,
+  status_bar, spinner, radio_group, tabs, usage_display, text_area,
+  input_field, box_plot, breadcrumb, code_block), bringing doc test
+  coverage from 63.6% to 74.3%.
+
+- Added `# Errors` and `# Panics` documentation sections to public
+  methods with non-obvious failure conditions.
 
 ## [0.12.0] - 2026-04-05
 
