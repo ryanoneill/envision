@@ -594,6 +594,87 @@ fn test_view_from_collapsed_blocks_use_state_config() {
     assert_ne!(output_expanded, output_collapsed);
 }
 
+// =============================================================================
+// Role style override rendering
+// =============================================================================
+
+#[cfg(feature = "markdown")]
+#[test]
+fn test_role_style_override_in_rendering() {
+    use ratatui::style::{Color, Modifier, Style};
+
+    let mut state = ConversationViewState::new().with_markdown(true);
+    state.set_role_style(ConversationRole::User, Style::default().fg(Color::Cyan));
+    state.push_user("Hello from user");
+    state.push_assistant("Hello from assistant");
+
+    let theme = crate::theme::Theme::default();
+    let lines = super::render::build_display_lines(state.source_messages(), &state, 80, &theme);
+
+    // Find user body spans — should use overridden Cyan color
+    let mut found_user_cyan = false;
+    let mut in_user_section = false;
+    for line in &lines {
+        let text: String = line.spans.iter().map(|s| s.content.as_ref()).collect();
+        if text.contains("User")
+            && line
+                .spans
+                .iter()
+                .any(|s| s.style.add_modifier.contains(Modifier::BOLD))
+        {
+            in_user_section = true;
+            continue;
+        }
+        if text.contains("Assistant")
+            && line
+                .spans
+                .iter()
+                .any(|s| s.style.add_modifier.contains(Modifier::BOLD))
+        {
+            in_user_section = false;
+            continue;
+        }
+        if in_user_section {
+            for span in &line.spans {
+                if span.content.contains("Hello") && span.style.fg == Some(Color::Cyan) {
+                    found_user_cyan = true;
+                }
+            }
+        }
+    }
+    assert!(
+        found_user_cyan,
+        "User message body should use the overridden Cyan color"
+    );
+
+    // Assistant should still use default Blue (no override set)
+    let mut found_assistant_blue = false;
+    let mut in_assistant_section = false;
+    for line in &lines {
+        let text: String = line.spans.iter().map(|s| s.content.as_ref()).collect();
+        if text.contains("Assistant")
+            && line
+                .spans
+                .iter()
+                .any(|s| s.style.add_modifier.contains(Modifier::BOLD))
+        {
+            in_assistant_section = true;
+            continue;
+        }
+        if in_assistant_section {
+            for span in &line.spans {
+                if span.content.contains("Hello") && span.style.fg == Some(Color::Blue) {
+                    found_assistant_blue = true;
+                }
+            }
+        }
+    }
+    assert!(
+        found_assistant_blue,
+        "Assistant message body should use default Blue (no override set)"
+    );
+}
+
 #[cfg(feature = "markdown")]
 #[test]
 fn test_markdown_role_style_propagation() {

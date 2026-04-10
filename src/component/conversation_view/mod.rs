@@ -41,7 +41,7 @@ pub use types::{
     ConversationMessage, ConversationRole, MessageBlock, MessageHandle, MessageSource,
 };
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::marker::PhantomData;
 
 use ratatui::prelude::*;
@@ -128,6 +128,10 @@ pub struct ConversationViewState {
     /// Next unique ID for message handles.
     #[cfg_attr(feature = "serialization", serde(skip, default))]
     pub(super) next_id: u64,
+    /// Per-role style overrides. When set, these take precedence over
+    /// the default colors from [`ConversationRole::color()`].
+    #[cfg_attr(feature = "serialization", serde(skip, default))]
+    pub(super) role_style_overrides: HashMap<ConversationRole, Style>,
 }
 
 impl Default for ConversationViewState {
@@ -145,6 +149,7 @@ impl Default for ConversationViewState {
             collapsed_blocks: HashSet::new(),
             status: None,
             next_id: 1,
+            role_style_overrides: HashMap::new(),
         }
     }
 }
@@ -160,6 +165,7 @@ impl PartialEq for ConversationViewState {
             && self.title == other.title
             && self.collapsed_blocks == other.collapsed_blocks
             && self.status == other.status
+            && self.role_style_overrides == other.role_style_overrides
         // next_id is intentionally excluded from equality
     }
 }
@@ -258,6 +264,58 @@ impl ConversationViewState {
     /// Sets whether markdown rendering is enabled.
     pub fn set_markdown_enabled(&mut self, enabled: bool) {
         self.markdown_enabled = enabled;
+    }
+
+    // ---- Role style overrides ----
+
+    /// Sets a style override for a specific role (builder pattern).
+    ///
+    /// When set, this style is used instead of the default color from
+    /// [`ConversationRole::color()`] for messages from this role.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationViewState, ConversationRole};
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let state = ConversationViewState::new()
+    ///     .with_role_style(ConversationRole::User, Style::default().fg(Color::Cyan))
+    ///     .with_role_style(ConversationRole::Assistant, Style::default().fg(Color::Magenta));
+    /// assert!(state.role_style_override(&ConversationRole::User).is_some());
+    /// ```
+    pub fn with_role_style(mut self, role: ConversationRole, style: Style) -> Self {
+        self.role_style_overrides.insert(role, style);
+        self
+    }
+
+    /// Returns the style override for a role, if one is set.
+    pub fn role_style_override(&self, role: &ConversationRole) -> Option<&Style> {
+        self.role_style_overrides.get(role)
+    }
+
+    /// Sets a style override for a specific role.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationViewState, ConversationRole};
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.set_role_style(ConversationRole::Assistant, Style::default().fg(Color::Red));
+    /// assert_eq!(
+    ///     state.role_style_override(&ConversationRole::Assistant),
+    ///     Some(&Style::default().fg(Color::Red)),
+    /// );
+    /// ```
+    pub fn set_role_style(&mut self, role: ConversationRole, style: Style) {
+        self.role_style_overrides.insert(role, style);
+    }
+
+    /// Removes a style override for a role, reverting to the default color.
+    pub fn clear_role_style(&mut self, role: &ConversationRole) {
+        self.role_style_overrides.remove(role);
     }
 
     // ---- Message manipulation ----
