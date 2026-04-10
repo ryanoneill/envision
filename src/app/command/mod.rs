@@ -526,9 +526,14 @@ impl<M> Command<M> {
     /// Creates a command that saves application state to a JSON file.
     ///
     /// Serializes the state to JSON synchronously, then writes the file
-    /// asynchronously via `tokio::fs::write`. If serialization fails,
-    /// returns [`Command::none`]. File write errors are reported to the
-    /// runtime's error channel (see [`Runtime::take_errors`](crate::Runtime::take_errors)).
+    /// asynchronously via `tokio::fs::write`.
+    ///
+    /// # Errors
+    ///
+    /// If JSON serialization fails, returns [`Command::none`] silently (no
+    /// error is reported). If the file write fails, the error is reported to
+    /// the runtime's error channel as `EnvisionError::Io`; retrieve it
+    /// with [`Runtime::take_errors`](crate::Runtime::take_errors).
     ///
     /// # Example
     ///

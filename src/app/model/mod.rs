@@ -202,10 +202,10 @@ pub trait App: Sized {
     /// [`Runtime::virtual_terminal_with_state()`]), this method is **not
     /// called** — the provided state is used directly instead.
     ///
-    /// # Default Implementation
+    /// # Panics
     ///
-    /// The default implementation panics with a descriptive message. This
-    /// allows applications that exclusively use `with_state` constructors
+    /// The default implementation panics if called without being overridden.
+    /// This allows applications that exclusively use `with_state` constructors
     /// to omit `init()` entirely, since it will never be called. If you
     /// use [`Runtime::new_terminal()`] or [`Runtime::virtual_terminal()`],
     /// you **must** override this method to provide valid initial state.
