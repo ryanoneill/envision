@@ -271,3 +271,99 @@ mod re_export_tests {
         assert_eq!(size.height, 24);
     }
 }
+
+mod app_shell_tests {
+    #[test]
+    fn test_app_regions_equality() {
+        use super::{AppRegions, Rect};
+
+        let regions_a = AppRegions {
+            header: Rect::new(0, 0, 80, 4),
+            content: Rect::new(0, 4, 80, 19),
+            footer: Rect::new(0, 23, 80, 1),
+        };
+        let regions_b = AppRegions {
+            header: Rect::new(0, 0, 80, 4),
+            content: Rect::new(0, 4, 80, 19),
+            footer: Rect::new(0, 23, 80, 1),
+        };
+        assert_eq!(regions_a, regions_b);
+    }
+
+    #[test]
+    fn test_app_shell_header_and_footer() {
+        use super::{AppShell, Constraint, Rect};
+
+        let shell = AppShell::new()
+            .header(Constraint::Length(4))
+            .footer(Constraint::Length(1));
+        let regions = shell.split(Rect::new(0, 0, 80, 24));
+
+        assert_eq!(regions.header, Rect::new(0, 0, 80, 4));
+        assert_eq!(regions.content, Rect::new(0, 4, 80, 19));
+        assert_eq!(regions.footer, Rect::new(0, 23, 80, 1));
+    }
+
+    #[test]
+    fn test_app_shell_header_only() {
+        use super::{AppShell, Constraint, Rect};
+
+        let shell = AppShell::new().header(Constraint::Length(4));
+        let regions = shell.split(Rect::new(0, 0, 80, 24));
+
+        assert_eq!(regions.header, Rect::new(0, 0, 80, 4));
+        assert_eq!(regions.content, Rect::new(0, 4, 80, 20));
+        assert_eq!(regions.footer.height, 0);
+    }
+
+    #[test]
+    fn test_app_shell_footer_only() {
+        use super::{AppShell, Constraint, Rect};
+
+        let shell = AppShell::new().footer(Constraint::Length(1));
+        let regions = shell.split(Rect::new(0, 0, 80, 24));
+
+        assert_eq!(regions.header.height, 0);
+        assert_eq!(regions.content, Rect::new(0, 0, 80, 23));
+        assert_eq!(regions.footer, Rect::new(0, 23, 80, 1));
+    }
+
+    #[test]
+    fn test_app_shell_neither() {
+        use super::{AppShell, Rect};
+
+        let shell = AppShell::new();
+        let regions = shell.split(Rect::new(0, 0, 80, 24));
+
+        assert_eq!(regions.header.height, 0);
+        assert_eq!(regions.content, Rect::new(0, 0, 80, 24));
+        assert_eq!(regions.footer.height, 0);
+    }
+
+    #[test]
+    fn test_app_shell_area_too_small() {
+        use super::{AppShell, Constraint, Rect};
+
+        let shell = AppShell::new()
+            .header(Constraint::Length(4))
+            .footer(Constraint::Length(3));
+        let regions = shell.split(Rect::new(0, 0, 80, 5));
+
+        let total = regions.header.height + regions.content.height + regions.footer.height;
+        assert!(total <= 5, "total height {} exceeds area height 5", total);
+    }
+
+    #[test]
+    fn test_app_shell_zero_area() {
+        use super::{AppShell, Constraint, Rect};
+
+        let shell = AppShell::new()
+            .header(Constraint::Length(4))
+            .footer(Constraint::Length(1));
+        let regions = shell.split(Rect::default());
+
+        assert_eq!(regions.header.area(), 0);
+        assert_eq!(regions.content.area(), 0);
+        assert_eq!(regions.footer.area(), 0);
+    }
+}
