@@ -279,3 +279,78 @@ fn test_auto_scroll_after_manual_scroll_down_to_end() {
     ConversationView::update(&mut state, ConversationViewMessage::ScrollToBottom);
     assert!(state.auto_scroll());
 }
+
+// =============================================================================
+// Role style overrides
+// =============================================================================
+
+#[test]
+fn test_role_style_override_builder() {
+    use ratatui::style::{Color, Style};
+
+    let state = ConversationViewState::new()
+        .with_role_style(ConversationRole::User, Style::default().fg(Color::Cyan));
+    assert_eq!(
+        state.role_style_override(&ConversationRole::User),
+        Some(&Style::default().fg(Color::Cyan)),
+    );
+    assert_eq!(
+        state.role_style_override(&ConversationRole::Assistant),
+        None
+    );
+}
+
+#[test]
+fn test_role_style_override_set_and_clear() {
+    use ratatui::style::{Color, Style};
+
+    let mut state = ConversationViewState::new();
+    state.set_role_style(ConversationRole::User, Style::default().fg(Color::Red));
+    assert!(state.role_style_override(&ConversationRole::User).is_some());
+    state.clear_role_style(&ConversationRole::User);
+    assert!(state.role_style_override(&ConversationRole::User).is_none());
+}
+
+#[test]
+fn test_role_style_override_custom_role() {
+    use ratatui::style::{Color, Style};
+
+    let custom = ConversationRole::Custom("Moderator".into());
+    let state = ConversationViewState::new()
+        .with_role_style(custom.clone(), Style::default().fg(Color::Magenta));
+    assert_eq!(
+        state.role_style_override(&ConversationRole::Custom("Moderator".into())),
+        Some(&Style::default().fg(Color::Magenta)),
+    );
+}
+
+#[test]
+fn test_role_style_override_default_is_empty() {
+    let state = ConversationViewState::new();
+    assert!(state.role_style_override(&ConversationRole::User).is_none());
+    assert!(
+        state
+            .role_style_override(&ConversationRole::Assistant)
+            .is_none()
+    );
+    assert!(
+        state
+            .role_style_override(&ConversationRole::System)
+            .is_none()
+    );
+    assert!(state.role_style_override(&ConversationRole::Tool).is_none());
+}
+
+#[test]
+fn test_role_style_override_partial_eq() {
+    use ratatui::style::{Color, Style};
+
+    let state1 = ConversationViewState::new()
+        .with_role_style(ConversationRole::User, Style::default().fg(Color::Cyan));
+    let state2 = ConversationViewState::new()
+        .with_role_style(ConversationRole::User, Style::default().fg(Color::Cyan));
+    let state3 = ConversationViewState::new();
+
+    assert_eq!(state1, state2);
+    assert_ne!(state1, state3);
+}
