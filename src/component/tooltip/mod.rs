@@ -285,6 +285,25 @@ impl TooltipState {
         self.duration_ms
     }
 
+    /// Returns the auto-hide duration in milliseconds.
+    ///
+    /// This is the getter counterpart to [`set_duration`](Self::set_duration).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    ///
+    /// let state = TooltipState::new("Help text");
+    /// assert_eq!(state.duration(), None);
+    ///
+    /// let state = TooltipState::new("Help text").with_duration(5000);
+    /// assert_eq!(state.duration(), Some(5000));
+    /// ```
+    pub fn duration(&self) -> Option<u64> {
+        self.duration_ms
+    }
+
     /// Returns the remaining time before auto-hide.
     pub fn remaining_ms(&self) -> Option<u64> {
         self.remaining_ms
