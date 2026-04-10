@@ -130,7 +130,7 @@ pub enum SpanTreeOutput {
 /// assert_eq!(state.global_end(), 1000.0);
 /// assert_eq!(state.selected_index(), Some(0));
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)

@@ -50,7 +50,7 @@
 /// - `focus_next()` moves focus forward, wrapping from last to first
 /// - `focus_prev()` moves focus backward, wrapping from first to last
 /// - When unfocused, `focus_next()` focuses the first item, `focus_prev()` focuses the last
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FocusManager<Id> {
     order: Vec<Id>,
     focused: Option<usize>,
