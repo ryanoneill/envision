@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Per-role style overrides in `ConversationView` via
+  `ConversationViewState::with_role_style(role, style)`,
+  `set_role_style()`, `role_style_override()`, and `clear_role_style()`.
+  Allows customizing the color/style for specific roles (User, Assistant,
+  etc.) without affecting others. Falls back to the default
+  `ConversationRole::color()` when no override is set.
+
 - `AppShell` layout helper for consistent `(header, content, footer)`
   splits. Construct once at app init with
   `AppShell::new().header(Constraint::Length(4)).footer(Constraint::Length(1))`,
