@@ -271,7 +271,7 @@ impl AppShell {
 
     /// Splits the given area into header, content, and footer regions.
     ///
-    /// Content always receives [`Constraint::Min(0)`] so it expands
+    /// Content always receives `Constraint::Min(0)` so it expands
     /// to fill whatever the header and footer don't consume.
     ///
     /// When no header or footer is configured, the corresponding region
