@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hidden, the state's title is not rendered (the title is drawn as
   part of the border block).
 
+### Fixed
+
+- `ConversationView` now honors role colors (User=green, Assistant=blue,
+  etc.) when markdown rendering is enabled. Previously, the role style was
+  discarded in the markdown branch of `format_text_block`, causing all body
+  text to render in the terminal default foreground regardless of role.
+  Markdown-specific styling (bold, inline code) is preserved where set.
+
 ## [0.12.0] - 2026-04-05
 
 ### Breaking
