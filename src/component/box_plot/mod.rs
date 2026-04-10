@@ -211,21 +211,62 @@ impl BoxPlotData {
     }
 
     /// Sets the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    ///
+    /// let mut data = BoxPlotData::new("Old Label", 1.0, 2.0, 3.0, 4.0, 5.0);
+    /// data.set_label("New Label");
+    /// assert_eq!(data.label(), "New Label");
+    /// ```
     pub fn set_label(&mut self, label: impl Into<String>) {
         self.label = label.into();
     }
 
     /// Sets the color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut data = BoxPlotData::new("CPU", 1.0, 2.0, 3.0, 4.0, 5.0);
+    /// data.set_color(Color::Green);
+    /// assert_eq!(data.color(), Color::Green);
+    /// ```
     pub fn set_color(&mut self, color: Color) {
         self.color = color;
     }
 
     /// Sets the outliers.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    ///
+    /// let mut data = BoxPlotData::new("Latency", 1.0, 2.0, 3.0, 4.0, 5.0);
+    /// data.set_outliers(vec![0.1, 8.0]);
+    /// assert_eq!(data.outliers(), &[0.1, 8.0]);
+    /// ```
     pub fn set_outliers(&mut self, outliers: Vec<f64>) {
         self.outliers = outliers;
     }
 
     /// Adds a single outlier value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    ///
+    /// let mut data = BoxPlotData::new("Test", 1.0, 2.0, 3.0, 4.0, 5.0);
+    /// data.add_outlier(9.5);
+    /// assert_eq!(data.outliers(), &[9.5]);
+    /// ```
     pub fn add_outlier(&mut self, value: f64) {
         self.outliers.push(value);
     }
@@ -430,61 +471,193 @@ impl BoxPlotState {
     // ---- Accessors ----
 
     /// Returns the datasets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BoxPlotState, BoxPlotData};
+    ///
+    /// let state = BoxPlotState::new(vec![
+    ///     BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
+    ///     BoxPlotData::new("B", 2.0, 3.0, 4.0, 5.0, 6.0),
+    /// ]);
+    /// assert_eq!(state.datasets().len(), 2);
+    /// ```
     pub fn datasets(&self) -> &[BoxPlotData] {
         &self.datasets
     }
 
     /// Returns a mutable reference to the datasets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BoxPlotState, BoxPlotData};
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = BoxPlotState::new(vec![
+    ///     BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
+    /// ]);
+    /// state.datasets_mut()[0].set_color(Color::Red);
+    /// assert_eq!(state.datasets()[0].color(), Color::Red);
+    /// ```
     pub fn datasets_mut(&mut self) -> &mut [BoxPlotData] {
         &mut self.datasets
     }
 
     /// Returns the dataset at the given index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BoxPlotState, BoxPlotData};
+    ///
+    /// let state = BoxPlotState::new(vec![
+    ///     BoxPlotData::new("Service A", 1.0, 2.0, 3.0, 4.0, 5.0),
+    /// ]);
+    /// assert_eq!(state.get_dataset(0).unwrap().label(), "Service A");
+    /// assert!(state.get_dataset(99).is_none());
+    /// ```
     pub fn get_dataset(&self, index: usize) -> Option<&BoxPlotData> {
         self.datasets.get(index)
     }
 
     /// Returns a mutable reference to the dataset at the given index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BoxPlotState, BoxPlotData};
+    ///
+    /// let mut state = BoxPlotState::new(vec![
+    ///     BoxPlotData::new("Service A", 1.0, 2.0, 3.0, 4.0, 5.0),
+    /// ]);
+    /// if let Some(ds) = state.get_dataset_mut(0) {
+    ///     ds.set_label("Service B");
+    /// }
+    /// assert_eq!(state.datasets()[0].label(), "Service B");
+    /// ```
     pub fn get_dataset_mut(&mut self, index: usize) -> Option<&mut BoxPlotData> {
         self.datasets.get_mut(index)
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotState;
+    ///
+    /// let state = BoxPlotState::default().with_title("Latency");
+    /// assert_eq!(state.title(), Some("Latency"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotState;
+    ///
+    /// let mut state = BoxPlotState::default();
+    /// state.set_title(Some("Response Times".to_string()));
+    /// assert_eq!(state.title(), Some("Response Times"));
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
 
     /// Returns whether outliers are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotState;
+    ///
+    /// let state = BoxPlotState::default();
+    /// assert!(state.show_outliers());
+    /// ```
     pub fn show_outliers(&self) -> bool {
         self.show_outliers
     }
 
     /// Sets whether outliers are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotState;
+    ///
+    /// let mut state = BoxPlotState::default();
+    /// state.set_show_outliers(false);
+    /// assert!(!state.show_outliers());
+    /// ```
     pub fn set_show_outliers(&mut self, show: bool) {
         self.show_outliers = show;
     }
 
     /// Returns the orientation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BoxPlotState, BoxPlotOrientation};
+    ///
+    /// let state = BoxPlotState::default().with_orientation(BoxPlotOrientation::Horizontal);
+    /// assert_eq!(state.orientation(), &BoxPlotOrientation::Horizontal);
+    /// ```
     pub fn orientation(&self) -> &BoxPlotOrientation {
         &self.orientation
     }
 
     /// Sets the orientation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BoxPlotState, BoxPlotOrientation};
+    ///
+    /// let mut state = BoxPlotState::default();
+    /// state.set_orientation(BoxPlotOrientation::Horizontal);
+    /// assert_eq!(state.orientation(), &BoxPlotOrientation::Horizontal);
+    /// ```
     pub fn set_orientation(&mut self, orientation: BoxPlotOrientation) {
         self.orientation = orientation;
     }
 
     /// Returns the currently selected dataset index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BoxPlotState, BoxPlotData};
+    ///
+    /// let state = BoxPlotState::new(vec![
+    ///     BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
+    /// ]);
+    /// assert_eq!(state.selected(), 0);
+    /// ```
     pub fn selected(&self) -> usize {
         self.selected
     }
 
     /// Sets the selected dataset index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BoxPlotState, BoxPlotData};
+    ///
+    /// let mut state = BoxPlotState::new(vec![
+    ///     BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
+    ///     BoxPlotData::new("B", 2.0, 3.0, 4.0, 5.0, 6.0),
+    /// ]);
+    /// state.set_selected(1);
+    /// assert_eq!(state.selected(), 1);
+    /// ```
     pub fn set_selected(&mut self, index: usize) {
         if !self.datasets.is_empty() {
             self.selected = index.min(self.datasets.len() - 1);
@@ -492,11 +665,31 @@ impl BoxPlotState {
     }
 
     /// Returns the number of datasets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BoxPlotState, BoxPlotData};
+    ///
+    /// let state = BoxPlotState::new(vec![
+    ///     BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
+    ///     BoxPlotData::new("B", 2.0, 3.0, 4.0, 5.0, 6.0),
+    /// ]);
+    /// assert_eq!(state.dataset_count(), 2);
+    /// ```
     pub fn dataset_count(&self) -> usize {
         self.datasets.len()
     }
 
     /// Returns true if there are no datasets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotState;
+    ///
+    /// assert!(BoxPlotState::default().is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.datasets.is_empty()
     }

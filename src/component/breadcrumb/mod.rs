@@ -244,52 +244,150 @@ impl BreadcrumbState {
     }
 
     /// Returns the breadcrumb segments.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
+    /// assert_eq!(state.segments().len(), 2);
+    /// assert_eq!(state.segments()[0].label(), "Home");
+    /// ```
     pub fn segments(&self) -> &[BreadcrumbSegment] {
         &self.segments
     }
 
     /// Returns the number of segments.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let state = BreadcrumbState::from_labels(vec!["Home", "Products", "Item"]);
+    /// assert_eq!(state.len(), 3);
+    /// ```
     pub fn len(&self) -> usize {
         self.segments.len()
     }
 
     /// Returns true if there are no segments.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let empty = BreadcrumbState::default();
+    /// assert!(empty.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.segments.is_empty()
     }
 
     /// Returns the currently focused segment index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Breadcrumb, BreadcrumbMessage, BreadcrumbState, Component};
+    ///
+    /// let mut state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
+    /// assert_eq!(state.focused_index(), 0);
+    /// Breadcrumb::update(&mut state, BreadcrumbMessage::Right);
+    /// assert_eq!(state.focused_index(), 1);
+    /// ```
     pub fn focused_index(&self) -> usize {
         self.focused_index
     }
 
     /// Returns the currently focused segment, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
+    /// assert_eq!(state.focused_segment().unwrap().label(), "Home");
+    /// ```
     pub fn focused_segment(&self) -> Option<&BreadcrumbSegment> {
         self.segments.get(self.focused_index)
     }
 
     /// Returns the separator used between segments.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let state = BreadcrumbState::from_labels(vec!["A", "B"]).with_separator(" / ");
+    /// assert_eq!(state.separator(), " / ");
+    /// ```
     pub fn separator(&self) -> &str {
         &self.separator
     }
 
     /// Returns the maximum number of visible segments.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let state = BreadcrumbState::from_labels(vec!["A", "B", "C", "D", "E"])
+    ///     .with_max_visible(Some(3));
+    /// assert_eq!(state.max_visible(), Some(3));
+    /// ```
     pub fn max_visible(&self) -> Option<usize> {
         self.max_visible
     }
 
     /// Returns the last segment (current location).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let state = BreadcrumbState::from_labels(vec!["Home", "Products", "Item"]);
+    /// assert_eq!(state.current().unwrap().label(), "Item");
+    /// ```
     pub fn current(&self) -> Option<&BreadcrumbSegment> {
         self.segments.last()
     }
 
     /// Sets new segments, resetting the focused index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BreadcrumbSegment, BreadcrumbState};
+    ///
+    /// let mut state = BreadcrumbState::from_labels(vec!["Home", "Old"]);
+    /// state.set_segments(vec![BreadcrumbSegment::new("New")]);
+    /// assert_eq!(state.len(), 1);
+    /// assert_eq!(state.focused_index(), 0);
+    /// ```
     pub fn set_segments(&mut self, segments: Vec<BreadcrumbSegment>) {
         self.segments = segments;
         self.focused_index = 0;
     }
 
     /// Adds a segment to the end.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BreadcrumbSegment, BreadcrumbState};
+    ///
+    /// let mut state = BreadcrumbState::from_labels(vec!["Home"]);
+    /// state.push(BreadcrumbSegment::new("Products"));
+    /// assert_eq!(state.len(), 2);
+    /// assert_eq!(state.current().unwrap().label(), "Products");
+    /// ```
     pub fn push(&mut self, segment: BreadcrumbSegment) {
         self.segments.push(segment);
     }
@@ -297,6 +395,17 @@ impl BreadcrumbState {
     /// Removes and returns the last segment.
     ///
     /// Adjusts the focused index if necessary.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let mut state = BreadcrumbState::from_labels(vec!["Home", "Products"]);
+    /// let removed = state.pop();
+    /// assert_eq!(removed.unwrap().label(), "Products");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn pop(&mut self) -> Option<BreadcrumbSegment> {
         let result = self.segments.pop();
         if !self.segments.is_empty() && self.focused_index >= self.segments.len() {
@@ -376,6 +485,17 @@ impl BreadcrumbState {
     }
 
     /// Returns whether the breadcrumb is truncated.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let mut state = BreadcrumbState::from_labels(vec!["A", "B", "C", "D"]);
+    /// assert!(!state.is_truncated());
+    /// state.set_max_visible(Some(2));
+    /// assert!(state.is_truncated());
+    /// ```
     pub fn is_truncated(&self) -> bool {
         match self.max_visible {
             Some(max) if max > 0 => self.segments.len() > max,
@@ -398,6 +518,19 @@ impl BreadcrumbState {
     ///
     /// When truncation is enabled and the number of segments exceeds
     /// `max_visible`, only the last `max_visible` segments are returned.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbState;
+    ///
+    /// let state = BreadcrumbState::from_labels(vec!["A", "B", "C", "D"])
+    ///     .with_max_visible(Some(2));
+    /// let visible = state.visible_segments();
+    /// assert_eq!(visible.len(), 2);
+    /// assert_eq!(visible[0].label(), "C");
+    /// assert_eq!(visible[1].label(), "D");
+    /// ```
     pub fn visible_segments(&self) -> &[BreadcrumbSegment] {
         let (start, end) = self.visible_range();
         &self.segments[start..end]

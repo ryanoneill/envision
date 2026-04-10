@@ -121,6 +121,15 @@ impl SpinnerStyle {
     }
 
     /// Returns the number of frames in this style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpinnerStyle;
+    ///
+    /// assert_eq!(SpinnerStyle::Line.frame_count(), 4);
+    /// assert_eq!(SpinnerStyle::Dots.frame_count(), 10);
+    /// ```
     pub fn frame_count(&self) -> usize {
         self.frames().len()
     }
@@ -223,32 +232,93 @@ impl SpinnerState {
     ///
     /// This is the character that should be displayed for the current
     /// animation state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Spinner, SpinnerMessage, SpinnerState, Component};
+    ///
+    /// let mut state = SpinnerState::new();
+    /// let first = state.current_frame();
+    /// Spinner::update(&mut state, SpinnerMessage::Tick);
+    /// let second = state.current_frame();
+    /// assert_ne!(first, second);
+    /// ```
     pub fn current_frame(&self) -> char {
         let frames = self.style.frames();
         frames[self.frame % frames.len()]
     }
 
     /// Returns true if the spinner is currently spinning.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Spinner, SpinnerMessage, SpinnerState, Component};
+    ///
+    /// let mut state = SpinnerState::new();
+    /// assert!(state.is_spinning());
+    /// Spinner::update(&mut state, SpinnerMessage::Stop);
+    /// assert!(!state.is_spinning());
+    /// ```
     pub fn is_spinning(&self) -> bool {
         self.spinning
     }
 
     /// Sets whether the spinner is spinning.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpinnerState;
+    ///
+    /// let mut state = SpinnerState::new();
+    /// state.set_spinning(false);
+    /// assert!(!state.is_spinning());
+    /// ```
     pub fn set_spinning(&mut self, spinning: bool) {
         self.spinning = spinning;
     }
 
     /// Returns the label if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpinnerState;
+    ///
+    /// let state = SpinnerState::with_label("Uploading...");
+    /// assert_eq!(state.label(), Some("Uploading..."));
+    /// ```
     pub fn label(&self) -> Option<&str> {
         self.label.as_deref()
     }
 
     /// Sets the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpinnerState;
+    ///
+    /// let mut state = SpinnerState::new();
+    /// state.set_label(Some("Processing...".to_string()));
+    /// assert_eq!(state.label(), Some("Processing..."));
+    /// ```
     pub fn set_label(&mut self, label: Option<String>) {
         self.label = label;
     }
 
     /// Returns the spinner style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpinnerState, SpinnerStyle};
+    ///
+    /// let state = SpinnerState::with_style(SpinnerStyle::Circle);
+    /// assert_eq!(state.style(), &SpinnerStyle::Circle);
+    /// ```
     pub fn style(&self) -> &SpinnerStyle {
         &self.style
     }
@@ -256,22 +326,63 @@ impl SpinnerState {
     /// Sets the spinner style.
     ///
     /// This resets the frame index to 0.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpinnerState, SpinnerStyle};
+    ///
+    /// let mut state = SpinnerState::new();
+    /// state.set_style(SpinnerStyle::Bounce);
+    /// assert_eq!(state.style(), &SpinnerStyle::Bounce);
+    /// assert_eq!(state.frame_index(), 0);
+    /// ```
     pub fn set_style(&mut self, style: SpinnerStyle) {
         self.style = style;
         self.frame = 0;
     }
 
     /// Returns the current frame index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Spinner, SpinnerMessage, SpinnerState, Component};
+    ///
+    /// let mut state = SpinnerState::new();
+    /// assert_eq!(state.frame_index(), 0);
+    /// Spinner::update(&mut state, SpinnerMessage::Tick);
+    /// assert_eq!(state.frame_index(), 1);
+    /// ```
     pub fn frame_index(&self) -> usize {
         self.frame
     }
 
     /// Returns true if the spinner is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpinnerState;
+    ///
+    /// let state = SpinnerState::new();
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpinnerState;
+    ///
+    /// let mut state = SpinnerState::new();
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }

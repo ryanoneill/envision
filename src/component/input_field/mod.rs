@@ -270,31 +270,87 @@ impl InputFieldState {
     }
 
     /// Returns the cursor byte offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::InputFieldState;
+    ///
+    /// let state = InputFieldState::with_value("abc");
+    /// assert_eq!(state.cursor_byte_offset(), 3);
+    /// ```
     pub fn cursor_byte_offset(&self) -> usize {
         self.cursor
     }
 
     /// Sets the placeholder text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::InputFieldState;
+    ///
+    /// let mut state = InputFieldState::new();
+    /// state.set_placeholder("Search...");
+    /// assert_eq!(state.placeholder(), "Search...");
+    /// ```
     pub fn set_placeholder(&mut self, placeholder: impl Into<String>) {
         self.placeholder = placeholder.into();
     }
 
     /// Returns the placeholder text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::InputFieldState;
+    ///
+    /// let state = InputFieldState::with_placeholder("Type something");
+    /// assert_eq!(state.placeholder(), "Type something");
+    /// ```
     pub fn placeholder(&self) -> &str {
         &self.placeholder
     }
 
     /// Returns true if the input is empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::InputFieldState;
+    ///
+    /// assert!(InputFieldState::new().is_empty());
+    /// assert!(!InputFieldState::with_value("hi").is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.value.is_empty()
     }
 
     /// Returns the number of characters in the input.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::InputFieldState;
+    ///
+    /// let state = InputFieldState::with_value("hello");
+    /// assert_eq!(state.len(), 5);
+    /// ```
     pub fn len(&self) -> usize {
         self.value.chars().count()
     }
 
     /// Moves cursor to the given character position.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::InputFieldState;
+    ///
+    /// let mut state = InputFieldState::with_value("hello");
+    /// state.set_cursor_position(2);
+    /// assert_eq!(state.cursor_position(), 2);
+    /// ```
     pub fn set_cursor_position(&mut self, char_pos: usize) {
         let char_count = self.value.chars().count();
         let clamped = char_pos.min(char_count);
@@ -307,6 +363,17 @@ impl InputFieldState {
     }
 
     /// Returns true if there is an active text selection.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{InputField, InputFieldMessage, InputFieldState, Component};
+    ///
+    /// let mut state = InputFieldState::with_value("hello");
+    /// assert!(!state.has_selection());
+    /// InputField::update(&mut state, InputFieldMessage::SelectAll);
+    /// assert!(state.has_selection());
+    /// ```
     pub fn has_selection(&self) -> bool {
         self.selection_anchor.is_some() && self.selection_anchor != Some(self.cursor)
     }
@@ -314,6 +381,16 @@ impl InputFieldState {
     /// Returns the selected byte range as `(start, end)` where `start < end`.
     ///
     /// Returns `None` if there is no active selection or the selection is empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{InputField, InputFieldMessage, InputFieldState, Component};
+    ///
+    /// let mut state = InputFieldState::with_value("hello");
+    /// InputField::update(&mut state, InputFieldMessage::SelectAll);
+    /// assert_eq!(state.selection_range(), Some((0, 5)));
+    /// ```
     pub fn selection_range(&self) -> Option<(usize, usize)> {
         self.selection_anchor.and_then(|anchor| {
             if anchor == self.cursor {
@@ -327,12 +404,33 @@ impl InputFieldState {
     }
 
     /// Returns the currently selected text, or `None` if no selection.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{InputField, InputFieldMessage, InputFieldState, Component};
+    ///
+    /// let mut state = InputFieldState::with_value("hello world");
+    /// InputField::update(&mut state, InputFieldMessage::SelectAll);
+    /// assert_eq!(state.selected_text(), Some("hello world"));
+    /// ```
     pub fn selected_text(&self) -> Option<&str> {
         self.selection_range()
             .map(|(start, end)| &self.value[start..end])
     }
 
     /// Returns a reference to the internal clipboard contents.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{InputField, InputFieldMessage, InputFieldState, Component};
+    ///
+    /// let mut state = InputFieldState::with_value("hello");
+    /// InputField::update(&mut state, InputFieldMessage::SelectAll);
+    /// InputField::update(&mut state, InputFieldMessage::Copy);
+    /// assert_eq!(state.clipboard(), "hello");
+    /// ```
     pub fn clipboard(&self) -> &str {
         &self.clipboard
     }
@@ -363,11 +461,33 @@ impl InputFieldState {
     }
 
     /// Returns true if there are edits that can be undone.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{InputField, InputFieldMessage, InputFieldState, Component};
+    ///
+    /// let mut state = InputFieldState::new();
+    /// assert!(!state.can_undo());
+    /// InputField::update(&mut state, InputFieldMessage::Insert('a'));
+    /// assert!(state.can_undo());
+    /// ```
     pub fn can_undo(&self) -> bool {
         self.undo_stack.can_undo()
     }
 
     /// Returns true if there are edits that can be redone.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{InputField, InputFieldMessage, InputFieldState, Component};
+    ///
+    /// let mut state = InputFieldState::new();
+    /// InputField::update(&mut state, InputFieldMessage::Insert('a'));
+    /// InputField::update(&mut state, InputFieldMessage::Undo);
+    /// assert!(state.can_redo());
+    /// ```
     pub fn can_redo(&self) -> bool {
         self.undo_stack.can_redo()
     }

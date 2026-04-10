@@ -349,26 +349,73 @@ impl TextAreaState {
     }
 
     /// Returns the cursor row.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new().with_value("Line 1\nLine 2");
+    /// assert_eq!(state.cursor_row(), 1);
+    /// ```
     pub fn cursor_row(&self) -> usize {
         self.cursor_row
     }
 
     /// Returns the cursor column (byte offset).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let state = TextAreaState::new().with_value("Hello");
+    /// assert_eq!(state.cursor_col(), 5);
+    /// ```
     pub fn cursor_col(&self) -> usize {
         self.cursor_col
     }
 
     /// Returns the number of lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TextAreaState;
+    ///
+    /// let state = TextAreaState::new().with_value("a\nb\nc");
+    /// assert_eq!(state.line_count(), 3);
+    /// ```
     pub fn line_count(&self) -> usize {
         self.lines.len()
     }
 
     /// Returns a specific line by index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TextAreaState;
+    ///
+    /// let state = TextAreaState::new().with_value("first\nsecond\nthird");
+    /// assert_eq!(state.line(0), Some("first"));
+    /// assert_eq!(state.line(1), Some("second"));
+    /// assert_eq!(state.line(99), None);
+    /// ```
     pub fn line(&self, index: usize) -> Option<&str> {
         self.lines.get(index).map(|s| s.as_str())
     }
 
     /// Returns the current line (at cursor row).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TextAreaState;
+    ///
+    /// let state = TextAreaState::new().with_value("first\nsecond");
+    /// assert_eq!(state.current_line(), "second");
+    /// ```
     pub fn current_line(&self) -> &str {
         &self.lines[self.cursor_row]
     }
@@ -390,16 +437,44 @@ impl TextAreaState {
     }
 
     /// Returns the placeholder text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TextAreaState;
+    ///
+    /// let state = TextAreaState::new().with_placeholder("Type here...");
+    /// assert_eq!(state.placeholder(), "Type here...");
+    /// ```
     pub fn placeholder(&self) -> &str {
         &self.placeholder
     }
 
     /// Sets the placeholder text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TextAreaState;
+    ///
+    /// let mut state = TextAreaState::new();
+    /// state.set_placeholder("Enter your text...");
+    /// assert_eq!(state.placeholder(), "Enter your text...");
+    /// ```
     pub fn set_placeholder(&mut self, placeholder: impl Into<String>) {
         self.placeholder = placeholder.into();
     }
 
     /// Returns the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TextAreaState;
+    ///
+    /// let state = TextAreaState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll_offset
     }
@@ -407,6 +482,16 @@ impl TextAreaState {
     /// Sets the cursor position (row, char_column).
     ///
     /// Both row and column are clamped to valid ranges.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TextAreaState;
+    ///
+    /// let mut state = TextAreaState::new().with_value("Hello\nWorld");
+    /// state.set_cursor_position(0, 3);
+    /// assert_eq!(state.cursor_position(), (0, 3));
+    /// ```
     pub fn set_cursor_position(&mut self, row: usize, col: usize) {
         self.cursor_row = row.min(self.lines.len().saturating_sub(1));
         // Convert char position to byte offset
@@ -436,11 +521,33 @@ impl TextAreaState {
     }
 
     /// Returns true if there are edits that can be undone.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new();
+    /// assert!(!state.can_undo());
+    /// TextArea::update(&mut state, TextAreaMessage::Insert('a'));
+    /// assert!(state.can_undo());
+    /// ```
     pub fn can_undo(&self) -> bool {
         self.undo_stack.can_undo()
     }
 
     /// Returns true if there are edits that can be redone.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new();
+    /// TextArea::update(&mut state, TextAreaMessage::Insert('a'));
+    /// TextArea::update(&mut state, TextAreaMessage::Undo);
+    /// assert!(state.can_redo());
+    /// ```
     pub fn can_redo(&self) -> bool {
         self.undo_stack.can_redo()
     }
@@ -478,11 +585,30 @@ impl TextAreaState {
     }
 
     /// Returns whether line numbers are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TextAreaState;
+    ///
+    /// let state = TextAreaState::new().with_line_numbers(true);
+    /// assert!(state.show_line_numbers());
+    /// ```
     pub fn show_line_numbers(&self) -> bool {
         self.show_line_numbers
     }
 
     /// Sets whether line numbers are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TextAreaState;
+    ///
+    /// let mut state = TextAreaState::new();
+    /// state.set_show_line_numbers(true);
+    /// assert!(state.show_line_numbers());
+    /// ```
     pub fn set_show_line_numbers(&mut self, show: bool) {
         self.show_line_numbers = show;
     }
