@@ -267,11 +267,32 @@ impl CodeBlockState {
     // ---- Language accessors ----
 
     /// Returns the current language.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    /// use envision::component::code_block::highlight::Language;
+    ///
+    /// let state = CodeBlockState::new().with_language(Language::Python);
+    /// assert_eq!(state.language(), &Language::Python);
+    /// ```
     pub fn language(&self) -> &Language {
         &self.language
     }
 
     /// Sets the language.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    /// use envision::component::code_block::highlight::Language;
+    ///
+    /// let mut state = CodeBlockState::new();
+    /// state.set_language(Language::Go);
+    /// assert_eq!(state.language(), &Language::Go);
+    /// ```
     pub fn set_language(&mut self, language: Language) {
         self.language = language;
     }
@@ -279,11 +300,30 @@ impl CodeBlockState {
     // ---- Title accessors ----
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let state = CodeBlockState::new().with_title("server.rs");
+    /// assert_eq!(state.title(), Some("server.rs"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let mut state = CodeBlockState::new();
+    /// state.set_title(Some("app.rs".to_string()));
+    /// assert_eq!(state.title(), Some("app.rs"));
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
@@ -291,11 +331,30 @@ impl CodeBlockState {
     // ---- Line number accessors ----
 
     /// Returns whether line numbers are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let state = CodeBlockState::new().with_line_numbers(true);
+    /// assert!(state.show_line_numbers());
+    /// ```
     pub fn show_line_numbers(&self) -> bool {
         self.show_line_numbers
     }
 
     /// Sets whether line numbers are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let mut state = CodeBlockState::new();
+    /// state.set_show_line_numbers(true);
+    /// assert!(state.show_line_numbers());
+    /// ```
     pub fn set_show_line_numbers(&mut self, show: bool) {
         self.show_line_numbers = show;
     }
@@ -303,26 +362,77 @@ impl CodeBlockState {
     // ---- Highlight line accessors ----
 
     /// Returns true if the given line (1-based) is highlighted.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let state = CodeBlockState::new().with_highlight_lines(vec![2, 4]);
+    /// assert!(state.is_line_highlighted(2));
+    /// assert!(!state.is_line_highlighted(3));
+    /// ```
     pub fn is_line_highlighted(&self, line: usize) -> bool {
         self.highlight_lines.contains(&line)
     }
 
     /// Adds a highlighted line (1-based).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let mut state = CodeBlockState::new();
+    /// state.add_highlight_line(3);
+    /// assert!(state.is_line_highlighted(3));
+    /// ```
     pub fn add_highlight_line(&mut self, line: usize) {
         self.highlight_lines.insert(line);
     }
 
     /// Removes a highlighted line (1-based).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let mut state = CodeBlockState::new().with_highlight_lines(vec![1, 2, 3]);
+    /// state.remove_highlight_line(2);
+    /// assert!(!state.is_line_highlighted(2));
+    /// assert!(state.is_line_highlighted(1));
+    /// ```
     pub fn remove_highlight_line(&mut self, line: usize) {
         self.highlight_lines.remove(&line);
     }
 
     /// Clears all highlighted lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let mut state = CodeBlockState::new().with_highlight_lines(vec![1, 2, 3]);
+    /// state.clear_highlights();
+    /// assert!(state.highlighted_lines().is_empty());
+    /// ```
     pub fn clear_highlights(&mut self) {
         self.highlight_lines.clear();
     }
 
     /// Returns the set of highlighted line numbers.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let state = CodeBlockState::new().with_highlight_lines(vec![1, 3]);
+    /// assert_eq!(state.highlighted_lines().len(), 2);
+    /// assert!(state.highlighted_lines().contains(&1));
+    /// ```
     pub fn highlighted_lines(&self) -> &HashSet<usize> {
         &self.highlight_lines
     }
@@ -330,21 +440,60 @@ impl CodeBlockState {
     // ---- Scroll accessors ----
 
     /// Returns the current scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let state = CodeBlockState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
     }
 
     /// Sets the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let mut state = CodeBlockState::new()
+    ///     .with_code("line1\nline2\nline3\nline4\nline5");
+    /// state.set_scroll_offset(2);
+    /// assert_eq!(state.scroll_offset(), 2);
+    /// ```
     pub fn set_scroll_offset(&mut self, offset: usize) {
         self.scroll.set_offset(offset);
     }
 
     /// Returns the horizontal scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let state = CodeBlockState::new();
+    /// assert_eq!(state.horizontal_offset(), 0);
+    /// ```
     pub fn horizontal_offset(&self) -> usize {
         self.horizontal_offset
     }
 
     /// Sets the horizontal scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let mut state = CodeBlockState::new();
+    /// state.set_horizontal_offset(10);
+    /// assert_eq!(state.horizontal_offset(), 10);
+    /// ```
     pub fn set_horizontal_offset(&mut self, offset: usize) {
         self.horizontal_offset = offset;
     }

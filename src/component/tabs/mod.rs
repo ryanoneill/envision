@@ -137,11 +137,29 @@ impl<T: Clone> TabsState<T> {
     /// Returns the currently selected index.
     ///
     /// Returns `None` if there are no tabs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TabsState;
+    ///
+    /// let state = TabsState::new(vec!["Home", "Settings"]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TabsState;
+    ///
+    /// let state = TabsState::with_selected(vec!["A", "B", "C"], 2);
+    /// assert_eq!(state.selected(), Some(2));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
@@ -149,6 +167,15 @@ impl<T: Clone> TabsState<T> {
     /// Returns the currently selected item.
     ///
     /// Returns `None` if there are no tabs or no selection.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TabsState;
+    ///
+    /// let state = TabsState::with_selected(vec!["Home", "Settings", "Help"], 1);
+    /// assert_eq!(state.selected_item(), Some(&"Settings"));
+    /// ```
     pub fn selected_item(&self) -> Option<&T> {
         self.tabs.get(self.selected?)
     }
@@ -157,6 +184,16 @@ impl<T: Clone> TabsState<T> {
     ///
     /// Pass `Some(index)` to select a tab (clamped to valid range), or
     /// `None` to clear the selection.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TabsState;
+    ///
+    /// let mut state = TabsState::new(vec!["A", "B", "C"]);
+    /// state.set_selected(Some(2));
+    /// assert_eq!(state.selected_index(), Some(2));
+    /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
@@ -171,6 +208,15 @@ impl<T: Clone> TabsState<T> {
     }
 
     /// Returns all tabs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TabsState;
+    ///
+    /// let state = TabsState::new(vec!["Home", "Settings", "Help"]);
+    /// assert_eq!(state.tabs(), &["Home", "Settings", "Help"]);
+    /// ```
     pub fn tabs(&self) -> &[T] {
         &self.tabs
     }
@@ -206,11 +252,32 @@ impl<T: Clone> TabsState<T> {
     }
 
     /// Returns the number of tabs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TabsState;
+    ///
+    /// let state = TabsState::new(vec!["Tab1", "Tab2", "Tab3"]);
+    /// assert_eq!(state.len(), 3);
+    /// ```
     pub fn len(&self) -> usize {
         self.tabs.len()
     }
 
     /// Returns true if there are no tabs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TabsState;
+    ///
+    /// let empty: TabsState<&str> = TabsState::default();
+    /// assert!(empty.is_empty());
+    ///
+    /// let state = TabsState::new(vec!["Tab1"]);
+    /// assert!(!state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.tabs.is_empty()
     }

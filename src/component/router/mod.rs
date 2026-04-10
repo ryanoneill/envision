@@ -202,37 +202,129 @@ impl<S: Clone + PartialEq> RouterState<S> {
     }
 
     /// Returns the current screen.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RouterState;
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home, Settings }
+    ///
+    /// let state = RouterState::new(Screen::Home);
+    /// assert_eq!(state.current(), &Screen::Home);
+    /// ```
     pub fn current(&self) -> &S {
         &self.current
     }
 
     /// Returns true if we can navigate back.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Router, RouterState, RouterMessage};
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home, Settings }
+    ///
+    /// let mut state = RouterState::new(Screen::Home);
+    /// assert!(!state.can_go_back());
+    /// Router::update(&mut state, RouterMessage::Navigate(Screen::Settings));
+    /// assert!(state.can_go_back());
+    /// ```
     pub fn can_go_back(&self) -> bool {
         !self.history.is_empty()
     }
 
     /// Returns the number of screens in history.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Router, RouterState, RouterMessage};
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home, Settings, Profile }
+    ///
+    /// let mut state = RouterState::new(Screen::Home);
+    /// Router::update(&mut state, RouterMessage::Navigate(Screen::Settings));
+    /// Router::update(&mut state, RouterMessage::Navigate(Screen::Profile));
+    /// assert_eq!(state.history_len(), 2);
+    /// ```
     pub fn history_len(&self) -> usize {
         self.history.len()
     }
 
     /// Returns the history stack (oldest first).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Router, RouterState, RouterMessage};
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home, Settings }
+    ///
+    /// let mut state = RouterState::new(Screen::Home);
+    /// Router::update(&mut state, RouterMessage::Navigate(Screen::Settings));
+    /// assert_eq!(state.history(), &[Screen::Home]);
+    /// ```
     pub fn history(&self) -> &[S] {
         &self.history
     }
 
     /// Returns the maximum history size (0 = unlimited).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RouterState;
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home }
+    ///
+    /// let state = RouterState::new(Screen::Home).with_max_history(10);
+    /// assert_eq!(state.max_history(), 10);
+    /// ```
     pub fn max_history(&self) -> usize {
         self.max_history
     }
 
     /// Sets the maximum history size.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RouterState;
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home }
+    ///
+    /// let mut state = RouterState::new(Screen::Home);
+    /// state.set_max_history(5);
+    /// assert_eq!(state.max_history(), 5);
+    /// ```
     pub fn set_max_history(&mut self, max: usize) {
         self.max_history = max;
         self.enforce_history_limit();
     }
 
     /// Returns the previous screen if available.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Router, RouterState, RouterMessage};
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home, Settings }
+    ///
+    /// let mut state = RouterState::new(Screen::Home);
+    /// assert_eq!(state.previous(), None);
+    /// Router::update(&mut state, RouterMessage::Navigate(Screen::Settings));
+    /// assert_eq!(state.previous(), Some(&Screen::Home));
+    /// ```
     pub fn previous(&self) -> Option<&S> {
         self.history.last()
     }
@@ -256,6 +348,20 @@ impl<S: Clone + PartialEq> RouterState<S> {
     }
 
     /// Clears all navigation history.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Router, RouterState, RouterMessage};
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// enum Screen { Home, Settings }
+    ///
+    /// let mut state = RouterState::new(Screen::Home);
+    /// Router::update(&mut state, RouterMessage::Navigate(Screen::Settings));
+    /// state.clear_history();
+    /// assert!(!state.can_go_back());
+    /// ```
     pub fn clear_history(&mut self) {
         self.history.clear();
     }

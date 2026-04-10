@@ -129,6 +129,15 @@ impl<T: Clone> RadioGroupState<T> {
     }
 
     /// Returns the available options.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RadioGroupState;
+    ///
+    /// let state = RadioGroupState::new(vec!["Small", "Medium", "Large"]);
+    /// assert_eq!(state.options(), &["Small", "Medium", "Large"]);
+    /// ```
     pub fn options(&self) -> &[T] {
         &self.options
     }
@@ -166,11 +175,29 @@ impl<T: Clone> RadioGroupState<T> {
     /// Returns the currently selected index.
     ///
     /// Returns `None` if the options are empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RadioGroupState;
+    ///
+    /// let state = RadioGroupState::new(vec!["A", "B", "C"]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RadioGroupState;
+    ///
+    /// let state = RadioGroupState::with_selected(vec!["A", "B", "C"], 2);
+    /// assert_eq!(state.selected(), Some(2));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
@@ -178,6 +205,15 @@ impl<T: Clone> RadioGroupState<T> {
     /// Returns a reference to the currently selected item.
     ///
     /// Returns `None` if the options are empty or no selection exists.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RadioGroupState;
+    ///
+    /// let state = RadioGroupState::with_selected(vec!["Small", "Medium", "Large"], 1);
+    /// assert_eq!(state.selected_item(), Some(&"Medium"));
+    /// ```
     pub fn selected_item(&self) -> Option<&T> {
         self.options.get(self.selected?)
     }
@@ -186,6 +222,16 @@ impl<T: Clone> RadioGroupState<T> {
     ///
     /// Pass `Some(index)` to select an option (out-of-bounds indices are
     /// ignored), or `None` to clear the selection.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RadioGroupState;
+    ///
+    /// let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
+    /// state.set_selected(Some(2));
+    /// assert_eq!(state.selected_index(), Some(2));
+    /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         match index {
             Some(i) if i < self.options.len() => self.selected = Some(i),
@@ -195,11 +241,32 @@ impl<T: Clone> RadioGroupState<T> {
     }
 
     /// Returns true if the options are empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RadioGroupState;
+    ///
+    /// let empty: RadioGroupState<&str> = RadioGroupState::default();
+    /// assert!(empty.is_empty());
+    ///
+    /// let state = RadioGroupState::new(vec!["A"]);
+    /// assert!(!state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.options.is_empty()
     }
 
     /// Returns the number of options.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::RadioGroupState;
+    ///
+    /// let state = RadioGroupState::new(vec!["Small", "Medium", "Large"]);
+    /// assert_eq!(state.len(), 3);
+    /// ```
     pub fn len(&self) -> usize {
         self.options.len()
     }
