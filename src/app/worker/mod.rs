@@ -108,6 +108,11 @@ impl ProgressSender {
     }
 
     /// Sends a progress update with just a percentage.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Err` if the progress channel is closed, which occurs when the
+    /// worker has been cancelled or the runtime has shut down.
     pub async fn send_percentage(
         &self,
         percentage: f32,
@@ -116,6 +121,11 @@ impl ProgressSender {
     }
 
     /// Sends a progress update with a percentage and status message.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Err` if the progress channel is closed, which occurs when the
+    /// worker has been cancelled or the runtime has shut down.
     pub async fn send_status(
         &self,
         percentage: f32,
