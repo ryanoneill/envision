@@ -166,8 +166,11 @@ fn format_message<'a>(
     lines: &mut Vec<Line<'a>>,
 ) {
     let role = msg.role();
-    let role_color = role.color();
-    let role_style = Style::default().fg(role_color);
+    let role_style = state
+        .role_style_overrides
+        .get(role)
+        .copied()
+        .unwrap_or_else(|| Style::default().fg(role.color()));
     let bold_role_style = role_style.add_modifier(Modifier::BOLD);
 
     if state.show_role_labels {
@@ -190,9 +193,7 @@ fn format_message<'a>(
         if msg.is_streaming() {
             header_spans.push(Span::styled(
                 " \u{2588}",
-                Style::default()
-                    .fg(role_color)
-                    .add_modifier(Modifier::SLOW_BLINK),
+                role_style.add_modifier(Modifier::SLOW_BLINK),
             ));
         }
 
