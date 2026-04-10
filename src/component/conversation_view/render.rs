@@ -327,7 +327,7 @@ fn format_text_block<'a>(
         );
         for mut md_line in md_lines {
             for span in md_line.spans.iter_mut() {
-                if span.style.fg == Some(theme.foreground) {
+                if span.style.fg.is_none() || span.style.fg == Some(theme.foreground) {
                     span.style.fg = style.fg;
                 }
             }
