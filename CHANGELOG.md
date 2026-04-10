@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hidden, the state's title is not rendered (the title is drawn as
   part of the border block).
 
+### Changed
+
+- Split `chart/tests.rs` into two files to stay under the 1000-line
+  limit. No behavioral changes.
+
 ### Fixed
 
 - `ConversationView` now honors role colors (User=green, Assistant=blue,
