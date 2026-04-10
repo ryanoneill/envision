@@ -532,7 +532,7 @@ impl<M> Command<M> {
     ///
     /// If JSON serialization fails, returns [`Command::none`] silently (no
     /// error is reported). If the file write fails, the error is reported to
-    /// the runtime's error channel as [`EnvisionError::Io`]; retrieve it
+    /// the runtime's error channel as `EnvisionError::Io`; retrieve it
     /// with [`Runtime::take_errors`](crate::Runtime::take_errors).
     ///
     /// # Example
