@@ -141,7 +141,7 @@ fn render_messages_from(
     }
 }
 
-fn build_display_lines<'a>(
+pub(super) fn build_display_lines<'a>(
     messages: &[ConversationMessage],
     state: &ConversationViewState,
     width: usize,
@@ -324,11 +324,16 @@ fn format_text_block<'a>(
             available_width as u16,
             &theme,
         );
-        for md_line in md_lines {
+        for mut md_line in md_lines {
+            for span in md_line.spans.iter_mut() {
+                if span.style.fg == Some(theme.foreground) {
+                    span.style.fg = style.fg;
+                }
+            }
             if indent.is_empty() {
                 lines.push(md_line);
             } else {
-                let mut spans: Vec<Span> = vec![Span::raw(indent.to_string())];
+                let mut spans: Vec<Span> = vec![Span::styled(indent.to_string(), style)];
                 spans.extend(md_line.spans);
                 lines.push(Line::from(spans));
             }
