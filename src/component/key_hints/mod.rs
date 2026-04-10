@@ -150,21 +150,61 @@ impl KeyHint {
     }
 
     /// Sets the key string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHint;
+    ///
+    /// let mut hint = KeyHint::new("Enter", "Select");
+    /// hint.set_key("Return");
+    /// assert_eq!(hint.key(), "Return");
+    /// ```
     pub fn set_key(&mut self, key: impl Into<String>) {
         self.key = key.into();
     }
 
     /// Sets the action description.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHint;
+    ///
+    /// let mut hint = KeyHint::new("q", "Quit");
+    /// hint.set_action("Exit");
+    /// assert_eq!(hint.action(), "Exit");
+    /// ```
     pub fn set_action(&mut self, action: impl Into<String>) {
         self.action = action.into();
     }
 
     /// Sets whether the hint is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHint;
+    ///
+    /// let mut hint = KeyHint::new("Delete", "Remove");
+    /// hint.set_enabled(false);
+    /// assert!(!hint.is_enabled());
+    /// ```
     pub fn set_enabled(&mut self, enabled: bool) {
         self.enabled = enabled;
     }
 
     /// Sets the priority.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHint;
+    ///
+    /// let mut hint = KeyHint::new("q", "Quit");
+    /// hint.set_priority(5);
+    /// assert_eq!(hint.priority(), 5);
+    /// ```
     pub fn set_priority(&mut self, priority: u8) {
         self.priority = priority;
     }
@@ -288,24 +328,67 @@ impl KeyHintsState {
     }
 
     /// Sets the separator between key and action.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let state = KeyHintsState::new()
+    ///     .with_key_action_separator(": ")
+    ///     .hint("Enter", "Select");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn with_key_action_separator(mut self, sep: impl Into<String>) -> Self {
         self.key_action_separator = sep.into();
         self
     }
 
     /// Sets the separator between hints.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let state = KeyHintsState::new()
+    ///     .with_hint_separator(" | ")
+    ///     .hint("q", "Quit")
+    ///     .hint("Enter", "Select");
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn with_hint_separator(mut self, sep: impl Into<String>) -> Self {
         self.hint_separator = sep.into();
         self
     }
 
     /// Sets the style for keys.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    /// use ratatui::style::{Style, Color};
+    ///
+    /// let state = KeyHintsState::new().with_key_style(Style::default().fg(Color::Yellow));
+    /// assert_eq!(state.key_style(), Style::default().fg(Color::Yellow));
+    /// ```
     pub fn with_key_style(mut self, style: Style) -> Self {
         self.key_style = style;
         self
     }
 
     /// Sets the style for actions.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    /// use ratatui::style::{Style, Color};
+    ///
+    /// let state = KeyHintsState::new().with_action_style(Style::default().fg(Color::White));
+    /// assert_eq!(state.action_style(), Style::default().fg(Color::White));
+    /// ```
     pub fn with_action_style(mut self, style: Style) -> Self {
         self.action_style = style;
         self
@@ -331,6 +414,17 @@ impl KeyHintsState {
     }
 
     /// Adds a hint with priority using builder pattern.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let state = KeyHintsState::new()
+    ///     .hint_with_priority("q", "Quit", 1)
+    ///     .hint_with_priority("Enter", "Select", 10);
+    /// assert_eq!(state.visible_hints()[0].key(), "q");
+    /// ```
     pub fn hint_with_priority(
         mut self,
         key: impl Into<String>,
@@ -343,11 +437,32 @@ impl KeyHintsState {
     }
 
     /// Returns all hints.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let state = KeyHintsState::new().hint("q", "Quit").hint("Enter", "Select");
+    /// assert_eq!(state.hints().len(), 2);
+    /// ```
     pub fn hints(&self) -> &[KeyHint] {
         &self.hints
     }
 
     /// Returns only enabled hints, sorted by priority.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let state = KeyHintsState::new()
+    ///     .hint("q", "Quit")
+    ///     .hint("Delete", "Remove")
+    ///     .with_disabled(false);
+    /// assert_eq!(state.visible_hints().len(), 2);
+    /// ```
     pub fn visible_hints(&self) -> Vec<&KeyHint> {
         let mut visible: Vec<_> = self.hints.iter().filter(|h| h.enabled).collect();
         visible.sort_by_key(|h| h.priority);
@@ -370,21 +485,64 @@ impl KeyHintsState {
     }
 
     /// Sets the hints.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{KeyHintsState, KeyHint};
+    ///
+    /// let mut state = KeyHintsState::new().hint("q", "Quit");
+    /// state.set_hints(vec![KeyHint::new("Enter", "Select"), KeyHint::new("Esc", "Cancel")]);
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn set_hints(&mut self, hints: Vec<KeyHint>) {
         self.hints = hints;
     }
 
     /// Adds a hint.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{KeyHintsState, KeyHint};
+    ///
+    /// let mut state = KeyHintsState::new();
+    /// state.add_hint(KeyHint::new("q", "Quit"));
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn add_hint(&mut self, hint: KeyHint) {
         self.hints.push(hint);
     }
 
     /// Removes a hint by key.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let mut state = KeyHintsState::new().hint("q", "Quit").hint("Enter", "Select");
+    /// state.remove_hint("q");
+    /// assert_eq!(state.len(), 1);
+    /// assert_eq!(state.hints()[0].key(), "Enter");
+    /// ```
     pub fn remove_hint(&mut self, key: &str) {
         self.hints.retain(|h| h.key != key);
     }
 
     /// Enables a hint by key.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{KeyHintsState, KeyHint};
+    ///
+    /// let mut state = KeyHintsState::new()
+    ///     .hint("Delete", "Remove");
+    /// state.disable_hint("Delete");
+    /// state.enable_hint("Delete");
+    /// assert!(state.hints()[0].is_enabled());
+    /// ```
     pub fn enable_hint(&mut self, key: &str) {
         if let Some(hint) = self.hints.iter_mut().find(|h| h.key == key) {
             hint.enabled = true;
@@ -392,6 +550,16 @@ impl KeyHintsState {
     }
 
     /// Disables a hint by key.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let mut state = KeyHintsState::new().hint("Delete", "Remove");
+    /// state.disable_hint("Delete");
+    /// assert!(!state.hints()[0].is_enabled());
+    /// ```
     pub fn disable_hint(&mut self, key: &str) {
         if let Some(hint) = self.hints.iter_mut().find(|h| h.key == key) {
             hint.enabled = false;
@@ -399,41 +567,122 @@ impl KeyHintsState {
     }
 
     /// Sets the layout.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{KeyHintsState, KeyHintsLayout};
+    ///
+    /// let mut state = KeyHintsState::new();
+    /// state.set_layout(KeyHintsLayout::Inline);
+    /// assert_eq!(state.layout(), KeyHintsLayout::Inline);
+    /// ```
     pub fn set_layout(&mut self, layout: KeyHintsLayout) {
         self.layout = layout;
     }
 
     /// Clears all hints.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let mut state = KeyHintsState::new().hint("q", "Quit").hint("Enter", "Select");
+    /// state.clear();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn clear(&mut self) {
         self.hints.clear();
     }
 
     /// Returns the key style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    /// use ratatui::style::{Style, Color};
+    ///
+    /// let state = KeyHintsState::new().with_key_style(Style::default().fg(Color::Blue));
+    /// assert_eq!(state.key_style(), Style::default().fg(Color::Blue));
+    /// ```
     pub fn key_style(&self) -> Style {
         self.key_style
     }
 
     /// Returns the action style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    /// use ratatui::style::Style;
+    ///
+    /// let state = KeyHintsState::new();
+    /// assert_eq!(state.action_style(), Style::default());
+    /// ```
     pub fn action_style(&self) -> Style {
         self.action_style
     }
 
     /// Sets the key style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    /// use ratatui::style::{Style, Color};
+    ///
+    /// let mut state = KeyHintsState::new();
+    /// state.set_key_style(Style::default().fg(Color::Cyan));
+    /// assert_eq!(state.key_style(), Style::default().fg(Color::Cyan));
+    /// ```
     pub fn set_key_style(&mut self, style: Style) {
         self.key_style = style;
     }
 
     /// Sets the action style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    /// use ratatui::style::{Style, Color};
+    ///
+    /// let mut state = KeyHintsState::new();
+    /// state.set_action_style(Style::default().fg(Color::Gray));
+    /// assert_eq!(state.action_style(), Style::default().fg(Color::Gray));
+    /// ```
     pub fn set_action_style(&mut self, style: Style) {
         self.action_style = style;
     }
 
     /// Returns true if the key hints are disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let state = KeyHintsState::new();
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let mut state = KeyHintsState::new();
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }

@@ -256,31 +256,94 @@ impl StatusBarState {
     }
 
     /// Returns the left section items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.push_left(StatusBarItem::new("Mode"));
+    /// assert_eq!(state.left().len(), 1);
+    /// assert_eq!(state.left()[0].text(), "Mode");
+    /// ```
     pub fn left(&self) -> &[StatusBarItem] {
         &self.left
     }
 
     /// Returns the center section items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.push_center(StatusBarItem::new("main.rs"));
+    /// assert_eq!(state.center().len(), 1);
+    /// assert_eq!(state.center()[0].text(), "main.rs");
+    /// ```
     pub fn center(&self) -> &[StatusBarItem] {
         &self.center
     }
 
     /// Returns the right section items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.push_right(StatusBarItem::new("Ln 1"));
+    /// assert_eq!(state.right().len(), 1);
+    /// assert_eq!(state.right()[0].text(), "Ln 1");
+    /// ```
     pub fn right(&self) -> &[StatusBarItem] {
         &self.right
     }
 
     /// Sets the left section items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.set_left(vec![StatusBarItem::new("INSERT"), StatusBarItem::new("Git")]);
+    /// assert_eq!(state.left().len(), 2);
+    /// ```
     pub fn set_left(&mut self, items: Vec<StatusBarItem>) {
         self.left = items;
     }
 
     /// Sets the center section items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.set_center(vec![StatusBarItem::new("main.rs")]);
+    /// assert_eq!(state.center().len(), 1);
+    /// ```
     pub fn set_center(&mut self, items: Vec<StatusBarItem>) {
         self.center = items;
     }
 
     /// Sets the right section items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.set_right(vec![StatusBarItem::new("UTF-8"), StatusBarItem::new("Ln 1")]);
+    /// assert_eq!(state.right().len(), 2);
+    /// ```
     pub fn set_right(&mut self, items: Vec<StatusBarItem>) {
         self.right = items;
     }
@@ -331,6 +394,18 @@ impl StatusBarState {
     }
 
     /// Clears all sections.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.push_left(StatusBarItem::new("Mode"));
+    /// state.push_right(StatusBarItem::new("Ln 1"));
+    /// state.clear();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn clear(&mut self) {
         self.left.clear();
         self.center.clear();
@@ -343,26 +418,76 @@ impl StatusBarState {
     }
 
     /// Sets the separator string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarState;
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.set_separator(" :: ");
+    /// assert_eq!(state.separator(), " :: ");
+    /// ```
     pub fn set_separator(&mut self, separator: impl Into<String>) {
         self.separator = separator.into();
     }
 
     /// Returns the background color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarState;
+    /// use ratatui::style::Color;
+    ///
+    /// let state = StatusBarState::new();
+    /// assert_eq!(state.background(), Color::DarkGray);
+    /// ```
     pub fn background(&self) -> Color {
         self.background
     }
 
     /// Sets the background color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarState;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.set_background(Color::Black);
+    /// assert_eq!(state.background(), Color::Black);
+    /// ```
     pub fn set_background(&mut self, color: Color) {
         self.background = color;
     }
 
     /// Returns true if the status bar is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarState;
+    ///
+    /// let state = StatusBarState::new();
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarState;
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
@@ -384,16 +509,48 @@ impl StatusBarState {
     }
 
     /// Returns true if all sections are empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarState;
+    ///
+    /// let state = StatusBarState::new();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.left.is_empty() && self.center.is_empty() && self.right.is_empty()
     }
 
     /// Returns the total number of items across all sections.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.push_left(StatusBarItem::new("A"));
+    /// state.push_center(StatusBarItem::new("B"));
+    /// state.push_right(StatusBarItem::new("C"));
+    /// assert_eq!(state.len(), 3);
+    /// ```
     pub fn len(&self) -> usize {
         self.left.len() + self.center.len() + self.right.len()
     }
 
     /// Returns the items in the specified section.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem, Section};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.push_left(StatusBarItem::new("Mode"));
+    /// assert_eq!(state.section(Section::Left).len(), 1);
+    /// assert_eq!(state.section(Section::Right).len(), 0);
+    /// ```
     pub fn section(&self, section: Section) -> &[StatusBarItem] {
         match section {
             Section::Left => &self.left,
