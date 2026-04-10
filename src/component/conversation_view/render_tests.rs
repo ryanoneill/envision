@@ -594,6 +594,7 @@ fn test_view_from_collapsed_blocks_use_state_config() {
     assert_ne!(output_expanded, output_collapsed);
 }
 
+#[cfg(feature = "markdown")]
 #[test]
 fn test_markdown_role_style_propagation() {
     use ratatui::style::{Color, Modifier, Style};
