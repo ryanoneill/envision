@@ -153,5 +153,161 @@ pub fn centered_percent(area: Rect, width_percent: u16, height_percent: u16) -> 
     centered(area, width, height)
 }
 
+/// The regions produced by [`AppShell::split`].
+///
+/// All three fields are always present. When no header or footer is
+/// configured on the [`AppShell`], the corresponding rect has zero
+/// height.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::layout::{AppShell, AppRegions, Constraint, Rect};
+///
+/// let shell = AppShell::new()
+///     .header(Constraint::Length(3))
+///     .footer(Constraint::Length(1));
+///
+/// let regions = shell.split(Rect::new(0, 0, 80, 24));
+/// assert_eq!(regions.header.height, 3);
+/// assert_eq!(regions.content.height, 20);
+/// assert_eq!(regions.footer.height, 1);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AppRegions {
+    /// The header area. Zero-height if no header was configured.
+    pub header: Rect,
+    /// The main content area.
+    pub content: Rect,
+    /// The footer area. Zero-height if no footer was configured.
+    pub footer: Rect,
+}
+
+/// A reusable app-level layout definition for the canonical
+/// (header, content, footer) split.
+///
+/// Construct once at app init with your header and/or footer constraints,
+/// then call [`split`](Self::split) from views and overlays to get
+/// consistent rects without duplicating layout constants.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::layout::{AppShell, Constraint, Rect};
+///
+/// // Define the layout once at app init.
+/// let shell = AppShell::new()
+///     .header(Constraint::Length(4))
+///     .footer(Constraint::Length(1));
+///
+/// // Use it from both the main view and overlays.
+/// let area = Rect::new(0, 0, 80, 24);
+/// let regions = shell.split(area);
+///
+/// assert_eq!(regions.header.height, 4);
+/// assert_eq!(regions.content.height, 19);
+/// assert_eq!(regions.footer.height, 1);
+/// ```
+#[derive(Clone, Copy, Debug)]
+pub struct AppShell {
+    header: Option<Constraint>,
+    footer: Option<Constraint>,
+}
+
+impl AppShell {
+    /// Creates a new `AppShell` with no header or footer.
+    ///
+    /// Content will occupy the full area until a header or footer is
+    /// configured via [`header`](Self::header) or
+    /// [`footer`](Self::footer).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::layout::{AppShell, Rect};
+    ///
+    /// let shell = AppShell::new();
+    /// let regions = shell.split(Rect::new(0, 0, 80, 24));
+    /// assert_eq!(regions.content.height, 24);
+    /// ```
+    pub fn new() -> Self {
+        Self {
+            header: None,
+            footer: None,
+        }
+    }
+
+    /// Sets the header constraint (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::layout::{AppShell, Constraint, Rect};
+    ///
+    /// let shell = AppShell::new().header(Constraint::Length(3));
+    /// let regions = shell.split(Rect::new(0, 0, 80, 24));
+    /// assert_eq!(regions.header.height, 3);
+    /// ```
+    pub fn header(mut self, constraint: Constraint) -> Self {
+        self.header = Some(constraint);
+        self
+    }
+
+    /// Sets the footer constraint (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::layout::{AppShell, Constraint, Rect};
+    ///
+    /// let shell = AppShell::new().footer(Constraint::Length(1));
+    /// let regions = shell.split(Rect::new(0, 0, 80, 24));
+    /// assert_eq!(regions.footer.height, 1);
+    /// ```
+    pub fn footer(mut self, constraint: Constraint) -> Self {
+        self.footer = Some(constraint);
+        self
+    }
+
+    /// Splits the given area into header, content, and footer regions.
+    ///
+    /// Content always receives `Constraint::Min(0)` so it expands
+    /// to fill whatever the header and footer don't consume.
+    ///
+    /// When no header or footer is configured, the corresponding region
+    /// has zero height.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::layout::{AppShell, Constraint, Rect};
+    ///
+    /// let shell = AppShell::new()
+    ///     .header(Constraint::Length(4))
+    ///     .footer(Constraint::Length(1));
+    /// let regions = shell.split(Rect::new(0, 0, 80, 24));
+    ///
+    /// assert_eq!(regions.header.height, 4);
+    /// assert_eq!(regions.content.height, 19);
+    /// assert_eq!(regions.footer.height, 1);
+    /// ```
+    pub fn split(self, area: Rect) -> AppRegions {
+        let h = self.header.unwrap_or(Constraint::Length(0));
+        let f = self.footer.unwrap_or(Constraint::Length(0));
+        let [header, content, footer] = vertical(area, [h, Constraint::Min(0), f]);
+        AppRegions {
+            header,
+            content,
+            footer,
+        }
+    }
+}
+
+impl Default for AppShell {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests;

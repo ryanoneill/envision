@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `AppShell` layout helper for consistent `(header, content, footer)`
+  splits. Construct once at app init with
+  `AppShell::new().header(Constraint::Length(4)).footer(Constraint::Length(1))`,
+  then call `.split(area)` from views and overlays to get the same rects
+  without duplicating layout constants. Returns `AppRegions` with
+  `header`, `content`, and `footer` fields. Header and footer are
+  optional — unconfigured regions produce zero-height rects.
+
 - `StepIndicatorState::with_show_border(bool)`, `show_border()`, and
   `set_show_border(bool)` for opting out of the border box. When the
   border is disabled, `StepIndicator` becomes usable as an inline
