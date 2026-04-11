@@ -203,11 +203,30 @@ impl<T: Clone> LoadingListItem<T> {
     }
 
     /// Returns a mutable reference to the data.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListItem;
+    ///
+    /// let mut item = LoadingListItem::new(42u32, "Answer");
+    /// *item.data_mut() = 99;
+    /// assert_eq!(*item.data(), 99);
+    /// ```
     pub fn data_mut(&mut self) -> &mut T {
         &mut self.data
     }
 
     /// Returns the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListItem;
+    ///
+    /// let item = LoadingListItem::new("x", "Display Name");
+    /// assert_eq!(item.label(), "Display Name");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
@@ -218,11 +237,30 @@ impl<T: Clone> LoadingListItem<T> {
     }
 
     /// Returns the current state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ItemState, LoadingListItem};
+    ///
+    /// let item = LoadingListItem::new("x", "Item");
+    /// assert_eq!(item.state(), &ItemState::Ready);
+    /// ```
     pub fn state(&self) -> &ItemState {
         &self.state
     }
 
     /// Sets the state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ItemState, LoadingListItem};
+    ///
+    /// let mut item = LoadingListItem::new("x", "Item");
+    /// item.set_state(ItemState::Loading);
+    /// assert!(item.is_loading());
+    /// ```
     pub fn set_state(&mut self, state: ItemState) {
         self.state = state;
     }

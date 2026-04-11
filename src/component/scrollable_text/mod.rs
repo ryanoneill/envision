@@ -130,6 +130,15 @@ impl ScrollableTextState {
     // ---- Content accessors ----
 
     /// Returns the text content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ScrollableTextState;
+    ///
+    /// let state = ScrollableTextState::new().with_content("Hello, world!");
+    /// assert_eq!(state.content(), "Hello, world!");
+    /// ```
     pub fn content(&self) -> &str {
         &self.content
     }
@@ -170,11 +179,35 @@ impl ScrollableTextState {
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ScrollableTextState;
+    ///
+    /// let state = ScrollableTextState::new().with_title("My Panel");
+    /// assert_eq!(state.title(), Some("My Panel"));
+    ///
+    /// let empty = ScrollableTextState::new();
+    /// assert_eq!(empty.title(), None);
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ScrollableTextState;
+    ///
+    /// let mut state = ScrollableTextState::new();
+    /// state.set_title(Some("Updated Title".to_string()));
+    /// assert_eq!(state.title(), Some("Updated Title"));
+    /// state.set_title(None);
+    /// assert_eq!(state.title(), None);
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
@@ -191,6 +224,17 @@ impl ScrollableTextState {
     /// The offset is clamped to the valid range based on the current
     /// content length estimate. The precise clamping to wrapped line
     /// count happens during rendering.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ScrollableTextState;
+    ///
+    /// let mut state = ScrollableTextState::new()
+    ///     .with_content("Line 1\nLine 2\nLine 3\nLine 4\nLine 5");
+    /// state.set_scroll_offset(2);
+    /// assert_eq!(state.scroll_offset(), 2);
+    /// ```
     pub fn set_scroll_offset(&mut self, offset: usize) {
         self.scroll.set_offset(offset);
     }

@@ -427,11 +427,32 @@ impl HelpPanelState {
     // ---- Title accessors ----
 
     /// Returns the panel title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HelpPanelState;
+    ///
+    /// let state = HelpPanelState::new();
+    /// assert_eq!(state.title(), Some("Help"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HelpPanelState;
+    ///
+    /// let mut state = HelpPanelState::new();
+    /// state.set_title(Some("Shortcuts".to_string()));
+    /// assert_eq!(state.title(), Some("Shortcuts"));
+    /// state.set_title(None);
+    /// assert_eq!(state.title(), None);
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
@@ -439,16 +460,44 @@ impl HelpPanelState {
     // ---- State accessors ----
 
     /// Returns true if the component is visible.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HelpPanelState;
+    ///
+    /// let state = HelpPanelState::new();
+    /// assert!(state.is_visible()); // visible by default
+    /// ```
     pub fn is_visible(&self) -> bool {
         self.visible
     }
 
     /// Sets the visibility state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HelpPanelState;
+    ///
+    /// let mut state = HelpPanelState::new();
+    /// state.set_visible(false);
+    /// assert!(!state.is_visible());
+    /// ```
     pub fn set_visible(&mut self, visible: bool) {
         self.visible = visible;
     }
 
     /// Returns the current scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HelpPanelState;
+    ///
+    /// let state = HelpPanelState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
     }
