@@ -157,6 +157,15 @@ impl ProgressBarState {
     }
 
     /// Returns the current progress value (0.0 to 1.0).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::with_progress(0.75);
+    /// assert_eq!(state.progress(), 0.75);
+    /// ```
     pub fn progress(&self) -> f32 {
         self.progress
     }
@@ -170,31 +179,94 @@ impl ProgressBarState {
     /// Sets the progress value.
     ///
     /// The value is clamped to the range 0.0..=1.0.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_progress(0.6);
+    /// assert_eq!(state.percentage(), 60);
+    /// ```
     pub fn set_progress(&mut self, progress: f32) {
         self.progress = progress.clamp(0.0, 1.0);
     }
 
     /// Returns true if the progress is complete (>= 1.0).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::with_progress(1.0);
+    /// assert!(state.is_complete());
+    ///
+    /// let partial = ProgressBarState::with_progress(0.5);
+    /// assert!(!partial.is_complete());
+    /// ```
     pub fn is_complete(&self) -> bool {
         self.progress >= 1.0
     }
 
     /// Returns the label if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::with_label("Uploading...");
+    /// assert_eq!(state.label(), Some("Uploading..."));
+    ///
+    /// let unlabeled = ProgressBarState::new();
+    /// assert_eq!(unlabeled.label(), None);
+    /// ```
     pub fn label(&self) -> Option<&str> {
         self.label.as_deref()
     }
 
     /// Sets the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_label(Some("Loading...".to_string()));
+    /// assert_eq!(state.label(), Some("Loading..."));
+    /// ```
     pub fn set_label(&mut self, label: Option<String>) {
         self.label = label;
     }
 
     /// Returns true if the progress bar is disabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::new();
+    /// assert!(!state.is_disabled());
+    /// ```
     pub fn is_disabled(&self) -> bool {
         self.disabled
     }
 
     /// Sets the disabled state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_disabled(true);
+    /// assert!(state.is_disabled());
+    /// ```
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
     }
@@ -327,26 +399,79 @@ impl ProgressBarState {
     }
 
     /// Returns the ETA as a `Duration`, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::time::Duration;
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_eta(Some(Duration::from_secs(30)));
+    /// assert_eq!(state.eta(), Some(Duration::from_secs(30)));
+    /// ```
     pub fn eta(&self) -> Option<Duration> {
         self.eta_millis.map(Duration::from_millis)
     }
 
     /// Returns the ETA in milliseconds, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::time::Duration;
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_eta(Some(Duration::from_millis(5000)));
+    /// assert_eq!(state.eta_millis(), Some(5000));
+    /// ```
     pub fn eta_millis(&self) -> Option<u64> {
         self.eta_millis
     }
 
     /// Returns the rate text, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_rate_text(Some("5.2 MB/s".to_string()));
+    /// assert_eq!(state.rate_text(), Some("5.2 MB/s"));
+    /// ```
     pub fn rate_text(&self) -> Option<&str> {
         self.rate_text.as_deref()
     }
 
     /// Sets the ETA.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::time::Duration;
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_eta(Some(Duration::from_secs(60)));
+    /// assert_eq!(state.eta_millis(), Some(60_000));
+    /// ```
     pub fn set_eta(&mut self, eta: Option<Duration>) {
         self.eta_millis = eta.map(|d| d.as_millis() as u64);
     }
 
     /// Sets the rate text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let mut state = ProgressBarState::new();
+    /// state.set_rate_text(Some("100 items/s".to_string()));
+    /// assert_eq!(state.rate_text(), Some("100 items/s"));
+    /// ```
     pub fn set_rate_text(&mut self, rate_text: Option<String>) {
         self.rate_text = rate_text;
     }

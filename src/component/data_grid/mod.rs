@@ -267,16 +267,73 @@ impl<T: TableRow> DataGridState<T> {
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert_eq!(state.selected(), Some(0));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
 
     /// Returns a reference to the currently selected row.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "Alice".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert_eq!(state.selected_row().unwrap().name, "Alice");
+    /// ```
     pub fn selected_row(&self) -> Option<&T> {
         self.selected_row.and_then(|i| self.rows.get(i))
     }
 
     /// Returns a reference to the currently selected item.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "Bob".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert_eq!(state.selected_item().unwrap().name, "Bob");
+    /// ```
     pub fn selected_item(&self) -> Option<&T> {
         self.selected_row()
     }
@@ -351,11 +408,49 @@ impl<T: TableRow> DataGridState<T> {
     }
 
     /// Returns the current editor value (while editing).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert_eq!(state.editor_value(), "");
+    /// ```
     pub fn editor_value(&self) -> &str {
         self.editor.value()
     }
 
     /// Returns the value of the currently selected cell.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "Alice".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert_eq!(state.current_cell_value(), Some("Alice".to_string()));
+    /// ```
     pub fn current_cell_value(&self) -> Option<String> {
         self.selected_row
             .and_then(|ri| self.rows.get(ri))
@@ -437,6 +532,26 @@ impl<T: TableRow> DataGridState<T> {
     }
 
     /// Sets the rows, resetting selection and cancelling any edit.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// state.set_rows(vec![Item { name: "X".into() }, Item { name: "Y".into() }]);
+    /// assert_eq!(state.row_count(), 2);
+    /// ```
     pub fn set_rows(&mut self, rows: Vec<T>) {
         self.editing = false;
         self.rows = rows;

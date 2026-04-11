@@ -81,26 +81,76 @@ pub struct ToastItem {
 
 impl ToastItem {
     /// Returns the toast's unique identifier.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let mut state = ToastState::new();
+    /// let id = state.info("Hello");
+    /// assert_eq!(state.toasts()[0].id(), id);
+    /// ```
     pub fn id(&self) -> u64 {
         self.id
     }
 
     /// Returns the toast message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let mut state = ToastState::new();
+    /// state.info("Hello, world!");
+    /// assert_eq!(state.toasts()[0].message(), "Hello, world!");
+    /// ```
     pub fn message(&self) -> &str {
         &self.message
     }
 
     /// Returns the severity level.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ToastState, ToastLevel};
+    ///
+    /// let mut state = ToastState::new();
+    /// state.error("Something went wrong");
+    /// assert_eq!(state.toasts()[0].level(), ToastLevel::Error);
+    /// ```
     pub fn level(&self) -> ToastLevel {
         self.level
     }
 
     /// Returns true if this toast is persistent (no auto-dismiss).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let mut state = ToastState::new();
+    /// state.info("Persistent toast");
+    /// assert!(state.toasts()[0].is_persistent());
+    /// ```
     pub fn is_persistent(&self) -> bool {
         self.remaining_ms.is_none()
     }
 
     /// Returns the remaining duration in milliseconds, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let mut state = ToastState::with_duration(5000);
+    /// state.info("Timed toast");
+    /// assert_eq!(state.toasts()[0].remaining_ms(), Some(5000));
+    /// ```
     pub fn remaining_ms(&self) -> Option<u64> {
         self.remaining_ms
     }
@@ -221,36 +271,107 @@ impl ToastState {
     }
 
     /// Returns all active toasts.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let mut state = ToastState::new();
+    /// state.info("First");
+    /// state.error("Second");
+    /// assert_eq!(state.toasts().len(), 2);
+    /// ```
     pub fn toasts(&self) -> &[ToastItem] {
         &self.toasts
     }
 
     /// Returns the number of active toasts.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let mut state = ToastState::new();
+    /// assert_eq!(state.len(), 0);
+    /// state.info("Hello");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn len(&self) -> usize {
         self.toasts.len()
     }
 
     /// Returns true if there are no active toasts.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let mut state = ToastState::new();
+    /// assert!(state.is_empty());
+    /// state.success("Done!");
+    /// assert!(!state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.toasts.is_empty()
     }
 
     /// Returns the default duration for new toasts.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let state = ToastState::new();
+    /// assert_eq!(state.default_duration(), None);
+    /// ```
     pub fn default_duration(&self) -> Option<u64> {
         self.default_duration_ms
     }
 
     /// Returns the maximum number of visible toasts.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let state = ToastState::new();
+    /// assert_eq!(state.max_visible(), 5);
+    /// ```
     pub fn max_visible(&self) -> usize {
         self.max_visible
     }
 
     /// Sets the default duration for new toasts.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let mut state = ToastState::new();
+    /// state.set_default_duration(Some(2000));
+    /// assert_eq!(state.default_duration(), Some(2000));
+    /// ```
     pub fn set_default_duration(&mut self, duration_ms: Option<u64>) {
         self.default_duration_ms = duration_ms;
     }
 
     /// Sets the maximum number of visible toasts.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ToastState;
+    ///
+    /// let mut state = ToastState::new();
+    /// state.set_max_visible(3);
+    /// assert_eq!(state.max_visible(), 3);
+    /// ```
     pub fn set_max_visible(&mut self, max: usize) {
         self.max_visible = max;
     }

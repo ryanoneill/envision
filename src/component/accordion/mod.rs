@@ -107,16 +107,46 @@ impl AccordionPanel {
     }
 
     /// Returns the panel title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionPanel;
+    ///
+    /// let panel = AccordionPanel::new("Overview", "Details here");
+    /// assert_eq!(panel.title(), "Overview");
+    /// ```
     pub fn title(&self) -> &str {
         &self.title
     }
 
     /// Returns the panel content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionPanel;
+    ///
+    /// let panel = AccordionPanel::new("Title", "My content");
+    /// assert_eq!(panel.content(), "My content");
+    /// ```
     pub fn content(&self) -> &str {
         &self.content
     }
 
     /// Returns whether the panel is expanded.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionPanel;
+    ///
+    /// let collapsed = AccordionPanel::new("Title", "Content");
+    /// assert!(!collapsed.is_expanded());
+    ///
+    /// let expanded = AccordionPanel::new("Title", "Content").expanded();
+    /// assert!(expanded.is_expanded());
+    /// ```
     pub fn is_expanded(&self) -> bool {
         self.expanded
     }
@@ -233,21 +263,57 @@ impl AccordionState {
     }
 
     /// Returns the number of panels.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionState;
+    ///
+    /// let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn len(&self) -> usize {
         self.panels.len()
     }
 
     /// Returns true if there are no panels.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionState;
+    ///
+    /// let empty = AccordionState::new(vec![]);
+    /// assert!(empty.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.panels.is_empty()
     }
 
     /// Returns the currently focused panel index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionState;
+    ///
+    /// let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]).with_focused_index(1);
+    /// assert_eq!(state.focused_index(), 1);
+    /// ```
     pub fn focused_index(&self) -> usize {
         self.focused_index
     }
 
     /// Returns the currently focused panel.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionState;
+    ///
+    /// let state = AccordionState::from_pairs(vec![("Intro", "Introduction text")]);
+    /// assert_eq!(state.focused_panel().unwrap().title(), "Intro");
+    /// ```
     pub fn focused_panel(&self) -> Option<&AccordionPanel> {
         self.panels.get(self.focused_index)
     }
@@ -282,6 +348,18 @@ impl AccordionState {
     ///
     /// This is an alias for [`selected_index()`](Self::selected_index) that provides a
     /// consistent accessor name across all selection-based components.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionState;
+    ///
+    /// let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    /// assert_eq!(state.selected(), Some(0));
+    ///
+    /// let empty = AccordionState::new(vec![]);
+    /// assert_eq!(empty.selected(), None);
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
@@ -309,6 +387,19 @@ impl AccordionState {
     }
 
     /// Sets new panels, resetting the focused index if needed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{AccordionPanel, AccordionState};
+    ///
+    /// let mut state = AccordionState::from_pairs(vec![("A", "1")]);
+    /// state.set_panels(vec![
+    ///     AccordionPanel::new("X", "10"),
+    ///     AccordionPanel::new("Y", "20"),
+    /// ]);
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn set_panels(&mut self, panels: Vec<AccordionPanel>) {
         self.panels = panels;
         if self.focused_index >= self.panels.len() && !self.panels.is_empty() {
@@ -317,6 +408,16 @@ impl AccordionState {
     }
 
     /// Adds a panel to the accordion.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{AccordionPanel, AccordionState};
+    ///
+    /// let mut state = AccordionState::from_pairs(vec![("A", "1")]);
+    /// state.add_panel(AccordionPanel::new("B", "2"));
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn add_panel(&mut self, panel: AccordionPanel) {
         self.panels.push(panel);
     }
@@ -326,6 +427,16 @@ impl AccordionState {
     /// If the index is out of bounds, this is a no-op.
     /// Adjusts the focused index after removal so it remains valid.
     /// If the accordion becomes empty, the focused index is reset to 0.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::AccordionState;
+    ///
+    /// let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2"), ("C", "3")]);
+    /// state.remove_panel(1);
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn remove_panel(&mut self, index: usize) {
         if index >= self.panels.len() {
             return;
@@ -414,6 +525,17 @@ impl AccordionState {
     }
 
     /// Updates the accordion state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{AccordionMessage, AccordionOutput, AccordionState};
+    ///
+    /// let mut state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
+    /// let output = state.update(AccordionMessage::Toggle);
+    /// assert_eq!(output, Some(AccordionOutput::Expanded(0)));
+    /// assert!(state.panels()[0].is_expanded());
+    /// ```
     pub fn update(&mut self, msg: AccordionMessage) -> Option<AccordionOutput> {
         Accordion::update(self, msg)
     }

@@ -159,6 +159,15 @@ impl LineInputState {
     }
 
     /// Sets the maximum number of history entries (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new().with_max_history(20);
+    /// assert_eq!(state.max_history(), 20);
+    /// ```
     pub fn with_max_history(mut self, max: usize) -> Self {
         self.history = History::new(max);
         self
@@ -247,6 +256,15 @@ impl LineInputState {
     }
 
     /// Returns the cursor byte offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::with_value("hello");
+    /// assert_eq!(state.cursor_byte_offset(), 5);
+    /// ```
     pub fn cursor_byte_offset(&self) -> usize {
         self.cursor
     }
@@ -254,6 +272,17 @@ impl LineInputState {
     /// Returns the cursor as a (row, col) visual position.
     ///
     /// Uses the last known display width from the parent layout.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::with_value("hi");
+    /// let (row, col) = state.cursor_visual_position();
+    /// assert_eq!(row, 0);
+    /// assert_eq!(col, 2);
+    /// ```
     pub fn cursor_visual_position(&self) -> (usize, usize) {
         cursor_to_visual(&self.buffer, self.cursor, self.last_display_width)
     }
@@ -262,11 +291,30 @@ impl LineInputState {
     ///
     /// The parent layout should call this before event dispatch so that
     /// Up/Down navigation and rendering use the correct width.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let mut state = LineInputState::new();
+    /// state.set_display_width(40);
+    /// assert_eq!(state.display_width(), 40);
+    /// ```
     pub fn set_display_width(&mut self, width: usize) {
         self.last_display_width = width;
     }
 
     /// Returns the current display width.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new();
+    /// assert_eq!(state.display_width(), 80);
+    /// ```
     pub fn display_width(&self) -> usize {
         self.last_display_width
     }
@@ -311,16 +359,45 @@ impl LineInputState {
     /// Sets the maximum character length. `None` means unlimited.
     ///
     /// Does not truncate existing content -- only constrains future edits.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let mut state = LineInputState::new();
+    /// state.set_max_length(Some(25));
+    /// assert_eq!(state.max_length(), Some(25));
+    /// ```
     pub fn set_max_length(&mut self, max: Option<usize>) {
         self.max_length = max;
     }
 
     /// Returns the placeholder text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new().with_placeholder("Search...");
+    /// assert_eq!(state.placeholder(), "Search...");
+    /// ```
     pub fn placeholder(&self) -> &str {
         &self.placeholder
     }
 
     /// Sets the placeholder text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let mut state = LineInputState::new();
+    /// state.set_placeholder("Enter your name");
+    /// assert_eq!(state.placeholder(), "Enter your name");
+    /// ```
     pub fn set_placeholder(&mut self, placeholder: impl Into<String>) {
         self.placeholder = placeholder.into();
     }
@@ -357,26 +434,80 @@ impl LineInputState {
     }
 
     /// Returns the history entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LineInputState, LineInputMessage};
+    ///
+    /// let mut state = LineInputState::new();
+    /// state.update(LineInputMessage::SetValue("command one".into()));
+    /// state.update(LineInputMessage::Submit);
+    /// assert_eq!(state.history_entries(), &["command one"]);
+    /// ```
     pub fn history_entries(&self) -> &[String] {
         self.history.entries()
     }
 
     /// Returns the number of history entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LineInputState, LineInputMessage};
+    ///
+    /// let mut state = LineInputState::new();
+    /// assert_eq!(state.history_count(), 0);
+    /// state.update(LineInputMessage::SetValue("cmd".into()));
+    /// state.update(LineInputMessage::Submit);
+    /// assert_eq!(state.history_count(), 1);
+    /// ```
     pub fn history_count(&self) -> usize {
         self.history.count()
     }
 
     /// Returns true if currently browsing history.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new();
+    /// assert!(!state.is_browsing_history());
+    /// ```
     pub fn is_browsing_history(&self) -> bool {
         self.history.is_browsing()
     }
 
     /// Returns true if there are entries to undo.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LineInputState, LineInputMessage};
+    ///
+    /// let mut state = LineInputState::new();
+    /// assert!(!state.can_undo());
+    /// state.update(LineInputMessage::Insert('a'));
+    /// assert!(state.can_undo());
+    /// ```
     pub fn can_undo(&self) -> bool {
         self.undo_stack.can_undo()
     }
 
     /// Returns true if there are entries to redo.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LineInputState, LineInputMessage};
+    ///
+    /// let mut state = LineInputState::new();
+    /// state.update(LineInputMessage::Insert('a'));
+    /// state.update(LineInputMessage::Undo);
+    /// assert!(state.can_redo());
+    /// ```
     pub fn can_redo(&self) -> bool {
         self.undo_stack.can_redo()
     }
@@ -396,6 +527,16 @@ impl LineInputState {
     }
 
     /// Returns the selected byte range `(start, end)`, or `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LineInputState, LineInputMessage};
+    ///
+    /// let mut state = LineInputState::with_value("hello");
+    /// state.update(LineInputMessage::SelectAll);
+    /// assert_eq!(state.selection_range(), Some((0, 5)));
+    /// ```
     pub fn selection_range(&self) -> Option<(usize, usize)> {
         let anchor = self.selection_anchor?;
         let start = anchor.min(self.cursor);
@@ -408,12 +549,33 @@ impl LineInputState {
     }
 
     /// Returns the selected text, or `None` if no selection.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LineInputState, LineInputMessage};
+    ///
+    /// let mut state = LineInputState::with_value("hello");
+    /// state.update(LineInputMessage::SelectAll);
+    /// assert_eq!(state.selected_text(), Some("hello"));
+    /// ```
     pub fn selected_text(&self) -> Option<&str> {
         let (start, end) = self.selection_range()?;
         Some(&self.buffer[start..end])
     }
 
     /// Returns the internal clipboard contents.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LineInputState, LineInputMessage};
+    ///
+    /// let mut state = LineInputState::with_value("hello");
+    /// state.update(LineInputMessage::SelectAll);
+    /// state.update(LineInputMessage::Copy);
+    /// assert_eq!(state.clipboard(), "hello");
+    /// ```
     pub fn clipboard(&self) -> &str {
         &self.clipboard
     }

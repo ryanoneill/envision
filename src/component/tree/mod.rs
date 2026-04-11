@@ -107,26 +107,75 @@ impl<T: Clone> TreeNode<T> {
     }
 
     /// Sets the node's label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let mut node = TreeNode::new("Old", ());
+    /// node.set_label("New");
+    /// assert_eq!(node.label(), "New");
+    /// ```
     pub fn set_label(&mut self, label: impl Into<String>) {
         self.label = label.into();
     }
 
     /// Returns a reference to the node's data.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let node = TreeNode::new("Root", 42u32);
+    /// assert_eq!(node.data(), &42u32);
+    /// ```
     pub fn data(&self) -> &T {
         &self.data
     }
 
     /// Returns a mutable reference to the node's data.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let mut node = TreeNode::new("Root", 0u32);
+    /// *node.data_mut() = 99;
+    /// assert_eq!(node.data(), &99u32);
+    /// ```
     pub fn data_mut(&mut self) -> &mut T {
         &mut self.data
     }
 
     /// Returns the children of this node.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let mut parent = TreeNode::new("Parent", ());
+    /// parent.add_child(TreeNode::new("Child", ()));
+    /// assert_eq!(parent.children().len(), 1);
+    /// ```
     pub fn children(&self) -> &[TreeNode<T>] {
         &self.children
     }
 
     /// Returns a mutable reference to the children.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let mut node = TreeNode::new("Root", ());
+    /// node.children_mut().push(TreeNode::new("Child", ()));
+    /// assert_eq!(node.children().len(), 1);
+    /// ```
     pub fn children_mut(&mut self) -> &mut Vec<TreeNode<T>> {
         &mut self.children
     }
@@ -147,31 +196,93 @@ impl<T: Clone> TreeNode<T> {
     }
 
     /// Returns true if this node has children.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let mut parent = TreeNode::new("Parent", ());
+    /// assert!(!parent.has_children());
+    /// parent.add_child(TreeNode::new("Child", ()));
+    /// assert!(parent.has_children());
+    /// ```
     pub fn has_children(&self) -> bool {
         !self.children.is_empty()
     }
 
     /// Returns true if this node is expanded.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let node = TreeNode::new("Root", ());
+    /// assert!(!node.is_expanded());
+    /// ```
     pub fn is_expanded(&self) -> bool {
         self.expanded
     }
 
     /// Sets the expanded state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let mut node = TreeNode::new("Root", ());
+    /// node.set_expanded(true);
+    /// assert!(node.is_expanded());
+    /// ```
     pub fn set_expanded(&mut self, expanded: bool) {
         self.expanded = expanded;
     }
 
     /// Expands this node.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let mut node = TreeNode::new("Root", ());
+    /// node.expand();
+    /// assert!(node.is_expanded());
+    /// ```
     pub fn expand(&mut self) {
         self.expanded = true;
     }
 
     /// Collapses this node.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let mut node = TreeNode::new_expanded("Root", ());
+    /// node.collapse();
+    /// assert!(!node.is_expanded());
+    /// ```
     pub fn collapse(&mut self) {
         self.expanded = false;
     }
 
     /// Toggles the expanded state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let mut node = TreeNode::new("Root", ());
+    /// node.toggle();
+    /// assert!(node.is_expanded());
+    /// node.toggle();
+    /// assert!(!node.is_expanded());
+    /// ```
     pub fn toggle(&mut self) {
         self.expanded = !self.expanded;
     }
@@ -319,6 +430,16 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Returns a mutable reference to the root nodes.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreeState, TreeNode};
+    ///
+    /// let mut state = TreeState::new(vec![TreeNode::new("Root", ())]);
+    /// state.roots_mut().push(TreeNode::new("Another Root", ()));
+    /// assert_eq!(state.roots().len(), 2);
+    /// ```
     pub fn roots_mut(&mut self) -> &mut Vec<TreeNode<T>> {
         &mut self.roots
     }
@@ -389,6 +510,15 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreeState, TreeNode};
+    ///
+    /// let state = TreeState::new(vec![TreeNode::new("Root", ())]);
+    /// assert_eq!(state.selected(), Some(0));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
@@ -425,11 +555,29 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Returns true if the tree is empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeState;
+    ///
+    /// let empty: TreeState<()> = TreeState::new(vec![]);
+    /// assert!(empty.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.roots.is_empty()
     }
 
     /// Returns the path of the currently selected node.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreeState, TreeNode};
+    ///
+    /// let state = TreeState::new(vec![TreeNode::new("Root", ())]);
+    /// assert_eq!(state.selected_path(), Some(vec![0]));
+    /// ```
     pub fn selected_path(&self) -> Option<Vec<usize>> {
         let flat = self.flatten();
         flat.get(self.selected_index?).map(|n| n.path.clone())
@@ -530,6 +678,15 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Returns the current filter text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeState;
+    ///
+    /// let state: TreeState<()> = TreeState::new(vec![]);
+    /// assert_eq!(state.filter_text(), "");
+    /// ```
     pub fn filter_text(&self) -> &str {
         &self.filter_text
     }
@@ -542,6 +699,20 @@ impl<T: Clone> TreeState<T> {
     ///
     /// Selection is preserved if the selected node remains visible,
     /// otherwise it moves to the first visible node.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreeState, TreeNode};
+    ///
+    /// let mut state = TreeState::new(vec![
+    ///     TreeNode::new("Alpha", ()),
+    ///     TreeNode::new("Beta", ()),
+    /// ]);
+    /// state.set_filter_text("alpha");
+    /// assert_eq!(state.filter_text(), "alpha");
+    /// assert_eq!(state.visible_count(), 1);
+    /// ```
     pub fn set_filter_text(&mut self, text: &str) {
         let prev_path = self.selected_path();
         self.filter_text = text.to_string();
@@ -550,6 +721,22 @@ impl<T: Clone> TreeState<T> {
     }
 
     /// Clears the filter, showing all nodes with their original expanded state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreeState, TreeNode};
+    ///
+    /// let mut state = TreeState::new(vec![
+    ///     TreeNode::new("Alpha", ()),
+    ///     TreeNode::new("Beta", ()),
+    /// ]);
+    /// state.set_filter_text("alpha");
+    /// assert_eq!(state.visible_count(), 1);
+    /// state.clear_filter();
+    /// assert_eq!(state.filter_text(), "");
+    /// assert_eq!(state.visible_count(), 2);
+    /// ```
     pub fn clear_filter(&mut self) {
         let prev_path = self.selected_path();
         self.filter_text.clear();
