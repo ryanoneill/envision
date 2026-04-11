@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-04-11
+
+### Added
+
+- Memory allocation benchmarks for `SelectableList`, `Table`, and `Tree`
+  rendering, plus state creation scaling (1000/5000/10000 items). Uses
+  a counting global allocator wrapper isolated to the bench binary.
+- `focus_manager` example demonstrating focus coordination across
+  multiple components with Tab/Shift+Tab navigation. Brings example
+  coverage to 73/73 (100%).
+- Missing accessor getters: `FlameGraphState::search()`,
+  `TabBarState::active()`, `TooltipState::duration()`, and
+  `TreemapNode::color()` to match their existing setters.
+- `PartialEq` derives on `DependencyGraphState`, `FlameGraphState`,
+  `SpanTreeState`, and `FocusManager`.
+- ~265 new doc tests across 21 components, raising overall doc test
+  coverage from 63.6% to 84.4%.
+- Terminal escape sequence handling section in `SECURITY.md`,
+  documenting that envision components render through ratatui widgets
+  (safe against escape injection) and noting the exception for direct
+  `Span::raw()` usage with unsanitized input.
+
+### Fixed
+
+- `ConversationView` markdown rendering also recolors spans with
+  `fg: None` (in addition to spans with the theme default foreground),
+  defending against future markdown renderer changes.
+
+### Changed
+
+- Refactored render helper functions in `alert_panel`, `chart`,
+  `code_block`, `dependency_graph`, `flame_graph`, `heatmap`, and
+  `log_correlation` to use parameter structs instead of long argument
+  lists. Removed all 10 `#[allow(clippy::too_many_arguments)]`
+  suppressions from component code.
+- Removed 6 stale clippy suppressions in `code_block`, `gauge`,
+  `progress_bar`, `slider`, and `number_input` that were no longer
+  necessary. Zero clippy suppressions remain in component code.
+- Split `chart/tests.rs` (1115 → 416 + 712 lines) into two files
+  to stay under the 1000-line limit.
+- Split `line_input/mod.rs` (1109 → 769 lines) by extracting
+  `update.rs` for the message-handling logic.
+- Split `tree/mod.rs` (1041 → 948 lines) by extracting `render.rs`
+  for the rendering helpers.
+
+### Documentation
+
+- Added `# Errors` and `# Panics` sections to public methods with
+  non-obvious failure conditions in `App::init`, `Command::save_state`,
+  and `ProgressSender::send_status`/`send_percentage`.
+
+### Internal
+
+- Audit tool (`tools/audit/`) now correctly detects: feature flag cfg
+  gates, benchmark parameterization, manual `impl Trait for` blocks
+  (Debug/Clone/Default/PartialEq), and example coverage via prelude
+  imports. Five false positive detection issues fixed.
+
 ## [0.13.0] - 2026-04-09
 
 ### Added
