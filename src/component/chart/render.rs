@@ -695,13 +695,15 @@ pub(super) fn render_shared_axis_chart(
                 state,
                 frame,
                 graph_area,
-                x_bound_min,
-                x_bound_max,
-                y_axis_min,
-                y_axis_max,
+                super::annotations::AxisBounds {
+                    x_min: x_bound_min,
+                    x_max: x_bound_max,
+                    y_min: y_axis_min,
+                    y_max: y_axis_max,
+                    is_log,
+                },
                 disabled,
                 theme,
-                is_log,
             );
         }
     }
@@ -715,10 +717,13 @@ pub(super) fn render_shared_axis_chart(
                 frame,
                 graph_area,
                 &series_data,
-                x_bound_min,
-                x_bound_max,
-                y_axis_min,
-                y_axis_max,
+                super::annotations::AxisBounds {
+                    x_min: x_bound_min,
+                    x_max: x_bound_max,
+                    y_min: y_axis_min,
+                    y_max: y_axis_max,
+                    is_log,
+                },
                 disabled,
                 theme,
             );
@@ -736,11 +741,13 @@ pub(super) fn render_shared_axis_chart(
         area,
         &y_labels_for_layout,
         &x_labels_for_layout,
-        x_bound_min,
-        x_bound_max,
-        y_axis_min,
-        y_axis_max,
-        is_log,
+        super::annotations::AxisBounds {
+            x_min: x_bound_min,
+            x_max: x_bound_max,
+            y_min: y_axis_min,
+            y_max: y_axis_max,
+            is_log,
+        },
     );
 }
 
@@ -815,21 +822,17 @@ pub(super) fn compute_graph_area(area: Rect, y_labels: &[String], x_labels: &[St
 }
 
 /// Fills the area below each series curve for area charts.
-#[allow(clippy::too_many_arguments)]
 fn fill_area_below_curve(
     state: &ChartState,
     frame: &mut Frame,
     graph_area: Rect,
     series_data: &[Vec<(f64, f64)>],
-    x_min: f64,
-    x_max: f64,
-    y_min: f64,
-    y_max: f64,
+    bounds: super::annotations::AxisBounds,
     disabled: bool,
     theme: &Theme,
 ) {
-    let x_range = x_max - x_min;
-    let y_range = y_max - y_min;
+    let x_range = bounds.x_max - bounds.x_min;
+    let y_range = bounds.y_max - bounds.y_min;
     if x_range <= 0.0 || y_range <= 0.0 {
         return;
     }
@@ -843,9 +846,9 @@ fn fill_area_below_curve(
         let data = &series_data[series_idx];
         if data.len() < 2 {
             if let Some(&(dx, dy)) = data.first() {
-                let x_frac = (dx - x_min) / x_range;
+                let x_frac = (dx - bounds.x_min) / x_range;
                 let screen_x = graph_area.x + (x_frac * (graph_area.width as f64 - 1.0)) as u16;
-                let y_frac = (dy - y_min) / y_range;
+                let y_frac = (dy - bounds.y_min) / y_range;
                 let line_y = graph_area
                     .bottom()
                     .saturating_sub(1)
@@ -857,10 +860,10 @@ fn fill_area_below_curve(
         for screen_x in graph_area.x..graph_area.right() {
             let x_frac =
                 (screen_x - graph_area.x) as f64 / (graph_area.width as f64 - 1.0).max(1.0);
-            let data_x = x_min + x_frac * x_range;
+            let data_x = bounds.x_min + x_frac * x_range;
             let data_y = interpolate_y(data, data_x);
             if let Some(dy) = data_y {
-                let y_frac = ((dy - y_min) / y_range).clamp(0.0, 1.0);
+                let y_frac = ((dy - bounds.y_min) / y_range).clamp(0.0, 1.0);
                 let line_y = graph_area
                     .bottom()
                     .saturating_sub(1)

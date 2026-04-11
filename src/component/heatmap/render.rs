@@ -74,9 +74,11 @@ pub(super) fn render_heatmap(
             render_row_label(
                 state,
                 frame,
-                area.x,
-                y,
-                row_label_width,
+                LabelPosition {
+                    x: area.x,
+                    y,
+                    width: row_label_width,
+                },
                 ri,
                 theme,
                 disabled,
@@ -88,13 +90,15 @@ pub(super) fn render_heatmap(
             state,
             frame,
             ri,
-            grid_x,
-            y,
-            cell_width,
-            cell_height,
-            area,
-            min_val,
-            max_val,
+            CellRenderParams {
+                grid_x,
+                y,
+                cell_width,
+                cell_height,
+                area,
+                min_val,
+                max_val,
+            },
             theme,
             focused,
             disabled,
@@ -135,21 +139,25 @@ fn render_col_labels(
     }
 }
 
-/// Renders a single row label.
-#[allow(clippy::too_many_arguments)]
-fn render_row_label(
-    state: &HeatmapState,
-    frame: &mut Frame,
+/// Position and dimensions for rendering a row label.
+struct LabelPosition {
     x: u16,
     y: u16,
     width: u16,
+}
+
+/// Renders a single row label.
+fn render_row_label(
+    state: &HeatmapState,
+    frame: &mut Frame,
+    pos: LabelPosition,
     row_index: usize,
     theme: &Theme,
     disabled: bool,
 ) {
     if let Some(label) = state.row_labels().get(row_index) {
-        let label_area = Rect::new(x, y, width, 1);
-        let truncated = truncate_str(label, width as usize);
+        let label_area = Rect::new(pos.x, pos.y, pos.width, 1);
+        let truncated = truncate_str(label, pos.width as usize);
         let style = if disabled {
             theme.disabled_style()
         } else {
@@ -160,12 +168,8 @@ fn render_row_label(
     }
 }
 
-/// Renders all cells in a single row.
-#[allow(clippy::too_many_arguments)]
-fn render_row_cells(
-    state: &HeatmapState,
-    frame: &mut Frame,
-    ri: usize,
+/// Layout and value range parameters for rendering a row of heatmap cells.
+struct CellRenderParams {
     grid_x: u16,
     y: u16,
     cell_width: u16,
@@ -173,6 +177,14 @@ fn render_row_cells(
     area: Rect,
     min_val: f64,
     max_val: f64,
+}
+
+/// Renders all cells in a single row.
+fn render_row_cells(
+    state: &HeatmapState,
+    frame: &mut Frame,
+    ri: usize,
+    params: CellRenderParams,
     theme: &Theme,
     focused: bool,
     disabled: bool,
@@ -180,20 +192,20 @@ fn render_row_cells(
     let _ = theme; // reserved for future style customization
     let row_data = &state.data()[ri];
     for (ci, &value) in row_data.iter().enumerate() {
-        let x = grid_x + (ci as u16) * cell_width;
-        if x >= area.right() {
+        let x = params.grid_x + (ci as u16) * params.cell_width;
+        if x >= params.area.right() {
             break;
         }
-        let available_w = cell_width.min(area.right().saturating_sub(x));
+        let available_w = params.cell_width.min(params.area.right().saturating_sub(x));
         if available_w == 0 {
             continue;
         }
-        let cell_area = Rect::new(x, y, available_w, cell_height);
+        let cell_area = Rect::new(x, params.y, available_w, params.cell_height);
 
         let bg_color = if disabled {
             Color::DarkGray
         } else {
-            value_to_color(value, min_val, max_val, state.color_scale())
+            value_to_color(value, params.min_val, params.max_val, state.color_scale())
         };
 
         let is_selected = state.selected() == Some((ri, ci));

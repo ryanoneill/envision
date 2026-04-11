@@ -128,34 +128,50 @@ fn render_streams(
         render_single_stream(
             state,
             stream,
-            i,
-            is_active,
-            &aligned_rows,
-            &filtered[i],
+            StreamViewState {
+                is_active,
+                focused,
+                disabled,
+            },
+            StreamViewData {
+                aligned_rows: &aligned_rows,
+                filtered_entries: &filtered[i],
+                stream_idx: i,
+            },
             frame,
             stream_area,
             theme,
-            focused,
-            disabled,
         );
     }
 }
 
+/// Focus and active state for rendering a stream panel.
+struct StreamViewState {
+    is_active: bool,
+    focused: bool,
+    disabled: bool,
+}
+
+/// Pre-computed view data for a stream panel.
+struct StreamViewData<'a> {
+    aligned_rows: &'a [super::AlignedRow],
+    filtered_entries: &'a [&'a super::CorrelationEntry],
+    stream_idx: usize,
+}
+
 /// Renders a single stream panel.
-#[allow(clippy::too_many_arguments)]
 fn render_single_stream(
     state: &LogCorrelationState,
     stream: &super::LogStream,
-    _stream_idx: usize,
-    is_active: bool,
-    aligned_rows: &[super::AlignedRow],
-    filtered_entries: &[&super::CorrelationEntry],
+    view_state: StreamViewState,
+    data: StreamViewData<'_>,
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
-    focused: bool,
-    disabled: bool,
 ) {
+    let is_active = view_state.is_active;
+    let focused = view_state.focused;
+    let disabled = view_state.disabled;
     if area.width < 2 || area.height < 2 {
         return;
     }
@@ -189,8 +205,8 @@ fn render_single_stream(
     // Build display lines from aligned rows
     let mut lines: Vec<Line<'_>> = Vec::new();
 
-    for row in aligned_rows {
-        let indices = &row.stream_entries[_stream_idx];
+    for row in data.aligned_rows {
+        let indices = &row.stream_entries[data.stream_idx];
         let max_across_streams = row
             .stream_entries
             .iter()
@@ -205,8 +221,8 @@ fn render_single_stream(
             }
         } else {
             for &idx in indices {
-                if idx < filtered_entries.len() {
-                    let entry = filtered_entries[idx];
+                if idx < data.filtered_entries.len() {
+                    let entry = data.filtered_entries[idx];
                     let line = format_entry(entry, inner.width as usize);
                     let style = if disabled {
                         theme.disabled_style()

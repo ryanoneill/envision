@@ -84,7 +84,19 @@ pub(super) fn render_flame_graph(
         }
         let row_area = Rect::new(inner.x, y, inner.width, 1);
         render_depth_row(
-            state, frame, view_root, root_total, depth, row_area, theme, focused, disabled,
+            state,
+            frame,
+            FlameRootInfo {
+                view_root,
+                root_total,
+            },
+            depth,
+            row_area,
+            RowStyleContext {
+                theme,
+                focused,
+                disabled,
+            },
         );
     }
 
@@ -108,20 +120,33 @@ pub(super) fn render_flame_graph(
     }
 }
 
+/// Root node information needed to compute proportional widths.
+struct FlameRootInfo<'a> {
+    view_root: &'a FlameNode,
+    root_total: u64,
+}
+
+/// Style context for rendering a flame graph row.
+struct RowStyleContext<'a> {
+    theme: &'a Theme,
+    focused: bool,
+    disabled: bool,
+}
+
 /// Renders a single depth row of the flame graph.
-#[allow(clippy::too_many_arguments)]
 fn render_depth_row(
     state: &FlameGraphState,
     frame: &mut Frame,
-    view_root: &FlameNode,
-    root_total: u64,
+    root: FlameRootInfo<'_>,
     depth: usize,
     area: Rect,
-    theme: &Theme,
-
-    focused: bool,
-    disabled: bool,
+    style_ctx: RowStyleContext<'_>,
 ) {
+    let view_root = root.view_root;
+    let root_total = root.root_total;
+    let theme = style_ctx.theme;
+    let focused = style_ctx.focused;
+    let disabled = style_ctx.disabled;
     let width = area.width as usize;
     if width == 0 {
         return;
