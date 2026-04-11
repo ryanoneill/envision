@@ -103,8 +103,9 @@ fn analyze_single_component(dir: &Path) -> ComponentInfo {
     let has_instance_dispatch_event = mod_content.contains("pub fn dispatch_event(&mut self");
     let has_instance_update = mod_content.contains("pub fn update(&mut self");
 
-    // Standard trait derives on State type
-    let state_derives = extract_state_derives(&mod_content);
+    // Standard trait derives on State type (check all files, not just mod.rs,
+    // since some components define their State struct in a separate state.rs)
+    let state_derives = extract_state_derives(&all_content);
 
     ComponentInfo {
         has_focusable,
@@ -896,10 +897,21 @@ fn extract_state_derives(content: &str) -> Vec<String> {
     let mut derives = Vec::new();
     let lines: Vec<&str> = content.lines().collect();
 
+    // Find the first State struct and extract its type name
+    let mut state_type_name: Option<String> = None;
+
     for (i, line) in lines.iter().enumerate() {
         let trimmed = line.trim();
         // Look for pub struct ...State
         if trimmed.starts_with("pub struct ") && trimmed.contains("State") {
+            // Extract the State type name (e.g. "ButtonState" from "pub struct ButtonState {")
+            if let Some(name) = trimmed
+                .strip_prefix("pub struct ")
+                .and_then(|s| s.split(|c: char| !c.is_alphanumeric() && c != '_').next())
+            {
+                state_type_name = Some(name.to_string());
+            }
+
             // Collect the attribute block above the struct by joining lines
             // that are part of attributes (handles multi-line #[cfg_attr(...)])
             let mut attr_block = String::new();
@@ -933,6 +945,48 @@ fn extract_state_derives(content: &str) -> Vec<String> {
                 }
             }
             break; // Only check first State struct
+        }
+    }
+
+    // Also scan for manual trait impls: `impl TraitName for ...State`
+    // Handles both short (`impl Debug for`) and fully-qualified
+    // (`impl std::fmt::Debug for`, `impl core::fmt::Debug for`) paths.
+    if let Some(ref state_name) = state_type_name {
+        let trait_patterns: &[(&str, &[&str])] = &[
+            (
+                "Debug",
+                &[
+                    "impl Debug for",
+                    "impl std::fmt::Debug for",
+                    "impl core::fmt::Debug for",
+                ],
+            ),
+            ("Clone", &["impl Clone for", "impl std::clone::Clone for"]),
+            (
+                "Default",
+                &["impl Default for", "impl std::default::Default for"],
+            ),
+            (
+                "PartialEq",
+                &[
+                    "impl PartialEq for",
+                    "impl std::cmp::PartialEq for",
+                    "impl core::cmp::PartialEq for",
+                ],
+            ),
+        ];
+
+        for (trait_name, patterns) in trait_patterns {
+            if derives.iter().any(|d| d == *trait_name) {
+                continue; // Already found via derive
+            }
+            for pattern_prefix in *patterns {
+                let pattern = format!("{} {}", pattern_prefix, state_name);
+                if content.contains(&pattern) {
+                    derives.push(trait_name.to_string());
+                    break;
+                }
+            }
         }
     }
 

@@ -74,8 +74,23 @@ fn print_feature_flags(root: &Path) {
     if features.is_empty() {
         println!("  NONE");
     } else {
+        // Collect all .rs files in src/ to count cfg gate usage
+        let src_dir = root.join("src");
+        let all_rs_content = collect_rs_file_contents(&src_dir);
+
         for (name, deps) in &features {
-            println!("  {}: {}", name, deps);
+            // Count lines containing cfg(feature = "NAME") in src/
+            let pattern = format!("cfg(feature = \"{}\"", name);
+            let gate_count = all_rs_content
+                .iter()
+                .map(|content| content.lines().filter(|l| l.contains(&pattern)).count())
+                .sum::<usize>();
+
+            if gate_count > 0 {
+                println!("  {}: {} (gates {} code sites)", name, deps, gate_count);
+            } else {
+                println!("  {}: {}", name, deps);
+            }
         }
         println!("  Total: {} feature flags", features.len());
     }
@@ -247,59 +262,56 @@ fn print_example_coverage(root: &Path) {
         return;
     }
 
-    // Collect all component type names
+    // Collect all component type names by reading each component's mod.rs
     let component_dir = root.join("src/component");
     let mut all_components: BTreeSet<String> = BTreeSet::new();
+    // Map from dir_name -> Vec<type_name> (State type, component type, Message type)
+    let mut type_names: Vec<(String, Vec<String>)> = Vec::new();
+
     if let Ok(entries) = fs::read_dir(&component_dir) {
         for entry in entries.flatten() {
-            if entry.path().is_dir() && entry.path().join("mod.rs").exists() {
-                let name = entry.file_name().to_string_lossy().to_string();
-                if name != "focus_manager" {
-                    all_components.insert(name);
+            let mod_file = entry.path().join("mod.rs");
+            if !entry.path().is_dir() || !mod_file.exists() {
+                continue;
+            }
+            let dir_name = entry.file_name().to_string_lossy().to_string();
+            if dir_name == "focus_manager" {
+                continue;
+            }
+            all_components.insert(dir_name.clone());
+
+            // Read mod.rs and extract public type names
+            let mod_content = fs::read_to_string(&mod_file).unwrap_or_default();
+            let mut names: Vec<String> = Vec::new();
+
+            for line in mod_content.lines() {
+                let trimmed = line.trim();
+                // Match pub struct TypeName, pub enum TypeName
+                if (trimmed.starts_with("pub struct ") || trimmed.starts_with("pub enum "))
+                    && !trimmed.contains("pub(crate)")
+                    && !trimmed.contains("pub(super)")
+                {
+                    let after_keyword = if trimmed.starts_with("pub struct ") {
+                        trimmed.strip_prefix("pub struct ")
+                    } else {
+                        trimmed.strip_prefix("pub enum ")
+                    };
+                    if let Some(rest) = after_keyword {
+                        if let Some(name) = rest
+                            .split(|c: char| !c.is_alphanumeric() && c != '_')
+                            .next()
+                        {
+                            if !name.is_empty() {
+                                names.push(name.to_string());
+                            }
+                        }
+                    }
                 }
             }
+
+            type_names.push((dir_name, names));
         }
     }
-
-    // Map component directory names to type names used in code
-    let type_names: Vec<(&str, &str)> = vec![
-        ("accordion", "Accordion"),
-        ("breadcrumb", "Breadcrumb"),
-        ("button", "Button"),
-        ("chart", "Chart"),
-        ("chat_view", "ChatView"),
-        ("checkbox", "Checkbox"),
-        ("data_grid", "DataGrid"),
-        ("dialog", "Dialog"),
-        ("dropdown", "Dropdown"),
-        ("form", "Form"),
-        ("input_field", "InputField"),
-        ("key_hints", "KeyHints"),
-        ("line_input", "LineInput"),
-        ("loading_list", "LoadingList"),
-        ("log_viewer", "LogViewer"),
-        ("menu", "Menu"),
-        ("metrics_dashboard", "MetricsDashboard"),
-        ("multi_progress", "MultiProgress"),
-        ("progress_bar", "ProgressBar"),
-        ("radio_group", "RadioGroup"),
-        ("router", "Router"),
-        ("scrollable_text", "ScrollableText"),
-        ("searchable_list", "SearchableList"),
-        ("select", "Select"),
-        ("selectable_list", "SelectableList"),
-        ("spinner", "Spinner"),
-        ("split_panel", "SplitPanel"),
-        ("status_bar", "StatusBar"),
-        ("status_log", "StatusLog"),
-        ("table", "Table"),
-        ("tabs", "Tabs"),
-        ("text_area", "TextArea"),
-        ("title_card", "TitleCard"),
-        ("toast", "Toast"),
-        ("tooltip", "Tooltip"),
-        ("tree", "Tree"),
-    ];
 
     // Scan all example files
     let mut example_files: Vec<(String, String)> = Vec::new();
@@ -324,11 +336,21 @@ fn print_example_coverage(root: &Path) {
     let mut covered: BTreeSet<String> = BTreeSet::new();
 
     for (example_name, content) in &example_files {
-        let mut used: Vec<&str> = Vec::new();
-        for (dir_name, type_name) in &type_names {
-            if content.contains(type_name) {
-                used.push(type_name);
-                covered.insert(dir_name.to_string());
+        let mut used: Vec<String> = Vec::new();
+        for (dir_name, names) in &type_names {
+            for type_name in names {
+                if content.contains(type_name.as_str()) {
+                    // Use the primary type name (first without State/Message suffix)
+                    let display = names
+                        .iter()
+                        .find(|n| !n.ends_with("State") && !n.ends_with("Message"))
+                        .unwrap_or(type_name);
+                    if !used.contains(display) {
+                        used.push(display.clone());
+                    }
+                    covered.insert(dir_name.clone());
+                    break;
+                }
             }
         }
         if used.is_empty() {
@@ -406,7 +428,100 @@ fn print_benchmark_listing(root: &Path) {
 
         println!("  {} ({} lines):", name, lines);
         for func in &bench_fns {
-            println!("    - {}", func);
+            // Extract parameterization from the function body
+            let params = extract_bench_params(content, func);
+            if params.is_empty() {
+                println!("    - {}", func);
+            } else {
+                println!("    - {} [{}]", func, params);
+            }
+        }
+    }
+}
+
+/// Extract parameterization info from a benchmark function body.
+/// Looks for `for ... in [...]` patterns and `BenchmarkId::new(...)` patterns.
+fn extract_bench_params(content: &str, fn_name: &str) -> String {
+    // Find the function body
+    let fn_sig = format!("fn {}(", fn_name);
+    let Some(fn_start) = content.find(&fn_sig) else {
+        return String::new();
+    };
+
+    // Find the next function or end of file
+    let rest = &content[fn_start..];
+    let fn_end = rest[1..]
+        .find("\nfn ")
+        .map(|pos| pos + 1)
+        .unwrap_or(rest.len());
+    let fn_body = &rest[..fn_end];
+
+    let mut params = Vec::new();
+
+    // Look for `for ... in [values]` patterns (item counts, sizes)
+    for line in fn_body.lines() {
+        let trimmed = line.trim();
+        if !trimmed.starts_with("for ") || !trimmed.contains(" in [") {
+            continue;
+        }
+
+        let Some(bracket_start) = trimmed.find('[') else {
+            continue;
+        };
+        let Some(bracket_end) = trimmed.rfind(']') else {
+            continue;
+        };
+        let values = &trimmed[bracket_start + 1..bracket_end];
+        if values.is_empty() {
+            continue;
+        }
+
+        // Check if this is a tuple iteration like `for (width, height) in [(80, 24), ...]`
+        let is_dimension_tuple = trimmed.contains("(width") && trimmed.contains("height");
+
+        if is_dimension_tuple {
+            // Extract dimension pairs from tuples like "(80, 24), (120, 40)"
+            let dims: Vec<String> = values
+                .split("), (")
+                .map(|d| {
+                    d.trim_matches(|c: char| c == '(' || c == ')' || c.is_whitespace())
+                        .replace(", ", "x")
+                })
+                .collect();
+            params.push(dims.join(", "));
+        } else {
+            // Plain value iteration like `for count in [100, 1000]`
+            params.push(format!("{} items", values));
+        }
+    }
+
+    // Look for BenchmarkId::new usage as a fallback indicator
+    if params.is_empty() && fn_body.contains("BenchmarkId::new") {
+        params.push("parameterized".to_string());
+    }
+
+    params.join(" x ")
+}
+
+/// Recursively collect all .rs file contents under a directory.
+fn collect_rs_file_contents(dir: &Path) -> Vec<String> {
+    let mut contents = Vec::new();
+    walk_collect_contents(dir, &mut contents);
+    contents
+}
+
+fn walk_collect_contents(dir: &Path, contents: &mut Vec<String>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            walk_collect_contents(&path, contents);
+        } else if path.extension().is_some_and(|e| e == "rs") {
+            if let Ok(content) = fs::read_to_string(&path) {
+                contents.push(content);
+            }
         }
     }
 }
