@@ -421,3 +421,8 @@ required-features = ["data-components"]
 name = "component_events"
 harness = false
 required-features = ["input-components", "data-components"]
+
+[[bench]]
+name = "memory"
+harness = false
+required-features = ["data-components"]
