@@ -148,7 +148,7 @@ pub enum DependencyGraphOutput {
 /// assert_eq!(state.edges().len(), 1);
 /// assert_eq!(state.title(), Some("Service Topology"));
 /// ```
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)

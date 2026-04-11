@@ -140,7 +140,7 @@ pub enum FlameGraphOutput {
 /// assert_eq!(state.selected_depth(), 0);
 /// assert_eq!(state.selected_index(), 0);
 /// ```
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
