@@ -564,7 +564,6 @@ impl Component for NumberInput {
         }
     }
 
-    #[allow(clippy::cast_possible_truncation)]
     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
         if area.width == 0 || area.height == 0 {
             return;

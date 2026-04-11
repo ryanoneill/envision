@@ -18,7 +18,6 @@ use crate::theme::Theme;
 const GUTTER_WIDTH: u16 = 7;
 
 /// Renders the CodeBlock in the given area.
-#[allow(clippy::too_many_lines)]
 pub(super) fn render(
     state: &CodeBlockState,
     frame: &mut Frame,

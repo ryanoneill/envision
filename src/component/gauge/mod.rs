@@ -381,7 +381,6 @@ impl GaugeState {
     /// let state = GaugeState::new(33.3, 100.0);
     /// assert_eq!(state.display_percentage(), 33);
     /// ```
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     pub fn display_percentage(&self) -> u16 {
         (self.percentage() * 100.0) as u16
     }
