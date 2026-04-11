@@ -43,16 +43,47 @@ pub struct MenuItem {
 
 impl MenuItem {
     /// Returns the item label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MenuItem;
+    ///
+    /// let item = MenuItem::new("Edit");
+    /// assert_eq!(item.label(), "Edit");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Returns whether the item is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MenuItem;
+    ///
+    /// let enabled = MenuItem::new("File");
+    /// assert!(enabled.is_enabled());
+    ///
+    /// let disabled = MenuItem::disabled("Save");
+    /// assert!(!disabled.is_enabled());
+    /// ```
     pub fn is_enabled(&self) -> bool {
         self.enabled
     }
 
     /// Sets the item label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MenuItem;
+    ///
+    /// let mut item = MenuItem::new("File");
+    /// item.set_label("Edit");
+    /// assert_eq!(item.label(), "Edit");
+    /// ```
     pub fn set_label(&mut self, label: impl Into<String>) {
         self.label = label.into();
     }
@@ -93,6 +124,16 @@ impl MenuItem {
     }
 
     /// Sets whether this item is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MenuItem;
+    ///
+    /// let mut item = MenuItem::new("Save");
+    /// item.set_enabled(false);
+    /// assert!(!item.is_enabled());
+    /// ```
     pub fn set_enabled(&mut self, enabled: bool) {
         self.enabled = enabled;
     }
@@ -177,6 +218,16 @@ impl MenuState {
     ///
     /// Resets selection to the first item if the current selection is out of bounds.
     /// Sets selection to `None` if the new items list is empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MenuState, MenuItem};
+    ///
+    /// let mut state = MenuState::new(vec![MenuItem::new("File")]);
+    /// state.set_items(vec![MenuItem::new("A"), MenuItem::new("B"), MenuItem::new("C")]);
+    /// assert_eq!(state.items().len(), 3);
+    /// ```
     pub fn set_items(&mut self, items: Vec<MenuItem>) {
         self.items = items;
         if self.items.is_empty() {
@@ -189,6 +240,16 @@ impl MenuState {
     /// Adds a menu item.
     ///
     /// If this is the first item, it becomes selected.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MenuState, MenuItem};
+    ///
+    /// let mut state = MenuState::new(vec![MenuItem::new("File")]);
+    /// state.add_item(MenuItem::new("Edit"));
+    /// assert_eq!(state.items().len(), 2);
+    /// ```
     pub fn add_item(&mut self, item: MenuItem) {
         self.items.push(item);
         if self.selected_index.is_none() {
@@ -203,6 +264,20 @@ impl MenuState {
     /// - If the removed item was the selected item, selects the previous item
     ///   (or the first if at the beginning).
     /// - If the menu becomes empty, selection becomes `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MenuState, MenuItem};
+    ///
+    /// let mut state = MenuState::new(vec![
+    ///     MenuItem::new("File"),
+    ///     MenuItem::new("Edit"),
+    ///     MenuItem::new("View"),
+    /// ]);
+    /// state.remove_item(1);
+    /// assert_eq!(state.items().len(), 2);
+    /// ```
     pub fn remove_item(&mut self, index: usize) {
         if index >= self.items.len() {
             return;
@@ -237,6 +312,15 @@ impl MenuState {
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MenuState, MenuItem};
+    ///
+    /// let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
+    /// assert_eq!(state.selected(), Some(0));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
@@ -246,6 +330,20 @@ impl MenuState {
     /// Pass `Some(index)` to select an item (clamped to valid range), or
     /// `None` to clear the selection. Has no effect on an empty menu when
     /// selecting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MenuState, MenuItem};
+    ///
+    /// let mut state = MenuState::new(vec![
+    ///     MenuItem::new("File"),
+    ///     MenuItem::new("Edit"),
+    ///     MenuItem::new("View"),
+    /// ]);
+    /// state.set_selected(Some(2));
+    /// assert_eq!(state.selected_index(), Some(2));
+    /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
@@ -294,6 +392,19 @@ impl MenuState {
     }
 
     /// Updates the menu state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MenuMessage, MenuOutput, MenuState, MenuItem};
+    ///
+    /// let mut state = MenuState::new(vec![
+    ///     MenuItem::new("File"),
+    ///     MenuItem::new("Edit"),
+    /// ]);
+    /// let output = state.update(MenuMessage::Right);
+    /// assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
+    /// ```
     pub fn update(&mut self, msg: MenuMessage) -> Option<MenuOutput> {
         Menu::update(self, msg)
     }

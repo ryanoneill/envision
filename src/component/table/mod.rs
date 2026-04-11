@@ -163,6 +163,26 @@ impl<T: TableRow> TableState<T> {
     /// Creates a table state with a specific row selected.
     ///
     /// The index is clamped to the valid range.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = TableState::with_selected(
+    ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
+    ///     vec![Column::new("Name", Constraint::Length(10))],
+    ///     1,
+    /// );
+    /// assert_eq!(state.selected_index(), Some(1));
+    /// ```
     pub fn with_selected(rows: Vec<T>, columns: Vec<Column>, selected: usize) -> Self {
         let display_order: Vec<usize> = (0..rows.len()).collect();
         let selected = if rows.is_empty() {
@@ -238,6 +258,25 @@ impl<T: TableRow> TableState<T> {
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = TableState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// assert_eq!(state.selected(), Some(0));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
@@ -273,6 +312,24 @@ impl<T: TableRow> TableState<T> {
     ///
     /// This is an alias for [`selected_row()`](Self::selected_row) that provides a
     /// consistent accessor name across all selection-based components.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = TableState::new(
+    ///     vec![Item { name: "First".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// assert_eq!(state.selected_item().unwrap().name, "First");
+    /// ```
     pub fn selected_item(&self) -> Option<&T> {
         self.selected_row()
     }
@@ -311,6 +368,25 @@ impl<T: TableRow> TableState<T> {
     ///
     /// The first element is the primary sort, the second is the
     /// first tiebreaker, and so on.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, Table, TableMessage, TableRow, TableState, Component};
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = TableState::new(
+    ///     vec![Item { name: "B".into() }, Item { name: "A".into() }],
+    ///     vec![Column::fixed("Name", 10).sortable()],
+    /// );
+    /// Table::<Item>::update(&mut state, TableMessage::SortBy(0));
+    /// assert_eq!(state.sort_columns().len(), 1);
+    /// ```
     pub fn sort_columns(&self) -> &[(usize, SortDirection)] {
         &self.sort_columns
     }
@@ -340,6 +416,21 @@ impl<T: TableRow> TableState<T> {
     }
 
     /// Returns `true` if the table has no rows.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let empty: TableState<Item> = TableState::default();
+    /// assert!(empty.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.rows.is_empty()
     }
@@ -348,6 +439,25 @@ impl<T: TableRow> TableState<T> {
     ///
     /// If there were rows selected, the selection is preserved if valid,
     /// otherwise clamped to the last row.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = TableState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// state.set_rows(vec![Item { name: "X".into() }, Item { name: "Y".into() }]);
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn set_rows(&mut self, rows: Vec<T>) {
         self.rows = rows;
         self.filter_text.clear();
@@ -457,6 +567,27 @@ impl<T: TableRow> TableState<T> {
     }
 
     /// Clears the filter, showing all rows.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = TableState::new(
+    ///     vec![Item { name: "Alice".into() }, Item { name: "Bob".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// state.set_filter_text("Alice");
+    /// assert_eq!(state.visible_count(), 1);
+    /// state.clear_filter();
+    /// assert_eq!(state.visible_count(), 2);
+    /// ```
     pub fn clear_filter(&mut self) {
         self.filter_text.clear();
         self.rebuild_display_order();

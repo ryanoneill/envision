@@ -276,11 +276,32 @@ impl TooltipState {
     }
 
     /// Returns whether the tooltip is visible.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    ///
+    /// let state = TooltipState::new("Help text");
+    /// assert!(!state.is_visible());
+    ///
+    /// let visible = TooltipState::new("Help text").with_visible(true);
+    /// assert!(visible.is_visible());
+    /// ```
     pub fn is_visible(&self) -> bool {
         self.visible
     }
 
     /// Returns the auto-hide duration in milliseconds.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    ///
+    /// let state = TooltipState::new("Content").with_duration(2000);
+    /// assert_eq!(state.duration_ms(), Some(2000));
+    /// ```
     pub fn duration_ms(&self) -> Option<u64> {
         self.duration_ms
     }
@@ -305,56 +326,169 @@ impl TooltipState {
     }
 
     /// Returns the remaining time before auto-hide.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tooltip, TooltipMessage, TooltipState, Component};
+    ///
+    /// let mut state = TooltipState::new("Content").with_duration(5000);
+    /// Tooltip::update(&mut state, TooltipMessage::Show);
+    /// assert_eq!(state.remaining_ms(), Some(5000));
+    /// ```
     pub fn remaining_ms(&self) -> Option<u64> {
         self.remaining_ms
     }
 
     /// Returns the foreground color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    /// use ratatui::style::Color;
+    ///
+    /// let state = TooltipState::new("Content").with_fg_color(Color::Cyan);
+    /// assert_eq!(state.fg_color(), Color::Cyan);
+    /// ```
     pub fn fg_color(&self) -> Color {
         self.fg_color
     }
 
     /// Returns the background color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    /// use ratatui::style::Color;
+    ///
+    /// let state = TooltipState::new("Content").with_bg_color(Color::Blue);
+    /// assert_eq!(state.bg_color(), Color::Blue);
+    /// ```
     pub fn bg_color(&self) -> Color {
         self.bg_color
     }
 
     /// Returns the border color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    /// use ratatui::style::Color;
+    ///
+    /// let state = TooltipState::new("Content").with_border_color(Color::Green);
+    /// assert_eq!(state.border_color(), Color::Green);
+    /// ```
     pub fn border_color(&self) -> Color {
         self.border_color
     }
 
     /// Sets the tooltip content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    ///
+    /// let mut state = TooltipState::new("Old content");
+    /// state.set_content("New content");
+    /// assert_eq!(state.content(), "New content");
+    /// ```
     pub fn set_content(&mut self, content: impl Into<String>) {
         self.content = content.into();
     }
 
     /// Sets the tooltip title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    ///
+    /// let mut state = TooltipState::new("Content");
+    /// state.set_title(Some("Hint".to_string()));
+    /// assert_eq!(state.title(), Some("Hint"));
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
 
     /// Sets the preferred position.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TooltipState, TooltipPosition};
+    ///
+    /// let mut state = TooltipState::new("Content");
+    /// state.set_position(TooltipPosition::Right);
+    /// assert_eq!(state.position(), TooltipPosition::Right);
+    /// ```
     pub fn set_position(&mut self, position: TooltipPosition) {
         self.position = position;
     }
 
     /// Sets the auto-hide duration.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    ///
+    /// let mut state = TooltipState::new("Content");
+    /// state.set_duration(Some(3000));
+    /// assert_eq!(state.duration_ms(), Some(3000));
+    /// ```
     pub fn set_duration(&mut self, duration_ms: Option<u64>) {
         self.duration_ms = duration_ms;
     }
 
     /// Sets the foreground color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = TooltipState::new("Content");
+    /// state.set_fg_color(Color::Red);
+    /// assert_eq!(state.fg_color(), Color::Red);
+    /// ```
     pub fn set_fg_color(&mut self, color: Color) {
         self.fg_color = color;
     }
 
     /// Sets the background color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = TooltipState::new("Content");
+    /// state.set_bg_color(Color::DarkGray);
+    /// assert_eq!(state.bg_color(), Color::DarkGray);
+    /// ```
     pub fn set_bg_color(&mut self, color: Color) {
         self.bg_color = color;
     }
 
     /// Sets the border color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = TooltipState::new("Content");
+    /// state.set_border_color(Color::Yellow);
+    /// assert_eq!(state.border_color(), Color::Yellow);
+    /// ```
     pub fn set_border_color(&mut self, color: Color) {
         self.border_color = color;
     }
