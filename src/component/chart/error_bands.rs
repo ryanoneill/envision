@@ -3,25 +3,21 @@
 use ratatui::prelude::*;
 
 use super::ChartState;
+use super::annotations::AxisBounds;
 use super::render::interpolate_y;
 use crate::theme::Theme;
 
 /// Fills the shaded region between upper and lower bounds for error bands.
-#[allow(clippy::too_many_arguments)]
 pub(super) fn fill_error_bands(
     state: &ChartState,
     frame: &mut Frame,
     graph_area: Rect,
-    x_min: f64,
-    x_max: f64,
-    y_min: f64,
-    y_max: f64,
+    bounds: AxisBounds,
     disabled: bool,
     theme: &Theme,
-    is_log: bool,
 ) {
-    let x_range = x_max - x_min;
-    let y_range = y_max - y_min;
+    let x_range = bounds.x_max - bounds.x_min;
+    let y_range = bounds.y_max - bounds.y_min;
     if x_range <= 0.0 || y_range <= 0.0 {
         return;
     }
@@ -38,17 +34,17 @@ pub(super) fn fill_error_bands(
             dim_color(series.color())
         };
         let upper_data: Vec<(f64, f64)> = upper.map_or_else(Vec::new, |ub| {
-            build_bound_data(series, ub, is_log, &state.y_scale)
+            build_bound_data(series, ub, bounds.is_log, &state.y_scale)
         });
         let lower_data: Vec<(f64, f64)> = lower.map_or_else(Vec::new, |lb| {
-            build_bound_data(series, lb, is_log, &state.y_scale)
+            build_bound_data(series, lb, bounds.is_log, &state.y_scale)
         });
         let main_data: Vec<(f64, f64)> =
-            build_bound_data(series, series.values(), is_log, &state.y_scale);
+            build_bound_data(series, series.values(), bounds.is_log, &state.y_scale);
         for screen_x in graph_area.x..graph_area.right() {
             let x_frac =
                 (screen_x - graph_area.x) as f64 / (graph_area.width as f64 - 1.0).max(1.0);
-            let data_x = x_min + x_frac * x_range;
+            let data_x = bounds.x_min + x_frac * x_range;
             let upper_y = if !upper_data.is_empty() {
                 interpolate_y(&upper_data, data_x)
             } else {
@@ -74,8 +70,8 @@ pub(super) fn fill_error_bands(
             if band_upper <= band_lower {
                 continue;
             }
-            let upper_frac = f64::clamp((band_upper - y_min) / y_range, 0.0, 1.0);
-            let lower_frac = f64::clamp((band_lower - y_min) / y_range, 0.0, 1.0);
+            let upper_frac = f64::clamp((band_upper - bounds.y_min) / y_range, 0.0, 1.0);
+            let lower_frac = f64::clamp((band_lower - bounds.y_min) / y_range, 0.0, 1.0);
             let upper_screen_y = graph_area
                 .bottom()
                 .saturating_sub(1)

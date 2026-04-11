@@ -107,13 +107,15 @@ pub(super) fn render(
         let code_line_area = Rect::new(code_x, y, code_area_width, 1);
         render_code_line(
             line_text,
-            is_highlighted,
+            LineRenderConfig {
+                is_highlighted,
+                horizontal_offset: state.horizontal_offset,
+            },
             state,
             frame,
             code_line_area,
             theme,
             disabled,
-            state.horizontal_offset,
         );
     }
 
@@ -193,18 +195,24 @@ fn apply_horizontal_offset<'a>(spans: Vec<Span<'a>>, offset: usize) -> Vec<Span<
     result
 }
 
+/// Display configuration for a single code line.
+struct LineRenderConfig {
+    is_highlighted: bool,
+    horizontal_offset: usize,
+}
+
 /// Renders a single line of highlighted code.
-#[allow(clippy::too_many_arguments)]
 fn render_code_line(
     line_text: &str,
-    is_highlighted: bool,
+    config: LineRenderConfig,
     state: &CodeBlockState,
     frame: &mut Frame,
     area: Rect,
     theme: &Theme,
     disabled: bool,
-    horizontal_offset: usize,
 ) {
+    let is_highlighted = config.is_highlighted;
+    let horizontal_offset = config.horizontal_offset;
     if disabled {
         let visible: String = line_text.chars().skip(horizontal_offset).collect();
         let paragraph = Paragraph::new(visible).style(theme.disabled_style());

@@ -88,8 +88,10 @@ pub(super) fn render_alert_panel(
             if let Some(metric) = state.metrics().get(metric_idx) {
                 let is_selected = state.selected() == Some(metric_idx);
                 render_metric_card(
-                    metric,
-                    is_selected,
+                    MetricCardInput {
+                        metric,
+                        is_selected,
+                    },
                     state,
                     frame,
                     *col_area,
@@ -102,11 +104,15 @@ pub(super) fn render_alert_panel(
     }
 }
 
-/// Renders a single metric card within the grid.
-#[allow(clippy::too_many_arguments)]
-fn render_metric_card(
-    metric: &super::AlertMetric,
+/// Selection and focus state for a single metric card.
+struct MetricCardInput<'a> {
+    metric: &'a super::AlertMetric,
     is_selected: bool,
+}
+
+/// Renders a single metric card within the grid.
+fn render_metric_card(
+    card: MetricCardInput<'_>,
     state: &AlertPanelState,
     frame: &mut Frame,
     area: Rect,
@@ -114,6 +120,8 @@ fn render_metric_card(
     focused: bool,
     disabled: bool,
 ) {
+    let metric = card.metric;
+    let is_selected = card.is_selected;
     let border_style = if disabled {
         theme.disabled_style()
     } else if is_selected && focused {

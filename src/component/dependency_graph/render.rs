@@ -130,12 +130,14 @@ pub(super) fn render_dependency_graph(
                 frame,
                 node,
                 layout_node,
-                is_selected,
+                NodeRenderState {
+                    is_selected,
+                    focused,
+                    disabled,
+                },
                 state,
                 inner,
                 theme,
-                focused,
-                disabled,
             );
         }
     }
@@ -161,20 +163,26 @@ fn render_empty_state(
     frame.render_widget(Paragraph::new(msg).style(style), msg_area);
 }
 
+/// Selection and focus state for rendering a graph node.
+struct NodeRenderState {
+    is_selected: bool,
+    focused: bool,
+    disabled: bool,
+}
+
 /// Renders a single graph node as a bordered box with label and status.
-#[allow(clippy::too_many_arguments)]
 fn render_node(
     frame: &mut Frame,
     node: &super::GraphNode,
     layout_node: &LayoutNode,
-    is_selected: bool,
+    render_state: NodeRenderState,
     _state: &DependencyGraphState,
     clip: Rect,
     theme: &Theme,
-
-    focused: bool,
-    disabled: bool,
 ) {
+    let is_selected = render_state.is_selected;
+    let focused = render_state.focused;
+    let disabled = render_state.disabled;
     // Clip node to inner area
     let node_area = clip_rect(
         Rect::new(

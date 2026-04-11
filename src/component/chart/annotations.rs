@@ -67,6 +67,15 @@ impl ChartAnnotation {
     }
 }
 
+/// Axis bounds and scale information used for coordinate mapping.
+pub(super) struct AxisBounds {
+    pub(super) x_min: f64,
+    pub(super) x_max: f64,
+    pub(super) y_min: f64,
+    pub(super) y_max: f64,
+    pub(super) is_log: bool,
+}
+
 /// Renders text annotations at data coordinates on the chart surface.
 ///
 /// Each annotation's (x, y) data coordinates are converted to screen positions
@@ -74,18 +83,13 @@ impl ChartAnnotation {
 /// one column to the right and one row above the data point to avoid overlapping
 /// the plotted data. Only empty or space cells are overwritten, preserving
 /// existing chart content.
-#[allow(clippy::too_many_arguments)]
 pub(super) fn render_annotations(
     state: &ChartState,
     frame: &mut Frame,
     area: Rect,
     y_labels: &[String],
     x_labels: &[String],
-    x_bound_min: f64,
-    x_bound_max: f64,
-    y_axis_min: f64,
-    y_axis_max: f64,
-    is_log: bool,
+    bounds: AxisBounds,
 ) {
     if state.annotations.is_empty() {
         return;
@@ -96,8 +100,8 @@ pub(super) fn render_annotations(
         return;
     }
 
-    let x_range = x_bound_max - x_bound_min;
-    let y_range = y_axis_max - y_axis_min;
+    let x_range = bounds.x_max - bounds.x_min;
+    let y_range = bounds.y_max - bounds.y_min;
     if x_range <= 0.0 || y_range <= 0.0 {
         return;
     }
@@ -105,14 +109,14 @@ pub(super) fn render_annotations(
     let buf = frame.buffer_mut();
 
     for ann in &state.annotations {
-        let ann_y = if is_log {
+        let ann_y = if bounds.is_log {
             state.y_scale.transform(ann.y.max(f64::MIN_POSITIVE))
         } else {
             ann.y
         };
 
-        let x_frac = (ann.x - x_bound_min) / x_range;
-        let y_frac = (ann_y - y_axis_min) / y_range;
+        let x_frac = (ann.x - bounds.x_min) / x_range;
+        let y_frac = (ann_y - bounds.y_min) / y_range;
 
         // Skip annotations outside the visible graph area
         if !(0.0..=1.0).contains(&x_frac) || !(0.0..=1.0).contains(&y_frac) {
