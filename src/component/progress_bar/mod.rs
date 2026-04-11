@@ -162,7 +162,6 @@ impl ProgressBarState {
     }
 
     /// Returns the progress as a percentage (0 to 100).
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     pub fn percentage(&self) -> u16 {
         (self.progress * 100.0).round() as u16
     }

@@ -488,7 +488,6 @@ impl Component for Slider {
 }
 
 /// Renders the slider in horizontal orientation.
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn view_horizontal(
     state: &SliderState,
     frame: &mut Frame,
@@ -547,7 +546,6 @@ fn view_horizontal(
 }
 
 /// Renders the slider in vertical orientation.
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn view_vertical(
     state: &SliderState,
     frame: &mut Frame,
