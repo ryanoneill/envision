@@ -298,6 +298,31 @@ impl TabBarState {
         self.active
     }
 
+    /// Returns the active tab index, or `None` if the tab bar is empty.
+    ///
+    /// This is the getter counterpart to [`set_active`](Self::set_active).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Tab, TabBarState};
+    ///
+    /// let mut state = TabBarState::new(vec![
+    ///     Tab::new("a", "A"),
+    ///     Tab::new("b", "B"),
+    /// ]);
+    /// assert_eq!(state.active(), Some(0));
+    ///
+    /// state.set_active(Some(1));
+    /// assert_eq!(state.active(), Some(1));
+    ///
+    /// state.set_active(None);
+    /// assert_eq!(state.active(), None);
+    /// ```
+    pub fn active(&self) -> Option<usize> {
+        self.active
+    }
+
     /// Returns the currently active tab, or `None` if empty.
     ///
     /// # Example

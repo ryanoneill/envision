@@ -136,6 +136,26 @@ impl TreemapNode {
         self.color = color;
     }
 
+    /// Returns the color of this node.
+    ///
+    /// This is the getter counterpart to [`set_color`](Self::set_color).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreemapNode;
+    /// use ratatui::style::Color;
+    ///
+    /// let node = TreemapNode::new("data", 100.0);
+    /// assert_eq!(node.color(), Color::Gray);
+    ///
+    /// let node = TreemapNode::new("data", 100.0).with_color(Color::Cyan);
+    /// assert_eq!(node.color(), Color::Cyan);
+    /// ```
+    pub fn color(&self) -> Color {
+        self.color
+    }
+
     /// Adds a single child node (builder pattern).
     ///
     /// # Example

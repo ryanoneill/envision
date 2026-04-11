@@ -387,6 +387,28 @@ impl FlameGraphState {
         &self.search_query
     }
 
+    /// Returns the search query as an `Option<&str>`, or `None` if empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FlameGraphState, FlameNode};
+    ///
+    /// let state = FlameGraphState::new();
+    /// assert_eq!(state.search(), None);
+    ///
+    /// let mut state = FlameGraphState::with_root(FlameNode::new("main()", 500));
+    /// state.set_search("compute".to_string());
+    /// assert_eq!(state.search(), Some("compute"));
+    /// ```
+    pub fn search(&self) -> Option<&str> {
+        if self.search_query.is_empty() {
+            None
+        } else {
+            Some(&self.search_query)
+        }
+    }
+
     /// Sets the search query.
     ///
     /// # Example
