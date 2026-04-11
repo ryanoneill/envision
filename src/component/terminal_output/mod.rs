@@ -365,6 +365,20 @@ impl TerminalOutputState {
     }
 
     /// Returns the number of output lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let mut state = TerminalOutputState::new();
+    /// assert_eq!(state.line_count(), 0);
+    /// state.push_line("hello");
+    /// assert_eq!(state.line_count(), 1);
+    /// # }
+    /// ```
     pub fn line_count(&self) -> usize {
         self.lines.len()
     }
@@ -372,11 +386,39 @@ impl TerminalOutputState {
     // ---- Scroll accessors ----
 
     /// Returns the current scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let state = TerminalOutputState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// # }
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
     }
 
     /// Sets the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let mut state = TerminalOutputState::new();
+    /// for i in 0..20 {
+    ///     state.push_line(format!("line {}", i));
+    /// }
+    /// state.set_scroll_offset(5);
+    /// assert_eq!(state.scroll_offset(), 5);
+    /// # }
+    /// ```
     pub fn set_scroll_offset(&mut self, offset: usize) {
         self.scroll.set_offset(offset);
     }
@@ -408,31 +450,108 @@ impl TerminalOutputState {
     }
 
     /// Returns whether auto-scroll is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let state = TerminalOutputState::new();
+    /// assert!(state.auto_scroll()); // enabled by default
+    /// # }
+    /// ```
     pub fn auto_scroll(&self) -> bool {
         self.auto_scroll
     }
 
     /// Sets the auto-scroll state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let mut state = TerminalOutputState::new();
+    /// state.set_auto_scroll(false);
+    /// assert!(!state.auto_scroll());
+    /// # }
+    /// ```
     pub fn set_auto_scroll(&mut self, auto_scroll: bool) {
         self.auto_scroll = auto_scroll;
     }
 
     /// Returns whether line numbers are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let state = TerminalOutputState::new();
+    /// assert!(!state.show_line_numbers());
+    /// # }
+    /// ```
     pub fn show_line_numbers(&self) -> bool {
         self.show_line_numbers
     }
 
     /// Sets whether to show line numbers.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let mut state = TerminalOutputState::new();
+    /// state.set_show_line_numbers(true);
+    /// assert!(state.show_line_numbers());
+    /// # }
+    /// ```
     pub fn set_show_line_numbers(&mut self, show: bool) {
         self.show_line_numbers = show;
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let state = TerminalOutputState::new().with_title("Build");
+    /// assert_eq!(state.title(), Some("Build"));
+    /// # }
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let mut state = TerminalOutputState::new();
+    /// state.set_title(Some("Output".to_string()));
+    /// assert_eq!(state.title(), Some("Output"));
+    /// state.set_title(None);
+    /// assert_eq!(state.title(), None);
+    /// # }
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
@@ -501,6 +620,21 @@ impl TerminalOutputState {
     }
 
     /// Sets the running state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let mut state = TerminalOutputState::new();
+    /// state.set_running(true);
+    /// assert!(state.running());
+    /// state.set_running(false);
+    /// assert!(!state.running());
+    /// # }
+    /// ```
     pub fn set_running(&mut self, running: bool) {
         self.running = running;
     }

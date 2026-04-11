@@ -295,21 +295,60 @@ impl DialogState {
     }
 
     /// Returns the index of the primary button.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DialogState;
+    ///
+    /// let state = DialogState::confirm("Delete?", "Are you sure?");
+    /// assert_eq!(state.primary_button(), 1);
+    /// ```
     pub fn primary_button(&self) -> usize {
         self.primary_button
     }
 
     /// Returns the index of the currently focused button.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DialogState;
+    ///
+    /// let state = DialogState::confirm("Delete?", "Are you sure?");
+    /// // Starts at primary button index
+    /// assert_eq!(state.focused_button(), state.primary_button());
+    /// ```
     pub fn focused_button(&self) -> usize {
         self.focused_button
     }
 
     /// Sets the dialog title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DialogState;
+    ///
+    /// let mut state = DialogState::alert("Old Title", "Message");
+    /// state.set_title("New Title");
+    /// assert_eq!(state.title(), "New Title");
+    /// ```
     pub fn set_title(&mut self, title: impl Into<String>) {
         self.title = title.into();
     }
 
     /// Sets the dialog message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DialogState;
+    ///
+    /// let mut state = DialogState::alert("Title", "Old message");
+    /// state.set_message("New message");
+    /// assert_eq!(state.message(), "New message");
+    /// ```
     pub fn set_message(&mut self, message: impl Into<String>) {
         self.message = message.into();
     }
@@ -331,6 +370,19 @@ impl DialogState {
     /// Sets the primary button index.
     ///
     /// The index is clamped to the valid range.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DialogButton, DialogState};
+    ///
+    /// let mut state = DialogState::new("T", "M", vec![
+    ///     DialogButton::new("cancel", "Cancel"),
+    ///     DialogButton::new("ok", "OK"),
+    /// ]);
+    /// state.set_primary_button(1);
+    /// assert_eq!(state.primary_button(), 1);
+    /// ```
     pub fn set_primary_button(&mut self, index: usize) {
         if self.buttons.is_empty() {
             self.primary_button = 0;
@@ -454,16 +506,52 @@ impl DialogState {
     }
 
     /// Maps an input event to a dialog message.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DialogMessage, DialogState, Toggleable, Dialog};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = DialogState::alert("Info", "Done.");
+    /// Dialog::show(&mut state);
+    /// let event = Event::key(KeyCode::Enter);
+    /// assert_eq!(state.handle_event(&event), Some(DialogMessage::Press));
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<DialogMessage> {
         Dialog::handle_event(self, event, &ViewContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DialogOutput, DialogState, Toggleable, Dialog};
+    /// use envision::input::{Event, KeyCode};
+    ///
+    /// let mut state = DialogState::alert("Info", "Done.");
+    /// Dialog::show(&mut state);
+    /// let event = Event::key(KeyCode::Enter);
+    /// let output = state.dispatch_event(&event);
+    /// assert_eq!(output, Some(DialogOutput::ButtonPressed("ok".into())));
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<DialogOutput> {
         Dialog::dispatch_event(self, event, &ViewContext::default())
     }
 
     /// Updates the dialog state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DialogMessage, DialogOutput, DialogState, Toggleable, Dialog};
+    ///
+    /// let mut state = DialogState::alert("Info", "Done.");
+    /// Dialog::show(&mut state);
+    /// let output = state.update(DialogMessage::Close);
+    /// assert_eq!(output, Some(DialogOutput::Closed));
+    /// ```
     pub fn update(&mut self, msg: DialogMessage) -> Option<DialogOutput> {
         Dialog::update(self, msg)
     }

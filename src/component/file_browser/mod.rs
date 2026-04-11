@@ -361,6 +361,18 @@ impl FileBrowserState {
     }
 
     /// Returns all entries (unfiltered).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![
+    ///     FileEntry::file("a.txt", "/a.txt"),
+    ///     FileEntry::directory("src", "/src"),
+    /// ]);
+    /// assert_eq!(state.entries().len(), 2);
+    /// ```
     pub fn entries(&self) -> &[FileEntry] {
         &self.entries
     }
@@ -410,6 +422,18 @@ impl FileBrowserState {
     }
 
     /// Returns the selected index within the filtered list.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![FileEntry::file("a.txt", "/a.txt")]);
+    /// assert_eq!(state.selected_index(), Some(0));
+    ///
+    /// let empty = FileBrowserState::new("/", vec![]);
+    /// assert_eq!(empty.selected_index(), None);
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected_index
     }
@@ -459,11 +483,30 @@ impl FileBrowserState {
     }
 
     /// Returns the selection mode.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState, SelectionMode};
+    ///
+    /// let state = FileBrowserState::new("/", vec![])
+    ///     .with_selection_mode(SelectionMode::Multiple);
+    /// assert_eq!(state.selection_mode(), &SelectionMode::Multiple);
+    /// ```
     pub fn selection_mode(&self) -> &SelectionMode {
         &self.selection_mode
     }
 
     /// Returns the sort field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState, FileSortField};
+    ///
+    /// let state = FileBrowserState::new("/", vec![]);
+    /// assert_eq!(state.sort_field(), &FileSortField::Name);
+    /// ```
     pub fn sort_field(&self) -> &FileSortField {
         &self.sort_field
     }
@@ -513,6 +556,20 @@ impl FileBrowserState {
     // ---- Instance methods ----
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    /// use envision::component::{FileBrowserMessage, FileBrowserOutput};
+    ///
+    /// let mut state = FileBrowserState::new("/", vec![
+    ///     FileEntry::file("a.txt", "/a.txt"),
+    ///     FileEntry::file("b.txt", "/b.txt"),
+    /// ]);
+    /// let output = state.update(FileBrowserMessage::Down);
+    /// assert_eq!(output, Some(FileBrowserOutput::SelectionChanged(1)));
+    /// ```
     pub fn update(&mut self, msg: FileBrowserMessage) -> Option<FileBrowserOutput> {
         FileBrowser::update(self, msg)
     }

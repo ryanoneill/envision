@@ -353,6 +353,17 @@ impl StepIndicatorState {
     }
 
     /// Returns a specific step, if it exists.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("Build"), Step::new("Test")]);
+    /// assert_eq!(state.step(0).unwrap().label(), "Build");
+    /// assert!(state.step(99).is_none());
+    /// ```
     pub fn step(&self, index: usize) -> Option<&Step> {
         self.steps.get(index)
     }
@@ -363,6 +374,16 @@ impl StepIndicatorState {
     }
 
     /// Returns the focused step index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
+    /// assert_eq!(state.focused_index(), 0);
+    /// ```
     pub fn focused_index(&self) -> usize {
         self.focused_index
     }
@@ -437,6 +458,15 @@ impl StepIndicatorState {
     }
 
     /// Returns whether descriptions are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::default();
+    /// assert!(!state.show_descriptions());
+    /// ```
     pub fn show_descriptions(&self) -> bool {
         self.show_descriptions
     }
@@ -507,6 +537,21 @@ impl StepIndicatorState {
     }
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StepIndicatorState, StepIndicatorMessage, StepIndicatorOutput};
+    /// use envision::component::step_indicator::{Step, StepStatus};
+    ///
+    /// let steps = vec![
+    ///     Step::new("Build").with_status(StepStatus::Active),
+    ///     Step::new("Test"),
+    /// ];
+    /// let mut state = StepIndicatorState::new(steps);
+    /// let output = state.update(StepIndicatorMessage::CompleteActive);
+    /// assert!(matches!(output, Some(StepIndicatorOutput::StatusChanged { .. })));
+    /// ```
     pub fn update(&mut self, msg: StepIndicatorMessage) -> Option<StepIndicatorOutput> {
         StepIndicator::update(self, msg)
     }

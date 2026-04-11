@@ -257,11 +257,30 @@ impl ConversationViewState {
     }
 
     /// Returns whether markdown rendering is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let state = ConversationViewState::new().with_markdown(true);
+    /// assert!(state.markdown_enabled());
+    /// ```
     pub fn markdown_enabled(&self) -> bool {
         self.markdown_enabled
     }
 
     /// Sets whether markdown rendering is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.set_markdown_enabled(true);
+    /// assert!(state.markdown_enabled());
+    /// ```
     pub fn set_markdown_enabled(&mut self, enabled: bool) {
         self.markdown_enabled = enabled;
     }
@@ -542,6 +561,16 @@ impl ConversationViewState {
     // ---- Accessors ----
 
     /// Returns the messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationViewState, ConversationMessage, ConversationRole};
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.push_user("Hello");
+    /// assert_eq!(state.messages().len(), 1);
+    /// ```
     pub fn messages(&self) -> &[ConversationMessage] {
         &self.messages
     }

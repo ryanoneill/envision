@@ -443,36 +443,105 @@ impl LogCorrelationState {
     // ---- Accessors ----
 
     /// Returns all streams.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LogCorrelationState, LogStream};
+    ///
+    /// let state = LogCorrelationState::new()
+    ///     .with_streams(vec![LogStream::new("API"), LogStream::new("DB")]);
+    /// assert_eq!(state.streams().len(), 2);
+    /// assert_eq!(state.streams()[0].name, "API");
+    /// ```
     pub fn streams(&self) -> &[LogStream] {
         &self.streams
     }
 
     /// Returns the number of streams.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LogCorrelationState, LogStream};
+    ///
+    /// let state = LogCorrelationState::new()
+    ///     .with_streams(vec![LogStream::new("A"), LogStream::new("B")]);
+    /// assert_eq!(state.stream_count(), 2);
+    /// ```
     pub fn stream_count(&self) -> usize {
         self.streams.len()
     }
 
     /// Returns the index of the active (focused) stream.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogCorrelationState;
+    ///
+    /// let state = LogCorrelationState::new();
+    /// assert_eq!(state.active_stream(), 0);
+    /// ```
     pub fn active_stream(&self) -> usize {
         self.active_stream
     }
 
     /// Returns whether synchronized scrolling is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogCorrelationState;
+    ///
+    /// let state = LogCorrelationState::new();
+    /// assert!(state.sync_scroll()); // enabled by default
+    /// ```
     pub fn sync_scroll(&self) -> bool {
         self.sync_scroll
     }
 
     /// Returns the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogCorrelationState;
+    ///
+    /// let state = LogCorrelationState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
     }
 
     /// Returns the current scroll timestamp.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogCorrelationState;
+    ///
+    /// let state = LogCorrelationState::new();
+    /// assert_eq!(state.scroll_timestamp(), 0.0);
+    /// ```
     pub fn scroll_timestamp(&self) -> f64 {
         self.scroll_timestamp
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogCorrelationState;
+    ///
+    /// let state = LogCorrelationState::new().with_title("Logs");
+    /// assert_eq!(state.title(), Some("Logs"));
+    ///
+    /// let no_title = LogCorrelationState::new();
+    /// assert_eq!(no_title.title(), None);
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -613,6 +682,19 @@ impl LogCorrelationState {
     // ---- Instance methods ----
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{
+    ///     LogCorrelationState, LogCorrelationMessage, LogCorrelationOutput, LogStream,
+    /// };
+    ///
+    /// let mut state = LogCorrelationState::new()
+    ///     .with_streams(vec![LogStream::new("A"), LogStream::new("B")]);
+    /// let output = state.update(LogCorrelationMessage::FocusNextStream);
+    /// assert_eq!(output, Some(LogCorrelationOutput::StreamFocused(1)));
+    /// ```
     pub fn update(&mut self, msg: LogCorrelationMessage) -> Option<LogCorrelationOutput> {
         LogCorrelation::update(self, msg)
     }
