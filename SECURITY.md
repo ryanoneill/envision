@@ -24,7 +24,7 @@ Envision is a TUI framework that renders to terminal emulators. Its security bou
 
 Side effects (network calls, file I/O, etc.) are the responsibility of application code within `Command` callbacks, not the framework itself.
 
-## Terminal Escape Sequences
+## Terminal Escape Sequence Handling
 
 Terminal applications face a unique attack surface: malicious content rendered to the terminal can include escape sequences that exploit vulnerabilities in terminal emulators.
 
@@ -32,15 +32,21 @@ Terminal applications face a unique attack surface: malicious content rendered t
 
 - **Ratatui handles rendering.** All text output goes through ratatui's `Buffer` abstraction, which maps styled characters to cells rather than writing raw escape sequences. Ratatui and crossterm together handle the translation from logical cells to terminal output.
 - **No raw `write!` to stdout.** Envision never writes raw bytes to the terminal directly. All rendering is mediated by ratatui's `Backend` trait.
+- **Component API is safe by default.** Components such as `ConversationView` (renders via `Paragraph`) and `TerminalOutput` (parses ANSI codes into ratatui `Style` values via `parse_ansi`, then renders them as `Span::styled`) never forward raw escape bytes to the terminal. User-provided text passed through envision's component API is inherently safe against terminal escape injection.
 - **CaptureBackend for testing.** The headless `CaptureBackend` never interacts with a real terminal, eliminating escape sequence concerns in test environments entirely.
+
+### Exception: direct ratatui primitive usage
+
+If application code constructs `Span::raw()` or `Line` values containing escape sequences and renders them directly through ratatui (bypassing envision's component API), those sequences will reach the terminal. This is a ratatui/crossterm concern rather than one specific to envision. Envision makes no guarantee about content rendered outside its component API.
 
 ### Guidance for application developers
 
 If your application displays user-provided or external content (log files, chat messages, API responses, etc.):
 
 1. **Sanitize before storing.** Strip or replace control characters (U+0000–U+001F, U+007F, U+0080–U+009F) from untrusted input before storing it in your application state. The TEA pattern makes this straightforward — validate in your `update` function.
-2. **Limit string lengths.** Unbounded strings can cause excessive memory use or slow rendering. Truncate or paginate long content.
-3. **Be cautious with ANSI in content.** If you display content that may contain ANSI escape codes (e.g., log output), consider stripping them before rendering through envision components.
+2. **Prefer envision components over raw ratatui primitives.** Rendering user-provided strings through envision components (`ConversationView`, `TerminalOutput`, `StyledText`, etc.) is safer than constructing `Span::raw()` directly from unsanitized input.
+3. **Limit string lengths.** Unbounded strings can cause excessive memory use or slow rendering. Truncate or paginate long content.
+4. **Be cautious with ANSI in content.** If you display content that may contain ANSI escape codes (e.g., log output), consider stripping them before rendering through envision components.
 
 ## Input Validation
 
