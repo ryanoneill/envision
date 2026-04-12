@@ -336,7 +336,10 @@ progress_sender.try_send(MyProgress::Tick(0.5)).ok();
 ```
 
 Workers can now be spawned on-demand from `update()` using
-`Command::subscribe` to register the progress subscription:
+`Command::subscribe` to register the progress subscription. Use
+`cmd.and(Command::subscribe(subscription))` to combine the async
+task command with the subscription registration — without the
+subscription, progress messages will never arrive:
 
 ```rust
 fn update(state: &mut State, msg: Msg) -> Command<Msg> {
@@ -349,7 +352,8 @@ fn update(state: &mut State, msg: Msg) -> Command<Msg> {
                     |result| Msg::Done(result),
                 );
             state.handle = Some(handle);
-            Command::combine(vec![cmd, Command::subscribe(subscription)])
+            // .and() combines the async task with the subscription registration
+            cmd.and(Command::subscribe(subscription))
         }
         // ...
     }
