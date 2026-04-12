@@ -64,7 +64,7 @@ impl App for HeatmapApp {
     fn view(state: &State, frame: &mut Frame) {
         let theme = Theme::default();
         let area = frame.area();
-        Heatmap::view(&state.heatmap, frame, area, &theme, &ViewContext::default());
+        Heatmap::view(&state.heatmap, &mut RenderContext::new(frame, area, &theme));
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {

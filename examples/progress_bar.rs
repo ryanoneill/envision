@@ -70,24 +70,15 @@ impl App for ProgressBarApp {
 
         ProgressBar::view(
             &state.download,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         ProgressBar::view(
             &state.install,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
         ProgressBar::view(
             &state.verify,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
     }
 

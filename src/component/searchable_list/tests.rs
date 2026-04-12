@@ -479,7 +479,7 @@ fn test_disabled_ignores_events() {
     let msg = SearchableList::handle_event(
         &state,
         &Event::char('a'),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -492,7 +492,7 @@ fn test_disabled_ignores_events() {
 fn test_unfocused_ignores_events() {
     let state = SearchableListState::new(sample_items());
 
-    let msg = SearchableList::handle_event(&state, &Event::char('a'), &ViewContext::default());
+    let msg = SearchableList::handle_event(&state, &Event::char('a'), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -508,7 +508,7 @@ fn test_dispatch_event_filters_and_selects() {
     let output = SearchableList::dispatch_event(
         &mut state,
         &Event::char('b'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(
         output,
@@ -520,7 +520,7 @@ fn test_dispatch_event_filters_and_selects() {
     let output = SearchableList::dispatch_event(
         &mut state,
         &Event::char('a'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(
         output,
@@ -565,7 +565,7 @@ fn test_render_unfocused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -578,10 +578,7 @@ fn test_render_focused_filter() {
         .draw(|frame| {
             SearchableList::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -596,10 +593,7 @@ fn test_render_focused_list() {
         .draw(|frame| {
             SearchableList::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -617,10 +611,7 @@ fn test_render_with_filter() {
         .draw(|frame| {
             SearchableList::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -634,10 +625,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             SearchableList::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -649,7 +637,7 @@ fn test_render_empty_list() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -872,7 +860,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                SearchableList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

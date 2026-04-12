@@ -233,7 +233,7 @@ fn test_view_renders() {
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tabs::<&str>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -250,10 +250,7 @@ fn test_view_focused() {
         .draw(|frame| {
             Tabs::<&str>::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -268,7 +265,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            Tabs::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tabs::<&str>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -408,7 +405,7 @@ fn test_handle_event_left_when_focused() {
     let msg = Tabs::<&str>::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::Left));
 }
@@ -420,7 +417,7 @@ fn test_handle_event_right_when_focused() {
     let msg = Tabs::<&str>::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::Right));
 }
@@ -432,7 +429,7 @@ fn test_handle_event_first_when_focused() {
     let msg = Tabs::<&str>::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::First));
 }
@@ -444,7 +441,7 @@ fn test_handle_event_last_when_focused() {
     let msg = Tabs::<&str>::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::Last));
 }
@@ -456,7 +453,7 @@ fn test_handle_event_confirm_when_focused() {
     let msg = Tabs::<&str>::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::Confirm));
 }
@@ -465,12 +462,18 @@ fn test_handle_event_confirm_when_focused() {
 fn test_handle_event_vim_keys() {
     let state = TabsState::new(vec!["A", "B", "C"]);
 
-    let msg_h =
-        Tabs::<&str>::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
+    let msg_h = Tabs::<&str>::handle_event(
+        &state,
+        &Event::char('h'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg_h, Some(TabsMessage::Left));
 
-    let msg_l =
-        Tabs::<&str>::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
+    let msg_l = Tabs::<&str>::handle_event(
+        &state,
+        &Event::char('l'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg_l, Some(TabsMessage::Right));
 }
 
@@ -479,15 +482,21 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = TabsState::new(vec!["A", "B", "C"]);
     // focused is false by default
 
-    let msg =
-        Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
+    let msg = Tabs::<&str>::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 
-    let msg =
-        Tabs::<&str>::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = Tabs::<&str>::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 
-    let msg = Tabs::<&str>::handle_event(&state, &Event::char('l'), &ViewContext::default());
+    let msg = Tabs::<&str>::handle_event(&state, &Event::char('l'), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -498,14 +507,14 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = Tabs::<&str>::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Tabs::<&str>::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -520,7 +529,7 @@ fn test_dispatch_event() {
     let output = Tabs::<&str>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
@@ -529,7 +538,7 @@ fn test_dispatch_event() {
     let output = Tabs::<&str>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabsOutput::Confirmed("B")));
 }
@@ -544,7 +553,7 @@ fn test_instance_methods() {
     let output = Tabs::<&str>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
@@ -558,7 +567,7 @@ fn test_instance_methods() {
     let msg = Tabs::<&str>::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::Left));
 }
@@ -645,7 +654,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Tabs::<String>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Tabs::<String>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

@@ -51,10 +51,7 @@ impl App for CollapsibleApp {
         // Render the collapsible header and border
         Collapsible::view(
             &state.collapsible,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         // Render content inside the content area when expanded
@@ -97,8 +94,12 @@ impl App for CollapsibleApp {
                 return Some(Msg::Quit);
             }
         }
-        Collapsible::handle_event(&state.collapsible, event, &ViewContext::new().focused(true))
-            .map(Msg::Collapsible)
+        Collapsible::handle_event(
+            &state.collapsible,
+            event,
+            &EventContext::new().focused(true),
+        )
+        .map(Msg::Collapsible)
     }
 }
 

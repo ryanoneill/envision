@@ -100,10 +100,7 @@ impl App for KeyHintsApp {
         // Key hints bar at the bottom
         KeyHints::view(
             &state.hints,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
     }
 

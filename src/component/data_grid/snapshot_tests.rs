@@ -47,7 +47,7 @@ fn test_snapshot_default_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DataGrid::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -59,7 +59,7 @@ fn test_snapshot_populated() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DataGrid::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -73,10 +73,7 @@ fn test_snapshot_focused() {
         .draw(|frame| {
             DataGrid::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -92,10 +89,7 @@ fn test_snapshot_focused_second_column() {
         .draw(|frame| {
             DataGrid::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -111,10 +105,7 @@ fn test_snapshot_editing() {
         .draw(|frame| {
             DataGrid::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();

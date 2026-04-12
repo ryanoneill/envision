@@ -32,9 +32,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::theme::Theme;
 
 /// Messages that can be sent to a Dropdown.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -649,7 +648,7 @@ impl Component for Dropdown {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -678,7 +677,7 @@ impl Component for Dropdown {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             let mut ann = crate::annotation::Annotation::dropdown("dropdown")
                 .with_focus(ctx.focused)
@@ -687,24 +686,24 @@ impl Component for Dropdown {
             if let Some(val) = state.selected_value() {
                 ann = ann.with_value(val.to_string());
             }
-            reg.register(area, ann);
+            reg.register(ctx.area, ann);
         });
 
         let style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_style()
+            ctx.theme.focused_style()
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         let border_style = if ctx.focused && !ctx.disabled {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
-        // Determine what to show in the input area
+        // Determine what to show in the input ctx.area
         let display_text = if state.is_open {
             // When open, show filter text with cursor indicator
             let arrow = "▲";
@@ -724,7 +723,7 @@ impl Component for Dropdown {
             && !ctx.disabled
             && !ctx.focused
         {
-            theme.placeholder_style()
+            ctx.theme.placeholder_style()
         } else {
             style
         };
@@ -736,37 +735,37 @@ impl Component for Dropdown {
         );
 
         if !state.is_open {
-            frame.render_widget(paragraph, area);
+            ctx.frame.render_widget(paragraph, ctx.area);
         } else {
-            // Render input area at top
+            // Render input ctx.area at top
             let closed_height = 3; // 1 line + 2 borders
             let closed_area = Rect {
-                x: area.x,
-                y: area.y,
-                width: area.width,
-                height: closed_height.min(area.height),
+                x: ctx.area.x,
+                y: ctx.area.y,
+                width: ctx.area.width,
+                height: closed_height.min(ctx.area.height),
             };
-            frame.render_widget(paragraph, closed_area);
+            ctx.frame.render_widget(paragraph, closed_area);
 
             // Render dropdown list below
-            if area.height > closed_height {
+            if ctx.area.height > closed_height {
                 let list_area = Rect {
-                    x: area.x,
-                    y: area.y + closed_height,
-                    width: area.width,
-                    height: area.height.saturating_sub(closed_height),
+                    x: ctx.area.x,
+                    y: ctx.area.y + closed_height,
+                    width: ctx.area.width,
+                    height: ctx.area.height.saturating_sub(closed_height),
                 };
 
                 if state.filtered_indices.is_empty() {
                     // Show "no matches" message
                     let no_match = Paragraph::new("  No matches")
-                        .style(theme.placeholder_style())
+                        .style(ctx.theme.placeholder_style())
                         .block(
                             Block::default()
                                 .borders(Borders::ALL)
                                 .border_style(border_style),
                         );
-                    frame.render_widget(no_match, list_area);
+                    ctx.frame.render_widget(no_match, list_area);
                 } else {
                     let items: Vec<ListItem> = state
                         .filtered_indices
@@ -781,9 +780,9 @@ impl Component for Dropdown {
                             };
                             let text = format!("{}{}", prefix, opt);
                             let item_style = if i == state.highlighted_index {
-                                theme.selected_style(ctx.focused)
+                                ctx.theme.selected_style(ctx.focused)
                             } else {
-                                theme.normal_style()
+                                ctx.theme.normal_style()
                             };
                             ListItem::new(text).style(item_style)
                         })
@@ -795,7 +794,7 @@ impl Component for Dropdown {
                             .border_style(border_style),
                     );
 
-                    frame.render_widget(list, list_area);
+                    ctx.frame.render_widget(list, list_area);
                 }
             }
         }

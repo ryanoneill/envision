@@ -12,13 +12,16 @@ fn test_handle_event_scroll_up() {
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MultiProgressMessage::ScrollUp));
 
     // Vim 'k' -> ScrollUp
-    let msg =
-        MultiProgress::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
+    let msg = MultiProgress::handle_event(
+        &state,
+        &Event::char('k'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(MultiProgressMessage::ScrollUp));
 }
 
@@ -30,13 +33,16 @@ fn test_handle_event_scroll_down() {
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MultiProgressMessage::ScrollDown));
 
     // Vim 'j' -> ScrollDown
-    let msg =
-        MultiProgress::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
+    let msg = MultiProgress::handle_event(
+        &state,
+        &Event::char('j'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(MultiProgressMessage::ScrollDown));
 }
 
@@ -44,7 +50,7 @@ fn test_handle_event_scroll_down() {
 fn test_handle_event_ignored_when_unfocused() {
     let state = MultiProgressState::new();
     let msg =
-        MultiProgress::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
+        MultiProgress::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -64,7 +70,7 @@ fn test_dispatch_event() {
     MultiProgress::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.selected(), Some(6));
 }
@@ -85,7 +91,7 @@ fn test_instance_methods() {
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MultiProgressMessage::ScrollUp));
 
@@ -97,7 +103,7 @@ fn test_instance_methods() {
     MultiProgress::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.selected(), Some(3));
 }
@@ -113,28 +119,28 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = MultiProgress::handle_event(
         &state,
         &Event::char('k'),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = MultiProgress::handle_event(
         &state,
         &Event::char('j'),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -150,7 +156,7 @@ fn test_dispatch_event_ignored_when_disabled() {
     MultiProgress::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(state.selected(), Some(5)); // Should not change
 }
@@ -166,28 +172,28 @@ fn test_handle_event_unrecognized_key() {
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Esc),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 }
@@ -196,16 +202,25 @@ fn test_handle_event_unrecognized_key() {
 fn test_handle_event_unrecognized_char() {
     let state = MultiProgressState::new();
 
-    let msg =
-        MultiProgress::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
+    let msg = MultiProgress::handle_event(
+        &state,
+        &Event::char('a'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 
-    let msg =
-        MultiProgress::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
+    let msg = MultiProgress::handle_event(
+        &state,
+        &Event::char('z'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 
-    let msg =
-        MultiProgress::handle_event(&state, &Event::char('q'), &ViewContext::new().focused(true));
+    let msg = MultiProgress::handle_event(
+        &state,
+        &Event::char('q'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -216,7 +231,7 @@ fn test_handle_event_instance_unrecognized() {
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 }
@@ -232,7 +247,7 @@ fn test_dispatch_event_unrecognized_returns_none() {
     let output = MultiProgress::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert!(output.is_none());
 }
@@ -245,7 +260,7 @@ fn test_dispatch_event_unfocused_returns_none() {
     let output = MultiProgress::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Up),
-        &ViewContext::default(),
+        &EventContext::default(),
     );
     assert!(output.is_none());
 }
@@ -265,7 +280,7 @@ fn test_dispatch_event_scroll_up() {
     MultiProgress::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.selected(), Some(4));
 }
@@ -281,7 +296,7 @@ fn test_dispatch_event_scroll_up_vim_k() {
     MultiProgress::dispatch_event(
         &mut state,
         &Event::char('k'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.selected(), Some(4));
 }
@@ -297,7 +312,7 @@ fn test_dispatch_event_scroll_down_vim_j() {
     MultiProgress::dispatch_event(
         &mut state,
         &Event::char('j'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.selected(), Some(4));
 }
@@ -313,7 +328,7 @@ fn test_instance_dispatch_event_scroll_up() {
     MultiProgress::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.selected(), Some(4));
 }
@@ -355,7 +370,7 @@ fn test_handle_event_enter_produces_select() {
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MultiProgressMessage::Select));
 }
@@ -412,7 +427,7 @@ fn test_dispatch_event_enter_selects_item() {
     let output = MultiProgress::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(MultiProgressOutput::Selected(1)));
 }
@@ -424,7 +439,7 @@ fn test_instance_handle_event_enter() {
     let msg = MultiProgress::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MultiProgressMessage::Select));
 }
@@ -437,7 +452,7 @@ fn test_instance_dispatch_event_enter() {
     let output = MultiProgress::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(MultiProgressOutput::Selected(0)));
 }

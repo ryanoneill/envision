@@ -11,7 +11,7 @@ fn test_snapshot_default() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SplitPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -25,10 +25,7 @@ fn test_snapshot_vertical_focused_first() {
         .draw(|frame| {
             SplitPanel::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -44,10 +41,7 @@ fn test_snapshot_vertical_focused_second() {
         .draw(|frame| {
             SplitPanel::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -62,10 +56,7 @@ fn test_snapshot_horizontal() {
         .draw(|frame| {
             SplitPanel::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -80,10 +71,7 @@ fn test_snapshot_custom_ratio() {
         .draw(|frame| {
             SplitPanel::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -101,10 +89,7 @@ fn test_snapshot_resized() {
         .draw(|frame| {
             SplitPanel::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();

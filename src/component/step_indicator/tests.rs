@@ -500,7 +500,7 @@ fn test_handle_event_right_arrow() {
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StepIndicatorMessage::FocusNext));
 }
@@ -508,8 +508,11 @@ fn test_handle_event_right_arrow() {
 #[test]
 fn test_handle_event_l_key() {
     let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    let msg =
-        StepIndicator::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
+    let msg = StepIndicator::handle_event(
+        &state,
+        &Event::char('l'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StepIndicatorMessage::FocusNext));
 }
 
@@ -519,7 +522,7 @@ fn test_handle_event_left_arrow() {
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StepIndicatorMessage::FocusPrev));
 }
@@ -527,8 +530,11 @@ fn test_handle_event_left_arrow() {
 #[test]
 fn test_handle_event_h_key() {
     let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
-    let msg =
-        StepIndicator::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
+    let msg = StepIndicator::handle_event(
+        &state,
+        &Event::char('h'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StepIndicatorMessage::FocusPrev));
 }
 
@@ -538,7 +544,7 @@ fn test_handle_event_home() {
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StepIndicatorMessage::First));
 }
@@ -549,7 +555,7 @@ fn test_handle_event_end() {
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StepIndicatorMessage::Last));
 }
@@ -560,7 +566,7 @@ fn test_handle_event_enter() {
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StepIndicatorMessage::Select));
 }
@@ -568,8 +574,11 @@ fn test_handle_event_enter() {
 #[test]
 fn test_handle_event_unfocused_ignored() {
     let state = StepIndicatorState::new(vec![Step::new("A")]);
-    let msg =
-        StepIndicator::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
+    let msg = StepIndicator::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -579,7 +588,7 @@ fn test_handle_event_disabled_ignored() {
     let msg = StepIndicator::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -587,8 +596,11 @@ fn test_handle_event_disabled_ignored() {
 #[test]
 fn test_handle_event_unrecognized_key() {
     let state = StepIndicatorState::new(vec![Step::new("A")]);
-    let msg =
-        StepIndicator::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
+    let msg = StepIndicator::handle_event(
+        &state,
+        &Event::char('z'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -600,7 +612,7 @@ fn test_dispatch_event() {
     let output = StepIndicator::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(StepIndicatorOutput::FocusChanged(1)));
     assert_eq!(state.focused_index(), 1);
@@ -627,7 +639,7 @@ fn test_view_horizontal() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -647,7 +659,7 @@ fn test_view_vertical() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -666,7 +678,7 @@ fn test_view_with_title() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -685,10 +697,7 @@ fn test_view_focused_step() {
         .draw(|frame| {
             StepIndicator::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -715,7 +724,7 @@ fn test_view_vertical_with_descriptions() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -737,7 +746,7 @@ fn test_view_all_statuses() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -752,7 +761,7 @@ fn test_view_empty_steps() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -772,7 +781,7 @@ fn test_view_borderless_horizontal() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -794,7 +803,7 @@ fn test_view_borderless_vertical() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -818,7 +827,7 @@ fn test_view_borderless_one_row() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -846,7 +855,7 @@ fn test_view_borderless_drops_title() {
 
     terminal
         .draw(|frame| {
-            StepIndicator::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StepIndicator::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -885,10 +894,7 @@ fn test_annotation_emission() {
             .draw(|frame| {
                 StepIndicator::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();

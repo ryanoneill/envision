@@ -104,24 +104,15 @@ impl App for ButtonApp {
 
         Button::view(
             &state.save,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         Button::view(
             &state.cancel,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
         Button::view(
             &state.submit,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
 
         // Last pressed info
@@ -157,11 +148,11 @@ impl App for ButtonApp {
         }
         // Route event to focused button
         match state.focus_index {
-            0 => Button::handle_event(&state.save, event, &ViewContext::new().focused(true))
+            0 => Button::handle_event(&state.save, event, &EventContext::new().focused(true))
                 .map(Msg::Save),
-            1 => Button::handle_event(&state.cancel, event, &ViewContext::new().focused(true))
+            1 => Button::handle_event(&state.cancel, event, &EventContext::new().focused(true))
                 .map(Msg::Cancel),
-            _ => Button::handle_event(&state.submit, event, &ViewContext::new().focused(true))
+            _ => Button::handle_event(&state.submit, event, &EventContext::new().focused(true))
                 .map(Msg::Submit),
         }
     }

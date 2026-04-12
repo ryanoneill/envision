@@ -157,10 +157,7 @@ fn test_view_renders_indicators() {
         .draw(|frame| {
             RadioGroup::<&str>::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -190,7 +187,7 @@ fn test_view_unfocused() {
 
     terminal
         .draw(|frame| {
-            RadioGroup::<&str>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            RadioGroup::<&str>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -207,10 +204,7 @@ fn test_view_focused_not_selected() {
         .draw(|frame| {
             RadioGroup::<&str>::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -278,7 +272,7 @@ fn test_handle_event_up() {
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(RadioGroupMessage::Up));
 }
@@ -289,7 +283,7 @@ fn test_handle_event_down() {
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(RadioGroupMessage::Down));
 }
@@ -300,7 +294,7 @@ fn test_handle_event_k() {
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::char('k'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(RadioGroupMessage::Up));
 }
@@ -311,7 +305,7 @@ fn test_handle_event_j() {
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::char('j'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(RadioGroupMessage::Down));
 }
@@ -322,7 +316,7 @@ fn test_handle_event_enter() {
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(RadioGroupMessage::Confirm));
 }
@@ -333,7 +327,7 @@ fn test_handle_event_ignored_when_unfocused() {
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::default(),
+        &EventContext::default(),
     );
     assert_eq!(msg, None);
 }
@@ -344,7 +338,7 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = RadioGroup::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -355,7 +349,7 @@ fn test_dispatch_event_radio() {
     let output = RadioGroup::<String>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(RadioGroupOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
@@ -454,10 +448,7 @@ fn test_annotation_emitted() {
             .draw(|frame| {
                 RadioGroup::<String>::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::default(),
+                    &mut RenderContext::new(frame, frame.area(), &theme),
                 );
             })
             .unwrap();

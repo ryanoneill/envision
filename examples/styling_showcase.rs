@@ -304,10 +304,7 @@ impl App for StylingShowcaseApp {
         // Right panel: Rich Text
         StyledText::view(
             &state.styled_text,
-            frame,
-            panels[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, panels[1], &theme),
         );
 
         // Footer — key hints
@@ -326,8 +323,12 @@ impl App for StylingShowcaseApp {
             }
         }
         if state.panel == Panel::RichText {
-            StyledText::handle_event(&state.styled_text, event, &ViewContext::new().focused(true))
-                .map(Msg::StyledText)
+            StyledText::handle_event(
+                &state.styled_text,
+                event,
+                &EventContext::new().focused(true),
+            )
+            .map(Msg::StyledText)
         } else {
             None
         }

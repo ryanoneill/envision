@@ -28,12 +28,10 @@
 
 use std::marker::PhantomData;
 
-use ratatui::prelude::*;
 use ratatui::widgets::{List, ListItem};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 /// Messages that can be sent to a RadioGroup.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -331,7 +329,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -382,7 +380,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         let items: Vec<ListItem> = state
             .options
             .iter()
@@ -393,11 +391,11 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
                 let text = format!("{} {}", indicator, option);
 
                 let style = if ctx.disabled {
-                    theme.disabled_style()
+                    ctx.theme.disabled_style()
                 } else if is_selected && ctx.focused {
-                    theme.focused_style()
+                    ctx.theme.focused_style()
                 } else {
-                    theme.normal_style()
+                    ctx.theme.normal_style()
                 };
 
                 ListItem::new(text).style(style)
@@ -414,7 +412,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
             ann = ann.with_selected(true).with_value(idx.to_string());
         }
         let annotated = crate::annotation::Annotate::new(list, ann);
-        frame.render_widget(annotated, area);
+        ctx.frame.render_widget(annotated, ctx.area);
     }
 }
 

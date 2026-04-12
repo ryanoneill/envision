@@ -37,12 +37,9 @@
 pub mod parser;
 mod render;
 
-use ratatui::prelude::*;
-
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
-use crate::theme::Theme;
 
 /// Display mode for the diff.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -752,7 +749,7 @@ impl Component for DiffViewer {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -905,8 +902,15 @@ impl Component for DiffViewer {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        render::render(state, frame, area, theme, ctx.focused, ctx.disabled);
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        render::render(
+            state,
+            ctx.frame,
+            ctx.area,
+            ctx.theme,
+            ctx.focused,
+            ctx.disabled,
+        );
     }
 }
 

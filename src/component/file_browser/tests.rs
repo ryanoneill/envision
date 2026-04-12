@@ -604,11 +604,11 @@ fn test_cycle_focus() {
 fn test_unfocused_ignores_events() {
     let state = FileBrowserState::new("/", sample_entries());
     assert!(
-        FileBrowser::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default())
+        FileBrowser::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default())
             .is_none()
     );
     assert!(
-        FileBrowser::handle_event(&state, &Event::char('j'), &ViewContext::default()).is_none()
+        FileBrowser::handle_event(&state, &Event::char('j'), &EventContext::default()).is_none()
     );
 }
 
@@ -619,7 +619,7 @@ fn test_disabled_ignores_events() {
         FileBrowser::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true).disabled(true)
+            &EventContext::new().focused(true).disabled(true)
         )
         .is_none()
     );
@@ -635,7 +635,7 @@ fn test_key_up() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::Up));
 }
@@ -643,8 +643,11 @@ fn test_key_up() {
 #[test]
 fn test_key_k_maps_to_up() {
     let state = focused_state();
-    let msg =
-        FileBrowser::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::char('k'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::Up));
 }
 
@@ -654,7 +657,7 @@ fn test_key_down() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::Down));
 }
@@ -662,8 +665,11 @@ fn test_key_down() {
 #[test]
 fn test_key_j_maps_to_down() {
     let state = focused_state();
-    let msg =
-        FileBrowser::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::char('j'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::Down));
 }
 
@@ -673,7 +679,7 @@ fn test_key_home_maps_to_first() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::First));
 }
@@ -684,7 +690,7 @@ fn test_key_end_maps_to_last() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::Last));
 }
@@ -695,7 +701,7 @@ fn test_key_enter_maps_to_enter() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::Enter));
 }
@@ -706,7 +712,7 @@ fn test_key_backspace_maps_to_back_when_filter_empty() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Backspace),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::Back));
 }
@@ -718,7 +724,7 @@ fn test_key_backspace_maps_to_filter_backspace_when_filter_active() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Backspace),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::FilterBackspace));
 }
@@ -726,16 +732,22 @@ fn test_key_backspace_maps_to_filter_backspace_when_filter_active() {
 #[test]
 fn test_key_space_maps_to_toggle_select() {
     let state = focused_state();
-    let msg =
-        FileBrowser::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::char(' '),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::ToggleSelect));
 }
 
 #[test]
 fn test_key_ctrl_h_maps_to_toggle_hidden() {
     let state = focused_state();
-    let msg =
-        FileBrowser::handle_event(&state, &Event::ctrl('h'), &ViewContext::new().focused(true));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::ctrl('h'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::ToggleHidden));
 }
 
@@ -745,7 +757,7 @@ fn test_key_tab_maps_to_cycle_focus() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::CycleFocus));
 }
@@ -756,7 +768,7 @@ fn test_key_esc_maps_to_filter_clear() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Esc),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::FilterClear));
 }
@@ -764,16 +776,22 @@ fn test_key_esc_maps_to_filter_clear() {
 #[test]
 fn test_alphanumeric_char_maps_to_filter_char() {
     let state = focused_state();
-    let msg =
-        FileBrowser::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::char('a'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::FilterChar('a')));
 }
 
 #[test]
 fn test_dot_maps_to_filter_char() {
     let state = focused_state();
-    let msg =
-        FileBrowser::handle_event(&state, &Event::char('.'), &ViewContext::new().focused(true));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::char('.'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::FilterChar('.')));
 }
 

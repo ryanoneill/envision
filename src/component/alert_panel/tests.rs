@@ -566,7 +566,7 @@ fn test_key_maps() {
         AlertPanel::handle_event(
             &state,
             &Event::key(KeyCode::Left),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(AlertPanelMessage::SelectPrev)
     );
@@ -574,7 +574,7 @@ fn test_key_maps() {
         AlertPanel::handle_event(
             &state,
             &Event::key(KeyCode::Right),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(AlertPanelMessage::SelectNext)
     );
@@ -582,7 +582,7 @@ fn test_key_maps() {
         AlertPanel::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(AlertPanelMessage::SelectUp)
     );
@@ -590,7 +590,7 @@ fn test_key_maps() {
         AlertPanel::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(AlertPanelMessage::SelectDown)
     );
@@ -598,7 +598,7 @@ fn test_key_maps() {
         AlertPanel::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(AlertPanelMessage::Select)
     );
@@ -608,19 +608,35 @@ fn test_key_maps() {
 fn test_vim_key_maps() {
     let state = focused_state();
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::char('h'),
+            &EventContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectPrev)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::char('l'),
+            &EventContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectNext)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectUp)
     );
     assert_eq!(
-        AlertPanel::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        AlertPanel::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(AlertPanelMessage::SelectDown)
     );
 }
@@ -635,7 +651,7 @@ fn test_disabled_ignores_events() {
     let msg = AlertPanel::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -647,8 +663,11 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = AlertPanelState::new().with_metrics(sample_metrics());
-    let msg =
-        AlertPanel::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
+    let msg = AlertPanel::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -673,7 +692,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -684,7 +703,7 @@ fn test_render_with_metrics() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -697,10 +716,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             AlertPanel::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -712,7 +728,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -729,7 +745,7 @@ fn test_render_with_history() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -857,7 +873,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

@@ -80,10 +80,7 @@ impl App for TimelineApp {
         let theme = Theme::default();
         Timeline::view(
             &state.timeline,
-            frame,
-            frame.area(),
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, frame.area(), &theme),
         );
     }
 

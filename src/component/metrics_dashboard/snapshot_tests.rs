@@ -22,7 +22,7 @@ fn test_snapshot_default_empty() {
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -34,7 +34,7 @@ fn test_snapshot_populated() {
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -48,10 +48,7 @@ fn test_snapshot_focused() {
         .draw(|frame| {
             MetricsDashboard::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -67,10 +64,7 @@ fn test_snapshot_focused_second_widget() {
         .draw(|frame| {
             MetricsDashboard::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -91,7 +85,7 @@ fn test_snapshot_two_columns() {
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -112,7 +106,7 @@ fn test_snapshot_with_sparkline_history() {
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
-            MetricsDashboard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MetricsDashboard::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

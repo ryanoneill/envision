@@ -4,7 +4,7 @@
 //! application using The Elm Architecture (TEA) pattern. It demonstrates:
 //!
 //! - **Event dispatch**: Using `dispatch_event` to route events to the focused component
-//! - **ViewContext**: Using `ViewContext::new().focused(true)` to pass focus state
+//! - **EventContext**: Using `EventContext::new().focused(true)` to pass focus state
 //! - **Simplified messages**: Global hotkeys only; component events dispatched directly
 //! - **Focus management**: Using `FocusManager` to coordinate keyboard focus
 //! - **Output handling**: Reacting to component outputs (selections, confirmations)
@@ -370,7 +370,7 @@ impl App for ShowcaseApp {
                     if let Some(output) = Dialog::dispatch_event(
                         &mut state.dialog,
                         &event,
-                        &ViewContext::new().focused(true),
+                        &EventContext::new().focused(true),
                     ) {
                         handle_dialog_output(state, output);
                     }
@@ -384,7 +384,7 @@ impl App for ShowcaseApp {
                         if let Some(MenuOutput::Selected(idx)) = Menu::dispatch_event(
                             &mut state.menu,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         ) {
                             let label = state.menu.items()[idx].label();
                             push_toast(
@@ -398,35 +398,35 @@ impl App for ShowcaseApp {
                         Tabs::dispatch_event(
                             &mut state.tabs,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         );
                     }
                     Some(FocusId::Input) => {
                         InputField::dispatch_event(
                             &mut state.input,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         );
                     }
                     Some(FocusId::Checkbox) => {
                         Checkbox::dispatch_event(
                             &mut state.checkbox,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         );
                     }
                     Some(FocusId::Radio) => {
                         RadioGroup::<String>::dispatch_event(
                             &mut state.radio,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         );
                     }
                     Some(FocusId::SubmitButton) => {
                         if Button::dispatch_event(
                             &mut state.submit_button,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         )
                         .is_some()
                         {
@@ -437,14 +437,14 @@ impl App for ShowcaseApp {
                         SelectableList::dispatch_event(
                             &mut state.list,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         );
                     }
                     Some(FocusId::Table) => {
                         if let Some(TableOutput::Selected(row)) = Table::dispatch_event(
                             &mut state.table,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         ) {
                             push_toast(
                                 &mut state.toast,
@@ -461,28 +461,28 @@ impl App for ShowcaseApp {
                         Heatmap::dispatch_event(
                             &mut state.heatmap,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         );
                     }
                     Some(FocusId::Timeline) => {
                         Timeline::dispatch_event(
                             &mut state.timeline,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         );
                     }
                     Some(FocusId::CommandPalette) => {
                         CommandPalette::dispatch_event(
                             &mut state.command_palette,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         );
                     }
                     Some(FocusId::CodeBlock) => {
                         CodeBlock::dispatch_event(
                             &mut state.code_block,
                             &event,
-                            &ViewContext::new().focused(true),
+                            &EventContext::new().focused(true),
                         );
                     }
                     None => {}
@@ -515,19 +515,13 @@ impl App for ShowcaseApp {
         // Menu bar
         envision::component::Menu::view(
             &state.menu,
-            frame,
-            main_chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, main_chunks[0], &theme),
         );
 
         // Tabs
         Tabs::view(
             &state.tabs,
-            frame,
-            main_chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, main_chunks[1], &theme),
         );
 
         // Content panel based on selected tab
@@ -565,10 +559,7 @@ impl App for ShowcaseApp {
             let dialog_area = centered_rect(40, 8, area);
             Dialog::view(
                 &state.dialog,
-                frame,
-                dialog_area,
-                &theme,
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, dialog_area, &theme),
             );
         }
     }
@@ -643,31 +634,19 @@ fn render_form_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme
 
     envision::component::InputField::view(
         &state.input,
-        frame,
-        chunks[0],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, chunks[0], theme),
     );
     envision::component::Checkbox::view(
         &state.checkbox,
-        frame,
-        chunks[1],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, chunks[1], theme),
     );
     envision::component::RadioGroup::view(
         &state.radio,
-        frame,
-        chunks[2],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, chunks[2], theme),
     );
     envision::component::Button::view(
         &state.submit_button,
-        frame,
-        chunks[3],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, chunks[3], theme),
     );
 }
 
@@ -691,19 +670,13 @@ fn render_data_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme
     frame.render_widget(list_block, chunks[0]);
     envision::component::SelectableList::view(
         &state.list,
-        frame,
-        list_inner,
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, list_inner, theme),
     );
 
     // Table
     Table::view(
         &state.table,
-        frame,
-        chunks[1],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, chunks[1], theme),
     );
 }
 
@@ -724,24 +697,15 @@ fn render_status_panel(state: &State, frame: &mut Frame, area: Rect, theme: &The
 
     envision::component::ProgressBar::view(
         &state.progress,
-        frame,
-        chunks[0],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, chunks[0], theme),
     );
     Spinner::view(
         &state.spinner,
-        frame,
-        chunks[1],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, chunks[1], theme),
     );
     Toast::view(
         &state.toast,
-        frame,
-        chunks[2],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, chunks[2], theme),
     );
 }
 
@@ -767,35 +731,23 @@ fn render_viz_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme)
         Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).split(rows[0]);
     Sparkline::view(
         &state.sparkline,
-        frame,
-        top_cols[0],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, top_cols[0], theme),
     );
     Gauge::view(
         &state.gauge,
-        frame,
-        top_cols[1],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, top_cols[1], theme),
     );
 
     // Row 2: Heatmap (full width)
     Heatmap::view(
         &state.heatmap,
-        frame,
-        rows[1],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, rows[1], theme),
     );
 
     // Row 3: Timeline (full width)
     Timeline::view(
         &state.timeline,
-        frame,
-        rows[2],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, rows[2], theme),
     );
 
     // Row 4: CommandPalette (left) + CodeBlock (right)
@@ -803,17 +755,11 @@ fn render_viz_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme)
         Layout::horizontal([Constraint::Percentage(40), Constraint::Percentage(60)]).split(rows[3]);
     CommandPalette::view(
         &state.command_palette,
-        frame,
-        bottom_cols[0],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, bottom_cols[0], theme),
     );
     CodeBlock::view(
         &state.code_block,
-        frame,
-        bottom_cols[1],
-        theme,
-        &ViewContext::default(),
+        &mut RenderContext::new(frame, bottom_cols[1], theme),
     );
 }
 
@@ -821,9 +767,9 @@ fn render_viz_panel(state: &State, frame: &mut Frame, area: Rect, theme: &Theme)
 // Helpers
 // ---------------------------------------------------------------------------
 
-/// Focus synchronization is now handled via ViewContext in view() and handle_event().
+/// Focus synchronization is now handled via EventContext in view() and handle_event().
 fn sync_focus(_state: &mut State) {
-    // No-op: focused/disabled state is passed via ViewContext, not stored in component state.
+    // No-op: focused/disabled state is passed via EventContext, not stored in component state.
 }
 
 /// Creates a centered rectangle for dialog overlays.

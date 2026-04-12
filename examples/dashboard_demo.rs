@@ -348,38 +348,26 @@ impl App for DashboardApp {
 
         Chart::view(
             &state.chart,
-            frame,
-            left_chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, left_chunks[0], &theme),
         );
         MultiProgress::view(
             &state.multi_progress,
-            frame,
-            left_chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, left_chunks[1], &theme),
         );
 
         // Right column: status log
         StatusLog::view(
             &state.status_log,
-            frame,
-            content_chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, content_chunks[1], &theme),
         );
 
         // Toast overlay (renders on top of everything)
-        Toast::view(&state.toasts, frame, area, &theme, &ViewContext::default());
+        Toast::view(&state.toasts, &mut RenderContext::new(frame, area, &theme));
 
         // Status bar
         StatusBar::view(
             &state.status_bar,
-            frame,
-            main_chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, main_chunks[2], &theme),
         );
 
         // Key hints
@@ -402,7 +390,7 @@ impl App for DashboardApp {
             }
         }
         // Delegate scroll to status log
-        StatusLog::handle_event(&state.status_log, event, &ViewContext::new().focused(true))
+        StatusLog::handle_event(&state.status_log, event, &EventContext::new().focused(true))
             .map(Msg::Log)
     }
 

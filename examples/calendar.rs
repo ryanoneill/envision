@@ -55,10 +55,7 @@ impl App for CalendarApp {
 
         Calendar::view(
             &state.calendar,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected_info = match state.calendar.selected_day() {
@@ -86,7 +83,7 @@ impl App for CalendarApp {
                 return Some(Msg::Quit);
             }
         }
-        Calendar::handle_event(&state.calendar, event, &ViewContext::new().focused(true))
+        Calendar::handle_event(&state.calendar, event, &EventContext::new().focused(true))
             .map(Msg::Calendar)
     }
 }

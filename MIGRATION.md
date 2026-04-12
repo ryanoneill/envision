@@ -1,5 +1,196 @@
 # Migration Guide
 
+## v0.13.x to v0.14.0
+
+0.14.0 introduces a large, cascading breakage around component rendering.
+`Component::view` now takes a single `&mut RenderContext<'_, '_>` argument
+instead of five separate arguments, and `ViewContext` has been renamed to
+`EventContext` and is now used only for `handle_event`. The upside is that
+component signatures are stable: adding a new render-time field (e.g.
+scaling factor, accessibility hint) is a non-breaking change because callers
+never name those fields explicitly.
+
+### 1. Component `view` implementations
+
+```rust
+// Before (v0.13.x)
+use envision::component::{Component, ViewContext};
+use envision::theme::Theme;
+use ratatui::prelude::*;
+
+impl Component for MyButton {
+    // ...
+    fn view(
+        state: &Self::State,
+        frame: &mut Frame,
+        area: Rect,
+        theme: &Theme,
+        ctx: &ViewContext,
+    ) {
+        let style = if ctx.focused {
+            theme.focused_style()
+        } else {
+            theme.normal_style()
+        };
+        frame.render_widget(Paragraph::new("Hello").style(style), area);
+    }
+}
+```
+
+```rust
+// After (v0.14.0)
+use envision::component::{Component, RenderContext};
+use ratatui::prelude::*;
+
+impl Component for MyButton {
+    // ...
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        let style = if ctx.focused {
+            ctx.theme.focused_style()
+        } else {
+            ctx.theme.normal_style()
+        };
+        ctx.frame.render_widget(Paragraph::new("Hello").style(style), ctx.area);
+        // Or equivalently:
+        // ctx.render_widget(Paragraph::new("Hello").style(style));
+    }
+}
+```
+
+Mechanical steps:
+- Replace the parameter list with `ctx: &mut RenderContext<'_, '_>`.
+- Replace `theme` with `ctx.theme`.
+- Replace `frame` with `ctx.frame` (or use `ctx.render_widget(...)` when
+  the widget fills the entire `area`).
+- Replace `area` with `ctx.area`.
+- `ctx.focused` and `ctx.disabled` continue to work unchanged.
+
+### 2. Component `handle_event` implementations
+
+```rust
+// Before
+fn handle_event(
+    state: &Self::State,
+    event: &Event,
+    ctx: &ViewContext,
+) -> Option<Self::Message> { /* ... */ }
+```
+
+```rust
+// After
+fn handle_event(
+    state: &Self::State,
+    event: &Event,
+    ctx: &EventContext,
+) -> Option<Self::Message> { /* ... */ }
+```
+
+This is a pure type rename. Field access (`ctx.focused`, `ctx.disabled`) is
+unchanged. The same applies to `Component::dispatch_event`.
+
+### 3. Sub-area rendering: `RenderContext::with_area`
+
+When a parent component lays out sub-areas and delegates to child
+components:
+
+```rust
+// Before
+fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    let chunks = Layout::vertical([Constraint::Length(3), Constraint::Min(0)]).split(area);
+    Header::view(&state.header, frame, chunks[0], theme, ctx);
+    Body::view(&state.body, frame, chunks[1], theme, ctx);
+}
+```
+
+```rust
+// After
+fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+    let chunks = Layout::vertical([Constraint::Length(3), Constraint::Min(0)]).split(ctx.area);
+    Header::view(&state.header, &mut ctx.with_area(chunks[0]));
+    Body::view(&state.body, &mut ctx.with_area(chunks[1]));
+}
+```
+
+`ctx.with_area(new_area)` returns a `RenderContext` that borrows `frame`
+for a shorter lifetime, reborrows the theme, and preserves `focused` and
+`disabled`. When the child context goes out of scope, the parent `ctx` is
+usable again.
+
+If a child needs different focus/disabled state, mutate the fields on the
+returned context:
+
+```rust
+let mut child_ctx = ctx.with_area(chunks[0]);
+child_ctx.focused = state.current_focus == FocusTarget::Header;
+Header::view(&state.header, &mut child_ctx);
+```
+
+### 4. Test code calling `Component::view` directly
+
+```rust
+// Before
+terminal.draw(|frame| {
+    Button::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+}).unwrap();
+```
+
+```rust
+// After
+terminal.draw(|frame| {
+    Button::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
+}).unwrap();
+```
+
+For focused or disabled rendering:
+
+```rust
+// Before
+Button::view(&state, frame, frame.area(), &theme, &ViewContext::new().focused(true));
+
+// After
+Button::view(
+    &state,
+    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
+);
+```
+
+### 5. Test code calling `Component::handle_event` / `dispatch_event`
+
+Pure type rename:
+
+```rust
+// Before
+Button::handle_event(&state, &event, &ViewContext::new().focused(true));
+Button::dispatch_event(&mut state, &event, &ViewContext::default());
+```
+
+```rust
+// After
+Button::handle_event(&state, &event, &EventContext::new().focused(true));
+Button::dispatch_event(&mut state, &event, &EventContext::default());
+```
+
+### 6. `App::view` is unchanged
+
+`App::view` still has signature `(state, frame)` — the `App` trait is not
+affected by the `Component::view` change. Only `Component::view` (and its
+helpers like `traced_view`) moved to `RenderContext`.
+
+### 7. `ChartGrid::render` and other inherent methods
+
+A small number of inherent methods (as opposed to trait methods) also
+migrated to `&mut RenderContext<'_, '_>`:
+
+- `ChartGrid::render(&self, frame, area, theme, ctx)` →
+  `ChartGrid::render(&self, ctx: &mut RenderContext<'_, '_>)`
+- `ConversationView::view_from(source, state, frame, area, theme, ctx)` →
+  `ConversationView::view_from(source, state, ctx: &mut RenderContext<'_, '_>)`
+- `Router::view(state, frame, area, theme, ctx)` →
+  `Router::view(state, ctx: &mut RenderContext<'_, '_>)`
+
+Call sites need the same `&mut RenderContext::new(...)` treatment as
+`Component::view` call sites.
+
 ## v0.6.0 to v0.7.0
 
 ### Breaking Changes

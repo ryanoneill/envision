@@ -83,10 +83,7 @@ impl App for SpanTreeApp {
 
         SpanTree::view(
             &state.tree,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -107,7 +104,7 @@ impl App for SpanTreeApp {
                 return Some(Msg::Quit);
             }
         }
-        SpanTree::handle_event(&state.tree, event, &ViewContext::new().focused(true))
+        SpanTree::handle_event(&state.tree, event, &EventContext::new().focused(true))
             .map(Msg::SpanTree)
     }
 }

@@ -413,7 +413,7 @@ fn test_handle_event_not_focused() {
     let msg = BoxPlot::handle_event(
         &state,
         &Event::key(crate::input::KeyCode::Right),
-        &ViewContext::default(),
+        &EventContext::default(),
     );
     assert!(msg.is_none());
 }
@@ -424,7 +424,7 @@ fn test_handle_event_disabled() {
     let msg = BoxPlot::handle_event(
         &state,
         &Event::key(crate::input::KeyCode::Right),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert!(msg.is_none());
 }
@@ -438,7 +438,7 @@ fn test_handle_event_right_arrow() {
     let msg = BoxPlot::handle_event(
         &state,
         &Event::key(crate::input::KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(BoxPlotMessage::NextDataset));
 }
@@ -452,7 +452,7 @@ fn test_handle_event_left_arrow() {
     let msg = BoxPlot::handle_event(
         &state,
         &Event::key(crate::input::KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(BoxPlotMessage::PrevDataset));
 }
@@ -460,28 +460,44 @@ fn test_handle_event_left_arrow() {
 #[test]
 fn test_handle_event_l_key() {
     let state = BoxPlotState::default();
-    let msg = BoxPlot::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::char('l'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BoxPlotMessage::NextDataset));
 }
 
 #[test]
 fn test_handle_event_h_key() {
     let state = BoxPlotState::default();
-    let msg = BoxPlot::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::char('h'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BoxPlotMessage::PrevDataset));
 }
 
 #[test]
 fn test_handle_event_o_key() {
     let state = BoxPlotState::default();
-    let msg = BoxPlot::handle_event(&state, &Event::char('o'), &ViewContext::new().focused(true));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::char('o'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(BoxPlotMessage::ToggleOutliers));
 }
 
 #[test]
 fn test_handle_event_unhandled_key() {
     let state = BoxPlotState::default();
-    let msg = BoxPlot::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
+    let msg = BoxPlot::handle_event(
+        &state,
+        &Event::char('z'),
+        &EventContext::new().focused(true),
+    );
     assert!(msg.is_none());
 }
 
@@ -676,7 +692,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -690,7 +706,7 @@ fn test_render_single_dataset() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -706,7 +722,7 @@ fn test_render_multiple_datasets() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -720,7 +736,7 @@ fn test_render_with_outliers() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -734,7 +750,7 @@ fn test_render_without_outliers() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -748,10 +764,7 @@ fn test_render_focused() {
         .draw(|frame| {
             BoxPlot::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -765,10 +778,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             BoxPlot::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -780,7 +790,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -791,7 +801,7 @@ fn test_render_very_small_width() {
     let (mut terminal, theme) = test_utils::setup_render(4, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -810,7 +820,7 @@ fn test_render_horizontal_single() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -825,7 +835,7 @@ fn test_render_horizontal_multiple() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -839,7 +849,7 @@ fn test_render_horizontal_with_outliers() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -853,10 +863,7 @@ fn test_render_horizontal_disabled() {
         .draw(|frame| {
             BoxPlot::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -875,7 +882,7 @@ fn test_render_zero_range() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }

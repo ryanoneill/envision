@@ -29,9 +29,8 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 use unicode_width::UnicodeWidthStr;
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::theme::Theme;
 use crate::undo::{EditKind, UndoStack};
 
 mod editing;
@@ -777,7 +776,7 @@ impl Component for InputField {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -840,10 +839,10 @@ impl Component for InputField {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::input("input_field")
                     .with_value(state.value.as_str())
                     .with_focus(ctx.focused)
@@ -852,9 +851,9 @@ impl Component for InputField {
         });
 
         let border_style = if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let block = Block::default()
@@ -864,13 +863,13 @@ impl Component for InputField {
         let is_placeholder = state.value.is_empty() && !state.placeholder.is_empty();
 
         let base_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_style()
+            ctx.theme.focused_style()
         } else if is_placeholder {
-            theme.placeholder_style()
+            ctx.theme.placeholder_style()
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         let text = if is_placeholder {
@@ -881,7 +880,7 @@ impl Component for InputField {
 
         // Build line with selection highlighting
         let line = if let Some((sel_start, sel_end)) = state.selection_range() {
-            let selection_style = theme.selection_style();
+            let selection_style = ctx.theme.selection_style();
             let before = &state.value[..sel_start];
             let selected = &state.value[sel_start..sel_end];
             let after = &state.value[sel_end..];
@@ -895,15 +894,15 @@ impl Component for InputField {
         };
 
         let paragraph = Paragraph::new(line).block(block);
-        frame.render_widget(paragraph, area);
+        ctx.frame.render_widget(paragraph, ctx.area);
 
         // Show cursor when focused
-        if ctx.focused && area.width > 2 && area.height > 2 {
-            let cursor_x = area.x + 1 + state.cursor_display_position() as u16;
-            let cursor_y = area.y + 1;
+        if ctx.focused && ctx.area.width > 2 && ctx.area.height > 2 {
+            let cursor_x = ctx.area.x + 1 + state.cursor_display_position() as u16;
+            let cursor_y = ctx.area.y + 1;
 
-            if cursor_x < area.x + area.width - 1 {
-                frame.set_cursor_position((cursor_x, cursor_y));
+            if cursor_x < ctx.area.x + ctx.area.width - 1 {
+                ctx.frame.set_cursor_position((cursor_x, cursor_y));
             }
         }
     }

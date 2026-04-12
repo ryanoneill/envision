@@ -36,9 +36,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, Toggleable, ViewContext};
+use super::{Component, EventContext, RenderContext, Toggleable};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 /// Messages that can be sent to a Collapsible.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -419,7 +418,7 @@ impl Component for Collapsible {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -436,14 +435,14 @@ impl Component for Collapsible {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.height == 0 || area.width == 0 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.height == 0 || ctx.area.width == 0 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::Custom(
                     "Collapsible".to_string(),
                 ))
@@ -462,35 +461,36 @@ impl Component for Collapsible {
         let header_text = format!("{} {}", indicator, state.header);
 
         let header_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_style()
+            ctx.theme.focused_style()
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         let header_line = Line::from(Span::styled(header_text, header_style));
-        let header_area = Rect::new(area.x, area.y, area.width, 1);
-        frame.render_widget(Paragraph::new(header_line), header_area);
+        let header_area = Rect::new(ctx.area.x, ctx.area.y, ctx.area.width, 1);
+        ctx.frame
+            .render_widget(Paragraph::new(header_line), header_area);
 
-        // Content area (below header) -- only render border when expanded
-        if state.expanded && area.height > 1 {
-            let available = area.height.saturating_sub(1);
+        // Content ctx.area (below header) -- only render border when expanded
+        if state.expanded && ctx.area.height > 1 {
+            let available = ctx.area.height.saturating_sub(1);
             let content_h = state.content_height.min(available);
 
             if content_h > 0 {
-                let content_area = Rect::new(area.x, area.y + 1, area.width, content_h);
+                let content_area = Rect::new(ctx.area.x, ctx.area.y + 1, ctx.area.width, content_h);
                 let border_style = if ctx.disabled {
-                    theme.disabled_style()
+                    ctx.theme.disabled_style()
                 } else if ctx.focused {
-                    theme.focused_border_style()
+                    ctx.theme.focused_border_style()
                 } else {
-                    theme.border_style()
+                    ctx.theme.border_style()
                 };
                 let content_block = Block::default()
                     .borders(Borders::LEFT | Borders::BOTTOM)
                     .border_style(border_style);
-                frame.render_widget(content_block, content_area);
+                ctx.frame.render_widget(content_block, content_area);
             }
         }
     }

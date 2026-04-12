@@ -133,15 +133,19 @@ fn test_instance_update() {
 fn test_handle_event_returns_none() {
     let state = BigTextState::new("42");
     assert_eq!(
-        BigText::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default()),
+        BigText::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default()),
         None
     );
     assert_eq!(
-        BigText::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default()),
+        BigText::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &EventContext::default()
+        ),
         None
     );
     assert_eq!(
-        BigText::handle_event(&state, &Event::char('a'), &ViewContext::default()),
+        BigText::handle_event(&state, &Event::char('a'), &EventContext::default()),
         None
     );
 }
@@ -276,7 +280,7 @@ fn test_empty_text() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -288,7 +292,7 @@ fn test_unsupported_characters() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -301,7 +305,7 @@ fn test_zero_height_area() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 40, 0);
-            BigText::view(&state, frame, area, &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, area, &theme));
         })
         .unwrap();
     // Should not panic
@@ -314,7 +318,7 @@ fn test_zero_width_area() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 0, 5);
-            BigText::view(&state, frame, area, &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, area, &theme));
         })
         .unwrap();
     // Should not panic
@@ -330,7 +334,7 @@ fn test_view_digits() {
     let (mut terminal, theme) = test_utils::setup_render(60, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -342,7 +346,7 @@ fn test_view_clock() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -354,7 +358,7 @@ fn test_view_percentage() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -366,7 +370,7 @@ fn test_view_with_color() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -378,7 +382,7 @@ fn test_view_left_aligned() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -390,7 +394,7 @@ fn test_view_right_aligned() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -404,10 +408,7 @@ fn test_view_disabled() {
         .draw(|frame| {
             BigText::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -420,7 +421,7 @@ fn test_view_letters() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -433,7 +434,7 @@ fn test_view_lowercase_converted() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -445,7 +446,7 @@ fn test_view_single_char() {
     let (mut terminal, theme) = test_utils::setup_render(20, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -457,7 +458,7 @@ fn test_view_dash() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -469,7 +470,7 @@ fn test_view_date() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -487,7 +488,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                BigText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                BigText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -508,10 +509,7 @@ fn test_annotation_disabled() {
             .draw(|frame| {
                 BigText::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().disabled(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
                 );
             })
             .unwrap();

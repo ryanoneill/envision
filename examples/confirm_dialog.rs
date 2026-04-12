@@ -116,7 +116,7 @@ impl App for ConfirmDialogApp {
 
         // Overlay dialog when visible
         if ConfirmDialog::is_visible(&state.dialog) {
-            ConfirmDialog::view(&state.dialog, frame, area, &theme, &ViewContext::default());
+            ConfirmDialog::view(&state.dialog, &mut RenderContext::new(frame, area, &theme));
         }
 
         let status = " d: delete dialog | s: save dialog | q: quit";
@@ -132,7 +132,7 @@ impl App for ConfirmDialogApp {
             return ConfirmDialog::handle_event(
                 &state.dialog,
                 event,
-                &ViewContext::new().focused(true),
+                &EventContext::new().focused(true),
             )
             .map(Msg::Dialog);
         }

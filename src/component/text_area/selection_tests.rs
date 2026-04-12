@@ -297,7 +297,7 @@ fn test_shift_left_event() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::SelectLeft));
 }
@@ -308,7 +308,7 @@ fn test_shift_right_event() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::SHIFT),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::SelectRight));
 }
@@ -319,7 +319,7 @@ fn test_shift_up_event() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key_with(KeyCode::Up, KeyModifiers::SHIFT),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::SelectUp));
 }
@@ -330,7 +330,7 @@ fn test_shift_down_event() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key_with(KeyCode::Down, KeyModifiers::SHIFT),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::SelectDown));
 }
@@ -338,21 +338,33 @@ fn test_shift_down_event() {
 #[test]
 fn test_ctrl_c_event() {
     let state = focused_state("hello");
-    let msg = TextArea::handle_event(&state, &Event::ctrl('c'), &ViewContext::new().focused(true));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::ctrl('c'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Copy));
 }
 
 #[test]
 fn test_ctrl_x_event() {
     let state = focused_state("hello");
-    let msg = TextArea::handle_event(&state, &Event::ctrl('x'), &ViewContext::new().focused(true));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::ctrl('x'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Cut));
 }
 
 #[test]
 fn test_ctrl_a_event() {
     let state = focused_state("hello");
-    let msg = TextArea::handle_event(&state, &Event::ctrl('a'), &ViewContext::new().focused(true));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::ctrl('a'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::SelectAll));
 }
 
@@ -362,7 +374,7 @@ fn test_paste_event() {
     let msg = TextArea::handle_event(
         &state,
         &Event::Paste("text".into()),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::Paste("text".into())));
 }

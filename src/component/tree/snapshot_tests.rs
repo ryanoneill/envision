@@ -11,7 +11,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -23,7 +23,7 @@ fn test_snapshot_single_root() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -38,7 +38,7 @@ fn test_snapshot_expanded_with_children() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -53,7 +53,7 @@ fn test_snapshot_collapsed_with_children() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -72,10 +72,7 @@ fn test_snapshot_focused_selected() {
         .draw(|frame| {
             Tree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -94,7 +91,7 @@ fn test_snapshot_deep_nesting() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -111,10 +108,7 @@ fn test_snapshot_disabled() {
         .draw(|frame| {
             Tree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -133,7 +127,7 @@ fn test_snapshot_mixed_expanded_collapsed() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

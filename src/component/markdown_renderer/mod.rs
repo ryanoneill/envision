@@ -35,10 +35,9 @@ pub mod render;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
-use crate::theme::Theme;
 
 /// Messages that can be sent to a [`MarkdownRenderer`].
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -320,7 +319,7 @@ impl Component for MarkdownRenderer {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -381,10 +380,10 @@ impl Component for MarkdownRenderer {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::Custom(
                     "MarkdownRenderer".to_string(),
                 ))
@@ -395,11 +394,11 @@ impl Component for MarkdownRenderer {
         });
 
         let border_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let mut block = Block::default()
@@ -411,8 +410,8 @@ impl Component for MarkdownRenderer {
             block = block.title(format!("{}{}", title, suffix));
         }
 
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
 
         if inner.height == 0 || inner.width == 0 {
             return;
@@ -421,9 +420,9 @@ impl Component for MarkdownRenderer {
         if state.show_source {
             // Raw source view
             let text_style = if ctx.disabled {
-                theme.disabled_style()
+                ctx.theme.disabled_style()
             } else {
-                theme.normal_style()
+                ctx.theme.normal_style()
             };
 
             let total_lines = crate::util::wrapped_line_count(&state.source, inner.width as usize);
@@ -436,17 +435,22 @@ impl Component for MarkdownRenderer {
                 .wrap(Wrap { trim: false })
                 .scroll((effective_scroll as u16, 0));
 
-            frame.render_widget(paragraph, inner);
+            ctx.frame.render_widget(paragraph, inner);
 
             if total_lines > visible {
                 let mut bar_scroll = ScrollState::new(total_lines);
                 bar_scroll.set_viewport_height(visible);
                 bar_scroll.set_offset(effective_scroll);
-                crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+                crate::scroll::render_scrollbar_inside_border(
+                    &bar_scroll,
+                    ctx.frame,
+                    ctx.area,
+                    ctx.theme,
+                );
             }
         } else {
             // Rendered markdown view
-            let rendered_lines = render::render_markdown(&state.source, inner.width, theme);
+            let rendered_lines = render::render_markdown(&state.source, inner.width, ctx.theme);
             let total_lines = rendered_lines.len();
             let visible = inner.height as usize;
             let max_scroll = total_lines.saturating_sub(visible);
@@ -457,13 +461,18 @@ impl Component for MarkdownRenderer {
                 .wrap(Wrap { trim: false })
                 .scroll((effective_scroll as u16, 0));
 
-            frame.render_widget(paragraph, inner);
+            ctx.frame.render_widget(paragraph, inner);
 
             if total_lines > visible {
                 let mut bar_scroll = ScrollState::new(total_lines);
                 bar_scroll.set_viewport_height(visible);
                 bar_scroll.set_offset(effective_scroll);
-                crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+                crate::scroll::render_scrollbar_inside_border(
+                    &bar_scroll,
+                    ctx.frame,
+                    ctx.area,
+                    ctx.theme,
+                );
             }
         }
     }

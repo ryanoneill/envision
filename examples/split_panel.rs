@@ -54,10 +54,7 @@ impl App for SplitPanelApp {
         let theme = Theme::default();
         SplitPanel::view(
             &state.split,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         // Render content inside each pane
@@ -107,7 +104,7 @@ impl App for SplitPanelApp {
                 return Some(Msg::Quit);
             }
         }
-        SplitPanel::handle_event(&state.split, event, &ViewContext::new().focused(true))
+        SplitPanel::handle_event(&state.split, event, &EventContext::new().focused(true))
             .map(Msg::Split)
     }
 }

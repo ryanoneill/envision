@@ -74,10 +74,7 @@ impl App for LoadingListApp {
 
         LoadingList::view(
             &state.list,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -98,7 +95,7 @@ impl App for LoadingListApp {
                 return Some(Msg::Quit);
             }
         }
-        LoadingList::<Task>::handle_event(&state.list, event, &ViewContext::new().focused(true))
+        LoadingList::<Task>::handle_event(&state.list, event, &EventContext::new().focused(true))
             .map(Msg::List)
     }
 }

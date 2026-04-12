@@ -80,10 +80,7 @@ impl App for FlameGraphApp {
 
         FlameGraph::view(
             &state.graph,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -116,7 +113,7 @@ impl App for FlameGraphApp {
                 return Some(Msg::Quit);
             }
         }
-        FlameGraph::handle_event(&state.graph, event, &ViewContext::new().focused(true))
+        FlameGraph::handle_event(&state.graph, event, &EventContext::new().focused(true))
             .map(Msg::FlameGraph)
     }
 }

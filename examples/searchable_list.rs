@@ -83,10 +83,7 @@ impl App for SearchableListApp {
 
         SearchableList::view(
             &state.list,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         // Show selection history
@@ -119,7 +116,7 @@ impl App for SearchableListApp {
                 return Some(Msg::Quit);
             }
         }
-        SearchableList::handle_event(&state.list, event, &ViewContext::new().focused(true))
+        SearchableList::handle_event(&state.list, event, &EventContext::new().focused(true))
             .map(Msg::List)
     }
 }

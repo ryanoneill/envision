@@ -29,9 +29,8 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 /// Messages that can be sent to a Tabs component.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -432,7 +431,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -451,7 +450,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         let selected_idx = state.selected.unwrap_or(0);
 
         let titles: Vec<Line> = state
@@ -460,26 +459,26 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             .enumerate()
             .map(|(i, tab)| {
                 let style = if ctx.disabled {
-                    theme.disabled_style()
+                    ctx.theme.disabled_style()
                 } else if i == selected_idx {
-                    theme.selected_style(ctx.focused)
+                    ctx.theme.selected_style(ctx.focused)
                 } else {
-                    theme.normal_style()
+                    ctx.theme.normal_style()
                 };
                 Line::from(Span::styled(format!(" {} ", tab), style))
             })
             .collect();
 
         let border_style = if ctx.focused && !ctx.disabled {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let highlight_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
-            theme.selected_style(ctx.focused)
+            ctx.theme.selected_style(ctx.focused)
         };
 
         let tabs_widget = ratatui::widgets::Tabs::new(titles)
@@ -498,7 +497,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             .with_selected(true)
             .with_value(selected_idx.to_string());
         let annotated = crate::annotation::Annotate::new(tabs_widget, annotation);
-        frame.render_widget(annotated, area);
+        ctx.frame.render_widget(annotated, ctx.area);
     }
 }
 

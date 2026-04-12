@@ -68,17 +68,11 @@ impl App for ChartApp {
 
         Chart::view(
             &state.line_chart,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         Chart::view(
             &state.bar_chart,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
     }
 

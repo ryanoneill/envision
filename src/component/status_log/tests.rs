@@ -1,4 +1,5 @@
 use super::*;
+use ratatui::style::Color;
 
 // ========================================
 // StatusLogLevel Tests
@@ -480,7 +481,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| StatusLog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -495,7 +496,7 @@ fn test_view_with_messages() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| StatusLog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -509,7 +510,7 @@ fn test_view_with_title() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| StatusLog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -523,7 +524,7 @@ fn test_view_with_timestamps() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| StatusLog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -540,7 +541,7 @@ fn test_view_all_levels() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| StatusLog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -559,10 +560,7 @@ fn test_view_focused() {
         .draw(|frame| {
             StatusLog::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             )
         })
         .unwrap();
@@ -580,7 +578,7 @@ fn test_view_unfocused() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
     terminal
-        .draw(|frame| StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| StatusLog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -600,12 +598,16 @@ fn test_handle_event_scroll_up() {
     let msg = StatusLog::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
 
     // Vim 'k' -> ScrollUp
-    let msg = StatusLog::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::char('k'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
 }
 
@@ -617,12 +619,16 @@ fn test_handle_event_scroll_down() {
     let msg = StatusLog::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StatusLogMessage::ScrollDown));
 
     // Vim 'j' -> ScrollDown
-    let msg = StatusLog::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
+    let msg = StatusLog::handle_event(
+        &state,
+        &Event::char('j'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StatusLogMessage::ScrollDown));
 }
 
@@ -633,7 +639,7 @@ fn test_handle_event_scroll_to_top() {
     let msg = StatusLog::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StatusLogMessage::ScrollToTop));
 }
@@ -645,7 +651,7 @@ fn test_handle_event_scroll_to_bottom() {
     let msg = StatusLog::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StatusLogMessage::ScrollToBottom));
 }
@@ -653,7 +659,7 @@ fn test_handle_event_scroll_to_bottom() {
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = StatusLogState::new();
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
+    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -673,7 +679,7 @@ fn test_dispatch_event() {
     StatusLog::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.scroll_offset(), 4);
 }
@@ -689,7 +695,7 @@ fn test_instance_methods() {
     let msg = StatusLog::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
 
@@ -701,7 +707,7 @@ fn test_instance_methods() {
     StatusLog::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.scroll_offset(), 2);
 }
@@ -717,35 +723,35 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = StatusLog::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = StatusLog::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = StatusLog::handle_event(
         &state,
         &Event::char('k'),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = StatusLog::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = StatusLog::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -761,7 +767,7 @@ fn test_dispatch_event_ignored_when_disabled() {
     let output = StatusLog::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(output, None);
     assert_eq!(state.scroll_offset(), 2);
@@ -801,7 +807,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                StatusLog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                StatusLog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

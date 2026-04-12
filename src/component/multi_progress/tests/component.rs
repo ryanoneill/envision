@@ -1,4 +1,6 @@
 use super::*;
+use crate::theme::Theme;
+use ratatui::layout::Rect;
 
 // ========================================
 // Component Tests
@@ -241,7 +243,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -266,7 +268,7 @@ fn test_view_with_items() {
 
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -280,7 +282,7 @@ fn test_view_with_title() {
 
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -304,7 +306,7 @@ fn test_view_failed_item() {
 
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -325,7 +327,7 @@ fn test_view_completed_item() {
 
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -347,10 +349,7 @@ fn test_view_zero_size_area() {
         .draw(|frame| {
             MultiProgress::view(
                 &state,
-                frame,
-                Rect::new(0, 0, 0, 10),
-                &theme,
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, Rect::new(0, 0, 0, 10), &theme),
             );
         })
         .unwrap();
@@ -360,10 +359,7 @@ fn test_view_zero_size_area() {
         .draw(|frame| {
             MultiProgress::view(
                 &state,
-                frame,
-                Rect::new(0, 0, 60, 0),
-                &Theme::default(),
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, Rect::new(0, 0, 60, 0), &Theme::default()),
             );
         })
         .unwrap();
@@ -378,7 +374,7 @@ fn test_view_without_percentages() {
 
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -402,7 +398,7 @@ fn test_view_failed_without_message() {
 
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -586,7 +582,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

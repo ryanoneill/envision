@@ -139,7 +139,7 @@ mod key_binding_tests {
         let msg = Table::<TestRow>::handle_event(
             &state,
             &Event::char('+'),
-            &ViewContext::new().focused(true),
+            &EventContext::new().focused(true),
         );
         assert_eq!(msg, Some(TableMessage::IncreaseColumnWidth(0)));
     }
@@ -151,7 +151,7 @@ mod key_binding_tests {
         let msg = Table::<TestRow>::handle_event(
             &state,
             &Event::char('-'),
-            &ViewContext::new().focused(true),
+            &EventContext::new().focused(true),
         );
         assert_eq!(msg, Some(TableMessage::DecreaseColumnWidth(0)));
     }
@@ -166,7 +166,7 @@ mod key_binding_tests {
         let msg = Table::<TestRow>::handle_event(
             &state,
             &Event::char('+'),
-            &ViewContext::new().focused(true),
+            &EventContext::new().focused(true),
         );
         assert_eq!(msg, Some(TableMessage::IncreaseColumnWidth(1)));
     }
@@ -176,11 +176,11 @@ mod key_binding_tests {
         let state = TableState::new(test_rows(), test_columns());
 
         let msg =
-            Table::<TestRow>::handle_event(&state, &Event::char('+'), &ViewContext::default());
+            Table::<TestRow>::handle_event(&state, &Event::char('+'), &EventContext::default());
         assert_eq!(msg, None);
 
         let msg =
-            Table::<TestRow>::handle_event(&state, &Event::char('-'), &ViewContext::default());
+            Table::<TestRow>::handle_event(&state, &Event::char('-'), &EventContext::default());
         assert_eq!(msg, None);
     }
 
@@ -191,7 +191,7 @@ mod key_binding_tests {
         let msg = Table::<TestRow>::handle_event(
             &state,
             &Event::char('+'),
-            &ViewContext::new().focused(true).disabled(true),
+            &EventContext::new().focused(true).disabled(true),
         );
         assert_eq!(msg, None);
     }

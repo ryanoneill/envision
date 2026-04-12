@@ -39,7 +39,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -483,7 +483,7 @@ impl Component for Paginator {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -555,10 +555,10 @@ impl Component for Paginator {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::paginator("paginator")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled)
@@ -567,11 +567,11 @@ impl Component for Paginator {
         });
 
         let text_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_style()
+            ctx.theme.focused_style()
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         let content = match &state.style {
@@ -593,20 +593,20 @@ impl Component for Paginator {
                 }
             }
             PaginatorStyle::Dots => render_dots(state),
-            PaginatorStyle::Compact => render_compact(state, theme),
+            PaginatorStyle::Compact => render_compact(state, ctx.theme),
         };
 
         // For Compact style, we need special span-based rendering for arrow dimming
         if state.style == PaginatorStyle::Compact {
-            let spans = render_compact_spans(state, theme, ctx);
+            let spans = render_compact_spans(state, ctx.theme, &ctx.event_context());
             let line = Line::from(spans);
             let paragraph = Paragraph::new(line).alignment(Alignment::Center);
-            frame.render_widget(paragraph, area);
+            ctx.frame.render_widget(paragraph, ctx.area);
         } else {
             let paragraph = Paragraph::new(content)
                 .style(text_style)
                 .alignment(Alignment::Center);
-            frame.render_widget(paragraph, area);
+            ctx.frame.render_widget(paragraph, ctx.area);
         }
     }
 }
@@ -714,7 +714,7 @@ fn render_compact(state: &PaginatorState, _theme: &Theme) -> String {
 fn render_compact_spans<'a>(
     state: &PaginatorState,
     theme: &Theme,
-    ctx: &ViewContext,
+    ctx: &EventContext,
 ) -> Vec<Span<'a>> {
     let text_style = if ctx.disabled {
         theme.disabled_style()

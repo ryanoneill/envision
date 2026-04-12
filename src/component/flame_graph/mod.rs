@@ -30,11 +30,8 @@
 //! assert_eq!(state.selected_depth(), 1);
 //! ```
 
-use ratatui::prelude::*;
-
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 mod node;
 mod render;
@@ -861,7 +858,7 @@ impl Component for FlameGraph {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -883,8 +880,15 @@ impl Component for FlameGraph {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        render::render_flame_graph(state, frame, area, theme, ctx.focused, ctx.disabled);
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        render::render_flame_graph(
+            state,
+            ctx.frame,
+            ctx.area,
+            ctx.theme,
+            ctx.focused,
+            ctx.disabled,
+        );
     }
 }
 

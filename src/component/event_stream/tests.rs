@@ -1,3 +1,5 @@
+use ratatui::style::Color;
+
 use super::*;
 
 fn sample_state() -> EventStreamState {
@@ -734,7 +736,7 @@ fn test_disabled_ignores_events() {
     let msg = EventStream::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -743,7 +745,7 @@ fn test_disabled_ignores_events() {
 fn test_unfocused_ignores_events() {
     let state = sample_state();
     let msg =
-        EventStream::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
+        EventStream::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 

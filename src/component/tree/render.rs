@@ -6,7 +6,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use crate::component::ViewContext;
+use crate::component::{EventContext, RenderContext};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
@@ -18,7 +18,7 @@ impl<T: Clone + 'static> Tree<T> {
         state: &TreeState<T>,
         width: u16,
         theme: &Theme,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Vec<Line<'static>> {
         let flat = state.flatten();
         let mut lines = Vec::with_capacity(flat.len());
@@ -78,15 +78,10 @@ impl<T: Clone + 'static> Tree<T> {
 }
 
 /// Renders the tree view into `frame` within `area`.
-pub(super) fn view<T: Clone + 'static>(
-    state: &TreeState<T>,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    ctx: &ViewContext,
-) {
-    let all_lines = Tree::render_lines(state, area.width, theme, ctx);
-    let viewport_height = area.height as usize;
+pub(super) fn view<T: Clone + 'static>(state: &TreeState<T>, ctx: &mut RenderContext<'_, '_>) {
+    let event_ctx = ctx.event_context();
+    let all_lines = Tree::render_lines(state, ctx.area.width, ctx.theme, &event_ctx);
+    let viewport_height = ctx.area.height as usize;
 
     // Use a local ScrollState for scrollbar rendering and virtual scrolling
     let mut bar_scroll = ScrollState::new(all_lines.len());
@@ -110,8 +105,8 @@ pub(super) fn view<T: Clone + 'static>(
         .with_focus(ctx.focused)
         .with_disabled(ctx.disabled);
     let annotated = crate::annotation::Annotate::new(paragraph, annotation);
-    frame.render_widget(annotated, area);
+    ctx.frame.render_widget(annotated, ctx.area);
 
     // Render scrollbar if content exceeds viewport
-    crate::scroll::render_scrollbar(&bar_scroll, frame, area, theme);
+    crate::scroll::render_scrollbar(&bar_scroll, ctx.frame, ctx.area, ctx.theme);
 }

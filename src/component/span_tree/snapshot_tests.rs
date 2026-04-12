@@ -1,5 +1,6 @@
 use super::*;
 use crate::component::test_utils;
+use ratatui::style::Color;
 
 #[test]
 fn test_snapshot_empty() {
@@ -7,7 +8,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 10);
     terminal
         .draw(|frame| {
-            SpanTree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SpanTree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -30,7 +31,7 @@ fn test_snapshot_simple_tree() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            SpanTree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SpanTree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -48,10 +49,7 @@ fn test_snapshot_with_selection() {
         .draw(|frame| {
             SpanTree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -68,7 +66,7 @@ fn test_snapshot_collapsed() {
     let (mut terminal, theme) = test_utils::setup_render(60, 10);
     terminal
         .draw(|frame| {
-            SpanTree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SpanTree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -88,10 +86,7 @@ fn test_snapshot_disabled() {
         .draw(|frame| {
             SpanTree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -104,7 +99,7 @@ fn test_snapshot_single_span() {
     let (mut terminal, theme) = test_utils::setup_render(60, 8);
     terminal
         .draw(|frame| {
-            SpanTree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SpanTree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -124,7 +119,7 @@ fn test_snapshot_custom_label_width() {
     let (mut terminal, theme) = test_utils::setup_render(60, 10);
     terminal
         .draw(|frame| {
-            SpanTree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SpanTree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

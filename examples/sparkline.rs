@@ -65,31 +65,19 @@ impl App for SparklineApp {
 
         Sparkline::view(
             &state.basic,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         Sparkline::view(
             &state.titled,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
         Sparkline::view(
             &state.rtl,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
         Sparkline::view(
             &state.limited,
-            frame,
-            chunks[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[3], &theme),
         );
     }
 

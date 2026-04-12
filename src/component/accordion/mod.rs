@@ -35,9 +35,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 /// A single accordion panel with a title and content.
 ///
@@ -734,7 +733,7 @@ impl Component for Accordion {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -753,24 +752,24 @@ impl Component for Accordion {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         if state.panels.is_empty() {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::accordion("accordion")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled),
             );
         });
 
-        let mut y = area.y;
+        let mut y = ctx.area.y;
 
         for (i, panel) in state.panels.iter().enumerate() {
-            if y >= area.bottom() {
+            if y >= ctx.area.bottom() {
                 break;
             }
 
@@ -780,32 +779,37 @@ impl Component for Accordion {
             let header = format!("{} {}", icon, panel.title);
 
             let header_style = if ctx.disabled {
-                theme.disabled_style()
+                ctx.theme.disabled_style()
             } else if is_focused_panel {
-                theme.focused_bold_style()
+                ctx.theme.focused_bold_style()
             } else {
-                theme.normal_style()
+                ctx.theme.normal_style()
             };
 
-            let header_area = Rect::new(area.x, y, area.width, 1);
-            frame.render_widget(Paragraph::new(header).style(header_style), header_area);
+            let header_area = Rect::new(ctx.area.x, y, ctx.area.width, 1);
+            ctx.frame
+                .render_widget(Paragraph::new(header).style(header_style), header_area);
             y += 1;
 
             // Content (if expanded)
-            if panel.expanded && y < area.bottom() {
+            if panel.expanded && y < ctx.area.bottom() {
                 let content_lines = panel.content.lines().count().max(1) as u16;
-                let available_height = area.bottom().saturating_sub(y);
+                let available_height = ctx.area.bottom().saturating_sub(y);
                 let content_height = content_lines.min(available_height);
 
                 if content_height > 0 {
-                    let content_area =
-                        Rect::new(area.x + 2, y, area.width.saturating_sub(2), content_height);
+                    let content_area = Rect::new(
+                        ctx.area.x + 2,
+                        y,
+                        ctx.area.width.saturating_sub(2),
+                        content_height,
+                    );
                     let content_style = if ctx.disabled {
-                        theme.disabled_style()
+                        ctx.theme.disabled_style()
                     } else {
-                        theme.placeholder_style()
+                        ctx.theme.placeholder_style()
                     };
-                    frame.render_widget(
+                    ctx.frame.render_widget(
                         Paragraph::new(panel.content.as_str()).style(content_style),
                         content_area,
                     );

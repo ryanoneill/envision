@@ -1,5 +1,6 @@
 use super::*;
 use crate::component::test_utils;
+use ratatui::style::Color;
 
 fn sample_events() -> Vec<TimelineEvent> {
     vec![
@@ -506,7 +507,7 @@ fn test_left_maps_to_pan_left() {
         Timeline::handle_event(
             &state,
             &Event::key(KeyCode::Left),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TimelineMessage::PanLeft)
     );
@@ -516,7 +517,11 @@ fn test_left_maps_to_pan_left() {
 fn test_h_maps_to_pan_left() {
     let state = focused_timeline();
     assert_eq!(
-        Timeline::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
+        Timeline::handle_event(
+            &state,
+            &Event::char('h'),
+            &EventContext::new().focused(true)
+        ),
         Some(TimelineMessage::PanLeft)
     );
 }
@@ -528,7 +533,7 @@ fn test_right_maps_to_pan_right() {
         Timeline::handle_event(
             &state,
             &Event::key(KeyCode::Right),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TimelineMessage::PanRight)
     );
@@ -538,7 +543,11 @@ fn test_right_maps_to_pan_right() {
 fn test_l_maps_to_pan_right() {
     let state = focused_timeline();
     assert_eq!(
-        Timeline::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
+        Timeline::handle_event(
+            &state,
+            &Event::char('l'),
+            &EventContext::new().focused(true)
+        ),
         Some(TimelineMessage::PanRight)
     );
 }
@@ -547,7 +556,11 @@ fn test_l_maps_to_pan_right() {
 fn test_plus_maps_to_zoom_in() {
     let state = focused_timeline();
     assert_eq!(
-        Timeline::handle_event(&state, &Event::char('+'), &ViewContext::new().focused(true)),
+        Timeline::handle_event(
+            &state,
+            &Event::char('+'),
+            &EventContext::new().focused(true)
+        ),
         Some(TimelineMessage::ZoomIn)
     );
 }
@@ -556,7 +569,11 @@ fn test_plus_maps_to_zoom_in() {
 fn test_equals_maps_to_zoom_in() {
     let state = focused_timeline();
     assert_eq!(
-        Timeline::handle_event(&state, &Event::char('='), &ViewContext::new().focused(true)),
+        Timeline::handle_event(
+            &state,
+            &Event::char('='),
+            &EventContext::new().focused(true)
+        ),
         Some(TimelineMessage::ZoomIn)
     );
 }
@@ -565,7 +582,11 @@ fn test_equals_maps_to_zoom_in() {
 fn test_minus_maps_to_zoom_out() {
     let state = focused_timeline();
     assert_eq!(
-        Timeline::handle_event(&state, &Event::char('-'), &ViewContext::new().focused(true)),
+        Timeline::handle_event(
+            &state,
+            &Event::char('-'),
+            &EventContext::new().focused(true)
+        ),
         Some(TimelineMessage::ZoomOut)
     );
 }
@@ -577,7 +598,7 @@ fn test_up_maps_to_select_prev() {
         Timeline::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TimelineMessage::SelectPrev)
     );
@@ -587,7 +608,11 @@ fn test_up_maps_to_select_prev() {
 fn test_k_maps_to_select_prev() {
     let state = focused_timeline();
     assert_eq!(
-        Timeline::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        Timeline::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(TimelineMessage::SelectPrev)
     );
 }
@@ -599,7 +624,7 @@ fn test_down_maps_to_select_next() {
         Timeline::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TimelineMessage::SelectNext)
     );
@@ -609,7 +634,11 @@ fn test_down_maps_to_select_next() {
 fn test_j_maps_to_select_next() {
     let state = focused_timeline();
     assert_eq!(
-        Timeline::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        Timeline::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(TimelineMessage::SelectNext)
     );
 }
@@ -621,7 +650,7 @@ fn test_home_maps_to_fit_all() {
         Timeline::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TimelineMessage::FitAll)
     );
@@ -637,7 +666,7 @@ fn test_disabled_ignores_events() {
     let msg = Timeline::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -647,7 +676,7 @@ fn test_unfocused_ignores_events() {
     let state = TimelineState::new()
         .with_events(sample_events())
         .with_spans(sample_spans());
-    let msg = Timeline::handle_event(&state, &Event::key(KeyCode::Left), &ViewContext::default());
+    let msg = Timeline::handle_event(&state, &Event::key(KeyCode::Left), &EventContext::default());
     assert_eq!(msg, None);
 }
 #[test]
@@ -694,7 +723,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -707,7 +736,7 @@ fn test_render_with_events() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -720,7 +749,7 @@ fn test_render_with_spans() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -735,7 +764,7 @@ fn test_render_with_events_and_spans() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -747,7 +776,7 @@ fn test_render_with_selection() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -762,10 +791,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             Timeline::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -777,7 +803,7 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -788,7 +814,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -799,7 +825,7 @@ fn test_render_minimal_height() {
     let (mut terminal, theme) = test_utils::setup_render(60, 5);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -810,7 +836,7 @@ fn test_render_very_wide() {
     let (mut terminal, theme) = test_utils::setup_render(120, 15);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -827,7 +853,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -869,7 +895,7 @@ fn test_overlapping_spans_same_lane() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }

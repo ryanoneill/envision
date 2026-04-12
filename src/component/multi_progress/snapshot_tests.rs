@@ -11,7 +11,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -26,7 +26,7 @@ fn test_snapshot_with_items() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -54,7 +54,7 @@ fn test_snapshot_active_progress() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -84,7 +84,7 @@ fn test_snapshot_completed_and_failed() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -98,7 +98,7 @@ fn test_snapshot_without_percentages() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -113,10 +113,7 @@ fn test_snapshot_disabled() {
         .draw(|frame| {
             MultiProgress::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();

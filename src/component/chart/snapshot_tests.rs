@@ -18,7 +18,7 @@ fn test_snapshot_default_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -33,7 +33,7 @@ fn test_snapshot_populated_line_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -47,10 +47,7 @@ fn test_snapshot_focused_line_chart() {
         .draw(|frame| {
             Chart::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -67,7 +64,7 @@ fn test_snapshot_bar_vertical() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -81,7 +78,7 @@ fn test_snapshot_bar_horizontal() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -96,7 +93,7 @@ fn test_snapshot_single_series() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -116,7 +113,7 @@ fn test_snapshot_area_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -132,7 +129,7 @@ fn test_snapshot_scatter_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -150,7 +147,7 @@ fn test_snapshot_area_chart_with_thresholds() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -167,7 +164,7 @@ fn test_snapshot_area_chart_with_y_range() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -179,7 +176,7 @@ fn test_snapshot_multi_series_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -191,7 +188,7 @@ fn test_snapshot_multi_series_scatter() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

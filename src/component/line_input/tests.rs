@@ -604,10 +604,7 @@ fn test_snapshot_focused() {
         .draw(|frame| {
             LineInput::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -620,7 +617,7 @@ fn test_snapshot_unfocused() {
     let state = LineInputState::with_value("hello");
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LineInput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -634,10 +631,7 @@ fn test_snapshot_disabled() {
         .draw(|frame| {
             LineInput::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -650,7 +644,7 @@ fn test_snapshot_placeholder() {
     let state = LineInputState::new().with_placeholder("Type here...");
     terminal
         .draw(|frame| {
-            LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LineInput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -665,10 +659,7 @@ fn test_snapshot_wrapped() {
         .draw(|frame| {
             LineInput::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -684,10 +675,7 @@ fn test_snapshot_wide_chars() {
         .draw(|frame| {
             LineInput::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -705,10 +693,7 @@ fn test_snapshot_selection() {
         .draw(|frame| {
             LineInput::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -845,7 +830,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                LineInput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                LineInput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

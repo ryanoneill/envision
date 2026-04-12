@@ -18,8 +18,7 @@
 use ratatui::prelude::*;
 
 use super::{Chart, ChartState};
-use crate::component::{Component, ViewContext};
-use crate::theme::Theme;
+use crate::component::{Component, RenderContext};
 
 /// A grid layout for rendering multiple charts simultaneously.
 ///
@@ -216,7 +215,7 @@ impl ChartGrid {
     ///
     /// Splits the area into equal rows and columns, then delegates each
     /// occupied cell to [`Chart::view`].
-    pub fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    pub fn render(&self, ctx: &mut RenderContext<'_, '_>) {
         let row_constraints: Vec<Constraint> = (0..self.rows)
             .map(|_| Constraint::Ratio(1, self.rows as u32))
             .collect();
@@ -224,7 +223,7 @@ impl ChartGrid {
         let row_areas = Layout::default()
             .direction(Direction::Vertical)
             .constraints(row_constraints)
-            .split(area);
+            .split(ctx.area);
 
         let col_constraints: Vec<Constraint> = (0..self.cols)
             .map(|_| Constraint::Ratio(1, self.cols as u32))
@@ -239,7 +238,7 @@ impl ChartGrid {
             for (col_idx, col_area) in col_areas.iter().enumerate() {
                 let cell_idx = row_idx * self.cols + col_idx;
                 if let Some(chart) = &self.charts[cell_idx] {
-                    Chart::view(chart, frame, *col_area, theme, ctx);
+                    Chart::view(chart, &mut ctx.with_area(*col_area));
                 }
             }
         }

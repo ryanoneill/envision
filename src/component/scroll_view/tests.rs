@@ -314,7 +314,7 @@ fn test_handle_event_up() {
         ScrollView::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::ScrollUp)
     );
@@ -327,7 +327,7 @@ fn test_handle_event_down() {
         ScrollView::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::ScrollDown)
     );
@@ -337,11 +337,19 @@ fn test_handle_event_down() {
 fn test_handle_event_k_j() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        ScrollView::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::ScrollUp)
     );
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        ScrollView::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::ScrollDown)
     );
 }
@@ -353,7 +361,7 @@ fn test_handle_event_page_up_down() {
         ScrollView::handle_event(
             &state,
             &Event::key(KeyCode::PageUp),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::PageUp)
     );
@@ -361,7 +369,7 @@ fn test_handle_event_page_up_down() {
         ScrollView::handle_event(
             &state,
             &Event::key(KeyCode::PageDown),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::PageDown)
     );
@@ -371,11 +379,19 @@ fn test_handle_event_page_up_down() {
 fn test_handle_event_ctrl_u_d() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true)),
+        ScrollView::handle_event(
+            &state,
+            &Event::ctrl('u'),
+            &EventContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::PageUp)
     );
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true)),
+        ScrollView::handle_event(
+            &state,
+            &Event::ctrl('d'),
+            &EventContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::PageDown)
     );
 }
@@ -387,7 +403,7 @@ fn test_handle_event_home_end() {
         ScrollView::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::Home)
     );
@@ -395,7 +411,7 @@ fn test_handle_event_home_end() {
         ScrollView::handle_event(
             &state,
             &Event::key(KeyCode::End),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::End)
     );
@@ -406,14 +422,18 @@ fn test_handle_event_home_end() {
 fn test_handle_event_g_and_G() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true)),
+        ScrollView::handle_event(
+            &state,
+            &Event::char('g'),
+            &EventContext::new().focused(true)
+        ),
         Some(ScrollViewMessage::Home)
     );
     assert_eq!(
         ScrollView::handle_event(
             &state,
             &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::End)
     );
@@ -423,7 +443,11 @@ fn test_handle_event_g_and_G() {
 fn test_handle_event_unrecognized() {
     let state = focused_state();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        ScrollView::handle_event(
+            &state,
+            &Event::char('x'),
+            &EventContext::new().focused(true)
+        ),
         None
     );
 }
@@ -432,11 +456,11 @@ fn test_handle_event_unrecognized() {
 fn test_handle_event_unfocused_ignores() {
     let state = ScrollViewState::new();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default()),
+        ScrollView::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default()),
         None
     );
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default()),
+        ScrollView::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default()),
         None
     );
 }
@@ -448,7 +472,7 @@ fn test_handle_event_disabled_ignores() {
         ScrollView::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true).disabled(true)
+            &EventContext::new().focused(true).disabled(true)
         ),
         None
     );
@@ -459,7 +483,7 @@ fn test_dispatch_event_no_change() {
     let output = ScrollView::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, None);
     assert_eq!(state.scroll_offset(), 0);
@@ -494,7 +518,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ScrollView::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -506,7 +530,7 @@ fn test_view_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ScrollView::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -518,7 +542,7 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ScrollView::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -532,7 +556,7 @@ fn test_view_with_scrollbar() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ScrollView::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -546,7 +570,7 @@ fn test_view_no_scrollbar_when_disabled() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ScrollView::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -558,7 +582,7 @@ fn test_view_no_scrollbar_when_content_fits() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ScrollView::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -571,7 +595,7 @@ fn test_view_zero_area() {
     terminal
         .draw(|frame| {
             let zero_area = Rect::new(0, 0, 0, 0);
-            ScrollView::view(&state, frame, zero_area, &theme, &ViewContext::default());
+            ScrollView::view(&state, &mut RenderContext::new(frame, zero_area, &theme));
         })
         .unwrap();
     // Should not panic
@@ -584,7 +608,7 @@ fn test_view_minimal_area() {
     terminal
         .draw(|frame| {
             let small_area = Rect::new(0, 0, 3, 3);
-            ScrollView::view(&state, frame, small_area, &theme, &ViewContext::default());
+            ScrollView::view(&state, &mut RenderContext::new(frame, small_area, &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -603,7 +627,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                ScrollView::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                ScrollView::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -626,10 +650,9 @@ fn test_annotation_reflects_focus_and_disabled() {
             .draw(|frame| {
                 ScrollView::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true).disabled(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme)
+                        .focused(true)
+                        .disabled(true),
                 );
             })
             .unwrap();

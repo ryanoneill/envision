@@ -84,7 +84,7 @@ impl App for DialogApp {
         frame.render_widget(content, chunks[0]);
 
         if Dialog::is_visible(&state.dialog) {
-            Dialog::view(&state.dialog, frame, area, &theme, &ViewContext::default());
+            Dialog::view(&state.dialog, &mut RenderContext::new(frame, area, &theme));
         }
 
         let status = " d: show dialog, q: quit";
@@ -96,7 +96,7 @@ impl App for DialogApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if Dialog::is_visible(&state.dialog) {
-            return Dialog::handle_event(&state.dialog, event, &ViewContext::new().focused(true))
+            return Dialog::handle_event(&state.dialog, event, &EventContext::new().focused(true))
                 .map(Msg::Dialog);
         }
         if let Some(key) = event.as_key() {

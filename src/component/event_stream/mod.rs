@@ -8,7 +8,7 @@
 //! State is stored in [`EventStreamState`], updated via [`EventStreamMessage`],
 //! and produces [`EventStreamOutput`].
 //!
-//! Focus and disabled state are managed via [`ViewContext`].
+//! Focus and disabled state are managed via [`EventContext`].
 //!
 //! # Example
 //!
@@ -36,11 +36,8 @@ mod types;
 
 use std::marker::PhantomData;
 
-use ratatui::prelude::*;
-
-use super::{Component, InputFieldMessage, ViewContext};
+use super::{Component, EventContext, InputFieldMessage, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::theme::Theme;
 
 pub use state::EventStreamState;
 pub use types::{EventLevel, StreamEvent};
@@ -168,7 +165,7 @@ impl Component for EventStream {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -378,8 +375,15 @@ impl Component for EventStream {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        render::render_event_stream(state, frame, area, theme, ctx.focused, ctx.disabled);
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        render::render_event_stream(
+            state,
+            ctx.frame,
+            ctx.area,
+            ctx.theme,
+            ctx.focused,
+            ctx.disabled,
+        );
     }
 }
 

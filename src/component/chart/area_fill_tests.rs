@@ -22,10 +22,7 @@ fn test_area_chart_renders_differently_from_line_chart() {
         .draw(|frame| {
             Chart::view(
                 &line_state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, frame.area(), &theme),
             );
         })
         .unwrap();
@@ -38,10 +35,7 @@ fn test_area_chart_renders_differently_from_line_chart() {
         .draw(|frame| {
             Chart::view(
                 &area_state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, frame.area(), &theme),
             );
         })
         .unwrap();
@@ -76,10 +70,7 @@ fn test_area_fill_does_not_overwrite_braille_dots() {
         .draw(|frame| {
             Chart::view(
                 &line_state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, frame.area(), &theme),
             );
         })
         .unwrap();
@@ -92,10 +83,7 @@ fn test_area_fill_does_not_overwrite_braille_dots() {
         .draw(|frame| {
             Chart::view(
                 &area_state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, frame.area(), &theme),
             );
         })
         .unwrap();
@@ -130,7 +118,7 @@ fn test_scatter_chart_has_no_area_fill() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     let output = terminal.backend().to_string();
@@ -147,7 +135,7 @@ fn test_area_chart_with_two_data_points() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     let output = terminal.backend().to_string();
@@ -168,7 +156,7 @@ fn test_area_chart_fill_with_y_range() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     let output = terminal.backend().to_string();
@@ -184,7 +172,7 @@ fn test_area_chart_multi_series_fill() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     let output = terminal.backend().to_string();
@@ -204,7 +192,7 @@ fn test_line_chart_has_no_area_fill() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     let output = terminal.backend().to_string();

@@ -8,7 +8,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 10);
     terminal
         .draw(|frame| {
-            FlameGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FlameGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -20,7 +20,7 @@ fn test_snapshot_single_frame() {
     let (mut terminal, theme) = test_utils::setup_render(60, 8);
     terminal
         .draw(|frame| {
-            FlameGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FlameGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -41,7 +41,7 @@ fn test_snapshot_simple_tree() {
     let (mut terminal, theme) = test_utils::setup_render(60, 10);
     terminal
         .draw(|frame| {
-            FlameGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FlameGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -62,10 +62,7 @@ fn test_snapshot_focused_with_selection() {
         .draw(|frame| {
             FlameGraph::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -92,10 +89,7 @@ fn test_snapshot_zoomed() {
         .draw(|frame| {
             FlameGraph::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -111,10 +105,7 @@ fn test_snapshot_disabled() {
         .draw(|frame| {
             FlameGraph::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -137,7 +128,7 @@ fn test_snapshot_with_search() {
     let (mut terminal, theme) = test_utils::setup_render(60, 10);
     terminal
         .draw(|frame| {
-            FlameGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FlameGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -164,7 +155,7 @@ fn test_snapshot_deep_nesting() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FlameGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FlameGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

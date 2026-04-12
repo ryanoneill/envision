@@ -464,7 +464,7 @@ fn test_view_full_gauge() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -478,7 +478,7 @@ fn test_view_full_gauge_with_title() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -494,7 +494,7 @@ fn test_view_full_gauge_with_units() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -508,7 +508,7 @@ fn test_view_line_gauge() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -524,7 +524,7 @@ fn test_view_line_gauge_with_title() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -540,10 +540,7 @@ fn test_view_disabled() {
         .draw(|frame| {
             Gauge::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -558,7 +555,7 @@ fn test_view_green_zone() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -572,7 +569,7 @@ fn test_view_yellow_zone() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -586,7 +583,7 @@ fn test_view_red_zone() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -600,7 +597,7 @@ fn test_view_zero_percent() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -614,7 +611,7 @@ fn test_view_full_percent() {
 
     terminal
         .draw(|frame| {
-            Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -633,7 +630,7 @@ fn test_annotation_emitted_full() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -651,7 +648,7 @@ fn test_annotation_emitted_line() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

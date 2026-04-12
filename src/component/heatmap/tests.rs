@@ -2,6 +2,7 @@ use super::render::{contrasting_fg, format_value, truncate_str};
 use super::*;
 use crate::component::test_utils;
 use crate::input::Event;
+use ratatui::style::Color;
 
 // =============================================================================
 // Construction
@@ -290,7 +291,7 @@ fn test_arrow_up_maps_to_select_up() {
     let msg = Heatmap::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(HeatmapMessage::SelectUp));
 }
@@ -301,7 +302,7 @@ fn test_arrow_down_maps_to_select_down() {
     let msg = Heatmap::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(HeatmapMessage::SelectDown));
 }
@@ -312,7 +313,7 @@ fn test_arrow_left_maps_to_select_left() {
     let msg = Heatmap::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(HeatmapMessage::SelectLeft));
 }
@@ -323,7 +324,7 @@ fn test_arrow_right_maps_to_select_right() {
     let msg = Heatmap::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(HeatmapMessage::SelectRight));
 }
@@ -332,19 +333,35 @@ fn test_arrow_right_maps_to_select_right() {
 fn test_hjkl_keys() {
     let state = focused_3x3();
     assert_eq!(
-        Heatmap::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        Heatmap::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(HeatmapMessage::SelectUp)
     );
     assert_eq!(
-        Heatmap::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        Heatmap::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(HeatmapMessage::SelectDown)
     );
     assert_eq!(
-        Heatmap::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
+        Heatmap::handle_event(
+            &state,
+            &Event::char('h'),
+            &EventContext::new().focused(true)
+        ),
         Some(HeatmapMessage::SelectLeft)
     );
     assert_eq!(
-        Heatmap::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
+        Heatmap::handle_event(
+            &state,
+            &Event::char('l'),
+            &EventContext::new().focused(true)
+        ),
         Some(HeatmapMessage::SelectRight)
     );
 }
@@ -355,7 +372,7 @@ fn test_enter_emits_cell_selected() {
     let output = Heatmap::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(
         output,
@@ -377,7 +394,7 @@ fn test_disabled_ignores_events() {
     let msg = Heatmap::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -385,7 +402,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = HeatmapState::with_data(vec![vec![1.0]]);
-    let msg = Heatmap::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
+    let msg = Heatmap::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -540,10 +557,7 @@ fn test_render_empty() {
         .draw(|frame| {
             Heatmap::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -557,10 +571,7 @@ fn test_render_small_grid() {
         .draw(|frame| {
             Heatmap::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -577,10 +588,7 @@ fn test_render_with_labels() {
         .draw(|frame| {
             Heatmap::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -596,10 +604,7 @@ fn test_render_with_values() {
         .draw(|frame| {
             Heatmap::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -613,10 +618,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             Heatmap::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -634,10 +636,7 @@ fn test_render_focused_with_selection() {
         .draw(|frame| {
             Heatmap::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -651,10 +650,7 @@ fn test_render_small_area() {
         .draw(|frame| {
             Heatmap::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -731,10 +727,7 @@ fn test_annotation_emitted() {
             .draw(|frame| {
                 Heatmap::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();

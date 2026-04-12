@@ -88,10 +88,7 @@ impl App for StepIndicatorApp {
 
         StepIndicator::view(
             &state.pipeline,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         // Info panel
@@ -144,7 +141,7 @@ impl App for StepIndicatorApp {
                 _ => {}
             }
         }
-        StepIndicator::handle_event(&state.pipeline, event, &ViewContext::new().focused(true))
+        StepIndicator::handle_event(&state.pipeline, event, &EventContext::new().focused(true))
             .map(Msg::Step)
     }
 }

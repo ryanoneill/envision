@@ -401,7 +401,7 @@ fn test_view_multiple_items_mixed_states() {
 
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -427,10 +427,7 @@ fn test_view_disabled_state() {
         .draw(|frame| {
             MultiProgress::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             )
         })
         .unwrap();
@@ -455,7 +452,7 @@ fn test_view_single_item_full_progress() {
 
     terminal
         .draw(|frame| {
-            MultiProgress::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            MultiProgress::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 

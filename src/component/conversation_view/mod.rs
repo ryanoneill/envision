@@ -46,10 +46,9 @@ use std::marker::PhantomData;
 
 use ratatui::prelude::*;
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
-use crate::theme::Theme;
 
 impl MessageSource for ConversationViewState {
     fn source_messages(&self) -> &[ConversationMessage] {
@@ -808,7 +807,7 @@ impl Component for ConversationView {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -893,21 +892,28 @@ impl Component for ConversationView {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.height < 3 || area.width < 5 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.height < 3 || ctx.area.width < 5 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.open(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::container("conversation_view")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled),
             );
         });
 
-        render::render(state, frame, area, theme, ctx.focused, ctx.disabled);
+        render::render(
+            state,
+            ctx.frame,
+            ctx.area,
+            ctx.theme,
+            ctx.focused,
+            ctx.disabled,
+        );
 
         crate::annotation::with_registry(|reg| {
             reg.close();
@@ -931,8 +937,11 @@ impl ConversationView {
     ///
     /// ```rust
     /// use envision::component::{
-    ///     ConversationView, ConversationViewState, ConversationMessage,
-    ///     ConversationRole, MessageSource, ViewContext,
+    ///     ConversationMessage,
+    ///     ConversationRole,
+    ///     ConversationView,
+    ///     ConversationViewState,
+    ///     MessageSource,
     /// };
     ///
     /// // Application owns the canonical message list
@@ -944,31 +953,32 @@ impl ConversationView {
     ///
     /// // State tracks only view configuration (scroll, collapsed blocks, etc.)
     /// let state = ConversationViewState::new();
-    /// // Call ConversationView::view_from(&messages, &state, frame, area, &theme, &ctx)
+    /// // Call ConversationView::view_from(&messages, &state, &mut ctx)
     /// // to render from the external source without mirroring.
     /// ```
     pub fn view_from(
         source: &dyn MessageSource,
         state: &ConversationViewState,
-        frame: &mut Frame,
-        area: Rect,
-        theme: &Theme,
-        ctx: &ViewContext,
+        ctx: &mut RenderContext<'_, '_>,
     ) {
-        if area.height < 3 || area.width < 5 {
+        if ctx.area.height < 3 || ctx.area.width < 5 {
             return;
         }
 
+        let focused = ctx.focused;
+        let disabled = ctx.disabled;
         crate::annotation::with_registry(|reg| {
             reg.open(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::container("conversation_view")
-                    .with_focus(ctx.focused)
-                    .with_disabled(ctx.disabled),
+                    .with_focus(focused)
+                    .with_disabled(disabled),
             );
         });
 
-        render::render_from(source, state, frame, area, theme, ctx.focused, ctx.disabled);
+        render::render_from(
+            source, state, ctx.frame, ctx.area, ctx.theme, focused, disabled,
+        );
 
         crate::annotation::with_registry(|reg| {
             reg.close();

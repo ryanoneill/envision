@@ -100,24 +100,15 @@ impl App for NumberInputApp {
 
         NumberInput::view(
             &state.quantity,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         NumberInput::view(
             &state.price,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
         NumberInput::view(
             &state.temperature,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
 
         let status = format!(
@@ -151,16 +142,18 @@ impl App for NumberInputApp {
 
         // Route event to focused input
         match state.focus_index {
-            0 => {
-                NumberInput::handle_event(&state.quantity, event, &ViewContext::new().focused(true))
-                    .map(Msg::Quantity)
-            }
-            1 => NumberInput::handle_event(&state.price, event, &ViewContext::new().focused(true))
+            0 => NumberInput::handle_event(
+                &state.quantity,
+                event,
+                &EventContext::new().focused(true),
+            )
+            .map(Msg::Quantity),
+            1 => NumberInput::handle_event(&state.price, event, &EventContext::new().focused(true))
                 .map(Msg::Price),
             _ => NumberInput::handle_event(
                 &state.temperature,
                 event,
-                &ViewContext::new().focused(true),
+                &EventContext::new().focused(true),
             )
             .map(Msg::Temperature),
         }

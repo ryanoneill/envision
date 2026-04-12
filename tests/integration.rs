@@ -1,6 +1,6 @@
 #![cfg(feature = "full")]
 //! Integration tests exercising multi-component workflows through the public API.
-use envision::ViewContext;
+use envision::{EventContext, RenderContext};
 
 use envision::component::{
     SearchableList, SearchableListMessage, SearchableListOutput, SearchableListState,
@@ -331,7 +331,7 @@ fn test_form_workflow_with_focus_manager() {
         Event::char('e'),
     ];
     for event in &events {
-        InputField::dispatch_event(&mut input, event, &ViewContext::new().focused(true));
+        InputField::dispatch_event(&mut input, event, &EventContext::new().focused(true));
     }
     assert_eq!(input.value(), "Alice");
     assert_eq!(input.cursor_position(), 5);
@@ -347,7 +347,7 @@ fn test_form_workflow_with_focus_manager() {
     let output = Checkbox::dispatch_event(
         &mut checkbox,
         &space_event,
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CheckboxOutput::Toggled(true)));
     assert!(checkbox.is_checked());
@@ -360,8 +360,11 @@ fn test_form_workflow_with_focus_manager() {
 
     // Press Enter on Button via dispatch_event
     let enter_event = Event::key(crossterm::event::KeyCode::Enter);
-    let output =
-        Button::dispatch_event(&mut button, &enter_event, &ViewContext::new().focused(true));
+    let output = Button::dispatch_event(
+        &mut button,
+        &enter_event,
+        &EventContext::new().focused(true),
+    );
     assert_eq!(output, Some(ButtonOutput::Pressed));
 
     // Final state verification: all components retain their state after the workflow
@@ -387,7 +390,7 @@ fn test_selectable_list_stress_10000_items() {
         SelectableList::<String>::dispatch_event(
             &mut state,
             &down_event,
-            &ViewContext::new().focused(true),
+            &EventContext::new().focused(true),
         );
     }
     assert_eq!(state.selected_index(), Some(100));
@@ -443,37 +446,37 @@ fn test_components_handle_zero_size_area() {
     // Button
     assert_view_zero_size("Button", |frame, area, theme| {
         let state = ButtonState::new("Click");
-        Button::view(&state, frame, area, theme, &ViewContext::default());
+        Button::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Checkbox
     assert_view_zero_size("Checkbox", |frame, area, theme| {
         let state = CheckboxState::new("Check");
-        Checkbox::view(&state, frame, area, theme, &ViewContext::default());
+        Checkbox::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // InputField
     assert_view_zero_size("InputField", |frame, area, theme| {
         let state = InputFieldState::new();
-        InputField::view(&state, frame, area, theme, &ViewContext::default());
+        InputField::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // SelectableList
     assert_view_zero_size("SelectableList", |frame, area, theme| {
         let state = SelectableListState::new(vec!["A".to_string(), "B".to_string()]);
-        SelectableList::<String>::view(&state, frame, area, theme, &ViewContext::default());
+        SelectableList::<String>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // RadioGroup
     assert_view_zero_size("RadioGroup", |frame, area, theme| {
         let state = RadioGroupState::new(vec!["X".to_string(), "Y".to_string()]);
-        RadioGroup::<String>::view(&state, frame, area, theme, &ViewContext::default());
+        RadioGroup::<String>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Tabs
     assert_view_zero_size("Tabs", |frame, area, theme| {
         let state = TabsState::new(vec!["Tab1".to_string(), "Tab2".to_string()]);
-        Tabs::<String>::view(&state, frame, area, theme, &ViewContext::default());
+        Tabs::<String>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Table
@@ -483,89 +486,89 @@ fn test_components_handle_zero_size_area() {
         }];
         let columns = vec![Column::new("Name", Constraint::Length(10))];
         let state = TableState::new(rows, columns);
-        Table::<SimpleRow>::view(&state, frame, area, theme, &ViewContext::default());
+        Table::<SimpleRow>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Tree
     assert_view_zero_size("Tree", |frame, area, theme| {
         let root = TreeNode::new("root", "root_data".to_string());
         let state = TreeState::new(vec![root]);
-        Tree::<String>::view(&state, frame, area, theme, &ViewContext::default());
+        Tree::<String>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Accordion
     assert_view_zero_size("Accordion", |frame, area, theme| {
         let panel = AccordionPanel::new("Panel", "Content");
         let state = AccordionState::new(vec![panel]);
-        Accordion::view(&state, frame, area, theme, &ViewContext::default());
+        Accordion::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Dialog
     assert_view_zero_size("Dialog", |frame, area, theme| {
         let mut state = DialogState::confirm("Title", "Body");
         Dialog::update(&mut state, DialogMessage::Open);
-        Dialog::view(&state, frame, area, theme, &ViewContext::default());
+        Dialog::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Menu
     assert_view_zero_size("Menu", |frame, area, theme| {
         let items = vec![MenuItem::new("File"), MenuItem::new("Edit")];
         let state = MenuState::new(items);
-        Menu::view(&state, frame, area, theme, &ViewContext::default());
+        Menu::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Dropdown
     assert_view_zero_size("Dropdown", |frame, area, theme| {
         let state = DropdownState::new(vec!["Option 1", "Option 2"]);
-        Dropdown::view(&state, frame, area, theme, &ViewContext::default());
+        Dropdown::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Select
     assert_view_zero_size("Select", |frame, area, theme| {
         let state = SelectState::new(vec!["Opt A", "Opt B"]);
-        Select::view(&state, frame, area, theme, &ViewContext::default());
+        Select::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // TextArea
     assert_view_zero_size("TextArea", |frame, area, theme| {
         let state = TextAreaState::new();
-        TextArea::view(&state, frame, area, theme, &ViewContext::default());
+        TextArea::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // ProgressBar
     assert_view_zero_size("ProgressBar", |frame, area, theme| {
         let state = ProgressBarState::new();
-        ProgressBar::view(&state, frame, area, theme, &ViewContext::default());
+        ProgressBar::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Spinner
     assert_view_zero_size("Spinner", |frame, area, theme| {
         let state = SpinnerState::new();
-        Spinner::view(&state, frame, area, theme, &ViewContext::default());
+        Spinner::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Toast
     assert_view_zero_size("Toast", |frame, area, theme| {
         let state = ToastState::new();
-        Toast::view(&state, frame, area, theme, &ViewContext::default());
+        Toast::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Tooltip
     assert_view_zero_size("Tooltip", |frame, area, theme| {
         let state = TooltipState::new("Tip content");
-        Tooltip::view(&state, frame, area, theme, &ViewContext::default());
+        Tooltip::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // StatusBar
     assert_view_zero_size("StatusBar", |frame, area, theme| {
         let state = StatusBarState::new();
-        StatusBar::view(&state, frame, area, theme, &ViewContext::default());
+        StatusBar::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // StatusLog
     assert_view_zero_size("StatusLog", |frame, area, theme| {
         let state = StatusLogState::new();
-        StatusLog::view(&state, frame, area, theme, &ViewContext::default());
+        StatusLog::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // Breadcrumb
@@ -575,43 +578,43 @@ fn test_components_handle_zero_size_area() {
             BreadcrumbSegment::new("Settings"),
         ];
         let state = BreadcrumbState::new(segments);
-        Breadcrumb::view(&state, frame, area, theme, &ViewContext::default());
+        Breadcrumb::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // KeyHints
     assert_view_zero_size("KeyHints", |frame, area, theme| {
         let state = KeyHintsState::with_hints(vec![KeyHint::new("q", "Quit")]);
-        KeyHints::view(&state, frame, area, theme, &ViewContext::default());
+        KeyHints::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // MultiProgress
     assert_view_zero_size("MultiProgress", |frame, area, theme| {
         let state = MultiProgressState::new();
-        MultiProgress::view(&state, frame, area, theme, &ViewContext::default());
+        MultiProgress::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // LoadingList
     assert_view_zero_size("LoadingList", |frame, area, theme| {
         let state: LoadingListState<String> = LoadingListState::new();
-        LoadingList::<String>::view(&state, frame, area, theme, &ViewContext::default());
+        LoadingList::<String>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // ScrollableText
     assert_view_zero_size("ScrollableText", |frame, area, theme| {
         let state = ScrollableTextState::new();
-        ScrollableText::view(&state, frame, area, theme, &ViewContext::default());
+        ScrollableText::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // TitleCard
     assert_view_zero_size("TitleCard", |frame, area, theme| {
         let state = TitleCardState::new("Title");
-        TitleCard::view(&state, frame, area, theme, &ViewContext::default());
+        TitleCard::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 
     // LineInput
     assert_view_zero_size("LineInput", |frame, area, theme| {
         let state = LineInputState::new();
-        LineInput::view(&state, frame, area, theme, &ViewContext::default());
+        LineInput::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 }
 

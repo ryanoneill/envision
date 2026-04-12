@@ -95,10 +95,7 @@ impl App for CanvasApp {
         let theme = Theme::default();
         Canvas::view(
             &state.canvas,
-            frame,
-            frame.area(),
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, frame.area(), &theme),
         );
     }
 

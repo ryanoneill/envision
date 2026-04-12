@@ -58,10 +58,7 @@ impl App for StatusLogApp {
 
         StatusLog::view(
             &state.log,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let status = format!(" Entries: {} | Up/Down: scroll, q: quit", state.log.len());
@@ -77,7 +74,7 @@ impl App for StatusLogApp {
                 return Some(Msg::Quit);
             }
         }
-        StatusLog::handle_event(&state.log, event, &ViewContext::new().focused(true)).map(Msg::Log)
+        StatusLog::handle_event(&state.log, event, &EventContext::new().focused(true)).map(Msg::Log)
     }
 }
 

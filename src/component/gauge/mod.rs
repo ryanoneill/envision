@@ -40,7 +40,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Gauge as RatatuiGauge, LineGauge};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::theme::Theme;
 
 /// The visual variant of the gauge.
@@ -473,14 +473,14 @@ impl GaugeState {
     ///
     /// Since Gauge is display-only, this always returns `None`.
     pub fn handle_event(&self, event: &crate::input::Event) -> Option<GaugeMessage> {
-        Gauge::handle_event(self, event, &ViewContext::default())
+        Gauge::handle_event(self, event, &EventContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
     ///
     /// Since Gauge is display-only, this always returns `None`.
     pub fn dispatch_event(&mut self, event: &crate::input::Event) -> Option<GaugeOutput> {
-        Gauge::dispatch_event(self, event, &ViewContext::default())
+        Gauge::dispatch_event(self, event, &EventContext::default())
     }
 }
 
@@ -561,15 +561,29 @@ impl Component for Gauge {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         let label_text = state.label_text();
 
         match state.variant {
             GaugeVariant::Full => {
-                render_full_gauge(state, frame, area, theme, &label_text, ctx.disabled);
+                render_full_gauge(
+                    state,
+                    ctx.frame,
+                    ctx.area,
+                    ctx.theme,
+                    &label_text,
+                    ctx.disabled,
+                );
             }
             GaugeVariant::Line => {
-                render_line_gauge(state, frame, area, theme, &label_text, ctx.disabled);
+                render_line_gauge(
+                    state,
+                    ctx.frame,
+                    ctx.area,
+                    ctx.theme,
+                    &label_text,
+                    ctx.disabled,
+                );
             }
         }
     }

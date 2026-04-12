@@ -70,10 +70,7 @@ impl App for MenuApp {
 
         Menu::view(
             &state.menu,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected_text = state.last_selected.as_deref().unwrap_or("None");
@@ -98,7 +95,7 @@ impl App for MenuApp {
                 return Some(Msg::Quit);
             }
         }
-        Menu::handle_event(&state.menu, event, &ViewContext::new().focused(true)).map(Msg::Menu)
+        Menu::handle_event(&state.menu, event, &EventContext::new().focused(true)).map(Msg::Menu)
     }
 }
 

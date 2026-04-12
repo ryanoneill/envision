@@ -26,13 +26,11 @@
 //! assert_eq!(state.selected_item(), Some(&"Item 2".into()));
 //! ```
 
-use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, ListState};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
 use crate::scroll::ScrollState;
-use crate::theme::Theme;
 
 /// Messages that can be sent to a SelectableList.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -515,7 +513,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -618,7 +616,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             let mut ann = crate::annotation::Annotation::list("selectable_list")
                 .with_focus(ctx.focused)
@@ -626,7 +624,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             if let Some(idx) = state.selected_index() {
                 ann = ann.with_selected(true).with_value(idx.to_string());
             }
-            reg.register(area, ann);
+            reg.register(ctx.area, ann);
         });
 
         let mut items = Vec::with_capacity(state.filtered_indices.len());
@@ -635,13 +633,13 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
         }
 
         let highlight_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
-            theme.selected_highlight_style(ctx.focused)
+            ctx.theme.selected_highlight_style(ctx.focused)
         };
 
         let block = Block::default().borders(Borders::ALL);
-        let inner = block.inner(area);
+        let inner = block.inner(ctx.area);
 
         let list = List::new(items)
             .block(block)
@@ -650,14 +648,20 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
 
         // We need to clone the state for rendering since StatefulWidget needs &mut
         let mut list_state = state.list_state.clone();
-        frame.render_stateful_widget(list, area, &mut list_state);
+        ctx.frame
+            .render_stateful_widget(list, ctx.area, &mut list_state);
 
         // Render scrollbar when content exceeds viewport
         if state.filtered_indices.len() > inner.height as usize {
             let mut bar_scroll = ScrollState::new(state.filtered_indices.len());
             bar_scroll.set_viewport_height(inner.height as usize);
             bar_scroll.set_offset(list_state.offset());
-            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+            crate::scroll::render_scrollbar_inside_border(
+                &bar_scroll,
+                ctx.frame,
+                ctx.area,
+                ctx.theme,
+            );
         }
     }
 }

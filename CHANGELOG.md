@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- **`Component::view` signature changed** from
+  `(state, frame, area, theme, ctx)` to `(state, ctx)`. The new
+  `ctx: &mut RenderContext<'_, '_>` bundles `frame`, `area`, `theme`,
+  `focused`, and `disabled` into a single value. This is a large,
+  cascading breakage: every component, every custom component
+  implementation, every direct call to `Component::view`, and every
+  test that renders a component through the public API must be
+  updated. See MIGRATION.md for the upgrade path.
+- **`ViewContext` renamed to `EventContext`.** It is now used only by
+  `Component::handle_event`, not by `Component::view`. The fields and
+  builder methods are unchanged.
+- **`Component::handle_event` signature changed** from
+  `(state, event, ctx: &ViewContext)` to
+  `(state, event, ctx: &EventContext)`. Pure type rename.
+- **`Component::traced_view` signature changed** to match the new
+  `view` signature: `(state, ctx: &mut RenderContext<'_, '_>)`.
+- **`Component::dispatch_event` now takes `&EventContext`** (not
+  `&ViewContext`). Pure type rename.
+- **`ChartGrid::render` signature changed** to take
+  `&mut RenderContext<'_, '_>` as the sole non-`self` argument
+  (previously took `frame`, `area`, `theme`, `ctx`).
+- **`Router::view` signature changed** to take
+  `(state, ctx: &mut RenderContext<'_, '_>)`.
+- **`ConversationView::view_from` signature changed** to take
+  `(source, state, ctx: &mut RenderContext<'_, '_>)`.
+
+### Added
+
+- `RenderContext<'frame, 'buf>` type in `envision::component`
+  that bundles `frame`, `area`, `theme`, `focused`, and `disabled`.
+  Provides builder methods (`focused`, `disabled`), sub-area reborrow
+  (`with_area`), a `render_widget` convenience method, and an
+  `event_context()` slice method for calls that need an
+  `EventContext`.
+- `EventContext` type (renamed from `ViewContext`) in
+  `envision::component`, now used exclusively by
+  `Component::handle_event`. `From<&RenderContext<'_, '_>>` impl is
+  provided so `(&render_ctx).into()` yields an `EventContext`.
+
 ## [0.13.1] - 2026-04-11
 
 ### Added

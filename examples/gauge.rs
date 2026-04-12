@@ -93,31 +93,19 @@ impl App for GaugeApp {
 
         Gauge::view(
             &state.cpu,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         Gauge::view(
             &state.memory,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
         Gauge::view(
             &state.disk,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
         Gauge::view(
             &state.network,
-            frame,
-            chunks[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[3], &theme),
         );
     }
 

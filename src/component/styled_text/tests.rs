@@ -320,7 +320,7 @@ fn test_handle_event_up() {
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::ScrollUp));
 }
@@ -328,8 +328,11 @@ fn test_handle_event_up() {
 #[test]
 fn test_handle_event_k() {
     let state = StyledTextState::new();
-    let msg =
-        StyledText::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
+    let msg = StyledText::handle_event(
+        &state,
+        &Event::char('k'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StyledTextMessage::ScrollUp));
 }
 
@@ -339,7 +342,7 @@ fn test_handle_event_down() {
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::ScrollDown));
 }
@@ -347,8 +350,11 @@ fn test_handle_event_down() {
 #[test]
 fn test_handle_event_j() {
     let state = StyledTextState::new();
-    let msg =
-        StyledText::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
+    let msg = StyledText::handle_event(
+        &state,
+        &Event::char('j'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StyledTextMessage::ScrollDown));
 }
 
@@ -358,7 +364,7 @@ fn test_handle_event_page_up() {
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::PageUp),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::PageUp(10)));
 }
@@ -369,7 +375,7 @@ fn test_handle_event_page_down() {
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::PageDown),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::PageDown(10)));
 }
@@ -377,16 +383,22 @@ fn test_handle_event_page_down() {
 #[test]
 fn test_handle_event_ctrl_u() {
     let state = StyledTextState::new();
-    let msg =
-        StyledText::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true));
+    let msg = StyledText::handle_event(
+        &state,
+        &Event::ctrl('u'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StyledTextMessage::PageUp(10)));
 }
 
 #[test]
 fn test_handle_event_ctrl_d() {
     let state = StyledTextState::new();
-    let msg =
-        StyledText::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true));
+    let msg = StyledText::handle_event(
+        &state,
+        &Event::ctrl('d'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StyledTextMessage::PageDown(10)));
 }
 
@@ -396,7 +408,7 @@ fn test_handle_event_home() {
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::Home));
 }
@@ -404,8 +416,11 @@ fn test_handle_event_home() {
 #[test]
 fn test_handle_event_g() {
     let state = StyledTextState::new();
-    let msg =
-        StyledText::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true));
+    let msg = StyledText::handle_event(
+        &state,
+        &Event::char('g'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(StyledTextMessage::Home));
 }
 
@@ -415,7 +430,7 @@ fn test_handle_event_end() {
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::End));
 }
@@ -423,7 +438,8 @@ fn test_handle_event_end() {
 #[test]
 fn test_handle_event_unfocused_ignored() {
     let state = StyledTextState::new();
-    let msg = StyledText::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
+    let msg =
+        StyledText::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -433,7 +449,7 @@ fn test_handle_event_disabled_ignored() {
     let msg = StyledText::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -441,8 +457,11 @@ fn test_handle_event_disabled_ignored() {
 #[test]
 fn test_handle_event_unrecognized() {
     let state = StyledTextState::new();
-    let msg =
-        StyledText::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
+    let msg = StyledText::handle_event(
+        &state,
+        &Event::char('z'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -454,7 +473,7 @@ fn test_dispatch_event() {
     let output = StyledText::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(StyledTextOutput::ScrollChanged(1)));
 }
@@ -486,7 +505,7 @@ fn test_view_heading_and_text() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StyledText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -506,7 +525,7 @@ fn test_view_bullet_list() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StyledText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -526,7 +545,7 @@ fn test_view_numbered_list() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StyledText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -543,7 +562,7 @@ fn test_view_code_block() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StyledText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -562,7 +581,7 @@ fn test_view_horizontal_rule() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StyledText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -580,7 +599,7 @@ fn test_view_with_title() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StyledText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -598,7 +617,7 @@ fn test_view_no_border() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StyledText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -613,7 +632,7 @@ fn test_view_empty_content() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StyledText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -640,7 +659,7 @@ fn test_view_mixed_content() {
 
     terminal
         .draw(|frame| {
-            StyledText::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StyledText::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -660,10 +679,7 @@ fn test_annotation_emission() {
             .draw(|frame| {
                 StyledText::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();

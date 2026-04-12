@@ -22,7 +22,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -33,7 +33,7 @@ fn test_render_line_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -47,7 +47,7 @@ fn test_render_line_chart_with_labels() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -61,7 +61,7 @@ fn test_render_bar_vertical() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -72,7 +72,7 @@ fn test_render_bar_horizontal() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -85,10 +85,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             Chart::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -100,7 +97,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(60, 2);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -111,7 +108,7 @@ fn test_render_single_series_no_legend() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -156,7 +153,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -250,7 +247,7 @@ fn test_render_bar_chart_with_categories() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     // Verify no panic and rendering succeeds
@@ -263,7 +260,7 @@ fn test_render_bar_chart_falls_back_to_numeric_without_categories() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     // Verify no panic and rendering succeeds with numeric fallback
@@ -281,7 +278,7 @@ fn test_categories_fewer_than_data_points() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -295,7 +292,7 @@ fn test_categories_more_than_data_points() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -308,7 +305,7 @@ fn test_render_horizontal_bar_chart_with_categories() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -420,7 +417,7 @@ fn test_render_scatter_with_xy_data() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -437,7 +434,7 @@ fn test_render_line_with_xy_data() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -456,7 +453,7 @@ fn test_render_mixed_series_implicit_and_explicit_x() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -472,7 +469,7 @@ fn test_render_area_with_xy_data() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -488,7 +485,7 @@ fn test_xy_with_negative_x_values() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -576,7 +573,7 @@ fn test_render_single_mode() {
     ]);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
-        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .draw(|f| Chart::view(&state, &mut RenderContext::new(f, f.area(), &theme)))
         .unwrap();
 }
 
@@ -590,7 +587,7 @@ fn test_render_grouped_vertical() {
     .with_categories(vec!["A", "B"]);
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
-        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .draw(|f| Chart::view(&state, &mut RenderContext::new(f, f.area(), &theme)))
         .unwrap();
 }
 
@@ -603,7 +600,7 @@ fn test_render_grouped_horizontal() {
     .with_bar_mode(BarMode::Grouped);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
-        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .draw(|f| Chart::view(&state, &mut RenderContext::new(f, f.area(), &theme)))
         .unwrap();
 }
 
@@ -617,7 +614,7 @@ fn test_render_stacked_vertical() {
     .with_categories(vec!["Q1", "Q2"]);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
-        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .draw(|f| Chart::view(&state, &mut RenderContext::new(f, f.area(), &theme)))
         .unwrap();
 }
 
@@ -630,7 +627,7 @@ fn test_render_stacked_horizontal() {
     .with_bar_mode(BarMode::Stacked);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
-        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .draw(|f| Chart::view(&state, &mut RenderContext::new(f, f.area(), &theme)))
         .unwrap();
 }
 
@@ -643,7 +640,7 @@ fn test_stacked_sums_values() {
     .with_bar_mode(BarMode::Stacked);
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
-        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .draw(|f| Chart::view(&state, &mut RenderContext::new(f, f.area(), &theme)))
         .unwrap();
 }
 
@@ -652,7 +649,7 @@ fn test_bar_width_auto_scales() {
     let state = ChartState::bar_vertical(vec![DataSeries::new("A", vec![10.0, 20.0])]);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
-        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .draw(|f| Chart::view(&state, &mut RenderContext::new(f, f.area(), &theme)))
         .unwrap();
 }
 
@@ -668,10 +665,7 @@ fn test_render_grouped_disabled() {
         .draw(|f| {
             Chart::view(
                 &state,
-                f,
-                f.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(f, f.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -689,10 +683,7 @@ fn test_render_stacked_disabled() {
         .draw(|f| {
             Chart::view(
                 &state,
-                f,
-                f.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(f, f.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -707,6 +698,6 @@ fn test_render_stacked_zero_values() {
     .with_bar_mode(BarMode::Stacked);
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
-        .draw(|f| Chart::view(&state, f, f.area(), &theme, &ViewContext::default()))
+        .draw(|f| Chart::view(&state, &mut RenderContext::new(f, f.area(), &theme)))
         .unwrap();
 }

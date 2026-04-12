@@ -77,10 +77,7 @@ impl App for AccordionApp {
 
         Accordion::view(
             &state.accordion,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let panel_idx = state
@@ -110,7 +107,7 @@ impl App for AccordionApp {
                 return Some(Msg::Quit);
             }
         }
-        Accordion::handle_event(&state.accordion, event, &ViewContext::new().focused(true))
+        Accordion::handle_event(&state.accordion, event, &EventContext::new().focused(true))
             .map(Msg::Accordion)
     }
 }

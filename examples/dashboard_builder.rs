@@ -242,10 +242,7 @@ impl App for Dashboard {
         // Tab bar
         Tabs::<DashTab>::view(
             &state.tabs,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::new().focused(true),
+            &mut RenderContext::new(frame, chunks[0], &theme).focused(true),
         );
 
         // Main content based on active tab
@@ -254,37 +251,25 @@ impl App for Dashboard {
             Some(DashTab::Overview) => {
                 MetricsDashboard::view(
                     &state.metrics,
-                    frame,
-                    chunks[1],
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, chunks[1], &theme).focused(true),
                 );
             }
             Some(DashTab::Alerts) => {
                 AlertPanel::view(
                     &state.alerts,
-                    frame,
-                    chunks[1],
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, chunks[1], &theme).focused(true),
                 );
             }
             Some(DashTab::Heatmap) => {
                 Heatmap::view(
                     &state.heatmap,
-                    frame,
-                    chunks[1],
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, chunks[1], &theme).focused(true),
                 );
             }
             None => {
                 MetricsDashboard::view(
                     &state.metrics,
-                    frame,
-                    chunks[1],
-                    &theme,
-                    &ViewContext::default(),
+                    &mut RenderContext::new(frame, chunks[1], &theme),
                 );
             }
         }
@@ -300,40 +285,25 @@ impl App for Dashboard {
 
         Sparkline::view(
             &state.cpu_spark,
-            frame,
-            gauge_chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, gauge_chunks[0], &theme),
         );
         Gauge::view(
             &state.cpu_gauge,
-            frame,
-            gauge_chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, gauge_chunks[1], &theme),
         );
         Gauge::view(
             &state.mem_gauge,
-            frame,
-            gauge_chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, gauge_chunks[2], &theme),
         );
         Gauge::view(
             &state.disk_gauge,
-            frame,
-            gauge_chunks[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, gauge_chunks[3], &theme),
         );
 
         // Status bar
         StatusBar::view(
             &state.status,
-            frame,
-            chunks[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[3], &theme),
         );
     }
 
@@ -351,15 +321,15 @@ impl App for Dashboard {
                     Some(DashTab::Overview) => MetricsDashboard::handle_event(
                         &state.metrics,
                         event,
-                        &ViewContext::default(),
+                        &EventContext::default(),
                     )
                     .map(Msg::Metrics),
                     Some(DashTab::Alerts) => {
-                        AlertPanel::handle_event(&state.alerts, event, &ViewContext::default())
+                        AlertPanel::handle_event(&state.alerts, event, &EventContext::default())
                             .map(Msg::Alert)
                     }
                     Some(DashTab::Heatmap) => {
-                        Heatmap::handle_event(&state.heatmap, event, &ViewContext::default())
+                        Heatmap::handle_event(&state.heatmap, event, &EventContext::default())
                             .map(Msg::Heatmap)
                     }
                     None => None,

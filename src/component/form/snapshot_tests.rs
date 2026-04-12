@@ -19,7 +19,7 @@ fn test_snapshot_default_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Form::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Form::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -41,10 +41,7 @@ fn test_snapshot_populated() {
         .draw(|frame| {
             Form::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -60,10 +57,7 @@ fn test_snapshot_focused_text_field() {
         .draw(|frame| {
             Form::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -80,10 +74,7 @@ fn test_snapshot_focused_checkbox() {
         .draw(|frame| {
             Form::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -101,10 +92,7 @@ fn test_snapshot_focused_select() {
         .draw(|frame| {
             Form::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -117,7 +105,7 @@ fn test_snapshot_unfocused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Form::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Form::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -132,7 +120,7 @@ fn test_snapshot_with_placeholder() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Form::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Form::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

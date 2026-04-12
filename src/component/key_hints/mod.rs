@@ -27,8 +27,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, ViewContext};
-use crate::theme::Theme;
+use super::{Component, RenderContext};
 
 /// Layout style for key hints display.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -770,8 +769,8 @@ impl Component for KeyHints {
         None // Display-only, no output
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
-        if state.hints.is_empty() || area.width == 0 || area.height == 0 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if state.hints.is_empty() || ctx.area.width == 0 || ctx.area.height == 0 {
             return;
         }
 
@@ -782,9 +781,9 @@ impl Component for KeyHints {
 
         let mut spans = Vec::new();
 
-        // Use theme for key style (focused/success color for keys)
+        // Use ctx.theme for key style (focused/success color for keys)
         let key_style = if state.key_style == Style::default().fg(Color::Green) {
-            theme.success_style()
+            ctx.theme.success_style()
         } else {
             state.key_style
         };
@@ -811,7 +810,7 @@ impl Component for KeyHints {
             crate::annotation::Annotation::new(crate::annotation::WidgetType::KeyHints)
                 .with_id("key_hints");
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
-        frame.render_widget(annotated, area);
+        ctx.frame.render_widget(annotated, ctx.area);
     }
 }
 

@@ -32,10 +32,9 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
-use crate::theme::Theme;
 
 /// Messages that can be sent to a ScrollView.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -446,7 +445,7 @@ impl Component for ScrollView {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -525,14 +524,14 @@ impl Component for ScrollView {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.width == 0 || area.height == 0 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.width == 0 || ctx.area.height == 0 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::Custom(
                     "ScrollView".to_string(),
                 ))
@@ -543,11 +542,11 @@ impl Component for ScrollView {
         });
 
         let border_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let mut block = Block::default()
@@ -558,8 +557,8 @@ impl Component for ScrollView {
             block = block.title(title.as_str());
         }
 
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
 
         if inner.height == 0 || inner.width == 0 {
             return;
@@ -579,7 +578,12 @@ impl Component for ScrollView {
                     .offset()
                     .min(total.saturating_sub(viewport_height)),
             );
-            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+            crate::scroll::render_scrollbar_inside_border(
+                &bar_scroll,
+                ctx.frame,
+                ctx.area,
+                ctx.theme,
+            );
         }
     }
 }

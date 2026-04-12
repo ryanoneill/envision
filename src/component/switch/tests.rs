@@ -185,7 +185,7 @@ fn test_handle_event_enter_when_focused() {
     let msg = Switch::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SwitchMessage::Toggle));
 }
@@ -193,14 +193,22 @@ fn test_handle_event_enter_when_focused() {
 #[test]
 fn test_handle_event_space_when_focused() {
     let state = SwitchState::new();
-    let msg = Switch::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
+    let msg = Switch::handle_event(
+        &state,
+        &Event::char(' '),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SwitchMessage::Toggle));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = SwitchState::new();
-    let msg = Switch::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = Switch::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -210,7 +218,7 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = Switch::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -218,7 +226,11 @@ fn test_handle_event_ignored_when_disabled() {
 #[test]
 fn test_handle_event_other_key_ignored() {
     let state = SwitchState::new();
-    let msg = Switch::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
+    let msg = Switch::handle_event(
+        &state,
+        &Event::char('a'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -228,7 +240,7 @@ fn test_dispatch_event() {
     let output = Switch::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SwitchOutput::On));
     assert!(state.is_on());
@@ -240,7 +252,7 @@ fn test_dispatch_event_unfocused() {
     let output = Switch::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::default(),
+        &EventContext::default(),
     );
     assert_eq!(output, None);
     assert!(!state.is_on());
@@ -264,7 +276,7 @@ fn test_view_off() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Switch::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -278,7 +290,7 @@ fn test_view_on() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Switch::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -294,10 +306,7 @@ fn test_view_focused() {
         .draw(|frame| {
             Switch::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -314,10 +323,7 @@ fn test_view_focused_on() {
         .draw(|frame| {
             Switch::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -333,10 +339,7 @@ fn test_view_disabled_on() {
         .draw(|frame| {
             Switch::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -351,7 +354,7 @@ fn test_view_with_label() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Switch::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -365,7 +368,7 @@ fn test_view_with_label_on() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Switch::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -382,7 +385,7 @@ fn test_view_custom_labels() {
 
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Switch::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -454,7 +457,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Switch::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -472,7 +475,7 @@ fn test_annotation_on() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Switch::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -488,7 +491,7 @@ fn test_annotation_with_label() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Switch::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

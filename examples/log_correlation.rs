@@ -144,10 +144,7 @@ impl App for LogCorrelationApp {
 
         LogCorrelation::view(
             &state.correlation,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let status = " Tab: switch stream | j/k: scroll | s: toggle sync | q: quit";
@@ -163,8 +160,12 @@ impl App for LogCorrelationApp {
                 return Some(Msg::Quit);
             }
         }
-        LogCorrelation::handle_event(&state.correlation, event, &ViewContext::new().focused(true))
-            .map(Msg::Correlation)
+        LogCorrelation::handle_event(
+            &state.correlation,
+            event,
+            &EventContext::new().focused(true),
+        )
+        .map(Msg::Correlation)
     }
 }
 

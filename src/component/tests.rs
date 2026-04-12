@@ -1,5 +1,4 @@
 use super::*;
-use crate::theme::Theme;
 use ratatui::widgets::Paragraph;
 
 // Test component implementation
@@ -42,15 +41,9 @@ impl Component for TestCounter {
         Some(TestCounterOutput::Changed(state.value))
     }
 
-    fn view(
-        state: &Self::State,
-        frame: &mut Frame,
-        area: Rect,
-        _theme: &Theme,
-        _ctx: &ViewContext,
-    ) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         let text = format!("Count: {}", state.value);
-        frame.render_widget(Paragraph::new(text), area);
+        ctx.frame.render_widget(Paragraph::new(text), ctx.area);
     }
 }
 
@@ -97,7 +90,7 @@ fn test_component_view() {
 
     terminal
         .draw(|frame| {
-            TestCounter::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TestCounter::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 

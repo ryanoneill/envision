@@ -518,55 +518,71 @@ fn test_handle_event_navigation_keys() {
         Calendar::handle_event(
             &state,
             &Event::key(KeyCode::Left),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::SelectPrevDay)
     );
     assert_eq!(
-        Calendar::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
+        Calendar::handle_event(
+            &state,
+            &Event::char('h'),
+            &EventContext::new().focused(true)
+        ),
         Some(CalendarMessage::SelectPrevDay)
     );
     assert_eq!(
         Calendar::handle_event(
             &state,
             &Event::key(KeyCode::Right),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::SelectNextDay)
     );
     assert_eq!(
-        Calendar::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
+        Calendar::handle_event(
+            &state,
+            &Event::char('l'),
+            &EventContext::new().focused(true)
+        ),
         Some(CalendarMessage::SelectNextDay)
     );
     assert_eq!(
         Calendar::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::SelectPrevWeek)
     );
     assert_eq!(
-        Calendar::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        Calendar::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(CalendarMessage::SelectPrevWeek)
     );
     assert_eq!(
         Calendar::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::SelectNextWeek)
     );
     assert_eq!(
-        Calendar::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        Calendar::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(CalendarMessage::SelectNextWeek)
     );
     assert_eq!(
         Calendar::handle_event(
             &state,
             &Event::key(KeyCode::PageUp),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::PrevMonth)
     );
@@ -574,7 +590,7 @@ fn test_handle_event_navigation_keys() {
         Calendar::handle_event(
             &state,
             &Event::key(KeyCode::PageDown),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::NextMonth)
     );
@@ -588,12 +604,16 @@ fn test_handle_event_confirm_keys() {
         Calendar::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::ConfirmSelection)
     );
     assert_eq!(
-        Calendar::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true)),
+        Calendar::handle_event(
+            &state,
+            &Event::char(' '),
+            &EventContext::new().focused(true)
+        ),
         Some(CalendarMessage::ConfirmSelection)
     );
 }
@@ -602,18 +622,22 @@ fn test_handle_event_confirm_keys() {
 fn test_handle_event_unfocused_ignores_events() {
     let state = CalendarState::new(2026, 3).with_selected_day(15);
     assert_eq!(
-        Calendar::handle_event(&state, &Event::key(KeyCode::Left), &ViewContext::default()),
+        Calendar::handle_event(&state, &Event::key(KeyCode::Left), &EventContext::default()),
         None
     );
     assert_eq!(
-        Calendar::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default()),
+        Calendar::handle_event(
+            &state,
+            &Event::key(KeyCode::Enter),
+            &EventContext::default()
+        ),
         None
     );
     assert_eq!(
         Calendar::handle_event(
             &state,
             &Event::key(KeyCode::PageUp),
-            &ViewContext::default()
+            &EventContext::default()
         ),
         None
     );
@@ -626,7 +650,7 @@ fn test_handle_event_disabled_ignores_events() {
         Calendar::handle_event(
             &state,
             &Event::key(KeyCode::Left),
-            &ViewContext::new().focused(true).disabled(true)
+            &EventContext::new().focused(true).disabled(true)
         ),
         None
     );
@@ -634,7 +658,7 @@ fn test_handle_event_disabled_ignores_events() {
         Calendar::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::new().focused(true).disabled(true)
+            &EventContext::new().focused(true).disabled(true)
         ),
         None
     );
@@ -644,7 +668,11 @@ fn test_handle_event_disabled_ignores_events() {
 fn test_handle_event_unrecognized_key_returns_none() {
     let state = CalendarState::new(2026, 3);
     assert_eq!(
-        Calendar::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        Calendar::handle_event(
+            &state,
+            &Event::char('x'),
+            &EventContext::new().focused(true)
+        ),
         None
     );
 }
@@ -657,7 +685,7 @@ fn test_dispatch_event_navigation() {
     let output = Calendar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.selected_day(), Some(16));
     assert_eq!(output, None);
@@ -665,7 +693,7 @@ fn test_dispatch_event_navigation() {
     let output = Calendar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.selected_day(), Some(15));
     assert_eq!(output, None);
@@ -677,7 +705,7 @@ fn test_dispatch_event_enter_confirms() {
     let output = Calendar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CalendarOutput::DateSelected(2026, 3, 15)));
 }
@@ -688,7 +716,7 @@ fn test_dispatch_event_page_navigation() {
     let output = Calendar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::PageUp),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.month(), 2);
     assert_eq!(output, Some(CalendarOutput::MonthChanged(2026, 2)));
@@ -696,7 +724,7 @@ fn test_dispatch_event_page_navigation() {
     let output = Calendar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::PageDown),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.month(), 3);
     assert_eq!(output, Some(CalendarOutput::MonthChanged(2026, 3)));
@@ -708,7 +736,7 @@ fn test_dispatch_event_unfocused_returns_none() {
     let output = Calendar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::default(),
+        &EventContext::default(),
     );
     assert_eq!(output, None);
     assert_eq!(state.selected_day(), Some(15));

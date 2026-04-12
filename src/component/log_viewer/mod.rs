@@ -43,10 +43,10 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 
 use super::{
-    Component, InputFieldMessage, InputFieldState, StatusLogEntry, StatusLogLevel, ViewContext,
+    Component, EventContext, InputFieldMessage, InputFieldState, RenderContext, StatusLogEntry,
+    StatusLogLevel,
 };
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::theme::Theme;
 
 pub use state::LogViewerState;
 
@@ -191,7 +191,7 @@ impl Component for LogViewer {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -444,21 +444,21 @@ impl Component for LogViewer {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.height < 3 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.height < 3 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::container("log_viewer")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled),
             );
         });
 
-        // Layout: search bar (1 line) + filter bar (1 line) + log area
+        // Layout: search bar (1 line) + filter bar (1 line) + log ctx.area
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -466,20 +466,20 @@ impl Component for LogViewer {
                 Constraint::Length(1),
                 Constraint::Min(1),
             ])
-            .split(area);
+            .split(ctx.area);
 
         let search_area = chunks[0];
         let filter_area = chunks[1];
         let log_area = chunks[2];
 
         // Render search bar
-        view::render_search_bar(state, frame, search_area, theme, ctx);
+        view::render_search_bar(state, &mut ctx.with_area(search_area));
 
         // Render filter bar
-        view::render_filter_bar(state, frame, filter_area, theme, ctx);
+        view::render_filter_bar(state, &mut ctx.with_area(filter_area));
 
         // Render log entries
-        view::render_log(state, frame, log_area, theme, ctx);
+        view::render_log(state, &mut ctx.with_area(log_area));
     }
 }
 

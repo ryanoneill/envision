@@ -306,7 +306,7 @@ fn test_handle_event_right_horizontal() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::Increment));
 }
@@ -317,7 +317,7 @@ fn test_handle_event_left_horizontal() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::Decrement));
 }
@@ -325,14 +325,22 @@ fn test_handle_event_left_horizontal() {
 #[test]
 fn test_handle_event_l_horizontal() {
     let state = SliderState::new(0.0, 100.0);
-    let msg = Slider::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
+    let msg = Slider::handle_event(
+        &state,
+        &Event::char('l'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SliderMessage::Increment));
 }
 
 #[test]
 fn test_handle_event_h_horizontal() {
     let state = SliderState::new(0.0, 100.0);
-    let msg = Slider::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
+    let msg = Slider::handle_event(
+        &state,
+        &Event::char('h'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SliderMessage::Decrement));
 }
 
@@ -342,7 +350,7 @@ fn test_handle_event_page_up() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::PageUp),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::IncrementPage));
 }
@@ -353,7 +361,7 @@ fn test_handle_event_page_down() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::PageDown),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::DecrementPage));
 }
@@ -364,7 +372,7 @@ fn test_handle_event_home() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::SetMin));
 }
@@ -375,7 +383,7 @@ fn test_handle_event_end() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::SetMax));
 }
@@ -390,7 +398,7 @@ fn test_handle_event_up_vertical() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::Increment));
 }
@@ -401,7 +409,7 @@ fn test_handle_event_down_vertical() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::Decrement));
 }
@@ -409,14 +417,22 @@ fn test_handle_event_down_vertical() {
 #[test]
 fn test_handle_event_k_vertical() {
     let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
-    let msg = Slider::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
+    let msg = Slider::handle_event(
+        &state,
+        &Event::char('k'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SliderMessage::Increment));
 }
 
 #[test]
 fn test_handle_event_j_vertical() {
     let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
-    let msg = Slider::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
+    let msg = Slider::handle_event(
+        &state,
+        &Event::char('j'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SliderMessage::Decrement));
 }
 
@@ -426,7 +442,7 @@ fn test_handle_event_page_up_vertical() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::PageUp),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::IncrementPage));
 }
@@ -437,7 +453,7 @@ fn test_handle_event_home_vertical() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::SetMin));
 }
@@ -448,7 +464,7 @@ fn test_handle_event_end_vertical() {
     let msg = Slider::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::SetMax));
 }
@@ -460,13 +476,21 @@ fn test_handle_event_end_vertical() {
 #[test]
 fn test_handle_event_unfocused() {
     let state = SliderState::new(0.0, 100.0);
-    let msg = Slider::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
+    let msg = Slider::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 }
 #[test]
 fn test_handle_event_unrelated_key() {
     let state = SliderState::new(0.0, 100.0);
-    let msg = Slider::handle_event(&state, &Event::char('q'), &ViewContext::new().focused(true));
+    let msg = Slider::handle_event(
+        &state,
+        &Event::char('q'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -480,7 +504,7 @@ fn test_dispatch_event() {
     let output = Slider::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SliderOutput::ValueChanged(1.0)));
     assert_eq!(state.value(), 1.0);
@@ -492,7 +516,7 @@ fn test_dispatch_event_unfocused() {
     let output = Slider::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::default(),
+        &EventContext::default(),
     );
     assert_eq!(output, None);
     assert_eq!(state.value(), 0.0);
@@ -528,7 +552,7 @@ fn test_view_horizontal_empty() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Slider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -542,7 +566,7 @@ fn test_view_horizontal_half() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Slider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -556,7 +580,7 @@ fn test_view_horizontal_full() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Slider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -572,7 +596,7 @@ fn test_view_horizontal_with_label() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Slider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -588,7 +612,7 @@ fn test_view_horizontal_no_value_display() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Slider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -604,10 +628,7 @@ fn test_view_horizontal_focused() {
         .draw(|frame| {
             Slider::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -624,10 +645,7 @@ fn test_view_horizontal_disabled() {
         .draw(|frame| {
             Slider::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -644,7 +662,7 @@ fn test_view_vertical() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Slider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -661,7 +679,7 @@ fn test_view_vertical_with_label() {
 
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Slider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -676,7 +694,7 @@ fn test_view_zero_area() {
     // Should not panic
     terminal
         .draw(|frame| {
-            Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Slider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -719,7 +737,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Slider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Slider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -740,10 +758,7 @@ fn test_annotation_focused() {
             .draw(|frame| {
                 Slider::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();
@@ -763,10 +778,7 @@ fn test_annotation_disabled() {
             .draw(|frame| {
                 Slider::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().disabled(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
                 );
             })
             .unwrap();

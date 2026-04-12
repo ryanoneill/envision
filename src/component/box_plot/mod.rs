@@ -24,9 +24,8 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 mod render;
 
@@ -831,7 +830,7 @@ impl Component for BoxPlot {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -884,14 +883,14 @@ impl Component for BoxPlot {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.height < 3 || area.width < 3 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.height < 3 || ctx.area.width < 3 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::container("box_plot")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled),
@@ -899,11 +898,11 @@ impl Component for BoxPlot {
         });
 
         let border_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let mut block = Block::default()
@@ -914,8 +913,8 @@ impl Component for BoxPlot {
             block = block.title(title.as_str());
         }
 
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
 
         if inner.height == 0 || inner.width == 0 || state.datasets.is_empty() {
             return;
@@ -923,10 +922,24 @@ impl Component for BoxPlot {
 
         match state.orientation {
             BoxPlotOrientation::Vertical => {
-                render::render_vertical(state, frame, inner, theme, ctx.focused, ctx.disabled);
+                render::render_vertical(
+                    state,
+                    ctx.frame,
+                    inner,
+                    ctx.theme,
+                    ctx.focused,
+                    ctx.disabled,
+                );
             }
             BoxPlotOrientation::Horizontal => {
-                render::render_horizontal(state, frame, inner, theme, ctx.focused, ctx.disabled);
+                render::render_horizontal(
+                    state,
+                    ctx.frame,
+                    inner,
+                    ctx.theme,
+                    ctx.focused,
+                    ctx.disabled,
+                );
             }
         }
     }

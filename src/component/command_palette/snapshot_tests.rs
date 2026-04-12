@@ -23,7 +23,7 @@ fn test_snapshot_visible_default() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -36,7 +36,7 @@ fn test_snapshot_with_query() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -50,7 +50,7 @@ fn test_snapshot_with_selection() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -66,7 +66,7 @@ fn test_snapshot_no_matches() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -78,7 +78,7 @@ fn test_snapshot_hidden() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -95,10 +95,7 @@ fn test_snapshot_custom_title_and_placeholder() {
         .draw(|frame| {
             CommandPalette::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -114,10 +111,7 @@ fn test_snapshot_empty_items() {
         .draw(|frame| {
             CommandPalette::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -141,10 +135,7 @@ fn test_snapshot_with_descriptions() {
         .draw(|frame| {
             CommandPalette::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();

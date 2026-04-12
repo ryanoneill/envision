@@ -15,7 +15,7 @@ fn test_view_multiple_roots_collapsed() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -36,7 +36,7 @@ fn test_view_multiple_roots_expanded() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -58,10 +58,7 @@ fn test_view_multiple_roots_focused() {
         .draw(|frame| {
             Tree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -84,10 +81,7 @@ fn test_view_selection_on_child() {
         .draw(|frame| {
             Tree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -111,7 +105,7 @@ fn test_view_deep_nesting() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -135,10 +129,7 @@ fn test_view_deep_nesting_selection_at_leaf() {
         .draw(|frame| {
             Tree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -161,7 +152,7 @@ fn test_view_mixed_expanded_collapsed() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -181,7 +172,7 @@ fn test_view_unicode_labels() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -203,10 +194,7 @@ fn test_view_disabled_with_children() {
         .draw(|frame| {
             Tree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -229,10 +217,7 @@ fn test_view_focused_expanded_tree() {
         .draw(|frame| {
             Tree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -251,7 +236,7 @@ fn test_view_unfocused_expanded_tree() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -277,7 +262,7 @@ fn test_view_filtered() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -298,10 +283,7 @@ fn test_view_filtered_focused() {
         .draw(|frame| {
             Tree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -318,7 +300,7 @@ fn test_view_filtered_no_matches() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -339,7 +321,7 @@ fn test_view_many_siblings() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            Tree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Tree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -362,10 +344,7 @@ fn test_view_selection_on_last_root() {
         .draw(|frame| {
             Tree::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();

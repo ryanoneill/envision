@@ -748,7 +748,7 @@ mod handle_event_tests {
     #[test]
     fn test_key_bindings_when_focused() {
         let state = TableState::new(test_rows(), test_columns());
-        let he = |e| Table::<TestRow>::handle_event(&state, &e, &ViewContext::new().focused(true));
+        let he = |e| Table::<TestRow>::handle_event(&state, &e, &EventContext::new().focused(true));
         assert_eq!(he(Event::key(KeyCode::Up)), Some(TableMessage::Up));
         assert_eq!(he(Event::key(KeyCode::Down)), Some(TableMessage::Down));
         assert_eq!(he(Event::key(KeyCode::Home)), Some(TableMessage::First));
@@ -765,7 +765,7 @@ mod handle_event_tests {
             Table::<TestRow>::handle_event(
                 &state,
                 &Event::key(KeyCode::Down),
-                &ViewContext::default()
+                &EventContext::default()
             ),
             None
         );
@@ -773,7 +773,7 @@ mod handle_event_tests {
             Table::<TestRow>::handle_event(
                 &state,
                 &Event::key(KeyCode::Enter),
-                &ViewContext::default()
+                &EventContext::default()
             ),
             None
         );
@@ -786,7 +786,7 @@ mod handle_event_tests {
             Table::<TestRow>::handle_event(
                 &state,
                 &Event::key(KeyCode::Down),
-                &ViewContext::new().focused(true).disabled(true)
+                &EventContext::new().focused(true).disabled(true)
             ),
             None
         );
@@ -798,7 +798,7 @@ mod handle_event_tests {
         let output = Table::<TestRow>::dispatch_event(
             &mut state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true),
+            &EventContext::new().focused(true),
         );
         assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
         assert_eq!(state.selected_index(), Some(1));
@@ -811,7 +811,7 @@ mod handle_event_tests {
         let output = Table::<TestRow>::dispatch_event(
             &mut state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true),
+            &EventContext::new().focused(true),
         );
         assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
 
@@ -821,7 +821,7 @@ mod handle_event_tests {
         let msg = Table::<TestRow>::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true),
+            &EventContext::new().focused(true),
         );
         assert_eq!(msg, Some(TableMessage::Up));
     }
@@ -896,10 +896,7 @@ fn test_annotation_emitted() {
             .draw(|frame| {
                 Table::<TestRow>::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::default(),
+                    &mut RenderContext::new(frame, frame.area(), &theme),
                 );
             })
             .unwrap();

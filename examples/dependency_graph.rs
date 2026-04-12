@@ -97,10 +97,7 @@ impl App for DependencyGraphApp {
 
         DependencyGraph::view(
             &state.graph,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected_info = state
@@ -139,7 +136,7 @@ impl App for DependencyGraphApp {
                 return Some(Msg::Quit);
             }
         }
-        DependencyGraph::handle_event(&state.graph, event, &ViewContext::new().focused(true))
+        DependencyGraph::handle_event(&state.graph, event, &EventContext::new().focused(true))
             .map(Msg::Graph)
     }
 }

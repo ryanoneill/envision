@@ -308,7 +308,7 @@ fn test_disabled_ignores_events() {
     let msg = DataGrid::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -320,7 +320,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = DataGridState::new(sample_rows(), sample_columns());
-    let msg = DataGrid::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
+    let msg = DataGrid::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -335,12 +335,16 @@ fn test_up_key_maps() {
         DataGrid::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Up)
     );
     assert_eq!(
-        DataGrid::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        DataGrid::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(DataGridMessage::Up)
     );
 }
@@ -352,12 +356,16 @@ fn test_down_key_maps() {
         DataGrid::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Down)
     );
     assert_eq!(
-        DataGrid::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        DataGrid::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(DataGridMessage::Down)
     );
 }
@@ -369,7 +377,7 @@ fn test_left_right_key_maps() {
         DataGrid::handle_event(
             &state,
             &Event::key(KeyCode::Left),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Left)
     );
@@ -377,16 +385,24 @@ fn test_left_right_key_maps() {
         DataGrid::handle_event(
             &state,
             &Event::key(KeyCode::Right),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Right)
     );
     assert_eq!(
-        DataGrid::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
+        DataGrid::handle_event(
+            &state,
+            &Event::char('h'),
+            &EventContext::new().focused(true)
+        ),
         Some(DataGridMessage::Left)
     );
     assert_eq!(
-        DataGrid::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
+        DataGrid::handle_event(
+            &state,
+            &Event::char('l'),
+            &EventContext::new().focused(true)
+        ),
         Some(DataGridMessage::Right)
     );
 }
@@ -398,7 +414,7 @@ fn test_home_end_key_maps() {
         DataGrid::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::First)
     );
@@ -406,7 +422,7 @@ fn test_home_end_key_maps() {
         DataGrid::handle_event(
             &state,
             &Event::key(KeyCode::End),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Last)
     );
@@ -419,7 +435,7 @@ fn test_enter_key_maps() {
         DataGrid::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Enter)
     );
@@ -436,7 +452,11 @@ fn test_editing_char_maps_to_input() {
     assert!(state.is_editing());
 
     assert_eq!(
-        DataGrid::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        DataGrid::handle_event(
+            &state,
+            &Event::char('x'),
+            &EventContext::new().focused(true)
+        ),
         Some(DataGridMessage::Input('x'))
     );
 }
@@ -450,7 +470,7 @@ fn test_editing_enter_maps() {
         DataGrid::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Enter)
     );
@@ -465,7 +485,7 @@ fn test_editing_esc_maps_to_cancel() {
         DataGrid::handle_event(
             &state,
             &Event::key(KeyCode::Esc),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Cancel)
     );
@@ -480,7 +500,7 @@ fn test_editing_backspace_maps() {
         DataGrid::handle_event(
             &state,
             &Event::key(KeyCode::Backspace),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Backspace)
     );
@@ -545,7 +565,7 @@ fn test_render_unfocused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DataGrid::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -556,7 +576,7 @@ fn test_render_focused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DataGrid::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -568,7 +588,7 @@ fn test_render_editing() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DataGrid::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -581,10 +601,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             DataGrid::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -596,7 +613,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DataGrid::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -648,7 +665,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                DataGrid::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                DataGrid::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

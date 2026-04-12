@@ -78,8 +78,8 @@ Every interactive component should have:
 1. **State struct** with domain-specific fields (no `focused`/`disabled` fields)
 2. **Instance method**: `update()` on the State type
 3. **`selected_item()`** accessor if the component has selection
-4. **Event guards**: `handle_event` checks `ctx.focused && !ctx.disabled` via `ViewContext`
-5. **View style**: Uses `ViewContext` to determine focused/disabled rendering
+4. **Event guards**: `handle_event` checks `ctx.focused && !ctx.disabled` via `EventContext`
+5. **View style**: Uses `RenderContext` to determine focused/disabled rendering
 
 ## Testing
 
@@ -108,7 +108,8 @@ fn test_view_focused() {
     let theme = Theme::default();
 
     terminal.draw(|frame| {
-        MyComponent::view(&state, frame, area, &theme, &ViewContext::new().focused(true));
+        let mut ctx = RenderContext::new(frame, area, &theme).focused(true);
+        MyComponent::view(&state, &mut ctx);
     }).unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -124,7 +125,8 @@ use crate::input::{Event, KeyCode};
 fn test_handle_event_focused() {
     let state = MyState::new();
     let event = Event::key(KeyCode::Enter);
-    let msg = MyComponent::handle_event(&state, &event, &ViewContext::new().focused(true));
+    let ctx = EventContext::new().focused(true);
+    let msg = MyComponent::handle_event(&state, &event, &ctx);
     assert_eq!(msg, Some(MyMessage::Confirm));
 }
 ```

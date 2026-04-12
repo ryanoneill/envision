@@ -72,31 +72,19 @@ impl App for SpinnerApp {
 
         Spinner::view(
             &state.dots,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         Spinner::view(
             &state.line,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
         Spinner::view(
             &state.circle,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
         Spinner::view(
             &state.stopped,
-            frame,
-            chunks[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[3], &theme),
         );
     }
 

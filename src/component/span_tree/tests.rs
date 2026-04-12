@@ -506,7 +506,7 @@ fn test_set_label_width_clamped_high() {
 #[test]
 fn test_handle_event_not_focused() {
     let state = SpanTreeState::new(vec![SpanNode::new("r", "root", 0.0, 10.0)]);
-    let msg = SpanTree::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
+    let msg = SpanTree::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 #[test]
@@ -516,12 +516,16 @@ fn test_handle_event_down() {
         SpanTree::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(SpanTreeMessage::SelectDown)
     );
     assert_eq!(
-        SpanTree::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        SpanTree::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(SpanTreeMessage::SelectDown)
     );
 }
@@ -533,12 +537,16 @@ fn test_handle_event_up() {
         SpanTree::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(SpanTreeMessage::SelectUp)
     );
     assert_eq!(
-        SpanTree::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        SpanTree::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(SpanTreeMessage::SelectUp)
     );
 }
@@ -550,12 +558,16 @@ fn test_handle_event_expand() {
         SpanTree::handle_event(
             &state,
             &Event::key(KeyCode::Right),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(SpanTreeMessage::Expand)
     );
     assert_eq!(
-        SpanTree::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
+        SpanTree::handle_event(
+            &state,
+            &Event::char('l'),
+            &EventContext::new().focused(true)
+        ),
         Some(SpanTreeMessage::Expand)
     );
 }
@@ -567,12 +579,16 @@ fn test_handle_event_collapse() {
         SpanTree::handle_event(
             &state,
             &Event::key(KeyCode::Left),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(SpanTreeMessage::Collapse)
     );
     assert_eq!(
-        SpanTree::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
+        SpanTree::handle_event(
+            &state,
+            &Event::char('h'),
+            &EventContext::new().focused(true)
+        ),
         Some(SpanTreeMessage::Collapse)
     );
 }
@@ -581,14 +597,18 @@ fn test_handle_event_collapse() {
 fn test_handle_event_toggle() {
     let state = SpanTreeState::new(vec![SpanNode::new("r", "root", 0.0, 10.0)]);
     assert_eq!(
-        SpanTree::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true)),
+        SpanTree::handle_event(
+            &state,
+            &Event::char(' '),
+            &EventContext::new().focused(true)
+        ),
         Some(SpanTreeMessage::Toggle)
     );
     assert_eq!(
         SpanTree::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(SpanTreeMessage::Toggle)
     );
@@ -600,7 +620,7 @@ fn test_handle_event_shift_right() {
     let msg = SpanTree::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::SHIFT),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SpanTreeMessage::SetLabelWidth(32)));
 }
@@ -611,7 +631,7 @@ fn test_handle_event_shift_left() {
     let msg = SpanTree::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SpanTreeMessage::SetLabelWidth(28)));
 }
@@ -629,7 +649,7 @@ fn test_dispatch_event() {
     let output = SpanTree::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SpanTreeOutput::Selected("c".into())));
     assert_eq!(state.selected_index(), Some(1));

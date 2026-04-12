@@ -39,9 +39,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::theme::Theme;
 
 /// The direction in which panes are arranged.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -797,7 +796,7 @@ impl Component for PaneLayout {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -906,10 +905,10 @@ impl Component for PaneLayout {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::PaneLayout)
                     .with_id("pane_layout")
                     .with_focus(ctx.focused)
@@ -917,16 +916,16 @@ impl Component for PaneLayout {
             );
         });
 
-        let rects = state.layout(area);
+        let rects = state.layout(ctx.area);
 
         for (i, (pane, rect)) in state.panes.iter().zip(rects.iter()).enumerate() {
             let is_focused_pane = ctx.focused && i == state.focused_pane;
             let border_style = if ctx.disabled {
-                theme.disabled_style()
+                ctx.theme.disabled_style()
             } else if is_focused_pane {
-                theme.focused_border_style()
+                ctx.theme.focused_border_style()
             } else {
-                theme.border_style()
+                ctx.theme.border_style()
             };
 
             let mut block = Block::default()
@@ -937,7 +936,7 @@ impl Component for PaneLayout {
                 block = block.title(format!(" {} ", title));
             }
 
-            frame.render_widget(block, *rect);
+            ctx.frame.render_widget(block, *rect);
         }
     }
 }

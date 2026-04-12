@@ -31,9 +31,8 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Bar, BarChart, BarGroup, Block, Borders};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::Event;
-use crate::theme::Theme;
 
 /// Strategy for computing the number of histogram bins.
 ///
@@ -680,12 +679,12 @@ impl HistogramState {
 
     /// Maps an input event to a histogram message.
     pub fn handle_event(&self, event: &Event) -> Option<HistogramMessage> {
-        Histogram::handle_event(self, event, &ViewContext::default())
+        Histogram::handle_event(self, event, &EventContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
     pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
-        Histogram::dispatch_event(self, event, &ViewContext::default())
+        Histogram::dispatch_event(self, event, &EventContext::default())
     }
 
     /// Updates the state with a message, returning any output.
@@ -749,7 +748,7 @@ impl Component for Histogram {
     fn handle_event(
         _state: &Self::State,
         _event: &Event,
-        _ctx: &ViewContext,
+        _ctx: &EventContext,
     ) -> Option<Self::Message> {
         // Display-only component; no event handling.
         None
@@ -783,14 +782,14 @@ impl Component for Histogram {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.height < 3 || area.width < 3 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.height < 3 || ctx.area.width < 3 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::container("histogram")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled),
@@ -798,11 +797,11 @@ impl Component for Histogram {
         });
 
         let border_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let mut block = Block::default()
@@ -813,8 +812,8 @@ impl Component for Histogram {
             block = block.title(title.as_str());
         }
 
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
 
         if inner.height == 0 || inner.width == 0 {
             return;
@@ -856,7 +855,7 @@ impl Component for Histogram {
                 let p = ratatui::widgets::Paragraph::new(label.as_str())
                     .alignment(Alignment::Left)
                     .style(Style::default().fg(Color::DarkGray));
-                frame.render_widget(p, y_area);
+                ctx.frame.render_widget(p, y_area);
             }
         }
 
@@ -866,7 +865,7 @@ impl Component for Histogram {
                 let p = ratatui::widgets::Paragraph::new(label.as_str())
                     .alignment(Alignment::Center)
                     .style(Style::default().fg(Color::DarkGray));
-                frame.render_widget(p, x_area);
+                ctx.frame.render_widget(p, x_area);
             }
         }
 
@@ -876,7 +875,7 @@ impl Component for Histogram {
 
         let bar_color = state.color.unwrap_or(Color::Cyan);
         let bar_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
             Style::default().fg(bar_color)
         };
@@ -917,7 +916,7 @@ impl Component for Histogram {
             .bar_style(bar_style)
             .max(max_count as u64);
 
-        frame.render_widget(chart, chart_area);
+        ctx.frame.render_widget(chart, chart_area);
     }
 }
 

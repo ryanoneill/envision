@@ -61,10 +61,7 @@ impl App for ScrollViewApp {
         // Render the scroll view (border + scrollbar)
         ScrollView::view(
             &state.scroll_view,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         // Render content inside the content area
@@ -98,8 +95,12 @@ impl App for ScrollViewApp {
                 return Some(Msg::Quit);
             }
         }
-        ScrollView::handle_event(&state.scroll_view, event, &ViewContext::new().focused(true))
-            .map(Msg::ScrollView)
+        ScrollView::handle_event(
+            &state.scroll_view,
+            event,
+            &EventContext::new().focused(true),
+        )
+        .map(Msg::ScrollView)
     }
 }
 

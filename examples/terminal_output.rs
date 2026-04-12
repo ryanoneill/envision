@@ -79,10 +79,7 @@ impl App for TerminalOutputApp {
         let theme = Theme::default();
         TerminalOutput::view(
             &state.output,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let status = Paragraph::new(
@@ -100,7 +97,7 @@ impl App for TerminalOutputApp {
             }
         }
 
-        TerminalOutput::handle_event(&state.output, event, &ViewContext::new().focused(true))
+        TerminalOutput::handle_event(&state.output, event, &EventContext::new().focused(true))
             .map(Msg::Output)
     }
 }

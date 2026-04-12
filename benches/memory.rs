@@ -31,7 +31,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use envision::backend::CaptureBackend;
-use envision::component::ViewContext;
+use envision::component::RenderContext;
 use envision::component::{
     Column, Component, SelectableList, SelectableListState, Table, TableRow, TableState, Tree,
     TreeNode, TreeState,
@@ -137,10 +137,7 @@ fn bench_selectable_list_1000_view_allocs(c: &mut Criterion) {
                 .draw(|frame| {
                     SelectableList::<String>::view(
                         black_box(&state),
-                        frame,
-                        frame.area(),
-                        &theme,
-                        &ViewContext::default(),
+                        &mut RenderContext::new(frame, frame.area(), &theme),
                     );
                 })
                 .unwrap();
@@ -172,10 +169,7 @@ fn bench_table_1000_view_allocs(c: &mut Criterion) {
                 .draw(|frame| {
                     Table::<BenchRow>::view(
                         black_box(&state),
-                        frame,
-                        frame.area(),
-                        &theme,
-                        &ViewContext::default(),
+                        &mut RenderContext::new(frame, frame.area(), &theme),
                     );
                 })
                 .unwrap();
@@ -200,10 +194,7 @@ fn bench_tree_1000_view_allocs(c: &mut Criterion) {
                 .draw(|frame| {
                     Tree::<String>::view(
                         black_box(&state),
-                        frame,
-                        frame.area(),
-                        &theme,
-                        &ViewContext::default(),
+                        &mut RenderContext::new(frame, frame.area(), &theme),
                     );
                 })
                 .unwrap();

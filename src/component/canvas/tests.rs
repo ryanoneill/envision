@@ -479,7 +479,7 @@ fn test_render_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Canvas::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Canvas::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -490,7 +490,7 @@ fn test_render_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            Canvas::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Canvas::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -524,7 +524,7 @@ fn test_render_with_shapes() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Canvas::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Canvas::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -539,10 +539,7 @@ fn test_render_focused() {
         .draw(|frame| {
             Canvas::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -565,10 +562,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             Canvas::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -582,7 +576,7 @@ fn test_render_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(5, 2);
     terminal
         .draw(|frame| {
-            Canvas::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Canvas::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -593,7 +587,7 @@ fn test_render_tiny_area_no_panic() {
     let (mut terminal, theme) = test_utils::setup_render(1, 1);
     terminal
         .draw(|frame| {
-            Canvas::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Canvas::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -609,7 +603,7 @@ fn test_render_with_points() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            Canvas::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Canvas::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -629,7 +623,7 @@ fn test_render_with_label() {
     let (mut terminal, theme) = test_utils::setup_render(40, 15);
     terminal
         .draw(|frame| {
-            Canvas::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Canvas::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -648,7 +642,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Canvas::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Canvas::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

@@ -90,10 +90,7 @@ impl App for FormApp {
         } else {
             Form::view(
                 &state.form,
-                frame,
-                chunks[0],
-                &theme,
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, chunks[0], &theme),
             );
         }
 
@@ -111,7 +108,7 @@ impl App for FormApp {
                 return Some(Msg::Quit);
             }
         }
-        Form::handle_event(&state.form, event, &ViewContext::new().focused(true)).map(Msg::Form)
+        Form::handle_event(&state.form, event, &EventContext::new().focused(true)).map(Msg::Form)
     }
 }
 

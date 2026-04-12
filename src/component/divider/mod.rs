@@ -25,9 +25,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::Event;
-use crate::theme::Theme;
 
 /// Orientation of the divider.
 ///
@@ -330,7 +329,7 @@ impl DividerState {
     /// assert!(state.handle_event(&Event::key(KeyCode::Enter)).is_none());
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<DividerMessage> {
-        Divider::handle_event(self, event, &ViewContext::default())
+        Divider::handle_event(self, event, &EventContext::default())
     }
 
     /// Dispatches an event by mapping it to a message and updating state.
@@ -349,7 +348,7 @@ impl DividerState {
     /// assert!(state.dispatch_event(&Event::key(KeyCode::Enter)).is_none());
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
-        Divider::dispatch_event(self, event, &ViewContext::default())
+        Divider::dispatch_event(self, event, &EventContext::default())
     }
 }
 
@@ -391,34 +390,34 @@ impl Component for Divider {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::divider("divider")
                     .with_label(state.label.as_deref().unwrap_or(""))
                     .with_disabled(ctx.disabled),
             );
         });
 
-        if area.width == 0 || area.height == 0 {
+        if ctx.area.width == 0 || ctx.area.height == 0 {
             return;
         }
 
         let style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if let Some(color) = state.color {
             Style::default().fg(color)
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         match state.orientation {
             DividerOrientation::Horizontal => {
-                render_horizontal(state, frame, area, style);
+                render_horizontal(state, ctx.frame, ctx.area, style);
             }
             DividerOrientation::Vertical => {
-                render_vertical(state, frame, area, style);
+                render_vertical(state, ctx.frame, ctx.area, style);
             }
         }
     }

@@ -260,10 +260,7 @@ fn test_view() {
         .draw(|frame| {
             SelectableList::<&str>::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -280,10 +277,7 @@ fn test_view_unfocused() {
         .draw(|frame| {
             SelectableList::<&str>::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, frame.area(), &theme),
             );
         })
         .unwrap();
@@ -345,7 +339,7 @@ fn test_handle_event_up() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::Up));
 }
@@ -356,7 +350,7 @@ fn test_handle_event_down() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::Down));
 }
@@ -367,7 +361,7 @@ fn test_handle_event_home() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::First));
 }
@@ -378,7 +372,7 @@ fn test_handle_event_end() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::Last));
 }
@@ -389,7 +383,7 @@ fn test_handle_event_enter() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::Select));
 }
@@ -400,7 +394,7 @@ fn test_handle_event_page_up() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::key(KeyCode::PageUp),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::PageUp(10)));
 }
@@ -411,7 +405,7 @@ fn test_handle_event_page_down() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::key(KeyCode::PageDown),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::PageDown(10)));
 }
@@ -422,7 +416,7 @@ fn test_handle_event_vim_k() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::char('k'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::Up));
 }
@@ -433,7 +427,7 @@ fn test_handle_event_vim_j() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::char('j'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::Down));
 }
@@ -444,7 +438,7 @@ fn test_handle_event_vim_g() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::char('g'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::First));
 }
@@ -455,7 +449,7 @@ fn test_handle_event_vim_shift_g() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::char('G'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectableListMessage::Last));
 }
@@ -466,7 +460,7 @@ fn test_handle_event_ignored_when_unfocused() {
     let msg = SelectableList::<String>::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::default(),
+        &EventContext::default(),
     );
     assert_eq!(msg, None);
 }
@@ -477,7 +471,7 @@ fn test_dispatch_event_selectable_list() {
     let output = SelectableList::<String>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SelectableListOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
@@ -738,10 +732,7 @@ fn test_filter_view() {
         .draw(|frame| {
             SelectableList::<String>::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -821,10 +812,7 @@ fn test_annotation_emitted() {
             .draw(|frame| {
                 SelectableList::<String>::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::default(),
+                    &mut RenderContext::new(frame, frame.area(), &theme),
                 );
             })
             .unwrap();

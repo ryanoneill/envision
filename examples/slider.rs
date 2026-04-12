@@ -109,31 +109,19 @@ impl App for SliderApp {
 
         Slider::view(
             &state.volume,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         Slider::view(
             &state.brightness,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
         Slider::view(
             &state.temperature,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
         Slider::view(
             &state.vertical,
-            frame,
-            chunks[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[3], &theme),
         );
 
         let status = format!(
@@ -160,13 +148,17 @@ impl App for SliderApp {
         }
         // Route event to focused slider
         match state.focus_index {
-            0 => Slider::handle_event(&state.volume, event, &ViewContext::new().focused(true))
+            0 => Slider::handle_event(&state.volume, event, &EventContext::new().focused(true))
                 .map(Msg::Volume),
-            1 => Slider::handle_event(&state.brightness, event, &ViewContext::new().focused(true))
+            1 => Slider::handle_event(&state.brightness, event, &EventContext::new().focused(true))
                 .map(Msg::Brightness),
-            2 => Slider::handle_event(&state.temperature, event, &ViewContext::new().focused(true))
-                .map(Msg::Temperature),
-            _ => Slider::handle_event(&state.vertical, event, &ViewContext::new().focused(true))
+            2 => Slider::handle_event(
+                &state.temperature,
+                event,
+                &EventContext::new().focused(true),
+            )
+            .map(Msg::Temperature),
+            _ => Slider::handle_event(&state.vertical, event, &EventContext::new().focused(true))
                 .map(Msg::Vertical),
         }
     }

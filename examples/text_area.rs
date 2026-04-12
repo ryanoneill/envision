@@ -51,10 +51,7 @@ impl App for TextAreaApp {
 
         TextArea::view(
             &state.editor,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let (row, col) = state.editor.cursor_position();
@@ -72,7 +69,7 @@ impl App for TextAreaApp {
                 return Some(Msg::Quit);
             }
         }
-        TextArea::handle_event(&state.editor, event, &ViewContext::new().focused(true))
+        TextArea::handle_event(&state.editor, event, &EventContext::new().focused(true))
             .map(Msg::Editor)
     }
 }

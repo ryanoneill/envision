@@ -80,17 +80,11 @@ impl App for ChartEnhancedApp {
 
         Chart::view(
             &state.area_chart,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         Chart::view(
             &state.scatter_chart,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
     }
 

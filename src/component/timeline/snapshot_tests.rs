@@ -1,5 +1,6 @@
 use super::*;
 use crate::component::test_utils;
+use ratatui::style::Color;
 
 fn sample_events() -> Vec<TimelineEvent> {
     vec![
@@ -24,7 +25,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -39,7 +40,7 @@ fn test_snapshot_events_only() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -54,7 +55,7 @@ fn test_snapshot_spans_only() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -70,7 +71,7 @@ fn test_snapshot_full_timeline() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -89,10 +90,7 @@ fn test_snapshot_with_selection() {
         .draw(|frame| {
             Timeline::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -111,10 +109,7 @@ fn test_snapshot_disabled() {
         .draw(|frame| {
             Timeline::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -137,10 +132,7 @@ fn test_snapshot_span_selected() {
         .draw(|frame| {
             Timeline::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();

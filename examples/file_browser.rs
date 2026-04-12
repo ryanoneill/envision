@@ -74,10 +74,7 @@ impl App for FileBrowserApp {
 
         FileBrowser::view(
             &state.browser,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -111,7 +108,7 @@ impl App for FileBrowserApp {
                 return Some(Msg::Quit);
             }
         }
-        FileBrowser::handle_event(&state.browser, event, &ViewContext::new().focused(true))
+        FileBrowser::handle_event(&state.browser, event, &EventContext::new().focused(true))
             .map(Msg::Browser)
     }
 }

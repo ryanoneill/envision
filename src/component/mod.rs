@@ -11,7 +11,8 @@
 //!
 //! - [`Component`]: The base trait for all components
 //! - [`Toggleable`]: Components that can be shown or hidden
-//! - [`ViewContext`]: Focus and disabled state passed to `handle_event` and `view`
+//! - [`RenderContext`]: Render-time context (frame, area, theme, focus) passed to `view`
+//! - [`EventContext`]: Focus and disabled state passed to `handle_event`
 //!
 //! # Built-in Components
 //!
@@ -34,9 +35,7 @@
 //! # Example
 //!
 //! ```rust
-//! use envision::component::{Component, ViewContext};
-//! use envision::theme::Theme;
-//! use ratatui::prelude::*;
+//! use envision::component::{Component, RenderContext};
 //!
 //! struct Counter;
 //!
@@ -73,25 +72,21 @@
 //!         Some(CounterOutput::ValueChanged(state.value))
 //!     }
 //!
-//!     fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+//!     fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
 //!         let style = if ctx.focused {
-//!             theme.focused_style()
+//!             ctx.theme.focused_style()
 //!         } else {
-//!             theme.normal_style()
+//!             ctx.theme.normal_style()
 //!         };
 //!         let text = format!("Count: {}", state.value);
-//!         frame.render_widget(
+//!         ctx.render_widget(
 //!             ratatui::widgets::Paragraph::new(text).style(style),
-//!             area,
 //!         );
 //!     }
 //! }
 //! ```
 
-use ratatui::prelude::*;
-
 use crate::input::Event;
-use crate::theme::Theme;
 
 // Input components
 #[cfg(feature = "input-components")]
@@ -253,6 +248,7 @@ mod tooltip;
 pub mod markdown_renderer;
 
 // Always available
+mod context;
 mod focus_manager;
 
 // Input components
@@ -491,61 +487,8 @@ pub use tooltip::{Tooltip, TooltipMessage, TooltipOutput, TooltipPosition, Toolt
 pub use markdown_renderer::{MarkdownRenderer, MarkdownRendererMessage, MarkdownRendererState};
 
 // Always available
+pub use context::{EventContext, RenderContext};
 pub use focus_manager::FocusManager;
-
-/// Render-time context passed to [`Component::view`].
-///
-/// `ViewContext` carries information that the parent determines at render
-/// time, such as whether a component is focused or disabled. This separates
-/// render-time concerns from persistent component state, allowing parents
-/// to control visual appearance without mutating component state.
-///
-/// # Usage
-///
-/// `ctx` values are authoritative for both rendering and event handling.
-/// Components read `ctx.focused` / `ctx.disabled` for visual appearance
-/// (border style, text color, cursor) and to guard `handle_event`.
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::ViewContext;
-///
-/// // Default: unfocused, enabled
-/// let ctx = ViewContext::default();
-///
-/// // Focused component
-/// let ctx = ViewContext::new().focused(true);
-///
-/// // Disabled and focused
-/// let ctx = ViewContext::new().focused(true).disabled(true);
-/// ```
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct ViewContext {
-    /// Whether this component currently has keyboard focus.
-    pub focused: bool,
-    /// Whether this component is currently disabled.
-    pub disabled: bool,
-}
-
-impl ViewContext {
-    /// Creates a new default ViewContext (unfocused, enabled).
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Sets the focused state (builder pattern).
-    pub fn focused(mut self, focused: bool) -> Self {
-        self.focused = focused;
-        self
-    }
-
-    /// Sets the disabled state (builder pattern).
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-}
 
 /// A composable UI component with its own state and message handling.
 ///
@@ -602,13 +545,10 @@ pub trait Component: Sized {
     /// Render the component to the given area.
     ///
     /// Unlike [`App::view`](crate::app::App::view) which renders to the full
-    /// frame, components render to a specific `Rect` area provided by their
-    /// parent.
-    ///
-    /// The `theme` parameter provides the color scheme to use for rendering.
-    /// Use [`Theme::default()`] for the standard color scheme, or
-    /// [`Theme::nord()`] for the Nord color palette.
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext);
+    /// frame, components render to a specific area carried by the
+    /// [`RenderContext`]. The context bundles the frame, render area, theme,
+    /// and focus/disabled state.
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>);
 
     /// Renders the component with optional tracing instrumentation.
     ///
@@ -616,43 +556,38 @@ pub trait Component: Sized {
     /// around the [`view`](Component::view) call with the component type name
     /// and render area dimensions. When the feature is disabled, this is
     /// identical to calling `view` directly.
-    fn traced_view(
-        state: &Self::State,
-        frame: &mut Frame,
-        area: Rect,
-        theme: &Theme,
-        ctx: &ViewContext,
-    ) {
+    fn traced_view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         #[cfg(feature = "tracing")]
         let _span = tracing::trace_span!(
             "component_view",
             component = std::any::type_name::<Self>(),
-            area.x = area.x,
-            area.y = area.y,
-            area.width = area.width,
-            area.height = area.height,
+            area.x = ctx.area.x,
+            area.y = ctx.area.y,
+            area.width = ctx.area.width,
+            area.height = ctx.area.height,
         )
         .entered();
-        Self::view(state, frame, area, theme, ctx);
+        Self::view(state, ctx);
     }
 
     /// Maps an input event to a component message.
     ///
     /// This is the read-only half of event handling. It inspects the
-    /// component's state, the incoming event, and the [`ViewContext`]
+    /// component's state, the incoming event, and the [`EventContext`]
     /// (which carries focused/disabled state from the parent), and
     /// returns an appropriate message if the event is relevant.
     ///
     /// Components should check `ctx.focused` and `ctx.disabled` to
-    /// decide whether to process the event. The same `ctx` should be
-    /// passed to both `handle_event` and [`view`](Component::view) so
-    /// that visual state and event routing are always consistent.
+    /// decide whether to process the event. The same focus/disabled
+    /// state should be passed to both `handle_event` and
+    /// [`view`](Component::view) (via the [`RenderContext`]) so that
+    /// visual state and event routing are always consistent.
     ///
     /// The default implementation returns `None` (ignores all events).
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         let _ = (state, event, ctx);
         None
@@ -669,7 +604,7 @@ pub trait Component: Sized {
     fn dispatch_event(
         state: &mut Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Output> {
         #[cfg(feature = "tracing")]
         let _span = tracing::debug_span!(
@@ -704,9 +639,7 @@ pub trait Component: Sized {
 /// # Example
 ///
 /// ```rust
-/// use envision::component::{Component, Toggleable, ViewContext};
-/// use envision::theme::Theme;
-/// use ratatui::prelude::*;
+/// use envision::component::{Component, RenderContext, Toggleable};
 ///
 /// struct HelpPanel;
 ///
@@ -727,7 +660,7 @@ pub trait Component: Sized {
 /// #     type Output = HelpPanelOutput;
 /// #     fn init() -> Self::State { HelpPanelState { visible: false, content: String::new() } }
 /// #     fn update(_: &mut Self::State, _: Self::Message) -> Option<Self::Output> { None }
-/// #     fn view(_: &Self::State, _: &mut Frame, _: Rect, _: &Theme, _: &ViewContext) {}
+/// #     fn view(_: &Self::State, _: &mut RenderContext<'_, '_>) {}
 /// # }
 /// #
 /// impl Toggleable for HelpPanel {

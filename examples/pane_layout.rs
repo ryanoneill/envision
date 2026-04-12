@@ -75,10 +75,7 @@ impl App for PaneLayoutApp {
         // Render pane borders
         PaneLayout::view(
             &state.layout,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         // Render content in each pane
@@ -120,7 +117,7 @@ impl App for PaneLayoutApp {
                 _ => {}
             }
         }
-        PaneLayout::handle_event(&state.layout, event, &ViewContext::new().focused(true))
+        PaneLayout::handle_event(&state.layout, event, &EventContext::new().focused(true))
             .map(Msg::Layout)
     }
 }

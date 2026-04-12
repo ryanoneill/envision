@@ -1,5 +1,5 @@
 use super::*;
-use crate::component::ViewContext;
+use crate::component::RenderContext;
 use crate::component::chart::DataSeries;
 use crate::component::test_utils;
 
@@ -163,7 +163,7 @@ fn test_render_2x2_grid_does_not_panic() {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            grid.render(frame, frame.area(), &theme, &ViewContext::default());
+            grid.render(&mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -175,7 +175,7 @@ fn test_render_with_empty_cells_does_not_panic() {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            grid.render(frame, frame.area(), &theme, &ViewContext::default());
+            grid.render(&mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -187,7 +187,7 @@ fn test_render_all_empty_does_not_panic() {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            grid.render(frame, frame.area(), &theme, &ViewContext::default());
+            grid.render(&mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -199,7 +199,7 @@ fn test_render_1x1_single_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            grid.render(frame, frame.area(), &theme, &ViewContext::default());
+            grid.render(&mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -216,7 +216,7 @@ fn test_render_small_area_does_not_panic() {
     let (mut terminal, theme) = test_utils::setup_render(10, 6);
     terminal
         .draw(|frame| {
-            grid.render(frame, frame.area(), &theme, &ViewContext::default());
+            grid.render(&mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -228,10 +228,9 @@ fn test_render_with_focused_context() {
         .set(0, 1, sample_chart("R"));
 
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
-    let ctx = ViewContext::new().focused(true);
     terminal
         .draw(|frame| {
-            grid.render(frame, frame.area(), &theme, &ctx);
+            grid.render(&mut RenderContext::new(frame, frame.area(), &theme).focused(true));
         })
         .unwrap();
 }
@@ -248,7 +247,7 @@ fn test_render_mixed_chart_kinds() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            grid.render(frame, frame.area(), &theme, &ViewContext::default());
+            grid.render(&mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 

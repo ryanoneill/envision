@@ -154,7 +154,7 @@ cargo run --example component_showcase
 
 ## Components
 
-Envision provides a comprehensive library of 73 reusable UI components, all following the TEA (The Elm Architecture) pattern with `Component`, `ViewContext`, and `Toggleable` traits.
+Envision provides a comprehensive library of 73 reusable UI components, all following the TEA (The Elm Architecture) pattern with `Component` and `Toggleable` traits.
 
 ### Input Components
 
@@ -277,7 +277,7 @@ Envision follows The Elm Architecture (TEA) pattern:
 
 | Module | Description |
 |--------|-------------|
-| `component` | 73 reusable UI components with `Component`, `ViewContext`, `Toggleable` traits |
+| `component` | 73 reusable UI components with `Component`, `Toggleable` traits |
 | `backend` | `CaptureBackend` for headless rendering |
 | `app` | TEA architecture: `App`, `Runtime`, `Command`, subscriptions |
 | `harness` | `TestHarness` and `AppHarness` for testing |

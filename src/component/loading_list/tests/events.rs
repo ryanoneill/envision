@@ -12,7 +12,7 @@ fn test_handle_event_up() {
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(LoadingListMessage::Up));
 }
@@ -25,7 +25,7 @@ fn test_handle_event_down() {
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(LoadingListMessage::Down));
 }
@@ -38,7 +38,7 @@ fn test_handle_event_select() {
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(LoadingListMessage::Select));
 }
@@ -52,7 +52,7 @@ fn test_handle_event_vim_keys() {
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::char('k'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(LoadingListMessage::Up));
 
@@ -60,7 +60,7 @@ fn test_handle_event_vim_keys() {
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::char('j'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(LoadingListMessage::Down));
 }
@@ -73,7 +73,7 @@ fn test_handle_event_ignored_when_unfocused() {
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::default(),
+        &EventContext::default(),
     );
     assert_eq!(msg, None);
 }
@@ -91,7 +91,7 @@ fn test_dispatch_event() {
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert!(matches!(
         output,
@@ -129,7 +129,7 @@ fn test_disabled_prevents_handle_event() {
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -166,28 +166,28 @@ fn test_handle_event_unrecognized_key() {
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::char('a'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::char('x'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 
     let msg = LoadingList::<TestItem>::handle_event(
         &state,
         &Event::key(KeyCode::Esc),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 }
@@ -206,7 +206,7 @@ fn test_handle_event_all_keys_ignored_when_unfocused() {
         LoadingList::<TestItem>::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::default()
+            &EventContext::default()
         ),
         None
     );
@@ -214,7 +214,7 @@ fn test_handle_event_all_keys_ignored_when_unfocused() {
         LoadingList::<TestItem>::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::default()
+            &EventContext::default()
         ),
         None
     );
@@ -222,16 +222,16 @@ fn test_handle_event_all_keys_ignored_when_unfocused() {
         LoadingList::<TestItem>::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::default()
+            &EventContext::default()
         ),
         None
     );
     assert_eq!(
-        LoadingList::<TestItem>::handle_event(&state, &Event::char('k'), &ViewContext::default()),
+        LoadingList::<TestItem>::handle_event(&state, &Event::char('k'), &EventContext::default()),
         None
     );
     assert_eq!(
-        LoadingList::<TestItem>::handle_event(&state, &Event::char('j'), &ViewContext::default()),
+        LoadingList::<TestItem>::handle_event(&state, &Event::char('j'), &EventContext::default()),
         None
     );
 }
@@ -295,21 +295,21 @@ fn test_dispatch_event_chained_navigation() {
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
 
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(1)));
 
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(2)));
 
@@ -317,7 +317,7 @@ fn test_dispatch_event_chained_navigation() {
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
 }
@@ -332,14 +332,14 @@ fn test_dispatch_event_up_navigation() {
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(1)));
 
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
 
@@ -347,7 +347,7 @@ fn test_dispatch_event_up_navigation() {
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(2)));
 }
@@ -362,7 +362,7 @@ fn test_dispatch_event_enter_selects() {
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert!(matches!(
         output,
@@ -379,7 +379,7 @@ fn test_dispatch_event_vim_keys() {
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::char('j'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
 
@@ -387,7 +387,7 @@ fn test_dispatch_event_vim_keys() {
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
         &Event::char('k'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(2)));
 }

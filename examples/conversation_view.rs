@@ -149,10 +149,7 @@ impl App for ConversationApp {
         let theme = Theme::default();
         ConversationView::view(
             &state.conversation,
-            frame,
-            frame.area(),
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, frame.area(), &theme),
         );
     }
 
@@ -166,7 +163,7 @@ impl App for ConversationApp {
         ConversationView::handle_event(
             &state.conversation,
             event,
-            &ViewContext::new().focused(true),
+            &EventContext::new().focused(true),
         )
         .map(Msg::Conversation)
     }

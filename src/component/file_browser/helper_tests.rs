@@ -140,14 +140,18 @@ fn test_pathbar_focus_only_handles_tab() {
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     // In PathBar focus, regular keys shouldn't map
     assert!(
-        FileBrowser::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true))
-            .is_none()
+        FileBrowser::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        )
+        .is_none()
     );
     assert!(
         FileBrowser::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         )
         .is_none()
     );
@@ -155,7 +159,7 @@ fn test_pathbar_focus_only_handles_tab() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::CycleFocus));
 }
@@ -170,8 +174,11 @@ fn test_filter_focus_handles_chars() {
     // Cycle to Filter
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     // In Filter focus, chars should map to FilterChar
-    let msg =
-        FileBrowser::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
+    let msg = FileBrowser::handle_event(
+        &state,
+        &Event::char('z'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(FileBrowserMessage::FilterChar('z')));
 }
 
@@ -182,7 +189,7 @@ fn test_filter_focus_backspace() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Backspace),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::FilterBackspace));
 }
@@ -194,7 +201,7 @@ fn test_filter_focus_esc() {
     let msg = FileBrowser::handle_event(
         &state,
         &Event::key(KeyCode::Esc),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::FilterClear));
 }

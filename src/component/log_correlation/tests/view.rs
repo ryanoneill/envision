@@ -12,10 +12,7 @@ fn test_render_empty() {
         .draw(|frame| {
             LogCorrelation::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -29,10 +26,7 @@ fn test_render_two_streams() {
         .draw(|frame| {
             LogCorrelation::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -46,10 +40,7 @@ fn test_render_focused() {
         .draw(|frame| {
             LogCorrelation::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -63,10 +54,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             LogCorrelation::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -93,10 +81,7 @@ fn test_render_with_title() {
         .draw(|frame| {
             LogCorrelation::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -111,10 +96,7 @@ fn test_render_with_filter() {
         .draw(|frame| {
             LogCorrelation::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -128,10 +110,7 @@ fn test_render_small_area() {
         .draw(|frame| {
             LogCorrelation::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -145,10 +124,7 @@ fn test_render_narrow_area() {
         .draw(|frame| {
             LogCorrelation::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();

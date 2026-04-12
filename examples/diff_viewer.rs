@@ -79,10 +79,7 @@ fn main() {
         let theme = Theme::default();
         DiffViewer::view(
             &state.viewer,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let mode_str = match state.viewer.mode() {
@@ -109,7 +106,7 @@ fn main() {
             }
         }
 
-        DiffViewer::handle_event(&state.viewer, event, &ViewContext::new().focused(true))
+        DiffViewer::handle_event(&state.viewer, event, &EventContext::new().focused(true))
             .map(Msg::Viewer)
     }
 }

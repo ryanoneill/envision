@@ -126,10 +126,7 @@ impl App for CommandPaletteApp {
         // Main area: render the command palette overlay
         CommandPalette::view(
             &state.palette,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         // Show selection history
@@ -170,7 +167,7 @@ impl App for CommandPaletteApp {
 
         // Delegate to palette when visible
         if state.palette.is_visible() {
-            CommandPalette::handle_event(&state.palette, event, &ViewContext::new().focused(true))
+            CommandPalette::handle_event(&state.palette, event, &EventContext::new().focused(true))
                 .map(Msg::Palette)
         } else {
             None

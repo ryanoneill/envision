@@ -317,7 +317,7 @@ fn test_view() {
 
     terminal
         .draw(|frame| {
-            Menu::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Menu::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -334,10 +334,7 @@ fn test_view_focused() {
         .draw(|frame| {
             Menu::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -360,10 +357,7 @@ fn test_view_selected() {
         .draw(|frame| {
             Menu::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -381,10 +375,7 @@ fn test_view_empty() {
         .draw(|frame| {
             Menu::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -442,7 +433,7 @@ fn test_handle_event_left_when_focused() {
     let msg = Menu::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MenuMessage::Left));
 }
@@ -454,7 +445,7 @@ fn test_handle_event_right_when_focused() {
     let msg = Menu::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MenuMessage::Right));
 }
@@ -466,7 +457,7 @@ fn test_handle_event_select_when_focused() {
     let msg = Menu::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MenuMessage::Select));
 }
@@ -476,13 +467,21 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
     // Not focused by default
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
+    let msg = Menu::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = Menu::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Left), &ViewContext::default());
+    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Left), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -496,7 +495,7 @@ fn test_dispatch_event() {
     let output = Menu::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
@@ -505,7 +504,7 @@ fn test_dispatch_event() {
     let output = Menu::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(MenuOutput::Selected(1)));
 }
@@ -520,7 +519,7 @@ fn test_instance_methods() {
     let output = Menu::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
     assert_eq!(state.selected_index(), Some(1));
@@ -534,7 +533,7 @@ fn test_instance_methods() {
     let msg = Menu::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MenuMessage::Select));
 }
@@ -572,21 +571,21 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = Menu::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Menu::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Menu::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -598,7 +597,7 @@ fn test_dispatch_event_ignored_when_disabled() {
     let output = Menu::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(output, None);
     assert_eq!(state.selected_index(), Some(0));
@@ -616,10 +615,7 @@ fn test_annotation_emitted() {
             .draw(|frame| {
                 Menu::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();

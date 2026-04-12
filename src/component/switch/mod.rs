@@ -28,12 +28,10 @@
 //! assert!(!state.is_on());
 //! ```
 
-use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, Toggleable, ViewContext};
+use super::{Component, EventContext, RenderContext, Toggleable};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 /// Messages that can be sent to a Switch.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -327,7 +325,7 @@ impl Component for Switch {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -342,7 +340,7 @@ impl Component for Switch {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         let indicator = if state.on {
             format!("(*) {}", state.on_label)
         } else {
@@ -356,17 +354,17 @@ impl Component for Switch {
         };
 
         let style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if state.on {
             if ctx.focused {
-                theme.focused_style()
+                ctx.theme.focused_style()
             } else {
-                theme.success_style()
+                ctx.theme.success_style()
             }
         } else if ctx.focused {
-            theme.focused_style()
+            ctx.theme.focused_style()
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         let paragraph = Paragraph::new(text).style(style);
@@ -380,7 +378,7 @@ impl Component for Switch {
         let annotated = crate::annotation::Annotate::new(paragraph, annotation)
             .focused(ctx.focused)
             .disabled(ctx.disabled);
-        frame.render_widget(annotated, area);
+        ctx.frame.render_widget(annotated, ctx.area);
     }
 }
 

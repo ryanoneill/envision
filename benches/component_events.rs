@@ -6,8 +6,8 @@
 
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use envision::component::{
-    Column, Component, InputField, InputFieldState, SelectableList, SelectableListState, Table,
-    TableRow, TableState, TextArea, TextAreaState, ViewContext,
+    Column, Component, EventContext, InputField, InputFieldState, SelectableList,
+    SelectableListState, Table, TableRow, TableState, TextArea, TextAreaState,
 };
 use envision::input::{Event, KeyCode};
 use ratatui::layout::Constraint;
@@ -69,7 +69,7 @@ fn bench_handle_event(c: &mut Criterion) {
                     SelectableList::<String>::handle_event(
                         black_box(&state),
                         black_box(&event),
-                        &ViewContext::new().focused(true),
+                        &EventContext::new().focused(true),
                     )
                 })
             },
@@ -84,7 +84,7 @@ fn bench_handle_event(c: &mut Criterion) {
                     SelectableList::<String>::handle_event(
                         black_box(&state),
                         black_box(&event),
-                        &ViewContext::default(),
+                        &EventContext::default(),
                     )
                 })
             },
@@ -102,7 +102,7 @@ fn bench_handle_event(c: &mut Criterion) {
                 Table::<BenchRow>::handle_event(
                     black_box(&state),
                     black_box(&event),
-                    &ViewContext::new().focused(true),
+                    &EventContext::new().focused(true),
                 )
             })
         });
@@ -113,7 +113,7 @@ fn bench_handle_event(c: &mut Criterion) {
                 Table::<BenchRow>::handle_event(
                     black_box(&state),
                     black_box(&event),
-                    &ViewContext::default(),
+                    &EventContext::default(),
                 )
             })
         });
@@ -136,7 +136,7 @@ fn bench_handle_event(c: &mut Criterion) {
                     TextArea::handle_event(
                         black_box(&state),
                         black_box(&event),
-                        &ViewContext::new().focused(true),
+                        &EventContext::new().focused(true),
                     )
                 })
             },
@@ -151,7 +151,7 @@ fn bench_handle_event(c: &mut Criterion) {
                     TextArea::handle_event(
                         black_box(&state),
                         black_box(&event),
-                        &ViewContext::default(),
+                        &EventContext::default(),
                     )
                 })
             },
@@ -176,7 +176,7 @@ fn bench_handle_event(c: &mut Criterion) {
                     InputField::handle_event(
                         black_box(&state),
                         black_box(&event_insert),
-                        &ViewContext::new().focused(true),
+                        &EventContext::new().focused(true),
                     )
                 })
             },
@@ -192,7 +192,7 @@ fn bench_handle_event(c: &mut Criterion) {
                     InputField::handle_event(
                         black_box(&state),
                         black_box(&event_backspace),
-                        &ViewContext::new().focused(true),
+                        &EventContext::new().focused(true),
                     )
                 })
             },
@@ -207,7 +207,7 @@ fn bench_handle_event(c: &mut Criterion) {
                     InputField::handle_event(
                         black_box(&state),
                         black_box(&event_insert),
-                        &ViewContext::default(),
+                        &EventContext::default(),
                     )
                 })
             },
@@ -238,7 +238,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
                     SelectableList::<String>::dispatch_event(
                         black_box(&mut state),
                         black_box(&event),
-                        &ViewContext::new().focused(true),
+                        &EventContext::new().focused(true),
                     )
                 })
             },
@@ -255,7 +255,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
                 Table::<BenchRow>::dispatch_event(
                     black_box(&mut state),
                     black_box(&event),
-                    &ViewContext::new().focused(true),
+                    &EventContext::new().focused(true),
                 )
             })
         });
@@ -278,7 +278,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
                     TextArea::dispatch_event(
                         black_box(&mut state),
                         black_box(&event_down),
-                        &ViewContext::new().focused(true),
+                        &EventContext::new().focused(true),
                     )
                 })
             },
@@ -301,7 +301,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
                     InputField::dispatch_event(
                         black_box(&mut state),
                         black_box(&event_insert),
-                        &ViewContext::new().focused(true),
+                        &EventContext::new().focused(true),
                     )
                 })
             },
@@ -319,7 +319,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
                     InputField::dispatch_event(
                         black_box(&mut state),
                         black_box(&event_backspace),
-                        &ViewContext::new().focused(true),
+                        &EventContext::new().focused(true),
                     )
                 })
             },

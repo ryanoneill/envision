@@ -424,7 +424,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Accordion::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -438,7 +438,7 @@ fn test_view_collapsed() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Accordion::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -454,7 +454,7 @@ fn test_view_expanded() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Accordion::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -471,7 +471,7 @@ fn test_view_mixed() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Accordion::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -487,10 +487,7 @@ fn test_view_focused_highlight() {
         .draw(|frame| {
             Accordion::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -507,7 +504,7 @@ fn test_view_long_content() {
 
     terminal
         .draw(|frame| {
-            Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Accordion::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -567,7 +564,7 @@ fn test_handle_event_up_when_focused() {
     let msg = Accordion::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(AccordionMessage::Up));
 }
@@ -579,7 +576,7 @@ fn test_handle_event_down_when_focused() {
     let msg = Accordion::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(AccordionMessage::Down));
 }
@@ -591,7 +588,7 @@ fn test_handle_event_toggle_when_focused() {
     let msg = Accordion::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(AccordionMessage::Toggle));
 }
@@ -603,7 +600,7 @@ fn test_handle_event_first_when_focused() {
     let msg = Accordion::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(AccordionMessage::First));
 }
@@ -615,7 +612,7 @@ fn test_handle_event_last_when_focused() {
     let msg = Accordion::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(AccordionMessage::Last));
 }
@@ -624,12 +621,18 @@ fn test_handle_event_last_when_focused() {
 fn test_handle_event_vim_keys() {
     let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
-    let msg_k =
-        Accordion::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
+    let msg_k = Accordion::handle_event(
+        &state,
+        &Event::char('k'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg_k, Some(AccordionMessage::Up));
 
-    let msg_j =
-        Accordion::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
+    let msg_j = Accordion::handle_event(
+        &state,
+        &Event::char('j'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg_j, Some(AccordionMessage::Down));
 }
 
@@ -637,7 +640,11 @@ fn test_handle_event_vim_keys() {
 fn test_handle_event_space_toggle() {
     let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
 
-    let msg = Accordion::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
+    let msg = Accordion::handle_event(
+        &state,
+        &Event::char(' '),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(AccordionMessage::Toggle));
 }
 
@@ -646,13 +653,17 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
     // Not focused by default
 
-    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
+    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
     assert_eq!(msg, None);
 
-    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = Accordion::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 
-    let msg = Accordion::handle_event(&state, &Event::char('j'), &ViewContext::default());
+    let msg = Accordion::handle_event(&state, &Event::char('j'), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -663,14 +674,14 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = Accordion::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Accordion::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -685,7 +696,7 @@ fn test_dispatch_event() {
     let output = Accordion::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(AccordionOutput::FocusChanged(1)));
     assert_eq!(state.focused_index(), 1);
@@ -694,7 +705,7 @@ fn test_dispatch_event() {
     let output = Accordion::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(AccordionOutput::Expanded(1)));
     assert!(state.panels()[1].is_expanded());
@@ -710,7 +721,7 @@ fn test_instance_update() {
     let output = Accordion::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(AccordionOutput::FocusChanged(1)));
     assert_eq!(state.focused_index(), 1);
@@ -760,7 +771,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Accordion::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Accordion::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

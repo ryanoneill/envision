@@ -383,7 +383,7 @@ fn test_disabled_ignores_events() {
     let msg = TerminalOutput::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -392,7 +392,7 @@ fn test_disabled_ignores_events() {
 fn test_unfocused_ignores_events() {
     let state = TerminalOutputState::new();
     let msg =
-        TerminalOutput::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
+        TerminalOutput::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -407,7 +407,7 @@ fn test_handle_event_up() {
         TerminalOutput::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TerminalOutputMessage::ScrollUp)
     );
@@ -420,7 +420,7 @@ fn test_handle_event_down() {
         TerminalOutput::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TerminalOutputMessage::ScrollDown)
     );
@@ -430,11 +430,19 @@ fn test_handle_event_down() {
 fn test_handle_event_k_j() {
     let state = focused_state();
     assert_eq!(
-        TerminalOutput::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        TerminalOutput::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(TerminalOutputMessage::ScrollUp)
     );
     assert_eq!(
-        TerminalOutput::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        TerminalOutput::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(TerminalOutputMessage::ScrollDown)
     );
 }
@@ -446,7 +454,7 @@ fn test_handle_event_page_up_down() {
         TerminalOutput::handle_event(
             &state,
             &Event::key(KeyCode::PageUp),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TerminalOutputMessage::PageUp(10))
     );
@@ -454,7 +462,7 @@ fn test_handle_event_page_up_down() {
         TerminalOutput::handle_event(
             &state,
             &Event::key(KeyCode::PageDown),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TerminalOutputMessage::PageDown(10))
     );
@@ -464,11 +472,19 @@ fn test_handle_event_page_up_down() {
 fn test_handle_event_ctrl_u_d() {
     let state = focused_state();
     assert_eq!(
-        TerminalOutput::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true)),
+        TerminalOutput::handle_event(
+            &state,
+            &Event::ctrl('u'),
+            &EventContext::new().focused(true)
+        ),
         Some(TerminalOutputMessage::PageUp(10))
     );
     assert_eq!(
-        TerminalOutput::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true)),
+        TerminalOutput::handle_event(
+            &state,
+            &Event::ctrl('d'),
+            &EventContext::new().focused(true)
+        ),
         Some(TerminalOutputMessage::PageDown(10))
     );
 }
@@ -480,7 +496,7 @@ fn test_handle_event_home_end() {
         TerminalOutput::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TerminalOutputMessage::Home)
     );
@@ -488,7 +504,7 @@ fn test_handle_event_home_end() {
         TerminalOutput::handle_event(
             &state,
             &Event::key(KeyCode::End),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TerminalOutputMessage::End)
     );
@@ -499,14 +515,18 @@ fn test_handle_event_home_end() {
 fn test_handle_event_g_and_G() {
     let state = focused_state();
     assert_eq!(
-        TerminalOutput::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true)),
+        TerminalOutput::handle_event(
+            &state,
+            &Event::char('g'),
+            &EventContext::new().focused(true)
+        ),
         Some(TerminalOutputMessage::Home)
     );
     assert_eq!(
         TerminalOutput::handle_event(
             &state,
             &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
-            &ViewContext::new().focused(true),
+            &EventContext::new().focused(true),
         ),
         Some(TerminalOutputMessage::End)
     );
@@ -516,7 +536,11 @@ fn test_handle_event_g_and_G() {
 fn test_handle_event_toggle_auto_scroll() {
     let state = focused_state();
     assert_eq!(
-        TerminalOutput::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true)),
+        TerminalOutput::handle_event(
+            &state,
+            &Event::char('a'),
+            &EventContext::new().focused(true)
+        ),
         Some(TerminalOutputMessage::ToggleAutoScroll)
     );
 }
@@ -525,7 +549,11 @@ fn test_handle_event_toggle_auto_scroll() {
 fn test_handle_event_toggle_line_numbers() {
     let state = focused_state();
     assert_eq!(
-        TerminalOutput::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true)),
+        TerminalOutput::handle_event(
+            &state,
+            &Event::char('n'),
+            &EventContext::new().focused(true)
+        ),
         Some(TerminalOutputMessage::ToggleLineNumbers)
     );
 }
@@ -534,7 +562,11 @@ fn test_handle_event_toggle_line_numbers() {
 fn test_handle_event_unrecognized() {
     let state = focused_state();
     assert_eq!(
-        TerminalOutput::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        TerminalOutput::handle_event(
+            &state,
+            &Event::char('x'),
+            &EventContext::new().focused(true)
+        ),
         None
     );
 }
@@ -588,7 +620,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TerminalOutput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -604,7 +636,7 @@ fn test_view_with_content() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TerminalOutput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -620,7 +652,7 @@ fn test_view_with_ansi_colors() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TerminalOutput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -636,7 +668,7 @@ fn test_view_with_line_numbers() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TerminalOutput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -650,7 +682,7 @@ fn test_view_running() {
     let (mut terminal, theme) = test_utils::setup_render(50, 8);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TerminalOutput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -665,7 +697,7 @@ fn test_view_exit_code() {
     let (mut terminal, theme) = test_utils::setup_render(50, 8);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TerminalOutput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -677,7 +709,7 @@ fn test_view_focused() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TerminalOutput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -694,7 +726,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                TerminalOutput::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                TerminalOutput::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -715,10 +747,7 @@ fn test_annotation_focused() {
             .draw(|frame| {
                 TerminalOutput::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();
