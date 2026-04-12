@@ -44,8 +44,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`ConversationView::view_from` signature changed** to take
   `(source, state, ctx: &mut RenderContext<'_, '_>)`.
 
+### Breaking (Worker module)
+
+- **`ProgressSender` is now generic**: `ProgressSender<P>` where `P` is
+  any `Send + 'static` type. The old `send_percentage()` and
+  `send_status()` convenience methods are removed. Use
+  `sender.send(WorkerProgress::new(0.5, None))` for percentage+string,
+  or define your own progress enum for richer updates.
+
 ### Added
 
+- `Command::subscribe(BoxedSubscription<M>)` for registering
+  subscriptions dynamically from within `update()`. This unblocks the
+  worker module for on-demand background tasks — return
+  `Command::subscribe(sub)` from `update()` and the runtime registers
+  the subscription on the next command processing cycle.
+- `ProgressSender::new(tx)` public constructor for creating a
+  `ProgressSender` outside of `WorkerBuilder` (testing, channel
+  bridging).
+- `ProgressSender::try_send()` for non-blocking fire-and-forget
+  progress updates. Use for high-frequency ticks where dropping one is
+  better than applying backpressure.
 - `RenderContext<'frame, 'buf>` type in `envision::component`
   that bundles `frame`, `area`, `theme`, `focused`, and `disabled`.
   Provides builder methods (`focused`, `disabled`), sub-area reborrow
