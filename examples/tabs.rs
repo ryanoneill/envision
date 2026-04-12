@@ -60,10 +60,7 @@ impl App for TabsApp {
 
         Tabs::<String>::view(
             &state.tabs,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let tab_name = state
@@ -98,7 +95,7 @@ impl App for TabsApp {
                 return Some(Msg::Quit);
             }
         }
-        Tabs::handle_event(&state.tabs, event, &ViewContext::new().focused(true)).map(Msg::Tabs)
+        Tabs::handle_event(&state.tabs, event, &EventContext::new().focused(true)).map(Msg::Tabs)
     }
 }
 

@@ -119,31 +119,19 @@ impl App for SwitchApp {
         // Switches
         Switch::view(
             &state.wifi,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
         Switch::view(
             &state.bluetooth,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
         Switch::view(
             &state.dark_mode,
-            frame,
-            chunks[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[3], &theme),
         );
         Switch::view(
             &state.notifications,
-            frame,
-            chunks[4],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[4], &theme),
         );
 
         // Summary
@@ -190,16 +178,16 @@ impl App for SwitchApp {
         }
         // Route event to focused switch
         match state.focus_index {
-            0 => Switch::handle_event(&state.wifi, event, &ViewContext::new().focused(true))
+            0 => Switch::handle_event(&state.wifi, event, &EventContext::new().focused(true))
                 .map(Msg::Wifi),
-            1 => Switch::handle_event(&state.bluetooth, event, &ViewContext::new().focused(true))
+            1 => Switch::handle_event(&state.bluetooth, event, &EventContext::new().focused(true))
                 .map(Msg::Bluetooth),
-            2 => Switch::handle_event(&state.dark_mode, event, &ViewContext::new().focused(true))
+            2 => Switch::handle_event(&state.dark_mode, event, &EventContext::new().focused(true))
                 .map(Msg::DarkMode),
             _ => Switch::handle_event(
                 &state.notifications,
                 event,
-                &ViewContext::new().focused(true),
+                &EventContext::new().focused(true),
             )
             .map(Msg::Notifications),
         }

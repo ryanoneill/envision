@@ -38,12 +38,9 @@ mod render;
 
 pub use item::{PaletteItem, fuzzy_score};
 
-use ratatui::prelude::*;
-
-use super::{Component, Toggleable, ViewContext};
+use super::{Component, EventContext, RenderContext, Toggleable};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
-use crate::theme::Theme;
 
 /// Messages that can be sent to a CommandPalette.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -622,7 +619,7 @@ impl Component for CommandPalette {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled || !state.visible {
             return None;
@@ -743,8 +740,15 @@ impl Component for CommandPalette {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        render::render_command_palette(state, frame, area, theme, ctx.focused, ctx.disabled);
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        render::render_command_palette(
+            state,
+            ctx.frame,
+            ctx.area,
+            ctx.theme,
+            ctx.focused,
+            ctx.disabled,
+        );
     }
 }
 

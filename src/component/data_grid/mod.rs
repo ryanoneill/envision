@@ -43,10 +43,11 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Row, Table as RatatuiTable};
 
-use super::{Column, Component, InputFieldMessage, InputFieldState, TableRow, ViewContext};
+use super::{
+    Column, Component, EventContext, InputFieldMessage, InputFieldState, RenderContext, TableRow,
+};
 use crate::input::{Event, KeyCode};
 use crate::scroll::ScrollState;
-use crate::theme::Theme;
 
 /// Messages that can be sent to a DataGrid.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -623,7 +624,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -819,14 +820,14 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         if state.columns.is_empty() {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::table("data_grid")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled),
@@ -860,7 +861,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
             .collect();
 
         let header_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
             Style::default().add_modifier(Modifier::BOLD)
         };
@@ -894,17 +895,17 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
             .collect();
 
         let border_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let highlight_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
-            theme.selected_highlight_style(ctx.focused)
+            ctx.theme.selected_highlight_style(ctx.focused)
         };
 
         let table = RatatuiTable::new(rows, widths)
@@ -919,17 +920,23 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
 
         let mut table_state = ratatui::widgets::TableState::default();
         table_state.select(state.selected_row);
-        frame.render_stateful_widget(table, area, &mut table_state);
+        ctx.frame
+            .render_stateful_widget(table, ctx.area, &mut table_state);
 
         // Render scrollbar by mirroring the offset from ratatui's TableState
-        let inner = area.inner(Margin::new(1, 1));
+        let inner = ctx.area.inner(Margin::new(1, 1));
         // Viewport for data rows: inner height minus header row (1) and bottom margin (1)
         let data_viewport = (inner.height as usize).saturating_sub(2);
         if data_viewport > 0 && state.rows.len() > data_viewport {
             let mut bar_scroll = ScrollState::new(state.rows.len());
             bar_scroll.set_viewport_height(data_viewport);
             bar_scroll.set_offset(table_state.offset());
-            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+            crate::scroll::render_scrollbar_inside_border(
+                &bar_scroll,
+                ctx.frame,
+                ctx.area,
+                ctx.theme,
+            );
         }
 
         // Show cursor when editing
@@ -937,7 +944,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
             if let Some(row_idx) = state.selected_row {
                 // Calculate cursor position for the edit cell
                 // This is approximate — exact positioning depends on column widths
-                let content_area = area.inner(Margin::new(1, 1));
+                let content_area = ctx.area.inner(Margin::new(1, 1));
                 let col_areas = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints(state.columns.iter().map(|c| c.width()).collect::<Vec<_>>())
@@ -947,8 +954,9 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                     // +2 for header row and margin
                     let cursor_y = content_area.y + 2 + (row_idx as u16);
                     let cursor_x = col_area.x + state.editor.cursor_display_position() as u16;
-                    if cursor_y < area.bottom() && cursor_x < col_area.right() {
-                        frame.set_cursor_position(Position::new(cursor_x, cursor_y));
+                    if cursor_y < ctx.area.bottom() && cursor_x < col_area.right() {
+                        ctx.frame
+                            .set_cursor_position(Position::new(cursor_x, cursor_y));
                     }
                 }
             }

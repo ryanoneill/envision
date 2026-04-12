@@ -8,7 +8,7 @@ use super::*;
 fn test_unfocused_ignores_events() {
     let state = ConversationViewState::new();
     assert_eq!(
-        ConversationView::handle_event(&state, &Event::char('k'), &ViewContext::default()),
+        ConversationView::handle_event(&state, &Event::char('k'), &EventContext::default()),
         None
     );
 }
@@ -20,7 +20,7 @@ fn test_disabled_ignores_events() {
         ConversationView::handle_event(
             &state,
             &Event::char('k'),
-            &ViewContext::new().focused(true).disabled(true)
+            &EventContext::new().focused(true).disabled(true)
         ),
         None
     );
@@ -33,7 +33,7 @@ fn test_scroll_up_event() {
         ConversationView::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollUp)
     );
@@ -41,7 +41,7 @@ fn test_scroll_up_event() {
         ConversationView::handle_event(
             &state,
             &Event::char('k'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollUp)
     );
@@ -54,7 +54,7 @@ fn test_scroll_down_event() {
         ConversationView::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollDown)
     );
@@ -62,7 +62,7 @@ fn test_scroll_down_event() {
         ConversationView::handle_event(
             &state,
             &Event::char('j'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollDown)
     );
@@ -75,7 +75,7 @@ fn test_scroll_to_top_event() {
         ConversationView::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollToTop)
     );
@@ -83,7 +83,7 @@ fn test_scroll_to_top_event() {
         ConversationView::handle_event(
             &state,
             &Event::char('g'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollToTop)
     );
@@ -96,7 +96,7 @@ fn test_scroll_to_bottom_event() {
         ConversationView::handle_event(
             &state,
             &Event::key(KeyCode::End),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollToBottom)
     );
@@ -104,7 +104,7 @@ fn test_scroll_to_bottom_event() {
         ConversationView::handle_event(
             &state,
             &Event::char('G'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollToBottom)
     );
@@ -117,7 +117,7 @@ fn test_page_up_event() {
         ConversationView::handle_event(
             &state,
             &Event::key(KeyCode::PageUp),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::PageUp)
     );
@@ -130,7 +130,7 @@ fn test_page_down_event() {
         ConversationView::handle_event(
             &state,
             &Event::key(KeyCode::PageDown),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::PageDown)
     );
@@ -143,7 +143,7 @@ fn test_unrecognized_key_ignored() {
         ConversationView::handle_event(
             &state,
             &Event::char('x'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         None
     );

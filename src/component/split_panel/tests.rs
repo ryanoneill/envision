@@ -247,7 +247,7 @@ fn test_disabled_ignores_events() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -259,7 +259,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = SplitPanelState::new(SplitOrientation::Vertical);
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
+    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -273,7 +273,7 @@ fn test_tab_maps_to_focus_other() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::FocusOther));
 }
@@ -284,7 +284,7 @@ fn test_backtab_maps_to_focus_other() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key(KeyCode::BackTab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::FocusOther));
 }
@@ -295,7 +295,7 @@ fn test_ctrl_right_maps_to_grow_first() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::GrowFirst));
 }
@@ -306,7 +306,7 @@ fn test_ctrl_left_maps_to_shrink_first() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::ShrinkFirst));
 }
@@ -317,7 +317,7 @@ fn test_ctrl_down_maps_to_grow_first() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key_with(KeyCode::Down, KeyModifiers::CONTROL),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::GrowFirst));
 }
@@ -328,7 +328,7 @@ fn test_ctrl_up_maps_to_shrink_first() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key_with(KeyCode::Up, KeyModifiers::CONTROL),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::ShrinkFirst));
 }
@@ -336,8 +336,11 @@ fn test_ctrl_up_maps_to_shrink_first() {
 #[test]
 fn test_ctrl_0_maps_to_reset_ratio() {
     let state = vertical_state();
-    let msg =
-        SplitPanel::handle_event(&state, &Event::ctrl('0'), &ViewContext::new().focused(true));
+    let msg = SplitPanel::handle_event(
+        &state,
+        &Event::ctrl('0'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SplitPanelMessage::ResetRatio));
 }
 
@@ -347,7 +350,7 @@ fn test_arrow_without_ctrl_ignored() {
     let msg = SplitPanel::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 }
@@ -406,7 +409,7 @@ fn test_dispatch_event_resize() {
     let output = SplitPanel::dispatch_event(
         &mut state,
         &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert!(matches!(output, Some(SplitPanelOutput::RatioChanged(_))));
 }
@@ -426,7 +429,7 @@ fn test_render_vertical() {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SplitPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -437,7 +440,7 @@ fn test_render_horizontal() {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SplitPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -449,7 +452,7 @@ fn test_render_second_pane_focused() {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SplitPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -462,10 +465,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             SplitPanel::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -498,7 +498,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                SplitPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                SplitPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

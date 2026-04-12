@@ -1,6 +1,6 @@
 #![cfg(feature = "full")]
 //! Stress tests exercising components with large datasets (10,000+ items).
-use envision::ViewContext;
+use envision::RenderContext;
 
 use envision::component::{DataGrid, DataGridMessage, DataGridState};
 use envision::{
@@ -96,7 +96,7 @@ fn test_table_stress_10000_rows() {
 
     // Render to verify no panics with large dataset
     assert_renders_ok("Table-10k", 80, 24, |frame, area, theme| {
-        Table::<StressRow>::view(&state, frame, area, theme, &ViewContext::default());
+        Table::<StressRow>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 }
 
@@ -154,7 +154,7 @@ fn test_tree_stress_10000_nodes() {
 
     // Render to verify no panics with large tree
     assert_renders_ok("Tree-11k", 100, 40, |frame, area, theme| {
-        Tree::<String>::view(&state, frame, area, theme, &ViewContext::default());
+        Tree::<String>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 }
 
@@ -208,7 +208,7 @@ fn test_loading_list_stress_10000_items() {
 
     // Render to verify no panics
     assert_renders_ok("LoadingList-10k", 80, 30, |frame, area, theme| {
-        LoadingList::<String>::view(&state, frame, area, theme, &ViewContext::default());
+        LoadingList::<String>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 }
 
@@ -250,7 +250,7 @@ fn test_selectable_list_stress_50000_items() {
 
     // Render to verify no panics with massive list
     assert_renders_ok("SelectableList-50k", 80, 24, |frame, area, theme| {
-        SelectableList::<String>::view(&state, frame, area, theme, &ViewContext::default());
+        SelectableList::<String>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 }
 
@@ -289,7 +289,7 @@ fn test_accordion_stress_1000_panels() {
 
     // Render to verify no panics
     assert_renders_ok("Accordion-1k", 80, 40, |frame, area, theme| {
-        Accordion::view(&state, frame, area, theme, &ViewContext::default());
+        Accordion::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 }
 
@@ -329,7 +329,7 @@ fn test_data_grid_stress_10000_rows() {
 
     // Render to verify no panics
     assert_renders_ok("DataGrid-10k", 120, 40, |frame, area, theme| {
-        DataGrid::<StressRow>::view(&state, frame, area, theme, &ViewContext::default());
+        DataGrid::<StressRow>::view(&state, &mut RenderContext::new(frame, area, theme));
     });
 }
 
@@ -346,7 +346,7 @@ fn test_rapid_input_10000_events() {
     let down = envision::Event::key(crossterm::event::KeyCode::Down);
     let up = envision::Event::key(crossterm::event::KeyCode::Up);
 
-    let ctx = envision::ViewContext::new().focused(true);
+    let ctx = envision::EventContext::new().focused(true);
     for i in 0..10_000 {
         if i % 2 == 0 {
             envision::SelectableList::<String>::dispatch_event(&mut state, &down, &ctx);

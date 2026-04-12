@@ -61,10 +61,7 @@ impl App for BoxPlotApp {
         let area = frame.area();
         BoxPlot::view(
             &state.box_plot,
-            frame,
-            area,
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, area, &theme),
         );
     }
 

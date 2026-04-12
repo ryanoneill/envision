@@ -209,10 +209,7 @@ impl App for ProcessorApp {
         frame.render_widget(progress_block, sections[1]);
         ProgressBar::view(
             &state.progress,
-            frame,
-            progress_inner,
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, progress_inner, &theme),
         );
 
         // -- Current file indicator --
@@ -239,10 +236,7 @@ impl App for ProcessorApp {
         // -- Status log --
         StatusLog::view(
             &state.log,
-            frame,
-            sections[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, sections[3], &theme),
         );
 
         // -- Bottom status bar --
@@ -266,7 +260,7 @@ impl App for ProcessorApp {
             }
         }
         // Delegate to the status log for scroll events (Up/Down keys).
-        StatusLog::handle_event(&state.log, event, &ViewContext::new().focused(true))
+        StatusLog::handle_event(&state.log, event, &EventContext::new().focused(true))
             .map(ProcessorMsg::Log)
     }
 }

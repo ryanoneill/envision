@@ -34,8 +34,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, RenderDirection, Sparkline as RatatuiSparkline};
 
-use super::{Component, ViewContext};
-use crate::theme::Theme;
+use super::{Component, RenderContext};
 
 /// The direction in which sparkline data is rendered.
 ///
@@ -486,7 +485,7 @@ impl Component for Sparkline {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         let display_data = match state.max_display_points {
             Some(n) if state.data.len() > n => &state.data[state.data.len() - n..],
             _ => &state.data,
@@ -506,11 +505,11 @@ impl Component for Sparkline {
         };
 
         let style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if let Some(color) = state.color {
             Style::default().fg(color)
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         let direction: RenderDirection = state.direction.clone().into();
@@ -530,7 +529,7 @@ impl Component for Sparkline {
                 .with_id("sparkline")
                 .with_label(state.title.as_deref().unwrap_or(""));
         let annotated = crate::annotation::Annotate::new(sparkline, annotation);
-        frame.render_widget(annotated, area);
+        ctx.frame.render_widget(annotated, ctx.area);
     }
 }
 

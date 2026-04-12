@@ -42,9 +42,8 @@ use std::collections::HashMap;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 // ---------------------------------------------------------------------------
 // Date math helpers (private)
@@ -678,7 +677,7 @@ impl Component for Calendar {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -700,14 +699,14 @@ impl Component for Calendar {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.height == 0 || area.width == 0 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.height == 0 || ctx.area.width == 0 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::Custom(
                     "Calendar".to_string(),
                 ))
@@ -719,34 +718,34 @@ impl Component for Calendar {
 
         // Determine styles
         let border_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let normal_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         let header_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_bold_style()
+            ctx.theme.focused_bold_style()
         } else {
             Style::default()
-                .fg(theme.foreground)
+                .fg(ctx.theme.foreground)
                 .add_modifier(Modifier::BOLD)
         };
 
         let day_header_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
             Style::default()
-                .fg(theme.primary)
+                .fg(ctx.theme.primary)
                 .add_modifier(Modifier::BOLD)
         };
 
@@ -762,8 +761,8 @@ impl Component for Calendar {
             .border_style(border_style)
             .title(Span::styled(format!(" {title_text} "), header_style));
 
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
 
         if inner.height == 0 || inner.width == 0 {
             return;
@@ -783,9 +782,9 @@ impl Component for Calendar {
         let total_days = days_in_month(state.year, state.month);
 
         let selected_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
-            theme.selected_highlight_style(ctx.focused)
+            ctx.theme.selected_highlight_style(ctx.focused)
         };
 
         // Build week rows
@@ -834,9 +833,9 @@ impl Component for Calendar {
 
         // Navigation hint footer
         let footer_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
-            theme.placeholder_style()
+            ctx.theme.placeholder_style()
         };
         lines.push(Line::from(vec![Span::styled(
             " \u{25c0} PgUp          PgDn \u{25b6}",
@@ -844,7 +843,7 @@ impl Component for Calendar {
         )]));
 
         let paragraph = Paragraph::new(lines).style(normal_style);
-        frame.render_widget(paragraph, inner);
+        ctx.frame.render_widget(paragraph, inner);
     }
 }
 

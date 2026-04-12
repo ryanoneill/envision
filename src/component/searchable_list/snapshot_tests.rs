@@ -21,7 +21,7 @@ fn test_snapshot_default_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -33,7 +33,7 @@ fn test_snapshot_populated() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -47,10 +47,7 @@ fn test_snapshot_focused_filter() {
         .draw(|frame| {
             SearchableList::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -66,10 +63,7 @@ fn test_snapshot_focused_list() {
         .draw(|frame| {
             SearchableList::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -85,10 +79,7 @@ fn test_snapshot_filtered() {
         .draw(|frame| {
             SearchableList::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -107,10 +98,7 @@ fn test_snapshot_no_matches() {
         .draw(|frame| {
             SearchableList::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -123,7 +111,7 @@ fn test_snapshot_custom_placeholder() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            SearchableList::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SearchableList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

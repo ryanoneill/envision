@@ -336,47 +336,32 @@ impl App for ChatClient {
         // Tab bar
         TabBar::view(
             &state.tab_bar,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::new().focused(true),
+            &mut RenderContext::new(frame, chunks[0], &theme).focused(true),
         );
 
         // Conversation
         ConversationView::view(
             &state.active_conv().view,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::new().focused(conv_focused),
+            &mut RenderContext::new(frame, chunks[1], &theme).focused(conv_focused),
         );
 
         // Input
         TextArea::view(
             &state.input,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::new().focused(input_focused),
+            &mut RenderContext::new(frame, chunks[2], &theme).focused(input_focused),
         );
 
         // Status
         StatusBar::view(
             &state.status,
-            frame,
-            chunks[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[3], &theme),
         );
 
         // Command palette overlay (render last)
         if state.palette.is_visible() {
             CommandPalette::view(
                 &state.palette,
-                frame,
-                area,
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, area, &theme).focused(true),
             );
         }
     }
@@ -391,7 +376,7 @@ impl App for ChatClient {
 
         // Command palette gets priority
         if state.palette.is_visible() {
-            return CommandPalette::handle_event(&state.palette, event, &ViewContext::default())
+            return CommandPalette::handle_event(&state.palette, event, &EventContext::default())
                 .map(Msg::Palette);
         }
 
@@ -417,7 +402,7 @@ impl App for ChatClient {
             if ctrl && key.code == KeyCode::Enter {
                 return Some(Msg::SubmitInput);
             }
-            return TextArea::handle_event(&state.input, event, &ViewContext::default())
+            return TextArea::handle_event(&state.input, event, &EventContext::default())
                 .map(Msg::Input);
         }
 
@@ -426,13 +411,13 @@ impl App for ChatClient {
             return ConversationView::handle_event(
                 &state.active_conv().view,
                 event,
-                &ViewContext::default(),
+                &EventContext::default(),
             )
             .map(Msg::Conv);
         }
 
         // Fall through: route to TabBar for left/right tab switching
-        TabBar::handle_event(&state.tab_bar, event, &ViewContext::default()).map(Msg::TabBar)
+        TabBar::handle_event(&state.tab_bar, event, &EventContext::default()).map(Msg::TabBar)
     }
 }
 
@@ -493,7 +478,7 @@ fn main() -> envision::Result<()> {
     println!("  - TabBar with closable conversation tabs");
     println!("  - TextArea multi-line input");
     println!("  - CommandPalette for slash commands");
-    println!("  - FocusManager + ViewContext focus routing");
+    println!("  - FocusManager + EventContext focus routing");
     println!("  - StatusBar with message count");
 
     Ok(())

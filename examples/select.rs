@@ -88,17 +88,11 @@ impl App for SelectApp {
 
         Select::view(
             &state.color,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::new().focused(state.focus_index == 0),
+            &mut RenderContext::new(frame, chunks[0], &theme).focused(state.focus_index == 0),
         );
         Select::view(
             &state.size,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::new().focused(state.focus_index == 1),
+            &mut RenderContext::new(frame, chunks[1], &theme).focused(state.focus_index == 1),
         );
 
         // Summary
@@ -137,9 +131,9 @@ impl App for SelectApp {
         }
         // Route event to focused select
         match state.focus_index {
-            0 => Select::handle_event(&state.color, event, &ViewContext::new().focused(true))
+            0 => Select::handle_event(&state.color, event, &EventContext::new().focused(true))
                 .map(Msg::Color),
-            _ => Select::handle_event(&state.size, event, &ViewContext::new().focused(true))
+            _ => Select::handle_event(&state.size, event, &EventContext::new().focused(true))
                 .map(Msg::Size),
         }
     }

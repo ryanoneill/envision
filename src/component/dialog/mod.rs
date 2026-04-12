@@ -27,7 +27,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
-use super::{Component, Toggleable, ViewContext};
+use super::{Component, EventContext, RenderContext, Toggleable};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -519,7 +519,7 @@ impl DialogState {
     /// assert_eq!(state.handle_event(&event), Some(DialogMessage::Press));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<DialogMessage> {
-        Dialog::handle_event(self, event, &ViewContext::default())
+        Dialog::handle_event(self, event, &EventContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
@@ -537,7 +537,7 @@ impl DialogState {
     /// assert_eq!(output, Some(DialogOutput::ButtonPressed("ok".into())));
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<DialogOutput> {
-        Dialog::dispatch_event(self, event, &ViewContext::default())
+        Dialog::dispatch_event(self, event, &EventContext::default())
     }
 
     /// Updates the dialog state with a message, returning any output.
@@ -657,7 +657,7 @@ impl Component for Dialog {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        _ctx: &ViewContext,
+        _ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !state.visible {
             return None;
@@ -675,14 +675,14 @@ impl Component for Dialog {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         if !state.visible {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::dialog(state.title.as_str())
                     .with_id("dialog")
                     .with_focus(ctx.focused)
@@ -691,26 +691,26 @@ impl Component for Dialog {
         });
 
         // Calculate dialog size
-        let dialog_width = (area.width * 60 / 100).clamp(30, 80);
+        let dialog_width = (ctx.area.width * 60 / 100).clamp(30, 80);
         let message_lines = state.message.lines().count().max(1) as u16;
-        let dialog_height = (5 + message_lines).min(area.height);
+        let dialog_height = (5 + message_lines).min(ctx.area.height);
 
         // Center the dialog
-        let dialog_area = centered_rect(dialog_width, dialog_height, area);
+        let dialog_area = centered_rect(dialog_width, dialog_height, ctx.area);
 
-        // Clear the dialog area (overlay effect)
-        frame.render_widget(Clear, dialog_area);
+        // Clear the dialog ctx.area (overlay effect)
+        ctx.frame.render_widget(Clear, dialog_area);
 
         // Render dialog box
         let block = Block::default()
             .title(format!(" {} ", state.title))
             .borders(Borders::ALL)
-            .border_style(theme.border_style());
+            .border_style(ctx.theme.border_style());
 
         let inner = block.inner(dialog_area);
-        frame.render_widget(block, dialog_area);
+        ctx.frame.render_widget(block, dialog_area);
 
-        // Layout: message area + button row
+        // Layout: message ctx.area + button row
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -721,10 +721,17 @@ impl Component for Dialog {
 
         // Render message
         let message = Paragraph::new(state.message.as_str()).wrap(Wrap { trim: true });
-        frame.render_widget(message, chunks[0]);
+        ctx.frame.render_widget(message, chunks[0]);
 
         // Render buttons horizontally centered
-        render_buttons(state, frame, chunks[1], theme, ctx.focused, ctx.disabled);
+        render_buttons(
+            state,
+            ctx.frame,
+            chunks[1],
+            ctx.theme,
+            ctx.focused,
+            ctx.disabled,
+        );
     }
 }
 

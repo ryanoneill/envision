@@ -34,9 +34,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::theme::Theme;
 
 /// The orientation of a split panel.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -369,7 +368,7 @@ impl Component for SplitPanel {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -464,10 +463,10 @@ impl Component for SplitPanel {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.open(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::SplitPanel)
                     .with_id("split_panel")
                     .with_focus(ctx.focused)
@@ -475,25 +474,25 @@ impl Component for SplitPanel {
             );
         });
 
-        let (first_area, second_area) = state.layout(area);
+        let (first_area, second_area) = state.layout(ctx.area);
 
         let first_focused = ctx.focused && state.focused_pane == Pane::First;
         let second_focused = ctx.focused && state.focused_pane == Pane::Second;
 
         let first_border = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if first_focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let second_border = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if second_focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let first_block = Block::default()
@@ -506,8 +505,8 @@ impl Component for SplitPanel {
             .border_style(second_border)
             .title(" Pane 2 ");
 
-        frame.render_widget(first_block, first_area);
-        frame.render_widget(second_block, second_area);
+        ctx.frame.render_widget(first_block, first_area);
+        ctx.frame.render_widget(second_block, second_area);
 
         crate::annotation::with_registry(|reg| {
             reg.close();

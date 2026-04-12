@@ -34,11 +34,9 @@
 
 use std::time::Duration;
 
-use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Gauge};
 
-use super::{Component, ViewContext};
-use crate::theme::Theme;
+use super::{Component, RenderContext};
 
 /// Messages that can be sent to a ProgressBar.
 #[derive(Clone, Debug, PartialEq)]
@@ -599,12 +597,12 @@ impl Component for ProgressBar {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         let label = build_label(state);
 
         let gauge = Gauge::default()
             .block(Block::default().borders(Borders::ALL))
-            .gauge_style(theme.progress_filled_style())
+            .gauge_style(ctx.theme.progress_filled_style())
             .percent(state.percentage())
             .label(label.clone());
 
@@ -614,7 +612,7 @@ impl Component for ProgressBar {
                 .with_label(label)
                 .with_value(format!("{}%", state.percentage()));
         let annotated = crate::annotation::Annotate::new(gauge, annotation);
-        frame.render_widget(annotated, area);
+        ctx.frame.render_widget(annotated, ctx.area);
     }
 }
 

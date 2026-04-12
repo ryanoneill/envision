@@ -306,7 +306,7 @@ fn test_view_when_hidden() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dialog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -325,7 +325,7 @@ fn test_view_renders() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dialog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -340,7 +340,7 @@ fn test_view_title() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dialog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -355,7 +355,7 @@ fn test_view_message() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dialog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -370,7 +370,7 @@ fn test_view_buttons() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dialog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -385,7 +385,7 @@ fn test_view_focused_button() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dialog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -400,7 +400,7 @@ fn test_view_primary_button() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dialog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -415,7 +415,7 @@ fn test_view_multiline_message() {
 
     terminal
         .draw(|frame| {
-            Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dialog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -510,7 +510,7 @@ fn test_handle_event_tab() {
     let mut state = DialogState::confirm("T", "M");
     Dialog::show(&mut state);
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Tab), &EventContext::default());
     assert_eq!(msg, Some(DialogMessage::FocusNext));
 }
 
@@ -522,7 +522,7 @@ fn test_handle_event_backtab() {
     let msg = Dialog::handle_event(
         &state,
         &Event::key(KeyCode::BackTab),
-        &ViewContext::default(),
+        &EventContext::default(),
     );
     assert_eq!(msg, Some(DialogMessage::FocusPrev));
 }
@@ -532,7 +532,11 @@ fn test_handle_event_enter() {
     let mut state = DialogState::confirm("T", "M");
     Dialog::show(&mut state);
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = Dialog::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, Some(DialogMessage::Press));
 }
 
@@ -541,7 +545,7 @@ fn test_handle_event_escape() {
     let mut state = DialogState::confirm("T", "M");
     Dialog::show(&mut state);
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Esc), &ViewContext::default());
+    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Esc), &EventContext::default());
     assert_eq!(msg, Some(DialogMessage::Close));
 }
 
@@ -551,7 +555,11 @@ fn test_handle_event_ignored_when_not_visible() {
     // Not visible by default
     assert!(!Dialog::is_visible(&state));
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = Dialog::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -568,7 +576,7 @@ fn test_dispatch_event() {
     let output = Dialog::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::default(),
+        &EventContext::default(),
     );
     assert_eq!(output, Some(DialogOutput::ButtonPressed("ok".into())));
     assert!(!Dialog::is_visible(&state));
@@ -693,7 +701,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Dialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Dialog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

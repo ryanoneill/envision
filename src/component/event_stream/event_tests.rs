@@ -67,12 +67,16 @@ fn test_list_mode_up_key() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::ScrollUp)
     );
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::ScrollUp)
     );
 }
@@ -84,12 +88,16 @@ fn test_list_mode_down_key() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::ScrollDown)
     );
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::ScrollDown)
     );
 }
@@ -101,12 +109,16 @@ fn test_list_mode_home_g() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::ScrollToTop)
     );
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('g'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::ScrollToTop)
     );
 }
@@ -118,12 +130,16 @@ fn test_list_mode_end_shift_g() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::End),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::ScrollToBottom)
     );
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('G'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('G'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::ScrollToBottom)
     );
 }
@@ -132,7 +148,11 @@ fn test_list_mode_end_shift_g() {
 fn test_list_mode_slash() {
     let state = focused_state();
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('/'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('/'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::FocusSearch)
     );
 }
@@ -141,23 +161,43 @@ fn test_list_mode_slash() {
 fn test_list_mode_number_keys() {
     let state = focused_state();
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('1'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('1'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::QuickLevelFilter(1))
     );
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('2'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('2'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::QuickLevelFilter(2))
     );
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('3'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('3'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::QuickLevelFilter(3))
     );
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('4'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('4'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::QuickLevelFilter(4))
     );
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('5'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('5'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::QuickLevelFilter(5))
     );
 }
@@ -166,7 +206,11 @@ fn test_list_mode_number_keys() {
 fn test_list_mode_f_toggle_auto() {
     let state = focused_state();
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('f'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('f'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::ToggleAutoScroll)
     );
 }
@@ -180,7 +224,11 @@ fn test_search_mode_char_input() {
     let mut state = focused_state();
     EventStream::update(&mut state, EventStreamMessage::FocusSearch);
     assert_eq!(
-        EventStream::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true)),
+        EventStream::handle_event(
+            &state,
+            &Event::char('a'),
+            &EventContext::new().focused(true)
+        ),
         Some(EventStreamMessage::SearchInput('a'))
     );
 }
@@ -193,7 +241,7 @@ fn test_search_mode_esc() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::Esc),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::ClearSearch)
     );
@@ -207,7 +255,7 @@ fn test_search_mode_enter() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::FocusList)
     );
@@ -221,7 +269,7 @@ fn test_search_mode_backspace() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::Backspace),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchBackspace)
     );
@@ -235,7 +283,7 @@ fn test_search_mode_delete() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::Delete),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchDelete)
     );
@@ -249,7 +297,7 @@ fn test_search_mode_left_right() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::Left),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchLeft)
     );
@@ -257,7 +305,7 @@ fn test_search_mode_left_right() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::Right),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchRight)
     );
@@ -271,7 +319,7 @@ fn test_search_mode_home_end() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchHome)
     );
@@ -279,7 +327,7 @@ fn test_search_mode_home_end() {
         EventStream::handle_event(
             &state,
             &Event::key(KeyCode::End),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchEnd)
     );
@@ -297,10 +345,7 @@ fn test_render_empty() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -314,10 +359,7 @@ fn test_render_with_events() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -331,10 +373,7 @@ fn test_render_focused() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -348,10 +387,7 @@ fn test_render_with_sources() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -365,10 +401,7 @@ fn test_render_disabled() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -384,10 +417,7 @@ fn test_render_with_title() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -402,10 +432,7 @@ fn test_render_filtered() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -419,10 +446,7 @@ fn test_render_small_area() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -439,10 +463,7 @@ fn test_render_search_focused() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -460,10 +481,7 @@ fn test_annotation_emitted() {
             .draw(|frame| {
                 EventStream::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();

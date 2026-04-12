@@ -94,10 +94,7 @@ impl App for PaginatorApp {
         );
         Paginator::view(
             &state.page_of_total,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
 
         frame.render_widget(
@@ -106,10 +103,7 @@ impl App for PaginatorApp {
         );
         Paginator::view(
             &state.range_of_total,
-            frame,
-            chunks[4],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[4], &theme),
         );
 
         frame.render_widget(
@@ -118,10 +112,7 @@ impl App for PaginatorApp {
         );
         Paginator::view(
             &state.dots,
-            frame,
-            chunks[7],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[7], &theme),
         );
 
         frame.render_widget(
@@ -130,10 +121,7 @@ impl App for PaginatorApp {
         );
         Paginator::view(
             &state.compact,
-            frame,
-            chunks[10],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[10], &theme),
         );
     }
 

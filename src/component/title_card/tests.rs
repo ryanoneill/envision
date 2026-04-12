@@ -240,7 +240,7 @@ fn test_view_basic() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            TitleCard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TitleCard::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -252,7 +252,7 @@ fn test_view_with_subtitle() {
     let (mut terminal, theme) = test_utils::setup_render(40, 6);
     terminal
         .draw(|frame| {
-            TitleCard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TitleCard::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -266,7 +266,7 @@ fn test_view_prefix_suffix() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            TitleCard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TitleCard::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -280,10 +280,7 @@ fn test_view_disabled() {
         .draw(|frame| {
             TitleCard::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -296,7 +293,7 @@ fn test_view_no_border() {
     let (mut terminal, theme) = test_utils::setup_render(40, 5);
     terminal
         .draw(|frame| {
-            TitleCard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TitleCard::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -308,7 +305,7 @@ fn test_view_small_area() {
     let (mut terminal, theme) = test_utils::setup_render(15, 4);
     terminal
         .draw(|frame| {
-            TitleCard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TitleCard::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -324,7 +321,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                TitleCard::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                TitleCard::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

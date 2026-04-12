@@ -365,7 +365,7 @@ fn test_selected_node_some() {
 fn test_handle_event_not_focused() {
     let state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     let msg =
-        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
+        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -373,7 +373,7 @@ fn test_handle_event_not_focused() {
 fn test_handle_event_disabled() {
     let state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     let msg =
-        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
+        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -384,7 +384,7 @@ fn test_handle_event_down() {
         DependencyGraph::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectNext)
     );
@@ -394,7 +394,11 @@ fn test_handle_event_down() {
 fn test_handle_event_j() {
     let state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        DependencyGraph::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(DependencyGraphMessage::SelectNext)
     );
 }
@@ -406,7 +410,7 @@ fn test_handle_event_tab() {
         DependencyGraph::handle_event(
             &state,
             &Event::key(KeyCode::Tab),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectNext)
     );
@@ -419,7 +423,7 @@ fn test_handle_event_up() {
         DependencyGraph::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectPrev)
     );
@@ -429,7 +433,11 @@ fn test_handle_event_up() {
 fn test_handle_event_k() {
     let state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        DependencyGraph::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(DependencyGraphMessage::SelectPrev)
     );
 }
@@ -441,7 +449,7 @@ fn test_handle_event_backtab() {
         DependencyGraph::handle_event(
             &state,
             &Event::key(KeyCode::BackTab),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectPrev)
     );
@@ -454,7 +462,7 @@ fn test_handle_event_enter() {
         DependencyGraph::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectConnected)
     );
@@ -464,7 +472,11 @@ fn test_handle_event_enter() {
 fn test_handle_event_l() {
     let state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
+        DependencyGraph::handle_event(
+            &state,
+            &Event::char('l'),
+            &EventContext::new().focused(true)
+        ),
         Some(DependencyGraphMessage::SelectConnected)
     );
 }
@@ -476,7 +488,7 @@ fn test_handle_event_right() {
         DependencyGraph::handle_event(
             &state,
             &Event::key(KeyCode::Right),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectConnected)
     );
@@ -486,7 +498,11 @@ fn test_handle_event_right() {
 fn test_handle_event_unknown_key() {
     let state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     assert_eq!(
-        DependencyGraph::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        DependencyGraph::handle_event(
+            &state,
+            &Event::char('x'),
+            &EventContext::new().focused(true)
+        ),
         None
     );
 }
@@ -674,7 +690,7 @@ fn test_dispatch_event() {
     let output = DependencyGraph::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(
         output,

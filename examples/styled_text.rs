@@ -134,10 +134,7 @@ impl App for StyledTextApp {
 
         StyledText::view(
             &state.text,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let status = format!(
@@ -156,7 +153,7 @@ impl App for StyledTextApp {
                 return Some(Msg::Quit);
             }
         }
-        StyledText::handle_event(&state.text, event, &ViewContext::new().focused(true))
+        StyledText::handle_event(&state.text, event, &EventContext::new().focused(true))
             .map(Msg::StyledText)
     }
 }

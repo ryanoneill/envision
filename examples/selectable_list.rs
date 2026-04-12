@@ -59,10 +59,7 @@ impl App for SelectableListApp {
 
         SelectableList::<String>::view(
             &state.list,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -86,7 +83,7 @@ impl App for SelectableListApp {
                 return Some(Msg::Quit);
             }
         }
-        SelectableList::handle_event(&state.list, event, &ViewContext::new().focused(true))
+        SelectableList::handle_event(&state.list, event, &EventContext::new().focused(true))
             .map(Msg::List)
     }
 }

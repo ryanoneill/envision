@@ -24,8 +24,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, ViewContext};
-use crate::theme::Theme;
+use super::{Component, RenderContext};
 
 /// Messages that can be sent to a TitleCard.
 #[derive(Clone, Debug, PartialEq)]
@@ -436,10 +435,10 @@ impl Component for TitleCard {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::title_card("title_card")
                     .with_label(state.title.as_str())
                     .with_disabled(ctx.disabled),
@@ -448,20 +447,20 @@ impl Component for TitleCard {
 
         let render_area = if state.bordered {
             let border_style = if ctx.disabled {
-                theme.disabled_style()
+                ctx.theme.disabled_style()
             } else {
-                theme.border_style()
+                ctx.theme.border_style()
             };
 
             let block = Block::default()
                 .borders(Borders::ALL)
                 .border_style(border_style);
 
-            let inner = block.inner(area);
-            frame.render_widget(block, area);
+            let inner = block.inner(ctx.area);
+            ctx.frame.render_widget(block, ctx.area);
             inner
         } else {
-            area
+            ctx.area
         };
 
         if render_area.height == 0 || render_area.width == 0 {
@@ -470,13 +469,13 @@ impl Component for TitleCard {
 
         // Build title line with optional prefix and suffix
         let title_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
             state.title_style
         };
 
         let subtitle_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
             state.subtitle_style
         };
@@ -506,7 +505,7 @@ impl Component for TitleCard {
 
         if title_area.height > 0 {
             let title_paragraph = Paragraph::new(title_line).alignment(Alignment::Center);
-            frame.render_widget(title_paragraph, title_area);
+            ctx.frame.render_widget(title_paragraph, title_area);
         }
 
         // Render subtitle if present
@@ -518,7 +517,7 @@ impl Component for TitleCard {
                 let subtitle_paragraph =
                     Paragraph::new(Span::styled(subtitle.as_str(), subtitle_style))
                         .alignment(Alignment::Center);
-                frame.render_widget(subtitle_paragraph, subtitle_area);
+                ctx.frame.render_widget(subtitle_paragraph, subtitle_area);
             }
         }
     }

@@ -175,7 +175,7 @@ fn test_view_horizontal_no_label() {
 
     terminal
         .draw(|frame| {
-            Divider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Divider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -189,7 +189,7 @@ fn test_view_horizontal_with_label() {
 
     terminal
         .draw(|frame| {
-            Divider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Divider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -203,7 +203,7 @@ fn test_view_vertical() {
 
     terminal
         .draw(|frame| {
-            Divider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Divider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -217,7 +217,7 @@ fn test_view_vertical_with_label() {
 
     terminal
         .draw(|frame| {
-            Divider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Divider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -233,10 +233,7 @@ fn test_view_disabled() {
         .draw(|frame| {
             Divider::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -252,7 +249,7 @@ fn test_view_zero_width() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 0, 3);
-            Divider::view(&state, frame, area, &theme, &ViewContext::default());
+            Divider::view(&state, &mut RenderContext::new(frame, area, &theme));
         })
         .unwrap();
 
@@ -267,7 +264,7 @@ fn test_view_zero_height() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 40, 0);
-            Divider::view(&state, frame, area, &theme, &ViewContext::default());
+            Divider::view(&state, &mut RenderContext::new(frame, area, &theme));
         })
         .unwrap();
 
@@ -281,7 +278,7 @@ fn test_view_narrow_with_long_label() {
 
     terminal
         .draw(|frame| {
-            Divider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Divider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -300,7 +297,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Divider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Divider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -321,7 +318,7 @@ fn test_annotation_emitted_no_label() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Divider::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Divider::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -344,10 +341,7 @@ fn test_annotation_disabled() {
             .draw(|frame| {
                 Divider::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().disabled(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
                 );
             })
             .unwrap();

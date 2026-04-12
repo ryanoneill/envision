@@ -170,7 +170,7 @@ fn test_view_closed() {
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Select::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -186,7 +186,7 @@ fn test_view_open() {
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Select::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -201,7 +201,7 @@ fn test_view_with_selection() {
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Select::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -216,7 +216,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Select::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Select::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -272,12 +272,16 @@ fn test_handle_event_toggle_when_closed() {
     let msg = Select::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Toggle));
 
     // Space when closed -> Toggle
-    let msg = Select::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
+    let msg = Select::handle_event(
+        &state,
+        &Event::char(' '),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectMessage::Toggle));
 }
 
@@ -289,7 +293,7 @@ fn test_handle_event_confirm_when_open() {
     let msg = Select::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Confirm));
 }
@@ -302,7 +306,7 @@ fn test_handle_event_close_when_open() {
     let msg = Select::handle_event(
         &state,
         &Event::key(KeyCode::Esc),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Close));
 }
@@ -315,12 +319,16 @@ fn test_handle_event_up_when_open() {
     let msg = Select::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Up));
 
     // Vim 'k' also maps to Up
-    let msg = Select::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true));
+    let msg = Select::handle_event(
+        &state,
+        &Event::char('k'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectMessage::Up));
 }
 
@@ -332,19 +340,27 @@ fn test_handle_event_down_when_open() {
     let msg = Select::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Down));
 
     // Vim 'j' also maps to Down
-    let msg = Select::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true));
+    let msg = Select::handle_event(
+        &state,
+        &Event::char('j'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(SelectMessage::Down));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = SelectState::new(vec!["A", "B", "C"]);
-    let msg = Select::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = Select::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -354,7 +370,7 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = Select::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -373,7 +389,7 @@ fn test_dispatch_event() {
     let output = Select::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SelectOutput::Selected("B".to_string())));
     assert!(!state.is_open());
@@ -386,7 +402,7 @@ fn test_instance_methods() {
     let msg = Select::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Toggle));
 
@@ -399,7 +415,7 @@ fn test_instance_methods() {
     let output = Select::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
 }
@@ -442,7 +458,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Select::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Select::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

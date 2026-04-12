@@ -7,7 +7,7 @@
 //! [`FormMessage`], and produces [`FormOutput`]. Fields are defined with
 //! [`FormField`] and [`FormFieldKind`].
 //!
-//! Focus and disabled state are managed via [`ViewContext`].
+//! Focus and disabled state are managed via [`EventContext`].
 //!
 //! # Example
 //!
@@ -43,8 +43,8 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{
-    Checkbox, CheckboxMessage, CheckboxState, Component, InputField, InputFieldMessage,
-    InputFieldState, Select, SelectMessage, SelectState, ViewContext,
+    Checkbox, CheckboxMessage, CheckboxState, Component, EventContext, InputField,
+    InputFieldMessage, InputFieldState, RenderContext, Select, SelectMessage, SelectState,
 };
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
@@ -452,7 +452,7 @@ impl Component for Form {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled || state.fields.is_empty() {
             return None;
@@ -640,14 +640,14 @@ impl Component for Form {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         if state.fields.is_empty() {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.open(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::Form)
                     .with_id("form")
                     .with_focus(ctx.focused)
@@ -669,7 +669,7 @@ impl Component for Form {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints(constraints)
-            .split(area);
+            .split(ctx.area);
 
         for (i, ((field, field_state), chunk)) in state
             .fields
@@ -683,27 +683,34 @@ impl Component for Form {
             match field_state {
                 FieldState::Text(s) => {
                     render_text_field(
-                        frame,
+                        ctx.frame,
                         *chunk,
                         field,
                         s,
                         is_field_focused,
                         ctx.disabled,
-                        theme,
+                        ctx.theme,
                     );
                 }
                 FieldState::Checkbox(s) => {
-                    render_checkbox(frame, *chunk, s, is_field_focused, ctx.disabled, theme);
+                    render_checkbox(
+                        ctx.frame,
+                        *chunk,
+                        s,
+                        is_field_focused,
+                        ctx.disabled,
+                        ctx.theme,
+                    );
                 }
                 FieldState::Select(s) => {
                     render_select_field(
-                        frame,
+                        ctx.frame,
                         *chunk,
                         field,
                         s,
                         is_field_focused,
                         ctx.disabled,
-                        theme,
+                        ctx.theme,
                     );
                 }
             }

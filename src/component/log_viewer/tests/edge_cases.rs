@@ -106,10 +106,7 @@ fn test_annotation_emitted() {
             .draw(|frame| {
                 LogViewer::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();

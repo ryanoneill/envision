@@ -1,5 +1,6 @@
 use super::*;
 use crate::input::{Event, KeyCode};
+use ratatui::layout::Rect;
 
 // ========== Tab Tests ==========
 
@@ -463,7 +464,7 @@ fn test_handle_event_navigation_keys() {
         TabBar::handle_event(
             &state,
             &Event::key(KeyCode::Right),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TabBarMessage::NextTab)
     );
@@ -471,7 +472,7 @@ fn test_handle_event_navigation_keys() {
         TabBar::handle_event(
             &state,
             &Event::key(KeyCode::Left),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TabBarMessage::PrevTab)
     );
@@ -479,7 +480,7 @@ fn test_handle_event_navigation_keys() {
         TabBar::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TabBarMessage::First)
     );
@@ -487,7 +488,7 @@ fn test_handle_event_navigation_keys() {
         TabBar::handle_event(
             &state,
             &Event::key(KeyCode::End),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(TabBarMessage::Last)
     );
@@ -497,11 +498,19 @@ fn test_handle_event_navigation_keys() {
 fn test_handle_event_vim_keys() {
     let state = TabBarState::new(vec![Tab::new("a", "A"), Tab::new("b", "B")]);
     assert_eq!(
-        TabBar::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
+        TabBar::handle_event(
+            &state,
+            &Event::char('h'),
+            &EventContext::new().focused(true)
+        ),
         Some(TabBarMessage::PrevTab)
     );
     assert_eq!(
-        TabBar::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
+        TabBar::handle_event(
+            &state,
+            &Event::char('l'),
+            &EventContext::new().focused(true)
+        ),
         Some(TabBarMessage::NextTab)
     );
 }
@@ -510,7 +519,11 @@ fn test_handle_event_vim_keys() {
 fn test_handle_event_close_key() {
     let state = TabBarState::new(vec![Tab::new("a", "A").with_closable(true)]);
     assert_eq!(
-        TabBar::handle_event(&state, &Event::char('w'), &ViewContext::new().focused(true)),
+        TabBar::handle_event(
+            &state,
+            &Event::char('w'),
+            &EventContext::new().focused(true)
+        ),
         Some(TabBarMessage::CloseActiveTab)
     );
 }
@@ -519,11 +532,15 @@ fn test_handle_event_close_key() {
 fn test_handle_event_unfocused() {
     let state = TabBarState::new(vec![Tab::new("a", "A")]);
     assert_eq!(
-        TabBar::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default()),
+        TabBar::handle_event(
+            &state,
+            &Event::key(KeyCode::Right),
+            &EventContext::default()
+        ),
         None
     );
     assert_eq!(
-        TabBar::handle_event(&state, &Event::char('l'), &ViewContext::default()),
+        TabBar::handle_event(&state, &Event::char('l'), &EventContext::default()),
         None
     );
 }
@@ -531,7 +548,11 @@ fn test_handle_event_unfocused() {
 fn test_handle_event_unrecognized_key() {
     let state = TabBarState::new(vec![Tab::new("a", "A")]);
     assert_eq!(
-        TabBar::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true)),
+        TabBar::handle_event(
+            &state,
+            &Event::char('z'),
+            &EventContext::new().focused(true)
+        ),
         None
     );
 }
@@ -544,7 +565,7 @@ fn test_dispatch_event_next() {
     let output = TabBar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
     assert_eq!(state.active_index(), Some(1));
@@ -559,7 +580,7 @@ fn test_dispatch_event_close() {
     let output = TabBar::dispatch_event(
         &mut state,
         &Event::char('w'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabBarOutput::TabClosed(0)));
     assert_eq!(state.len(), 1);
@@ -574,14 +595,14 @@ fn test_instance_methods() {
     let msg = TabBar::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabBarMessage::NextTab));
 
     let output = TabBar::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
     assert_eq!(state.active_index(), Some(1));
@@ -611,7 +632,7 @@ fn test_view_renders_basic() {
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| TabBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -624,10 +645,7 @@ fn test_view_focused() {
         .draw(|frame| {
             TabBar::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             )
         })
         .unwrap();
@@ -638,7 +656,7 @@ fn test_view_empty() {
     let state = TabBarState::new(vec![]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| TabBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -651,7 +669,7 @@ fn test_view_with_modified() {
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| TabBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -664,7 +682,7 @@ fn test_view_with_closable() {
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| TabBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -677,7 +695,7 @@ fn test_view_with_icon() {
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| TabBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -693,7 +711,7 @@ fn test_view_with_all_decorations() {
     ]);
     let (mut terminal, theme) = crate::component::test_utils::setup_render(50, 1);
     terminal
-        .draw(|frame| TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| TabBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
@@ -706,10 +724,7 @@ fn test_view_zero_area() {
         .draw(|frame| {
             TabBar::view(
                 &state,
-                frame,
-                Rect::new(0, 0, 0, 0),
-                &theme,
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, Rect::new(0, 0, 0, 0), &theme),
             )
         })
         .unwrap();
@@ -798,7 +813,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                TabBar::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+                TabBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
             })
             .unwrap();
     });

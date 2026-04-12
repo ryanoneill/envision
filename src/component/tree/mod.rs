@@ -25,12 +25,9 @@
 //! Tree::update(&mut state, TreeMessage::Down);
 //! ```
 
-use ratatui::prelude::*;
-
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
 use crate::scroll::ScrollState;
-use crate::theme::Theme;
 
 mod render;
 mod traversal;
@@ -917,7 +914,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -937,8 +934,8 @@ impl<T: Clone + 'static> Component for Tree<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        render::view(state, frame, area, theme, ctx);
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        render::view(state, ctx);
     }
 }
 

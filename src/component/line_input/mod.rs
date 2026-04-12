@@ -36,11 +36,8 @@ mod property_tests;
 #[cfg(test)]
 mod tests;
 
-use ratatui::prelude::*;
-
-use crate::component::{Component, ViewContext};
+use crate::component::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::theme::Theme;
 use crate::undo::UndoStack;
 
 use chunking::{chunk_buffer, cursor_to_visual};
@@ -661,7 +658,7 @@ impl Component for LineInput {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -763,7 +760,7 @@ impl Component for LineInput {
         update::update(state, msg)
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        view_helpers::render(state, frame, area, theme, ctx);
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        view_helpers::render(state, ctx);
     }
 }

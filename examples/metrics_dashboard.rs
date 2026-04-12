@@ -61,10 +61,7 @@ impl App for MetricsDashboardApp {
 
         MetricsDashboard::view(
             &state.dashboard,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -85,7 +82,7 @@ impl App for MetricsDashboardApp {
                 return Some(Msg::Quit);
             }
         }
-        MetricsDashboard::handle_event(&state.dashboard, event, &ViewContext::new().focused(true))
+        MetricsDashboard::handle_event(&state.dashboard, event, &EventContext::new().focused(true))
             .map(Msg::Dashboard)
     }
 }

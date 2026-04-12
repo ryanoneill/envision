@@ -24,8 +24,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, ViewContext};
-use crate::theme::Theme;
+use super::{Component, EventContext, RenderContext};
 
 /// Returns the 3-row block representation of a character.
 ///
@@ -327,7 +326,7 @@ impl BigTextState {
     /// assert_eq!(state.handle_event(&Event::key(KeyCode::Enter)), None);
     /// ```
     pub fn handle_event(&self, event: &crate::input::Event) -> Option<BigTextMessage> {
-        BigText::handle_event(self, event, &ViewContext::default())
+        BigText::handle_event(self, event, &EventContext::default())
     }
 
     /// Updates the state with a message, returning any output (instance method).
@@ -361,7 +360,7 @@ impl BigTextState {
     /// assert_eq!(state.dispatch_event(&Event::key(KeyCode::Enter)), None);
     /// ```
     pub fn dispatch_event(&mut self, event: &crate::input::Event) -> Option<()> {
-        BigText::dispatch_event(self, event, &ViewContext::default())
+        BigText::dispatch_event(self, event, &EventContext::default())
     }
 }
 
@@ -420,26 +419,26 @@ impl Component for BigText {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::big_text("big_text")
                     .with_label(&state.text)
                     .with_disabled(ctx.disabled),
             );
         });
 
-        if area.height == 0 || area.width == 0 {
+        if ctx.area.height == 0 || ctx.area.width == 0 {
             return;
         }
 
         let style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if let Some(color) = state.color {
             Style::default().fg(color)
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         // Build the 3 rows of big text
@@ -450,20 +449,20 @@ impl Component for BigText {
             })
             .collect();
 
-        // Vertically center within the available area
+        // Vertically center within the available ctx.area
         let content_height: u16 = 3;
-        let vertical_offset = area.height.saturating_sub(content_height) / 2;
+        let vertical_offset = ctx.area.height.saturating_sub(content_height) / 2;
 
         let render_area = Rect::new(
-            area.x,
-            area.y + vertical_offset,
-            area.width,
-            content_height.min(area.height.saturating_sub(vertical_offset)),
+            ctx.area.x,
+            ctx.area.y + vertical_offset,
+            ctx.area.width,
+            content_height.min(ctx.area.height.saturating_sub(vertical_offset)),
         );
 
         if render_area.height > 0 {
             let paragraph = Paragraph::new(lines).alignment(state.alignment);
-            frame.render_widget(paragraph, render_area);
+            ctx.frame.render_widget(paragraph, render_area);
         }
     }
 }

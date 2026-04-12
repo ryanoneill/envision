@@ -31,7 +31,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -723,7 +723,7 @@ impl Component for StepIndicator {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -742,10 +742,10 @@ impl Component for StepIndicator {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::StepIndicator)
                     .with_id("step_indicator")
                     .with_focus(ctx.focused)
@@ -757,18 +757,18 @@ impl Component for StepIndicator {
             let mut block = Block::default()
                 .borders(Borders::ALL)
                 .border_style(if ctx.focused {
-                    theme.focused_border_style()
+                    ctx.theme.focused_border_style()
                 } else {
-                    theme.border_style()
+                    ctx.theme.border_style()
                 });
             if let Some(title) = &state.title {
                 block = block.title(format!(" {} ", title));
             }
-            let inner = block.inner(area);
-            frame.render_widget(block, area);
+            let inner = block.inner(ctx.area);
+            ctx.frame.render_widget(block, ctx.area);
             inner
         } else {
-            area
+            ctx.area
         };
 
         if state.steps.is_empty() {
@@ -777,10 +777,10 @@ impl Component for StepIndicator {
 
         match state.orientation {
             StepOrientation::Horizontal => {
-                render_horizontal(state, frame, inner, theme, ctx.focused);
+                render_horizontal(state, ctx.frame, inner, ctx.theme, ctx.focused);
             }
             StepOrientation::Vertical => {
-                render_vertical(state, frame, inner, theme, ctx.focused);
+                render_vertical(state, ctx.frame, inner, ctx.theme, ctx.focused);
             }
         }
     }

@@ -68,10 +68,7 @@ impl App for InputFieldApp {
 
         InputField::view(
             &state.input,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         // Show submitted values
@@ -110,7 +107,7 @@ impl App for InputFieldApp {
                 return Some(Msg::Quit);
             }
         }
-        InputField::handle_event(&state.input, event, &ViewContext::new().focused(true))
+        InputField::handle_event(&state.input, event, &EventContext::new().focused(true))
             .map(Msg::Input)
     }
 }

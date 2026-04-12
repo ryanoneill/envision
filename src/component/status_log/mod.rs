@@ -28,12 +28,10 @@ pub mod entry;
 
 pub use entry::{StatusLogEntry, StatusLogLevel};
 
-use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 /// Messages that can be sent to a StatusLog component.
 #[derive(Clone, Debug, PartialEq)]
@@ -692,7 +690,7 @@ impl Component for StatusLog {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -710,14 +708,14 @@ impl Component for StatusLog {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.width == 0 || area.height == 0 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.width == 0 || ctx.area.height == 0 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::StatusLog)
                     .with_id("status_log")
                     .with_meta("entry_count", state.len().to_string()),
@@ -730,7 +728,7 @@ impl Component for StatusLog {
             Block::default().borders(Borders::ALL)
         };
 
-        let inner = block.inner(area);
+        let inner = block.inner(ctx.area);
 
         // Build list items (newest first, with scroll offset)
         let items: Vec<ListItem> = state
@@ -740,13 +738,13 @@ impl Component for StatusLog {
             .map(|entry| {
                 let prefix = entry.level.prefix();
                 let style = if ctx.disabled {
-                    theme.disabled_style()
+                    ctx.theme.disabled_style()
                 } else {
                     match entry.level {
-                        StatusLogLevel::Info => theme.info_style(),
-                        StatusLogLevel::Success => theme.success_style(),
-                        StatusLogLevel::Warning => theme.warning_style(),
-                        StatusLogLevel::Error => theme.error_style(),
+                        StatusLogLevel::Info => ctx.theme.info_style(),
+                        StatusLogLevel::Success => ctx.theme.success_style(),
+                        StatusLogLevel::Warning => ctx.theme.warning_style(),
+                        StatusLogLevel::Error => ctx.theme.error_style(),
                     }
                 };
 
@@ -764,11 +762,11 @@ impl Component for StatusLog {
             })
             .collect();
 
-        frame.render_widget(block, area);
+        ctx.frame.render_widget(block, ctx.area);
 
         if !items.is_empty() {
             let list = List::new(items);
-            frame.render_widget(list, inner);
+            ctx.frame.render_widget(list, inner);
         }
     }
 }

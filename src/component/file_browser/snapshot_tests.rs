@@ -26,7 +26,7 @@ fn test_render_basic() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FileBrowser::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -38,7 +38,7 @@ fn test_render_unfocused() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FileBrowser::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -51,7 +51,7 @@ fn test_render_with_filter() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FileBrowser::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -65,10 +65,9 @@ fn test_render_disabled() {
         .draw(|frame| {
             FileBrowser::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true).disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme)
+                    .focused(true)
+                    .disabled(true),
             );
         })
         .unwrap();
@@ -83,7 +82,7 @@ fn test_render_with_selection_markers() {
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
-            FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FileBrowser::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -97,10 +96,7 @@ fn test_render_empty() {
         .draw(|frame| {
             FileBrowser::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -118,7 +114,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                FileBrowser::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                FileBrowser::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

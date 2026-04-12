@@ -32,9 +32,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
-use super::Component;
-use super::ViewContext;
-use crate::theme::Theme;
+use super::{Component, RenderContext};
 
 /// Default maximum number of visible toasts.
 const DEFAULT_MAX_VISIBLE: usize = 5;
@@ -567,45 +565,48 @@ impl Component for Toast {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         if state.toasts.is_empty() {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::toast("toast")
                     .with_meta("count", state.toasts.len().to_string()),
             );
         });
 
         // Calculate toast dimensions
-        let toast_width = 40.min(area.width);
+        let toast_width = 40.min(ctx.area.width);
         let toast_height = 3;
         let visible_count = state.toasts.len().min(state.max_visible);
 
         // Render from bottom-right corner, stacking upward
         // Newest toasts appear at the bottom
         for (i, toast) in state.toasts.iter().rev().take(visible_count).enumerate() {
-            let y = area.bottom().saturating_sub((i as u16 + 1) * toast_height);
-            let x = area.right().saturating_sub(toast_width);
+            let y = ctx
+                .area
+                .bottom()
+                .saturating_sub((i as u16 + 1) * toast_height);
+            let x = ctx.area.right().saturating_sub(toast_width);
 
-            if y < area.y {
-                break; // Don't render above the area
+            if y < ctx.area.y {
+                break; // Don't render above the ctx.area
             }
 
-            let toast_area = Rect::new(x, y, toast_width, toast_height.min(area.bottom() - y));
+            let toast_area = Rect::new(x, y, toast_width, toast_height.min(ctx.area.bottom() - y));
 
             let (border_style, prefix) = match toast.level {
-                ToastLevel::Info => (theme.info_style(), "i"),
-                ToastLevel::Success => (theme.success_style(), "+"),
-                ToastLevel::Warning => (theme.warning_style(), "!"),
-                ToastLevel::Error => (theme.error_style(), "x"),
+                ToastLevel::Info => (ctx.theme.info_style(), "i"),
+                ToastLevel::Success => (ctx.theme.success_style(), "+"),
+                ToastLevel::Warning => (ctx.theme.warning_style(), "!"),
+                ToastLevel::Error => (ctx.theme.error_style(), "x"),
             };
 
-            // Clear the area for overlay effect
-            frame.render_widget(Clear, toast_area);
+            // Clear the ctx.area for overlay effect
+            ctx.frame.render_widget(Clear, toast_area);
 
             let block = Block::default()
                 .borders(Borders::ALL)
@@ -614,7 +615,7 @@ impl Component for Toast {
             let text = format!("[{}] {}", prefix, toast.message);
             let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
 
-            frame.render_widget(paragraph, toast_area);
+            ctx.frame.render_widget(paragraph, toast_area);
         }
     }
 }

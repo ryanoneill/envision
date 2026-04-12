@@ -500,7 +500,7 @@ fn test_handle_event_tab() {
     let msg = PaneLayout::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::FocusNext));
 }
@@ -512,7 +512,7 @@ fn test_handle_event_backtab() {
     let msg = PaneLayout::handle_event(
         &state,
         &Event::key(KeyCode::BackTab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::FocusPrev));
 }
@@ -524,7 +524,7 @@ fn test_handle_event_ctrl_right() {
     let msg = PaneLayout::handle_event(
         &state,
         &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::GrowFocused));
 }
@@ -536,7 +536,7 @@ fn test_handle_event_ctrl_left() {
     let msg = PaneLayout::handle_event(
         &state,
         &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::ShrinkFocused));
 }
@@ -545,8 +545,11 @@ fn test_handle_event_ctrl_left() {
 fn test_handle_event_ctrl_0() {
     let panes = vec![PaneConfig::new("a"), PaneConfig::new("b")];
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    let msg =
-        PaneLayout::handle_event(&state, &Event::ctrl('0'), &ViewContext::new().focused(true));
+    let msg = PaneLayout::handle_event(
+        &state,
+        &Event::ctrl('0'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(PaneLayoutMessage::ResetProportions));
 }
 
@@ -554,7 +557,7 @@ fn test_handle_event_ctrl_0() {
 fn test_handle_event_unfocused_ignored() {
     let panes = vec![PaneConfig::new("a")];
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
+    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -565,7 +568,7 @@ fn test_handle_event_disabled_ignored() {
     let msg = PaneLayout::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -574,8 +577,11 @@ fn test_handle_event_disabled_ignored() {
 fn test_handle_event_unrecognized() {
     let panes = vec![PaneConfig::new("a")];
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    let msg =
-        PaneLayout::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
+    let msg = PaneLayout::handle_event(
+        &state,
+        &Event::char('z'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -588,7 +594,7 @@ fn test_dispatch_event() {
     let output = PaneLayout::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert!(matches!(
         output,
@@ -625,7 +631,7 @@ fn test_view_two_panes_horizontal() {
 
     terminal
         .draw(|frame| {
-            PaneLayout::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            PaneLayout::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -644,7 +650,7 @@ fn test_view_two_panes_vertical() {
 
     terminal
         .draw(|frame| {
-            PaneLayout::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            PaneLayout::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -667,10 +673,7 @@ fn test_view_three_panes_focused() {
         .draw(|frame| {
             PaneLayout::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -686,7 +689,7 @@ fn test_view_empty_panes() {
 
     terminal
         .draw(|frame| {
-            PaneLayout::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            PaneLayout::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -707,10 +710,7 @@ fn test_annotation_emission() {
             .draw(|frame| {
                 PaneLayout::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();

@@ -159,8 +159,11 @@ fn test_press_cancel_in_ok_cancel() {
 fn test_y_shortcut_yes_no() {
     let state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
 
-    let msg =
-        ConfirmDialog::handle_event(&state, &Event::char('y'), &ViewContext::new().focused(true));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::char('y'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(
         msg,
         Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes))
@@ -171,8 +174,11 @@ fn test_y_shortcut_yes_no() {
 fn test_n_shortcut_yes_no() {
     let state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
 
-    let msg =
-        ConfirmDialog::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::char('n'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(
         msg,
         Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::No))
@@ -183,8 +189,11 @@ fn test_n_shortcut_yes_no() {
 fn test_y_shortcut_uppercase() {
     let state = ConfirmDialogState::yes_no("T", "M").with_visible(true);
 
-    let msg =
-        ConfirmDialog::handle_event(&state, &Event::char('Y'), &ViewContext::new().focused(true));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::char('Y'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(
         msg,
         Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes))
@@ -195,8 +204,11 @@ fn test_y_shortcut_uppercase() {
 fn test_y_shortcut_not_in_ok_config() {
     let state = ConfirmDialogState::ok("T", "M").with_visible(true);
 
-    let msg =
-        ConfirmDialog::handle_event(&state, &Event::char('y'), &ViewContext::new().focused(true));
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::char('y'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -207,7 +219,7 @@ fn test_tab_key() {
     let msg = ConfirmDialog::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(ConfirmDialogMessage::FocusNext));
 }
@@ -219,7 +231,7 @@ fn test_backtab_key() {
     let msg = ConfirmDialog::handle_event(
         &state,
         &Event::key(KeyCode::BackTab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(ConfirmDialogMessage::FocusPrev));
 }
@@ -231,7 +243,7 @@ fn test_enter_key() {
     let msg = ConfirmDialog::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(ConfirmDialogMessage::Press));
 }
@@ -243,7 +255,7 @@ fn test_esc_key() {
     let msg = ConfirmDialog::handle_event(
         &state,
         &Event::key(KeyCode::Esc),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(ConfirmDialogMessage::Close));
 }
@@ -287,8 +299,11 @@ fn test_open_resets_focus() {
 #[test]
 fn test_not_visible_ignores_events() {
     let state = ConfirmDialogState::ok("T", "M");
-    let msg =
-        ConfirmDialog::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = ConfirmDialog::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -354,7 +369,7 @@ fn test_view_not_visible() {
 
     terminal
         .draw(|frame| {
-            ConfirmDialog::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ConfirmDialog::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -373,10 +388,7 @@ fn test_view_ok_dialog() {
         .draw(|frame| {
             ConfirmDialog::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -394,10 +406,7 @@ fn test_view_yes_no_dialog() {
         .draw(|frame| {
             ConfirmDialog::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -419,10 +428,7 @@ fn test_annotation_emitted() {
             .draw(|frame| {
                 ConfirmDialog::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();

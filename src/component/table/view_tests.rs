@@ -45,7 +45,7 @@ fn test_view_renders() {
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Table::<TestRow>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -60,7 +60,7 @@ fn test_view_with_header() {
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Table::<TestRow>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -76,7 +76,7 @@ fn test_view_with_sort_indicator() {
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Table::<TestRow>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -93,10 +93,7 @@ fn test_view_focused() {
         .draw(|frame| {
             Table::<TestRow>::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -111,7 +108,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Table::<TestRow>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -129,7 +126,7 @@ fn test_view_descending_sort_indicator() {
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Table::<TestRow>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -144,7 +141,7 @@ fn test_view_unfocused() {
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Table::<TestRow>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -162,7 +159,7 @@ fn test_view_multi_column_sort_indicators() {
 
     terminal
         .draw(|frame| {
-            Table::<TestRow>::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Table::<TestRow>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 

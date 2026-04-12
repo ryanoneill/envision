@@ -28,7 +28,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -43,7 +43,7 @@ fn test_snapshot_with_metrics() {
     let (mut terminal, theme) = test_utils::setup_render(80, 25);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -60,10 +60,7 @@ fn test_snapshot_focused() {
         .draw(|frame| {
             AlertPanel::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -80,10 +77,7 @@ fn test_snapshot_disabled() {
         .draw(|frame| {
             AlertPanel::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -106,7 +100,7 @@ fn test_snapshot_all_ok() {
     let (mut terminal, theme) = test_utils::setup_render(80, 15);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -128,7 +122,7 @@ fn test_snapshot_all_critical() {
     let (mut terminal, theme) = test_utils::setup_render(80, 15);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -153,7 +147,7 @@ fn test_snapshot_with_sparklines() {
     let (mut terminal, theme) = test_utils::setup_render(80, 15);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -171,7 +165,7 @@ fn test_snapshot_single_metric() {
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -193,7 +187,7 @@ fn test_snapshot_with_thresholds() {
     let (mut terminal, theme) = test_utils::setup_render(80, 15);
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

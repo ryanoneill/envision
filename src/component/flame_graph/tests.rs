@@ -484,7 +484,8 @@ fn test_max_depth_empty() {
 #[test]
 fn test_handle_event_not_focused() {
     let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    let msg = FlameGraph::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
+    let msg =
+        FlameGraph::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -494,7 +495,7 @@ fn test_handle_event_disabled() {
     let msg = FlameGraph::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -507,12 +508,16 @@ fn test_handle_event_down() {
         FlameGraph::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::SelectDown)
     );
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::SelectDown)
     );
 }
@@ -525,12 +530,16 @@ fn test_handle_event_up() {
         FlameGraph::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::SelectUp)
     );
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::SelectUp)
     );
 }
@@ -543,12 +552,16 @@ fn test_handle_event_left() {
         FlameGraph::handle_event(
             &state,
             &Event::key(KeyCode::Left),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::SelectLeft)
     );
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::char('h'),
+            &EventContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::SelectLeft)
     );
 }
@@ -561,12 +574,16 @@ fn test_handle_event_right() {
         FlameGraph::handle_event(
             &state,
             &Event::key(KeyCode::Right),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::SelectRight)
     );
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::char('l'),
+            &EventContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::SelectRight)
     );
 }
@@ -579,7 +596,7 @@ fn test_handle_event_enter_zoom_in() {
         FlameGraph::handle_event(
             &state,
             &Event::key(KeyCode::Enter),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::ZoomIn)
     );
@@ -593,7 +610,7 @@ fn test_handle_event_escape_zoom_out() {
         FlameGraph::handle_event(
             &state,
             &Event::key(KeyCode::Esc),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::ZoomOut)
     );
@@ -601,7 +618,7 @@ fn test_handle_event_escape_zoom_out() {
         FlameGraph::handle_event(
             &state,
             &Event::key(KeyCode::Backspace),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::ZoomOut)
     );
@@ -615,7 +632,7 @@ fn test_handle_event_home_reset_zoom() {
         FlameGraph::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::ResetZoom)
     );
@@ -626,7 +643,11 @@ fn test_handle_event_slash_search() {
     let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
 
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('/'), &ViewContext::new().focused(true)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::char('/'),
+            &EventContext::new().focused(true)
+        ),
         Some(FlameGraphMessage::SetSearch(String::new()))
     );
 }
@@ -636,7 +657,11 @@ fn test_handle_event_unknown_key() {
     let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
 
     assert_eq!(
-        FlameGraph::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        FlameGraph::handle_event(
+            &state,
+            &Event::char('x'),
+            &EventContext::new().focused(true)
+        ),
         None
     );
 }

@@ -35,7 +35,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Sparkline};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -524,7 +524,7 @@ impl Component for MetricsDashboard {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -617,14 +617,14 @@ impl Component for MetricsDashboard {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if state.widgets.is_empty() || area.height < 3 || area.width < 3 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if state.widgets.is_empty() || ctx.area.height < 3 || ctx.area.width < 3 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::container("metrics_dashboard")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled),
@@ -642,7 +642,7 @@ impl Component for MetricsDashboard {
         let row_areas = Layout::default()
             .direction(Direction::Vertical)
             .constraints(row_constraints)
-            .split(area);
+            .split(ctx.area);
 
         // Compute column widths
         let col_constraints: Vec<Constraint> = (0..cols)
@@ -659,7 +659,7 @@ impl Component for MetricsDashboard {
                 let widget_idx = row_idx * cols + col_idx;
                 if let Some(widget) = state.widgets.get(widget_idx) {
                     let is_selected = state.selected == Some(widget_idx);
-                    render_widget(widget, is_selected, frame, *col_area, theme, ctx);
+                    render_widget(widget, is_selected, &mut ctx.with_area(*col_area));
                 }
             }
         }
@@ -667,20 +667,13 @@ impl Component for MetricsDashboard {
 }
 
 /// Renders a single metric widget.
-fn render_widget(
-    widget: &MetricWidget,
-    is_selected: bool,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    ctx: &ViewContext,
-) {
+fn render_widget(widget: &MetricWidget, is_selected: bool, ctx: &mut RenderContext<'_, '_>) {
     let border_style = if ctx.disabled {
-        theme.disabled_style()
+        ctx.theme.disabled_style()
     } else if is_selected && ctx.focused {
-        theme.focused_border_style()
+        ctx.theme.focused_border_style()
     } else {
-        theme.border_style()
+        ctx.theme.border_style()
     };
 
     let block = Block::default()
@@ -688,17 +681,17 @@ fn render_widget(
         .borders(Borders::ALL)
         .border_style(border_style);
 
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
+    let inner = block.inner(ctx.area);
+    ctx.frame.render_widget(block, ctx.area);
 
     if inner.height == 0 || inner.width == 0 {
         return;
     }
 
     let value_style = if ctx.disabled {
-        theme.disabled_style()
+        ctx.theme.disabled_style()
     } else {
-        value_color(widget, theme)
+        value_color(widget, ctx.theme)
     };
 
     // Show sparkline if there's history and enough space
@@ -711,20 +704,20 @@ fn render_widget(
         // Value line
         let value_text = widget.display_value();
         let paragraph = Paragraph::new(value_text).style(value_style);
-        frame.render_widget(paragraph, chunks[0]);
+        ctx.frame.render_widget(paragraph, chunks[0]);
 
         // Sparkline
         let sparkline = Sparkline::default()
             .data(&widget.history)
             .style(value_style);
-        frame.render_widget(sparkline, chunks[1]);
+        ctx.frame.render_widget(sparkline, chunks[1]);
     } else {
         // Just value
         let value_text = widget.display_value();
         let paragraph = Paragraph::new(value_text)
             .style(value_style)
             .alignment(Alignment::Center);
-        frame.render_widget(paragraph, inner);
+        ctx.frame.render_widget(paragraph, inner);
     }
 }
 

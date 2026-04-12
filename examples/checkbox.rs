@@ -87,24 +87,15 @@ impl App for CheckboxApp {
 
         Checkbox::view(
             &state.notifications,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         Checkbox::view(
             &state.dark_mode,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
         Checkbox::view(
             &state.auto_save,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
 
         // Summary
@@ -157,13 +148,17 @@ impl App for CheckboxApp {
             0 => Checkbox::handle_event(
                 &state.notifications,
                 event,
-                &ViewContext::new().focused(true),
+                &EventContext::new().focused(true),
             )
             .map(Msg::Notifications),
-            1 => Checkbox::handle_event(&state.dark_mode, event, &ViewContext::new().focused(true))
-                .map(Msg::DarkMode),
-            _ => Checkbox::handle_event(&state.auto_save, event, &ViewContext::new().focused(true))
-                .map(Msg::AutoSave),
+            1 => {
+                Checkbox::handle_event(&state.dark_mode, event, &EventContext::new().focused(true))
+                    .map(Msg::DarkMode)
+            }
+            _ => {
+                Checkbox::handle_event(&state.auto_save, event, &EventContext::new().focused(true))
+                    .map(Msg::AutoSave)
+            }
         }
     }
 }

@@ -65,10 +65,7 @@ impl App for LineInputApp {
         let theme = Theme::default();
         LineInput::view(
             &state.input,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         // Show submissions log
@@ -99,7 +96,7 @@ impl App for LineInputApp {
             }
         }
 
-        LineInput::handle_event(&state.input, event, &ViewContext::new().focused(true))
+        LineInput::handle_event(&state.input, event, &EventContext::new().focused(true))
             .map(Msg::Input)
     }
 }

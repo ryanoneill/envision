@@ -72,10 +72,7 @@ impl App for LogViewerApp {
 
         LogViewer::view(
             &state.viewer,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let visible = state.viewer.visible_entries().len();
@@ -101,7 +98,7 @@ impl App for LogViewerApp {
                 return Some(Msg::Quit);
             }
         }
-        LogViewer::handle_event(&state.viewer, event, &ViewContext::new().focused(true))
+        LogViewer::handle_event(&state.viewer, event, &EventContext::new().focused(true))
             .map(Msg::Viewer)
     }
 }

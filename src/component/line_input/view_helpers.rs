@@ -5,20 +5,13 @@ use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::LineInputState;
 use super::chunking::{chunk_buffer, cursor_to_visual};
-use crate::component::ViewContext;
-use crate::theme::Theme;
+use crate::component::RenderContext;
 
 /// Renders the LineInput component.
-pub(super) fn render(
-    state: &LineInputState,
-    frame: &mut Frame,
-    area: ratatui::layout::Rect,
-    theme: &Theme,
-    ctx: &ViewContext,
-) {
+pub(super) fn render(state: &LineInputState, ctx: &mut RenderContext<'_, '_>) {
     crate::annotation::with_registry(|reg| {
         reg.register(
-            area,
+            ctx.area,
             crate::annotation::Annotation::line_input("line_input")
                 .with_value(state.value())
                 .with_focus(ctx.focused)
@@ -27,18 +20,18 @@ pub(super) fn render(
     });
 
     let border_style = if ctx.focused {
-        theme.focused_border_style()
+        ctx.theme.focused_border_style()
     } else {
-        theme.border_style()
+        ctx.theme.border_style()
     };
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(border_style);
 
-    // Inner area (inside borders)
-    let inner = block.inner(area);
+    // Inner ctx.area (inside borders)
+    let inner = block.inner(ctx.area);
     if inner.width == 0 || inner.height == 0 {
-        frame.render_widget(block, area);
+        ctx.frame.render_widget(block, ctx.area);
         return;
     }
 
@@ -46,13 +39,13 @@ pub(super) fn render(
     let is_placeholder = state.buffer.is_empty();
 
     let base_style = if ctx.disabled {
-        theme.disabled_style()
+        ctx.theme.disabled_style()
     } else if ctx.focused {
-        theme.focused_style()
+        ctx.theme.focused_style()
     } else if is_placeholder {
-        theme.placeholder_style()
+        ctx.theme.placeholder_style()
     } else {
-        theme.normal_style()
+        ctx.theme.normal_style()
     };
 
     let display_text = if is_placeholder {
@@ -85,7 +78,10 @@ pub(super) fn render(
                 if !before.is_empty() {
                     spans.push(Span::styled(before.to_string(), base_style));
                 }
-                spans.push(Span::styled(selected.to_string(), theme.selection_style()));
+                spans.push(Span::styled(
+                    selected.to_string(),
+                    ctx.theme.selection_style(),
+                ));
                 if !after.is_empty() {
                     spans.push(Span::styled(after.to_string(), base_style));
                 }
@@ -99,7 +95,7 @@ pub(super) fn render(
     }
 
     let paragraph = Paragraph::new(Text::from(lines)).block(block);
-    frame.render_widget(paragraph, area);
+    ctx.frame.render_widget(paragraph, ctx.area);
 
     // Set cursor position when focused
     if ctx.focused && !ctx.disabled && inner.width > 0 && inner.height > 0 {
@@ -109,7 +105,7 @@ pub(super) fn render(
         let cursor_y = inner.y + cursor_row as u16;
 
         if cursor_x < inner.x + inner.width && cursor_y < inner.y + inner.height {
-            frame.set_cursor_position((cursor_x, cursor_y));
+            ctx.frame.set_cursor_position((cursor_x, cursor_y));
         }
     }
 }

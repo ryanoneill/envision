@@ -36,8 +36,7 @@ use ratatui::widgets::canvas::{
 };
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, ViewContext};
-use crate::theme::Theme;
+use super::{Component, RenderContext};
 
 /// A drawable shape on the canvas.
 ///
@@ -564,14 +563,14 @@ impl Component for Canvas {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.height < 2 || area.width < 2 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.height < 2 || ctx.area.width < 2 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::canvas("canvas")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled),
@@ -581,17 +580,17 @@ impl Component for Canvas {
         let needs_border = state.title.is_some() || ctx.focused;
 
         let border_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let content_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         let canvas_area = if needs_border {
@@ -603,11 +602,11 @@ impl Component for Canvas {
                 block = block.title(title.as_str());
             }
 
-            let inner = block.inner(area);
-            frame.render_widget(block, area);
+            let inner = block.inner(ctx.area);
+            ctx.frame.render_widget(block, ctx.area);
             inner
         } else {
-            area
+            ctx.area
         };
 
         if canvas_area.height == 0 || canvas_area.width == 0 {
@@ -619,7 +618,7 @@ impl Component for Canvas {
         let y_bounds = state.y_bounds;
         let shapes = state.shapes.clone();
         let is_disabled = ctx.disabled;
-        let disabled_style = theme.disabled_style();
+        let disabled_style = ctx.theme.disabled_style();
 
         let canvas = RatatuiCanvas::default()
             .x_bounds(x_bounds)
@@ -708,7 +707,7 @@ impl Component for Canvas {
                 }
             });
 
-        frame.render_widget(canvas, canvas_area);
+        ctx.frame.render_widget(canvas, canvas_area);
     }
 }
 

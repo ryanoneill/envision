@@ -98,10 +98,7 @@ impl App for TableApp {
 
         Table::<Language>::view(
             &state.table,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -127,7 +124,7 @@ impl App for TableApp {
                 _ => {}
             }
         }
-        Table::handle_event(&state.table, event, &ViewContext::new().focused(true)).map(Msg::Table)
+        Table::handle_event(&state.table, event, &EventContext::new().focused(true)).map(Msg::Table)
     }
 }
 

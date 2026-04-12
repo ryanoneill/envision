@@ -78,10 +78,7 @@ impl App for BreadcrumbApp {
 
         Breadcrumb::view(
             &state.breadcrumb,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         // Show selection history
@@ -114,7 +111,7 @@ impl App for BreadcrumbApp {
                 return Some(Msg::Quit);
             }
         }
-        Breadcrumb::handle_event(&state.breadcrumb, event, &ViewContext::new().focused(true))
+        Breadcrumb::handle_event(&state.breadcrumb, event, &EventContext::new().focused(true))
             .map(Msg::Breadcrumb)
     }
 }

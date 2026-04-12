@@ -49,7 +49,7 @@ fn test_snapshot_default_empty() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            EventStream::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            EventStream::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -61,7 +61,7 @@ fn test_snapshot_populated() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            EventStream::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            EventStream::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -75,10 +75,7 @@ fn test_snapshot_focused() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -94,7 +91,7 @@ fn test_snapshot_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            EventStream::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            EventStream::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -108,10 +105,7 @@ fn test_snapshot_disabled() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -125,7 +119,7 @@ fn test_snapshot_filtered() {
     let (mut terminal, theme) = test_utils::setup_render(80, 20);
     terminal
         .draw(|frame| {
-            EventStream::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            EventStream::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -143,10 +137,7 @@ fn test_snapshot_search_active() {
         .draw(|frame| {
             EventStream::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();

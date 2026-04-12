@@ -173,7 +173,7 @@ fn test_view_spinning() {
 
     terminal
         .draw(|frame| {
-            Spinner::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Spinner::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -189,7 +189,7 @@ fn test_view_stopped() {
 
     terminal
         .draw(|frame| {
-            Spinner::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Spinner::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -204,7 +204,7 @@ fn test_view_with_label() {
 
     terminal
         .draw(|frame| {
-            Spinner::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Spinner::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -283,7 +283,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Spinner::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Spinner::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

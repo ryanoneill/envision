@@ -287,7 +287,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
-        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| KeyHints::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -299,7 +299,7 @@ fn test_view_single_hint() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
-        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| KeyHints::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -315,7 +315,7 @@ fn test_view_multiple_hints() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
-        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| KeyHints::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -331,7 +331,7 @@ fn test_view_disabled_hints_hidden() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
-        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| KeyHints::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -347,7 +347,7 @@ fn test_view_inline_layout() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(80, 1);
 
     terminal
-        .draw(|frame| KeyHints::view(&state, frame, frame.area(), &theme, &ViewContext::default()))
+        .draw(|frame| KeyHints::view(&state, &mut RenderContext::new(frame, frame.area(), &theme)))
         .unwrap();
 
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -435,7 +435,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                KeyHints::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                KeyHints::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

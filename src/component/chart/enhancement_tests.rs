@@ -211,7 +211,7 @@ fn test_render_area_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -228,7 +228,7 @@ fn test_render_area_chart_with_labels() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -239,7 +239,7 @@ fn test_render_area_chart_multi_series() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -257,7 +257,7 @@ fn test_render_scatter_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -268,7 +268,7 @@ fn test_render_scatter_chart_multi_series() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -288,7 +288,7 @@ fn test_render_area_chart_with_thresholds() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -304,7 +304,7 @@ fn test_render_scatter_with_thresholds() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -320,7 +320,7 @@ fn test_render_area_chart_with_y_range() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -335,7 +335,7 @@ fn test_render_empty_area_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -346,7 +346,7 @@ fn test_render_empty_scatter_chart() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -385,10 +385,7 @@ fn test_area_chart_disabled() {
         .draw(|frame| {
             Chart::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -402,10 +399,7 @@ fn test_scatter_chart_disabled() {
         .draw(|frame| {
             Chart::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -523,7 +517,7 @@ fn test_render_chart_with_vertical_lines() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -539,7 +533,7 @@ fn test_render_chart_with_vertical_and_horizontal_lines() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -621,7 +615,7 @@ fn test_cursor_home_end() {
 #[test]
 fn test_cursor_key_bindings() {
     let state = ChartState::line(sample_series());
-    let ctx = ViewContext::new().focused(true);
+    let ctx = EventContext::new().focused(true);
 
     assert_eq!(
         Chart::handle_event(&state, &Event::key(KeyCode::Left), &ctx),
@@ -656,7 +650,7 @@ fn test_cursor_key_bindings() {
 #[test]
 fn test_cursor_unfocused_ignored() {
     let state = ChartState::line(sample_series());
-    let ctx = ViewContext::default();
+    let ctx = EventContext::default();
 
     assert_eq!(
         Chart::handle_event(&state, &Event::key(KeyCode::Left), &ctx),
@@ -690,10 +684,7 @@ fn test_render_chart_with_crosshair() {
         .draw(|frame| {
             Chart::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -719,7 +710,7 @@ fn test_toggle_grid_message() {
 #[test]
 fn test_toggle_grid_key_binding() {
     let state = ChartState::line(sample_series());
-    let ctx = ViewContext::new().focused(true);
+    let ctx = EventContext::new().focused(true);
     assert_eq!(
         Chart::handle_event(&state, &Event::char('g'), &ctx),
         Some(ChartMessage::ToggleGrid)
@@ -733,7 +724,7 @@ fn test_render_line_chart_with_grid() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }

@@ -265,7 +265,7 @@ fn test_expand_leaf_via_dispatch_event() {
     let output = Tree::<()>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, None);
 }
@@ -277,7 +277,7 @@ fn test_collapse_leaf_via_dispatch_event() {
     let output = Tree::<()>::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, None);
 }
@@ -288,8 +288,11 @@ fn test_collapse_leaf_via_dispatch_event() {
 fn test_handle_event_unrecognized_key() {
     let state = TreeState::new(vec![TreeNode::new("Root", ())]);
 
-    let msg =
-        Tree::<()>::handle_event(&state, &Event::char('z'), &ViewContext::new().focused(true));
+    let msg = Tree::<()>::handle_event(
+        &state,
+        &Event::char('z'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -300,7 +303,7 @@ fn test_handle_event_tab_key() {
     let msg = Tree::<()>::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 }
@@ -312,7 +315,7 @@ fn test_handle_event_escape_key() {
     let msg = Tree::<()>::handle_event(
         &state,
         &Event::key(KeyCode::Esc),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
 }

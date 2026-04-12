@@ -288,7 +288,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            Sparkline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Sparkline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -302,7 +302,7 @@ fn test_view_with_data() {
 
     terminal
         .draw(|frame| {
-            Sparkline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Sparkline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -317,7 +317,7 @@ fn test_view_with_title() {
 
     terminal
         .draw(|frame| {
-            Sparkline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Sparkline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -331,7 +331,7 @@ fn test_view_right_to_left() {
 
     terminal
         .draw(|frame| {
-            Sparkline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Sparkline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -346,7 +346,7 @@ fn test_view_with_max_display_points() {
 
     terminal
         .draw(|frame| {
-            Sparkline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Sparkline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -360,7 +360,7 @@ fn test_view_with_color() {
 
     terminal
         .draw(|frame| {
-            Sparkline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Sparkline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -378,7 +378,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Sparkline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Sparkline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -397,7 +397,7 @@ fn test_annotation_emitted_no_title() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Sparkline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Sparkline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

@@ -20,7 +20,7 @@ fn test_snapshot_default_empty() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -32,7 +32,7 @@ fn test_snapshot_populated() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -46,10 +46,7 @@ fn test_snapshot_focused() {
         .draw(|frame| {
             LogViewer::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -65,7 +62,7 @@ fn test_snapshot_with_title() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -80,7 +77,7 @@ fn test_snapshot_with_timestamps() {
     let (mut terminal, theme) = test_utils::setup_render(70, 20);
     terminal
         .draw(|frame| {
-            LogViewer::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            LogViewer::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -98,10 +95,7 @@ fn test_snapshot_search_active() {
         .draw(|frame| {
             LogViewer::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();

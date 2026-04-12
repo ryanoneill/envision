@@ -153,7 +153,7 @@ fn render_chart_with_annotations(state: &ChartState) {
     let (mut terminal, theme) = test_utils::setup_render(80, 24);
     terminal
         .draw(|frame| {
-            Chart::view(state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -264,7 +264,7 @@ fn test_render_annotation_small_chart_no_panic() {
     let (mut terminal, theme) = test_utils::setup_render(10, 5);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }

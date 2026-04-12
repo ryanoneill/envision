@@ -11,7 +11,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -25,7 +25,7 @@ fn test_snapshot_left_only() {
     let (mut terminal, theme) = test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -38,7 +38,7 @@ fn test_snapshot_center_only() {
     let (mut terminal, theme) = test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -52,7 +52,7 @@ fn test_snapshot_right_only() {
     let (mut terminal, theme) = test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -68,7 +68,7 @@ fn test_snapshot_all_sections() {
     let (mut terminal, theme) = test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -83,7 +83,7 @@ fn test_snapshot_styled_items() {
     let (mut terminal, theme) = test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -105,7 +105,7 @@ fn test_snapshot_counter_item() {
     let (mut terminal, theme) = test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -121,7 +121,7 @@ fn test_snapshot_custom_separator() {
     let (mut terminal, theme) = test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            StatusBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

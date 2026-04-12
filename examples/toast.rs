@@ -68,7 +68,7 @@ impl App for ToastApp {
                 );
         frame.render_widget(content, chunks[0]);
 
-        Toast::view(&state.toasts, frame, area, &theme, &ViewContext::default());
+        Toast::view(&state.toasts, &mut RenderContext::new(frame, area, &theme));
 
         let status = " s: success, w: warning, e: error, q: quit";
         frame.render_widget(

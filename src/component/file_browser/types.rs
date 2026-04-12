@@ -1,5 +1,95 @@
 //! Types for the file browser component.
 
+/// Messages that can be sent to a FileBrowser.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum FileBrowserMessage {
+    /// Move selection up.
+    Up,
+    /// Move selection down.
+    Down,
+    /// Jump to first entry.
+    First,
+    /// Jump to last entry.
+    Last,
+    /// Page up.
+    PageUp(usize),
+    /// Page down.
+    PageDown(usize),
+    /// Enter selected directory or select file.
+    Enter,
+    /// Navigate to parent directory.
+    Back,
+    /// Toggle selection of current entry.
+    ToggleSelect,
+    /// Toggle visibility of hidden files.
+    ToggleHidden,
+    /// Cycle internal focus (PathBar -> FileList -> Filter).
+    CycleFocus,
+    /// Add a character to the filter.
+    FilterChar(char),
+    /// Remove last filter character.
+    FilterBackspace,
+    /// Clear the filter.
+    FilterClear,
+    /// Set the sort field.
+    SetSort(FileSortField),
+    /// Toggle sort direction.
+    ToggleSortDirection,
+    /// Navigate to a path segment in the breadcrumb.
+    NavigateToSegment(usize),
+    /// Refresh the file listing.
+    Refresh,
+}
+
+/// Output messages from a FileBrowser.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum FileBrowserOutput {
+    /// A file was selected (Enter on a file).
+    FileSelected(FileEntry),
+    /// A directory was entered.
+    DirectoryEntered(String),
+    /// Navigated back to parent.
+    NavigatedBack(String),
+    /// The selected index changed.
+    SelectionChanged(usize),
+    /// A path was toggled in multi-select mode.
+    SelectionToggled(String),
+    /// The filter text changed.
+    FilterChanged(String),
+    /// The sort field or direction changed.
+    SortChanged(FileSortField, FileSortDirection),
+    /// Hidden file visibility toggled.
+    HiddenToggled(bool),
+}
+
+/// Computes path segments from a path string.
+pub(super) fn compute_segments(path: &str) -> Vec<String> {
+    let mut segments = Vec::new();
+    if path.starts_with('/') {
+        segments.push("/".to_string());
+    }
+    for part in path.split('/').filter(|s| !s.is_empty()) {
+        segments.push(part.to_string());
+    }
+    if segments.is_empty() {
+        segments.push("/".to_string());
+    }
+    segments
+}
+
+/// Formats a file size in human-readable form.
+pub(crate) fn format_size(size: u64) -> String {
+    if size < 1024 {
+        format!("{}B", size)
+    } else if size < 1024 * 1024 {
+        format!("{:.1}K", size as f64 / 1024.0)
+    } else if size < 1024 * 1024 * 1024 {
+        format!("{:.1}M", size as f64 / (1024.0 * 1024.0))
+    } else {
+        format!("{:.1}G", size as f64 / (1024.0 * 1024.0 * 1024.0))
+    }
+}
+
 /// A single file or directory entry.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(

@@ -6,7 +6,7 @@
 //! Tests 1-14 live here. Tests 15-30 are in integration_new_components_2.rs.
 
 use envision::CaptureBackend;
-use envision::ViewContext;
+use envision::RenderContext;
 use envision::component::{
     // Observability
     AlertMetric,
@@ -123,7 +123,7 @@ fn test_sparkline_push_data_and_bounded_eviction() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            Sparkline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Sparkline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -162,7 +162,7 @@ fn test_gauge_threshold_color_transitions() {
         let theme = envision::Theme::default();
         terminal
             .draw(|frame| {
-                Gauge::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Gauge::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     }
@@ -273,7 +273,7 @@ fn test_heatmap_cell_navigation_and_selection() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            Heatmap::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Heatmap::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -333,7 +333,7 @@ fn test_chart_area_scatter_with_thresholds() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -400,7 +400,7 @@ fn test_timeline_events_spans_and_zoom() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            Timeline::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Timeline::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -463,7 +463,7 @@ fn test_span_tree_expand_collapse_navigate() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            SpanTree::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            SpanTree::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -534,7 +534,7 @@ fn test_flame_graph_navigation_zoom_search() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            FlameGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            FlameGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -689,7 +689,7 @@ fn test_alert_panel_state_transitions() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            AlertPanel::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            AlertPanel::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -811,7 +811,7 @@ fn test_calendar_navigation_and_selection() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            Calendar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Calendar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -911,7 +911,7 @@ fn test_switch_toggle_workflow() {
     let theme = envision::Theme::default();
     terminal
         .draw(|frame| {
-            Switch::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Switch::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }

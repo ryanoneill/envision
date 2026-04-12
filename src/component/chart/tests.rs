@@ -324,7 +324,7 @@ fn test_disabled_ignores_events() {
     let msg = Chart::handle_event(
         &state,
         &Event::key(KeyCode::Tab),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -336,7 +336,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = ChartState::line(sample_series());
-    let msg = Chart::handle_event(&state, &Event::key(KeyCode::Tab), &ViewContext::default());
+    let msg = Chart::handle_event(&state, &Event::key(KeyCode::Tab), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -351,7 +351,7 @@ fn test_tab_maps_to_next() {
         Chart::handle_event(
             &state,
             &Event::key(KeyCode::Tab),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ChartMessage::NextSeries)
     );
@@ -364,7 +364,7 @@ fn test_backtab_maps_to_prev() {
         Chart::handle_event(
             &state,
             &Event::key(KeyCode::BackTab),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(ChartMessage::PrevSeries)
     );
@@ -384,7 +384,7 @@ fn test_render_line_chart_with_thresholds() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -399,7 +399,7 @@ fn test_render_line_chart_multi_series_overlay() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            Chart::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Chart::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }

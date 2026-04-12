@@ -82,19 +82,13 @@ impl App for UsageDisplayApp {
         // Horizontal layout
         UsageDisplay::view(
             &state.horizontal,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
 
         // Vertical layout
         UsageDisplay::view(
             &state.vertical,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
 
         // Spacer line
@@ -104,10 +98,7 @@ impl App for UsageDisplayApp {
         // Grid layout
         UsageDisplay::view(
             &state.grid,
-            frame,
-            chunks[4],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[4], &theme),
         );
     }
 

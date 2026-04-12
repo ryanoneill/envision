@@ -96,10 +96,7 @@ impl App for HelpPanelApp {
         let theme = Theme::default();
         HelpPanel::view(
             &state.help,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let status = Paragraph::new(format!(
@@ -117,7 +114,7 @@ impl App for HelpPanelApp {
             }
         }
 
-        HelpPanel::handle_event(&state.help, event, &ViewContext::new().focused(true))
+        HelpPanel::handle_event(&state.help, event, &EventContext::new().focused(true))
             .map(Msg::Help)
     }
 }

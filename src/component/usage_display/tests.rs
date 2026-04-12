@@ -1,4 +1,6 @@
 use super::*;
+use crate::component::EventContext;
+use ratatui::style::Color;
 
 // ========================================
 // UsageMetric Tests
@@ -460,7 +462,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 3);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -472,7 +474,7 @@ fn test_view_horizontal_single() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -487,7 +489,7 @@ fn test_view_horizontal_multiple() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -501,7 +503,7 @@ fn test_view_horizontal_with_color() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -515,7 +517,7 @@ fn test_view_horizontal_with_icon() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 1);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -530,7 +532,7 @@ fn test_view_horizontal_custom_separator() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 1);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -546,7 +548,7 @@ fn test_view_vertical() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -562,7 +564,7 @@ fn test_view_vertical_with_title() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 4);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -579,7 +581,7 @@ fn test_view_grid_2_columns() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(50, 4);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -596,7 +598,7 @@ fn test_view_grid_3_columns() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(50, 3);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -612,7 +614,7 @@ fn test_view_grid_odd_count() {
     let (mut terminal, theme) = crate::component::test_utils::setup_render(50, 4);
     terminal
         .draw(|frame| {
-            UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -625,7 +627,7 @@ fn test_view_zero_width() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 0, 3);
-            UsageDisplay::view(&state, frame, area, &theme, &ViewContext::default());
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, area, &theme));
         })
         .unwrap();
     // Should not panic
@@ -638,7 +640,7 @@ fn test_view_zero_height() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 60, 0);
-            UsageDisplay::view(&state, frame, area, &theme, &ViewContext::default());
+            UsageDisplay::view(&state, &mut RenderContext::new(frame, area, &theme));
         })
         .unwrap();
     // Should not panic
@@ -652,7 +654,7 @@ fn test_view_zero_height() {
 fn test_handle_event_returns_none() {
     let state = UsageDisplayState::new().metric(UsageMetric::new("CPU", "45%"));
     let event = crate::input::Event::key(crate::input::KeyCode::Char('q'));
-    let msg = UsageDisplay::handle_event(&state, &event, &ViewContext::default());
+    let msg = UsageDisplay::handle_event(&state, &event, &EventContext::default());
     assert!(msg.is_none());
 }
 
@@ -660,7 +662,7 @@ fn test_handle_event_returns_none() {
 fn test_dispatch_event_returns_none() {
     let mut state = UsageDisplayState::new().metric(UsageMetric::new("CPU", "45%"));
     let event = crate::input::Event::key(crate::input::KeyCode::Enter);
-    let output = UsageDisplay::dispatch_event(&mut state, &event, &ViewContext::default());
+    let output = UsageDisplay::dispatch_event(&mut state, &event, &EventContext::default());
     assert!(output.is_none());
 }
 
@@ -693,7 +695,7 @@ fn test_annotation_emitted_horizontal() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -711,7 +713,7 @@ fn test_annotation_emitted_vertical() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -730,7 +732,7 @@ fn test_annotation_emitted_grid() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                UsageDisplay::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                UsageDisplay::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

@@ -509,7 +509,7 @@ fn test_disabled_ignores_events() {
     let msg = CommandPalette::handle_event(
         &state,
         &Event::char('a'),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -523,7 +523,7 @@ fn test_unfocused_ignores_events() {
     let mut state = CommandPaletteState::new(sample_items());
     state.set_visible(true);
     // focused is false by default
-    let msg = CommandPalette::handle_event(&state, &Event::char('a'), &ViewContext::default());
+    let msg = CommandPalette::handle_event(&state, &Event::char('a'), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -535,8 +535,11 @@ fn test_unfocused_ignores_events() {
 fn test_hidden_ignores_events() {
     let state = CommandPaletteState::new(sample_items());
     // visible is false by default
-    let msg =
-        CommandPalette::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
+    let msg = CommandPalette::handle_event(
+        &state,
+        &Event::char('a'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -632,7 +635,7 @@ fn test_render_hidden_is_noop() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     // Should render nothing (blank)
@@ -644,7 +647,7 @@ fn test_render_visible() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -656,7 +659,7 @@ fn test_render_with_query() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -668,7 +671,7 @@ fn test_render_with_selection() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -683,7 +686,7 @@ fn test_render_no_matches() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 }
@@ -697,10 +700,7 @@ fn test_render_empty_items() {
         .draw(|frame| {
             CommandPalette::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -778,7 +778,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                CommandPalette::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                CommandPalette::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

@@ -62,10 +62,7 @@ impl App for DropdownApp {
 
         Dropdown::view(
             &state.language,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state.language.selected_value().unwrap_or("None");
@@ -82,7 +79,7 @@ impl App for DropdownApp {
                 return Some(Msg::Quit);
             }
         }
-        Dropdown::handle_event(&state.language, event, &ViewContext::new().focused(true))
+        Dropdown::handle_event(&state.language, event, &EventContext::new().focused(true))
             .map(Msg::Language)
     }
 }

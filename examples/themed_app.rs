@@ -208,28 +208,19 @@ impl App for ThemedApp {
         // Render button using Component trait
         Button::view(
             &state.button_state,
-            frame,
-            button_checkbox_chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, button_checkbox_chunks[0], &theme),
         );
 
         // Render checkbox using Component trait
         Checkbox::view(
             &state.checkbox_state,
-            frame,
-            button_checkbox_chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, button_checkbox_chunks[1], &theme),
         );
 
         // Progress bar
         ProgressBar::view(
             &state.progress_state,
-            frame,
-            chunks[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[3], &theme),
         );
 
         // Selectable list with block wrapper
@@ -242,10 +233,7 @@ impl App for ThemedApp {
         frame.render_widget(list_block, list_area);
         SelectableList::view(
             &state.list_state,
-            frame,
-            inner_area,
-            &theme,
-            &ViewContext::new().focused(true),
+            &mut RenderContext::new(frame, inner_area, &theme).focused(true),
         );
 
         // Controls help

@@ -195,7 +195,7 @@ fn test_view_zero_progress() {
 
     terminal
         .draw(|frame| {
-            ProgressBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ProgressBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -209,7 +209,7 @@ fn test_view_half_progress() {
 
     terminal
         .draw(|frame| {
-            ProgressBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ProgressBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -223,7 +223,7 @@ fn test_view_full_progress() {
 
     terminal
         .draw(|frame| {
-            ProgressBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ProgressBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -238,7 +238,7 @@ fn test_view_renders() {
 
     terminal
         .draw(|frame| {
-            ProgressBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ProgressBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -252,7 +252,7 @@ fn test_view_without_label() {
 
     terminal
         .draw(|frame| {
-            ProgressBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ProgressBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -546,7 +546,7 @@ fn test_view_with_eta_and_rate() {
 
     terminal
         .draw(|frame| {
-            ProgressBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            ProgressBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -564,7 +564,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                ProgressBar::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                ProgressBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

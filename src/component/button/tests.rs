@@ -34,7 +34,7 @@ fn test_view() {
 
     terminal
         .draw(|frame| {
-            Button::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Button::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -50,10 +50,7 @@ fn test_view_focused() {
         .draw(|frame| {
             Button::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -70,10 +67,7 @@ fn test_view_disabled() {
         .draw(|frame| {
             Button::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -89,7 +83,7 @@ fn test_handle_event_enter_when_focused() {
     let msg = Button::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(ButtonMessage::Press));
 }
@@ -97,14 +91,22 @@ fn test_handle_event_enter_when_focused() {
 #[test]
 fn test_handle_event_space_when_focused() {
     let state = ButtonState::new("OK");
-    let msg = Button::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
+    let msg = Button::handle_event(
+        &state,
+        &Event::char(' '),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(ButtonMessage::Press));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = ButtonState::new("OK");
-    let msg = Button::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = Button::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -114,7 +116,7 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = Button::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -122,7 +124,11 @@ fn test_handle_event_ignored_when_disabled() {
 #[test]
 fn test_handle_event_irrelevant_key() {
     let state = ButtonState::new("OK");
-    let msg = Button::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true));
+    let msg = Button::handle_event(
+        &state,
+        &Event::char('x'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -132,7 +138,7 @@ fn test_dispatch_event() {
     let output = Button::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(ButtonOutput::Pressed));
 }
@@ -154,7 +160,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Button::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Button::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -176,10 +182,7 @@ fn test_annotation_focused() {
             .draw(|frame| {
                 Button::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();

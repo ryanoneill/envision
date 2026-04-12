@@ -39,9 +39,8 @@ pub use content::{StyledBlock, StyledContent, StyledInline};
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::theme::Theme;
 
 /// Messages that can be sent to a StyledText component.
 #[derive(Clone, Debug, PartialEq)]
@@ -374,7 +373,7 @@ impl Component for StyledText {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -446,10 +445,10 @@ impl Component for StyledText {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::StyledText)
                     .with_id("styled_text")
                     .with_focus(ctx.focused)
@@ -458,11 +457,11 @@ impl Component for StyledText {
         });
 
         let border_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let (inner, render_area) = if state.show_border {
@@ -474,18 +473,18 @@ impl Component for StyledText {
                 block = block.title(title.as_str());
             }
 
-            let inner = block.inner(area);
-            frame.render_widget(block, area);
+            let inner = block.inner(ctx.area);
+            ctx.frame.render_widget(block, ctx.area);
             (inner, inner)
         } else {
-            (area, area)
+            (ctx.area, ctx.area)
         };
 
         if inner.height == 0 || inner.width == 0 {
             return;
         }
 
-        let rendered_lines = state.content.render_lines(inner.width, theme);
+        let rendered_lines = state.content.render_lines(inner.width, ctx.theme);
         let total_visual_rows = visual_row_count(&rendered_lines, inner.width as usize);
         let visible_lines = inner.height as usize;
         let max_scroll = total_visual_rows.saturating_sub(visible_lines);
@@ -496,7 +495,7 @@ impl Component for StyledText {
             .wrap(Wrap { trim: false })
             .scroll((effective_scroll as u16, 0));
 
-        frame.render_widget(paragraph, render_area);
+        ctx.frame.render_widget(paragraph, render_area);
     }
 }
 

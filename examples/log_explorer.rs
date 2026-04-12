@@ -12,7 +12,7 @@
 //
 // - **SplitPanel**: Side-by-side LogViewer + EventStream
 // - **FocusManager**: Tab-key focus cycling between panes
-// - **ViewContext**: Parent controls focus rendering per component
+// - **EventContext**: Parent controls focus rendering per component
 // - **CommandPalette**: Ctrl+P for action picker (overlay)
 // - **StatusBar**: Live counters and mode indicators
 // - **Async data**: Tick-driven simulated log stream
@@ -298,44 +298,32 @@ impl App for LogExplorer {
         // Get the two pane areas from SplitPanel
         let (left_area, right_area) = state.split.layout(chunks[0]);
 
-        // Determine focus for ViewContext
+        // Determine focus for EventContext
         let log_focused = state.focus.is_focused(&Pane::LogViewer);
         let event_focused = state.focus.is_focused(&Pane::EventStream);
 
-        // Render components with ViewContext carrying focus state
+        // Render components with EventContext carrying focus state
         LogViewer::view(
             &state.log,
-            frame,
-            left_area,
-            &theme,
-            &ViewContext::new().focused(log_focused),
+            &mut RenderContext::new(frame, left_area, &theme).focused(log_focused),
         );
 
         EventStream::view(
             &state.events,
-            frame,
-            right_area,
-            &theme,
-            &ViewContext::new().focused(event_focused),
+            &mut RenderContext::new(frame, right_area, &theme).focused(event_focused),
         );
 
         // Status bar (never focused)
         StatusBar::view(
             &state.status,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
 
         // Command palette renders last (overlay)
         if state.palette.is_visible() {
             CommandPalette::view(
                 &state.palette,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         }
     }
@@ -349,7 +337,7 @@ impl App for LogExplorer {
 
         // Command palette gets priority when visible
         if state.palette.is_visible() {
-            return CommandPalette::handle_event(&state.palette, event, &ViewContext::default())
+            return CommandPalette::handle_event(&state.palette, event, &EventContext::default())
                 .map(Msg::Palette);
         }
 
@@ -371,14 +359,15 @@ impl App for LogExplorer {
 
         // Route to focused component
         if state.focus.is_focused(&Pane::LogViewer) {
-            if let Some(msg) = LogViewer::handle_event(&state.log, event, &ViewContext::default()) {
+            if let Some(msg) = LogViewer::handle_event(&state.log, event, &EventContext::default())
+            {
                 return Some(Msg::Log(msg));
             }
         }
 
         if state.focus.is_focused(&Pane::EventStream) {
             if let Some(msg) =
-                EventStream::handle_event(&state.events, event, &ViewContext::default())
+                EventStream::handle_event(&state.events, event, &EventContext::default())
             {
                 return Some(Msg::Event(msg));
             }
@@ -515,7 +504,7 @@ fn main() -> envision::Result<()> {
     println!();
     println!("This demonstrates:");
     println!("  - SplitPanel with LogViewer + EventStream");
-    println!("  - FocusManager + ViewContext for focus routing");
+    println!("  - FocusManager + EventContext for focus routing");
     println!("  - CommandPalette overlay (Ctrl+P)");
     println!("  - StatusBar with live counters");
     println!("  - Async simulated data via on_tick");

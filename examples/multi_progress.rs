@@ -55,10 +55,7 @@ impl App for MultiProgressApp {
 
         MultiProgress::view(
             &state.progress,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let completed = state.progress.completed_count();
@@ -81,7 +78,7 @@ impl App for MultiProgressApp {
                 return Some(Msg::Quit);
             }
         }
-        MultiProgress::handle_event(&state.progress, event, &ViewContext::new().focused(true))
+        MultiProgress::handle_event(&state.progress, event, &EventContext::new().focused(true))
             .map(Msg::Progress)
     }
 }

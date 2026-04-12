@@ -60,7 +60,7 @@ pub use item::*;
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, ViewContext};
+use super::{Component, RenderContext};
 use crate::theme::Theme;
 
 /// Section of the status bar for addressing items.
@@ -806,21 +806,21 @@ impl Component for StatusBar {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         // Render background
         let bg_style = Style::default().bg(state.background);
 
         // Calculate section widths
-        let left_spans = Self::render_section(&state.left, &state.separator, theme);
-        let center_spans = Self::render_section(&state.center, &state.separator, theme);
-        let right_spans = Self::render_section(&state.right, &state.separator, theme);
+        let left_spans = Self::render_section(&state.left, &state.separator, ctx.theme);
+        let center_spans = Self::render_section(&state.center, &state.separator, ctx.theme);
+        let right_spans = Self::render_section(&state.right, &state.separator, ctx.theme);
 
         // Calculate the width of each section
         let left_width: usize = left_spans.iter().map(|s| s.content.len()).sum();
         let center_width: usize = center_spans.iter().map(|s| s.content.len()).sum();
         let right_width: usize = right_spans.iter().map(|s| s.content.len()).sum();
 
-        let total_width = area.width as usize;
+        let total_width = ctx.area.width as usize;
 
         // Determine how much space is available for center after left and right.
         // Priority: left (full), right (full), center (gets remainder).
@@ -873,7 +873,7 @@ impl Component for StatusBar {
                 .with_id("status_bar")
                 .with_meta("item_count", item_count.to_string());
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
-        frame.render_widget(annotated, area);
+        ctx.frame.render_widget(annotated, ctx.area);
     }
 }
 

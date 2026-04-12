@@ -216,7 +216,7 @@ fn test_disabled_ignores_events() {
     let msg = LogCorrelation::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -236,7 +236,7 @@ fn test_disabled_ignores_update() {
 fn test_unfocused_ignores_events() {
     let state = two_stream_state();
     let msg =
-        LogCorrelation::handle_event(&state, &Event::key(KeyCode::Down), &ViewContext::default());
+        LogCorrelation::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -251,12 +251,16 @@ fn test_up_key() {
         LogCorrelation::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::ScrollUp)
     );
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        LogCorrelation::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(LogCorrelationMessage::ScrollUp)
     );
 }
@@ -268,12 +272,16 @@ fn test_down_key() {
         LogCorrelation::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::ScrollDown)
     );
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        LogCorrelation::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(LogCorrelationMessage::ScrollDown)
     );
 }
@@ -285,7 +293,7 @@ fn test_home_end_keys() {
         LogCorrelation::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::ScrollToTop)
     );
@@ -293,7 +301,7 @@ fn test_home_end_keys() {
         LogCorrelation::handle_event(
             &state,
             &Event::key(KeyCode::End),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::ScrollToBottom)
     );
@@ -306,7 +314,7 @@ fn test_tab_key() {
         LogCorrelation::handle_event(
             &state,
             &Event::key(KeyCode::Tab),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::FocusNextStream)
     );
@@ -319,7 +327,7 @@ fn test_backtab_key() {
         LogCorrelation::handle_event(
             &state,
             &Event::key(KeyCode::BackTab),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::FocusPrevStream)
     );
@@ -329,7 +337,11 @@ fn test_backtab_key() {
 fn test_s_key() {
     let state = focused_state();
     assert_eq!(
-        LogCorrelation::handle_event(&state, &Event::char('s'), &ViewContext::new().focused(true)),
+        LogCorrelation::handle_event(
+            &state,
+            &Event::char('s'),
+            &EventContext::new().focused(true)
+        ),
         Some(LogCorrelationMessage::ToggleSyncScroll)
     );
 }
@@ -344,7 +356,7 @@ fn test_instance_handle_event() {
     let msg = LogCorrelation::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(LogCorrelationMessage::ScrollDown));
 }
@@ -362,7 +374,7 @@ fn test_instance_dispatch_event() {
     LogCorrelation::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(state.scroll_offset(), 1);
 }

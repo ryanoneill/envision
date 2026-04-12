@@ -81,10 +81,7 @@ impl App for BigTextApp {
         frame.render_widget(clock_label, chunks[0]);
         BigText::view(
             &state.clock,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
 
         let metric_label =
@@ -92,20 +89,14 @@ impl App for BigTextApp {
         frame.render_widget(metric_label, chunks[2]);
         BigText::view(
             &state.metric,
-            frame,
-            chunks[3],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[3], &theme),
         );
 
         let pct_label = Paragraph::new(" Uptime").style(Style::default().fg(Color::DarkGray));
         frame.render_widget(pct_label, chunks[4]);
         BigText::view(
             &state.percentage,
-            frame,
-            chunks[5],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[5], &theme),
         );
 
         let footer = Paragraph::new(" BigText dashboard metrics | Esc to quit")

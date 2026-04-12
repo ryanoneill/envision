@@ -7,7 +7,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 10);
     terminal
         .draw(|frame| {
-            DependencyGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DependencyGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -21,7 +21,7 @@ fn test_snapshot_single_node() {
     let (mut terminal, theme) = test_utils::setup_render(60, 10);
     terminal
         .draw(|frame| {
-            DependencyGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DependencyGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -39,7 +39,7 @@ fn test_snapshot_simple_graph() {
     let (mut terminal, theme) = test_utils::setup_render(80, 16);
     terminal
         .draw(|frame| {
-            DependencyGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DependencyGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -58,10 +58,7 @@ fn test_snapshot_with_selection() {
         .draw(|frame| {
             DependencyGraph::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -82,7 +79,7 @@ fn test_snapshot_with_statuses() {
     let (mut terminal, theme) = test_utils::setup_render(80, 16);
     terminal
         .draw(|frame| {
-            DependencyGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DependencyGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -100,10 +97,7 @@ fn test_snapshot_disabled() {
         .draw(|frame| {
             DependencyGraph::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -121,7 +115,7 @@ fn test_snapshot_top_to_bottom() {
     let (mut terminal, theme) = test_utils::setup_render(60, 16);
     terminal
         .draw(|frame| {
-            DependencyGraph::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            DependencyGraph::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());

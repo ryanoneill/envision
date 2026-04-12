@@ -38,13 +38,11 @@ use std::fmt::Display;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use ratatui::prelude::*;
 use ratatui::widgets::ListState;
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
-use crate::theme::Theme;
 
 /// A matcher function that takes `(query, item_text)` and returns
 /// `None` for no match or `Some(score)` for a ranked match (higher = better).
@@ -720,7 +718,7 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -901,8 +899,15 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        render::render_searchable_list(state, frame, area, theme, ctx.focused, ctx.disabled);
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        render::render_searchable_list(
+            state,
+            ctx.frame,
+            ctx.area,
+            ctx.theme,
+            ctx.focused,
+            ctx.disabled,
+        );
     }
 }
 

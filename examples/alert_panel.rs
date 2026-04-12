@@ -71,10 +71,7 @@ impl App for AlertPanelApp {
 
         AlertPanel::view(
             &state.panel,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -98,7 +95,7 @@ impl App for AlertPanelApp {
                 return Some(Msg::Quit);
             }
         }
-        AlertPanel::handle_event(&state.panel, event, &ViewContext::new().focused(true))
+        AlertPanel::handle_event(&state.panel, event, &EventContext::new().focused(true))
             .map(Msg::Panel)
     }
 }

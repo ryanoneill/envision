@@ -56,10 +56,7 @@ impl App for HistogramApp {
         let area = frame.area();
         Histogram::view(
             &state.histogram,
-            frame,
-            area,
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, area, &theme),
         );
     }
 

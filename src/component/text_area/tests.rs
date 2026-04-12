@@ -485,10 +485,7 @@ fn test_view_focused() {
         .draw(|frame| {
             TextArea::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -503,7 +500,7 @@ fn test_view_unfocused() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TextArea::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -517,7 +514,7 @@ fn test_view_placeholder() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TextArea::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -533,7 +530,7 @@ fn test_view_renders() {
 
     terminal
         .draw(|frame| {
-            TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            TextArea::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -691,10 +688,7 @@ fn test_view_with_scroll() {
         .draw(|frame| {
             TextArea::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -713,10 +707,7 @@ fn test_view_cursor_above_scroll() {
         .draw(|frame| {
             TextArea::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -799,7 +790,11 @@ fn test_multiline_mixed_unicode() {
 #[test]
 fn test_handle_event_char_insert() {
     let state = TextArea::init();
-    let msg = TextArea::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::char('a'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::Insert('a')));
 }
 
@@ -809,7 +804,7 @@ fn test_handle_event_enter() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::NewLine));
 }
@@ -820,7 +815,7 @@ fn test_handle_event_arrow_up() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::Up));
 }
@@ -831,7 +826,7 @@ fn test_handle_event_arrow_down() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::Down));
 }
@@ -842,7 +837,7 @@ fn test_handle_event_arrow_left() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::Left));
 }
@@ -853,7 +848,7 @@ fn test_handle_event_arrow_right() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::Right));
 }
@@ -864,7 +859,7 @@ fn test_handle_event_ctrl_home() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key_with(KeyCode::Home, KeyModifiers::CONTROL),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::TextStart));
 }
@@ -875,7 +870,7 @@ fn test_handle_event_ctrl_end() {
     let msg = TextArea::handle_event(
         &state,
         &Event::key_with(KeyCode::End, KeyModifiers::CONTROL),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::TextEnd));
 }
@@ -883,21 +878,29 @@ fn test_handle_event_ctrl_end() {
 #[test]
 fn test_handle_event_ctrl_k() {
     let state = TextArea::init();
-    let msg = TextArea::handle_event(&state, &Event::ctrl('k'), &ViewContext::new().focused(true));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::ctrl('k'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::DeleteToEnd));
 }
 
 #[test]
 fn test_handle_event_ctrl_u() {
     let state = TextArea::init();
-    let msg = TextArea::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true));
+    let msg = TextArea::handle_event(
+        &state,
+        &Event::ctrl('u'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(TextAreaMessage::DeleteToStart));
 }
 
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = TextArea::init();
-    let msg = TextArea::handle_event(&state, &Event::char('a'), &ViewContext::default());
+    let msg = TextArea::handle_event(&state, &Event::char('a'), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -907,7 +910,7 @@ fn test_dispatch_event_insert() {
     let output = TextArea::dispatch_event(
         &mut state,
         &Event::char('a'),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert!(matches!(output, Some(TextAreaOutput::Changed(_))));
     assert_eq!(state.value(), "a");
@@ -982,7 +985,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                TextArea::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                TextArea::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

@@ -37,7 +37,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, Toggleable, ViewContext};
+use super::{Component, EventContext, RenderContext, Toggleable};
 use crate::input::{Event, KeyCode, KeyModifiers};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
@@ -625,7 +625,7 @@ impl Component for HelpPanel {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -682,10 +682,10 @@ impl Component for HelpPanel {
         None // Display-only, no output
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::help_panel("help_panel")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled),
@@ -693,11 +693,11 @@ impl Component for HelpPanel {
         });
 
         let border_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let mut block = Block::default()
@@ -708,15 +708,15 @@ impl Component for HelpPanel {
             block = block.title(format!(" {} ", title));
         }
 
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
 
         if inner.height == 0 || inner.width == 0 {
             return;
         }
 
         // Build all lines and compute scroll dimensions
-        let all_lines = state.build_lines(theme);
+        let all_lines = state.build_lines(ctx.theme);
         let total_lines = all_lines.len();
         let visible_height = inner.height as usize;
         let max_scroll = total_lines.saturating_sub(visible_height);
@@ -736,7 +736,8 @@ impl Component for HelpPanel {
                 break;
             }
             let line_area = Rect::new(inner.x + 1, y, inner.width.saturating_sub(2), 1);
-            frame.render_widget(ratatui::widgets::Paragraph::new(line), line_area);
+            ctx.frame
+                .render_widget(ratatui::widgets::Paragraph::new(line), line_area);
         }
 
         // Render scrollbar when content exceeds viewport
@@ -744,7 +745,12 @@ impl Component for HelpPanel {
             let mut bar_scroll = ScrollState::new(total_lines);
             bar_scroll.set_viewport_height(visible_height);
             bar_scroll.set_offset(effective_scroll);
-            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+            crate::scroll::render_scrollbar_inside_border(
+                &bar_scroll,
+                ctx.frame,
+                ctx.area,
+                ctx.theme,
+            );
         }
     }
 }

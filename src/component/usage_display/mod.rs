@@ -33,7 +33,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, ViewContext};
+use super::{Component, RenderContext};
 use crate::theme::Theme;
 
 /// Layout style for usage metrics display.
@@ -962,15 +962,15 @@ impl Component for UsageDisplay {
         None // Display-only, no output
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
-        if state.metrics.is_empty() || area.width == 0 || area.height == 0 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if state.metrics.is_empty() || ctx.area.width == 0 || ctx.area.height == 0 {
             return;
         }
 
         match state.layout {
-            UsageLayout::Horizontal => Self::view_horizontal(state, frame, area, theme),
-            UsageLayout::Vertical => Self::view_vertical(state, frame, area, theme),
-            UsageLayout::Grid(cols) => Self::view_grid(state, frame, area, theme, cols),
+            UsageLayout::Horizontal => Self::view_horizontal(state, ctx.frame, ctx.area, ctx.theme),
+            UsageLayout::Vertical => Self::view_vertical(state, ctx.frame, ctx.area, ctx.theme),
+            UsageLayout::Grid(cols) => Self::view_grid(state, ctx.frame, ctx.area, ctx.theme, cols),
         }
     }
 }

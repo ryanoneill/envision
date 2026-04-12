@@ -400,7 +400,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Breadcrumb::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -415,7 +415,7 @@ fn test_view_single() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Breadcrumb::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -430,7 +430,7 @@ fn test_view_multiple() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Breadcrumb::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -448,10 +448,7 @@ fn test_view_focused_highlight() {
         .draw(|frame| {
             Breadcrumb::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -469,7 +466,7 @@ fn test_view_truncated() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Breadcrumb::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -485,7 +482,7 @@ fn test_view_custom_separator() {
 
     terminal
         .draw(|frame| {
-            Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Breadcrumb::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -502,10 +499,7 @@ fn test_view_disabled() {
         .draw(|frame| {
             Breadcrumb::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -567,7 +561,7 @@ fn test_handle_event_left_when_focused() {
     let msg = Breadcrumb::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(BreadcrumbMessage::Left));
 }
@@ -579,7 +573,7 @@ fn test_handle_event_right_when_focused() {
     let msg = Breadcrumb::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(BreadcrumbMessage::Right));
 }
@@ -591,7 +585,7 @@ fn test_handle_event_first_when_focused() {
     let msg = Breadcrumb::handle_event(
         &state,
         &Event::key(KeyCode::Home),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(BreadcrumbMessage::First));
 }
@@ -603,7 +597,7 @@ fn test_handle_event_last_when_focused() {
     let msg = Breadcrumb::handle_event(
         &state,
         &Event::key(KeyCode::End),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(BreadcrumbMessage::Last));
 }
@@ -615,7 +609,7 @@ fn test_handle_event_select_when_focused() {
     let msg = Breadcrumb::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(BreadcrumbMessage::Select));
 }
@@ -624,12 +618,18 @@ fn test_handle_event_select_when_focused() {
 fn test_handle_event_vim_keys() {
     let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
 
-    let msg_h =
-        Breadcrumb::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
+    let msg_h = Breadcrumb::handle_event(
+        &state,
+        &Event::char('h'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg_h, Some(BreadcrumbMessage::Left));
 
-    let msg_l =
-        Breadcrumb::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
+    let msg_l = Breadcrumb::handle_event(
+        &state,
+        &Event::char('l'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg_l, Some(BreadcrumbMessage::Right));
 }
 
@@ -638,15 +638,21 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = BreadcrumbState::from_labels(vec!["A", "B", "C"]);
     // Not focused by default
 
-    let msg =
-        Breadcrumb::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
+    let msg = Breadcrumb::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 
-    let msg =
-        Breadcrumb::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = Breadcrumb::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 
-    let msg = Breadcrumb::handle_event(&state, &Event::char('l'), &ViewContext::default());
+    let msg = Breadcrumb::handle_event(&state, &Event::char('l'), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -657,14 +663,14 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = Breadcrumb::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Breadcrumb::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -679,7 +685,7 @@ fn test_dispatch_event() {
     let output = Breadcrumb::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(BreadcrumbOutput::FocusChanged(1)));
     assert_eq!(state.focused_index(), 1);
@@ -688,7 +694,7 @@ fn test_dispatch_event() {
     let output = Breadcrumb::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(BreadcrumbOutput::Selected(1)));
 }
@@ -763,7 +769,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Breadcrumb::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Breadcrumb::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

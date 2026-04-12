@@ -27,13 +27,11 @@
 //! assert_eq!(state.line_count(), 2);
 //! ```
 
-use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 use unicode_width::UnicodeWidthStr;
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::theme::Theme;
 use crate::undo::UndoStack;
 
 #[cfg(feature = "clipboard")]
@@ -656,7 +654,7 @@ impl Component for TextArea {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -726,11 +724,11 @@ impl Component for TextArea {
         state.apply_update(msg)
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         crate::annotation::with_registry(|reg| {
             let first_line = state.lines.first().map_or("", |l| l.as_str());
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::text_area("text_area")
                     .with_value(first_line)
                     .with_focus(ctx.focused)
@@ -738,7 +736,7 @@ impl Component for TextArea {
             );
         });
 
-        let inner_height = area.height.saturating_sub(2) as usize; // Account for borders
+        let inner_height = ctx.area.height.saturating_sub(2) as usize; // Account for borders
 
         // Ensure cursor is visible
         let mut scroll = state.scroll_offset;
@@ -766,19 +764,19 @@ impl Component for TextArea {
         };
 
         let style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_style()
+            ctx.theme.focused_style()
         } else if state.is_empty() && !state.placeholder.is_empty() {
-            theme.placeholder_style()
+            ctx.theme.placeholder_style()
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         let border_style = if ctx.focused && !ctx.disabled {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let paragraph = Paragraph::new(display_text).style(style).block(
@@ -787,22 +785,22 @@ impl Component for TextArea {
                 .border_style(border_style),
         );
 
-        frame.render_widget(paragraph, area);
+        ctx.frame.render_widget(paragraph, ctx.area);
 
         // Show cursor when focused
-        if ctx.focused && area.width > 2 && area.height > 2 {
+        if ctx.focused && ctx.area.width > 2 && ctx.area.height > 2 {
             let cursor_row_in_view = state.cursor_row.saturating_sub(scroll);
             let (_, display_col) = state.cursor_display_position();
 
-            let cursor_x = area.x + 1 + display_col as u16;
-            let cursor_y = area.y + 1 + cursor_row_in_view as u16;
+            let cursor_x = ctx.area.x + 1 + display_col as u16;
+            let cursor_y = ctx.area.y + 1 + cursor_row_in_view as u16;
 
-            // Only show cursor if it's within the visible area
-            if cursor_x < area.x + area.width - 1
-                && cursor_y < area.y + area.height - 1
+            // Only show cursor if it's within the visible ctx.area
+            if cursor_x < ctx.area.x + ctx.area.width - 1
+                && cursor_y < ctx.area.y + ctx.area.height - 1
                 && cursor_row_in_view < inner_height
             {
-                frame.set_cursor_position((cursor_x, cursor_y));
+                ctx.frame.set_cursor_position((cursor_x, cursor_y));
             }
         }
     }

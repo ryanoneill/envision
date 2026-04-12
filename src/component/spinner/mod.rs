@@ -38,11 +38,9 @@
 //! assert!(!state.is_spinning());
 //! ```
 
-use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, ViewContext};
-use crate::theme::Theme;
+use super::{Component, RenderContext};
 
 /// Built-in spinner animation styles.
 ///
@@ -467,7 +465,7 @@ impl Component for Spinner {
         None
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, _ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         let spinner_char = if state.spinning {
             state.current_frame().to_string()
         } else {
@@ -479,12 +477,12 @@ impl Component for Spinner {
             None => spinner_char,
         };
 
-        let paragraph = Paragraph::new(text).style(theme.info_style());
+        let paragraph = Paragraph::new(text).style(ctx.theme.info_style());
 
         let annotation = crate::annotation::Annotation::spinner("spinner")
             .with_label(state.label.as_deref().unwrap_or(""));
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
-        frame.render_widget(annotated, area);
+        ctx.frame.render_widget(annotated, ctx.area);
     }
 }
 

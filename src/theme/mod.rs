@@ -19,8 +19,9 @@
 //! // Use Dracula theme (purple focused, dark disabled)
 //! let dracula_theme = Theme::dracula();
 //!
-//! // Components use theme in their view() method:
-//! // Component::view(&state, frame, area, &nord_theme, &ViewContext::default());
+//! // Components use theme via RenderContext in their view() method:
+//! // let mut ctx = RenderContext::new(frame, area, &nord_theme);
+//! // Component::view(&state, &mut ctx);
 //! ```
 //!
 //! # Creating Custom Themes
@@ -282,7 +283,8 @@ impl Theme {
     ///
     /// let theme = Theme::nord();
     /// // Use with components:
-    /// // Button::view(&state, frame, area, &theme, &ViewContext::default());
+    /// // let mut ctx = RenderContext::new(frame, area, &theme);
+    /// // Button::view(&state, &mut ctx);
     /// ```
     pub fn nord() -> Self {
         Self {

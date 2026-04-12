@@ -166,10 +166,7 @@ impl App for EventStreamApp {
 
         EventStream::view(
             &state.stream,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let visible = state.stream.visible_events().len();
@@ -190,7 +187,7 @@ impl App for EventStreamApp {
                 return Some(Msg::Quit);
             }
         }
-        EventStream::handle_event(&state.stream, event, &ViewContext::new().focused(true))
+        EventStream::handle_event(&state.stream, event, &EventContext::new().focused(true))
             .map(Msg::Stream)
     }
 }

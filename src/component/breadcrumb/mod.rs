@@ -36,9 +36,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 /// A single breadcrumb segment.
 ///
@@ -643,7 +642,7 @@ impl Component for Breadcrumb {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -662,7 +661,7 @@ impl Component for Breadcrumb {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         if state.segments.is_empty() {
             return;
         }
@@ -672,7 +671,7 @@ impl Component for Breadcrumb {
 
         // Add ellipsis if truncated
         if state.is_truncated() {
-            spans.push(Span::styled("…", theme.disabled_style()));
+            spans.push(Span::styled("…", ctx.theme.disabled_style()));
             spans.push(Span::raw(&state.separator));
         }
 
@@ -682,9 +681,9 @@ impl Component for Breadcrumb {
             let is_focused_segment = ctx.focused && seg_idx == state.focused_index;
 
             let style = if ctx.disabled {
-                theme.disabled_style()
+                ctx.theme.disabled_style()
             } else if is_focused_segment {
-                theme
+                ctx.theme
                     .focused_style()
                     .add_modifier(Modifier::BOLD | Modifier::UNDERLINED)
             } else if is_last {
@@ -692,7 +691,7 @@ impl Component for Breadcrumb {
                 Style::default().add_modifier(Modifier::BOLD)
             } else {
                 // Navigable segments
-                theme.info_style()
+                ctx.theme.info_style()
             };
 
             spans.push(Span::styled(segment.label(), style));
@@ -708,7 +707,7 @@ impl Component for Breadcrumb {
             .with_focus(ctx.focused)
             .with_disabled(ctx.disabled);
         let annotated = crate::annotation::Annotate::new(Paragraph::new(line), annotation);
-        frame.render_widget(annotated, area);
+        ctx.frame.render_widget(annotated, ctx.area);
     }
 }
 

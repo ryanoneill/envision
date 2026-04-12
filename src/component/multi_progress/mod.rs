@@ -32,12 +32,10 @@ mod types;
 
 pub use types::*;
 
-use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 /// State for the MultiProgress component.
 #[derive(Clone, Debug, PartialEq)]
@@ -702,7 +700,7 @@ impl Component for MultiProgress {
     fn handle_event(
         _state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -719,14 +717,14 @@ impl Component for MultiProgress {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.width == 0 || area.height == 0 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.width == 0 || ctx.area.height == 0 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::new(crate::annotation::WidgetType::MultiProgress)
                     .with_id("multi_progress")
                     .with_meta("item_count", state.items.len().to_string()),
@@ -739,8 +737,8 @@ impl Component for MultiProgress {
             Block::default().borders(Borders::ALL)
         };
 
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
 
         if state.items.is_empty() || inner.height == 0 {
             return;
@@ -758,9 +756,9 @@ impl Component for MultiProgress {
             .map(|item| {
                 let symbol = item.status.symbol();
                 let style = if ctx.disabled {
-                    theme.disabled_style()
+                    ctx.theme.disabled_style()
                 } else {
-                    item.status.style(theme)
+                    item.status.style(ctx.theme)
                 };
 
                 // Build the content string
@@ -791,7 +789,7 @@ impl Component for MultiProgress {
             .collect();
 
         let list = List::new(items);
-        frame.render_widget(list, inner);
+        ctx.frame.render_widget(list, inner);
     }
 }
 

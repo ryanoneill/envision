@@ -97,10 +97,7 @@ fn main() {
         let theme = Theme::default();
         CodeBlock::view(
             &state.code,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let status = Paragraph::new(format!(
@@ -120,7 +117,7 @@ fn main() {
             }
         }
 
-        CodeBlock::handle_event(&state.code, event, &ViewContext::new().focused(true))
+        CodeBlock::handle_event(&state.code, event, &EventContext::new().focused(true))
             .map(Msg::Code)
     }
 }

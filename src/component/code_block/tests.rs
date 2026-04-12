@@ -335,7 +335,7 @@ fn test_disabled_ignores_events() {
     let msg = CodeBlock::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -343,7 +343,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = CodeBlockState::new();
-    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
+    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -358,7 +358,7 @@ fn test_handle_event_up() {
         CodeBlock::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::ScrollUp)
     );
@@ -371,7 +371,7 @@ fn test_handle_event_down() {
         CodeBlock::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::ScrollDown)
     );
@@ -381,11 +381,19 @@ fn test_handle_event_down() {
 fn test_handle_event_k_j() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('k'), &ViewContext::new().focused(true)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::char('k'),
+            &EventContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::ScrollUp)
     );
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('j'), &ViewContext::new().focused(true)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::char('j'),
+            &EventContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::ScrollDown)
     );
 }
@@ -397,7 +405,7 @@ fn test_handle_event_page_up_down() {
         CodeBlock::handle_event(
             &state,
             &Event::key(KeyCode::PageUp),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::PageUp(10))
     );
@@ -405,7 +413,7 @@ fn test_handle_event_page_up_down() {
         CodeBlock::handle_event(
             &state,
             &Event::key(KeyCode::PageDown),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::PageDown(10))
     );
@@ -415,11 +423,19 @@ fn test_handle_event_page_up_down() {
 fn test_handle_event_ctrl_u_d() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::ctrl('u'), &ViewContext::new().focused(true)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::ctrl('u'),
+            &EventContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::PageUp(10))
     );
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::ctrl('d'), &ViewContext::new().focused(true)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::ctrl('d'),
+            &EventContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::PageDown(10))
     );
 }
@@ -431,7 +447,7 @@ fn test_handle_event_home_end() {
         CodeBlock::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::Home)
     );
@@ -439,7 +455,7 @@ fn test_handle_event_home_end() {
         CodeBlock::handle_event(
             &state,
             &Event::key(KeyCode::End),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::End)
     );
@@ -450,14 +466,18 @@ fn test_handle_event_home_end() {
 fn test_handle_event_g_and_G() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('g'), &ViewContext::new().focused(true)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::char('g'),
+            &EventContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::Home)
     );
     assert_eq!(
         CodeBlock::handle_event(
             &state,
             &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
-            &ViewContext::new().focused(true),
+            &EventContext::new().focused(true),
         ),
         Some(CodeBlockMessage::End)
     );
@@ -467,7 +487,11 @@ fn test_handle_event_g_and_G() {
 fn test_handle_event_l_scroll_right() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::char('l'),
+            &EventContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::ScrollRight)
     );
 }
@@ -476,7 +500,11 @@ fn test_handle_event_l_scroll_right() {
 fn test_handle_event_n_toggle_line_numbers() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::char('n'),
+            &EventContext::new().focused(true)
+        ),
         Some(CodeBlockMessage::ToggleLineNumbers)
     );
 }
@@ -485,7 +513,11 @@ fn test_handle_event_n_toggle_line_numbers() {
 fn test_handle_event_unrecognized() {
     let state = focused_state();
     assert_eq!(
-        CodeBlock::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true)),
+        CodeBlock::handle_event(
+            &state,
+            &Event::char('x'),
+            &EventContext::new().focused(true)
+        ),
         None
     );
 }
@@ -536,7 +568,7 @@ fn test_view_empty() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -551,7 +583,7 @@ fn test_view_with_rust_code() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -566,7 +598,7 @@ fn test_view_with_line_numbers() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -582,10 +614,7 @@ fn test_view_focused() {
         .draw(|frame| {
             CodeBlock::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -602,10 +631,7 @@ fn test_view_disabled() {
         .draw(|frame| {
             CodeBlock::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -623,7 +649,7 @@ fn test_view_scrolled() {
     let (mut terminal, theme) = test_utils::setup_render(50, 8);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -638,7 +664,7 @@ fn test_view_with_highlight_lines() {
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -654,7 +680,7 @@ fn test_view_python_code() {
     let (mut terminal, theme) = test_utils::setup_render(60, 8);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -672,7 +698,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                CodeBlock::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -693,10 +719,7 @@ fn test_annotation_focused() {
             .draw(|frame| {
                 CodeBlock::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();
@@ -716,7 +739,7 @@ fn test_zero_size_render() {
     let (mut terminal, theme) = test_utils::setup_render(3, 3);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     // Should not panic
@@ -728,7 +751,7 @@ fn test_single_line_render() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -741,7 +764,7 @@ fn test_scroll_beyond_content() {
     let (mut terminal, theme) = test_utils::setup_render(30, 5);
     terminal
         .draw(|frame| {
-            CodeBlock::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            CodeBlock::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     // Should not panic; scroll is clamped during render
@@ -821,7 +844,7 @@ fn test_horizontal_scroll_key_bindings() {
     let msg = CodeBlock::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CodeBlockMessage::ScrollLeft));
 
@@ -829,20 +852,32 @@ fn test_horizontal_scroll_key_bindings() {
     let msg = CodeBlock::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CodeBlockMessage::ScrollRight));
 
     // h key
-    let msg = CodeBlock::handle_event(&state, &Event::char('h'), &ViewContext::new().focused(true));
+    let msg = CodeBlock::handle_event(
+        &state,
+        &Event::char('h'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CodeBlockMessage::ScrollLeft));
 
     // l key (now horizontal scroll, not toggle line numbers)
-    let msg = CodeBlock::handle_event(&state, &Event::char('l'), &ViewContext::new().focused(true));
+    let msg = CodeBlock::handle_event(
+        &state,
+        &Event::char('l'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CodeBlockMessage::ScrollRight));
 
     // n key (toggle line numbers)
-    let msg = CodeBlock::handle_event(&state, &Event::char('n'), &ViewContext::new().focused(true));
+    let msg = CodeBlock::handle_event(
+        &state,
+        &Event::char('n'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CodeBlockMessage::ToggleLineNumbers));
 }
 
@@ -859,10 +894,7 @@ fn test_horizontal_scroll_renders_shifted_content() {
         .draw(|frame| {
             CodeBlock::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();

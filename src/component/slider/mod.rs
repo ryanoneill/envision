@@ -33,7 +33,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
 use crate::theme::Theme;
 
@@ -447,7 +447,7 @@ impl Component for Slider {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -479,27 +479,21 @@ impl Component for Slider {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
         match state.orientation {
-            SliderOrientation::Horizontal => view_horizontal(state, frame, area, theme, ctx),
-            SliderOrientation::Vertical => view_vertical(state, frame, area, theme, ctx),
+            SliderOrientation::Horizontal => view_horizontal(state, ctx),
+            SliderOrientation::Vertical => view_vertical(state, ctx),
         }
     }
 }
 
 /// Renders the slider in horizontal orientation.
-fn view_horizontal(
-    state: &SliderState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    ctx: &ViewContext,
-) {
-    if area.height == 0 || area.width == 0 {
+fn view_horizontal(state: &SliderState, ctx: &mut RenderContext<'_, '_>) {
+    if ctx.area.height == 0 || ctx.area.width == 0 {
         return;
     }
 
-    let (label_style, filled_style, empty_style) = compute_styles(theme, ctx);
+    let (label_style, filled_style, empty_style) = compute_styles(ctx.theme, &ctx.event_context());
 
     let mut lines = Vec::new();
 
@@ -510,7 +504,7 @@ fn view_horizontal(
     }
 
     // Build track line
-    let track_width = area.width as usize;
+    let track_width = ctx.area.width as usize;
     let pct = state.percentage();
     let filled = (pct * track_width as f64).round() as usize;
     let empty = track_width.saturating_sub(filled);
@@ -542,22 +536,16 @@ fn view_horizontal(
     let annotated = crate::annotation::Annotate::new(paragraph, annotation)
         .focused(ctx.focused)
         .disabled(ctx.disabled);
-    frame.render_widget(annotated, area);
+    ctx.frame.render_widget(annotated, ctx.area);
 }
 
 /// Renders the slider in vertical orientation.
-fn view_vertical(
-    state: &SliderState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    ctx: &ViewContext,
-) {
-    if area.height == 0 || area.width == 0 {
+fn view_vertical(state: &SliderState, ctx: &mut RenderContext<'_, '_>) {
+    if ctx.area.height == 0 || ctx.area.width == 0 {
         return;
     }
 
-    let (label_style, filled_style, empty_style) = compute_styles(theme, ctx);
+    let (label_style, filled_style, empty_style) = compute_styles(ctx.theme, &ctx.event_context());
 
     let mut lines = Vec::new();
 
@@ -567,7 +555,7 @@ fn view_vertical(
     } else {
         0
     };
-    let track_height = (area.height as usize).saturating_sub(label_lines);
+    let track_height = (ctx.area.height as usize).saturating_sub(label_lines);
 
     // Label at top
     if state.label.is_some() || state.show_value {
@@ -607,11 +595,11 @@ fn view_vertical(
     let annotated = crate::annotation::Annotate::new(paragraph, annotation)
         .focused(ctx.focused)
         .disabled(ctx.disabled);
-    frame.render_widget(annotated, area);
+    ctx.frame.render_widget(annotated, ctx.area);
 }
 
 /// Computes the styles for label, filled, and empty portions.
-fn compute_styles(theme: &Theme, ctx: &ViewContext) -> (Style, Style, Style) {
+fn compute_styles(theme: &Theme, ctx: &EventContext) -> (Style, Style, Style) {
     if ctx.disabled {
         let disabled = theme.disabled_style();
         (disabled, disabled, disabled)

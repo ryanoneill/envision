@@ -104,10 +104,7 @@ impl App for StatusBarApp {
         // Status bar
         StatusBar::view(
             &state.status,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
 
         // Help line

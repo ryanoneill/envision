@@ -429,7 +429,7 @@ fn test_view_closed_empty() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dropdown::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -444,7 +444,7 @@ fn test_view_closed_with_selection() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dropdown::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -460,7 +460,7 @@ fn test_view_open_no_filter() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dropdown::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -477,7 +477,7 @@ fn test_view_open_with_filter() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dropdown::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -494,7 +494,7 @@ fn test_view_highlight() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dropdown::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -511,7 +511,7 @@ fn test_view_no_matches() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dropdown::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -526,7 +526,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Dropdown::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -628,7 +628,7 @@ fn test_handle_event_toggle_when_closed() {
     let msg = Dropdown::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(DropdownMessage::Toggle));
 }
@@ -641,7 +641,7 @@ fn test_handle_event_confirm_when_open() {
     let msg = Dropdown::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(DropdownMessage::Confirm));
 }
@@ -654,7 +654,7 @@ fn test_handle_event_close_when_open() {
     let msg = Dropdown::handle_event(
         &state,
         &Event::key(KeyCode::Esc),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(DropdownMessage::Close));
 }
@@ -667,7 +667,7 @@ fn test_handle_event_up_when_open() {
     let msg = Dropdown::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(DropdownMessage::Up));
 }
@@ -680,7 +680,7 @@ fn test_handle_event_down_when_open() {
     let msg = Dropdown::handle_event(
         &state,
         &Event::key(KeyCode::Down),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(DropdownMessage::Down));
 }
@@ -690,7 +690,11 @@ fn test_handle_event_char_when_open() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
     Dropdown::update(&mut state, DropdownMessage::Open);
 
-    let msg = Dropdown::handle_event(&state, &Event::char('a'), &ViewContext::new().focused(true));
+    let msg = Dropdown::handle_event(
+        &state,
+        &Event::char('a'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(DropdownMessage::Insert('a')));
 }
 
@@ -702,7 +706,7 @@ fn test_handle_event_backspace_when_open() {
     let msg = Dropdown::handle_event(
         &state,
         &Event::key(KeyCode::Backspace),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(DropdownMessage::Backspace));
 }
@@ -710,7 +714,11 @@ fn test_handle_event_backspace_when_open() {
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = DropdownState::new(vec!["A", "B", "C"]);
-    let msg = Dropdown::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
+    let msg = Dropdown::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 }
 
@@ -720,7 +728,7 @@ fn test_handle_event_ignored_when_disabled() {
     let msg = Dropdown::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -739,7 +747,7 @@ fn test_dispatch_event() {
     let output = Dropdown::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(DropdownOutput::Selected("B".to_string())));
     assert!(!state.is_open());
@@ -798,7 +806,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Dropdown::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Dropdown::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });

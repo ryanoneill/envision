@@ -70,10 +70,7 @@ impl App for TreeApp {
 
         Tree::view(
             &state.tree,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -94,7 +91,7 @@ impl App for TreeApp {
                 return Some(Msg::Quit);
             }
         }
-        Tree::handle_event(&state.tree, event, &ViewContext::new().focused(true)).map(Msg::Tree)
+        Tree::handle_event(&state.tree, event, &EventContext::new().focused(true)).map(Msg::Tree)
     }
 }
 

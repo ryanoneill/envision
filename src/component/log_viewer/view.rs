@@ -2,23 +2,16 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 use super::{LogViewerState, StatusLogLevel};
-use crate::component::ViewContext;
-use crate::theme::Theme;
+use crate::component::RenderContext;
 
 /// Renders the search bar area.
-pub(super) fn render_search_bar(
-    state: &LogViewerState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    ctx: &ViewContext,
-) {
+pub(super) fn render_search_bar(state: &LogViewerState, ctx: &mut RenderContext<'_, '_>) {
     let search_style = if ctx.disabled {
-        theme.disabled_style()
+        ctx.theme.disabled_style()
     } else if state.is_search_focused() {
-        theme.focused_style()
+        ctx.theme.focused_style()
     } else {
-        theme.normal_style()
+        ctx.theme.normal_style()
     };
 
     // Build the search prefix with regex indicator
@@ -35,30 +28,25 @@ pub(super) fn render_search_bar(
     };
 
     let paragraph = Paragraph::new(display).style(search_style);
-    frame.render_widget(paragraph, area);
+    ctx.frame.render_widget(paragraph, ctx.area);
 
     // Show cursor when search is focused
     if ctx.focused && state.is_search_focused() && !ctx.disabled {
         let prefix_len = prefix.len() as u16;
-        let cursor_x = area.x + prefix_len + state.search_cursor_position() as u16;
-        if cursor_x < area.right() {
-            frame.set_cursor_position(Position::new(cursor_x, area.y));
+        let cursor_x = ctx.area.x + prefix_len + state.search_cursor_position() as u16;
+        if cursor_x < ctx.area.right() {
+            ctx.frame
+                .set_cursor_position(Position::new(cursor_x, ctx.area.y));
         }
     }
 }
 
 /// Renders the filter bar showing which severity levels are active.
-pub(super) fn render_filter_bar(
-    state: &LogViewerState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    ctx: &ViewContext,
-) {
+pub(super) fn render_filter_bar(state: &LogViewerState, ctx: &mut RenderContext<'_, '_>) {
     let filter_style = if ctx.disabled {
-        theme.disabled_style()
+        ctx.theme.disabled_style()
     } else {
-        theme.normal_style()
+        ctx.theme.normal_style()
     };
 
     let info_marker = if state.show_info() { "●" } else { "○" };
@@ -115,25 +103,19 @@ pub(super) fn render_filter_bar(
 
     let line = Line::from(spans);
     let paragraph = Paragraph::new(line);
-    frame.render_widget(paragraph, area);
+    ctx.frame.render_widget(paragraph, ctx.area);
 }
 
 /// Renders the log entries area.
-pub(super) fn render_log(
-    state: &LogViewerState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    ctx: &ViewContext,
-) {
+pub(super) fn render_log(state: &LogViewerState, ctx: &mut RenderContext<'_, '_>) {
     let visible = state.visible_entries();
 
     let border_style = if ctx.disabled {
-        theme.disabled_style()
+        ctx.theme.disabled_style()
     } else if ctx.focused && !state.is_search_focused() {
-        theme.focused_border_style()
+        ctx.theme.focused_border_style()
     } else {
-        theme.border_style()
+        ctx.theme.border_style()
     };
 
     let mut block = Block::default()
@@ -150,8 +132,8 @@ pub(super) fn render_log(
         }
     }
 
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
+    let inner = block.inner(ctx.area);
+    ctx.frame.render_widget(block, ctx.area);
 
     if inner.height == 0 || inner.width == 0 {
         return;
@@ -164,7 +146,7 @@ pub(super) fn render_log(
         .take(inner.height as usize)
         .map(|entry| {
             let style = if disabled {
-                theme.disabled_style()
+                ctx.theme.disabled_style()
             } else {
                 Style::default().fg(entry.level().color())
             };
@@ -218,7 +200,7 @@ pub(super) fn render_log(
         .collect();
 
     let list = List::new(items);
-    frame.render_widget(list, inner);
+    ctx.frame.render_widget(list, inner);
 
     // Render scrollbar if content exceeds viewport
     if visible.len() > inner.height as usize {
@@ -229,6 +211,6 @@ pub(super) fn render_log(
                 .scroll_offset()
                 .min(visible.len().saturating_sub(inner.height as usize)),
         );
-        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        crate::scroll::render_scrollbar_inside_border(&bar_scroll, ctx.frame, ctx.area, ctx.theme);
     }
 }

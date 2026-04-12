@@ -6,6 +6,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::*;
+use crate::theme::Theme;
 
 /// Renders the loading list into the given frame area.
 pub(super) fn render_loading_list<T: Clone>(

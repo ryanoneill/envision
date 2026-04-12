@@ -1,4 +1,5 @@
 use super::*;
+use crate::theme::Theme;
 use ratatui::prelude::Rect;
 
 // ========================================
@@ -12,7 +13,7 @@ fn test_view_empty() {
 
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            LoadingList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -29,7 +30,7 @@ fn test_view_with_items() {
 
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            LoadingList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -45,7 +46,7 @@ fn test_view_with_title() {
 
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            LoadingList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -62,7 +63,7 @@ fn test_view_with_error() {
 
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            LoadingList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -80,10 +81,7 @@ fn test_view_zero_size_area() {
         .draw(|frame| {
             LoadingList::view(
                 &state,
-                frame,
-                Rect::new(0, 0, 0, 10),
-                &theme,
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, Rect::new(0, 0, 0, 10), &theme),
             );
         })
         .unwrap();
@@ -93,10 +91,7 @@ fn test_view_zero_size_area() {
         .draw(|frame| {
             LoadingList::view(
                 &state,
-                frame,
-                Rect::new(0, 0, 60, 0),
-                &Theme::default(),
-                &ViewContext::default(),
+                &mut RenderContext::new(frame, Rect::new(0, 0, 60, 0), &Theme::default()),
             );
         })
         .unwrap();
@@ -112,7 +107,7 @@ fn test_view_without_indicators() {
 
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            LoadingList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -129,7 +124,7 @@ fn test_view_without_indicators_with_error() {
 
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            LoadingList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -152,10 +147,7 @@ fn test_view_focused() {
         .draw(|frame| {
             LoadingList::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             )
         })
         .unwrap();
@@ -173,7 +165,7 @@ fn test_view_with_loading_item() {
 
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            LoadingList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -192,7 +184,7 @@ fn test_view_with_mixed_states() {
 
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            LoadingList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -211,7 +203,7 @@ fn test_view_single_item() {
 
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            LoadingList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 
@@ -230,10 +222,7 @@ fn test_view_disabled() {
         .draw(|frame| {
             LoadingList::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             )
         })
         .unwrap();
@@ -251,7 +240,7 @@ fn test_view_with_title_and_selection() {
 
     terminal
         .draw(|frame| {
-            LoadingList::view(&state, frame, frame.area(), &theme, &ViewContext::default())
+            LoadingList::view(&state, &mut RenderContext::new(frame, frame.area(), &theme))
         })
         .unwrap();
 

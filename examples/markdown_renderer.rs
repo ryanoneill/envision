@@ -105,10 +105,7 @@ impl App for MarkdownRendererApp {
         let theme = Theme::default();
         MarkdownRenderer::view(
             &state.renderer,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let mode = if state.renderer.show_source() {
@@ -132,7 +129,7 @@ impl App for MarkdownRendererApp {
             }
         }
 
-        MarkdownRenderer::handle_event(&state.renderer, event, &ViewContext::new().focused(true))
+        MarkdownRenderer::handle_event(&state.renderer, event, &EventContext::new().focused(true))
             .map(Msg::Renderer)
     }
 }

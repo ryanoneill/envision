@@ -258,10 +258,7 @@ impl App for FileManager {
         // Breadcrumb
         Breadcrumb::view(
             &state.breadcrumb,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::new().focused(browser_focused),
+            &mut RenderContext::new(frame, chunks[0], &theme).focused(browser_focused),
         );
 
         // Split panel: browser (left) + preview (right)
@@ -269,29 +266,20 @@ impl App for FileManager {
 
         FileBrowser::view(
             &state.browser,
-            frame,
-            left,
-            &theme,
-            &ViewContext::new().focused(browser_focused),
+            &mut RenderContext::new(frame, left, &theme).focused(browser_focused),
         );
 
         match state.preview_mode {
             PreviewMode::Code => {
                 CodeBlock::view(
                     &state.code,
-                    frame,
-                    right,
-                    &theme,
-                    &ViewContext::new().focused(preview_focused),
+                    &mut RenderContext::new(frame, right, &theme).focused(preview_focused),
                 );
             }
             PreviewMode::Diff => {
                 DiffViewer::view(
                     &state.diff,
-                    frame,
-                    right,
-                    &theme,
-                    &ViewContext::new().focused(preview_focused),
+                    &mut RenderContext::new(frame, right, &theme).focused(preview_focused),
                 );
             }
         }
@@ -299,20 +287,14 @@ impl App for FileManager {
         // Status bar
         StatusBar::view(
             &state.status,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
 
         // Command palette overlay
         if state.palette.is_visible() {
             CommandPalette::view(
                 &state.palette,
-                frame,
-                area,
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, area, &theme).focused(true),
             );
         }
     }
@@ -327,7 +309,7 @@ impl App for FileManager {
 
         // Command palette gets priority
         if state.palette.is_visible() {
-            return CommandPalette::handle_event(&state.palette, event, &ViewContext::default())
+            return CommandPalette::handle_event(&state.palette, event, &EventContext::default())
                 .map(Msg::Palette);
         }
 
@@ -346,7 +328,7 @@ impl App for FileManager {
 
         // Browser-focused
         if state.focus.is_focused(&Focus::Browser) {
-            return FileBrowser::handle_event(&state.browser, event, &ViewContext::default())
+            return FileBrowser::handle_event(&state.browser, event, &EventContext::default())
                 .map(Msg::Browser);
         }
 
@@ -354,21 +336,21 @@ impl App for FileManager {
         if state.focus.is_focused(&Focus::Preview) {
             return match state.preview_mode {
                 PreviewMode::Code => {
-                    CodeBlock::handle_event(&state.code, event, &ViewContext::default())
+                    CodeBlock::handle_event(&state.code, event, &EventContext::default())
                         .map(Msg::Code)
                 }
                 PreviewMode::Diff => {
-                    DiffViewer::handle_event(&state.diff, event, &ViewContext::default())
+                    DiffViewer::handle_event(&state.diff, event, &EventContext::default())
                         .map(Msg::Diff)
                 }
             };
         }
 
         // Fall through: split panel resize and breadcrumb navigation
-        if let Some(m) = SplitPanel::handle_event(&state.split, event, &ViewContext::default()) {
+        if let Some(m) = SplitPanel::handle_event(&state.split, event, &EventContext::default()) {
             return Some(Msg::Split(m));
         }
-        Breadcrumb::handle_event(&state.breadcrumb, event, &ViewContext::default()).map(Msg::Crumb)
+        Breadcrumb::handle_event(&state.breadcrumb, event, &EventContext::default()).map(Msg::Crumb)
     }
 }
 
@@ -543,7 +525,7 @@ fn main() -> envision::Result<()> {
     println!("  - SplitPanel with resizable panes");
     println!("  - Breadcrumb path navigation");
     println!("  - CommandPalette for quick actions");
-    println!("  - FocusManager + ViewContext focus routing");
+    println!("  - FocusManager + EventContext focus routing");
     println!("  - StatusBar with file info");
 
     Ok(())

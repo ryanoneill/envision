@@ -33,9 +33,8 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 /// Messages that can be sent to a NumberInput.
 #[derive(Clone, Debug, PartialEq)]
@@ -532,7 +531,7 @@ impl Component for NumberInput {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -564,15 +563,15 @@ impl Component for NumberInput {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.width == 0 || area.height == 0 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.width == 0 || ctx.area.height == 0 {
             return;
         }
 
         let border_style = if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let block = Block::default()
@@ -580,11 +579,11 @@ impl Component for NumberInput {
             .border_style(border_style);
 
         let content_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_style()
+            ctx.theme.focused_style()
         } else {
-            theme.normal_style()
+            ctx.theme.normal_style()
         };
 
         // Build the display text
@@ -632,7 +631,7 @@ impl Component for NumberInput {
         let annotated = crate::annotation::Annotate::new(paragraph, annotation)
             .focused(ctx.focused)
             .disabled(ctx.disabled);
-        frame.render_widget(annotated, area);
+        ctx.frame.render_widget(annotated, ctx.area);
     }
 }
 

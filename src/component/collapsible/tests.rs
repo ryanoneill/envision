@@ -249,8 +249,11 @@ fn test_update_set_content_height() {
 #[test]
 fn test_handle_event_space_toggles() {
     let state = CollapsibleState::new("Details");
-    let msg =
-        Collapsible::handle_event(&state, &Event::char(' '), &ViewContext::new().focused(true));
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::char(' '),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, Some(CollapsibleMessage::Toggle));
 }
 
@@ -260,7 +263,7 @@ fn test_handle_event_enter_toggles() {
     let msg = Collapsible::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CollapsibleMessage::Toggle));
 }
@@ -271,7 +274,7 @@ fn test_handle_event_right_expands() {
     let msg = Collapsible::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CollapsibleMessage::Expand));
 }
@@ -282,7 +285,7 @@ fn test_handle_event_left_collapses() {
     let msg = Collapsible::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CollapsibleMessage::Collapse));
 }
@@ -291,19 +294,25 @@ fn test_handle_event_left_collapses() {
 fn test_handle_event_unfocused_ignores_events() {
     let state = CollapsibleState::new("Details");
 
-    let msg = Collapsible::handle_event(&state, &Event::char(' '), &ViewContext::default());
+    let msg = Collapsible::handle_event(&state, &Event::char(' '), &EventContext::default());
+    assert_eq!(msg, None);
+
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::key(KeyCode::Enter),
+        &EventContext::default(),
+    );
+    assert_eq!(msg, None);
+
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::key(KeyCode::Right),
+        &EventContext::default(),
+    );
     assert_eq!(msg, None);
 
     let msg =
-        Collapsible::handle_event(&state, &Event::key(KeyCode::Enter), &ViewContext::default());
-    assert_eq!(msg, None);
-
-    let msg =
-        Collapsible::handle_event(&state, &Event::key(KeyCode::Right), &ViewContext::default());
-    assert_eq!(msg, None);
-
-    let msg =
-        Collapsible::handle_event(&state, &Event::key(KeyCode::Left), &ViewContext::default());
+        Collapsible::handle_event(&state, &Event::key(KeyCode::Left), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -314,28 +323,28 @@ fn test_handle_event_disabled_ignores_events() {
     let msg = Collapsible::handle_event(
         &state,
         &Event::char(' '),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Collapsible::handle_event(
         &state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Collapsible::handle_event(
         &state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Collapsible::handle_event(
         &state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -343,8 +352,11 @@ fn test_handle_event_disabled_ignores_events() {
 #[test]
 fn test_handle_event_unrecognized_key_returns_none() {
     let state = CollapsibleState::new("Details");
-    let msg =
-        Collapsible::handle_event(&state, &Event::char('x'), &ViewContext::new().focused(true));
+    let msg = Collapsible::handle_event(
+        &state,
+        &Event::char('x'),
+        &EventContext::new().focused(true),
+    );
     assert_eq!(msg, None);
 }
 
@@ -356,7 +368,7 @@ fn test_dispatch_event_space_toggles() {
     let output = Collapsible::dispatch_event(
         &mut state,
         &Event::char(' '),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CollapsibleOutput::Toggled(false)));
     assert!(!state.expanded());
@@ -368,7 +380,7 @@ fn test_dispatch_event_enter_toggles() {
     let output = Collapsible::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Enter),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CollapsibleOutput::Toggled(true)));
     assert!(state.expanded());
@@ -380,7 +392,7 @@ fn test_dispatch_event_right_expands() {
     let output = Collapsible::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Right),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CollapsibleOutput::Expanded));
     assert!(state.expanded());
@@ -392,7 +404,7 @@ fn test_dispatch_event_left_collapses() {
     let output = Collapsible::dispatch_event(
         &mut state,
         &Event::key(KeyCode::Left),
-        &ViewContext::new().focused(true),
+        &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CollapsibleOutput::Collapsed));
     assert!(!state.expanded());
@@ -402,7 +414,7 @@ fn test_dispatch_event_left_collapses() {
 fn test_dispatch_event_unfocused_returns_none() {
     let mut state = CollapsibleState::new("Details");
     let output =
-        Collapsible::dispatch_event(&mut state, &Event::char(' '), &ViewContext::default());
+        Collapsible::dispatch_event(&mut state, &Event::char(' '), &EventContext::default());
     assert_eq!(output, None);
     assert!(state.expanded()); // Unchanged
 }
@@ -486,7 +498,7 @@ fn test_view_expanded() {
 
     terminal
         .draw(|frame| {
-            Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Collapsible::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -500,7 +512,7 @@ fn test_view_collapsed() {
 
     terminal
         .draw(|frame| {
-            Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Collapsible::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -514,7 +526,7 @@ fn test_view_focused() {
 
     terminal
         .draw(|frame| {
-            Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Collapsible::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -530,10 +542,7 @@ fn test_view_disabled() {
         .draw(|frame| {
             Collapsible::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -548,7 +557,7 @@ fn test_view_focused_collapsed() {
 
     terminal
         .draw(|frame| {
-            Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            Collapsible::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
 
@@ -563,7 +572,7 @@ fn test_view_zero_area() {
     terminal
         .draw(|frame| {
             let zero_area = Rect::new(0, 0, 0, 0);
-            Collapsible::view(&state, frame, zero_area, &theme, &ViewContext::default());
+            Collapsible::view(&state, &mut RenderContext::new(frame, zero_area, &theme));
         })
         .unwrap();
     // Should not panic
@@ -577,7 +586,7 @@ fn test_view_height_one() {
     terminal
         .draw(|frame| {
             let area = Rect::new(0, 0, 40, 1);
-            Collapsible::view(&state, frame, area, &theme, &ViewContext::default());
+            Collapsible::view(&state, &mut RenderContext::new(frame, area, &theme));
         })
         .unwrap();
 
@@ -595,7 +604,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                Collapsible::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                Collapsible::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -619,10 +628,9 @@ fn test_annotation_reflects_state() {
             .draw(|frame| {
                 Collapsible::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true).disabled(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme)
+                        .focused(true)
+                        .disabled(true),
                 );
             })
             .unwrap();

@@ -61,10 +61,7 @@ impl App for RadioGroupApp {
 
         RadioGroup::<String>::view(
             &state.size,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -93,7 +90,7 @@ impl App for RadioGroupApp {
                 return Some(Msg::Quit);
             }
         }
-        RadioGroup::<String>::handle_event(&state.size, event, &ViewContext::new().focused(true))
+        RadioGroup::<String>::handle_event(&state.size, event, &EventContext::new().focused(true))
             .map(Msg::Size)
     }
 }

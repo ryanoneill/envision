@@ -85,24 +85,15 @@ impl App for TitleCardApp {
 
         TitleCard::view(
             &state.plain,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
         TitleCard::view(
             &state.decorated,
-            frame,
-            chunks[1],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[1], &theme),
         );
         TitleCard::view(
             &state.styled,
-            frame,
-            chunks[2],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[2], &theme),
         );
 
         let footer = Paragraph::new(" TitleCard configurations | Esc to quit")

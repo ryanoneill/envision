@@ -30,12 +30,10 @@
 
 use std::marker::PhantomData;
 
-use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode};
-use crate::theme::Theme;
 
 pub(crate) mod render;
 mod types;
@@ -628,7 +626,7 @@ impl Component for Timeline {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -731,14 +729,14 @@ impl Component for Timeline {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        if area.height < 3 || area.width < 3 {
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        if ctx.area.height < 3 || ctx.area.width < 3 {
             return;
         }
 
         crate::annotation::with_registry(|reg| {
             reg.register(
-                area,
+                ctx.area,
                 crate::annotation::Annotation::container("timeline")
                     .with_focus(ctx.focused)
                     .with_disabled(ctx.disabled),
@@ -746,11 +744,11 @@ impl Component for Timeline {
         });
 
         let border_style = if ctx.disabled {
-            theme.disabled_style()
+            ctx.theme.disabled_style()
         } else if ctx.focused {
-            theme.focused_border_style()
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let mut block = Block::default()
@@ -761,14 +759,21 @@ impl Component for Timeline {
             block = block.title(title.as_str());
         }
 
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
 
         if inner.height == 0 || inner.width == 0 {
             return;
         }
 
-        render::render_timeline(state, frame, inner, theme, ctx.focused, ctx.disabled);
+        render::render_timeline(
+            state,
+            ctx.frame,
+            inner,
+            ctx.theme,
+            ctx.focused,
+            ctx.disabled,
+        );
     }
 }
 

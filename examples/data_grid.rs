@@ -92,10 +92,7 @@ impl App for DataGridApp {
 
         DataGrid::view(
             &state.grid,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let selected = state
@@ -118,7 +115,8 @@ impl App for DataGridApp {
                 }
             }
         }
-        DataGrid::handle_event(&state.grid, event, &ViewContext::new().focused(true)).map(Msg::Grid)
+        DataGrid::handle_event(&state.grid, event, &EventContext::new().focused(true))
+            .map(Msg::Grid)
     }
 }
 

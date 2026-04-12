@@ -11,7 +11,7 @@ fn test_snapshot_empty() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -24,7 +24,7 @@ fn test_snapshot_single_vertical() {
     let (mut terminal, theme) = test_utils::setup_render(40, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -41,7 +41,7 @@ fn test_snapshot_multiple_vertical() {
     let (mut terminal, theme) = test_utils::setup_render(60, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -58,7 +58,7 @@ fn test_snapshot_horizontal() {
     let (mut terminal, theme) = test_utils::setup_render(60, 15);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -74,7 +74,7 @@ fn test_snapshot_with_outliers() {
     let (mut terminal, theme) = test_utils::setup_render(40, 20);
     terminal
         .draw(|frame| {
-            BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+            BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
         })
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
@@ -91,10 +91,7 @@ fn test_snapshot_disabled() {
         .draw(|frame| {
             BoxPlot::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().disabled(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
             );
         })
         .unwrap();
@@ -113,7 +110,7 @@ fn test_annotation_emitted() {
     let registry = with_annotations(|| {
         terminal
             .draw(|frame| {
-                BoxPlot::view(&state, frame, frame.area(), &theme, &ViewContext::default());
+                BoxPlot::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
             })
             .unwrap();
     });
@@ -130,10 +127,7 @@ fn test_annotation_with_focus() {
             .draw(|frame| {
                 BoxPlot::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().focused(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
                 );
             })
             .unwrap();
@@ -152,10 +146,7 @@ fn test_annotation_with_disabled() {
             .draw(|frame| {
                 BoxPlot::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::new().disabled(true),
+                    &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
                 );
             })
             .unwrap();

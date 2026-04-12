@@ -7,7 +7,7 @@
 //! and produces [`FileBrowserOutput`]. Entries are represented as
 //! [`FileEntry`].
 //!
-//! Focus and disabled state are managed via [`ViewContext`].
+//! Focus and disabled state are managed via [`EventContext`].
 //!
 //! # Example
 //!
@@ -34,13 +34,11 @@ pub use types::*;
 
 use std::sync::Arc;
 
-use ratatui::prelude::*;
 use ratatui::widgets::ListState;
 
-use super::{Component, ViewContext};
+use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, KeyCode, KeyModifiers};
-use crate::theme::Theme;
-use types::FileBrowserFocus;
+use types::{FileBrowserFocus, compute_segments};
 
 /// Trait for providing directory listings.
 ///
@@ -57,68 +55,6 @@ pub trait DirectoryProvider: Send + 'static {
     fn separator(&self) -> &str {
         "/"
     }
-}
-
-/// Messages that can be sent to a FileBrowser.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum FileBrowserMessage {
-    /// Move selection up.
-    Up,
-    /// Move selection down.
-    Down,
-    /// Jump to first entry.
-    First,
-    /// Jump to last entry.
-    Last,
-    /// Page up.
-    PageUp(usize),
-    /// Page down.
-    PageDown(usize),
-    /// Enter selected directory or select file.
-    Enter,
-    /// Navigate to parent directory.
-    Back,
-    /// Toggle selection of current entry.
-    ToggleSelect,
-    /// Toggle visibility of hidden files.
-    ToggleHidden,
-    /// Cycle internal focus (PathBar -> FileList -> Filter).
-    CycleFocus,
-    /// Add a character to the filter.
-    FilterChar(char),
-    /// Remove last filter character.
-    FilterBackspace,
-    /// Clear the filter.
-    FilterClear,
-    /// Set the sort field.
-    SetSort(FileSortField),
-    /// Toggle sort direction.
-    ToggleSortDirection,
-    /// Navigate to a path segment in the breadcrumb.
-    NavigateToSegment(usize),
-    /// Refresh the file listing.
-    Refresh,
-}
-
-/// Output messages from a FileBrowser.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum FileBrowserOutput {
-    /// A file was selected (Enter on a file).
-    FileSelected(FileEntry),
-    /// A directory was entered.
-    DirectoryEntered(String),
-    /// Navigated back to parent.
-    NavigatedBack(String),
-    /// The selected index changed.
-    SelectionChanged(usize),
-    /// A path was toggled in multi-select mode.
-    SelectionToggled(String),
-    /// The filter text changed.
-    FilterChanged(String),
-    /// The sort field or direction changed.
-    SortChanged(FileSortField, FileSortDirection),
-    /// Hidden file visibility toggled.
-    HiddenToggled(bool),
 }
 
 /// State for a FileBrowser component.
@@ -658,32 +594,6 @@ impl FileBrowserState {
     }
 }
 
-fn compute_segments(path: &str) -> Vec<String> {
-    let mut segments = Vec::new();
-    if path.starts_with('/') {
-        segments.push("/".to_string());
-    }
-    for part in path.split('/').filter(|s| !s.is_empty()) {
-        segments.push(part.to_string());
-    }
-    if segments.is_empty() {
-        segments.push("/".to_string());
-    }
-    segments
-}
-
-pub(crate) fn format_size(size: u64) -> String {
-    if size < 1024 {
-        format!("{}B", size)
-    } else if size < 1024 * 1024 {
-        format!("{:.1}K", size as f64 / 1024.0)
-    } else if size < 1024 * 1024 * 1024 {
-        format!("{:.1}M", size as f64 / (1024.0 * 1024.0))
-    } else {
-        format!("{:.1}G", size as f64 / (1024.0 * 1024.0 * 1024.0))
-    }
-}
-
 /// A compound file browsing component.
 ///
 /// Displays a navigable directory listing with filtering, sorting, and
@@ -734,7 +644,7 @@ impl Component for FileBrowser {
     fn handle_event(
         state: &Self::State,
         event: &Event,
-        ctx: &ViewContext,
+        ctx: &EventContext,
     ) -> Option<Self::Message> {
         if !ctx.focused || ctx.disabled {
             return None;
@@ -983,8 +893,15 @@ impl Component for FileBrowser {
         }
     }
 
-    fn view(state: &Self::State, frame: &mut Frame, area: Rect, theme: &Theme, ctx: &ViewContext) {
-        view::render(state, frame, area, theme, ctx.focused, ctx.disabled);
+    fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
+        view::render(
+            state,
+            ctx.frame,
+            ctx.area,
+            ctx.theme,
+            ctx.focused,
+            ctx.disabled,
+        );
     }
 }
 

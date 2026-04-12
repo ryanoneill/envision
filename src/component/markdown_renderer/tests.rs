@@ -192,7 +192,7 @@ fn test_disabled_ignores_events() {
     let msg = MarkdownRenderer::handle_event(
         &state,
         &Event::key(KeyCode::Up),
-        &ViewContext::new().focused(true).disabled(true),
+        &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 }
@@ -201,7 +201,7 @@ fn test_disabled_ignores_events() {
 fn test_unfocused_ignores_events() {
     let state = MarkdownRendererState::new();
     let msg =
-        MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::Up), &ViewContext::default());
+        MarkdownRenderer::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -216,7 +216,7 @@ fn test_handle_event_up() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::key(KeyCode::Up),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::ScrollUp)
     );
@@ -229,7 +229,7 @@ fn test_handle_event_down() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::key(KeyCode::Down),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::ScrollDown)
     );
@@ -242,7 +242,7 @@ fn test_handle_event_k_j() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::char('k'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::ScrollUp)
     );
@@ -250,7 +250,7 @@ fn test_handle_event_k_j() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::char('j'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::ScrollDown)
     );
@@ -263,7 +263,7 @@ fn test_handle_event_page_up_down() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::key(KeyCode::PageUp),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::PageUp(10))
     );
@@ -271,7 +271,7 @@ fn test_handle_event_page_up_down() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::key(KeyCode::PageDown),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::PageDown(10))
     );
@@ -284,7 +284,7 @@ fn test_handle_event_ctrl_u_d() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::ctrl('u'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::PageUp(10))
     );
@@ -292,7 +292,7 @@ fn test_handle_event_ctrl_u_d() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::ctrl('d'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::PageDown(10))
     );
@@ -305,7 +305,7 @@ fn test_handle_event_home_end() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::key(KeyCode::Home),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::Home)
     );
@@ -313,7 +313,7 @@ fn test_handle_event_home_end() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::key(KeyCode::End),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::End)
     );
@@ -327,7 +327,7 @@ fn test_handle_event_g_and_G() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::char('g'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::Home)
     );
@@ -335,7 +335,7 @@ fn test_handle_event_g_and_G() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::End)
     );
@@ -348,7 +348,7 @@ fn test_handle_event_s_toggle() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::char('s'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         Some(MarkdownRendererMessage::ToggleSource)
     );
@@ -361,7 +361,7 @@ fn test_handle_event_unrecognized() {
         MarkdownRenderer::handle_event(
             &state,
             &Event::char('x'),
-            &ViewContext::new().focused(true)
+            &EventContext::new().focused(true)
         ),
         None
     );
@@ -384,10 +384,7 @@ fn test_view_empty() {
         .draw(|frame| {
             MarkdownRenderer::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -402,10 +399,7 @@ fn test_view_with_heading() {
         .draw(|frame| {
             MarkdownRenderer::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -421,10 +415,7 @@ fn test_view_with_paragraph() {
         .draw(|frame| {
             MarkdownRenderer::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -440,10 +431,7 @@ fn test_view_with_code_block() {
         .draw(|frame| {
             MarkdownRenderer::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -458,10 +446,7 @@ fn test_view_with_list() {
         .draw(|frame| {
             MarkdownRenderer::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -476,10 +461,7 @@ fn test_view_focused() {
         .draw(|frame| {
             MarkdownRenderer::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -495,10 +477,7 @@ fn test_view_with_title() {
         .draw(|frame| {
             MarkdownRenderer::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -516,10 +495,7 @@ fn test_view_source_mode() {
         .draw(|frame| {
             MarkdownRenderer::view(
                 &state,
-                frame,
-                frame.area(),
-                &theme,
-                &ViewContext::new().focused(true),
+                &mut RenderContext::new(frame, frame.area(), &theme).focused(true),
             );
         })
         .unwrap();
@@ -540,10 +516,7 @@ fn test_annotation_emitted() {
             .draw(|frame| {
                 MarkdownRenderer::view(
                     &state,
-                    frame,
-                    frame.area(),
-                    &theme,
-                    &ViewContext::default(),
+                    &mut RenderContext::new(frame, frame.area(), &theme),
                 );
             })
             .unwrap();

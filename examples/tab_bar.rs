@@ -84,10 +84,7 @@ impl App for TabBarApp {
 
         TabBar::view(
             &state.tab_bar,
-            frame,
-            chunks[0],
-            &theme,
-            &ViewContext::default(),
+            &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
         let tab_name = state
@@ -124,7 +121,7 @@ impl App for TabBarApp {
                 return Some(Msg::AddNewTab);
             }
         }
-        TabBar::handle_event(&state.tab_bar, event, &ViewContext::new().focused(true))
+        TabBar::handle_event(&state.tab_bar, event, &EventContext::new().focused(true))
             .map(Msg::TabBar)
     }
 }
