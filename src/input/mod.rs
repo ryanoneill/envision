@@ -23,6 +23,8 @@
 //! ```
 
 mod events;
+pub mod key;
+pub mod mouse;
 mod queue;
 
 pub use events::{Event, KeyEventBuilder, MouseEventBuilder};
