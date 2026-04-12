@@ -7,6 +7,7 @@
 use std::future::Future;
 use std::pin::Pin;
 
+use crate::app::subscription::BoxedSubscription;
 use crate::overlay::Overlay;
 use tokio_util::sync::CancellationToken;
 
@@ -54,6 +55,9 @@ pub(crate) enum CommandAction<M> {
 
     /// Request the runtime's cancellation token
     RequestCancelToken(Box<dyn FnOnce(CancellationToken) -> M + Send + 'static>),
+
+    /// Register a subscription dynamically from within update()
+    Subscribe(BoxedSubscription<M>),
 }
 
 impl<M> CommandAction<M> {
@@ -73,6 +77,7 @@ impl<M> CommandAction<M> {
             CommandAction::PushOverlay(_) => "push_overlay",
             CommandAction::PopOverlay => "pop_overlay",
             CommandAction::RequestCancelToken(_) => "request_cancel_token",
+            CommandAction::Subscribe(_) => "subscribe",
         }
     }
 }
@@ -523,6 +528,42 @@ impl<M> Command<M> {
         }
     }
 
+    /// Creates a command that dynamically registers a subscription.
+    ///
+    /// Use this to add subscriptions from within `update()` — for example,
+    /// when a user action triggers a background worker that reports progress
+    /// via a channel subscription.
+    ///
+    /// The subscription is registered by the runtime on the next command
+    /// processing cycle, and begins producing messages immediately.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::{ChannelSubscription, MappedSubscription, Command};
+    /// use tokio::sync::mpsc;
+    ///
+    /// #[derive(Clone)]
+    /// enum Msg { WorkerProgress(String) }
+    ///
+    /// let (tx, rx) = mpsc::channel::<String>(32);
+    /// let subscription = ChannelSubscription::new(rx);
+    ///
+    /// // Map the subscription's output to your message type
+    /// let mapped = MappedSubscription::new(subscription, Msg::WorkerProgress);
+    ///
+    /// let cmd: Command<Msg> = Command::subscribe(Box::new(mapped));
+    /// // Return `cmd` from update() — runtime registers the subscription
+    /// ```
+    pub fn subscribe(subscription: BoxedSubscription<M>) -> Self
+    where
+        M: Send + Clone + 'static,
+    {
+        Self {
+            actions: vec![CommandAction::Subscribe(subscription)],
+        }
+    }
+
     /// Creates a command that saves application state to a JSON file.
     ///
     /// Serializes the state to JSON synchronously, then writes the file
@@ -656,6 +697,9 @@ impl<M> Command<M> {
                         f(cb(token))
                     })))
                 }
+                // Subscriptions can't be remapped after boxing — map them
+                // before creating the Command::subscribe.
+                CommandAction::Subscribe(_) => None,
             })
             .collect();
 
@@ -814,6 +858,11 @@ impl<M: Send + 'static> CommandHandler<M> {
     /// Takes the count of pending overlay pops and resets the counter.
     pub fn take_overlay_pops(&mut self) -> usize {
         self.core.take_overlay_pops()
+    }
+
+    /// Takes all pending dynamic subscription registrations.
+    pub(crate) fn take_subscriptions(&mut self) -> Vec<BoxedSubscription<M>> {
+        self.core.take_subscriptions()
     }
 
     /// Takes all pending cancel token request callbacks.

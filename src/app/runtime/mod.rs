@@ -589,6 +589,25 @@ impl<A: App, B: Backend> Runtime<A, B> {
             self.core.overlay_stack.pop();
         }
 
+        // Process dynamic subscription registrations
+        let subscriptions = self.commands.take_subscriptions();
+        if !subscriptions.is_empty() {
+            #[cfg(feature = "tracing")]
+            tracing::info!(
+                count = subscriptions.len(),
+                "registering dynamic subscriptions"
+            );
+
+            for sub in subscriptions {
+                let stream = sub.into_stream(self.cancel_token.clone());
+                Self::spawn_subscription(
+                    stream,
+                    self.message_tx.clone(),
+                    self.cancel_token.clone(),
+                );
+            }
+        }
+
         // Process cancel token requests
         for cb in self.commands.take_cancel_token_requests() {
             let msg = cb(self.cancel_token.clone());
