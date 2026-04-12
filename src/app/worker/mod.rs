@@ -172,6 +172,25 @@ pub struct ProgressSender<P> {
 }
 
 impl<P: Send + 'static> ProgressSender<P> {
+    /// Creates a new `ProgressSender` wrapping a tokio mpsc sender.
+    ///
+    /// Use this to construct a `ProgressSender` outside of
+    /// [`WorkerBuilder`] — for example, in tests or when bridging
+    /// to an existing channel.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::app::worker::ProgressSender;
+    /// use tokio::sync::mpsc;
+    ///
+    /// let (tx, mut rx) = mpsc::channel::<String>(32);
+    /// let sender = ProgressSender::new(tx);
+    /// ```
+    pub fn new(tx: mpsc::Sender<P>) -> Self {
+        Self { tx }
+    }
+
     /// Sends a progress update, waiting if the channel is full.
     ///
     /// Use this for important messages that must not be dropped (lifecycle
