@@ -3,6 +3,7 @@
 //! This module provides `CommandHandlerCore`, a struct containing the fields
 //! and methods for managing sync command results used by `CommandHandler`.
 
+use crate::app::subscription::BoxedSubscription;
 use crate::overlay::Overlay;
 
 use super::command::CommandAction;
@@ -10,11 +11,12 @@ use super::command::CommandAction;
 /// Core command handler state.
 ///
 /// Contains the fields and methods for managing sync command results
-/// (messages, overlay operations, quit flag).
+/// (messages, overlay operations, quit flag, dynamic subscriptions).
 pub(crate) struct CommandHandlerCore<M> {
     pub(crate) pending_messages: Vec<M>,
     pub(crate) pending_overlay_pushes: Vec<Box<dyn Overlay<M> + Send>>,
     pub(crate) pending_overlay_pops: usize,
+    pub(crate) pending_subscriptions: Vec<BoxedSubscription<M>>,
     pub(crate) should_quit: bool,
 }
 
@@ -25,6 +27,7 @@ impl<M> CommandHandlerCore<M> {
             pending_messages: Vec::new(),
             pending_overlay_pushes: Vec::new(),
             pending_overlay_pops: 0,
+            pending_subscriptions: Vec::new(),
             should_quit: false,
         }
     }
@@ -64,6 +67,10 @@ impl<M> CommandHandlerCore<M> {
                 self.pending_overlay_pops += 1;
                 None
             }
+            CommandAction::Subscribe(sub) => {
+                self.pending_subscriptions.push(sub);
+                None
+            }
             async_action @ (CommandAction::Async(_)
             | CommandAction::AsyncFallible(_)
             | CommandAction::RequestCancelToken(_)) => Some(async_action),
@@ -83,6 +90,11 @@ impl<M> CommandHandlerCore<M> {
     /// Takes the count of pending overlay pops and resets the counter.
     pub(crate) fn take_overlay_pops(&mut self) -> usize {
         std::mem::replace(&mut self.pending_overlay_pops, 0)
+    }
+
+    /// Takes all pending dynamic subscription registrations.
+    pub(crate) fn take_subscriptions(&mut self) -> Vec<BoxedSubscription<M>> {
+        std::mem::take(&mut self.pending_subscriptions)
     }
 
     /// Returns true if a quit command was executed.
