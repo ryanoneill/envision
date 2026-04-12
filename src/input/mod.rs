@@ -22,6 +22,7 @@
 //! }
 //! ```
 
+pub(crate) mod convert;
 mod events;
 pub mod key;
 pub mod mouse;
