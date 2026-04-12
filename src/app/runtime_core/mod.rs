@@ -39,7 +39,9 @@ impl<A: App, B: Backend> RuntimeCore<A, B> {
         let overlay_stack = &self.overlay_stack;
         self.terminal.draw(|frame| {
             A::view(&self.state, frame);
-            overlay_stack.render(frame, frame.area(), theme);
+            let area = frame.area();
+            let mut ctx = crate::component::RenderContext::new(frame, area, theme);
+            overlay_stack.render(&mut ctx);
         })?;
         Ok(())
     }

@@ -1,11 +1,7 @@
 use super::*;
 
-use ratatui::Frame;
-use ratatui::layout::Rect;
-
 use crate::input::Event;
 use crate::overlay::{Overlay, OverlayAction};
-use crate::theme::Theme;
 
 #[derive(Clone, Debug, PartialEq)]
 enum TestMsg {
@@ -21,7 +17,7 @@ impl Overlay<TestMsg> for TestOverlay {
         OverlayAction::Consumed
     }
 
-    fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+    fn view(&self, _ctx: &mut crate::component::RenderContext<'_, '_>) {}
 }
 
 #[test]

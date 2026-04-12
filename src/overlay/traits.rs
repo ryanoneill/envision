@@ -1,10 +1,7 @@
 //! Overlay trait definition.
 
-use ratatui::Frame;
-use ratatui::layout::Rect;
-
+use crate::component::RenderContext;
 use crate::input::Event;
-use crate::theme::Theme;
 
 use super::OverlayAction;
 
@@ -18,10 +15,8 @@ use super::OverlayAction;
 ///
 /// ```rust
 /// use envision::overlay::{Overlay, OverlayAction};
+/// use envision::component::RenderContext;
 /// use envision::input::{Event, Key};
-/// use envision::theme::Theme;
-/// use ratatui::layout::Rect;
-/// use ratatui::Frame;
 ///
 /// struct ConfirmDialog {
 ///     message: String,
@@ -40,8 +35,8 @@ use super::OverlayAction;
 ///         }
 ///     }
 ///
-///     fn view(&self, frame: &mut Frame, area: Rect, _theme: &Theme) {
-///         // Render the confirmation dialog
+///     fn view(&self, ctx: &mut RenderContext<'_, '_>) {
+///         // Render the confirmation dialog using ctx.frame, ctx.area, ctx.theme
 ///     }
 /// }
 /// ```
@@ -52,12 +47,13 @@ pub trait Overlay<M>: Send {
     fn handle_event(&mut self, event: &Event) -> OverlayAction<M>;
 
     /// Render the overlay on top of the main view.
-    fn view(&self, frame: &mut Frame, area: Rect, theme: &Theme);
+    fn view(&self, ctx: &mut RenderContext<'_, '_>);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::component::RenderContext;
     use crate::input::Key;
 
     struct TestOverlay {
@@ -80,7 +76,7 @@ mod tests {
             }
         }
 
-        fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {
+        fn view(&self, _ctx: &mut RenderContext<'_, '_>) {
             // no-op for testing
         }
     }

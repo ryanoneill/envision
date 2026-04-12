@@ -640,12 +640,10 @@ fn test_run_terminal_blocking_exists() {
 mod overlay_tests {
     use super::*;
     use crate::app::Command;
+    use crate::component::RenderContext;
     use crate::input::Event;
     use crate::input::Key;
     use crate::overlay::{Overlay, OverlayAction};
-    use crate::theme::Theme;
-    use ratatui::Frame;
-    use ratatui::layout::Rect;
 
     /// An overlay that consumes all events.
     struct ConsumeOverlay;
@@ -654,7 +652,7 @@ mod overlay_tests {
         fn handle_event(&mut self, _event: &Event) -> OverlayAction<CounterMsg> {
             OverlayAction::Consumed
         }
-        fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+        fn view(&self, _ctx: &mut RenderContext<'_, '_>) {}
     }
 
     /// An overlay that propagates all events.
@@ -664,7 +662,7 @@ mod overlay_tests {
         fn handle_event(&mut self, _event: &Event) -> OverlayAction<EventMsg> {
             OverlayAction::Propagate
         }
-        fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+        fn view(&self, _ctx: &mut RenderContext<'_, '_>) {}
     }
 
     /// An overlay that dismisses on Esc and sends a message on Enter.
@@ -682,7 +680,7 @@ mod overlay_tests {
                 OverlayAction::Propagate
             }
         }
-        fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+        fn view(&self, _ctx: &mut RenderContext<'_, '_>) {}
     }
 
     #[test]
@@ -717,7 +715,7 @@ mod overlay_tests {
             fn handle_event(&mut self, _event: &Event) -> OverlayAction<EventMsg> {
                 OverlayAction::Consumed
             }
-            fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+            fn view(&self, _ctx: &mut RenderContext<'_, '_>) {}
         }
 
         vt.push_overlay(Box::new(ConsumeAll));
@@ -795,7 +793,7 @@ mod overlay_tests {
             fn handle_event(&mut self, _event: &Event) -> OverlayAction<CmdOverlayMsg> {
                 OverlayAction::Consumed
             }
-            fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+            fn view(&self, _ctx: &mut RenderContext<'_, '_>) {}
         }
 
         impl App for CmdOverlayApp {
@@ -867,7 +865,7 @@ mod overlay_tests {
             fn handle_event(&mut self, _event: &Event) -> OverlayAction<EventMsg> {
                 OverlayAction::KeepAndMessage(EventMsg::KeyPressed('z'))
             }
-            fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+            fn view(&self, _ctx: &mut RenderContext<'_, '_>) {}
         }
 
         let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
@@ -900,7 +898,7 @@ mod overlay_tests {
             fn handle_event(&mut self, _event: &Event) -> OverlayAction<CmdMsg> {
                 OverlayAction::Consumed
             }
-            fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+            fn view(&self, _ctx: &mut RenderContext<'_, '_>) {}
         }
 
         impl App for CmdApp {
