@@ -29,7 +29,7 @@
 use ratatui::widgets::{Block, Borders, List, ListItem, ListState};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 /// Messages that can be sent to a SelectableList.
@@ -519,14 +519,15 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(SelectableListMessage::Up),
-                KeyCode::Down | KeyCode::Char('j') => Some(SelectableListMessage::Down),
-                KeyCode::Home | KeyCode::Char('g') => Some(SelectableListMessage::First),
-                KeyCode::End | KeyCode::Char('G') => Some(SelectableListMessage::Last),
-                KeyCode::Enter => Some(SelectableListMessage::Select),
-                KeyCode::PageUp => Some(SelectableListMessage::PageUp(10)),
-                KeyCode::PageDown => Some(SelectableListMessage::PageDown(10)),
+            match key.key {
+                Key::Up | Key::Char('k') => Some(SelectableListMessage::Up),
+                Key::Down | Key::Char('j') => Some(SelectableListMessage::Down),
+                Key::Char('g') if key.modifiers.shift() => Some(SelectableListMessage::Last),
+                Key::Home | Key::Char('g') => Some(SelectableListMessage::First),
+                Key::End => Some(SelectableListMessage::Last),
+                Key::Enter => Some(SelectableListMessage::Select),
+                Key::PageUp => Some(SelectableListMessage::PageUp(10)),
+                Key::PageDown => Some(SelectableListMessage::PageDown(10)),
                 _ => None,
             }
         } else {

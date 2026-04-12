@@ -36,7 +36,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Sparkline};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::theme::Theme;
 
 /// Messages that can be sent to a MetricsDashboard.
@@ -532,14 +532,14 @@ impl Component for MetricsDashboard {
 
         let key = event.as_key()?;
 
-        match key.code {
-            KeyCode::Left | KeyCode::Char('h') => Some(MetricsDashboardMessage::Left),
-            KeyCode::Right | KeyCode::Char('l') => Some(MetricsDashboardMessage::Right),
-            KeyCode::Up | KeyCode::Char('k') => Some(MetricsDashboardMessage::Up),
-            KeyCode::Down | KeyCode::Char('j') => Some(MetricsDashboardMessage::Down),
-            KeyCode::Home => Some(MetricsDashboardMessage::First),
-            KeyCode::End => Some(MetricsDashboardMessage::Last),
-            KeyCode::Enter => Some(MetricsDashboardMessage::Select),
+        match key.key {
+            Key::Left | Key::Char('h') => Some(MetricsDashboardMessage::Left),
+            Key::Right | Key::Char('l') => Some(MetricsDashboardMessage::Right),
+            Key::Up | Key::Char('k') => Some(MetricsDashboardMessage::Up),
+            Key::Down | Key::Char('j') => Some(MetricsDashboardMessage::Down),
+            Key::Home => Some(MetricsDashboardMessage::First),
+            Key::End => Some(MetricsDashboardMessage::Last),
+            Key::Enter => Some(MetricsDashboardMessage::Select),
             _ => None,
         }
     }

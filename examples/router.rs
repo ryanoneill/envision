@@ -120,13 +120,13 @@ impl App for RouterApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => Some(Msg::Quit),
-                KeyCode::Char('s') => Some(Msg::Navigate(Screen::Settings)),
-                KeyCode::Char('p') => Some(Msg::Navigate(Screen::Profile)),
-                KeyCode::Char('a') => Some(Msg::Navigate(Screen::About)),
-                KeyCode::Backspace => Some(Msg::Back),
-                KeyCode::Char('r') => Some(Msg::Reset),
+            match key.key {
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
+                Key::Char('s') => Some(Msg::Navigate(Screen::Settings)),
+                Key::Char('p') => Some(Msg::Navigate(Screen::Profile)),
+                Key::Char('a') => Some(Msg::Navigate(Screen::About)),
+                Key::Backspace => Some(Msg::Back),
+                Key::Char('r') => Some(Msg::Reset),
                 _ => None,
             }
         } else {

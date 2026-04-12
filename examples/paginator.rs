@@ -127,10 +127,10 @@ impl App for PaginatorApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => Some(Msg::Quit),
-                KeyCode::Right | KeyCode::Char('l') => Some(Msg::Next),
-                KeyCode::Left | KeyCode::Char('h') => Some(Msg::Prev),
+            match key.key {
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
+                Key::Right | Key::Char('l') => Some(Msg::Next),
+                Key::Left | Key::Char('h') => Some(Msg::Prev),
                 _ => None,
             }
         } else {

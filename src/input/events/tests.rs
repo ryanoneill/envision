@@ -1,4 +1,6 @@
 use super::*;
+use crate::input::key::{Key, KeyEvent, KeyEventKind, Modifiers};
+use crate::input::mouse::{MouseButton, MouseEvent, MouseEventKind};
 
 // -------------------------------------------------------------------------
 // Event constructors
@@ -9,48 +11,51 @@ fn test_simulated_event_char() {
     let event = Event::char('a');
     assert!(event.is_key());
     let key = event.as_key().unwrap();
-    assert_eq!(key.code, KeyCode::Char('a'));
-    assert_eq!(key.modifiers, KeyModifiers::NONE);
+    assert_eq!(key.key, Key::Char('a'));
+    assert!(key.modifiers.is_none());
+    assert_eq!(key.raw_char, Some('a'));
 }
 
 #[test]
 fn test_simulated_event_char_with() {
-    let event = Event::char_with('A', KeyModifiers::SHIFT);
+    let event = Event::char_with('A', Modifiers::SHIFT);
     let key = event.as_key().unwrap();
-    assert_eq!(key.code, KeyCode::Char('A'));
-    assert!(key.modifiers.contains(KeyModifiers::SHIFT));
+    // KeyEvent::char('A') normalizes to lowercase
+    assert_eq!(key.key, Key::Char('a'));
+    assert!(key.modifiers.shift());
+    assert_eq!(key.raw_char, Some('A'));
 }
 
 #[test]
 fn test_simulated_event_key() {
-    let event = Event::key(KeyCode::Enter);
+    let event = Event::key(Key::Enter);
     let key = event.as_key().unwrap();
-    assert_eq!(key.code, KeyCode::Enter);
-    assert_eq!(key.modifiers, KeyModifiers::NONE);
+    assert_eq!(key.key, Key::Enter);
+    assert!(key.modifiers.is_none());
 }
 
 #[test]
 fn test_simulated_event_key_with() {
-    let event = Event::key_with(KeyCode::Tab, KeyModifiers::SHIFT);
+    let event = Event::key_with(Key::Tab, Modifiers::SHIFT);
     let key = event.as_key().unwrap();
-    assert_eq!(key.code, KeyCode::Tab);
-    assert!(key.modifiers.contains(KeyModifiers::SHIFT));
+    assert_eq!(key.key, Key::Tab);
+    assert!(key.modifiers.shift());
 }
 
 #[test]
 fn test_simulated_event_ctrl() {
     let event = Event::ctrl('c');
     let key = event.as_key().unwrap();
-    assert_eq!(key.code, KeyCode::Char('c'));
-    assert!(key.modifiers.contains(KeyModifiers::CONTROL));
+    assert_eq!(key.key, Key::Char('c'));
+    assert!(key.modifiers.ctrl());
 }
 
 #[test]
 fn test_simulated_event_alt() {
     let event = Event::alt('x');
     let key = event.as_key().unwrap();
-    assert_eq!(key.code, KeyCode::Char('x'));
-    assert!(key.modifiers.contains(KeyModifiers::ALT));
+    assert_eq!(key.key, Key::Char('x'));
+    assert!(key.modifiers.alt());
 }
 
 #[test]
@@ -148,7 +153,7 @@ fn test_simulated_event_as_mouse_none() {
 
 #[test]
 fn test_from_key_event() {
-    let key = KeyEvent::new(KeyCode::Char('z'), KeyModifiers::NONE);
+    let key = KeyEvent::new(Key::Char('z'));
     let event: Event = key.into();
     assert!(event.is_key());
 }
@@ -159,55 +164,10 @@ fn test_from_mouse_event() {
         kind: MouseEventKind::Moved,
         column: 0,
         row: 0,
-        modifiers: KeyModifiers::NONE,
+        modifiers: Modifiers::NONE,
     };
     let event: Event = mouse.into();
     assert!(event.is_mouse());
-}
-
-#[test]
-fn test_crossterm_conversion() {
-    let simulated = Event::key(KeyCode::Enter);
-    let crossterm: crossterm::event::Event = simulated.clone().into();
-    let back: Event = crossterm.into();
-    assert_eq!(simulated, back);
-}
-
-#[test]
-fn test_crossterm_conversion_resize() {
-    let event = crossterm::event::Event::Resize(80, 24);
-    let simulated: Event = event.into();
-    assert!(matches!(simulated, Event::Resize(80, 24)));
-
-    let back: crossterm::event::Event = simulated.into();
-    assert!(matches!(back, crossterm::event::Event::Resize(80, 24)));
-}
-
-#[test]
-fn test_crossterm_conversion_focus() {
-    let gained = crossterm::event::Event::FocusGained;
-    let simulated: Event = gained.into();
-    assert!(matches!(simulated, Event::FocusGained));
-
-    let back: crossterm::event::Event = simulated.into();
-    assert!(matches!(back, crossterm::event::Event::FocusGained));
-
-    let lost = crossterm::event::Event::FocusLost;
-    let simulated: Event = lost.into();
-    assert!(matches!(simulated, Event::FocusLost));
-
-    let back: crossterm::event::Event = simulated.into();
-    assert!(matches!(back, crossterm::event::Event::FocusLost));
-}
-
-#[test]
-fn test_crossterm_conversion_paste() {
-    let event = crossterm::event::Event::Paste("hello".to_string());
-    let simulated: Event = event.into();
-    assert!(matches!(simulated, Event::Paste(ref s) if s == "hello"));
-
-    let back: crossterm::event::Event = simulated.into();
-    assert!(matches!(back, crossterm::event::Event::Paste(ref s) if s == "hello"));
 }
 
 // -------------------------------------------------------------------------
@@ -218,31 +178,33 @@ fn test_crossterm_conversion_paste() {
 fn test_key_event_builder() {
     let event = KeyEventBuilder::new().char('x').ctrl().shift().build();
 
-    assert_eq!(event.code, KeyCode::Char('x'));
-    assert!(event.modifiers.contains(KeyModifiers::CONTROL));
-    assert!(event.modifiers.contains(KeyModifiers::SHIFT));
+    assert_eq!(event.key, Key::Char('x'));
+    assert!(event.modifiers.ctrl());
+    assert!(event.modifiers.shift());
 }
 
 #[test]
 fn test_key_event_builder_code() {
-    let event = KeyEventBuilder::new().code(KeyCode::F(1)).build();
+    let event = KeyEventBuilder::new().code(Key::F(1)).build();
 
-    assert_eq!(event.code, KeyCode::F(1));
+    assert_eq!(event.key, Key::F(1));
 }
 
 #[test]
 fn test_key_event_builder_alt() {
     let event = KeyEventBuilder::new().char('a').alt().build();
 
-    assert!(event.modifiers.contains(KeyModifiers::ALT));
+    assert!(event.modifiers.alt());
 }
 
 #[test]
 fn test_key_event_builder_modifiers() {
-    let mods = KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT;
+    let mods = Modifiers::CONTROL | Modifiers::ALT | Modifiers::SHIFT;
     let event = KeyEventBuilder::new().char('a').modifiers(mods).build();
 
-    assert_eq!(event.modifiers, mods);
+    assert!(event.modifiers.ctrl());
+    assert!(event.modifiers.alt());
+    assert!(event.modifiers.shift());
 }
 
 #[test]
@@ -260,14 +222,14 @@ fn test_key_event_builder_into_event() {
     let event = KeyEventBuilder::new().char('b').into_event();
 
     assert!(event.is_key());
-    assert_eq!(event.as_key().unwrap().code, KeyCode::Char('b'));
+    assert_eq!(event.as_key().unwrap().key, Key::Char('b'));
 }
 
 #[test]
 fn test_key_event_builder_default_code() {
-    // When no code is set, should use KeyCode::Null
+    // When no key is set, should use Key::Esc
     let event = KeyEventBuilder::new().build();
-    assert_eq!(event.code, KeyCode::Null);
+    assert_eq!(event.key, Key::Esc);
 }
 
 // -------------------------------------------------------------------------
@@ -288,7 +250,7 @@ fn test_mouse_event_builder() {
         event.kind,
         MouseEventKind::Down(MouseButton::Right)
     ));
-    assert!(event.modifiers.contains(KeyModifiers::CONTROL));
+    assert!(event.modifiers.ctrl());
 }
 
 #[test]
@@ -346,14 +308,14 @@ fn test_mouse_event_builder_scroll_down() {
 fn test_mouse_event_builder_alt() {
     let event = MouseEventBuilder::new().alt().build();
 
-    assert!(event.modifiers.contains(KeyModifiers::ALT));
+    assert!(event.modifiers.alt());
 }
 
 #[test]
 fn test_mouse_event_builder_shift() {
     let event = MouseEventBuilder::new().shift().build();
 
-    assert!(event.modifiers.contains(KeyModifiers::SHIFT));
+    assert!(event.modifiers.shift());
 }
 
 #[test]
@@ -382,7 +344,7 @@ fn test_mouse_event_builder_default() {
 #[test]
 fn test_kind_name_key() {
     assert_eq!(Event::char('a').kind_name(), "Key");
-    assert_eq!(Event::key(KeyCode::Enter).kind_name(), "Key");
+    assert_eq!(Event::key(Key::Enter).kind_name(), "Key");
     assert_eq!(Event::ctrl('c').kind_name(), "Key");
 }
 

@@ -46,7 +46,7 @@ use ratatui::widgets::{Block, Borders, Row, Table as RatatuiTable};
 use super::{
     Column, Component, EventContext, InputFieldMessage, InputFieldState, RenderContext, TableRow,
 };
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 /// Messages that can be sent to a DataGrid.
@@ -633,27 +633,27 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         if let Some(key) = event.as_key() {
             if state.editing {
                 // Editing mode key bindings
-                match key.code {
-                    KeyCode::Enter => Some(DataGridMessage::Enter),
-                    KeyCode::Esc => Some(DataGridMessage::Cancel),
-                    KeyCode::Char(c) => Some(DataGridMessage::Input(c)),
-                    KeyCode::Backspace => Some(DataGridMessage::Backspace),
-                    KeyCode::Delete => Some(DataGridMessage::Delete),
-                    KeyCode::Home => Some(DataGridMessage::Home),
-                    KeyCode::End => Some(DataGridMessage::End),
+                match key.key {
+                    Key::Enter => Some(DataGridMessage::Enter),
+                    Key::Esc => Some(DataGridMessage::Cancel),
+                    Key::Char(_) => key.raw_char.map(DataGridMessage::Input),
+                    Key::Backspace => Some(DataGridMessage::Backspace),
+                    Key::Delete => Some(DataGridMessage::Delete),
+                    Key::Home => Some(DataGridMessage::Home),
+                    Key::End => Some(DataGridMessage::End),
                     _ => None,
                 }
             } else {
                 // Navigation mode key bindings
-                match key.code {
-                    KeyCode::Up | KeyCode::Char('k') => Some(DataGridMessage::Up),
-                    KeyCode::Down | KeyCode::Char('j') => Some(DataGridMessage::Down),
-                    KeyCode::Left | KeyCode::Char('h') => Some(DataGridMessage::Left),
-                    KeyCode::Right | KeyCode::Char('l') => Some(DataGridMessage::Right),
-                    KeyCode::Home => Some(DataGridMessage::First),
-                    KeyCode::End => Some(DataGridMessage::Last),
-                    KeyCode::Enter => Some(DataGridMessage::Enter),
-                    KeyCode::Esc => Some(DataGridMessage::Cancel),
+                match key.key {
+                    Key::Up | Key::Char('k') => Some(DataGridMessage::Up),
+                    Key::Down | Key::Char('j') => Some(DataGridMessage::Down),
+                    Key::Left | Key::Char('h') => Some(DataGridMessage::Left),
+                    Key::Right | Key::Char('l') => Some(DataGridMessage::Right),
+                    Key::Home => Some(DataGridMessage::First),
+                    Key::End => Some(DataGridMessage::Last),
+                    Key::Enter => Some(DataGridMessage::Enter),
+                    Key::Esc => Some(DataGridMessage::Cancel),
                     _ => None,
                 }
             }

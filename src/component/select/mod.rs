@@ -30,7 +30,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a Select.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -489,16 +489,16 @@ impl Component for Select {
         }
         if let Some(key) = event.as_key() {
             if state.is_open {
-                match key.code {
-                    KeyCode::Enter => Some(SelectMessage::Confirm),
-                    KeyCode::Esc => Some(SelectMessage::Close),
-                    KeyCode::Up | KeyCode::Char('k') => Some(SelectMessage::Up),
-                    KeyCode::Down | KeyCode::Char('j') => Some(SelectMessage::Down),
+                match key.key {
+                    Key::Enter => Some(SelectMessage::Confirm),
+                    Key::Esc => Some(SelectMessage::Close),
+                    Key::Up | Key::Char('k') => Some(SelectMessage::Up),
+                    Key::Down | Key::Char('j') => Some(SelectMessage::Down),
                     _ => None,
                 }
             } else {
-                match key.code {
-                    KeyCode::Enter | KeyCode::Char(' ') => Some(SelectMessage::Toggle),
+                match key.key {
+                    Key::Enter | Key::Char(' ') => Some(SelectMessage::Toggle),
                     _ => None,
                 }
             }

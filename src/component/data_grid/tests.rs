@@ -307,7 +307,7 @@ fn test_disabled_ignores_events() {
     let state = focused_grid();
     let msg = DataGrid::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -320,7 +320,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = DataGridState::new(sample_rows(), sample_columns());
-    let msg = DataGrid::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
+    let msg = DataGrid::handle_event(&state, &Event::key(Key::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -334,7 +334,7 @@ fn test_up_key_maps() {
     assert_eq!(
         DataGrid::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Up)
@@ -355,7 +355,7 @@ fn test_down_key_maps() {
     assert_eq!(
         DataGrid::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Down)
@@ -376,7 +376,7 @@ fn test_left_right_key_maps() {
     assert_eq!(
         DataGrid::handle_event(
             &state,
-            &Event::key(KeyCode::Left),
+            &Event::key(Key::Left),
             &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Left)
@@ -384,7 +384,7 @@ fn test_left_right_key_maps() {
     assert_eq!(
         DataGrid::handle_event(
             &state,
-            &Event::key(KeyCode::Right),
+            &Event::key(Key::Right),
             &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Right)
@@ -413,7 +413,7 @@ fn test_home_end_key_maps() {
     assert_eq!(
         DataGrid::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::First)
@@ -421,7 +421,7 @@ fn test_home_end_key_maps() {
     assert_eq!(
         DataGrid::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Last)
@@ -434,7 +434,7 @@ fn test_enter_key_maps() {
     assert_eq!(
         DataGrid::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Enter)
@@ -469,7 +469,7 @@ fn test_editing_enter_maps() {
     assert_eq!(
         DataGrid::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Enter)
@@ -484,7 +484,7 @@ fn test_editing_esc_maps_to_cancel() {
     assert_eq!(
         DataGrid::handle_event(
             &state,
-            &Event::key(KeyCode::Esc),
+            &Event::key(Key::Esc),
             &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Cancel)
@@ -499,7 +499,7 @@ fn test_editing_backspace_maps() {
     assert_eq!(
         DataGrid::handle_event(
             &state,
-            &Event::key(KeyCode::Backspace),
+            &Event::key(Key::Backspace),
             &EventContext::new().focused(true)
         ),
         Some(DataGridMessage::Backspace)

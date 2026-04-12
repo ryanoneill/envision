@@ -2,15 +2,32 @@
 //!
 //! These functions are `pub(crate)` so the runtime and subscription modules
 //! can call them, but they are not part of envision's public API.
-//!
-//! NOTE: These converters are unused until Task 3 (the atomic switch) wires
-//! the Event enum to use envision's owned types. The allow(dead_code) is
-//! intentional and will be removed in that commit.
 
-#![allow(dead_code)]
-
+use super::events::Event;
 use super::key::{Key, KeyEvent, KeyEventKind, Modifiers};
 use super::mouse::{MouseButton, MouseEvent, MouseEventKind};
+
+/// Converts a crossterm event to an envision event.
+///
+/// Returns `None` for key events that envision doesn't model (e.g. CapsLock)
+/// and for key release/repeat events (only presses are forwarded).
+pub(crate) fn from_crossterm_event(event: crossterm::event::Event) -> Option<Event> {
+    match event {
+        crossterm::event::Event::Key(key) => {
+            // Only handle key press events, not release or repeat
+            if key.kind == crossterm::event::KeyEventKind::Press {
+                from_crossterm_key(key).map(Event::Key)
+            } else {
+                None
+            }
+        }
+        crossterm::event::Event::Mouse(mouse) => Some(Event::Mouse(from_crossterm_mouse(mouse))),
+        crossterm::event::Event::Resize(w, h) => Some(Event::Resize(w, h)),
+        crossterm::event::Event::FocusGained => Some(Event::FocusGained),
+        crossterm::event::Event::FocusLost => Some(Event::FocusLost),
+        crossterm::event::Event::Paste(s) => Some(Event::Paste(s)),
+    }
+}
 
 /// Converts a crossterm key event to an envision key event.
 ///
@@ -406,5 +423,76 @@ mod tests {
         };
         let result = from_crossterm_mouse(ct_mouse);
         assert!(result.modifiers.ctrl());
+    }
+
+    // ========== Event-level conversion tests ==========
+
+    #[test]
+    fn test_event_key_press() {
+        let ct_event = ct::Event::Key(ct_key(ct::KeyCode::Enter));
+        let result = from_crossterm_event(ct_event).unwrap();
+        assert!(matches!(result, Event::Key(ke) if ke.key == Key::Enter));
+    }
+
+    #[test]
+    fn test_event_key_release_filtered() {
+        let mut key = ct_key(ct::KeyCode::Enter);
+        key.kind = ct::KeyEventKind::Release;
+        let ct_event = ct::Event::Key(key);
+        assert!(from_crossterm_event(ct_event).is_none());
+    }
+
+    #[test]
+    fn test_event_key_repeat_filtered() {
+        let mut key = ct_key(ct::KeyCode::Enter);
+        key.kind = ct::KeyEventKind::Repeat;
+        let ct_event = ct::Event::Key(key);
+        assert!(from_crossterm_event(ct_event).is_none());
+    }
+
+    #[test]
+    fn test_event_dropped_key_filtered() {
+        let ct_event = ct::Event::Key(ct_key(ct::KeyCode::Null));
+        assert!(from_crossterm_event(ct_event).is_none());
+    }
+
+    #[test]
+    fn test_event_mouse() {
+        let ct_event = ct::Event::Mouse(ct::MouseEvent {
+            kind: ct::MouseEventKind::Down(ct::MouseButton::Left),
+            column: 5,
+            row: 10,
+            modifiers: ct::KeyModifiers::empty(),
+        });
+        let result = from_crossterm_event(ct_event).unwrap();
+        assert!(matches!(result, Event::Mouse(_)));
+    }
+
+    #[test]
+    fn test_event_resize() {
+        let ct_event = ct::Event::Resize(80, 24);
+        let result = from_crossterm_event(ct_event).unwrap();
+        assert!(matches!(result, Event::Resize(80, 24)));
+    }
+
+    #[test]
+    fn test_event_focus_gained() {
+        let ct_event = ct::Event::FocusGained;
+        let result = from_crossterm_event(ct_event).unwrap();
+        assert!(matches!(result, Event::FocusGained));
+    }
+
+    #[test]
+    fn test_event_focus_lost() {
+        let ct_event = ct::Event::FocusLost;
+        let result = from_crossterm_event(ct_event).unwrap();
+        assert!(matches!(result, Event::FocusLost));
+    }
+
+    #[test]
+    fn test_event_paste() {
+        let ct_event = ct::Event::Paste("hello".to_string());
+        let result = from_crossterm_event(ct_event).unwrap();
+        assert!(matches!(result, Event::Paste(s) if s == "hello"));
     }
 }

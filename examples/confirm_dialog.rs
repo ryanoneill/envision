@@ -138,10 +138,10 @@ impl App for ConfirmDialogApp {
         }
 
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => Some(Msg::Quit),
-                KeyCode::Char('d') => Some(Msg::ShowDeleteDialog),
-                KeyCode::Char('s') => Some(Msg::ShowSaveDialog),
+            match key.key {
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
+                Key::Char('d') => Some(Msg::ShowDeleteDialog),
+                Key::Char('s') => Some(Msg::ShowSaveDialog),
                 _ => None,
             }
         } else {

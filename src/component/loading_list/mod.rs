@@ -36,7 +36,7 @@
 //! ```
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 mod items;
@@ -739,10 +739,10 @@ impl<T: Clone> Component for LoadingList<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(LoadingListMessage::Up),
-                KeyCode::Down | KeyCode::Char('j') => Some(LoadingListMessage::Down),
-                KeyCode::Enter => Some(LoadingListMessage::Select),
+            match key.key {
+                Key::Up | Key::Char('k') => Some(LoadingListMessage::Up),
+                Key::Down | Key::Char('j') => Some(LoadingListMessage::Down),
+                Key::Enter => Some(LoadingListMessage::Select),
                 _ => None,
             }
         } else {

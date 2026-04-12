@@ -39,7 +39,7 @@ mod render;
 pub use item::{PaletteItem, fuzzy_score};
 
 use super::{Component, EventContext, RenderContext, Toggleable};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 /// Messages that can be sent to a CommandPalette.
@@ -626,26 +626,17 @@ impl Component for CommandPalette {
         }
 
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Esc => Some(CommandPaletteMessage::Dismiss),
-                KeyCode::Enter => Some(CommandPaletteMessage::Confirm),
-                KeyCode::Backspace => Some(CommandPaletteMessage::Backspace),
-                KeyCode::Up => Some(CommandPaletteMessage::SelectPrev),
-                KeyCode::Down => Some(CommandPaletteMessage::SelectNext),
-                KeyCode::Char('p') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                    Some(CommandPaletteMessage::SelectPrev)
-                }
-                KeyCode::Char('n') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                    Some(CommandPaletteMessage::SelectNext)
-                }
-                KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                    Some(CommandPaletteMessage::ClearQuery)
-                }
-                KeyCode::Char(c) if key.modifiers == KeyModifiers::NONE => {
-                    Some(CommandPaletteMessage::TypeChar(c))
-                }
-                KeyCode::Char(c) if key.modifiers == KeyModifiers::SHIFT => {
-                    Some(CommandPaletteMessage::TypeChar(c))
+            match key.key {
+                Key::Esc => Some(CommandPaletteMessage::Dismiss),
+                Key::Enter => Some(CommandPaletteMessage::Confirm),
+                Key::Backspace => Some(CommandPaletteMessage::Backspace),
+                Key::Up => Some(CommandPaletteMessage::SelectPrev),
+                Key::Down => Some(CommandPaletteMessage::SelectNext),
+                Key::Char('p') if key.modifiers.ctrl() => Some(CommandPaletteMessage::SelectPrev),
+                Key::Char('n') if key.modifiers.ctrl() => Some(CommandPaletteMessage::SelectNext),
+                Key::Char('u') if key.modifiers.ctrl() => Some(CommandPaletteMessage::ClearQuery),
+                Key::Char(_) if !key.modifiers.ctrl() && !key.modifiers.alt() => {
+                    key.raw_char.map(CommandPaletteMessage::TypeChar)
                 }
                 _ => None,
             }

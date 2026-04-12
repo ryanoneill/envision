@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 #[test]
 fn test_new() {
@@ -82,7 +82,7 @@ fn test_handle_event_enter_when_focused() {
     let state = ButtonState::new("OK");
     let msg = Button::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(ButtonMessage::Press));
@@ -102,11 +102,7 @@ fn test_handle_event_space_when_focused() {
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = ButtonState::new("OK");
-    let msg = Button::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg = Button::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -115,7 +111,7 @@ fn test_handle_event_ignored_when_disabled() {
     let state = ButtonState::new("OK");
     let msg = Button::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -137,7 +133,7 @@ fn test_dispatch_event() {
     let mut state = ButtonState::new("OK");
     let output = Button::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(ButtonOutput::Pressed));

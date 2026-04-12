@@ -33,7 +33,7 @@
 use std::collections::HashSet;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 mod render;
@@ -761,21 +761,19 @@ impl Component for SpanTree {
             return None;
         }
         if let Some(key) = event.as_key() {
-            let has_shift = key.modifiers.contains(KeyModifiers::SHIFT);
-            match key.code {
-                KeyCode::Up | KeyCode::Char('k') if !has_shift => Some(SpanTreeMessage::SelectUp),
-                KeyCode::Down | KeyCode::Char('j') if !has_shift => {
-                    Some(SpanTreeMessage::SelectDown)
-                }
-                KeyCode::Right | KeyCode::Char('l') if has_shift => Some(
-                    SpanTreeMessage::SetLabelWidth(state.label_width.saturating_add(2)),
-                ),
-                KeyCode::Left | KeyCode::Char('h') if has_shift => Some(
-                    SpanTreeMessage::SetLabelWidth(state.label_width.saturating_sub(2)),
-                ),
-                KeyCode::Right | KeyCode::Char('l') => Some(SpanTreeMessage::Expand),
-                KeyCode::Left | KeyCode::Char('h') => Some(SpanTreeMessage::Collapse),
-                KeyCode::Char(' ') | KeyCode::Enter => Some(SpanTreeMessage::Toggle),
+            let has_shift = key.modifiers.shift();
+            match key.key {
+                Key::Up | Key::Char('k') if !has_shift => Some(SpanTreeMessage::SelectUp),
+                Key::Down | Key::Char('j') if !has_shift => Some(SpanTreeMessage::SelectDown),
+                Key::Right | Key::Char('l') if has_shift => Some(SpanTreeMessage::SetLabelWidth(
+                    state.label_width.saturating_add(2),
+                )),
+                Key::Left | Key::Char('h') if has_shift => Some(SpanTreeMessage::SetLabelWidth(
+                    state.label_width.saturating_sub(2),
+                )),
+                Key::Right | Key::Char('l') => Some(SpanTreeMessage::Expand),
+                Key::Left | Key::Char('h') => Some(SpanTreeMessage::Collapse),
+                Key::Char(' ') | Key::Enter => Some(SpanTreeMessage::Toggle),
                 _ => None,
             }
         } else {

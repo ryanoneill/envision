@@ -1,5 +1,6 @@
 use super::*;
 use crate::input::Event;
+use crate::input::Modifiers;
 
 // Construction tests
 
@@ -218,7 +219,7 @@ fn test_tab_key() {
 
     let msg = ConfirmDialog::handle_event(
         &state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(ConfirmDialogMessage::FocusNext));
@@ -230,7 +231,7 @@ fn test_backtab_key() {
 
     let msg = ConfirmDialog::handle_event(
         &state,
-        &Event::key(KeyCode::BackTab),
+        &Event::key_with(Key::Tab, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(ConfirmDialogMessage::FocusPrev));
@@ -242,7 +243,7 @@ fn test_enter_key() {
 
     let msg = ConfirmDialog::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(ConfirmDialogMessage::Press));
@@ -254,7 +255,7 @@ fn test_esc_key() {
 
     let msg = ConfirmDialog::handle_event(
         &state,
-        &Event::key(KeyCode::Esc),
+        &Event::key(Key::Esc),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(ConfirmDialogMessage::Close));
@@ -299,11 +300,8 @@ fn test_open_resets_focus() {
 #[test]
 fn test_not_visible_ignores_events() {
     let state = ConfirmDialogState::ok("T", "M");
-    let msg = ConfirmDialog::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg =
+        ConfirmDialog::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, None);
 }
 

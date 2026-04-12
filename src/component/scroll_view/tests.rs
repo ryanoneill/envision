@@ -1,6 +1,6 @@
 use super::*;
 use crate::component::test_utils;
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key, Modifiers};
 
 fn focused_state() -> ScrollViewState {
     ScrollViewState::new()
@@ -313,7 +313,7 @@ fn test_handle_event_up() {
     assert_eq!(
         ScrollView::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::ScrollUp)
@@ -326,7 +326,7 @@ fn test_handle_event_down() {
     assert_eq!(
         ScrollView::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::ScrollDown)
@@ -360,7 +360,7 @@ fn test_handle_event_page_up_down() {
     assert_eq!(
         ScrollView::handle_event(
             &state,
-            &Event::key(KeyCode::PageUp),
+            &Event::key(Key::PageUp),
             &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::PageUp)
@@ -368,7 +368,7 @@ fn test_handle_event_page_up_down() {
     assert_eq!(
         ScrollView::handle_event(
             &state,
-            &Event::key(KeyCode::PageDown),
+            &Event::key(Key::PageDown),
             &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::PageDown)
@@ -402,7 +402,7 @@ fn test_handle_event_home_end() {
     assert_eq!(
         ScrollView::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::Home)
@@ -410,7 +410,7 @@ fn test_handle_event_home_end() {
     assert_eq!(
         ScrollView::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::End)
@@ -432,7 +432,7 @@ fn test_handle_event_g_and_G() {
     assert_eq!(
         ScrollView::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &Event::key_with(Key::Char('g'), Modifiers::SHIFT),
             &EventContext::new().focused(true)
         ),
         Some(ScrollViewMessage::End)
@@ -456,11 +456,11 @@ fn test_handle_event_unrecognized() {
 fn test_handle_event_unfocused_ignores() {
     let state = ScrollViewState::new();
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default()),
+        ScrollView::handle_event(&state, &Event::key(Key::Up), &EventContext::default()),
         None
     );
     assert_eq!(
-        ScrollView::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default()),
+        ScrollView::handle_event(&state, &Event::key(Key::Down), &EventContext::default()),
         None
     );
 }
@@ -471,7 +471,7 @@ fn test_handle_event_disabled_ignores() {
     assert_eq!(
         ScrollView::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true).disabled(true)
         ),
         None
@@ -482,7 +482,7 @@ fn test_dispatch_event_no_change() {
     let mut state = scrollable_state();
     let output = ScrollView::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, None);

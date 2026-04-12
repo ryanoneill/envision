@@ -43,7 +43,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 // ---------------------------------------------------------------------------
 // Date math helpers (private)
@@ -684,14 +684,14 @@ impl Component for Calendar {
         }
 
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Left | KeyCode::Char('h') => Some(CalendarMessage::SelectPrevDay),
-                KeyCode::Right | KeyCode::Char('l') => Some(CalendarMessage::SelectNextDay),
-                KeyCode::Up | KeyCode::Char('k') => Some(CalendarMessage::SelectPrevWeek),
-                KeyCode::Down | KeyCode::Char('j') => Some(CalendarMessage::SelectNextWeek),
-                KeyCode::PageUp => Some(CalendarMessage::PrevMonth),
-                KeyCode::PageDown => Some(CalendarMessage::NextMonth),
-                KeyCode::Enter | KeyCode::Char(' ') => Some(CalendarMessage::ConfirmSelection),
+            match key.key {
+                Key::Left | Key::Char('h') => Some(CalendarMessage::SelectPrevDay),
+                Key::Right | Key::Char('l') => Some(CalendarMessage::SelectNextDay),
+                Key::Up | Key::Char('k') => Some(CalendarMessage::SelectPrevWeek),
+                Key::Down | Key::Char('j') => Some(CalendarMessage::SelectNextWeek),
+                Key::PageUp => Some(CalendarMessage::PrevMonth),
+                Key::PageDown => Some(CalendarMessage::NextMonth),
+                Key::Enter | Key::Char(' ') => Some(CalendarMessage::ConfirmSelection),
                 _ => None,
             }
         } else {

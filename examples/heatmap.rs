@@ -69,8 +69,8 @@ impl App for HeatmapApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
+            match key.key {
+                Key::Char('q') | Key::Esc => return Some(Msg::Quit),
                 _ => {}
             }
         }
@@ -89,9 +89,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}\n", vt.display());
 
     // Navigate to a cell
-    vt.send(Event::key(KeyCode::Down));
-    vt.send(Event::key(KeyCode::Right));
-    vt.send(Event::key(KeyCode::Right));
+    vt.send(Event::key(Key::Down));
+    vt.send(Event::key(Key::Right));
+    vt.send(Event::key(Key::Right));
     vt.tick()?;
     println!("After navigating to (1, 2):");
     println!("{}\n", vt.display());

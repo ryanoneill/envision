@@ -37,7 +37,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, EventContext, RenderContext, Toggleable};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a Collapsible.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -424,10 +424,10 @@ impl Component for Collapsible {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char(' ') | KeyCode::Enter => Some(CollapsibleMessage::Toggle),
-                KeyCode::Right => Some(CollapsibleMessage::Expand),
-                KeyCode::Left => Some(CollapsibleMessage::Collapse),
+            match key.key {
+                Key::Char(' ') | Key::Enter => Some(CollapsibleMessage::Toggle),
+                Key::Right => Some(CollapsibleMessage::Expand),
+                Key::Left => Some(CollapsibleMessage::Collapse),
                 _ => None,
             }
         } else {

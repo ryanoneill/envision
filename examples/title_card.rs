@@ -104,8 +104,8 @@ impl App for TitleCardApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => Some(Msg::Quit),
+            match key.key {
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
                 _ => None,
             }
         } else {

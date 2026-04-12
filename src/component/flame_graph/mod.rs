@@ -31,7 +31,7 @@
 //! ```
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 mod node;
 mod render;
@@ -864,15 +864,15 @@ impl Component for FlameGraph {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(FlameGraphMessage::SelectUp),
-                KeyCode::Down | KeyCode::Char('j') => Some(FlameGraphMessage::SelectDown),
-                KeyCode::Left | KeyCode::Char('h') => Some(FlameGraphMessage::SelectLeft),
-                KeyCode::Right | KeyCode::Char('l') => Some(FlameGraphMessage::SelectRight),
-                KeyCode::Enter => Some(FlameGraphMessage::ZoomIn),
-                KeyCode::Esc | KeyCode::Backspace => Some(FlameGraphMessage::ZoomOut),
-                KeyCode::Home => Some(FlameGraphMessage::ResetZoom),
-                KeyCode::Char('/') => Some(FlameGraphMessage::SetSearch(String::new())),
+            match key.key {
+                Key::Up | Key::Char('k') => Some(FlameGraphMessage::SelectUp),
+                Key::Down | Key::Char('j') => Some(FlameGraphMessage::SelectDown),
+                Key::Left | Key::Char('h') => Some(FlameGraphMessage::SelectLeft),
+                Key::Right | Key::Char('l') => Some(FlameGraphMessage::SelectRight),
+                Key::Enter => Some(FlameGraphMessage::ZoomIn),
+                Key::Esc | Key::Backspace => Some(FlameGraphMessage::ZoomOut),
+                Key::Home => Some(FlameGraphMessage::ResetZoom),
+                Key::Char('/') => Some(FlameGraphMessage::SetSearch(String::new())),
                 _ => None,
             }
         } else {

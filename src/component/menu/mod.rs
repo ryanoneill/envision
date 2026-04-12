@@ -26,7 +26,7 @@
 use ratatui::widgets::Paragraph;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// A menu item.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -515,10 +515,10 @@ impl Component for Menu {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Left => Some(MenuMessage::Left),
-                KeyCode::Right => Some(MenuMessage::Right),
-                KeyCode::Enter => Some(MenuMessage::Select),
+            match key.key {
+                Key::Left => Some(MenuMessage::Left),
+                Key::Right => Some(MenuMessage::Right),
+                Key::Enter => Some(MenuMessage::Select),
                 _ => None,
             }
         } else {

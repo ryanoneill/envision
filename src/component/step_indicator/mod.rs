@@ -32,7 +32,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::theme::Theme;
 
 /// The status of a single step in a workflow.
@@ -729,12 +729,12 @@ impl Component for StepIndicator {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Left | KeyCode::Char('h') => Some(StepIndicatorMessage::FocusPrev),
-                KeyCode::Right | KeyCode::Char('l') => Some(StepIndicatorMessage::FocusNext),
-                KeyCode::Home => Some(StepIndicatorMessage::First),
-                KeyCode::End => Some(StepIndicatorMessage::Last),
-                KeyCode::Enter => Some(StepIndicatorMessage::Select),
+            match key.key {
+                Key::Left | Key::Char('h') => Some(StepIndicatorMessage::FocusPrev),
+                Key::Right | Key::Char('l') => Some(StepIndicatorMessage::FocusNext),
+                Key::Home => Some(StepIndicatorMessage::First),
+                Key::End => Some(StepIndicatorMessage::Last),
+                Key::Enter => Some(StepIndicatorMessage::Select),
                 _ => None,
             }
         } else {

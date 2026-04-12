@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::key::Key;
 
 #[test]
 fn test_new_queue_is_empty() {
@@ -43,10 +44,10 @@ fn test_convenience_methods() {
     queue.backspace();
 
     assert_eq!(queue.len(), 4);
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Enter)));
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Esc)));
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Tab)));
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Backspace)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Enter)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Esc)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Tab)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Backspace)));
 }
 
 #[test]
@@ -58,10 +59,10 @@ fn test_arrow_keys() {
     queue.right();
 
     assert_eq!(queue.len(), 4);
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Up)));
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Down)));
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Left)));
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Right)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Up)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Down)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Left)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Right)));
 }
 
 #[test]
@@ -106,7 +107,7 @@ fn test_peek() {
 
 #[test]
 fn test_with_events() {
-    let events = vec![Event::char('a'), Event::key(KeyCode::Enter)];
+    let events = vec![Event::char('a'), Event::key(Key::Enter)];
 
     let queue = EventQueue::with_events(events);
     assert_eq!(queue.len(), 2);
@@ -163,7 +164,7 @@ fn test_delete() {
     queue.delete();
 
     assert_eq!(queue.len(), 1);
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Delete)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Delete)));
 }
 
 #[test]
@@ -173,8 +174,8 @@ fn test_home_end() {
     queue.end();
 
     assert_eq!(queue.len(), 2);
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Home)));
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::End)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Home)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::End)));
 }
 
 #[test]
@@ -184,8 +185,8 @@ fn test_page_up_down() {
     queue.page_down();
 
     assert_eq!(queue.len(), 2);
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::PageUp)));
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::PageDown)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::PageUp)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::PageDown)));
 }
 
 #[test]
@@ -195,8 +196,8 @@ fn test_function_keys() {
     queue.function(12);
 
     assert_eq!(queue.len(), 2);
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::F(1))));
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::F(12))));
+    assert_eq!(queue.pop(), Some(Event::key(Key::F(1))));
+    assert_eq!(queue.pop(), Some(Event::key(Key::F(12))));
 }
 
 #[test]
@@ -318,7 +319,7 @@ fn test_queue_default() {
 #[test]
 fn test_key_method() {
     let mut queue = EventQueue::new();
-    queue.key(KeyCode::Insert);
+    queue.key(Key::Insert);
 
-    assert_eq!(queue.pop(), Some(Event::key(KeyCode::Insert)));
+    assert_eq!(queue.pop(), Some(Event::key(Key::Insert)));
 }

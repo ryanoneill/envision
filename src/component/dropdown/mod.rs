@@ -33,7 +33,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a Dropdown.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -655,20 +655,18 @@ impl Component for Dropdown {
         }
         if let Some(key) = event.as_key() {
             if state.is_open {
-                match key.code {
-                    KeyCode::Enter => Some(DropdownMessage::Confirm),
-                    KeyCode::Esc => Some(DropdownMessage::Close),
-                    KeyCode::Up => Some(DropdownMessage::Up),
-                    KeyCode::Down => Some(DropdownMessage::Down),
-                    KeyCode::Char(c) if key.modifiers == KeyModifiers::NONE => {
-                        Some(DropdownMessage::Insert(c))
-                    }
-                    KeyCode::Backspace => Some(DropdownMessage::Backspace),
+                match key.key {
+                    Key::Enter => Some(DropdownMessage::Confirm),
+                    Key::Esc => Some(DropdownMessage::Close),
+                    Key::Up => Some(DropdownMessage::Up),
+                    Key::Down => Some(DropdownMessage::Down),
+                    Key::Char(c) if key.modifiers.is_none() => Some(DropdownMessage::Insert(c)),
+                    Key::Backspace => Some(DropdownMessage::Backspace),
                     _ => None,
                 }
             } else {
-                match key.code {
-                    KeyCode::Enter => Some(DropdownMessage::Toggle),
+                match key.key {
+                    Key::Enter => Some(DropdownMessage::Toggle),
                     _ => None,
                 }
             }

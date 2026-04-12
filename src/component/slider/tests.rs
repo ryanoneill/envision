@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 // ========================================
 // Construction Tests
@@ -305,7 +305,7 @@ fn test_handle_event_right_horizontal() {
     let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::Increment));
@@ -316,7 +316,7 @@ fn test_handle_event_left_horizontal() {
     let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::Decrement));
@@ -349,7 +349,7 @@ fn test_handle_event_page_up() {
     let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::PageUp),
+        &Event::key(Key::PageUp),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::IncrementPage));
@@ -360,7 +360,7 @@ fn test_handle_event_page_down() {
     let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::PageDown),
+        &Event::key(Key::PageDown),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::DecrementPage));
@@ -371,7 +371,7 @@ fn test_handle_event_home() {
     let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::SetMin));
@@ -382,7 +382,7 @@ fn test_handle_event_end() {
     let state = SliderState::new(0.0, 100.0);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::SetMax));
@@ -397,7 +397,7 @@ fn test_handle_event_up_vertical() {
     let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::Increment));
@@ -408,7 +408,7 @@ fn test_handle_event_down_vertical() {
     let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::Decrement));
@@ -441,7 +441,7 @@ fn test_handle_event_page_up_vertical() {
     let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::PageUp),
+        &Event::key(Key::PageUp),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::IncrementPage));
@@ -452,7 +452,7 @@ fn test_handle_event_home_vertical() {
     let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::SetMin));
@@ -463,7 +463,7 @@ fn test_handle_event_end_vertical() {
     let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
     let msg = Slider::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SliderMessage::SetMax));
@@ -476,11 +476,7 @@ fn test_handle_event_end_vertical() {
 #[test]
 fn test_handle_event_unfocused() {
     let state = SliderState::new(0.0, 100.0);
-    let msg = Slider::handle_event(
-        &state,
-        &Event::key(KeyCode::Right),
-        &EventContext::default(),
-    );
+    let msg = Slider::handle_event(&state, &Event::key(Key::Right), &EventContext::default());
     assert_eq!(msg, None);
 }
 #[test]
@@ -503,7 +499,7 @@ fn test_dispatch_event() {
     let mut state = SliderState::new(0.0, 100.0);
     let output = Slider::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SliderOutput::ValueChanged(1.0)));
@@ -515,7 +511,7 @@ fn test_dispatch_event_unfocused() {
     let mut state = SliderState::new(0.0, 100.0);
     let output = Slider::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::default(),
     );
     assert_eq!(output, None);

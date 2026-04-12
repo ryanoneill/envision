@@ -288,7 +288,7 @@ impl App for DashboardApp {
             }
             Msg::ChartNextSeries => {
                 // Toggle active series via chart message
-                let event = Event::key(KeyCode::Tab);
+                let event = Event::key(Key::Tab);
                 Chart::dispatch_event(&mut state.chart, &event, &EventContext::default());
             }
             Msg::Quit => {
@@ -340,16 +340,17 @@ impl App for DashboardApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => Some(Msg::Quit),
-                KeyCode::Tab => Some(Msg::FocusNext),
-                KeyCode::BackTab => Some(Msg::FocusPrev),
-                KeyCode::Left | KeyCode::Char('h') => Some(Msg::Left),
-                KeyCode::Right | KeyCode::Char('l') => Some(Msg::Right),
-                KeyCode::Up | KeyCode::Char('k') => Some(Msg::Up),
-                KeyCode::Down | KeyCode::Char('j') => Some(Msg::Down),
-                KeyCode::Enter => Some(Msg::Select),
-                KeyCode::Char('s') => Some(Msg::ChartNextSeries),
+            match key.key {
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
+                Key::Tab if key.modifiers.shift() => Some(Msg::FocusPrev),
+
+                Key::Tab => Some(Msg::FocusNext),
+                Key::Left | Key::Char('h') => Some(Msg::Left),
+                Key::Right | Key::Char('l') => Some(Msg::Right),
+                Key::Up | Key::Char('k') => Some(Msg::Up),
+                Key::Down | Key::Char('j') => Some(Msg::Down),
+                Key::Enter => Some(Msg::Select),
+                Key::Char('s') => Some(Msg::ChartNextSeries),
                 _ => None,
             }
         } else {

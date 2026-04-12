@@ -40,7 +40,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 
 /// The direction in which panes are arranged.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -803,14 +803,14 @@ impl Component for PaneLayout {
         }
 
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+        let ctrl = key.modifiers.ctrl();
 
-        match key.code {
-            KeyCode::Tab if !ctrl => Some(PaneLayoutMessage::FocusNext),
-            KeyCode::BackTab => Some(PaneLayoutMessage::FocusPrev),
-            KeyCode::Right | KeyCode::Down if ctrl => Some(PaneLayoutMessage::GrowFocused),
-            KeyCode::Left | KeyCode::Up if ctrl => Some(PaneLayoutMessage::ShrinkFocused),
-            KeyCode::Char('0') if ctrl => Some(PaneLayoutMessage::ResetProportions),
+        match key.key {
+            Key::Tab if key.modifiers.shift() => Some(PaneLayoutMessage::FocusPrev),
+            Key::Tab if !ctrl => Some(PaneLayoutMessage::FocusNext),
+            Key::Right | Key::Down if ctrl => Some(PaneLayoutMessage::GrowFocused),
+            Key::Left | Key::Up if ctrl => Some(PaneLayoutMessage::ShrinkFocused),
+            Key::Char('0') if ctrl => Some(PaneLayoutMessage::ResetProportions),
             _ => None,
         }
     }

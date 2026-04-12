@@ -25,7 +25,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 mod render;
 
@@ -838,10 +838,10 @@ impl Component for BoxPlot {
 
         let key = event.as_key()?;
 
-        match key.code {
-            KeyCode::Right | KeyCode::Char('l') => Some(BoxPlotMessage::NextDataset),
-            KeyCode::Left | KeyCode::Char('h') => Some(BoxPlotMessage::PrevDataset),
-            KeyCode::Char('o') => Some(BoxPlotMessage::ToggleOutliers),
+        match key.key {
+            Key::Right | Key::Char('l') => Some(BoxPlotMessage::NextDataset),
+            Key::Left | Key::Char('h') => Some(BoxPlotMessage::PrevDataset),
+            Key::Char('o') => Some(BoxPlotMessage::ToggleOutliers),
             _ => None,
         }
     }

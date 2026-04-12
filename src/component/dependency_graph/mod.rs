@@ -28,7 +28,7 @@
 //! ```
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 pub mod layout;
 mod render;
@@ -797,14 +797,11 @@ impl Component for DependencyGraph {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Down | KeyCode::Char('j') | KeyCode::Tab => {
-                    Some(DependencyGraphMessage::SelectNext)
-                }
-                KeyCode::Up | KeyCode::Char('k') | KeyCode::BackTab => {
-                    Some(DependencyGraphMessage::SelectPrev)
-                }
-                KeyCode::Enter | KeyCode::Char('l') | KeyCode::Right => {
+            match key.key {
+                Key::Tab if key.modifiers.shift() => Some(DependencyGraphMessage::SelectPrev),
+                Key::Down | Key::Char('j') | Key::Tab => Some(DependencyGraphMessage::SelectNext),
+                Key::Up | Key::Char('k') => Some(DependencyGraphMessage::SelectPrev),
+                Key::Enter | Key::Char('l') | Key::Right => {
                     Some(DependencyGraphMessage::SelectConnected)
                 }
                 _ => None,

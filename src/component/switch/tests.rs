@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 // ========================================
 // Construction Tests
@@ -184,7 +184,7 @@ fn test_handle_event_enter_when_focused() {
     let state = SwitchState::new();
     let msg = Switch::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SwitchMessage::Toggle));
@@ -204,11 +204,7 @@ fn test_handle_event_space_when_focused() {
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = SwitchState::new();
-    let msg = Switch::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg = Switch::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -217,7 +213,7 @@ fn test_handle_event_ignored_when_disabled() {
     let state = SwitchState::new();
     let msg = Switch::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -239,7 +235,7 @@ fn test_dispatch_event() {
     let mut state = SwitchState::new();
     let output = Switch::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SwitchOutput::On));
@@ -251,7 +247,7 @@ fn test_dispatch_event_unfocused() {
     let mut state = SwitchState::new();
     let output = Switch::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::default(),
     );
     assert_eq!(output, None);

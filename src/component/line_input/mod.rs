@@ -37,7 +37,7 @@ mod property_tests;
 mod tests;
 
 use crate::component::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::undo::UndoStack;
 
 use chunking::{chunk_buffer, cursor_to_visual};
@@ -670,18 +670,18 @@ impl Component for LineInput {
         }
 
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+        let ctrl = key.modifiers.ctrl();
+        let shift = key.modifiers.shift();
 
-        match key.code {
+        match key.key {
             // Undo/Redo
-            KeyCode::Char('z') if ctrl => Some(LineInputMessage::Undo),
-            KeyCode::Char('y') if ctrl => Some(LineInputMessage::Redo),
+            Key::Char('z') if ctrl => Some(LineInputMessage::Undo),
+            Key::Char('y') if ctrl => Some(LineInputMessage::Redo),
 
             // Clipboard
-            KeyCode::Char('c') if ctrl => Some(LineInputMessage::Copy),
-            KeyCode::Char('x') if ctrl => Some(LineInputMessage::Cut),
-            KeyCode::Char('v') if ctrl => {
+            Key::Char('c') if ctrl => Some(LineInputMessage::Copy),
+            Key::Char('x') if ctrl => Some(LineInputMessage::Cut),
+            Key::Char('v') if ctrl => {
                 // Use internal clipboard
                 if !state.clipboard.is_empty() {
                     Some(LineInputMessage::Paste(state.clipboard.clone()))
@@ -691,42 +691,42 @@ impl Component for LineInput {
             }
 
             // Select all
-            KeyCode::Char('a') if ctrl => Some(LineInputMessage::SelectAll),
+            Key::Char('a') if ctrl => Some(LineInputMessage::SelectAll),
 
             // Clear
-            KeyCode::Char('u') if ctrl => Some(LineInputMessage::Clear),
+            Key::Char('u') if ctrl => Some(LineInputMessage::Clear),
 
             // Regular character insertion
-            KeyCode::Char(c) if !ctrl => Some(LineInputMessage::Insert(c)),
+            Key::Char(_) if !ctrl => key.raw_char.map(LineInputMessage::Insert),
 
             // Selection with shift
-            KeyCode::Left if ctrl && shift => Some(LineInputMessage::SelectWordLeft),
-            KeyCode::Right if ctrl && shift => Some(LineInputMessage::SelectWordRight),
-            KeyCode::Left if shift => Some(LineInputMessage::SelectLeft),
-            KeyCode::Right if shift => Some(LineInputMessage::SelectRight),
-            KeyCode::Home if shift => Some(LineInputMessage::SelectHome),
-            KeyCode::End if shift => Some(LineInputMessage::SelectEnd),
+            Key::Left if ctrl && shift => Some(LineInputMessage::SelectWordLeft),
+            Key::Right if ctrl && shift => Some(LineInputMessage::SelectWordRight),
+            Key::Left if shift => Some(LineInputMessage::SelectLeft),
+            Key::Right if shift => Some(LineInputMessage::SelectRight),
+            Key::Home if shift => Some(LineInputMessage::SelectHome),
+            Key::End if shift => Some(LineInputMessage::SelectEnd),
 
             // Word deletion
-            KeyCode::Backspace if ctrl => Some(LineInputMessage::DeleteWordBack),
-            KeyCode::Delete if ctrl => Some(LineInputMessage::DeleteWordForward),
+            Key::Backspace if ctrl => Some(LineInputMessage::DeleteWordBack),
+            Key::Delete if ctrl => Some(LineInputMessage::DeleteWordForward),
 
             // Character deletion
-            KeyCode::Backspace => Some(LineInputMessage::Backspace),
-            KeyCode::Delete => Some(LineInputMessage::Delete),
+            Key::Backspace => Some(LineInputMessage::Backspace),
+            Key::Delete => Some(LineInputMessage::Delete),
 
             // Word navigation
-            KeyCode::Left if ctrl => Some(LineInputMessage::WordLeft),
-            KeyCode::Right if ctrl => Some(LineInputMessage::WordRight),
+            Key::Left if ctrl => Some(LineInputMessage::WordLeft),
+            Key::Right if ctrl => Some(LineInputMessage::WordRight),
 
             // Character navigation
-            KeyCode::Left => Some(LineInputMessage::Left),
-            KeyCode::Right => Some(LineInputMessage::Right),
-            KeyCode::Home => Some(LineInputMessage::Home),
-            KeyCode::End => Some(LineInputMessage::End),
+            Key::Left => Some(LineInputMessage::Left),
+            Key::Right => Some(LineInputMessage::Right),
+            Key::Home => Some(LineInputMessage::Home),
+            Key::End => Some(LineInputMessage::End),
 
             // Up/Down: context-dependent
-            KeyCode::Up => {
+            Key::Up => {
                 let (row, _) =
                     cursor_to_visual(&state.buffer, state.cursor, state.last_display_width);
                 if row == 0 {
@@ -735,7 +735,7 @@ impl Component for LineInput {
                     Some(LineInputMessage::VisualUp)
                 }
             }
-            KeyCode::Down => {
+            Key::Down => {
                 let (row, _) =
                     cursor_to_visual(&state.buffer, state.cursor, state.last_display_width);
                 let chunks = chunk_buffer(&state.buffer, state.last_display_width);
@@ -750,7 +750,7 @@ impl Component for LineInput {
             }
 
             // Submit
-            KeyCode::Enter => Some(LineInputMessage::Submit),
+            Key::Enter => Some(LineInputMessage::Submit),
 
             _ => None,
         }

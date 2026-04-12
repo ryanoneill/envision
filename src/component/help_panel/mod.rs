@@ -38,7 +38,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, EventContext, RenderContext, Toggleable};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
@@ -632,18 +632,18 @@ impl Component for HelpPanel {
         }
 
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+        let ctrl = key.modifiers.ctrl();
+        let shift = key.modifiers.shift();
 
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') if !ctrl => Some(HelpPanelMessage::ScrollUp),
-            KeyCode::Down | KeyCode::Char('j') if !ctrl => Some(HelpPanelMessage::ScrollDown),
-            KeyCode::PageUp => Some(HelpPanelMessage::PageUp(10)),
-            KeyCode::PageDown => Some(HelpPanelMessage::PageDown(10)),
-            KeyCode::Char('u') if ctrl => Some(HelpPanelMessage::PageUp(10)),
-            KeyCode::Char('d') if ctrl => Some(HelpPanelMessage::PageDown(10)),
-            KeyCode::Home | KeyCode::Char('g') if !shift => Some(HelpPanelMessage::Home),
-            KeyCode::End | KeyCode::Char('G') if shift || key.code == KeyCode::End => {
+        match key.key {
+            Key::Up | Key::Char('k') if !ctrl => Some(HelpPanelMessage::ScrollUp),
+            Key::Down | Key::Char('j') if !ctrl => Some(HelpPanelMessage::ScrollDown),
+            Key::PageUp => Some(HelpPanelMessage::PageUp(10)),
+            Key::PageDown => Some(HelpPanelMessage::PageDown(10)),
+            Key::Char('u') if ctrl => Some(HelpPanelMessage::PageUp(10)),
+            Key::Char('d') if ctrl => Some(HelpPanelMessage::PageDown(10)),
+            Key::Home | Key::Char('g') if !shift => Some(HelpPanelMessage::Home),
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
                 Some(HelpPanelMessage::End)
             }
             _ => None,

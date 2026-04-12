@@ -396,7 +396,7 @@ fn test_search_history_up_key_binding() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::SearchHistoryUp)
@@ -410,7 +410,7 @@ fn test_search_history_down_key_binding() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::SearchHistoryDown)

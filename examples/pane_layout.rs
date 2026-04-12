@@ -109,9 +109,9 @@ impl App for PaneLayoutApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
-                KeyCode::Char('r') => {
+            match key.key {
+                Key::Char('q') | Key::Esc => return Some(Msg::Quit),
+                Key::Char('r') => {
                     return Some(Msg::Layout(PaneLayoutMessage::ResetProportions));
                 }
                 _ => {}

@@ -104,8 +104,8 @@ impl App for UsageDisplayApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') => Some(Msg::Quit),
+            match key.key {
+                Key::Char('q') => Some(Msg::Quit),
                 _ => None,
             }
         } else {

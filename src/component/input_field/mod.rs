@@ -30,7 +30,7 @@ use ratatui::widgets::{Block, Borders, Paragraph};
 use unicode_width::UnicodeWidthStr;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::undo::{EditKind, UndoStack};
 
 mod editing;
@@ -788,16 +788,16 @@ impl Component for InputField {
         }
 
         if let Some(key) = event.as_key() {
-            let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-            let shift = key.modifiers.contains(KeyModifiers::SHIFT);
-            match key.code {
+            let ctrl = key.modifiers.ctrl();
+            let shift = key.modifiers.shift();
+            match key.key {
                 // Undo/redo
-                KeyCode::Char('z') if ctrl => Some(InputFieldMessage::Undo),
-                KeyCode::Char('y') if ctrl => Some(InputFieldMessage::Redo),
+                Key::Char('z') if ctrl => Some(InputFieldMessage::Undo),
+                Key::Char('y') if ctrl => Some(InputFieldMessage::Redo),
                 // Clipboard operations
-                KeyCode::Char('c') if ctrl => Some(InputFieldMessage::Copy),
-                KeyCode::Char('x') if ctrl => Some(InputFieldMessage::Cut),
-                KeyCode::Char('v') if ctrl => {
+                Key::Char('c') if ctrl => Some(InputFieldMessage::Copy),
+                Key::Char('x') if ctrl => Some(InputFieldMessage::Cut),
+                Key::Char('v') if ctrl => {
                     // Try system clipboard first, fall back to internal
                     #[cfg(feature = "clipboard")]
                     if let Some(text) = system_clipboard_get() {
@@ -809,29 +809,29 @@ impl Component for InputField {
                         Some(InputFieldMessage::Paste(state.clipboard.clone()))
                     }
                 }
-                KeyCode::Char('a') if ctrl => Some(InputFieldMessage::SelectAll),
+                Key::Char('a') if ctrl => Some(InputFieldMessage::SelectAll),
                 // Character input (only when no ctrl modifier)
-                KeyCode::Char(c) if !ctrl => Some(InputFieldMessage::Insert(c)),
+                Key::Char(_) if !ctrl => key.raw_char.map(InputFieldMessage::Insert),
                 // Selection movement (shift+key)
-                KeyCode::Left if ctrl && shift => Some(InputFieldMessage::SelectWordLeft),
-                KeyCode::Right if ctrl && shift => Some(InputFieldMessage::SelectWordRight),
-                KeyCode::Left if shift => Some(InputFieldMessage::SelectLeft),
-                KeyCode::Right if shift => Some(InputFieldMessage::SelectRight),
-                KeyCode::Home if shift => Some(InputFieldMessage::SelectHome),
-                KeyCode::End if shift => Some(InputFieldMessage::SelectEnd),
+                Key::Left if ctrl && shift => Some(InputFieldMessage::SelectWordLeft),
+                Key::Right if ctrl && shift => Some(InputFieldMessage::SelectWordRight),
+                Key::Left if shift => Some(InputFieldMessage::SelectLeft),
+                Key::Right if shift => Some(InputFieldMessage::SelectRight),
+                Key::Home if shift => Some(InputFieldMessage::SelectHome),
+                Key::End if shift => Some(InputFieldMessage::SelectEnd),
                 // Deletion
-                KeyCode::Backspace if ctrl => Some(InputFieldMessage::DeleteWordBack),
-                KeyCode::Delete if ctrl => Some(InputFieldMessage::DeleteWordForward),
-                KeyCode::Backspace => Some(InputFieldMessage::Backspace),
-                KeyCode::Delete => Some(InputFieldMessage::Delete),
+                Key::Backspace if ctrl => Some(InputFieldMessage::DeleteWordBack),
+                Key::Delete if ctrl => Some(InputFieldMessage::DeleteWordForward),
+                Key::Backspace => Some(InputFieldMessage::Backspace),
+                Key::Delete => Some(InputFieldMessage::Delete),
                 // Navigation (clears selection)
-                KeyCode::Left if ctrl => Some(InputFieldMessage::WordLeft),
-                KeyCode::Right if ctrl => Some(InputFieldMessage::WordRight),
-                KeyCode::Left => Some(InputFieldMessage::Left),
-                KeyCode::Right => Some(InputFieldMessage::Right),
-                KeyCode::Home => Some(InputFieldMessage::Home),
-                KeyCode::End => Some(InputFieldMessage::End),
-                KeyCode::Enter => Some(InputFieldMessage::Submit),
+                Key::Left if ctrl => Some(InputFieldMessage::WordLeft),
+                Key::Right if ctrl => Some(InputFieldMessage::WordRight),
+                Key::Left => Some(InputFieldMessage::Left),
+                Key::Right => Some(InputFieldMessage::Right),
+                Key::Home => Some(InputFieldMessage::Home),
+                Key::End => Some(InputFieldMessage::End),
+                Key::Enter => Some(InputFieldMessage::Submit),
                 _ => None,
             }
         } else {

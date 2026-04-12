@@ -1,5 +1,6 @@
 use super::*;
 use crate::component::test_utils;
+use crate::input::Modifiers;
 
 fn sample_series() -> Vec<DataSeries> {
     vec![
@@ -323,7 +324,7 @@ fn test_disabled_ignores_events() {
     let state = focused_line_chart();
     let msg = Chart::handle_event(
         &state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -336,7 +337,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = ChartState::line(sample_series());
-    let msg = Chart::handle_event(&state, &Event::key(KeyCode::Tab), &EventContext::default());
+    let msg = Chart::handle_event(&state, &Event::key(Key::Tab), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -350,7 +351,7 @@ fn test_tab_maps_to_next() {
     assert_eq!(
         Chart::handle_event(
             &state,
-            &Event::key(KeyCode::Tab),
+            &Event::key(Key::Tab),
             &EventContext::new().focused(true)
         ),
         Some(ChartMessage::NextSeries)
@@ -363,7 +364,7 @@ fn test_backtab_maps_to_prev() {
     assert_eq!(
         Chart::handle_event(
             &state,
-            &Event::key(KeyCode::BackTab),
+            &Event::key_with(Key::Tab, Modifiers::SHIFT),
             &EventContext::new().focused(true)
         ),
         Some(ChartMessage::PrevSeries)

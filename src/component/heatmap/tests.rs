@@ -290,7 +290,7 @@ fn test_arrow_up_maps_to_select_up() {
     let state = focused_3x3();
     let msg = Heatmap::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(HeatmapMessage::SelectUp));
@@ -301,7 +301,7 @@ fn test_arrow_down_maps_to_select_down() {
     let state = focused_3x3();
     let msg = Heatmap::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(HeatmapMessage::SelectDown));
@@ -312,7 +312,7 @@ fn test_arrow_left_maps_to_select_left() {
     let state = focused_3x3();
     let msg = Heatmap::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(HeatmapMessage::SelectLeft));
@@ -323,7 +323,7 @@ fn test_arrow_right_maps_to_select_right() {
     let state = focused_3x3();
     let msg = Heatmap::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(HeatmapMessage::SelectRight));
@@ -371,7 +371,7 @@ fn test_enter_emits_cell_selected() {
     let mut state = focused_3x3();
     let output = Heatmap::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(
@@ -393,7 +393,7 @@ fn test_disabled_ignores_events() {
     let state = focused_3x3();
     let msg = Heatmap::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -402,7 +402,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = HeatmapState::with_data(vec![vec![1.0]]);
-    let msg = Heatmap::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
+    let msg = Heatmap::handle_event(&state, &Event::key(Key::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 

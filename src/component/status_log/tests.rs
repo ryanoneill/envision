@@ -588,7 +588,7 @@ fn test_view_unfocused() {
 // handle_event Tests
 // ========================================
 
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 #[test]
 fn test_handle_event_scroll_up() {
@@ -597,7 +597,7 @@ fn test_handle_event_scroll_up() {
     // Up arrow -> ScrollUp
     let msg = StatusLog::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
@@ -618,7 +618,7 @@ fn test_handle_event_scroll_down() {
     // Down arrow -> ScrollDown
     let msg = StatusLog::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StatusLogMessage::ScrollDown));
@@ -638,7 +638,7 @@ fn test_handle_event_scroll_to_top() {
 
     let msg = StatusLog::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StatusLogMessage::ScrollToTop));
@@ -650,7 +650,7 @@ fn test_handle_event_scroll_to_bottom() {
 
     let msg = StatusLog::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StatusLogMessage::ScrollToBottom));
@@ -659,7 +659,7 @@ fn test_handle_event_scroll_to_bottom() {
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = StatusLogState::new();
-    let msg = StatusLog::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default());
+    let msg = StatusLog::handle_event(&state, &Event::key(Key::Up), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -678,7 +678,7 @@ fn test_dispatch_event() {
     // Down arrow dispatches ScrollDown
     StatusLog::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(state.scroll_offset(), 4);
@@ -694,7 +694,7 @@ fn test_instance_methods() {
     // static handle_event
     let msg = StatusLog::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StatusLogMessage::ScrollUp));
@@ -706,7 +706,7 @@ fn test_instance_methods() {
     // static dispatch_event
     StatusLog::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(state.scroll_offset(), 2);
@@ -722,14 +722,14 @@ fn test_handle_event_ignored_when_disabled() {
 
     let msg = StatusLog::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = StatusLog::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -743,14 +743,14 @@ fn test_handle_event_ignored_when_disabled() {
 
     let msg = StatusLog::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = StatusLog::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -766,7 +766,7 @@ fn test_dispatch_event_ignored_when_disabled() {
 
     let output = StatusLog::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(output, None);

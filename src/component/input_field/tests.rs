@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key, Modifiers};
 
 #[path = "selection_tests.rs"]
 mod selection_tests;
@@ -410,7 +410,7 @@ fn test_handle_event_backspace() {
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key(KeyCode::Backspace),
+        &Event::key(Key::Backspace),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::Backspace));
@@ -422,7 +422,7 @@ fn test_handle_event_delete() {
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key(KeyCode::Delete),
+        &Event::key(Key::Delete),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::Delete));
@@ -434,7 +434,7 @@ fn test_handle_event_left() {
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::Left));
@@ -446,7 +446,7 @@ fn test_handle_event_right() {
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::Right));
@@ -458,7 +458,7 @@ fn test_handle_event_home() {
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::Home));
@@ -470,7 +470,7 @@ fn test_handle_event_end() {
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::End));
@@ -482,7 +482,7 @@ fn test_handle_event_enter() {
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::Submit));
@@ -494,7 +494,7 @@ fn test_handle_event_ctrl_left() {
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+        &Event::key_with(Key::Left, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::WordLeft));
@@ -506,7 +506,7 @@ fn test_handle_event_ctrl_right() {
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &Event::key_with(Key::Right, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::WordRight));
@@ -546,21 +546,21 @@ fn test_handle_event_ignored_when_disabled() {
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key(KeyCode::Backspace),
+        &Event::key(Key::Backspace),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = InputField::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);

@@ -29,7 +29,7 @@
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 /// Messages that can be sent to a ScrollableText.
@@ -311,18 +311,18 @@ impl Component for ScrollableText {
         }
 
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+        let ctrl = key.modifiers.ctrl();
+        let shift = key.modifiers.shift();
 
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') if !ctrl => Some(ScrollableTextMessage::ScrollUp),
-            KeyCode::Down | KeyCode::Char('j') if !ctrl => Some(ScrollableTextMessage::ScrollDown),
-            KeyCode::PageUp => Some(ScrollableTextMessage::PageUp(10)),
-            KeyCode::PageDown => Some(ScrollableTextMessage::PageDown(10)),
-            KeyCode::Char('u') if ctrl => Some(ScrollableTextMessage::PageUp(10)),
-            KeyCode::Char('d') if ctrl => Some(ScrollableTextMessage::PageDown(10)),
-            KeyCode::Home | KeyCode::Char('g') if !shift => Some(ScrollableTextMessage::Home),
-            KeyCode::End | KeyCode::Char('G') if shift || key.code == KeyCode::End => {
+        match key.key {
+            Key::Up | Key::Char('k') if !ctrl => Some(ScrollableTextMessage::ScrollUp),
+            Key::Down | Key::Char('j') if !ctrl => Some(ScrollableTextMessage::ScrollDown),
+            Key::PageUp => Some(ScrollableTextMessage::PageUp(10)),
+            Key::PageDown => Some(ScrollableTextMessage::PageDown(10)),
+            Key::Char('u') if ctrl => Some(ScrollableTextMessage::PageUp(10)),
+            Key::Char('d') if ctrl => Some(ScrollableTextMessage::PageDown(10)),
+            Key::Home | Key::Char('g') if !shift => Some(ScrollableTextMessage::Home),
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
                 Some(ScrollableTextMessage::End)
             }
             _ => None,

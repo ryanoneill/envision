@@ -104,7 +104,7 @@ impl App for FormApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if key.code == KeyCode::Esc {
+            if key.key == Key::Esc {
                 return Some(Msg::Quit);
             }
         }

@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 #[test]
 fn test_new() {
@@ -133,7 +133,7 @@ fn test_handle_event_enter_when_focused() {
     let state = CheckboxState::new("Test");
     let msg = Checkbox::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CheckboxMessage::Toggle));
@@ -153,11 +153,7 @@ fn test_handle_event_space_when_focused() {
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = CheckboxState::new("Test");
-    let msg = Checkbox::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg = Checkbox::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -166,7 +162,7 @@ fn test_handle_event_ignored_when_disabled() {
     let state = CheckboxState::new("Test");
     let msg = Checkbox::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -177,7 +173,7 @@ fn test_dispatch_event() {
     let mut state = CheckboxState::new("Test");
     let output = Checkbox::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CheckboxOutput::Toggled(true)));

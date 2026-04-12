@@ -503,14 +503,14 @@ fn test_show_resets_focus_to_primary() {
 // handle_event Tests
 // ========================================
 
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key, Modifiers};
 
 #[test]
 fn test_handle_event_tab() {
     let mut state = DialogState::confirm("T", "M");
     Dialog::show(&mut state);
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Tab), &EventContext::default());
+    let msg = Dialog::handle_event(&state, &Event::key(Key::Tab), &EventContext::default());
     assert_eq!(msg, Some(DialogMessage::FocusNext));
 }
 
@@ -521,7 +521,7 @@ fn test_handle_event_backtab() {
 
     let msg = Dialog::handle_event(
         &state,
-        &Event::key(KeyCode::BackTab),
+        &Event::key_with(Key::Tab, Modifiers::SHIFT),
         &EventContext::default(),
     );
     assert_eq!(msg, Some(DialogMessage::FocusPrev));
@@ -532,11 +532,7 @@ fn test_handle_event_enter() {
     let mut state = DialogState::confirm("T", "M");
     Dialog::show(&mut state);
 
-    let msg = Dialog::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg = Dialog::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, Some(DialogMessage::Press));
 }
 
@@ -545,7 +541,7 @@ fn test_handle_event_escape() {
     let mut state = DialogState::confirm("T", "M");
     Dialog::show(&mut state);
 
-    let msg = Dialog::handle_event(&state, &Event::key(KeyCode::Esc), &EventContext::default());
+    let msg = Dialog::handle_event(&state, &Event::key(Key::Esc), &EventContext::default());
     assert_eq!(msg, Some(DialogMessage::Close));
 }
 
@@ -555,11 +551,7 @@ fn test_handle_event_ignored_when_not_visible() {
     // Not visible by default
     assert!(!Dialog::is_visible(&state));
 
-    let msg = Dialog::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg = Dialog::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -575,7 +567,7 @@ fn test_dispatch_event() {
     // Enter dispatches Press, which presses the OK button
     let output = Dialog::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::default(),
     );
     assert_eq!(output, Some(DialogOutput::ButtonPressed("ok".into())));

@@ -118,9 +118,9 @@ impl App for TableApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
-                KeyCode::Char('s') => return Some(Msg::Table(TableMessage::SortBy(0))),
+            match key.key {
+                Key::Char('q') | Key::Esc => return Some(Msg::Quit),
+                Key::Char('s') => return Some(Msg::Table(TableMessage::SortBy(0))),
                 _ => {}
             }
         }

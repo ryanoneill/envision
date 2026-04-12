@@ -33,7 +33,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 /// Messages that can be sent to a ScrollView.
@@ -452,18 +452,18 @@ impl Component for ScrollView {
         }
 
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+        let ctrl = key.modifiers.ctrl();
+        let shift = key.modifiers.shift();
 
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') if !ctrl => Some(ScrollViewMessage::ScrollUp),
-            KeyCode::Down | KeyCode::Char('j') if !ctrl => Some(ScrollViewMessage::ScrollDown),
-            KeyCode::PageUp => Some(ScrollViewMessage::PageUp),
-            KeyCode::PageDown => Some(ScrollViewMessage::PageDown),
-            KeyCode::Char('u') if ctrl => Some(ScrollViewMessage::PageUp),
-            KeyCode::Char('d') if ctrl => Some(ScrollViewMessage::PageDown),
-            KeyCode::Home | KeyCode::Char('g') if !shift => Some(ScrollViewMessage::Home),
-            KeyCode::End | KeyCode::Char('G') if shift || key.code == KeyCode::End => {
+        match key.key {
+            Key::Up | Key::Char('k') if !ctrl => Some(ScrollViewMessage::ScrollUp),
+            Key::Down | Key::Char('j') if !ctrl => Some(ScrollViewMessage::ScrollDown),
+            Key::PageUp => Some(ScrollViewMessage::PageUp),
+            Key::PageDown => Some(ScrollViewMessage::PageDown),
+            Key::Char('u') if ctrl => Some(ScrollViewMessage::PageUp),
+            Key::Char('d') if ctrl => Some(ScrollViewMessage::PageDown),
+            Key::Home | Key::Char('g') if !shift => Some(ScrollViewMessage::Home),
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
                 Some(ScrollViewMessage::End)
             }
             _ => None,

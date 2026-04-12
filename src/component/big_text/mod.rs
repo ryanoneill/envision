@@ -319,11 +319,10 @@ impl BigTextState {
     ///
     /// ```rust
     /// use envision::component::BigTextState;
-    /// use envision::input::Event;
-    /// use crossterm::event::KeyCode;
+    /// use envision::input::{Event, Key};
     ///
     /// let state = BigTextState::new("42");
-    /// assert_eq!(state.handle_event(&Event::key(KeyCode::Enter)), None);
+    /// assert_eq!(state.handle_event(&Event::key(Key::Enter)), None);
     /// ```
     pub fn handle_event(&self, event: &crate::input::Event) -> Option<BigTextMessage> {
         BigText::handle_event(self, event, &EventContext::default())
@@ -353,11 +352,10 @@ impl BigTextState {
     ///
     /// ```rust
     /// use envision::component::BigTextState;
-    /// use envision::input::Event;
-    /// use crossterm::event::KeyCode;
+    /// use envision::input::{Event, Key};
     ///
     /// let mut state = BigTextState::new("42");
-    /// assert_eq!(state.dispatch_event(&Event::key(KeyCode::Enter)), None);
+    /// assert_eq!(state.dispatch_event(&Event::key(Key::Enter)), None);
     /// ```
     pub fn dispatch_event(&mut self, event: &crate::input::Event) -> Option<()> {
         BigText::dispatch_event(self, event, &EventContext::default())

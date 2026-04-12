@@ -1,7 +1,7 @@
 use super::*;
 use crate::component::Component;
 use crate::component::test_utils::setup_render;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 // ========== StyledContent Builder Tests ==========
 
@@ -319,7 +319,7 @@ fn test_handle_event_up() {
     let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::ScrollUp));
@@ -341,7 +341,7 @@ fn test_handle_event_down() {
     let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::ScrollDown));
@@ -363,7 +363,7 @@ fn test_handle_event_page_up() {
     let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
-        &Event::key(KeyCode::PageUp),
+        &Event::key(Key::PageUp),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::PageUp(10)));
@@ -374,7 +374,7 @@ fn test_handle_event_page_down() {
     let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
-        &Event::key(KeyCode::PageDown),
+        &Event::key(Key::PageDown),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::PageDown(10)));
@@ -407,7 +407,7 @@ fn test_handle_event_home() {
     let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::Home));
@@ -429,7 +429,7 @@ fn test_handle_event_end() {
     let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StyledTextMessage::End));
@@ -438,8 +438,7 @@ fn test_handle_event_end() {
 #[test]
 fn test_handle_event_unfocused_ignored() {
     let state = StyledTextState::new();
-    let msg =
-        StyledText::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
+    let msg = StyledText::handle_event(&state, &Event::key(Key::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -448,7 +447,7 @@ fn test_handle_event_disabled_ignored() {
     let state = StyledTextState::new();
     let msg = StyledText::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -472,7 +471,7 @@ fn test_dispatch_event() {
     let mut state = StyledTextState::new();
     let output = StyledText::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(StyledTextOutput::ScrollChanged(1)));

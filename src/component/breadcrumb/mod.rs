@@ -37,7 +37,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// A single breadcrumb segment.
 ///
@@ -648,12 +648,12 @@ impl Component for Breadcrumb {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Left | KeyCode::Char('h') => Some(BreadcrumbMessage::Left),
-                KeyCode::Right | KeyCode::Char('l') => Some(BreadcrumbMessage::Right),
-                KeyCode::Home => Some(BreadcrumbMessage::First),
-                KeyCode::End => Some(BreadcrumbMessage::Last),
-                KeyCode::Enter => Some(BreadcrumbMessage::Select),
+            match key.key {
+                Key::Left | Key::Char('h') => Some(BreadcrumbMessage::Left),
+                Key::Right | Key::Char('l') => Some(BreadcrumbMessage::Right),
+                Key::Home => Some(BreadcrumbMessage::First),
+                Key::End => Some(BreadcrumbMessage::Last),
+                Key::Enter => Some(BreadcrumbMessage::Select),
                 _ => None,
             }
         } else {

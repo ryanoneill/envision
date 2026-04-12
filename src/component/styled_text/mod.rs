@@ -40,7 +40,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a StyledText component.
 #[derive(Clone, Debug, PartialEq)]
@@ -380,18 +380,18 @@ impl Component for StyledText {
         }
 
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+        let ctrl = key.modifiers.ctrl();
+        let shift = key.modifiers.shift();
 
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') if !ctrl => Some(StyledTextMessage::ScrollUp),
-            KeyCode::Down | KeyCode::Char('j') if !ctrl => Some(StyledTextMessage::ScrollDown),
-            KeyCode::PageUp => Some(StyledTextMessage::PageUp(10)),
-            KeyCode::PageDown => Some(StyledTextMessage::PageDown(10)),
-            KeyCode::Char('u') if ctrl => Some(StyledTextMessage::PageUp(10)),
-            KeyCode::Char('d') if ctrl => Some(StyledTextMessage::PageDown(10)),
-            KeyCode::Home | KeyCode::Char('g') if !shift => Some(StyledTextMessage::Home),
-            KeyCode::End | KeyCode::Char('G') if shift || key.code == KeyCode::End => {
+        match key.key {
+            Key::Up | Key::Char('k') if !ctrl => Some(StyledTextMessage::ScrollUp),
+            Key::Down | Key::Char('j') if !ctrl => Some(StyledTextMessage::ScrollDown),
+            Key::PageUp => Some(StyledTextMessage::PageUp(10)),
+            Key::PageDown => Some(StyledTextMessage::PageDown(10)),
+            Key::Char('u') if ctrl => Some(StyledTextMessage::PageUp(10)),
+            Key::Char('d') if ctrl => Some(StyledTextMessage::PageDown(10)),
+            Key::Home | Key::Char('g') if !shift => Some(StyledTextMessage::Home),
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
                 Some(StyledTextMessage::End)
             }
             _ => None,

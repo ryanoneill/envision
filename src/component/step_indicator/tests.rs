@@ -1,7 +1,7 @@
 use super::*;
 use crate::component::Component;
 use crate::component::test_utils::setup_render;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 // ========== Step Tests ==========
 
@@ -499,7 +499,7 @@ fn test_handle_event_right_arrow() {
     let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg = StepIndicator::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StepIndicatorMessage::FocusNext));
@@ -521,7 +521,7 @@ fn test_handle_event_left_arrow() {
     let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg = StepIndicator::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StepIndicatorMessage::FocusPrev));
@@ -543,7 +543,7 @@ fn test_handle_event_home() {
     let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg = StepIndicator::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StepIndicatorMessage::First));
@@ -554,7 +554,7 @@ fn test_handle_event_end() {
     let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg = StepIndicator::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StepIndicatorMessage::Last));
@@ -565,7 +565,7 @@ fn test_handle_event_enter() {
     let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let msg = StepIndicator::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(StepIndicatorMessage::Select));
@@ -574,11 +574,8 @@ fn test_handle_event_enter() {
 #[test]
 fn test_handle_event_unfocused_ignored() {
     let state = StepIndicatorState::new(vec![Step::new("A")]);
-    let msg = StepIndicator::handle_event(
-        &state,
-        &Event::key(KeyCode::Right),
-        &EventContext::default(),
-    );
+    let msg =
+        StepIndicator::handle_event(&state, &Event::key(Key::Right), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -587,7 +584,7 @@ fn test_handle_event_disabled_ignored() {
     let state = StepIndicatorState::new(vec![Step::new("A")]);
     let msg = StepIndicator::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -611,7 +608,7 @@ fn test_dispatch_event() {
     let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
     let output = StepIndicator::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(StepIndicatorOutput::FocusChanged(1)));

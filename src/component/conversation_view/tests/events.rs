@@ -32,7 +32,7 @@ fn test_scroll_up_event() {
     assert_eq!(
         ConversationView::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollUp)
@@ -53,7 +53,7 @@ fn test_scroll_down_event() {
     assert_eq!(
         ConversationView::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollDown)
@@ -74,7 +74,7 @@ fn test_scroll_to_top_event() {
     assert_eq!(
         ConversationView::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollToTop)
@@ -95,7 +95,7 @@ fn test_scroll_to_bottom_event() {
     assert_eq!(
         ConversationView::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::ScrollToBottom)
@@ -116,7 +116,7 @@ fn test_page_up_event() {
     assert_eq!(
         ConversationView::handle_event(
             &state,
-            &Event::key(KeyCode::PageUp),
+            &Event::key(Key::PageUp),
             &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::PageUp)
@@ -129,7 +129,7 @@ fn test_page_down_event() {
     assert_eq!(
         ConversationView::handle_event(
             &state,
-            &Event::key(KeyCode::PageDown),
+            &Event::key(Key::PageDown),
             &EventContext::new().focused(true)
         ),
         Some(ConversationViewMessage::PageDown)

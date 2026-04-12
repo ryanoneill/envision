@@ -40,7 +40,7 @@ use std::collections::HashSet;
 
 pub use self::highlight::Language;
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 /// Messages that can be sent to a CodeBlock.
@@ -553,23 +553,23 @@ impl Component for CodeBlock {
         }
 
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+        let ctrl = key.modifiers.ctrl();
+        let shift = key.modifiers.shift();
 
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') if !ctrl => Some(CodeBlockMessage::ScrollUp),
-            KeyCode::Down | KeyCode::Char('j') if !ctrl => Some(CodeBlockMessage::ScrollDown),
-            KeyCode::Left | KeyCode::Char('h') if !ctrl => Some(CodeBlockMessage::ScrollLeft),
-            KeyCode::Right | KeyCode::Char('l') if !ctrl => Some(CodeBlockMessage::ScrollRight),
-            KeyCode::PageUp => Some(CodeBlockMessage::PageUp(10)),
-            KeyCode::PageDown => Some(CodeBlockMessage::PageDown(10)),
-            KeyCode::Char('u') if ctrl => Some(CodeBlockMessage::PageUp(10)),
-            KeyCode::Char('d') if ctrl => Some(CodeBlockMessage::PageDown(10)),
-            KeyCode::Home | KeyCode::Char('g') if !shift => Some(CodeBlockMessage::Home),
-            KeyCode::End | KeyCode::Char('G') if shift || key.code == KeyCode::End => {
+        match key.key {
+            Key::Up | Key::Char('k') if !ctrl => Some(CodeBlockMessage::ScrollUp),
+            Key::Down | Key::Char('j') if !ctrl => Some(CodeBlockMessage::ScrollDown),
+            Key::Left | Key::Char('h') if !ctrl => Some(CodeBlockMessage::ScrollLeft),
+            Key::Right | Key::Char('l') if !ctrl => Some(CodeBlockMessage::ScrollRight),
+            Key::PageUp => Some(CodeBlockMessage::PageUp(10)),
+            Key::PageDown => Some(CodeBlockMessage::PageDown(10)),
+            Key::Char('u') if ctrl => Some(CodeBlockMessage::PageUp(10)),
+            Key::Char('d') if ctrl => Some(CodeBlockMessage::PageDown(10)),
+            Key::Home | Key::Char('g') if !shift => Some(CodeBlockMessage::Home),
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
                 Some(CodeBlockMessage::End)
             }
-            KeyCode::Char('n') if !ctrl => Some(CodeBlockMessage::ToggleLineNumbers),
+            Key::Char('n') if !ctrl => Some(CodeBlockMessage::ToggleLineNumbers),
             _ => None,
         }
     }

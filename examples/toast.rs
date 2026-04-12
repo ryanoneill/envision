@@ -79,11 +79,11 @@ impl App for ToastApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => Some(Msg::Quit),
-                KeyCode::Char('s') => Some(Msg::AddSuccess),
-                KeyCode::Char('w') => Some(Msg::AddWarning),
-                KeyCode::Char('e') => Some(Msg::AddError),
+            match key.key {
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
+                Key::Char('s') => Some(Msg::AddSuccess),
+                Key::Char('w') => Some(Msg::AddWarning),
+                Key::Char('e') => Some(Msg::AddError),
                 _ => None,
             }
         } else {

@@ -32,7 +32,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
 use super::{Component, EventContext, RenderContext, Toggleable};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::theme::Theme;
 
 /// Preset button configurations for the confirm dialog.
@@ -414,11 +414,11 @@ impl ConfirmDialogState {
     ///
     /// ```rust
     /// use envision::component::{ConfirmDialogState, ConfirmDialogMessage};
-    /// use envision::input::{Event, KeyCode};
+    /// use envision::input::{Event, Key};
     ///
     /// let mut state = ConfirmDialogState::yes_no("Delete?", "Sure?");
     /// state.set_visible(true);
-    /// let event = Event::key(KeyCode::Esc);
+    /// let event = Event::key(Key::Esc);
     /// assert_eq!(state.handle_event(&event), Some(ConfirmDialogMessage::Close));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<ConfirmDialogMessage> {
@@ -431,11 +431,11 @@ impl ConfirmDialogState {
     ///
     /// ```rust
     /// use envision::component::{ConfirmDialogState, ConfirmDialogOutput};
-    /// use envision::input::{Event, KeyCode};
+    /// use envision::input::{Event, Key};
     ///
     /// let mut state = ConfirmDialogState::new("Info", "Done.");
     /// state.set_visible(true);
-    /// let event = Event::key(KeyCode::Esc);
+    /// let event = Event::key(Key::Esc);
     /// let output = state.dispatch_event(&event);
     /// assert_eq!(output, Some(ConfirmDialogOutput::Closed));
     /// assert!(!state.is_visible());
@@ -574,15 +574,15 @@ impl Component for ConfirmDialog {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Tab => Some(ConfirmDialogMessage::FocusNext),
-                KeyCode::BackTab => Some(ConfirmDialogMessage::FocusPrev),
-                KeyCode::Enter => Some(ConfirmDialogMessage::Press),
-                KeyCode::Esc => Some(ConfirmDialogMessage::Close),
-                KeyCode::Char('y') | KeyCode::Char('Y') if state.button_config.has_yes_no() => {
+            match key.key {
+                Key::Tab if key.modifiers.shift() => Some(ConfirmDialogMessage::FocusPrev),
+                Key::Tab => Some(ConfirmDialogMessage::FocusNext),
+                Key::Enter => Some(ConfirmDialogMessage::Press),
+                Key::Esc => Some(ConfirmDialogMessage::Close),
+                Key::Char('y') if state.button_config.has_yes_no() => {
                     Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::Yes))
                 }
-                KeyCode::Char('n') | KeyCode::Char('N') if state.button_config.has_yes_no() => {
+                Key::Char('n') if state.button_config.has_yes_no() => {
                     Some(ConfirmDialogMessage::SelectResult(ConfirmDialogResult::No))
                 }
                 _ => None,

@@ -27,7 +27,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 mod annotations;
 pub(crate) mod downsample;
@@ -741,15 +741,15 @@ impl Component for Chart {
 
         let key = event.as_key()?;
 
-        match key.code {
-            KeyCode::Tab => Some(ChartMessage::NextSeries),
-            KeyCode::BackTab => Some(ChartMessage::PrevSeries),
-            KeyCode::Left | KeyCode::Char('h') => Some(ChartMessage::CursorLeft),
-            KeyCode::Right | KeyCode::Char('l') => Some(ChartMessage::CursorRight),
-            KeyCode::Home => Some(ChartMessage::CursorHome),
-            KeyCode::End => Some(ChartMessage::CursorEnd),
-            KeyCode::Char('c') => Some(ChartMessage::ToggleCrosshair),
-            KeyCode::Char('g') => Some(ChartMessage::ToggleGrid),
+        match key.key {
+            Key::Tab if key.modifiers.shift() => Some(ChartMessage::PrevSeries),
+            Key::Tab => Some(ChartMessage::NextSeries),
+            Key::Left | Key::Char('h') => Some(ChartMessage::CursorLeft),
+            Key::Right | Key::Char('l') => Some(ChartMessage::CursorRight),
+            Key::Home => Some(ChartMessage::CursorHome),
+            Key::End => Some(ChartMessage::CursorEnd),
+            Key::Char('c') => Some(ChartMessage::ToggleCrosshair),
+            Key::Char('g') => Some(ChartMessage::ToggleGrid),
             _ => None,
         }
     }

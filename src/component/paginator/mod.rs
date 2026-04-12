@@ -40,7 +40,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::theme::Theme;
 
 /// Display style for the paginator.
@@ -491,11 +491,11 @@ impl Component for Paginator {
 
         let key = event.as_key()?;
 
-        match key.code {
-            KeyCode::Left | KeyCode::Char('h') => Some(PaginatorMessage::PrevPage),
-            KeyCode::Right | KeyCode::Char('l') => Some(PaginatorMessage::NextPage),
-            KeyCode::Home => Some(PaginatorMessage::FirstPage),
-            KeyCode::End => Some(PaginatorMessage::LastPage),
+        match key.key {
+            Key::Left | Key::Char('h') => Some(PaginatorMessage::PrevPage),
+            Key::Right | Key::Char('l') => Some(PaginatorMessage::NextPage),
+            Key::Home => Some(PaginatorMessage::FirstPage),
+            Key::End => Some(PaginatorMessage::LastPage),
             _ => None,
         }
     }

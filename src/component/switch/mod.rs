@@ -31,7 +31,7 @@
 use ratatui::widgets::Paragraph;
 
 use super::{Component, EventContext, RenderContext, Toggleable};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a Switch.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -331,8 +331,8 @@ impl Component for Switch {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Enter | KeyCode::Char(' ') => Some(SwitchMessage::Toggle),
+            match key.key {
+                Key::Enter | Key::Char(' ') => Some(SwitchMessage::Toggle),
                 _ => None,
             }
         } else {

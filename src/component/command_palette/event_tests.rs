@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::KeyCode;
+use crate::input::Key;
 
 fn sample_items() -> Vec<PaletteItem> {
     vec![
@@ -29,9 +29,10 @@ fn test_char_maps_to_type_char() {
 #[test]
 fn test_uppercase_char_maps_to_type_char() {
     let state = active_state();
+    // Event::char('A') normalizes to Key::Char('a') with SHIFT and raw_char='A'
     let msg = CommandPalette::handle_event(
         &state,
-        &Event::key_with(KeyCode::Char('A'), crate::input::KeyModifiers::SHIFT),
+        &Event::char('A'),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CommandPaletteMessage::TypeChar('A')));
@@ -42,7 +43,7 @@ fn test_backspace_maps_to_backspace() {
     let state = active_state();
     let msg = CommandPalette::handle_event(
         &state,
-        &Event::key(KeyCode::Backspace),
+        &Event::key(Key::Backspace),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CommandPaletteMessage::Backspace));
@@ -53,7 +54,7 @@ fn test_enter_maps_to_confirm() {
     let state = active_state();
     let msg = CommandPalette::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CommandPaletteMessage::Confirm));
@@ -64,7 +65,7 @@ fn test_escape_maps_to_dismiss() {
     let state = active_state();
     let msg = CommandPalette::handle_event(
         &state,
-        &Event::key(KeyCode::Esc),
+        &Event::key(Key::Esc),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CommandPaletteMessage::Dismiss));
@@ -75,7 +76,7 @@ fn test_up_maps_to_select_prev() {
     let state = active_state();
     let msg = CommandPalette::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CommandPaletteMessage::SelectPrev));
@@ -86,7 +87,7 @@ fn test_down_maps_to_select_next() {
     let state = active_state();
     let msg = CommandPalette::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CommandPaletteMessage::SelectNext));
@@ -136,15 +137,11 @@ fn test_unfocused_ignores_all_events() {
         None
     );
     assert_eq!(
-        CommandPalette::handle_event(
-            &state,
-            &Event::key(KeyCode::Enter),
-            &EventContext::default()
-        ),
+        CommandPalette::handle_event(&state, &Event::key(Key::Enter), &EventContext::default()),
         None
     );
     assert_eq!(
-        CommandPalette::handle_event(&state, &Event::key(KeyCode::Esc), &EventContext::default()),
+        CommandPalette::handle_event(&state, &Event::key(Key::Esc), &EventContext::default()),
         None
     );
 }
@@ -164,7 +161,7 @@ fn test_disabled_ignores_all_events() {
     assert_eq!(
         CommandPalette::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true).disabled(true)
         ),
         None
@@ -187,7 +184,7 @@ fn test_hidden_ignores_all_events() {
     assert_eq!(
         CommandPalette::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         ),
         None
@@ -199,7 +196,7 @@ fn test_unrecognized_key_returns_none() {
     let state = active_state();
     let msg = CommandPalette::handle_event(
         &state,
-        &Event::key(KeyCode::F(1)),
+        &Event::key(Key::F(1)),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);

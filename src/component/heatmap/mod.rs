@@ -27,7 +27,7 @@ use std::marker::PhantomData;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 mod color;
 pub mod distribution;
@@ -625,12 +625,12 @@ impl Component for Heatmap {
 
         let key = event.as_key()?;
 
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') => Some(HeatmapMessage::SelectUp),
-            KeyCode::Down | KeyCode::Char('j') => Some(HeatmapMessage::SelectDown),
-            KeyCode::Left | KeyCode::Char('h') => Some(HeatmapMessage::SelectLeft),
-            KeyCode::Right | KeyCode::Char('l') => Some(HeatmapMessage::SelectRight),
-            KeyCode::Enter => {
+        match key.key {
+            Key::Up | Key::Char('k') => Some(HeatmapMessage::SelectUp),
+            Key::Down | Key::Char('j') => Some(HeatmapMessage::SelectDown),
+            Key::Left | Key::Char('h') => Some(HeatmapMessage::SelectLeft),
+            Key::Right | Key::Char('l') => Some(HeatmapMessage::SelectRight),
+            Key::Enter => {
                 // Confirm selection -- handled in update to produce CellSelected output
                 if let Some((row, col)) = state.selected() {
                     if let Some(value) = state.get(row, col) {

@@ -1,5 +1,6 @@
 use super::*;
 use crate::component::test_utils;
+use crate::input::Modifiers;
 
 fn focused_state() -> ScrollableTextState {
     ScrollableTextState::new()
@@ -195,7 +196,7 @@ fn test_disabled_ignores_events() {
     let state = focused_state();
     let msg = ScrollableText::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -204,8 +205,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = ScrollableTextState::new();
-    let msg =
-        ScrollableText::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default());
+    let msg = ScrollableText::handle_event(&state, &Event::key(Key::Up), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -219,7 +219,7 @@ fn test_handle_event_up() {
     assert_eq!(
         ScrollableText::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(ScrollableTextMessage::ScrollUp)
@@ -232,7 +232,7 @@ fn test_handle_event_down() {
     assert_eq!(
         ScrollableText::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(ScrollableTextMessage::ScrollDown)
@@ -266,7 +266,7 @@ fn test_handle_event_page_up_down() {
     assert_eq!(
         ScrollableText::handle_event(
             &state,
-            &Event::key(KeyCode::PageUp),
+            &Event::key(Key::PageUp),
             &EventContext::new().focused(true)
         ),
         Some(ScrollableTextMessage::PageUp(10))
@@ -274,7 +274,7 @@ fn test_handle_event_page_up_down() {
     assert_eq!(
         ScrollableText::handle_event(
             &state,
-            &Event::key(KeyCode::PageDown),
+            &Event::key(Key::PageDown),
             &EventContext::new().focused(true)
         ),
         Some(ScrollableTextMessage::PageDown(10))
@@ -308,7 +308,7 @@ fn test_handle_event_home_end() {
     assert_eq!(
         ScrollableText::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(ScrollableTextMessage::Home)
@@ -316,7 +316,7 @@ fn test_handle_event_home_end() {
     assert_eq!(
         ScrollableText::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(ScrollableTextMessage::End)
@@ -338,7 +338,7 @@ fn test_handle_event_g_and_G() {
     assert_eq!(
         ScrollableText::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &Event::key_with(Key::Char('g'), Modifiers::SHIFT),
             &EventContext::new().focused(true)
         ),
         Some(ScrollableTextMessage::End)

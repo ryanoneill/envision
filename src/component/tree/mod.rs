@@ -26,7 +26,7 @@
 //! ```
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 mod render;
@@ -920,13 +920,13 @@ impl<T: Clone + 'static> Component for Tree<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(TreeMessage::Up),
-                KeyCode::Down | KeyCode::Char('j') => Some(TreeMessage::Down),
-                KeyCode::Left | KeyCode::Char('h') => Some(TreeMessage::Collapse),
-                KeyCode::Right | KeyCode::Char('l') => Some(TreeMessage::Expand),
-                KeyCode::Char(' ') => Some(TreeMessage::Toggle),
-                KeyCode::Enter => Some(TreeMessage::Select),
+            match key.key {
+                Key::Up | Key::Char('k') => Some(TreeMessage::Up),
+                Key::Down | Key::Char('j') => Some(TreeMessage::Down),
+                Key::Left | Key::Char('h') => Some(TreeMessage::Collapse),
+                Key::Right | Key::Char('l') => Some(TreeMessage::Expand),
+                Key::Char(' ') => Some(TreeMessage::Toggle),
+                Key::Enter => Some(TreeMessage::Select),
                 _ => None,
             }
         } else {

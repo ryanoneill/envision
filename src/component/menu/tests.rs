@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 #[test]
 fn test_menu_item_new() {
@@ -432,7 +432,7 @@ fn test_handle_event_left_when_focused() {
 
     let msg = Menu::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MenuMessage::Left));
@@ -444,7 +444,7 @@ fn test_handle_event_right_when_focused() {
 
     let msg = Menu::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MenuMessage::Right));
@@ -456,7 +456,7 @@ fn test_handle_event_select_when_focused() {
 
     let msg = Menu::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MenuMessage::Select));
@@ -467,21 +467,13 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
     // Not focused by default
 
-    let msg = Menu::handle_event(
-        &state,
-        &Event::key(KeyCode::Right),
-        &EventContext::default(),
-    );
+    let msg = Menu::handle_event(&state, &Event::key(Key::Right), &EventContext::default());
     assert_eq!(msg, None);
 
-    let msg = Menu::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg = Menu::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, None);
 
-    let msg = Menu::handle_event(&state, &Event::key(KeyCode::Left), &EventContext::default());
+    let msg = Menu::handle_event(&state, &Event::key(Key::Left), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -494,7 +486,7 @@ fn test_dispatch_event() {
     // Dispatch Right: should move selection from 0 to 1
     let output = Menu::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
@@ -503,7 +495,7 @@ fn test_dispatch_event() {
     // Dispatch Enter: should select the current item
     let output = Menu::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(MenuOutput::Selected(1)));
@@ -518,7 +510,7 @@ fn test_instance_methods() {
     // dispatch_event via associated function
     let output = Menu::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(MenuOutput::SelectionChanged(1)));
@@ -532,7 +524,7 @@ fn test_instance_methods() {
     // handle_event via associated function
     let msg = Menu::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MenuMessage::Select));
@@ -570,21 +562,21 @@ fn test_handle_event_ignored_when_disabled() {
 
     let msg = Menu::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Menu::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Menu::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -596,7 +588,7 @@ fn test_dispatch_event_ignored_when_disabled() {
 
     let output = Menu::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(output, None);

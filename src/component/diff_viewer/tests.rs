@@ -1,6 +1,7 @@
 use super::*;
 use crate::component::test_utils;
 use crate::input::Event;
+use crate::input::Modifiers;
 
 fn focused_state() -> DiffViewerState {
     DiffViewerState::new()
@@ -406,7 +407,7 @@ fn test_disabled_ignores_events() {
     let state = focused_state();
     let msg = DiffViewer::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -415,7 +416,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = DiffViewerState::new();
-    let msg = DiffViewer::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default());
+    let msg = DiffViewer::handle_event(&state, &Event::key(Key::Up), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -429,7 +430,7 @@ fn test_handle_event_up() {
     assert_eq!(
         DiffViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(DiffViewerMessage::ScrollUp)
@@ -442,7 +443,7 @@ fn test_handle_event_down() {
     assert_eq!(
         DiffViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(DiffViewerMessage::ScrollDown)
@@ -489,7 +490,7 @@ fn test_handle_event_shift_n_for_prev_hunk() {
     assert_eq!(
         DiffViewer::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('N'), KeyModifiers::SHIFT),
+            &Event::key_with(Key::Char('n'), Modifiers::SHIFT),
             &EventContext::new().focused(true),
         ),
         Some(DiffViewerMessage::PrevHunk)
@@ -515,7 +516,7 @@ fn test_handle_event_page_up_down() {
     assert_eq!(
         DiffViewer::handle_event(
             &state,
-            &Event::key(KeyCode::PageUp),
+            &Event::key(Key::PageUp),
             &EventContext::new().focused(true)
         ),
         Some(DiffViewerMessage::PageUp(10))
@@ -523,7 +524,7 @@ fn test_handle_event_page_up_down() {
     assert_eq!(
         DiffViewer::handle_event(
             &state,
-            &Event::key(KeyCode::PageDown),
+            &Event::key(Key::PageDown),
             &EventContext::new().focused(true)
         ),
         Some(DiffViewerMessage::PageDown(10))
@@ -557,7 +558,7 @@ fn test_handle_event_home_end() {
     assert_eq!(
         DiffViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(DiffViewerMessage::Home)
@@ -565,7 +566,7 @@ fn test_handle_event_home_end() {
     assert_eq!(
         DiffViewer::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(DiffViewerMessage::End)
@@ -587,7 +588,7 @@ fn test_handle_event_g_and_G() {
     assert_eq!(
         DiffViewer::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &Event::key_with(Key::Char('g'), Modifiers::SHIFT),
             &EventContext::new().focused(true),
         ),
         Some(DiffViewerMessage::End)

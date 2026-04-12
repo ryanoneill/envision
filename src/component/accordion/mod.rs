@@ -36,7 +36,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// A single accordion panel with a title and content.
 ///
@@ -739,12 +739,12 @@ impl Component for Accordion {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(AccordionMessage::Up),
-                KeyCode::Down | KeyCode::Char('j') => Some(AccordionMessage::Down),
-                KeyCode::Enter | KeyCode::Char(' ') => Some(AccordionMessage::Toggle),
-                KeyCode::Home => Some(AccordionMessage::First),
-                KeyCode::End => Some(AccordionMessage::Last),
+            match key.key {
+                Key::Up | Key::Char('k') => Some(AccordionMessage::Up),
+                Key::Down | Key::Char('j') => Some(AccordionMessage::Down),
+                Key::Enter | Key::Char(' ') => Some(AccordionMessage::Toggle),
+                Key::Home => Some(AccordionMessage::First),
+                Key::End => Some(AccordionMessage::Last),
                 _ => None,
             }
         } else {

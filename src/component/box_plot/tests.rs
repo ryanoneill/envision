@@ -412,7 +412,7 @@ fn test_handle_event_not_focused() {
     let state = BoxPlotState::default();
     let msg = BoxPlot::handle_event(
         &state,
-        &Event::key(crate::input::KeyCode::Right),
+        &Event::key(crate::input::Key::Right),
         &EventContext::default(),
     );
     assert!(msg.is_none());
@@ -423,7 +423,7 @@ fn test_handle_event_disabled() {
     let state = BoxPlotState::default();
     let msg = BoxPlot::handle_event(
         &state,
-        &Event::key(crate::input::KeyCode::Right),
+        &Event::key(crate::input::Key::Right),
         &EventContext::new().focused(true).disabled(true),
     );
     assert!(msg.is_none());
@@ -437,7 +437,7 @@ fn test_handle_event_right_arrow() {
     ]);
     let msg = BoxPlot::handle_event(
         &state,
-        &Event::key(crate::input::KeyCode::Right),
+        &Event::key(crate::input::Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(BoxPlotMessage::NextDataset));
@@ -451,7 +451,7 @@ fn test_handle_event_left_arrow() {
     ]);
     let msg = BoxPlot::handle_event(
         &state,
-        &Event::key(crate::input::KeyCode::Left),
+        &Event::key(crate::input::Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(BoxPlotMessage::PrevDataset));

@@ -305,7 +305,7 @@ impl App for FileManager {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+        let ctrl = key.modifiers.ctrl();
 
         // Command palette gets priority
         if state.palette.is_visible() {
@@ -314,15 +314,15 @@ impl App for FileManager {
         }
 
         // Global shortcuts
-        match key.code {
-            KeyCode::Char('q') if ctrl => return Some(Msg::Quit),
-            KeyCode::Char('p') if ctrl => return Some(Msg::TogglePalette),
-            KeyCode::Char('h') if ctrl => {
+        match key.key {
+            Key::Char('q') if ctrl => return Some(Msg::Quit),
+            Key::Char('p') if ctrl => return Some(Msg::TogglePalette),
+            Key::Char('h') if ctrl => {
                 return Some(Msg::Palette(CommandPaletteMessage::Confirm));
             }
-            KeyCode::Char('d') if ctrl => return Some(Msg::TogglePreviewMode),
-            KeyCode::Tab => return Some(Msg::FocusToggle),
-            KeyCode::Esc => return Some(Msg::Quit),
+            Key::Char('d') if ctrl => return Some(Msg::TogglePreviewMode),
+            Key::Tab => return Some(Msg::FocusToggle),
+            Key::Esc => return Some(Msg::Quit),
             _ => {}
         }
 

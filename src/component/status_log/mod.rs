@@ -31,7 +31,7 @@ pub use entry::{StatusLogEntry, StatusLogLevel};
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a StatusLog component.
 #[derive(Clone, Debug, PartialEq)]
@@ -696,11 +696,11 @@ impl Component for StatusLog {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(StatusLogMessage::ScrollUp),
-                KeyCode::Down | KeyCode::Char('j') => Some(StatusLogMessage::ScrollDown),
-                KeyCode::Home => Some(StatusLogMessage::ScrollToTop),
-                KeyCode::End => Some(StatusLogMessage::ScrollToBottom),
+            match key.key {
+                Key::Up | Key::Char('k') => Some(StatusLogMessage::ScrollUp),
+                Key::Down | Key::Char('j') => Some(StatusLogMessage::ScrollDown),
+                Key::Home => Some(StatusLogMessage::ScrollToTop),
+                Key::End => Some(StatusLogMessage::ScrollToBottom),
                 _ => None,
             }
         } else {

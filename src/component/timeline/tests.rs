@@ -506,7 +506,7 @@ fn test_left_maps_to_pan_left() {
     assert_eq!(
         Timeline::handle_event(
             &state,
-            &Event::key(KeyCode::Left),
+            &Event::key(Key::Left),
             &EventContext::new().focused(true)
         ),
         Some(TimelineMessage::PanLeft)
@@ -532,7 +532,7 @@ fn test_right_maps_to_pan_right() {
     assert_eq!(
         Timeline::handle_event(
             &state,
-            &Event::key(KeyCode::Right),
+            &Event::key(Key::Right),
             &EventContext::new().focused(true)
         ),
         Some(TimelineMessage::PanRight)
@@ -597,7 +597,7 @@ fn test_up_maps_to_select_prev() {
     assert_eq!(
         Timeline::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(TimelineMessage::SelectPrev)
@@ -623,7 +623,7 @@ fn test_down_maps_to_select_next() {
     assert_eq!(
         Timeline::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(TimelineMessage::SelectNext)
@@ -649,7 +649,7 @@ fn test_home_maps_to_fit_all() {
     assert_eq!(
         Timeline::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(TimelineMessage::FitAll)
@@ -665,7 +665,7 @@ fn test_disabled_ignores_events() {
     let state = focused_timeline();
     let msg = Timeline::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -676,7 +676,7 @@ fn test_unfocused_ignores_events() {
     let state = TimelineState::new()
         .with_events(sample_events())
         .with_spans(sample_spans());
-    let msg = Timeline::handle_event(&state, &Event::key(KeyCode::Left), &EventContext::default());
+    let msg = Timeline::handle_event(&state, &Event::key(Key::Left), &EventContext::default());
     assert_eq!(msg, None);
 }
 #[test]

@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::KeyCode;
+use crate::input::{Key, Modifiers};
 
 fn sample_items() -> Vec<String> {
     vec![
@@ -20,7 +20,7 @@ fn test_tab_maps_to_toggle_focus() {
     let state = focused_state();
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::ToggleFocus));
@@ -31,7 +31,7 @@ fn test_backtab_maps_to_toggle_focus() {
     let state = focused_state();
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::BackTab),
+        &Event::key_with(Key::Tab, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::ToggleFocus));
@@ -42,7 +42,7 @@ fn test_esc_maps_to_filter_clear() {
     let state = focused_state();
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::Esc),
+        &Event::key(Key::Esc),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::FilterClear));
@@ -66,7 +66,7 @@ fn test_enter_in_filter_mode_maps_to_toggle_focus() {
     assert!(state.is_filter_focused());
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::ToggleFocus));
@@ -77,7 +77,7 @@ fn test_backspace_in_filter_mode_maps_to_filter_backspace() {
     let state = focused_state();
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::Backspace),
+        &Event::key(Key::Backspace),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::FilterBackspace));
@@ -113,14 +113,14 @@ fn test_arrow_keys_in_list_mode() {
 
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::Up));
 
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::Down));
@@ -153,14 +153,14 @@ fn test_home_end_in_list_mode() {
 
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::First));
 
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::Last));
@@ -193,14 +193,14 @@ fn test_page_keys_in_list_mode() {
 
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::PageUp),
+        &Event::key(Key::PageUp),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::PageUp(10)));
 
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::PageDown),
+        &Event::key(Key::PageDown),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::PageDown(10)));
@@ -213,7 +213,7 @@ fn test_enter_in_list_mode_maps_to_select() {
 
     let msg = SearchableList::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SearchableListMessage::Select));

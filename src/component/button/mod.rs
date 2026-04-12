@@ -24,7 +24,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a Button.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -183,8 +183,8 @@ impl Component for Button {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Enter | KeyCode::Char(' ') => Some(ButtonMessage::Press),
+            match key.key {
+                Key::Enter | Key::Char(' ') => Some(ButtonMessage::Press),
                 _ => None,
             }
         } else {

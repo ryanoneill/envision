@@ -89,7 +89,7 @@ impl App for TreemapApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if let KeyCode::Char('q') = key.code {
+            if let Key::Char('q') = key.key {
                 return Some(Msg::Quit);
             }
         }
@@ -117,21 +117,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}\n", vt.display());
 
     // Navigate to next sibling.
-    vt.send(Event::key(KeyCode::Right));
+    vt.send(Event::key(Key::Right));
     vt.tick()?;
     println!("After selecting next sibling:");
     println!("{}\n", vt.display());
 
     // Zoom into first node (src).
-    vt.send(Event::key(KeyCode::Left));
+    vt.send(Event::key(Key::Left));
     vt.tick()?;
-    vt.send(Event::key(KeyCode::Enter));
+    vt.send(Event::key(Key::Enter));
     vt.tick()?;
     println!("After zooming into 'src':");
     println!("{}\n", vt.display());
 
     // Zoom out.
-    vt.send(Event::key(KeyCode::Esc));
+    vt.send(Event::key(Key::Esc));
     vt.tick()?;
     println!("After zooming out:");
     println!("{}\n", vt.display());

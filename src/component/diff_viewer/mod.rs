@@ -38,7 +38,7 @@ pub mod parser;
 mod render;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 /// Display mode for the diff.
@@ -756,24 +756,24 @@ impl Component for DiffViewer {
         }
 
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+        let ctrl = key.modifiers.ctrl();
+        let shift = key.modifiers.shift();
 
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') if !ctrl => Some(DiffViewerMessage::ScrollUp),
-            KeyCode::Down | KeyCode::Char('j') if !ctrl => Some(DiffViewerMessage::ScrollDown),
-            KeyCode::Char('n') if !shift && !ctrl => Some(DiffViewerMessage::NextHunk),
-            KeyCode::Char('N') if shift => Some(DiffViewerMessage::PrevHunk),
-            KeyCode::Char('p') if !ctrl => Some(DiffViewerMessage::PrevHunk),
-            KeyCode::PageUp => Some(DiffViewerMessage::PageUp(10)),
-            KeyCode::PageDown => Some(DiffViewerMessage::PageDown(10)),
-            KeyCode::Char('u') if ctrl => Some(DiffViewerMessage::PageUp(10)),
-            KeyCode::Char('d') if ctrl => Some(DiffViewerMessage::PageDown(10)),
-            KeyCode::Home | KeyCode::Char('g') if !shift => Some(DiffViewerMessage::Home),
-            KeyCode::End | KeyCode::Char('G') if shift || key.code == KeyCode::End => {
+        match key.key {
+            Key::Up | Key::Char('k') if !ctrl => Some(DiffViewerMessage::ScrollUp),
+            Key::Down | Key::Char('j') if !ctrl => Some(DiffViewerMessage::ScrollDown),
+            Key::Char('n') if !shift && !ctrl => Some(DiffViewerMessage::NextHunk),
+            Key::Char('n') if key.modifiers.shift() => Some(DiffViewerMessage::PrevHunk),
+            Key::Char('p') if !ctrl => Some(DiffViewerMessage::PrevHunk),
+            Key::PageUp => Some(DiffViewerMessage::PageUp(10)),
+            Key::PageDown => Some(DiffViewerMessage::PageDown(10)),
+            Key::Char('u') if ctrl => Some(DiffViewerMessage::PageUp(10)),
+            Key::Char('d') if ctrl => Some(DiffViewerMessage::PageDown(10)),
+            Key::Home | Key::Char('g') if !shift => Some(DiffViewerMessage::Home),
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
                 Some(DiffViewerMessage::End)
             }
-            KeyCode::Char('m') if !ctrl => Some(DiffViewerMessage::ToggleMode),
+            Key::Char('m') if !ctrl => Some(DiffViewerMessage::ToggleMode),
             _ => None,
         }
     }

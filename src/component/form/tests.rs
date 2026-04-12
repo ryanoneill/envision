@@ -1,5 +1,6 @@
 use super::*;
 use crate::component::test_utils;
+use crate::input::Modifiers;
 
 fn sample_form() -> FormState {
     FormState::new(vec![
@@ -380,7 +381,7 @@ fn test_tab_maps_to_focus_next() {
     let state = focused_form();
     let msg = Form::handle_event(
         &state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::FocusNext));
@@ -391,7 +392,7 @@ fn test_backtab_maps_to_focus_prev() {
     let state = focused_form();
     let msg = Form::handle_event(
         &state,
-        &Event::key(KeyCode::BackTab),
+        &Event::key_with(Key::Tab, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::FocusPrev));
@@ -408,7 +409,7 @@ fn test_ctrl_enter_maps_to_submit() {
     // Ctrl+Enter on terminal may send ctrl('\n'). Test via explicit key_with.
     let msg = Form::handle_event(
         &state,
-        &Event::key_with(KeyCode::Enter, crate::input::KeyModifiers::CONTROL),
+        &Event::key_with(Key::Enter, crate::input::Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::Submit));
@@ -430,7 +431,7 @@ fn test_backspace_in_text_field_maps() {
     let state = focused_form();
     let msg = Form::handle_event(
         &state,
-        &Event::key(KeyCode::Backspace),
+        &Event::key(Key::Backspace),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::Backspace));
@@ -454,7 +455,7 @@ fn test_enter_in_checkbox_maps_to_toggle() {
     Form::update(&mut state, FormMessage::FocusNext);
     let msg = Form::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::Toggle));
@@ -467,7 +468,7 @@ fn test_enter_in_closed_select_maps_to_toggle() {
     Form::update(&mut state, FormMessage::FocusNext);
     let msg = Form::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::Toggle));
@@ -482,21 +483,21 @@ fn test_arrow_keys_in_open_select() {
 
     let msg = Form::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::SelectDown));
 
     let msg = Form::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::SelectUp));
 
     let msg = Form::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::SelectConfirm));
@@ -511,7 +512,7 @@ fn test_esc_in_open_select_maps_to_toggle() {
 
     let msg = Form::handle_event(
         &state,
-        &Event::key(KeyCode::Esc),
+        &Event::key(Key::Esc),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FormMessage::Toggle));

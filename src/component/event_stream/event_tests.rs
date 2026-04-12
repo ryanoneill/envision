@@ -66,7 +66,7 @@ fn test_list_mode_up_key() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::ScrollUp)
@@ -87,7 +87,7 @@ fn test_list_mode_down_key() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::ScrollDown)
@@ -108,7 +108,7 @@ fn test_list_mode_home_g() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::ScrollToTop)
@@ -129,7 +129,7 @@ fn test_list_mode_end_shift_g() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::ScrollToBottom)
@@ -240,7 +240,7 @@ fn test_search_mode_esc() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::Esc),
+            &Event::key(Key::Esc),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::ClearSearch)
@@ -254,7 +254,7 @@ fn test_search_mode_enter() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::FocusList)
@@ -268,7 +268,7 @@ fn test_search_mode_backspace() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::Backspace),
+            &Event::key(Key::Backspace),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchBackspace)
@@ -282,7 +282,7 @@ fn test_search_mode_delete() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::Delete),
+            &Event::key(Key::Delete),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchDelete)
@@ -296,7 +296,7 @@ fn test_search_mode_left_right() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::Left),
+            &Event::key(Key::Left),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchLeft)
@@ -304,7 +304,7 @@ fn test_search_mode_left_right() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::Right),
+            &Event::key(Key::Right),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchRight)
@@ -318,7 +318,7 @@ fn test_search_mode_home_end() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchHome)
@@ -326,7 +326,7 @@ fn test_search_mode_home_end() {
     assert_eq!(
         EventStream::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(EventStreamMessage::SearchEnd)

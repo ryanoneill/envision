@@ -31,7 +31,7 @@ use std::marker::PhantomData;
 use ratatui::widgets::{List, ListItem};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a RadioGroup.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -335,10 +335,10 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(RadioGroupMessage::Up),
-                KeyCode::Down | KeyCode::Char('j') => Some(RadioGroupMessage::Down),
-                KeyCode::Enter => Some(RadioGroupMessage::Confirm),
+            match key.key {
+                Key::Up | Key::Char('k') => Some(RadioGroupMessage::Up),
+                Key::Down | Key::Char('j') => Some(RadioGroupMessage::Down),
+                Key::Enter => Some(RadioGroupMessage::Confirm),
                 _ => None,
             }
         } else {

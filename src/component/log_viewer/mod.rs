@@ -46,7 +46,7 @@ use super::{
     Component, EventContext, InputFieldMessage, InputFieldState, RenderContext, StatusLogEntry,
     StatusLogLevel,
 };
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 
 pub use state::LogViewerState;
 
@@ -200,26 +200,26 @@ impl Component for LogViewer {
         let key = event.as_key()?;
 
         match state.focus {
-            Focus::Log => match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(LogViewerMessage::ScrollUp),
-                KeyCode::Down | KeyCode::Char('j') => Some(LogViewerMessage::ScrollDown),
-                KeyCode::Home => Some(LogViewerMessage::ScrollToTop),
-                KeyCode::End => Some(LogViewerMessage::ScrollToBottom),
-                KeyCode::Char('/') => Some(LogViewerMessage::FocusSearch),
-                KeyCode::Char('f') => Some(LogViewerMessage::ToggleFollow),
-                KeyCode::Char('1') => Some(LogViewerMessage::ToggleInfo),
-                KeyCode::Char('2') => Some(LogViewerMessage::ToggleSuccess),
-                KeyCode::Char('3') => Some(LogViewerMessage::ToggleWarning),
-                KeyCode::Char('4') => Some(LogViewerMessage::ToggleError),
+            Focus::Log => match key.key {
+                Key::Up | Key::Char('k') => Some(LogViewerMessage::ScrollUp),
+                Key::Down | Key::Char('j') => Some(LogViewerMessage::ScrollDown),
+                Key::Home => Some(LogViewerMessage::ScrollToTop),
+                Key::End => Some(LogViewerMessage::ScrollToBottom),
+                Key::Char('/') => Some(LogViewerMessage::FocusSearch),
+                Key::Char('f') => Some(LogViewerMessage::ToggleFollow),
+                Key::Char('1') => Some(LogViewerMessage::ToggleInfo),
+                Key::Char('2') => Some(LogViewerMessage::ToggleSuccess),
+                Key::Char('3') => Some(LogViewerMessage::ToggleWarning),
+                Key::Char('4') => Some(LogViewerMessage::ToggleError),
                 _ => None,
             },
-            Focus::Search => match key.code {
-                KeyCode::Esc => Some(LogViewerMessage::ClearSearch),
-                KeyCode::Enter => Some(LogViewerMessage::ConfirmSearch),
-                KeyCode::Up => Some(LogViewerMessage::SearchHistoryUp),
-                KeyCode::Down => Some(LogViewerMessage::SearchHistoryDown),
-                KeyCode::Char(c) => {
-                    if key.modifiers.contains(KeyModifiers::CONTROL) {
+            Focus::Search => match key.key {
+                Key::Esc => Some(LogViewerMessage::ClearSearch),
+                Key::Enter => Some(LogViewerMessage::ConfirmSearch),
+                Key::Up => Some(LogViewerMessage::SearchHistoryUp),
+                Key::Down => Some(LogViewerMessage::SearchHistoryDown),
+                Key::Char(c) => {
+                    if key.modifiers.ctrl() {
                         match c {
                             'r' => Some(LogViewerMessage::ToggleRegex),
                             _ => None,
@@ -228,12 +228,12 @@ impl Component for LogViewer {
                         Some(LogViewerMessage::SearchInput(c))
                     }
                 }
-                KeyCode::Backspace => Some(LogViewerMessage::SearchBackspace),
-                KeyCode::Delete => Some(LogViewerMessage::SearchDelete),
-                KeyCode::Left => Some(LogViewerMessage::SearchLeft),
-                KeyCode::Right => Some(LogViewerMessage::SearchRight),
-                KeyCode::Home => Some(LogViewerMessage::SearchHome),
-                KeyCode::End => Some(LogViewerMessage::SearchEnd),
+                Key::Backspace => Some(LogViewerMessage::SearchBackspace),
+                Key::Delete => Some(LogViewerMessage::SearchDelete),
+                Key::Left => Some(LogViewerMessage::SearchLeft),
+                Key::Right => Some(LogViewerMessage::SearchRight),
+                Key::Home => Some(LogViewerMessage::SearchHome),
+                Key::End => Some(LogViewerMessage::SearchEnd),
                 _ => None,
             },
         }

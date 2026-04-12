@@ -252,8 +252,8 @@ impl App for ProcessorApp {
 
     fn handle_event_with_state(state: &Self::State, event: &Event) -> Option<Self::Message> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => {
+            match key.key {
+                Key::Char('q') | Key::Esc => {
                     return Some(ProcessorMsg::Quit);
                 }
                 _ => {}

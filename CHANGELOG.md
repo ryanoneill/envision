@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking
 
+- **Crossterm event types replaced with envision-owned types.**
+  `KeyCode` is now `Key`, `KeyModifiers` is now `Modifiers`, and
+  `KeyEvent`/`MouseEvent` are envision-defined structs. Letter keys
+  are normalized to lowercase; use `raw_char` for text input.
+  `BackTab` is replaced by `Tab` with `modifiers.shift()`.
+  See MIGRATION.md for the upgrade path.
+- **`TerminalEventSubscription` handler now receives `Event`**
+  instead of `crossterm::event::Event`. The subscription converts
+  crossterm events internally before invoking the handler.
 - **`Component::view` signature changed** from
   `(state, frame, area, theme, ctx)` to `(state, ctx)`. The new
   `ctx: &mut RenderContext<'_, '_>` bundles `frame`, `area`, `theme`,

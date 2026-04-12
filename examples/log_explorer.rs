@@ -342,16 +342,16 @@ impl App for LogExplorer {
         }
 
         // Global shortcuts (always active)
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-        match key.code {
-            KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
-            KeyCode::Tab => return Some(Msg::FocusNext),
-            KeyCode::Char('p') if ctrl => return Some(Msg::TogglePalette),
-            KeyCode::Char('l') if ctrl => return Some(Msg::ClearAll),
-            KeyCode::Char('1') => {
+        let ctrl = key.modifiers.ctrl();
+        match key.key {
+            Key::Char('q') | Key::Esc => return Some(Msg::Quit),
+            Key::Tab => return Some(Msg::FocusNext),
+            Key::Char('p') if ctrl => return Some(Msg::TogglePalette),
+            Key::Char('l') if ctrl => return Some(Msg::ClearAll),
+            Key::Char('1') => {
                 return Some(Msg::Log(LogViewerMessage::ScrollToTop));
             }
-            KeyCode::Char('2') => {
+            Key::Char('2') => {
                 return Some(Msg::Event(EventStreamMessage::ScrollToTop));
             }
             _ => {}
@@ -374,11 +374,11 @@ impl App for LogExplorer {
         }
 
         // SplitPanel resize (Shift+Left/Right)
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+        let shift = key.modifiers.shift();
         if shift {
-            match key.code {
-                KeyCode::Left => return Some(Msg::Split(SplitPanelMessage::ShrinkFirst)),
-                KeyCode::Right => return Some(Msg::Split(SplitPanelMessage::GrowFirst)),
+            match key.key {
+                Key::Left => return Some(Msg::Split(SplitPanelMessage::ShrinkFirst)),
+                Key::Right => return Some(Msg::Split(SplitPanelMessage::GrowFirst)),
                 _ => {}
             }
         }

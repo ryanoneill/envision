@@ -155,7 +155,7 @@ fn test_disabled_ignores_events() {
     let state = focused_state();
     let msg = LogViewer::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -168,6 +168,6 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = sample_state();
-    let msg = LogViewer::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
+    let msg = LogViewer::handle_event(&state, &Event::key(Key::Down), &EventContext::default());
     assert_eq!(msg, None);
 }

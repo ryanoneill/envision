@@ -260,18 +260,18 @@ impl App for ThemedApp {
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {
-        use crossterm::event::KeyCode;
+        use envision::input::Key;
 
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('t') | KeyCode::Char('T') => Some(Msg::ToggleTheme),
-                KeyCode::Char(' ') => Some(Msg::CheckboxToggled),
-                KeyCode::Char('+') | KeyCode::Char('=') => Some(Msg::IncreaseProgress),
-                KeyCode::Char('-') => Some(Msg::DecreaseProgress),
-                KeyCode::Up | KeyCode::Char('k') => Some(Msg::PrevItem),
-                KeyCode::Down | KeyCode::Char('j') => Some(Msg::NextItem),
-                KeyCode::Enter => Some(Msg::ButtonPressed),
-                KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => Some(Msg::Quit),
+            match key.key {
+                Key::Char('t') => Some(Msg::ToggleTheme),
+                Key::Char(' ') => Some(Msg::CheckboxToggled),
+                Key::Char('+') | Key::Char('=') => Some(Msg::IncreaseProgress),
+                Key::Char('-') => Some(Msg::DecreaseProgress),
+                Key::Up | Key::Char('k') => Some(Msg::PrevItem),
+                Key::Down | Key::Char('j') => Some(Msg::NextItem),
+                Key::Enter => Some(Msg::ButtonPressed),
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
                 _ => None,
             }
         } else {

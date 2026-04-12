@@ -37,7 +37,7 @@ mod types;
 use std::marker::PhantomData;
 
 use super::{Component, EventContext, InputFieldMessage, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 
 pub use state::EventStreamState;
 pub use types::{EventLevel, StreamEvent};
@@ -174,37 +174,37 @@ impl Component for EventStream {
         let key = event.as_key()?;
 
         match state.focus {
-            Focus::List => match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(EventStreamMessage::ScrollUp),
-                KeyCode::Down | KeyCode::Char('j') => Some(EventStreamMessage::ScrollDown),
-                KeyCode::Home | KeyCode::Char('g') => Some(EventStreamMessage::ScrollToTop),
-                KeyCode::End => Some(EventStreamMessage::ScrollToBottom),
-                KeyCode::Char('G') => Some(EventStreamMessage::ScrollToBottom),
-                KeyCode::Char('/') => Some(EventStreamMessage::FocusSearch),
-                KeyCode::Char('1') => Some(EventStreamMessage::QuickLevelFilter(1)),
-                KeyCode::Char('2') => Some(EventStreamMessage::QuickLevelFilter(2)),
-                KeyCode::Char('3') => Some(EventStreamMessage::QuickLevelFilter(3)),
-                KeyCode::Char('4') => Some(EventStreamMessage::QuickLevelFilter(4)),
-                KeyCode::Char('5') => Some(EventStreamMessage::QuickLevelFilter(5)),
-                KeyCode::Char('f') => Some(EventStreamMessage::ToggleAutoScroll),
+            Focus::List => match key.key {
+                Key::Up | Key::Char('k') => Some(EventStreamMessage::ScrollUp),
+                Key::Down | Key::Char('j') => Some(EventStreamMessage::ScrollDown),
+                Key::Char('g') if key.modifiers.shift() => Some(EventStreamMessage::ScrollToBottom),
+                Key::Home | Key::Char('g') => Some(EventStreamMessage::ScrollToTop),
+                Key::End => Some(EventStreamMessage::ScrollToBottom),
+                Key::Char('/') => Some(EventStreamMessage::FocusSearch),
+                Key::Char('1') => Some(EventStreamMessage::QuickLevelFilter(1)),
+                Key::Char('2') => Some(EventStreamMessage::QuickLevelFilter(2)),
+                Key::Char('3') => Some(EventStreamMessage::QuickLevelFilter(3)),
+                Key::Char('4') => Some(EventStreamMessage::QuickLevelFilter(4)),
+                Key::Char('5') => Some(EventStreamMessage::QuickLevelFilter(5)),
+                Key::Char('f') => Some(EventStreamMessage::ToggleAutoScroll),
                 _ => None,
             },
-            Focus::Search => match key.code {
-                KeyCode::Esc => Some(EventStreamMessage::ClearSearch),
-                KeyCode::Enter => Some(EventStreamMessage::FocusList),
-                KeyCode::Char(c) => {
-                    if key.modifiers.contains(KeyModifiers::CONTROL) {
+            Focus::Search => match key.key {
+                Key::Esc => Some(EventStreamMessage::ClearSearch),
+                Key::Enter => Some(EventStreamMessage::FocusList),
+                Key::Char(c) => {
+                    if key.modifiers.ctrl() {
                         None
                     } else {
                         Some(EventStreamMessage::SearchInput(c))
                     }
                 }
-                KeyCode::Backspace => Some(EventStreamMessage::SearchBackspace),
-                KeyCode::Delete => Some(EventStreamMessage::SearchDelete),
-                KeyCode::Left => Some(EventStreamMessage::SearchLeft),
-                KeyCode::Right => Some(EventStreamMessage::SearchRight),
-                KeyCode::Home => Some(EventStreamMessage::SearchHome),
-                KeyCode::End => Some(EventStreamMessage::SearchEnd),
+                Key::Backspace => Some(EventStreamMessage::SearchBackspace),
+                Key::Delete => Some(EventStreamMessage::SearchDelete),
+                Key::Left => Some(EventStreamMessage::SearchLeft),
+                Key::Right => Some(EventStreamMessage::SearchRight),
+                Key::Home => Some(EventStreamMessage::SearchHome),
+                Key::End => Some(EventStreamMessage::SearchEnd),
                 _ => None,
             },
         }

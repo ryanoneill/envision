@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key, Modifiers};
 
 // ---- handle_event ----
 
@@ -40,7 +40,7 @@ fn test_handle_event_char() {
 #[test]
 fn test_handle_event_enter() {
     let state = LineInputState::new();
-    let event = Event::key(KeyCode::Enter);
+    let event = Event::key(Key::Enter);
     assert_eq!(
         LineInput::handle_event(&state, &event, &EventContext::new().focused(true)),
         Some(LineInputMessage::Submit)
@@ -50,7 +50,7 @@ fn test_handle_event_enter() {
 #[test]
 fn test_handle_event_backspace() {
     let state = LineInputState::new();
-    let event = Event::key(KeyCode::Backspace);
+    let event = Event::key(Key::Backspace);
     assert_eq!(
         LineInput::handle_event(&state, &event, &EventContext::new().focused(true)),
         Some(LineInputMessage::Backspace)
@@ -60,7 +60,7 @@ fn test_handle_event_backspace() {
 #[test]
 fn test_handle_event_delete() {
     let state = LineInputState::new();
-    let event = Event::key(KeyCode::Delete);
+    let event = Event::key(Key::Delete);
     assert_eq!(
         LineInput::handle_event(&state, &event, &EventContext::new().focused(true)),
         Some(LineInputMessage::Delete)
@@ -72,19 +72,19 @@ fn test_handle_event_arrows() {
     let state = LineInputState::new();
     let ctx = EventContext::new().focused(true);
     assert_eq!(
-        LineInput::handle_event(&state, &Event::key(KeyCode::Left), &ctx),
+        LineInput::handle_event(&state, &Event::key(Key::Left), &ctx),
         Some(LineInputMessage::Left)
     );
     assert_eq!(
-        LineInput::handle_event(&state, &Event::key(KeyCode::Right), &ctx),
+        LineInput::handle_event(&state, &Event::key(Key::Right), &ctx),
         Some(LineInputMessage::Right)
     );
     assert_eq!(
-        LineInput::handle_event(&state, &Event::key(KeyCode::Home), &ctx),
+        LineInput::handle_event(&state, &Event::key(Key::Home), &ctx),
         Some(LineInputMessage::Home)
     );
     assert_eq!(
-        LineInput::handle_event(&state, &Event::key(KeyCode::End), &ctx),
+        LineInput::handle_event(&state, &Event::key(Key::End), &ctx),
         Some(LineInputMessage::End)
     );
 }
@@ -124,35 +124,19 @@ fn test_handle_event_shift_arrows() {
     let state = LineInputState::new();
     let ctx = EventContext::new().focused(true);
     assert_eq!(
-        LineInput::handle_event(
-            &state,
-            &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT),
-            &ctx
-        ),
+        LineInput::handle_event(&state, &Event::key_with(Key::Left, Modifiers::SHIFT), &ctx),
         Some(LineInputMessage::SelectLeft)
     );
     assert_eq!(
-        LineInput::handle_event(
-            &state,
-            &Event::key_with(KeyCode::Right, KeyModifiers::SHIFT),
-            &ctx
-        ),
+        LineInput::handle_event(&state, &Event::key_with(Key::Right, Modifiers::SHIFT), &ctx),
         Some(LineInputMessage::SelectRight)
     );
     assert_eq!(
-        LineInput::handle_event(
-            &state,
-            &Event::key_with(KeyCode::Home, KeyModifiers::SHIFT),
-            &ctx
-        ),
+        LineInput::handle_event(&state, &Event::key_with(Key::Home, Modifiers::SHIFT), &ctx),
         Some(LineInputMessage::SelectHome)
     );
     assert_eq!(
-        LineInput::handle_event(
-            &state,
-            &Event::key_with(KeyCode::End, KeyModifiers::SHIFT),
-            &ctx
-        ),
+        LineInput::handle_event(&state, &Event::key_with(Key::End, Modifiers::SHIFT), &ctx),
         Some(LineInputMessage::SelectEnd)
     );
 }
@@ -164,7 +148,7 @@ fn test_handle_event_ctrl_arrows() {
     assert_eq!(
         LineInput::handle_event(
             &state,
-            &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+            &Event::key_with(Key::Left, Modifiers::CONTROL),
             &ctx
         ),
         Some(LineInputMessage::WordLeft)
@@ -172,7 +156,7 @@ fn test_handle_event_ctrl_arrows() {
     assert_eq!(
         LineInput::handle_event(
             &state,
-            &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+            &Event::key_with(Key::Right, Modifiers::CONTROL),
             &ctx
         ),
         Some(LineInputMessage::WordRight)
@@ -183,13 +167,13 @@ fn test_handle_event_ctrl_arrows() {
 fn test_handle_event_ctrl_shift_arrows() {
     let state = LineInputState::new();
     let ctx = EventContext::new().focused(true);
-    let mods = KeyModifiers::CONTROL | KeyModifiers::SHIFT;
+    let mods = Modifiers::CONTROL | Modifiers::SHIFT;
     assert_eq!(
-        LineInput::handle_event(&state, &Event::key_with(KeyCode::Left, mods), &ctx),
+        LineInput::handle_event(&state, &Event::key_with(Key::Left, mods), &ctx),
         Some(LineInputMessage::SelectWordLeft)
     );
     assert_eq!(
-        LineInput::handle_event(&state, &Event::key_with(KeyCode::Right, mods), &ctx),
+        LineInput::handle_event(&state, &Event::key_with(Key::Right, mods), &ctx),
         Some(LineInputMessage::SelectWordRight)
     );
 }
@@ -201,7 +185,7 @@ fn test_handle_event_ctrl_backspace() {
     assert_eq!(
         LineInput::handle_event(
             &state,
-            &Event::key_with(KeyCode::Backspace, KeyModifiers::CONTROL),
+            &Event::key_with(Key::Backspace, Modifiers::CONTROL),
             &ctx
         ),
         Some(LineInputMessage::DeleteWordBack)
@@ -215,7 +199,7 @@ fn test_handle_event_ctrl_delete() {
     assert_eq!(
         LineInput::handle_event(
             &state,
-            &Event::key_with(KeyCode::Delete, KeyModifiers::CONTROL),
+            &Event::key_with(Key::Delete, Modifiers::CONTROL),
             &ctx
         ),
         Some(LineInputMessage::DeleteWordForward)
@@ -231,7 +215,7 @@ fn test_up_on_first_row_is_history_prev() {
     let ctx = EventContext::new().focused(true);
     // Single row -> cursor on row 0 -> Up = HistoryPrev
     assert_eq!(
-        LineInput::handle_event(&state, &Event::key(KeyCode::Up), &ctx),
+        LineInput::handle_event(&state, &Event::key(Key::Up), &ctx),
         Some(LineInputMessage::HistoryPrev)
     );
 }
@@ -243,7 +227,7 @@ fn test_up_on_second_row_is_visual_up() {
     let ctx = EventContext::new().focused(true);
     // "hello" | " worl" | "d!" -> cursor at end (row 2)
     assert_eq!(
-        LineInput::handle_event(&state, &Event::key(KeyCode::Up), &ctx),
+        LineInput::handle_event(&state, &Event::key(Key::Up), &ctx),
         Some(LineInputMessage::VisualUp)
     );
 }
@@ -255,7 +239,7 @@ fn test_down_on_last_row_is_history_next() {
     let ctx = EventContext::new().focused(true);
     // Single row -> cursor on last row -> Down = HistoryNext
     assert_eq!(
-        LineInput::handle_event(&state, &Event::key(KeyCode::Down), &ctx),
+        LineInput::handle_event(&state, &Event::key(Key::Down), &ctx),
         Some(LineInputMessage::HistoryNext)
     );
 }
@@ -268,7 +252,7 @@ fn test_down_on_first_row_is_visual_down() {
     let ctx = EventContext::new().focused(true);
     // cursor at row 0, multiple rows -> Down = VisualDown
     assert_eq!(
-        LineInput::handle_event(&state, &Event::key(KeyCode::Down), &ctx),
+        LineInput::handle_event(&state, &Event::key(Key::Down), &ctx),
         Some(LineInputMessage::VisualDown)
     );
 }

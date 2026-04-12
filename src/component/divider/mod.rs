@@ -322,11 +322,10 @@ impl DividerState {
     ///
     /// ```rust
     /// use envision::component::DividerState;
-    /// use envision::input::Event;
-    /// use ratatui::crossterm::event::KeyCode;
+    /// use envision::input::{Event, Key};
     ///
     /// let state = DividerState::new();
-    /// assert!(state.handle_event(&Event::key(KeyCode::Enter)).is_none());
+    /// assert!(state.handle_event(&Event::key(Key::Enter)).is_none());
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<DividerMessage> {
         Divider::handle_event(self, event, &EventContext::default())
@@ -341,11 +340,10 @@ impl DividerState {
     ///
     /// ```rust
     /// use envision::component::DividerState;
-    /// use envision::input::Event;
-    /// use ratatui::crossterm::event::KeyCode;
+    /// use envision::input::{Event, Key};
     ///
     /// let mut state = DividerState::new();
-    /// assert!(state.dispatch_event(&Event::key(KeyCode::Enter)).is_none());
+    /// assert!(state.dispatch_event(&Event::key(Key::Enter)).is_none());
     /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
         Divider::dispatch_event(self, event, &EventContext::default())

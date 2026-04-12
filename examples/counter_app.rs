@@ -149,14 +149,14 @@ impl App for CounterApp {
 
     /// Handle terminal events
     fn handle_event(event: &Event) -> Option<Msg> {
-        use crossterm::event::KeyCode;
+        use envision::input::Key;
 
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('+') | KeyCode::Up => Some(Msg::Increment),
-                KeyCode::Char('-') | KeyCode::Down => Some(Msg::Decrement),
-                KeyCode::Char('r') | KeyCode::Char('R') => Some(Msg::Reset),
-                KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => Some(Msg::Quit),
+            match key.key {
+                Key::Char('+') | Key::Up => Some(Msg::Increment),
+                Key::Char('-') | Key::Down => Some(Msg::Decrement),
+                Key::Char('r') => Some(Msg::Reset),
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
                 _ => None,
             }
         } else {

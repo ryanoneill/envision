@@ -743,17 +743,17 @@ fn test_unicode_cell_content() {
 
 mod handle_event_tests {
     use super::*;
-    use crate::input::{Event, KeyCode};
+    use crate::input::{Event, Key};
 
     #[test]
     fn test_key_bindings_when_focused() {
         let state = TableState::new(test_rows(), test_columns());
         let he = |e| Table::<TestRow>::handle_event(&state, &e, &EventContext::new().focused(true));
-        assert_eq!(he(Event::key(KeyCode::Up)), Some(TableMessage::Up));
-        assert_eq!(he(Event::key(KeyCode::Down)), Some(TableMessage::Down));
-        assert_eq!(he(Event::key(KeyCode::Home)), Some(TableMessage::First));
-        assert_eq!(he(Event::key(KeyCode::End)), Some(TableMessage::Last));
-        assert_eq!(he(Event::key(KeyCode::Enter)), Some(TableMessage::Select));
+        assert_eq!(he(Event::key(Key::Up)), Some(TableMessage::Up));
+        assert_eq!(he(Event::key(Key::Down)), Some(TableMessage::Down));
+        assert_eq!(he(Event::key(Key::Home)), Some(TableMessage::First));
+        assert_eq!(he(Event::key(Key::End)), Some(TableMessage::Last));
+        assert_eq!(he(Event::key(Key::Enter)), Some(TableMessage::Select));
         assert_eq!(he(Event::char('k')), Some(TableMessage::Up));
         assert_eq!(he(Event::char('j')), Some(TableMessage::Down));
     }
@@ -764,7 +764,7 @@ mod handle_event_tests {
         assert_eq!(
             Table::<TestRow>::handle_event(
                 &state,
-                &Event::key(KeyCode::Down),
+                &Event::key(Key::Down),
                 &EventContext::default()
             ),
             None
@@ -772,7 +772,7 @@ mod handle_event_tests {
         assert_eq!(
             Table::<TestRow>::handle_event(
                 &state,
-                &Event::key(KeyCode::Enter),
+                &Event::key(Key::Enter),
                 &EventContext::default()
             ),
             None
@@ -785,7 +785,7 @@ mod handle_event_tests {
         assert_eq!(
             Table::<TestRow>::handle_event(
                 &state,
-                &Event::key(KeyCode::Down),
+                &Event::key(Key::Down),
                 &EventContext::new().focused(true).disabled(true)
             ),
             None
@@ -797,7 +797,7 @@ mod handle_event_tests {
         let mut state = TableState::new(test_rows(), test_columns());
         let output = Table::<TestRow>::dispatch_event(
             &mut state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true),
         );
         assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
@@ -810,7 +810,7 @@ mod handle_event_tests {
 
         let output = Table::<TestRow>::dispatch_event(
             &mut state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true),
         );
         assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
@@ -820,7 +820,7 @@ mod handle_event_tests {
 
         let msg = Table::<TestRow>::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true),
         );
         assert_eq!(msg, Some(TableMessage::Up));
