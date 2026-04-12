@@ -201,6 +201,7 @@ async fn test_spawn_with_progress() {
 #[tokio::test]
 async fn test_spawn_with_custom_progress_type() {
     #[derive(Clone, Debug)]
+    #[allow(dead_code)]
     enum Progress {
         ChapterFound(String),
         Encoding { percent: f32 },
