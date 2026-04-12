@@ -1,10 +1,7 @@
 //! Overlay stack implementation.
 
-use ratatui::Frame;
-use ratatui::layout::Rect;
-
+use crate::component::RenderContext;
 use crate::input::Event;
-use crate::theme::Theme;
 
 use super::action::OverlayAction;
 use super::traits::Overlay;
@@ -69,9 +66,9 @@ impl<M> OverlayStack<M> {
     }
 
     /// Renders all overlays bottom-up (so topmost draws last).
-    pub(crate) fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme) {
+    pub(crate) fn render(&self, ctx: &mut RenderContext<'_, '_>) {
         for overlay in &self.layers {
-            overlay.view(frame, area, theme);
+            overlay.view(&mut ctx.with_area(ctx.area));
         }
     }
 }

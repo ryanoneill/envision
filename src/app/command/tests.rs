@@ -661,10 +661,6 @@ mod overlay_tests {
     use super::*;
     use crate::input::Event;
     use crate::overlay::{Overlay, OverlayAction};
-    use crate::theme::Theme;
-    use ratatui::Frame;
-    use ratatui::layout::Rect;
-
     struct TestOverlay;
 
     impl Overlay<TestMsg> for TestOverlay {
@@ -672,7 +668,7 @@ mod overlay_tests {
             OverlayAction::Consumed
         }
 
-        fn view(&self, _frame: &mut Frame, _area: Rect, _theme: &Theme) {}
+        fn view(&self, _ctx: &mut crate::component::RenderContext<'_, '_>) {}
     }
 
     #[test]

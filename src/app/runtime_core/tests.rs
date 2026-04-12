@@ -1,6 +1,5 @@
 use super::*;
 
-use ratatui::layout::Rect;
 use ratatui::widgets::Paragraph;
 
 use crate::backend::CaptureBackend;
@@ -70,7 +69,7 @@ impl Overlay<TestMsg> for ConsumingOverlay {
         OverlayAction::Consumed
     }
 
-    fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+    fn view(&self, _ctx: &mut crate::component::RenderContext<'_, '_>) {}
 }
 
 struct MessageOverlay {
@@ -82,7 +81,7 @@ impl Overlay<TestMsg> for MessageOverlay {
         OverlayAction::KeepAndMessage(TestMsg::FromOverlay(self.msg.clone()))
     }
 
-    fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+    fn view(&self, _ctx: &mut crate::component::RenderContext<'_, '_>) {}
 }
 
 struct DismissOverlay;
@@ -92,7 +91,7 @@ impl Overlay<TestMsg> for DismissOverlay {
         OverlayAction::Dismiss
     }
 
-    fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+    fn view(&self, _ctx: &mut crate::component::RenderContext<'_, '_>) {}
 }
 
 struct DismissWithMsgOverlay {
@@ -104,7 +103,7 @@ impl Overlay<TestMsg> for DismissWithMsgOverlay {
         OverlayAction::DismissWithMessage(TestMsg::FromOverlay(self.msg.clone()))
     }
 
-    fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+    fn view(&self, _ctx: &mut crate::component::RenderContext<'_, '_>) {}
 }
 
 struct PropagateOverlay;
@@ -114,7 +113,7 @@ impl Overlay<TestMsg> for PropagateOverlay {
         OverlayAction::Propagate
     }
 
-    fn view(&self, _frame: &mut ratatui::Frame, _area: Rect, _theme: &Theme) {}
+    fn view(&self, _ctx: &mut crate::component::RenderContext<'_, '_>) {}
 }
 
 // ========== Helper ==========
