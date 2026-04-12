@@ -46,7 +46,7 @@ use super::{
     Checkbox, CheckboxMessage, CheckboxState, Component, EventContext, InputField,
     InputFieldMessage, InputFieldState, RenderContext, Select, SelectMessage, SelectState,
 };
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::theme::Theme;
 
 /// Internal representation of a field's widget state.
@@ -460,48 +460,46 @@ impl Component for Form {
 
         if let Some(key) = event.as_key() {
             // Global keys (regardless of field type)
-            if key.code == KeyCode::Tab {
-                return Some(FormMessage::FocusNext);
-            }
-            if key.code == KeyCode::BackTab {
+            if key.key == Key::Tab && key.modifiers.shift() {
                 return Some(FormMessage::FocusPrev);
+            }
+            if key.key == Key::Tab {
+                return Some(FormMessage::FocusNext);
             }
 
             // Ctrl+Enter submits the form
-            if key.code == KeyCode::Enter
-                && key.modifiers.contains(crate::input::KeyModifiers::CONTROL)
-            {
+            if key.key == Key::Enter && key.modifiers.ctrl() {
                 return Some(FormMessage::Submit);
             }
 
             // Field-specific keys
             match &state.states.get(state.focused_index)? {
-                FieldState::Text(_) => match key.code {
-                    KeyCode::Char(c) => Some(FormMessage::Input(c)),
-                    KeyCode::Backspace => Some(FormMessage::Backspace),
-                    KeyCode::Delete => Some(FormMessage::Delete),
-                    KeyCode::Left => Some(FormMessage::Left),
-                    KeyCode::Right => Some(FormMessage::Right),
-                    KeyCode::Home => Some(FormMessage::Home),
-                    KeyCode::End => Some(FormMessage::End),
+                FieldState::Text(_) => match key.key {
+                    Key::Char(c) => Some(FormMessage::Input(c)),
+                    Key::Backspace => Some(FormMessage::Backspace),
+                    Key::Delete => Some(FormMessage::Delete),
+                    Key::Left => Some(FormMessage::Left),
+                    Key::Right => Some(FormMessage::Right),
+                    Key::Home => Some(FormMessage::Home),
+                    Key::End => Some(FormMessage::End),
                     _ => None,
                 },
-                FieldState::Checkbox(_) => match key.code {
-                    KeyCode::Char(' ') | KeyCode::Enter => Some(FormMessage::Toggle),
+                FieldState::Checkbox(_) => match key.key {
+                    Key::Char(' ') | Key::Enter => Some(FormMessage::Toggle),
                     _ => None,
                 },
                 FieldState::Select(s) => {
                     if s.is_open() {
-                        match key.code {
-                            KeyCode::Up | KeyCode::Char('k') => Some(FormMessage::SelectUp),
-                            KeyCode::Down | KeyCode::Char('j') => Some(FormMessage::SelectDown),
-                            KeyCode::Enter => Some(FormMessage::SelectConfirm),
-                            KeyCode::Esc => Some(FormMessage::Toggle),
+                        match key.key {
+                            Key::Up | Key::Char('k') => Some(FormMessage::SelectUp),
+                            Key::Down | Key::Char('j') => Some(FormMessage::SelectDown),
+                            Key::Enter => Some(FormMessage::SelectConfirm),
+                            Key::Esc => Some(FormMessage::Toggle),
                             _ => None,
                         }
                     } else {
-                        match key.code {
-                            KeyCode::Enter | KeyCode::Char(' ') => Some(FormMessage::Toggle),
+                        match key.key {
+                            Key::Enter | Key::Char(' ') => Some(FormMessage::Toggle),
                             _ => None,
                         }
                     }

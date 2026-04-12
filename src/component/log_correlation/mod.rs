@@ -40,7 +40,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 /// Severity level for a correlation log entry.
@@ -736,20 +736,19 @@ impl Component for LogCorrelation {
 
         let key = event.as_key()?;
 
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') => Some(LogCorrelationMessage::ScrollUp),
-            KeyCode::Down | KeyCode::Char('j') => Some(LogCorrelationMessage::ScrollDown),
-            KeyCode::Home => Some(LogCorrelationMessage::ScrollToTop),
-            KeyCode::End => Some(LogCorrelationMessage::ScrollToBottom),
-            KeyCode::Tab => {
-                if key.modifiers.contains(KeyModifiers::SHIFT) {
+        match key.key {
+            Key::Up | Key::Char('k') => Some(LogCorrelationMessage::ScrollUp),
+            Key::Down | Key::Char('j') => Some(LogCorrelationMessage::ScrollDown),
+            Key::Home => Some(LogCorrelationMessage::ScrollToTop),
+            Key::End => Some(LogCorrelationMessage::ScrollToBottom),
+            Key::Tab => {
+                if key.modifiers.shift() {
                     Some(LogCorrelationMessage::FocusPrevStream)
                 } else {
                     Some(LogCorrelationMessage::FocusNextStream)
                 }
             }
-            KeyCode::BackTab => Some(LogCorrelationMessage::FocusPrevStream),
-            KeyCode::Char('s') => Some(LogCorrelationMessage::ToggleSyncScroll),
+            Key::Char('s') => Some(LogCorrelationMessage::ToggleSyncScroll),
             _ => None,
         }
     }

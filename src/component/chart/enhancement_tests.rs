@@ -618,11 +618,11 @@ fn test_cursor_key_bindings() {
     let ctx = EventContext::new().focused(true);
 
     assert_eq!(
-        Chart::handle_event(&state, &Event::key(KeyCode::Left), &ctx),
+        Chart::handle_event(&state, &Event::key(Key::Left), &ctx),
         Some(ChartMessage::CursorLeft)
     );
     assert_eq!(
-        Chart::handle_event(&state, &Event::key(KeyCode::Right), &ctx),
+        Chart::handle_event(&state, &Event::key(Key::Right), &ctx),
         Some(ChartMessage::CursorRight)
     );
     assert_eq!(
@@ -634,11 +634,11 @@ fn test_cursor_key_bindings() {
         Some(ChartMessage::CursorRight)
     );
     assert_eq!(
-        Chart::handle_event(&state, &Event::key(KeyCode::Home), &ctx),
+        Chart::handle_event(&state, &Event::key(Key::Home), &ctx),
         Some(ChartMessage::CursorHome)
     );
     assert_eq!(
-        Chart::handle_event(&state, &Event::key(KeyCode::End), &ctx),
+        Chart::handle_event(&state, &Event::key(Key::End), &ctx),
         Some(ChartMessage::CursorEnd)
     );
     assert_eq!(
@@ -653,7 +653,7 @@ fn test_cursor_unfocused_ignored() {
     let ctx = EventContext::default();
 
     assert_eq!(
-        Chart::handle_event(&state, &Event::key(KeyCode::Left), &ctx),
+        Chart::handle_event(&state, &Event::key(Key::Left), &ctx),
         None
     );
 }

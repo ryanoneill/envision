@@ -86,8 +86,8 @@ impl App for TimelineApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => Some(Msg::Quit),
+            match key.key {
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
                 _ => None,
             }
         } else {
@@ -107,14 +107,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}\n", vt.display());
 
     // Select first event
-    vt.send(Event::key(KeyCode::Down));
+    vt.send(Event::key(Key::Down));
     vt.tick()?;
     println!("After selecting first event:");
     println!("{}\n", vt.display());
 
     // Navigate to a span
     for _ in 0..5 {
-        vt.send(Event::key(KeyCode::Down));
+        vt.send(Event::key(Key::Down));
         vt.tick()?;
     }
     println!("After selecting a span:");

@@ -56,7 +56,7 @@
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
 //! let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
-//! vt.send(Event::key(KeyCode::Char('j')));
+//! vt.send(Event::key(Key::Char('j')));
 //! vt.tick()?;
 //! println!("{}", vt.display());
 //! # Ok::<(), envision::EnvisionError>(())
@@ -672,7 +672,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
-    /// vt.send(Event::key(KeyCode::Char('j')));
+    /// vt.send(Event::key(Key::Char('j')));
     /// vt.tick()?; // processes the 'j' event and re-renders
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```

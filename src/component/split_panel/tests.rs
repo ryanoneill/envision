@@ -1,5 +1,6 @@
 use super::*;
 use crate::component::test_utils;
+use crate::input::Modifiers;
 
 fn vertical_state() -> SplitPanelState {
     SplitPanelState::new(SplitOrientation::Vertical)
@@ -246,7 +247,7 @@ fn test_disabled_ignores_events() {
 
     let msg = SplitPanel::handle_event(
         &state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -259,7 +260,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = SplitPanelState::new(SplitOrientation::Vertical);
-    let msg = SplitPanel::handle_event(&state, &Event::key(KeyCode::Tab), &EventContext::default());
+    let msg = SplitPanel::handle_event(&state, &Event::key(Key::Tab), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -272,7 +273,7 @@ fn test_tab_maps_to_focus_other() {
     let state = vertical_state();
     let msg = SplitPanel::handle_event(
         &state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::FocusOther));
@@ -283,7 +284,7 @@ fn test_backtab_maps_to_focus_other() {
     let state = vertical_state();
     let msg = SplitPanel::handle_event(
         &state,
-        &Event::key(KeyCode::BackTab),
+        &Event::key_with(Key::Tab, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::FocusOther));
@@ -294,7 +295,7 @@ fn test_ctrl_right_maps_to_grow_first() {
     let state = vertical_state();
     let msg = SplitPanel::handle_event(
         &state,
-        &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &Event::key_with(Key::Right, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::GrowFirst));
@@ -305,7 +306,7 @@ fn test_ctrl_left_maps_to_shrink_first() {
     let state = vertical_state();
     let msg = SplitPanel::handle_event(
         &state,
-        &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+        &Event::key_with(Key::Left, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::ShrinkFirst));
@@ -316,7 +317,7 @@ fn test_ctrl_down_maps_to_grow_first() {
     let state = vertical_state();
     let msg = SplitPanel::handle_event(
         &state,
-        &Event::key_with(KeyCode::Down, KeyModifiers::CONTROL),
+        &Event::key_with(Key::Down, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::GrowFirst));
@@ -327,7 +328,7 @@ fn test_ctrl_up_maps_to_shrink_first() {
     let state = vertical_state();
     let msg = SplitPanel::handle_event(
         &state,
-        &Event::key_with(KeyCode::Up, KeyModifiers::CONTROL),
+        &Event::key_with(Key::Up, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SplitPanelMessage::ShrinkFirst));
@@ -349,7 +350,7 @@ fn test_arrow_without_ctrl_ignored() {
     let state = vertical_state();
     let msg = SplitPanel::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
@@ -408,7 +409,7 @@ fn test_dispatch_event_resize() {
     let mut state = vertical_state();
     let output = SplitPanel::dispatch_event(
         &mut state,
-        &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &Event::key_with(Key::Right, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert!(matches!(output, Some(SplitPanelOutput::RatioChanged(_))));

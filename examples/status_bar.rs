@@ -117,15 +117,15 @@ impl App for StatusBarApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') => Some(Msg::Quit),
-                KeyCode::Char('i') => Some(Msg::SwitchToInsert),
-                KeyCode::Esc => Some(Msg::SwitchToNormal),
-                KeyCode::Char('+') => Some(Msg::StatusBar(StatusBarMessage::IncrementCounter {
+            match key.key {
+                Key::Char('q') => Some(Msg::Quit),
+                Key::Char('i') => Some(Msg::SwitchToInsert),
+                Key::Esc => Some(Msg::SwitchToNormal),
+                Key::Char('+') => Some(Msg::StatusBar(StatusBarMessage::IncrementCounter {
                     section: Section::Right,
                     index: 0,
                 })),
-                KeyCode::Char('-') => Some(Msg::StatusBar(StatusBarMessage::DecrementCounter {
+                Key::Char('-') => Some(Msg::StatusBar(StatusBarMessage::DecrementCounter {
                     section: Section::Right,
                     index: 0,
                 })),

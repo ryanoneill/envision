@@ -1,6 +1,7 @@
 use super::highlight::Language;
 use super::*;
 use crate::component::test_utils;
+use crate::input::Modifiers;
 
 fn focused_state() -> CodeBlockState {
     CodeBlockState::new()
@@ -334,7 +335,7 @@ fn test_disabled_ignores_events() {
     let state = focused_state();
     let msg = CodeBlock::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -343,7 +344,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = CodeBlockState::new();
-    let msg = CodeBlock::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default());
+    let msg = CodeBlock::handle_event(&state, &Event::key(Key::Up), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -357,7 +358,7 @@ fn test_handle_event_up() {
     assert_eq!(
         CodeBlock::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::ScrollUp)
@@ -370,7 +371,7 @@ fn test_handle_event_down() {
     assert_eq!(
         CodeBlock::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::ScrollDown)
@@ -404,7 +405,7 @@ fn test_handle_event_page_up_down() {
     assert_eq!(
         CodeBlock::handle_event(
             &state,
-            &Event::key(KeyCode::PageUp),
+            &Event::key(Key::PageUp),
             &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::PageUp(10))
@@ -412,7 +413,7 @@ fn test_handle_event_page_up_down() {
     assert_eq!(
         CodeBlock::handle_event(
             &state,
-            &Event::key(KeyCode::PageDown),
+            &Event::key(Key::PageDown),
             &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::PageDown(10))
@@ -446,7 +447,7 @@ fn test_handle_event_home_end() {
     assert_eq!(
         CodeBlock::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::Home)
@@ -454,7 +455,7 @@ fn test_handle_event_home_end() {
     assert_eq!(
         CodeBlock::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(CodeBlockMessage::End)
@@ -476,7 +477,7 @@ fn test_handle_event_g_and_G() {
     assert_eq!(
         CodeBlock::handle_event(
             &state,
-            &Event::key_with(KeyCode::Char('G'), KeyModifiers::SHIFT),
+            &Event::key_with(Key::Char('g'), Modifiers::SHIFT),
             &EventContext::new().focused(true),
         ),
         Some(CodeBlockMessage::End)
@@ -843,7 +844,7 @@ fn test_horizontal_scroll_key_bindings() {
     // Left arrow
     let msg = CodeBlock::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CodeBlockMessage::ScrollLeft));
@@ -851,7 +852,7 @@ fn test_horizontal_scroll_key_bindings() {
     // Right arrow
     let msg = CodeBlock::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(CodeBlockMessage::ScrollRight));

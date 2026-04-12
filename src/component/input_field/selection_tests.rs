@@ -364,7 +364,7 @@ fn test_shift_left_event() {
     let state = focused_state("hello");
     let msg = InputField::handle_event(
         &state,
-        &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT),
+        &Event::key_with(Key::Left, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::SelectLeft));
@@ -375,7 +375,7 @@ fn test_shift_right_event() {
     let state = focused_state("hello");
     let msg = InputField::handle_event(
         &state,
-        &Event::key_with(KeyCode::Right, KeyModifiers::SHIFT),
+        &Event::key_with(Key::Right, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::SelectRight));
@@ -386,7 +386,7 @@ fn test_shift_home_event() {
     let state = focused_state("hello");
     let msg = InputField::handle_event(
         &state,
-        &Event::key_with(KeyCode::Home, KeyModifiers::SHIFT),
+        &Event::key_with(Key::Home, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::SelectHome));
@@ -397,7 +397,7 @@ fn test_shift_end_event() {
     let state = focused_state("hello");
     let msg = InputField::handle_event(
         &state,
-        &Event::key_with(KeyCode::End, KeyModifiers::SHIFT),
+        &Event::key_with(Key::End, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::SelectEnd));
@@ -408,7 +408,7 @@ fn test_ctrl_shift_left_event() {
     let state = focused_state("hello");
     let msg = InputField::handle_event(
         &state,
-        &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL | KeyModifiers::SHIFT),
+        &Event::key_with(Key::Left, Modifiers::CONTROL | Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::SelectWordLeft));
@@ -419,7 +419,7 @@ fn test_ctrl_shift_right_event() {
     let state = focused_state("hello");
     let msg = InputField::handle_event(
         &state,
-        &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL | KeyModifiers::SHIFT),
+        &Event::key_with(Key::Right, Modifiers::CONTROL | Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(InputFieldMessage::SelectWordRight));

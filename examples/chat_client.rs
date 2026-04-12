@@ -372,7 +372,7 @@ impl App for ChatClient {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+        let ctrl = key.modifiers.ctrl();
 
         // Command palette gets priority
         if state.palette.is_visible() {
@@ -381,25 +381,25 @@ impl App for ChatClient {
         }
 
         // Global shortcuts
-        match key.code {
-            KeyCode::Char('q') if ctrl => return Some(Msg::Quit),
-            KeyCode::Char('p') if ctrl => return Some(Msg::TogglePalette),
-            KeyCode::Char('n') if ctrl => return Some(Msg::NewTab),
-            KeyCode::Char('w') if ctrl => return Some(Msg::CloseTab),
-            KeyCode::Char('l') if ctrl => {
+        match key.key {
+            Key::Char('q') if ctrl => return Some(Msg::Quit),
+            Key::Char('p') if ctrl => return Some(Msg::TogglePalette),
+            Key::Char('n') if ctrl => return Some(Msg::NewTab),
+            Key::Char('w') if ctrl => return Some(Msg::CloseTab),
+            Key::Char('l') if ctrl => {
                 state
                     .conversations
                     .get(state.active_tab)
                     .map(|_| Msg::Palette(CommandPaletteMessage::Confirm));
             }
-            KeyCode::Tab => return Some(Msg::FocusToggle),
-            KeyCode::Esc => return Some(Msg::Quit),
+            Key::Tab => return Some(Msg::FocusToggle),
+            Key::Esc => return Some(Msg::Quit),
             _ => {}
         }
 
         // Input-focused: Ctrl+Enter submits, other keys go to TextArea
         if state.focus.is_focused(&Focus::Input) {
-            if ctrl && key.code == KeyCode::Enter {
+            if ctrl && key.key == Key::Enter {
                 return Some(Msg::SubmitInput);
             }
             return TextArea::handle_event(&state.input, event, &EventContext::default())

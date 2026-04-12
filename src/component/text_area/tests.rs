@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key, Modifiers};
 
 #[path = "selection_tests.rs"]
 mod selection_tests;
@@ -803,7 +803,7 @@ fn test_handle_event_enter() {
     let state = TextArea::init();
     let msg = TextArea::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::NewLine));
@@ -814,7 +814,7 @@ fn test_handle_event_arrow_up() {
     let state = TextArea::init();
     let msg = TextArea::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::Up));
@@ -825,7 +825,7 @@ fn test_handle_event_arrow_down() {
     let state = TextArea::init();
     let msg = TextArea::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::Down));
@@ -836,7 +836,7 @@ fn test_handle_event_arrow_left() {
     let state = TextArea::init();
     let msg = TextArea::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::Left));
@@ -847,7 +847,7 @@ fn test_handle_event_arrow_right() {
     let state = TextArea::init();
     let msg = TextArea::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::Right));
@@ -858,7 +858,7 @@ fn test_handle_event_ctrl_home() {
     let state = TextArea::init();
     let msg = TextArea::handle_event(
         &state,
-        &Event::key_with(KeyCode::Home, KeyModifiers::CONTROL),
+        &Event::key_with(Key::Home, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::TextStart));
@@ -869,7 +869,7 @@ fn test_handle_event_ctrl_end() {
     let state = TextArea::init();
     let msg = TextArea::handle_event(
         &state,
-        &Event::key_with(KeyCode::End, KeyModifiers::CONTROL),
+        &Event::key_with(Key::End, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::TextEnd));

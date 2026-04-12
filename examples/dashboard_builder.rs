@@ -310,10 +310,10 @@ impl App for Dashboard {
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         let key = event.as_key()?;
 
-        match key.code {
-            KeyCode::Char('q') | KeyCode::Esc => Some(Msg::Quit),
-            KeyCode::Left | KeyCode::Char('h') => Some(Msg::Tab(TabsMessage::Left)),
-            KeyCode::Right | KeyCode::Char('l') => Some(Msg::Tab(TabsMessage::Right)),
+        match key.key {
+            Key::Char('q') | Key::Esc => Some(Msg::Quit),
+            Key::Left | Key::Char('h') => Some(Msg::Tab(TabsMessage::Left)),
+            Key::Right | Key::Char('l') => Some(Msg::Tab(TabsMessage::Right)),
             _ => {
                 // Route to active tab's component
                 let active_tab = state.tabs.selected_item();

@@ -14,7 +14,7 @@ fn test_handle_event_up_when_focused() {
     let mut state = make_tree_state();
     state.selected_index = Some(1);
 
-    let event = Event::key(KeyCode::Up);
+    let event = Event::key(Key::Up);
     let msg = Tree::<&str>::handle_event(&state, &event, &EventContext::new().focused(true));
     assert_eq!(msg, Some(TreeMessage::Up));
 }
@@ -23,7 +23,7 @@ fn test_handle_event_up_when_focused() {
 fn test_handle_event_down_when_focused() {
     let state = make_tree_state();
 
-    let event = Event::key(KeyCode::Down);
+    let event = Event::key(Key::Down);
     let msg = Tree::<&str>::handle_event(&state, &event, &EventContext::new().focused(true));
     assert_eq!(msg, Some(TreeMessage::Down));
 }
@@ -32,7 +32,7 @@ fn test_handle_event_down_when_focused() {
 fn test_handle_event_expand_when_focused() {
     let state = make_tree_state();
 
-    let event = Event::key(KeyCode::Right);
+    let event = Event::key(Key::Right);
     let msg = Tree::<&str>::handle_event(&state, &event, &EventContext::new().focused(true));
     assert_eq!(msg, Some(TreeMessage::Expand));
 }
@@ -41,7 +41,7 @@ fn test_handle_event_expand_when_focused() {
 fn test_handle_event_collapse_when_focused() {
     let state = make_tree_state();
 
-    let event = Event::key(KeyCode::Left);
+    let event = Event::key(Key::Left);
     let msg = Tree::<&str>::handle_event(&state, &event, &EventContext::new().focused(true));
     assert_eq!(msg, Some(TreeMessage::Collapse));
 }
@@ -59,7 +59,7 @@ fn test_handle_event_toggle_when_focused() {
 fn test_handle_event_select_when_focused() {
     let state = make_tree_state();
 
-    let event = Event::key(KeyCode::Enter);
+    let event = Event::key(Key::Enter);
     let msg = Tree::<&str>::handle_event(&state, &event, &EventContext::new().focused(true));
     assert_eq!(msg, Some(TreeMessage::Select));
 }
@@ -102,15 +102,10 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = make_tree_state();
     // focused is false by default
 
-    let msg =
-        Tree::<&str>::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
+    let msg = Tree::<&str>::handle_event(&state, &Event::key(Key::Down), &EventContext::default());
     assert_eq!(msg, None);
 
-    let msg = Tree::<&str>::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg = Tree::<&str>::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, None);
 
     let msg = Tree::<&str>::handle_event(&state, &Event::char('j'), &EventContext::default());
@@ -126,7 +121,7 @@ fn test_dispatch_event() {
     // Dispatch Down: should move selection from 0 to 1
     let output = Tree::<&str>::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, None); // Down returns None but updates state
@@ -135,7 +130,7 @@ fn test_dispatch_event() {
     // Dispatch Enter: should select the current node
     let output = Tree::<&str>::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TreeOutput::Selected(vec![0, 0])));
@@ -150,7 +145,7 @@ fn test_instance_methods() {
     // dispatch_event via static method
     let output = Tree::<&str>::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, None); // Down returns None but updates state
@@ -163,7 +158,7 @@ fn test_instance_methods() {
     // handle_event via static method
     let msg = Tree::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TreeMessage::Up));
@@ -187,35 +182,35 @@ fn test_handle_event_ignored_when_disabled() {
 
     let msg = Tree::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Tree::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Tree::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Tree::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Tree::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -241,7 +236,7 @@ fn test_dispatch_event_ignored_when_disabled() {
 
     let output = Tree::<&str>::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(output, None);

@@ -343,8 +343,8 @@ fn test_rapid_input_10000_events() {
     let mut state = SelectableListState::new(items);
 
     // Send 10,000 alternating Down/Up events via dispatch_event
-    let down = envision::Event::key(crossterm::event::KeyCode::Down);
-    let up = envision::Event::key(crossterm::event::KeyCode::Up);
+    let down = envision::Event::key(envision::input::Key::Down);
+    let up = envision::Event::key(envision::input::Key::Up);
 
     let ctx = envision::EventContext::new().focused(true);
     for i in 0..10_000 {

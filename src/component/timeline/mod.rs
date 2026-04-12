@@ -33,7 +33,7 @@ use std::marker::PhantomData;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 pub(crate) mod render;
 mod types;
@@ -634,15 +634,15 @@ impl Component for Timeline {
 
         let key = event.as_key()?;
 
-        match key.code {
-            KeyCode::Left | KeyCode::Char('h') => Some(TimelineMessage::PanLeft),
-            KeyCode::Right | KeyCode::Char('l') => Some(TimelineMessage::PanRight),
-            KeyCode::Char('+') | KeyCode::Char('=') => Some(TimelineMessage::ZoomIn),
-            KeyCode::Char('-') => Some(TimelineMessage::ZoomOut),
-            KeyCode::Up | KeyCode::Char('k') => Some(TimelineMessage::SelectPrev),
-            KeyCode::Down | KeyCode::Char('j') => Some(TimelineMessage::SelectNext),
-            KeyCode::Home => Some(TimelineMessage::FitAll),
-            KeyCode::Enter => {
+        match key.key {
+            Key::Left | Key::Char('h') => Some(TimelineMessage::PanLeft),
+            Key::Right | Key::Char('l') => Some(TimelineMessage::PanRight),
+            Key::Char('+') | Key::Char('=') => Some(TimelineMessage::ZoomIn),
+            Key::Char('-') => Some(TimelineMessage::ZoomOut),
+            Key::Up | Key::Char('k') => Some(TimelineMessage::SelectPrev),
+            Key::Down | Key::Char('j') => Some(TimelineMessage::SelectNext),
+            Key::Home => Some(TimelineMessage::FitAll),
+            Key::Enter => {
                 // On Enter, re-emit the current selection if any
                 if state.selected_index.is_some() {
                     // We handle this in update by returning the selection output

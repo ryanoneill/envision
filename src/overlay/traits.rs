@@ -18,9 +18,8 @@ use super::OverlayAction;
 ///
 /// ```rust
 /// use envision::overlay::{Overlay, OverlayAction};
-/// use envision::input::Event;
+/// use envision::input::{Event, Key};
 /// use envision::theme::Theme;
-/// use crossterm::event::KeyCode;
 /// use ratatui::layout::Rect;
 /// use ratatui::Frame;
 ///
@@ -31,9 +30,9 @@ use super::OverlayAction;
 /// impl Overlay<String> for ConfirmDialog {
 ///     fn handle_event(&mut self, event: &Event) -> OverlayAction<String> {
 ///         if let Some(key) = event.as_key() {
-///             match key.code {
-///                 KeyCode::Char('y') => OverlayAction::DismissWithMessage("confirmed".into()),
-///                 KeyCode::Char('n') | KeyCode::Esc => OverlayAction::Dismiss,
+///             match key.key {
+///                 Key::Char('y') => OverlayAction::DismissWithMessage("confirmed".into()),
+///                 Key::Char('n') | Key::Esc => OverlayAction::Dismiss,
 ///                 _ => OverlayAction::Consumed,
 ///             }
 ///         } else {
@@ -59,7 +58,7 @@ pub trait Overlay<M>: Send {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crossterm::event::KeyCode;
+    use crate::input::Key;
 
     struct TestOverlay {
         consumed_count: u32,
@@ -68,9 +67,9 @@ mod tests {
     impl Overlay<String> for TestOverlay {
         fn handle_event(&mut self, event: &Event) -> OverlayAction<String> {
             if let Some(key) = event.as_key() {
-                match key.code {
-                    KeyCode::Esc => OverlayAction::Dismiss,
-                    KeyCode::Enter => OverlayAction::DismissWithMessage("confirmed".to_string()),
+                match key.key {
+                    Key::Esc => OverlayAction::Dismiss,
+                    Key::Enter => OverlayAction::DismissWithMessage("confirmed".to_string()),
                     _ => {
                         self.consumed_count += 1;
                         OverlayAction::Consumed
@@ -99,7 +98,7 @@ mod tests {
     #[test]
     fn test_overlay_handle_event_dismiss() {
         let mut overlay = TestOverlay { consumed_count: 0 };
-        let event = Event::key(KeyCode::Esc);
+        let event = Event::key(Key::Esc);
 
         let action = overlay.handle_event(&event);
         assert!(matches!(action, OverlayAction::Dismiss));
@@ -108,7 +107,7 @@ mod tests {
     #[test]
     fn test_overlay_handle_event_dismiss_with_message() {
         let mut overlay = TestOverlay { consumed_count: 0 };
-        let event = Event::key(KeyCode::Enter);
+        let event = Event::key(Key::Enter);
 
         let action = overlay.handle_event(&event);
         assert!(matches!(action, OverlayAction::DismissWithMessage(ref s) if s == "confirmed"));

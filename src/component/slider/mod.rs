@@ -34,7 +34,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::theme::Theme;
 
 /// Orientation of the slider.
@@ -455,22 +455,22 @@ impl Component for Slider {
 
         if let Some(key) = event.as_key() {
             match state.orientation {
-                SliderOrientation::Horizontal => match key.code {
-                    KeyCode::Right | KeyCode::Char('l') => Some(SliderMessage::Increment),
-                    KeyCode::Left | KeyCode::Char('h') => Some(SliderMessage::Decrement),
-                    KeyCode::PageUp => Some(SliderMessage::IncrementPage),
-                    KeyCode::PageDown => Some(SliderMessage::DecrementPage),
-                    KeyCode::Home => Some(SliderMessage::SetMin),
-                    KeyCode::End => Some(SliderMessage::SetMax),
+                SliderOrientation::Horizontal => match key.key {
+                    Key::Right | Key::Char('l') => Some(SliderMessage::Increment),
+                    Key::Left | Key::Char('h') => Some(SliderMessage::Decrement),
+                    Key::PageUp => Some(SliderMessage::IncrementPage),
+                    Key::PageDown => Some(SliderMessage::DecrementPage),
+                    Key::Home => Some(SliderMessage::SetMin),
+                    Key::End => Some(SliderMessage::SetMax),
                     _ => None,
                 },
-                SliderOrientation::Vertical => match key.code {
-                    KeyCode::Up | KeyCode::Char('k') => Some(SliderMessage::Increment),
-                    KeyCode::Down | KeyCode::Char('j') => Some(SliderMessage::Decrement),
-                    KeyCode::PageUp => Some(SliderMessage::IncrementPage),
-                    KeyCode::PageDown => Some(SliderMessage::DecrementPage),
-                    KeyCode::Home => Some(SliderMessage::SetMin),
-                    KeyCode::End => Some(SliderMessage::SetMax),
+                SliderOrientation::Vertical => match key.key {
+                    Key::Up | Key::Char('k') => Some(SliderMessage::Increment),
+                    Key::Down | Key::Char('j') => Some(SliderMessage::Decrement),
+                    Key::PageUp => Some(SliderMessage::IncrementPage),
+                    Key::PageDown => Some(SliderMessage::DecrementPage),
+                    Key::Home => Some(SliderMessage::SetMin),
+                    Key::End => Some(SliderMessage::SetMax),
                     _ => None,
                 },
             }

@@ -9,7 +9,7 @@ use envision::component::{
     Column, Component, EventContext, InputField, InputFieldState, SelectableList,
     SelectableListState, Table, TableRow, TableState, TextArea, TextAreaState,
 };
-use envision::input::{Event, KeyCode};
+use envision::input::{Event, Key};
 use ratatui::layout::Constraint;
 
 // ========================================
@@ -57,7 +57,7 @@ fn bench_handle_event(c: &mut Criterion) {
     for size in [100, 1000] {
         // ---- SelectableList ----
         let items: Vec<String> = (0..size).map(|i| format!("Item {}", i)).collect();
-        let event = Event::key(KeyCode::Down);
+        let event = Event::key(Key::Down);
 
         // Focused (processes the event)
         let state = SelectableListState::new(items.clone());
@@ -93,7 +93,7 @@ fn bench_handle_event(c: &mut Criterion) {
         // ---- Table ----
         let rows = make_bench_rows(size as u32);
         let columns = make_table_columns();
-        let event = Event::key(KeyCode::Down);
+        let event = Event::key(Key::Down);
 
         // Focused
         let state = TableState::new(rows.clone(), columns.clone());
@@ -124,7 +124,7 @@ fn bench_handle_event(c: &mut Criterion) {
             .map(|i| format!("Line {} with some text content", i))
             .collect::<Vec<_>>()
             .join("\n");
-        let event = Event::key(KeyCode::Down);
+        let event = Event::key(Key::Down);
 
         // Focused
         let state = TextAreaState::new().with_value(&content);
@@ -183,7 +183,7 @@ fn bench_handle_event(c: &mut Criterion) {
         );
 
         // Backspace event (focused)
-        let event_backspace = Event::key(KeyCode::Backspace);
+        let event_backspace = Event::key(Key::Backspace);
         group.bench_with_input(
             BenchmarkId::new("input_field/focused/backspace", size),
             &size,
@@ -227,7 +227,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
     for size in [100, 1000] {
         // ---- SelectableList ----
         let items: Vec<String> = (0..size).map(|i| format!("Item {}", i)).collect();
-        let event = Event::key(KeyCode::Down);
+        let event = Event::key(Key::Down);
 
         group.bench_with_input(
             BenchmarkId::new("selectable_list/focused", size),
@@ -247,7 +247,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
         // ---- Table ----
         let rows = make_bench_rows(size as u32);
         let columns = make_table_columns();
-        let event = Event::key(KeyCode::Down);
+        let event = Event::key(Key::Down);
 
         group.bench_with_input(BenchmarkId::new("table/focused", size), &size, |b, _| {
             let mut state = TableState::new(rows.clone(), columns.clone());
@@ -265,7 +265,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
             .map(|i| format!("Line {} with some text content", i))
             .collect::<Vec<_>>()
             .join("\n");
-        let event_down = Event::key(KeyCode::Down);
+        let event_down = Event::key(Key::Down);
 
         group.bench_with_input(
             BenchmarkId::new("text_area/focused", size),
@@ -308,7 +308,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
         );
 
         // Backspace dispatch
-        let event_backspace = Event::key(KeyCode::Backspace);
+        let event_backspace = Event::key(Key::Backspace);
         group.bench_with_input(
             BenchmarkId::new("input_field/focused/backspace", size),
             &size,

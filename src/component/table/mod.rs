@@ -67,7 +67,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
@@ -932,25 +932,25 @@ impl<T: TableRow + 'static> Component for Table<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            let has_shift = key.modifiers.contains(KeyModifiers::SHIFT);
-            match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(TableMessage::Up),
-                KeyCode::Down | KeyCode::Char('j') => Some(TableMessage::Down),
-                KeyCode::Home => Some(TableMessage::First),
-                KeyCode::End => Some(TableMessage::Last),
-                KeyCode::Enter if has_shift => {
+            let has_shift = key.modifiers.shift();
+            match key.key {
+                Key::Up | Key::Char('k') => Some(TableMessage::Up),
+                Key::Down | Key::Char('j') => Some(TableMessage::Down),
+                Key::Home => Some(TableMessage::First),
+                Key::End => Some(TableMessage::Last),
+                Key::Enter if has_shift => {
                     // Shift+Enter adds the current primary sort column to the sort stack
                     // This is a no-op if there's no selection context for a column
                     None
                 }
-                KeyCode::Enter => Some(TableMessage::Select),
-                KeyCode::Char('+') => {
+                Key::Enter => Some(TableMessage::Select),
+                Key::Char('+') => {
                     // Increase the width of the currently selected column
                     // Uses the primary sort column index, or column 0 if no sort
                     let col = state.sort_columns.first().map(|&(c, _)| c).unwrap_or(0);
                     Some(TableMessage::IncreaseColumnWidth(col))
                 }
-                KeyCode::Char('-') => {
+                Key::Char('-') => {
                     // Decrease the width of the currently selected column
                     let col = state.sort_columns.first().map(|&(c, _)| c).unwrap_or(0);
                     Some(TableMessage::DecreaseColumnWidth(col))

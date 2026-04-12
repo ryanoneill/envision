@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::Key;
 use ratatui::widgets::Paragraph;
 
 struct TestApp;
@@ -146,9 +147,8 @@ impl App for CustomApp {
     fn view(_state: &Self::State, _frame: &mut Frame) {}
 
     fn handle_event(event: &Event) -> Option<Self::Message> {
-        use crossterm::event::KeyCode;
         if let Some(key) = event.as_key() {
-            if let KeyCode::Char(c) = key.code {
+            if let Key::Char(c) = key.key {
                 if c == 'q' {
                     return Some(CustomMsg::Quit);
                 }
@@ -270,15 +270,15 @@ fn test_message_clone() {
 fn test_handle_event_with_state_default_delegation() {
     // CustomApp overrides handle_event but NOT handle_event_with_state.
     // Calling handle_event_with_state should delegate to handle_event.
-    use crossterm::event::KeyCode;
+    use crate::input::Key;
 
     let (state, _) = CustomApp::init();
 
-    let event = Event::key(KeyCode::Char('q'));
+    let event = Event::key(Key::Char('q'));
     let msg = CustomApp::handle_event_with_state(&state, &event);
     assert!(matches!(msg, Some(CustomMsg::Quit)));
 
-    let event = Event::key(KeyCode::Char('a'));
+    let event = Event::key(Key::Char('a'));
     let msg = CustomApp::handle_event_with_state(&state, &event);
     assert!(matches!(msg, Some(CustomMsg::KeyPressed('a'))));
 }

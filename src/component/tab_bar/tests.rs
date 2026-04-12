@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use ratatui::layout::Rect;
 
 // ========== Tab Tests ==========
@@ -463,7 +463,7 @@ fn test_handle_event_navigation_keys() {
     assert_eq!(
         TabBar::handle_event(
             &state,
-            &Event::key(KeyCode::Right),
+            &Event::key(Key::Right),
             &EventContext::new().focused(true)
         ),
         Some(TabBarMessage::NextTab)
@@ -471,7 +471,7 @@ fn test_handle_event_navigation_keys() {
     assert_eq!(
         TabBar::handle_event(
             &state,
-            &Event::key(KeyCode::Left),
+            &Event::key(Key::Left),
             &EventContext::new().focused(true)
         ),
         Some(TabBarMessage::PrevTab)
@@ -479,7 +479,7 @@ fn test_handle_event_navigation_keys() {
     assert_eq!(
         TabBar::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(TabBarMessage::First)
@@ -487,7 +487,7 @@ fn test_handle_event_navigation_keys() {
     assert_eq!(
         TabBar::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(TabBarMessage::Last)
@@ -532,11 +532,7 @@ fn test_handle_event_close_key() {
 fn test_handle_event_unfocused() {
     let state = TabBarState::new(vec![Tab::new("a", "A")]);
     assert_eq!(
-        TabBar::handle_event(
-            &state,
-            &Event::key(KeyCode::Right),
-            &EventContext::default()
-        ),
+        TabBar::handle_event(&state, &Event::key(Key::Right), &EventContext::default()),
         None
     );
     assert_eq!(
@@ -564,7 +560,7 @@ fn test_dispatch_event_next() {
     let mut state = TabBarState::new(vec![Tab::new("a", "A"), Tab::new("b", "B")]);
     let output = TabBar::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
@@ -594,14 +590,14 @@ fn test_instance_methods() {
 
     let msg = TabBar::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabBarMessage::NextTab));
 
     let output = TabBar::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabBarOutput::TabSelected(1)));

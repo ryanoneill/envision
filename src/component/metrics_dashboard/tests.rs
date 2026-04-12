@@ -349,7 +349,7 @@ fn test_disabled_ignores_events() {
     let state = focused_state();
     let msg = MetricsDashboard::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -362,11 +362,8 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = MetricsDashboardState::new(sample_widgets(), 3);
-    let msg = MetricsDashboard::handle_event(
-        &state,
-        &Event::key(KeyCode::Right),
-        &EventContext::default(),
-    );
+    let msg =
+        MetricsDashboard::handle_event(&state, &Event::key(Key::Right), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -380,7 +377,7 @@ fn test_key_maps() {
     assert_eq!(
         MetricsDashboard::handle_event(
             &state,
-            &Event::key(KeyCode::Left),
+            &Event::key(Key::Left),
             &EventContext::new().focused(true)
         ),
         Some(MetricsDashboardMessage::Left)
@@ -388,7 +385,7 @@ fn test_key_maps() {
     assert_eq!(
         MetricsDashboard::handle_event(
             &state,
-            &Event::key(KeyCode::Right),
+            &Event::key(Key::Right),
             &EventContext::new().focused(true)
         ),
         Some(MetricsDashboardMessage::Right)
@@ -396,7 +393,7 @@ fn test_key_maps() {
     assert_eq!(
         MetricsDashboard::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(MetricsDashboardMessage::Up)
@@ -404,7 +401,7 @@ fn test_key_maps() {
     assert_eq!(
         MetricsDashboard::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(MetricsDashboardMessage::Down)
@@ -412,7 +409,7 @@ fn test_key_maps() {
     assert_eq!(
         MetricsDashboard::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(MetricsDashboardMessage::First)
@@ -420,7 +417,7 @@ fn test_key_maps() {
     assert_eq!(
         MetricsDashboard::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(MetricsDashboardMessage::Last)
@@ -428,7 +425,7 @@ fn test_key_maps() {
     assert_eq!(
         MetricsDashboard::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         ),
         Some(MetricsDashboardMessage::Select)
@@ -527,7 +524,7 @@ fn test_instance_handle_event() {
     let state = focused_state();
     let msg = MetricsDashboard::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(MetricsDashboardMessage::Right));
@@ -545,7 +542,7 @@ fn test_instance_dispatch_event() {
     let mut state = focused_state();
     let output = MetricsDashboard::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(MetricsDashboardOutput::SelectionChanged(1)));

@@ -1,7 +1,7 @@
 use super::*;
 use crate::component::test_utils;
 use crate::input::Event;
-use crossterm::event::KeyCode;
+use crate::input::Key;
 
 // =============================================================================
 // Construction
@@ -133,15 +133,11 @@ fn test_instance_update() {
 fn test_handle_event_returns_none() {
     let state = BigTextState::new("42");
     assert_eq!(
-        BigText::handle_event(&state, &Event::key(KeyCode::Up), &EventContext::default()),
+        BigText::handle_event(&state, &Event::key(Key::Up), &EventContext::default()),
         None
     );
     assert_eq!(
-        BigText::handle_event(
-            &state,
-            &Event::key(KeyCode::Enter),
-            &EventContext::default()
-        ),
+        BigText::handle_event(&state, &Event::key(Key::Enter), &EventContext::default()),
         None
     );
     assert_eq!(

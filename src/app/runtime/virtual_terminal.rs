@@ -52,7 +52,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
-    /// vt.send(Event::key(KeyCode::Char('j')));
+    /// vt.send(Event::key(Key::Char('j')));
     /// vt.tick()?;
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```
@@ -173,7 +173,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
     /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
-    /// vt.send(Event::key(KeyCode::Enter));
+    /// vt.send(Event::key(Key::Enter));
     /// vt.tick()?;
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```

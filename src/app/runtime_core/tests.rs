@@ -1,11 +1,10 @@
 use super::*;
 
-use crossterm::event::KeyCode;
 use ratatui::layout::Rect;
 use ratatui::widgets::Paragraph;
 
 use crate::backend::CaptureBackend;
-use crate::input::Event;
+use crate::input::{Event, Key};
 use crate::overlay::{Overlay, OverlayAction};
 use crate::theme::Theme;
 
@@ -54,7 +53,7 @@ impl App for TestApp {
 
     fn handle_event(event: &Event) -> Option<Self::Message> {
         if let Some(key) = event.as_key() {
-            if let KeyCode::Char(c) = key.code {
+            if let Key::Char(c) = key.key {
                 return Some(TestMsg::Set(c.to_string()));
             }
         }

@@ -29,7 +29,7 @@
 use ratatui::widgets::Paragraph;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a Checkbox.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -250,8 +250,8 @@ impl Component for Checkbox {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Enter | KeyCode::Char(' ') => Some(CheckboxMessage::Toggle),
+            match key.key {
+                Key::Enter | Key::Char(' ') => Some(CheckboxMessage::Toggle),
                 _ => None,
             }
         } else {

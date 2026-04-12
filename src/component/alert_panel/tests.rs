@@ -565,7 +565,7 @@ fn test_key_maps() {
     assert_eq!(
         AlertPanel::handle_event(
             &state,
-            &Event::key(KeyCode::Left),
+            &Event::key(Key::Left),
             &EventContext::new().focused(true)
         ),
         Some(AlertPanelMessage::SelectPrev)
@@ -573,7 +573,7 @@ fn test_key_maps() {
     assert_eq!(
         AlertPanel::handle_event(
             &state,
-            &Event::key(KeyCode::Right),
+            &Event::key(Key::Right),
             &EventContext::new().focused(true)
         ),
         Some(AlertPanelMessage::SelectNext)
@@ -581,7 +581,7 @@ fn test_key_maps() {
     assert_eq!(
         AlertPanel::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(AlertPanelMessage::SelectUp)
@@ -589,7 +589,7 @@ fn test_key_maps() {
     assert_eq!(
         AlertPanel::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(AlertPanelMessage::SelectDown)
@@ -597,7 +597,7 @@ fn test_key_maps() {
     assert_eq!(
         AlertPanel::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         ),
         Some(AlertPanelMessage::Select)
@@ -650,7 +650,7 @@ fn test_disabled_ignores_events() {
     let state = focused_state();
     let msg = AlertPanel::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -663,11 +663,7 @@ fn test_disabled_ignores_events() {
 #[test]
 fn test_unfocused_ignores_events() {
     let state = AlertPanelState::new().with_metrics(sample_metrics());
-    let msg = AlertPanel::handle_event(
-        &state,
-        &Event::key(KeyCode::Right),
-        &EventContext::default(),
-    );
+    let msg = AlertPanel::handle_event(&state, &Event::key(Key::Right), &EventContext::default());
     assert_eq!(msg, None);
 }
 

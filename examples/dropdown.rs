@@ -75,7 +75,7 @@ impl App for DropdownApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if key.code == KeyCode::Esc && !state.language.is_open() {
+            if key.key == Key::Esc && !state.language.is_open() {
                 return Some(Msg::Quit);
             }
         }

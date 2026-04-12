@@ -35,7 +35,7 @@ pub use types::*;
 use ratatui::widgets::{Block, Borders, List, ListItem};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// State for the MultiProgress component.
 #[derive(Clone, Debug, PartialEq)]
@@ -706,10 +706,10 @@ impl Component for MultiProgress {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Up | KeyCode::Char('k') => Some(MultiProgressMessage::ScrollUp),
-                KeyCode::Down | KeyCode::Char('j') => Some(MultiProgressMessage::ScrollDown),
-                KeyCode::Enter => Some(MultiProgressMessage::Select),
+            match key.key {
+                Key::Up | Key::Char('k') => Some(MultiProgressMessage::ScrollUp),
+                Key::Down | Key::Char('j') => Some(MultiProgressMessage::ScrollDown),
+                Key::Enter => Some(MultiProgressMessage::Select),
                 _ => None,
             }
         } else {

@@ -1,6 +1,6 @@
 use super::*;
 use crate::component::Component;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key, Modifiers};
 use ratatui::style::Color;
 
 // =============================================================================
@@ -365,7 +365,7 @@ fn test_selected_node_some() {
 fn test_handle_event_not_focused() {
     let state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     let msg =
-        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
+        DependencyGraph::handle_event(&state, &Event::key(Key::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -373,7 +373,7 @@ fn test_handle_event_not_focused() {
 fn test_handle_event_disabled() {
     let state = DependencyGraphState::new().with_node(GraphNode::new("a", "A"));
     let msg =
-        DependencyGraph::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
+        DependencyGraph::handle_event(&state, &Event::key(Key::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -383,7 +383,7 @@ fn test_handle_event_down() {
     assert_eq!(
         DependencyGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectNext)
@@ -409,7 +409,7 @@ fn test_handle_event_tab() {
     assert_eq!(
         DependencyGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Tab),
+            &Event::key(Key::Tab),
             &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectNext)
@@ -422,7 +422,7 @@ fn test_handle_event_up() {
     assert_eq!(
         DependencyGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectPrev)
@@ -448,7 +448,7 @@ fn test_handle_event_backtab() {
     assert_eq!(
         DependencyGraph::handle_event(
             &state,
-            &Event::key(KeyCode::BackTab),
+            &Event::key_with(Key::Tab, Modifiers::SHIFT),
             &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectPrev)
@@ -461,7 +461,7 @@ fn test_handle_event_enter() {
     assert_eq!(
         DependencyGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectConnected)
@@ -487,7 +487,7 @@ fn test_handle_event_right() {
     assert_eq!(
         DependencyGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Right),
+            &Event::key(Key::Right),
             &EventContext::new().focused(true)
         ),
         Some(DependencyGraphMessage::SelectConnected)
@@ -689,7 +689,7 @@ fn test_dispatch_event() {
 
     let output = DependencyGraph::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(

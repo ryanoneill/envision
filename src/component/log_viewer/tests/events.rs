@@ -10,7 +10,7 @@ fn test_log_mode_up_key() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::ScrollUp)
@@ -31,7 +31,7 @@ fn test_log_mode_down_key() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::ScrollDown)
@@ -52,7 +52,7 @@ fn test_log_mode_home_end() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::ScrollToTop)
@@ -60,7 +60,7 @@ fn test_log_mode_home_end() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::ScrollToBottom)
@@ -142,7 +142,7 @@ fn test_search_mode_esc() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Esc),
+            &Event::key(Key::Esc),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::ClearSearch)
@@ -156,7 +156,7 @@ fn test_search_mode_enter() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::ConfirmSearch)
@@ -170,7 +170,7 @@ fn test_search_mode_backspace() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Backspace),
+            &Event::key(Key::Backspace),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::SearchBackspace)
@@ -184,7 +184,7 @@ fn test_search_mode_delete() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Delete),
+            &Event::key(Key::Delete),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::SearchDelete)
@@ -198,7 +198,7 @@ fn test_search_mode_left_right() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Left),
+            &Event::key(Key::Left),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::SearchLeft)
@@ -206,7 +206,7 @@ fn test_search_mode_left_right() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Right),
+            &Event::key(Key::Right),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::SearchRight)
@@ -220,7 +220,7 @@ fn test_search_mode_home_end() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::SearchHome)
@@ -228,7 +228,7 @@ fn test_search_mode_home_end() {
     assert_eq!(
         LogViewer::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(LogViewerMessage::SearchEnd)
@@ -244,7 +244,7 @@ fn test_instance_handle_event() {
     let state = focused_state();
     let msg = LogViewer::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(LogViewerMessage::ScrollDown));
@@ -262,7 +262,7 @@ fn test_instance_dispatch_event() {
     let mut state = focused_state();
     LogViewer::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(state.scroll_offset(), 1);

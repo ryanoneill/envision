@@ -264,7 +264,7 @@ fn test_expand_leaf_via_dispatch_event() {
 
     let output = Tree::<()>::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, None);
@@ -276,7 +276,7 @@ fn test_collapse_leaf_via_dispatch_event() {
 
     let output = Tree::<()>::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, None);
@@ -302,7 +302,7 @@ fn test_handle_event_tab_key() {
 
     let msg = Tree::<()>::handle_event(
         &state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);
@@ -314,7 +314,7 @@ fn test_handle_event_escape_key() {
 
     let msg = Tree::<()>::handle_event(
         &state,
-        &Event::key(KeyCode::Esc),
+        &Event::key(Key::Esc),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, None);

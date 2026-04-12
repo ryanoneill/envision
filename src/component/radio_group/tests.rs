@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 #[test]
 fn test_new() {
@@ -271,7 +271,7 @@ fn test_handle_event_up() {
     let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let msg = RadioGroup::<String>::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(RadioGroupMessage::Up));
@@ -282,7 +282,7 @@ fn test_handle_event_down() {
     let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let msg = RadioGroup::<String>::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(RadioGroupMessage::Down));
@@ -315,7 +315,7 @@ fn test_handle_event_enter() {
     let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let msg = RadioGroup::<String>::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(RadioGroupMessage::Confirm));
@@ -324,11 +324,8 @@ fn test_handle_event_enter() {
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
-    let msg = RadioGroup::<String>::handle_event(
-        &state,
-        &Event::key(KeyCode::Up),
-        &EventContext::default(),
-    );
+    let msg =
+        RadioGroup::<String>::handle_event(&state, &Event::key(Key::Up), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -337,7 +334,7 @@ fn test_handle_event_ignored_when_disabled() {
     let state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let msg = RadioGroup::<String>::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -348,7 +345,7 @@ fn test_dispatch_event_radio() {
     let mut state = RadioGroupState::new(vec!["A".to_string(), "B".to_string(), "C".to_string()]);
     let output = RadioGroup::<String>::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(RadioGroupOutput::SelectionChanged(1)));

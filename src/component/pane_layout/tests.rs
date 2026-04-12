@@ -1,7 +1,7 @@
 use super::*;
 use crate::component::Component;
 use crate::component::test_utils::setup_render;
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key, Modifiers};
 use ratatui::prelude::Rect;
 
 // ========== PaneConfig Tests ==========
@@ -499,7 +499,7 @@ fn test_handle_event_tab() {
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     let msg = PaneLayout::handle_event(
         &state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::FocusNext));
@@ -511,7 +511,7 @@ fn test_handle_event_backtab() {
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     let msg = PaneLayout::handle_event(
         &state,
-        &Event::key(KeyCode::BackTab),
+        &Event::key_with(Key::Tab, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::FocusPrev));
@@ -523,7 +523,7 @@ fn test_handle_event_ctrl_right() {
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     let msg = PaneLayout::handle_event(
         &state,
-        &Event::key_with(KeyCode::Right, KeyModifiers::CONTROL),
+        &Event::key_with(Key::Right, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::GrowFocused));
@@ -535,7 +535,7 @@ fn test_handle_event_ctrl_left() {
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     let msg = PaneLayout::handle_event(
         &state,
-        &Event::key_with(KeyCode::Left, KeyModifiers::CONTROL),
+        &Event::key_with(Key::Left, Modifiers::CONTROL),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaneLayoutMessage::ShrinkFocused));
@@ -557,7 +557,7 @@ fn test_handle_event_ctrl_0() {
 fn test_handle_event_unfocused_ignored() {
     let panes = vec![PaneConfig::new("a")];
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
-    let msg = PaneLayout::handle_event(&state, &Event::key(KeyCode::Tab), &EventContext::default());
+    let msg = PaneLayout::handle_event(&state, &Event::key(Key::Tab), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -567,7 +567,7 @@ fn test_handle_event_disabled_ignored() {
     let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     let msg = PaneLayout::handle_event(
         &state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -593,7 +593,7 @@ fn test_dispatch_event() {
     let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
     let output = PaneLayout::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true),
     );
     assert!(matches!(

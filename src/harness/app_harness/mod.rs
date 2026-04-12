@@ -369,7 +369,7 @@ impl<A: App> AppHarness<A> {
     /// use envision::harness::AppHarness;
     ///
     /// let mut harness = AppHarness::<MyApp>::new(80, 24)?;
-    /// harness.push_event(Event::key(KeyCode::Enter));
+    /// harness.push_event(Event::key(Key::Enter));
     /// harness.tick()?;
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```

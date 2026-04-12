@@ -262,7 +262,7 @@ fn test_large_select_navigation() {
 // handle_event Tests
 // ========================================
 
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 #[test]
 fn test_handle_event_toggle_when_closed() {
@@ -271,7 +271,7 @@ fn test_handle_event_toggle_when_closed() {
     // Enter when closed -> Toggle
     let msg = Select::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Toggle));
@@ -292,7 +292,7 @@ fn test_handle_event_confirm_when_open() {
 
     let msg = Select::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Confirm));
@@ -305,7 +305,7 @@ fn test_handle_event_close_when_open() {
 
     let msg = Select::handle_event(
         &state,
-        &Event::key(KeyCode::Esc),
+        &Event::key(Key::Esc),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Close));
@@ -318,7 +318,7 @@ fn test_handle_event_up_when_open() {
 
     let msg = Select::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Up));
@@ -339,7 +339,7 @@ fn test_handle_event_down_when_open() {
 
     let msg = Select::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Down));
@@ -356,11 +356,7 @@ fn test_handle_event_down_when_open() {
 #[test]
 fn test_handle_event_ignored_when_unfocused() {
     let state = SelectState::new(vec!["A", "B", "C"]);
-    let msg = Select::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg = Select::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -369,7 +365,7 @@ fn test_handle_event_ignored_when_disabled() {
     let state = SelectState::new(vec!["A", "B", "C"]);
     let msg = Select::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -388,7 +384,7 @@ fn test_dispatch_event() {
     // Enter when open dispatches Confirm, which selects the item
     let output = Select::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SelectOutput::Selected("B".to_string())));
@@ -401,7 +397,7 @@ fn test_instance_methods() {
     // static handle_event
     let msg = Select::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(SelectMessage::Toggle));
@@ -414,7 +410,7 @@ fn test_instance_methods() {
     // static dispatch_event
     let output = Select::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));

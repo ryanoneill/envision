@@ -47,7 +47,7 @@ use std::marker::PhantomData;
 use ratatui::prelude::*;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 impl MessageSource for ConversationViewState {
@@ -814,17 +814,17 @@ impl Component for ConversationView {
         }
 
         let key = event.as_key()?;
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
 
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') => Some(ConversationViewMessage::ScrollUp),
-            KeyCode::Down | KeyCode::Char('j') => Some(ConversationViewMessage::ScrollDown),
-            KeyCode::Home | KeyCode::Char('g') => Some(ConversationViewMessage::ScrollToTop),
-            KeyCode::End if shift => Some(ConversationViewMessage::ScrollToBottom),
-            KeyCode::End => Some(ConversationViewMessage::ScrollToBottom),
-            KeyCode::Char('G') => Some(ConversationViewMessage::ScrollToBottom),
-            KeyCode::PageUp => Some(ConversationViewMessage::PageUp),
-            KeyCode::PageDown => Some(ConversationViewMessage::PageDown),
+        match key.key {
+            Key::Up | Key::Char('k') => Some(ConversationViewMessage::ScrollUp),
+            Key::Down | Key::Char('j') => Some(ConversationViewMessage::ScrollDown),
+            Key::Char('g') if key.modifiers.shift() => {
+                Some(ConversationViewMessage::ScrollToBottom)
+            }
+            Key::Home | Key::Char('g') => Some(ConversationViewMessage::ScrollToTop),
+            Key::End => Some(ConversationViewMessage::ScrollToBottom),
+            Key::PageUp => Some(ConversationViewMessage::PageUp),
+            Key::PageDown => Some(ConversationViewMessage::PageDown),
             _ => None,
         }
     }

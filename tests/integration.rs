@@ -359,7 +359,7 @@ fn test_form_workflow_with_focus_manager() {
     // Verify Checkbox is no longer focused and Button is
 
     // Press Enter on Button via dispatch_event
-    let enter_event = Event::key(crossterm::event::KeyCode::Enter);
+    let enter_event = Event::key(envision::input::Key::Enter);
     let output = Button::dispatch_event(
         &mut button,
         &enter_event,
@@ -385,7 +385,7 @@ fn test_selectable_list_stress_10000_items() {
     assert_eq!(state.selected_index(), Some(0));
 
     // Send 100 Down events via dispatch_event
-    let down_event = Event::key(crossterm::event::KeyCode::Down);
+    let down_event = Event::key(envision::input::Key::Down);
     for _ in 0..100 {
         SelectableList::<String>::dispatch_event(
             &mut state,

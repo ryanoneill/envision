@@ -30,7 +30,7 @@
 //! ```
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::theme::Theme;
 
 mod render;
@@ -749,12 +749,12 @@ impl Component for TabBar {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Left | KeyCode::Char('h') => Some(TabBarMessage::PrevTab),
-                KeyCode::Right | KeyCode::Char('l') => Some(TabBarMessage::NextTab),
-                KeyCode::Home => Some(TabBarMessage::First),
-                KeyCode::End => Some(TabBarMessage::Last),
-                KeyCode::Char('w') => Some(TabBarMessage::CloseActiveTab),
+            match key.key {
+                Key::Left | Key::Char('h') => Some(TabBarMessage::PrevTab),
+                Key::Right | Key::Char('l') => Some(TabBarMessage::NextTab),
+                Key::Home => Some(TabBarMessage::First),
+                Key::End => Some(TabBarMessage::Last),
+                Key::Char('w') => Some(TabBarMessage::CloseActiveTab),
                 _ => None,
             }
         } else {

@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 // State Tests
 
@@ -404,7 +404,7 @@ fn test_handle_event_left_when_focused() {
 
     let msg = Tabs::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::Left));
@@ -416,7 +416,7 @@ fn test_handle_event_right_when_focused() {
 
     let msg = Tabs::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::Right));
@@ -428,7 +428,7 @@ fn test_handle_event_first_when_focused() {
 
     let msg = Tabs::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::First));
@@ -440,7 +440,7 @@ fn test_handle_event_last_when_focused() {
 
     let msg = Tabs::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::Last));
@@ -452,7 +452,7 @@ fn test_handle_event_confirm_when_focused() {
 
     let msg = Tabs::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::Confirm));
@@ -482,18 +482,10 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = TabsState::new(vec!["A", "B", "C"]);
     // focused is false by default
 
-    let msg = Tabs::<&str>::handle_event(
-        &state,
-        &Event::key(KeyCode::Right),
-        &EventContext::default(),
-    );
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(Key::Right), &EventContext::default());
     assert_eq!(msg, None);
 
-    let msg = Tabs::<&str>::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg = Tabs::<&str>::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, None);
 
     let msg = Tabs::<&str>::handle_event(&state, &Event::char('l'), &EventContext::default());
@@ -506,14 +498,14 @@ fn test_handle_event_ignored_when_disabled() {
 
     let msg = Tabs::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Tabs::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -528,7 +520,7 @@ fn test_dispatch_event() {
     // Dispatch Right: should move selection from 0 to 1
     let output = Tabs::<&str>::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
@@ -537,7 +529,7 @@ fn test_dispatch_event() {
     // Dispatch Enter: should confirm the current selection
     let output = Tabs::<&str>::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabsOutput::Confirmed("B")));
@@ -552,7 +544,7 @@ fn test_instance_methods() {
     // dispatch_event via static method
     let output = Tabs::<&str>::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
@@ -566,7 +558,7 @@ fn test_instance_methods() {
     // handle_event via static method
     let msg = Tabs::<&str>::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TabsMessage::Left));

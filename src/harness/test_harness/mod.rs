@@ -175,10 +175,10 @@ impl TestHarness {
     ///
     /// ```rust
     /// use envision::harness::TestHarness;
-    /// use envision::input::{Event, KeyCode};
+    /// use envision::input::{Event, Key};
     ///
     /// let mut harness = TestHarness::new(80, 24);
-    /// harness.push_event(Event::key(KeyCode::Enter));
+    /// harness.push_event(Event::key(Key::Enter));
     /// let event = harness.pop_event();
     /// assert!(event.is_some());
     /// ```

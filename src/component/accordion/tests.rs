@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 // ========== AccordionPanel Tests ==========
 
@@ -563,7 +563,7 @@ fn test_handle_event_up_when_focused() {
 
     let msg = Accordion::handle_event(
         &state,
-        &Event::key(KeyCode::Up),
+        &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(AccordionMessage::Up));
@@ -575,7 +575,7 @@ fn test_handle_event_down_when_focused() {
 
     let msg = Accordion::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(AccordionMessage::Down));
@@ -587,7 +587,7 @@ fn test_handle_event_toggle_when_focused() {
 
     let msg = Accordion::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(AccordionMessage::Toggle));
@@ -599,7 +599,7 @@ fn test_handle_event_first_when_focused() {
 
     let msg = Accordion::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(AccordionMessage::First));
@@ -611,7 +611,7 @@ fn test_handle_event_last_when_focused() {
 
     let msg = Accordion::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(AccordionMessage::Last));
@@ -653,14 +653,10 @@ fn test_handle_event_ignored_when_unfocused() {
     let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
     // Not focused by default
 
-    let msg = Accordion::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
+    let msg = Accordion::handle_event(&state, &Event::key(Key::Down), &EventContext::default());
     assert_eq!(msg, None);
 
-    let msg = Accordion::handle_event(
-        &state,
-        &Event::key(KeyCode::Enter),
-        &EventContext::default(),
-    );
+    let msg = Accordion::handle_event(&state, &Event::key(Key::Enter), &EventContext::default());
     assert_eq!(msg, None);
 
     let msg = Accordion::handle_event(&state, &Event::char('j'), &EventContext::default());
@@ -673,14 +669,14 @@ fn test_handle_event_ignored_when_disabled() {
 
     let msg = Accordion::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
 
     let msg = Accordion::handle_event(
         &state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -695,7 +691,7 @@ fn test_dispatch_event() {
     // Dispatch Down: should move focus from 0 to 1
     let output = Accordion::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(AccordionOutput::FocusChanged(1)));
@@ -704,7 +700,7 @@ fn test_dispatch_event() {
     // Dispatch Enter: should toggle the focused panel
     let output = Accordion::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(AccordionOutput::Expanded(1)));
@@ -720,7 +716,7 @@ fn test_instance_update() {
     // Navigate down via dispatch_event
     let output = Accordion::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(AccordionOutput::FocusChanged(1)));

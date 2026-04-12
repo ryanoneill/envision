@@ -28,7 +28,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
 use super::{Component, EventContext, RenderContext, Toggleable};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use crate::theme::Theme;
 
 /// A button configuration for a dialog.
@@ -511,11 +511,11 @@ impl DialogState {
     ///
     /// ```rust
     /// use envision::component::{DialogMessage, DialogState, Toggleable, Dialog};
-    /// use envision::input::{Event, KeyCode};
+    /// use envision::input::{Event, Key};
     ///
     /// let mut state = DialogState::alert("Info", "Done.");
     /// Dialog::show(&mut state);
-    /// let event = Event::key(KeyCode::Enter);
+    /// let event = Event::key(Key::Enter);
     /// assert_eq!(state.handle_event(&event), Some(DialogMessage::Press));
     /// ```
     pub fn handle_event(&self, event: &Event) -> Option<DialogMessage> {
@@ -528,11 +528,11 @@ impl DialogState {
     ///
     /// ```rust
     /// use envision::component::{DialogOutput, DialogState, Toggleable, Dialog};
-    /// use envision::input::{Event, KeyCode};
+    /// use envision::input::{Event, Key};
     ///
     /// let mut state = DialogState::alert("Info", "Done.");
     /// Dialog::show(&mut state);
-    /// let event = Event::key(KeyCode::Enter);
+    /// let event = Event::key(Key::Enter);
     /// let output = state.dispatch_event(&event);
     /// assert_eq!(output, Some(DialogOutput::ButtonPressed("ok".into())));
     /// ```
@@ -663,11 +663,11 @@ impl Component for Dialog {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Tab => Some(DialogMessage::FocusNext),
-                KeyCode::BackTab => Some(DialogMessage::FocusPrev),
-                KeyCode::Enter => Some(DialogMessage::Press),
-                KeyCode::Esc => Some(DialogMessage::Close),
+            match key.key {
+                Key::Tab if key.modifiers.shift() => Some(DialogMessage::FocusPrev),
+                Key::Tab => Some(DialogMessage::FocusNext),
+                Key::Enter => Some(DialogMessage::Press),
+                Key::Esc => Some(DialogMessage::Close),
                 _ => None,
             }
         } else {

@@ -30,7 +30,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a Tabs component.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -437,12 +437,12 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Left | KeyCode::Char('h') => Some(TabsMessage::Left),
-                KeyCode::Right | KeyCode::Char('l') => Some(TabsMessage::Right),
-                KeyCode::Home => Some(TabsMessage::First),
-                KeyCode::End => Some(TabsMessage::Last),
-                KeyCode::Enter => Some(TabsMessage::Confirm),
+            match key.key {
+                Key::Left | Key::Char('h') => Some(TabsMessage::Left),
+                Key::Right | Key::Char('l') => Some(TabsMessage::Right),
+                Key::Home => Some(TabsMessage::First),
+                Key::End => Some(TabsMessage::Last),
+                Key::Enter => Some(TabsMessage::Confirm),
                 _ => None,
             }
         } else {

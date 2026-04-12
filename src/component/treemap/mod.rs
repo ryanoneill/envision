@@ -31,7 +31,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// Layout algorithm module.
 pub mod layout;
@@ -667,14 +667,14 @@ impl Component for Treemap {
 
         let key = event.as_key()?;
 
-        match key.code {
-            KeyCode::Left | KeyCode::Char('h') => Some(TreemapMessage::SelectPrev),
-            KeyCode::Right | KeyCode::Char('l') => Some(TreemapMessage::SelectNext),
-            KeyCode::Down | KeyCode::Char('j') => Some(TreemapMessage::SelectChild),
-            KeyCode::Up | KeyCode::Char('k') => Some(TreemapMessage::SelectParent),
-            KeyCode::Enter => Some(TreemapMessage::ZoomIn),
-            KeyCode::Esc | KeyCode::Backspace => Some(TreemapMessage::ZoomOut),
-            KeyCode::Home => Some(TreemapMessage::ResetZoom),
+        match key.key {
+            Key::Left | Key::Char('h') => Some(TreemapMessage::SelectPrev),
+            Key::Right | Key::Char('l') => Some(TreemapMessage::SelectNext),
+            Key::Down | Key::Char('j') => Some(TreemapMessage::SelectChild),
+            Key::Up | Key::Char('k') => Some(TreemapMessage::SelectParent),
+            Key::Enter => Some(TreemapMessage::ZoomIn),
+            Key::Esc | Key::Backspace => Some(TreemapMessage::ZoomOut),
+            Key::Home => Some(TreemapMessage::ResetZoom),
             _ => None,
         }
     }

@@ -1,15 +1,13 @@
 //! Event types for terminal input.
 
-use crossterm::event::{
-    KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseButton, MouseEvent,
-    MouseEventKind,
-};
+use super::key::{Key, KeyEvent, Modifiers};
+use super::mouse::{MouseButton, MouseEvent, MouseEventKind};
 
 /// A terminal input event.
 ///
-/// This wraps crossterm's event types to provide a unified interface
-/// for handling input events. The same type is used whether events come
-/// from a real terminal or are injected programmatically.
+/// This provides a unified interface for handling input events. The same
+/// type is used whether events come from a real terminal or are injected
+/// programmatically.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Event {
     /// A keyboard event
@@ -43,12 +41,14 @@ impl Event {
     /// assert!(event.is_key());
     /// ```
     pub fn char(c: char) -> Self {
-        Self::Key(KeyEvent::new(KeyCode::Char(c), KeyModifiers::NONE))
+        Self::Key(KeyEvent::char(c))
     }
 
     /// Creates a key press event for a character with modifiers.
-    pub fn char_with(c: char, modifiers: KeyModifiers) -> Self {
-        Self::Key(KeyEvent::new(KeyCode::Char(c), modifiers))
+    pub fn char_with(c: char, modifiers: Modifiers) -> Self {
+        let mut ke = KeyEvent::char(c);
+        ke.modifiers |= modifiers;
+        Self::Key(ke)
     }
 
     /// Creates a key press event for a special key.
@@ -56,13 +56,13 @@ impl Event {
     /// # Example
     ///
     /// ```rust
-    /// use envision::input::{Event, KeyCode};
+    /// use envision::input::{Event, Key};
     ///
-    /// let event = Event::key(KeyCode::Enter);
+    /// let event = Event::key(Key::Enter);
     /// assert!(event.is_key());
     /// ```
-    pub fn key(code: KeyCode) -> Self {
-        Self::Key(KeyEvent::new(code, KeyModifiers::NONE))
+    pub fn key(key: Key) -> Self {
+        Self::Key(KeyEvent::new(key))
     }
 
     /// Creates a key press event with modifiers.
@@ -70,13 +70,21 @@ impl Event {
     /// # Example
     ///
     /// ```rust
-    /// use envision::input::{Event, KeyCode, KeyModifiers};
+    /// use envision::input::{Event, Key, Modifiers};
     ///
-    /// let event = Event::key_with(KeyCode::Char('s'), KeyModifiers::CONTROL);
+    /// let event = Event::key_with(Key::Char('s'), Modifiers::CONTROL);
     /// assert!(event.is_key());
     /// ```
-    pub fn key_with(code: KeyCode, modifiers: KeyModifiers) -> Self {
-        Self::Key(KeyEvent::new(code, modifiers))
+    pub fn key_with(key: Key, modifiers: Modifiers) -> Self {
+        Self::Key(KeyEvent {
+            key,
+            modifiers,
+            kind: super::key::KeyEventKind::Press,
+            raw_char: match key {
+                Key::Char(c) => Some(c),
+                _ => None,
+            },
+        })
     }
 
     /// Creates a Ctrl+key event.
@@ -90,7 +98,7 @@ impl Event {
     /// assert!(event.is_key());
     /// ```
     pub fn ctrl(c: char) -> Self {
-        Self::Key(KeyEvent::new(KeyCode::Char(c), KeyModifiers::CONTROL))
+        Self::Key(KeyEvent::ctrl(c))
     }
 
     /// Creates an Alt+key event.
@@ -104,7 +112,12 @@ impl Event {
     /// assert!(event.is_key());
     /// ```
     pub fn alt(c: char) -> Self {
-        Self::Key(KeyEvent::new(KeyCode::Char(c), KeyModifiers::ALT))
+        Self::Key(KeyEvent {
+            key: Key::Char(c.to_ascii_lowercase()),
+            modifiers: Modifiers::ALT,
+            kind: super::key::KeyEventKind::Press,
+            raw_char: Some(c),
+        })
     }
 
     /// Creates a mouse click event at the specified position.
@@ -122,7 +135,7 @@ impl Event {
             kind: MouseEventKind::Down(MouseButton::Left),
             column: x,
             row: y,
-            modifiers: KeyModifiers::NONE,
+            modifiers: Modifiers::NONE,
         })
     }
 
@@ -132,7 +145,7 @@ impl Event {
             kind: MouseEventKind::Down(button),
             column: x,
             row: y,
-            modifiers: KeyModifiers::NONE,
+            modifiers: Modifiers::NONE,
         })
     }
 
@@ -142,7 +155,7 @@ impl Event {
             kind: MouseEventKind::Up(MouseButton::Left),
             column: x,
             row: y,
-            modifiers: KeyModifiers::NONE,
+            modifiers: Modifiers::NONE,
         })
     }
 
@@ -152,7 +165,7 @@ impl Event {
             kind: MouseEventKind::Moved,
             column: x,
             row: y,
-            modifiers: KeyModifiers::NONE,
+            modifiers: Modifiers::NONE,
         })
     }
 
@@ -162,7 +175,7 @@ impl Event {
             kind: MouseEventKind::Drag(button),
             column: x,
             row: y,
-            modifiers: KeyModifiers::NONE,
+            modifiers: Modifiers::NONE,
         })
     }
 
@@ -172,7 +185,7 @@ impl Event {
             kind: MouseEventKind::ScrollUp,
             column: x,
             row: y,
-            modifiers: KeyModifiers::NONE,
+            modifiers: Modifiers::NONE,
         })
     }
 
@@ -182,7 +195,7 @@ impl Event {
             kind: MouseEventKind::ScrollDown,
             column: x,
             row: y,
-            modifiers: KeyModifiers::NONE,
+            modifiers: Modifiers::NONE,
         })
     }
 
@@ -219,9 +232,9 @@ impl Event {
     /// # Example
     ///
     /// ```rust
-    /// use envision::input::{Event, KeyCode};
+    /// use envision::input::{Event, Key};
     ///
-    /// let event = Event::key(KeyCode::Enter);
+    /// let event = Event::key(Key::Enter);
     /// assert!(event.as_key().is_some());
     /// assert!(Event::click(0, 0).as_key().is_none());
     /// ```
@@ -258,7 +271,7 @@ impl Event {
     /// # Example
     ///
     /// ```rust
-    /// use envision::input::{Event, KeyCode};
+    /// use envision::input::{Event, Key};
     ///
     /// assert_eq!(Event::char('a').kind_name(), "Key");
     /// assert_eq!(Event::click(0, 0).kind_name(), "Mouse");
@@ -290,48 +303,20 @@ impl From<MouseEvent> for Event {
     }
 }
 
-impl From<crossterm::event::Event> for Event {
-    fn from(event: crossterm::event::Event) -> Self {
-        match event {
-            crossterm::event::Event::Key(e) => Event::Key(e),
-            crossterm::event::Event::Mouse(e) => Event::Mouse(e),
-            crossterm::event::Event::Resize(w, h) => Event::Resize(w, h),
-            crossterm::event::Event::FocusGained => Event::FocusGained,
-            crossterm::event::Event::FocusLost => Event::FocusLost,
-            crossterm::event::Event::Paste(s) => Event::Paste(s),
-        }
-    }
-}
-
-impl From<Event> for crossterm::event::Event {
-    fn from(event: Event) -> Self {
-        match event {
-            Event::Key(e) => crossterm::event::Event::Key(e),
-            Event::Mouse(e) => crossterm::event::Event::Mouse(e),
-            Event::Resize(w, h) => crossterm::event::Event::Resize(w, h),
-            Event::FocusGained => crossterm::event::Event::FocusGained,
-            Event::FocusLost => crossterm::event::Event::FocusLost,
-            Event::Paste(s) => crossterm::event::Event::Paste(s),
-        }
-    }
-}
-
 /// Builder for creating key events with specific properties.
 #[derive(Clone, Debug)]
 pub struct KeyEventBuilder {
-    code: Option<KeyCode>,
-    modifiers: KeyModifiers,
-    kind: KeyEventKind,
-    state: KeyEventState,
+    key: Option<Key>,
+    modifiers: Modifiers,
+    kind: super::key::KeyEventKind,
 }
 
 impl Default for KeyEventBuilder {
     fn default() -> Self {
         Self {
-            code: None,
-            modifiers: KeyModifiers::NONE,
-            kind: KeyEventKind::Press,
-            state: KeyEventState::NONE,
+            key: None,
+            modifiers: Modifiers::NONE,
+            kind: super::key::KeyEventKind::Press,
         }
     }
 }
@@ -342,55 +327,59 @@ impl KeyEventBuilder {
         Self::default()
     }
 
-    /// Sets the key code.
-    pub fn code(mut self, code: KeyCode) -> Self {
-        self.code = Some(code);
+    /// Sets the key.
+    pub fn code(mut self, key: Key) -> Self {
+        self.key = Some(key);
         self
     }
 
     /// Sets the key to a character.
     pub fn char(mut self, c: char) -> Self {
-        self.code = Some(KeyCode::Char(c));
+        self.key = Some(Key::Char(c));
         self
     }
 
     /// Adds the Control modifier.
     pub fn ctrl(mut self) -> Self {
-        self.modifiers |= KeyModifiers::CONTROL;
+        self.modifiers |= Modifiers::CONTROL;
         self
     }
 
     /// Adds the Alt modifier.
     pub fn alt(mut self) -> Self {
-        self.modifiers |= KeyModifiers::ALT;
+        self.modifiers |= Modifiers::ALT;
         self
     }
 
     /// Adds the Shift modifier.
     pub fn shift(mut self) -> Self {
-        self.modifiers |= KeyModifiers::SHIFT;
+        self.modifiers |= Modifiers::SHIFT;
         self
     }
 
     /// Sets the modifiers directly.
-    pub fn modifiers(mut self, modifiers: KeyModifiers) -> Self {
+    pub fn modifiers(mut self, modifiers: Modifiers) -> Self {
         self.modifiers = modifiers;
         self
     }
 
     /// Sets the event kind (Press, Release, Repeat).
-    pub fn kind(mut self, kind: KeyEventKind) -> Self {
+    pub fn kind(mut self, kind: super::key::KeyEventKind) -> Self {
         self.kind = kind;
         self
     }
 
     /// Builds the key event.
     pub fn build(self) -> KeyEvent {
+        let key = self.key.unwrap_or(Key::Esc);
         KeyEvent {
-            code: self.code.unwrap_or(KeyCode::Null),
+            key,
             modifiers: self.modifiers,
             kind: self.kind,
-            state: self.state,
+            raw_char: match key {
+                Key::Char(c) => Some(c),
+                _ => None,
+            },
         }
     }
 
@@ -406,7 +395,7 @@ pub struct MouseEventBuilder {
     kind: MouseEventKind,
     column: u16,
     row: u16,
-    modifiers: KeyModifiers,
+    modifiers: Modifiers,
 }
 
 impl MouseEventBuilder {
@@ -416,7 +405,7 @@ impl MouseEventBuilder {
             kind: MouseEventKind::Moved,
             column: 0,
             row: 0,
-            modifiers: KeyModifiers::NONE,
+            modifiers: Modifiers::NONE,
         }
     }
 
@@ -471,19 +460,19 @@ impl MouseEventBuilder {
 
     /// Adds the Control modifier.
     pub fn ctrl(mut self) -> Self {
-        self.modifiers |= KeyModifiers::CONTROL;
+        self.modifiers |= Modifiers::CONTROL;
         self
     }
 
     /// Adds the Alt modifier.
     pub fn alt(mut self) -> Self {
-        self.modifiers |= KeyModifiers::ALT;
+        self.modifiers |= Modifiers::ALT;
         self
     }
 
     /// Adds the Shift modifier.
     pub fn shift(mut self) -> Self {
-        self.modifiers |= KeyModifiers::SHIFT;
+        self.modifiers |= Modifiers::SHIFT;
         self
     }
 

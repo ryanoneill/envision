@@ -35,7 +35,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 
 /// The orientation of a split panel.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -376,16 +376,16 @@ impl Component for SplitPanel {
 
         if let Some(key) = event.as_key() {
             // Tab toggles pane focus
-            if key.code == KeyCode::Tab || key.code == KeyCode::BackTab {
+            if key.key == Key::Tab {
                 return Some(SplitPanelMessage::FocusOther);
             }
 
             // Ctrl+arrow resizes
-            if key.modifiers.contains(KeyModifiers::CONTROL) {
-                match key.code {
-                    KeyCode::Left | KeyCode::Up => return Some(SplitPanelMessage::ShrinkFirst),
-                    KeyCode::Right | KeyCode::Down => return Some(SplitPanelMessage::GrowFirst),
-                    KeyCode::Char('0') => return Some(SplitPanelMessage::ResetRatio),
+            if key.modifiers.ctrl() {
+                match key.key {
+                    Key::Left | Key::Up => return Some(SplitPanelMessage::ShrinkFirst),
+                    Key::Right | Key::Down => return Some(SplitPanelMessage::GrowFirst),
+                    Key::Char('0') => return Some(SplitPanelMessage::ResetRatio),
                     _ => {}
                 }
             }

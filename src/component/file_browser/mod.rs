@@ -37,7 +37,7 @@ use std::sync::Arc;
 use ratatui::widgets::ListState;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use types::{FileBrowserFocus, compute_segments};
 
 /// Trait for providing directory listings.
@@ -651,45 +651,41 @@ impl Component for FileBrowser {
         }
 
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+        let ctrl = key.modifiers.ctrl();
+        let shift = key.modifiers.shift();
 
         match state.internal_focus {
-            FileBrowserFocus::FileList => match key.code {
-                KeyCode::Up | KeyCode::Char('k') if !ctrl => Some(FileBrowserMessage::Up),
-                KeyCode::Down | KeyCode::Char('j') if !ctrl => Some(FileBrowserMessage::Down),
-                KeyCode::Home | KeyCode::Char('g') if !shift => Some(FileBrowserMessage::First),
-                KeyCode::End | KeyCode::Char('G') if shift || key.code == KeyCode::End => {
+            FileBrowserFocus::FileList => match key.key {
+                Key::Up | Key::Char('k') if !ctrl => Some(FileBrowserMessage::Up),
+                Key::Down | Key::Char('j') if !ctrl => Some(FileBrowserMessage::Down),
+                Key::Home | Key::Char('g') if !shift => Some(FileBrowserMessage::First),
+                Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
                     Some(FileBrowserMessage::Last)
                 }
-                KeyCode::PageUp => Some(FileBrowserMessage::PageUp(10)),
-                KeyCode::PageDown => Some(FileBrowserMessage::PageDown(10)),
-                KeyCode::Enter => Some(FileBrowserMessage::Enter),
-                KeyCode::Backspace if state.filter_text.is_empty() => {
-                    Some(FileBrowserMessage::Back)
-                }
-                KeyCode::Backspace => Some(FileBrowserMessage::FilterBackspace),
-                KeyCode::Char(' ') => Some(FileBrowserMessage::ToggleSelect),
-                KeyCode::Char('h') if ctrl => Some(FileBrowserMessage::ToggleHidden),
-                KeyCode::Tab => Some(FileBrowserMessage::CycleFocus),
-                KeyCode::BackTab => Some(FileBrowserMessage::CycleFocus),
-                KeyCode::Esc => Some(FileBrowserMessage::FilterClear),
-                KeyCode::Char(c)
-                    if !ctrl && c.is_alphanumeric() || c == '.' || c == '_' || c == '-' =>
-                {
-                    Some(FileBrowserMessage::FilterChar(c))
-                }
+                Key::PageUp => Some(FileBrowserMessage::PageUp(10)),
+                Key::PageDown => Some(FileBrowserMessage::PageDown(10)),
+                Key::Enter => Some(FileBrowserMessage::Enter),
+                Key::Backspace if state.filter_text.is_empty() => Some(FileBrowserMessage::Back),
+                Key::Backspace => Some(FileBrowserMessage::FilterBackspace),
+                Key::Char(' ') => Some(FileBrowserMessage::ToggleSelect),
+                Key::Char('h') if ctrl => Some(FileBrowserMessage::ToggleHidden),
+                Key::Tab => Some(FileBrowserMessage::CycleFocus),
+                Key::Esc => Some(FileBrowserMessage::FilterClear),
+                Key::Char(_) if !ctrl => key
+                    .raw_char
+                    .filter(|c| c.is_alphanumeric() || *c == '.' || *c == '_' || *c == '-')
+                    .map(FileBrowserMessage::FilterChar),
                 _ => None,
             },
-            FileBrowserFocus::PathBar => match key.code {
-                KeyCode::Tab | KeyCode::BackTab => Some(FileBrowserMessage::CycleFocus),
+            FileBrowserFocus::PathBar => match key.key {
+                Key::Tab => Some(FileBrowserMessage::CycleFocus),
                 _ => None,
             },
-            FileBrowserFocus::Filter => match key.code {
-                KeyCode::Tab | KeyCode::BackTab => Some(FileBrowserMessage::CycleFocus),
-                KeyCode::Backspace => Some(FileBrowserMessage::FilterBackspace),
-                KeyCode::Esc => Some(FileBrowserMessage::FilterClear),
-                KeyCode::Char(c) if !ctrl => Some(FileBrowserMessage::FilterChar(c)),
+            FileBrowserFocus::Filter => match key.key {
+                Key::Tab => Some(FileBrowserMessage::CycleFocus),
+                Key::Backspace => Some(FileBrowserMessage::FilterBackspace),
+                Key::Esc => Some(FileBrowserMessage::FilterClear),
+                Key::Char(_) if !ctrl => key.raw_char.map(FileBrowserMessage::FilterChar),
                 _ => None,
             },
         }

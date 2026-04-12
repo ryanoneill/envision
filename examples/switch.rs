@@ -169,10 +169,11 @@ impl App for SwitchApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
-                KeyCode::Tab => return Some(Msg::FocusNext),
-                KeyCode::BackTab => return Some(Msg::FocusPrev),
+            match key.key {
+                Key::Char('q') | Key::Esc => return Some(Msg::Quit),
+                Key::Tab if key.modifiers.shift() => return Some(Msg::FocusPrev),
+
+                Key::Tab => return Some(Msg::FocusNext),
                 _ => {}
             }
         }

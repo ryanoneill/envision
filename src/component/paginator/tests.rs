@@ -1,6 +1,6 @@
 use super::*;
 use crate::component::test_utils;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 fn focused_state(total_pages: usize) -> PaginatorState {
     PaginatorState::new(total_pages)
@@ -321,7 +321,7 @@ fn test_handle_event_right_next() {
     let state = focused_state(5);
     let msg = Paginator::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaginatorMessage::NextPage));
@@ -343,7 +343,7 @@ fn test_handle_event_left_prev() {
     let state = focused_state(5);
     let msg = Paginator::handle_event(
         &state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaginatorMessage::PrevPage));
@@ -365,7 +365,7 @@ fn test_handle_event_home() {
     let state = focused_state(5);
     let msg = Paginator::handle_event(
         &state,
-        &Event::key(KeyCode::Home),
+        &Event::key(Key::Home),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaginatorMessage::FirstPage));
@@ -376,7 +376,7 @@ fn test_handle_event_end() {
     let state = focused_state(5);
     let msg = Paginator::handle_event(
         &state,
-        &Event::key(KeyCode::End),
+        &Event::key(Key::End),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaginatorMessage::LastPage));
@@ -396,11 +396,7 @@ fn test_handle_event_unrecognized() {
 #[test]
 fn test_handle_event_unfocused_ignores() {
     let state = PaginatorState::new(5);
-    let msg = Paginator::handle_event(
-        &state,
-        &Event::key(KeyCode::Right),
-        &EventContext::default(),
-    );
+    let msg = Paginator::handle_event(&state, &Event::key(Key::Right), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -409,7 +405,7 @@ fn test_handle_event_disabled_ignores() {
     let state = focused_state(5);
     let msg = Paginator::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -424,7 +420,7 @@ fn test_instance_handle_event() {
     let state = focused_state(5);
     let msg = Paginator::handle_event(
         &state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(PaginatorMessage::NextPage));
@@ -435,7 +431,7 @@ fn test_instance_dispatch_event() {
     let mut state = focused_state(5);
     let output = Paginator::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(PaginatorOutput::PageChanged(1)));

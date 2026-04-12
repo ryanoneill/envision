@@ -1,4 +1,5 @@
 use super::*;
+use crate::input::Modifiers;
 
 // =============================================================================
 // Sync scroll
@@ -215,7 +216,7 @@ fn test_disabled_ignores_events() {
     let state = focused_state();
     let msg = LogCorrelation::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -236,7 +237,7 @@ fn test_disabled_ignores_update() {
 fn test_unfocused_ignores_events() {
     let state = two_stream_state();
     let msg =
-        LogCorrelation::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
+        LogCorrelation::handle_event(&state, &Event::key(Key::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -250,7 +251,7 @@ fn test_up_key() {
     assert_eq!(
         LogCorrelation::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::ScrollUp)
@@ -271,7 +272,7 @@ fn test_down_key() {
     assert_eq!(
         LogCorrelation::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::ScrollDown)
@@ -292,7 +293,7 @@ fn test_home_end_keys() {
     assert_eq!(
         LogCorrelation::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::ScrollToTop)
@@ -300,7 +301,7 @@ fn test_home_end_keys() {
     assert_eq!(
         LogCorrelation::handle_event(
             &state,
-            &Event::key(KeyCode::End),
+            &Event::key(Key::End),
             &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::ScrollToBottom)
@@ -313,7 +314,7 @@ fn test_tab_key() {
     assert_eq!(
         LogCorrelation::handle_event(
             &state,
-            &Event::key(KeyCode::Tab),
+            &Event::key(Key::Tab),
             &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::FocusNextStream)
@@ -326,7 +327,7 @@ fn test_backtab_key() {
     assert_eq!(
         LogCorrelation::handle_event(
             &state,
-            &Event::key(KeyCode::BackTab),
+            &Event::key_with(Key::Tab, Modifiers::SHIFT),
             &EventContext::new().focused(true)
         ),
         Some(LogCorrelationMessage::FocusPrevStream)
@@ -355,7 +356,7 @@ fn test_instance_handle_event() {
     let state = focused_state();
     let msg = LogCorrelation::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(LogCorrelationMessage::ScrollDown));
@@ -373,7 +374,7 @@ fn test_instance_dispatch_event() {
     let mut state = focused_state();
     LogCorrelation::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
     assert_eq!(state.scroll_offset(), 1);

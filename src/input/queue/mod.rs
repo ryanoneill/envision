@@ -3,9 +3,9 @@
 use std::collections::VecDeque;
 use std::time::Duration;
 
-use crossterm::event::KeyCode;
-
 use super::events::Event;
+use super::key::Key;
+use super::mouse::MouseButton;
 
 /// A queue of simulated input events.
 ///
@@ -15,13 +15,13 @@ use super::events::Event;
 /// # Example
 ///
 /// ```rust
-/// use envision::input::{EventQueue, KeyCode};
+/// use envision::input::{EventQueue, Key};
 ///
 /// let mut queue = EventQueue::new();
 ///
 /// // Type "hello" then press Enter
 /// queue.type_str("hello");
-/// queue.key(KeyCode::Enter);
+/// queue.key(Key::Enter);
 ///
 /// // Process events
 /// assert_eq!(queue.len(), 6); // 5 chars + Enter
@@ -51,11 +51,11 @@ impl EventQueue {
     /// # Example
     ///
     /// ```rust
-    /// use envision::input::{Event, EventQueue, KeyCode};
+    /// use envision::input::{Event, EventQueue, Key};
     ///
     /// let queue = EventQueue::with_events(vec![
     ///     Event::char('a'),
-    ///     Event::key(KeyCode::Enter),
+    ///     Event::key(Key::Enter),
     /// ]);
     /// assert_eq!(queue.len(), 2);
     /// ```
@@ -111,8 +111,8 @@ impl EventQueue {
     }
 
     /// Adds a key event for a special key.
-    pub fn key(&mut self, code: KeyCode) {
-        self.push(Event::key(code));
+    pub fn key(&mut self, key: Key) {
+        self.push(Event::key(key));
     }
 
     /// Adds a character key event.
@@ -149,72 +149,72 @@ impl EventQueue {
 
     /// Adds an Enter key event.
     pub fn enter(&mut self) {
-        self.key(KeyCode::Enter);
+        self.key(Key::Enter);
     }
 
     /// Adds an Escape key event.
     pub fn escape(&mut self) {
-        self.key(KeyCode::Esc);
+        self.key(Key::Esc);
     }
 
     /// Adds a Tab key event.
     pub fn tab(&mut self) {
-        self.key(KeyCode::Tab);
+        self.key(Key::Tab);
     }
 
     /// Adds a Backspace key event.
     pub fn backspace(&mut self) {
-        self.key(KeyCode::Backspace);
+        self.key(Key::Backspace);
     }
 
     /// Adds a Delete key event.
     pub fn delete(&mut self) {
-        self.key(KeyCode::Delete);
+        self.key(Key::Delete);
     }
 
     /// Adds an Up arrow key event.
     pub fn up(&mut self) {
-        self.key(KeyCode::Up);
+        self.key(Key::Up);
     }
 
     /// Adds a Down arrow key event.
     pub fn down(&mut self) {
-        self.key(KeyCode::Down);
+        self.key(Key::Down);
     }
 
     /// Adds a Left arrow key event.
     pub fn left(&mut self) {
-        self.key(KeyCode::Left);
+        self.key(Key::Left);
     }
 
     /// Adds a Right arrow key event.
     pub fn right(&mut self) {
-        self.key(KeyCode::Right);
+        self.key(Key::Right);
     }
 
     /// Adds a Home key event.
     pub fn home(&mut self) {
-        self.key(KeyCode::Home);
+        self.key(Key::Home);
     }
 
     /// Adds an End key event.
     pub fn end(&mut self) {
-        self.key(KeyCode::End);
+        self.key(Key::End);
     }
 
     /// Adds a Page Up key event.
     pub fn page_up(&mut self) {
-        self.key(KeyCode::PageUp);
+        self.key(Key::PageUp);
     }
 
     /// Adds a Page Down key event.
     pub fn page_down(&mut self) {
-        self.key(KeyCode::PageDown);
+        self.key(Key::PageDown);
     }
 
     /// Adds a function key event (F1-F12).
     pub fn function(&mut self, n: u8) {
-        self.key(KeyCode::F(n));
+        self.key(Key::F(n));
     }
 
     /// Adds a mouse click event.
@@ -233,11 +233,7 @@ impl EventQueue {
     /// Adds mouse events to simulate a drag from one position to another.
     pub fn drag(&mut self, from: (u16, u16), to: (u16, u16)) {
         self.push(Event::click(from.0, from.1));
-        self.push(Event::mouse_drag(
-            to.0,
-            to.1,
-            crossterm::event::MouseButton::Left,
-        ));
+        self.push(Event::mouse_drag(to.0, to.1, MouseButton::Left));
         self.push(Event::mouse_up(to.0, to.1));
     }
 

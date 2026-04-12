@@ -119,12 +119,12 @@ fn test_view_focused() {
 ### Event Testing
 
 ```rust
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 #[test]
 fn test_handle_event_focused() {
     let state = MyState::new();
-    let event = Event::key(KeyCode::Enter);
+    let event = Event::key(Key::Enter);
     let ctx = EventContext::new().focused(true);
     let msg = MyComponent::handle_event(&state, &event, &ctx);
     assert_eq!(msg, Some(MyMessage::Confirm));

@@ -313,12 +313,12 @@ impl App for StylingShowcaseApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if key.code == KeyCode::Char('t') && key.modifiers.contains(KeyModifiers::CONTROL) {
+            if key.key == Key::Char('t') && key.modifiers.ctrl() {
                 return Some(Msg::CycleTheme);
             }
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
-                KeyCode::Tab => return Some(Msg::TogglePanel),
+            match key.key {
+                Key::Char('q') | Key::Esc => return Some(Msg::Quit),
+                Key::Tab => return Some(Msg::TogglePanel),
                 _ => {}
             }
         }

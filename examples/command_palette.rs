@@ -154,13 +154,10 @@ impl App for CommandPaletteApp {
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         // Global key bindings
         if let Some(key) = event.as_key() {
-            if key.code == KeyCode::Esc && !state.palette.is_visible() {
+            if key.key == Key::Esc && !state.palette.is_visible() {
                 return Some(Msg::Quit);
             }
-            if key.code == KeyCode::Char('p')
-                && key.modifiers.contains(KeyModifiers::CONTROL)
-                && !state.palette.is_visible()
-            {
+            if key.key == Key::Char('p') && key.modifiers.ctrl() && !state.palette.is_visible() {
                 return Some(Msg::TogglePalette);
             }
         }

@@ -709,23 +709,23 @@ fn test_slider_dispatch_event_keyboard() {
     let mut state = SliderState::new(0.0, 100.0).with_step(5.0);
 
     // Right arrow should increment
-    let event = envision::input::Event::key(crossterm::event::KeyCode::Right);
+    let event = envision::input::Event::key(envision::input::Key::Right);
     Slider::dispatch_event(&mut state, &event, &EventContext::new().focused(true));
     assert_eq!(state.value(), 5.0);
 
     // Left arrow should decrement
-    let event = envision::input::Event::key(crossterm::event::KeyCode::Left);
+    let event = envision::input::Event::key(envision::input::Key::Left);
     Slider::dispatch_event(&mut state, &event, &EventContext::new().focused(true));
     assert_eq!(state.value(), 0.0);
 
     // Home should go to min
     Slider::update(&mut state, SliderMessage::SetValue(50.0));
-    let event = envision::input::Event::key(crossterm::event::KeyCode::Home);
+    let event = envision::input::Event::key(envision::input::Key::Home);
     Slider::dispatch_event(&mut state, &event, &EventContext::new().focused(true));
     assert_eq!(state.value(), 0.0);
 
     // End should go to max
-    let event = envision::input::Event::key(crossterm::event::KeyCode::End);
+    let event = envision::input::Event::key(envision::input::Key::End);
     Slider::dispatch_event(&mut state, &event, &EventContext::new().focused(true));
     assert_eq!(state.value(), 100.0);
 }

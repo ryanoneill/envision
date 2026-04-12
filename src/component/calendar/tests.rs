@@ -1,5 +1,5 @@
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 // ========== Date Math Helper Tests ==========
 
@@ -517,7 +517,7 @@ fn test_handle_event_navigation_keys() {
     assert_eq!(
         Calendar::handle_event(
             &state,
-            &Event::key(KeyCode::Left),
+            &Event::key(Key::Left),
             &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::SelectPrevDay)
@@ -533,7 +533,7 @@ fn test_handle_event_navigation_keys() {
     assert_eq!(
         Calendar::handle_event(
             &state,
-            &Event::key(KeyCode::Right),
+            &Event::key(Key::Right),
             &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::SelectNextDay)
@@ -549,7 +549,7 @@ fn test_handle_event_navigation_keys() {
     assert_eq!(
         Calendar::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::SelectPrevWeek)
@@ -565,7 +565,7 @@ fn test_handle_event_navigation_keys() {
     assert_eq!(
         Calendar::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::SelectNextWeek)
@@ -581,7 +581,7 @@ fn test_handle_event_navigation_keys() {
     assert_eq!(
         Calendar::handle_event(
             &state,
-            &Event::key(KeyCode::PageUp),
+            &Event::key(Key::PageUp),
             &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::PrevMonth)
@@ -589,7 +589,7 @@ fn test_handle_event_navigation_keys() {
     assert_eq!(
         Calendar::handle_event(
             &state,
-            &Event::key(KeyCode::PageDown),
+            &Event::key(Key::PageDown),
             &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::NextMonth)
@@ -603,7 +603,7 @@ fn test_handle_event_confirm_keys() {
     assert_eq!(
         Calendar::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         ),
         Some(CalendarMessage::ConfirmSelection)
@@ -622,23 +622,15 @@ fn test_handle_event_confirm_keys() {
 fn test_handle_event_unfocused_ignores_events() {
     let state = CalendarState::new(2026, 3).with_selected_day(15);
     assert_eq!(
-        Calendar::handle_event(&state, &Event::key(KeyCode::Left), &EventContext::default()),
+        Calendar::handle_event(&state, &Event::key(Key::Left), &EventContext::default()),
         None
     );
     assert_eq!(
-        Calendar::handle_event(
-            &state,
-            &Event::key(KeyCode::Enter),
-            &EventContext::default()
-        ),
+        Calendar::handle_event(&state, &Event::key(Key::Enter), &EventContext::default()),
         None
     );
     assert_eq!(
-        Calendar::handle_event(
-            &state,
-            &Event::key(KeyCode::PageUp),
-            &EventContext::default()
-        ),
+        Calendar::handle_event(&state, &Event::key(Key::PageUp), &EventContext::default()),
         None
     );
 }
@@ -649,7 +641,7 @@ fn test_handle_event_disabled_ignores_events() {
     assert_eq!(
         Calendar::handle_event(
             &state,
-            &Event::key(KeyCode::Left),
+            &Event::key(Key::Left),
             &EventContext::new().focused(true).disabled(true)
         ),
         None
@@ -657,7 +649,7 @@ fn test_handle_event_disabled_ignores_events() {
     assert_eq!(
         Calendar::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true).disabled(true)
         ),
         None
@@ -684,7 +676,7 @@ fn test_dispatch_event_navigation() {
     let mut state = CalendarState::new(2026, 3).with_selected_day(15);
     let output = Calendar::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::new().focused(true),
     );
     assert_eq!(state.selected_day(), Some(16));
@@ -692,7 +684,7 @@ fn test_dispatch_event_navigation() {
 
     let output = Calendar::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Left),
+        &Event::key(Key::Left),
         &EventContext::new().focused(true),
     );
     assert_eq!(state.selected_day(), Some(15));
@@ -704,7 +696,7 @@ fn test_dispatch_event_enter_confirms() {
     let mut state = CalendarState::new(2026, 3).with_selected_day(15);
     let output = Calendar::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Enter),
+        &Event::key(Key::Enter),
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CalendarOutput::DateSelected(2026, 3, 15)));
@@ -715,7 +707,7 @@ fn test_dispatch_event_page_navigation() {
     let mut state = CalendarState::new(2026, 3);
     let output = Calendar::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::PageUp),
+        &Event::key(Key::PageUp),
         &EventContext::new().focused(true),
     );
     assert_eq!(state.month(), 2);
@@ -723,7 +715,7 @@ fn test_dispatch_event_page_navigation() {
 
     let output = Calendar::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::PageDown),
+        &Event::key(Key::PageDown),
         &EventContext::new().focused(true),
     );
     assert_eq!(state.month(), 3);
@@ -735,7 +727,7 @@ fn test_dispatch_event_unfocused_returns_none() {
     let mut state = CalendarState::new(2026, 3).with_selected_day(15);
     let output = Calendar::dispatch_event(
         &mut state,
-        &Event::key(KeyCode::Right),
+        &Event::key(Key::Right),
         &EventContext::default(),
     );
     assert_eq!(output, None);

@@ -565,13 +565,14 @@ impl App for ShowcaseApp {
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {
-        use crossterm::event::KeyCode;
+        use envision::input::Key;
 
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => Some(Msg::Quit),
-                KeyCode::Tab => Some(Msg::FocusNext),
-                KeyCode::BackTab => Some(Msg::FocusPrev),
+            match key.key {
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
+                Key::Tab if key.modifiers.shift() => Some(Msg::FocusPrev),
+
+                Key::Tab => Some(Msg::FocusNext),
                 // All other keys are forwarded as ComponentEvent
                 _ => Some(Msg::ComponentEvent(event.clone())),
             }
@@ -795,18 +796,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}\n", vt.display_ansi());
 
     // Navigate menu via ComponentEvent
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Right,
-    )));
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Enter,
-    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Right)));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Enter)));
 
     // Switch focus to Tabs, then navigate
     vt.dispatch(Msg::FocusNext);
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Right,
-    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Right)));
     vt.tick()?;
     println!("--- Data Panel ---");
     println!("{}\n", vt.display_ansi());
@@ -817,21 +812,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     vt.dispatch(Msg::FocusNext); // -> Radio
     vt.dispatch(Msg::FocusNext); // -> SubmitButton
     vt.dispatch(Msg::FocusNext); // -> List
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Down,
-    )));
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Down,
-    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Down)));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Down)));
 
     // Focus the table, select a row
     vt.dispatch(Msg::FocusNext); // -> Table
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Down,
-    )));
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Enter,
-    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Down)));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Enter)));
     vt.tick()?;
     println!("--- Data Panel (after navigation) ---");
     println!("{}\n", vt.display_ansi());
@@ -840,9 +827,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     vt.dispatch(Msg::FocusNext); // -> Progress
     vt.dispatch(Msg::FocusNext); // -> Menu (wraps)
     vt.dispatch(Msg::FocusNext); // -> Tabs
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Right,
-    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Right)));
     vt.dispatch(Msg::SpinnerTick);
     vt.dispatch(Msg::ToastTick);
     vt.tick()?;
@@ -850,32 +835,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}\n", vt.display_ansi());
 
     // Go back to Form and submit
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Left,
-    )));
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Left,
-    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Left)));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Left)));
 
     // Focus the submit button and press it
     vt.dispatch(Msg::FocusNext); // -> Input
     vt.dispatch(Msg::FocusNext); // -> Checkbox
     vt.dispatch(Msg::FocusNext); // -> Radio
     vt.dispatch(Msg::FocusNext); // -> SubmitButton
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Enter,
-    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Enter)));
     vt.tick()?;
     println!("--- Form Panel with Dialog Overlay ---");
     println!("{}\n", vt.display_ansi());
 
     // Confirm dialog via dispatch_event (Tab to OK, Enter to confirm)
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Tab,
-    )));
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Enter,
-    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Tab)));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Enter)));
     vt.tick()?;
     println!("--- After Submission (toast notification) ---");
     println!("{}\n", vt.display_ansi());
@@ -891,15 +866,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     vt.dispatch(Msg::FocusNext); // -> Menu (wraps)
     vt.dispatch(Msg::FocusNext); // -> Tabs
     // Navigate right three times to reach Viz tab
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Right,
-    )));
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Right,
-    )));
-    vt.dispatch(Msg::ComponentEvent(Event::key(
-        crossterm::event::KeyCode::Right,
-    )));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Right)));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Right)));
+    vt.dispatch(Msg::ComponentEvent(Event::key(envision::input::Key::Right)));
     vt.tick()?;
     println!("--- Viz Panel (Sparkline, Gauge, Heatmap, Timeline, CommandPalette, CodeBlock) ---");
     println!("{}\n", vt.display_ansi());

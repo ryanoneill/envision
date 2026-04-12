@@ -1,6 +1,6 @@
 use super::*;
 use crate::component::Component;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 use ratatui::style::Color;
 
 // =============================================================================
@@ -484,8 +484,7 @@ fn test_max_depth_empty() {
 #[test]
 fn test_handle_event_not_focused() {
     let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
-    let msg =
-        FlameGraph::handle_event(&state, &Event::key(KeyCode::Down), &EventContext::default());
+    let msg = FlameGraph::handle_event(&state, &Event::key(Key::Down), &EventContext::default());
     assert_eq!(msg, None);
 }
 
@@ -494,7 +493,7 @@ fn test_handle_event_disabled() {
     let state = FlameGraphState::with_root(FlameNode::new("main()", 500));
     let msg = FlameGraph::handle_event(
         &state,
-        &Event::key(KeyCode::Down),
+        &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
     assert_eq!(msg, None);
@@ -507,7 +506,7 @@ fn test_handle_event_down() {
     assert_eq!(
         FlameGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Down),
+            &Event::key(Key::Down),
             &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::SelectDown)
@@ -529,7 +528,7 @@ fn test_handle_event_up() {
     assert_eq!(
         FlameGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Up),
+            &Event::key(Key::Up),
             &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::SelectUp)
@@ -551,7 +550,7 @@ fn test_handle_event_left() {
     assert_eq!(
         FlameGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Left),
+            &Event::key(Key::Left),
             &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::SelectLeft)
@@ -573,7 +572,7 @@ fn test_handle_event_right() {
     assert_eq!(
         FlameGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Right),
+            &Event::key(Key::Right),
             &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::SelectRight)
@@ -595,7 +594,7 @@ fn test_handle_event_enter_zoom_in() {
     assert_eq!(
         FlameGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::ZoomIn)
@@ -609,7 +608,7 @@ fn test_handle_event_escape_zoom_out() {
     assert_eq!(
         FlameGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Esc),
+            &Event::key(Key::Esc),
             &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::ZoomOut)
@@ -617,7 +616,7 @@ fn test_handle_event_escape_zoom_out() {
     assert_eq!(
         FlameGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Backspace),
+            &Event::key(Key::Backspace),
             &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::ZoomOut)
@@ -631,7 +630,7 @@ fn test_handle_event_home_reset_zoom() {
     assert_eq!(
         FlameGraph::handle_event(
             &state,
-            &Event::key(KeyCode::Home),
+            &Event::key(Key::Home),
             &EventContext::new().focused(true)
         ),
         Some(FlameGraphMessage::ResetZoom)

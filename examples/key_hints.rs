@@ -106,10 +106,10 @@ impl App for KeyHintsApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') => Some(Msg::Quit),
-                KeyCode::Char('e') => Some(Msg::SwitchToEdit),
-                KeyCode::Esc => Some(Msg::SwitchToNormal),
+            match key.key {
+                Key::Char('q') => Some(Msg::Quit),
+                Key::Char('e') => Some(Msg::SwitchToEdit),
+                Key::Esc => Some(Msg::SwitchToNormal),
                 _ => None,
             }
         } else {

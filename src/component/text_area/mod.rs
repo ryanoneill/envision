@@ -31,7 +31,7 @@ use ratatui::widgets::{Block, Borders, Paragraph};
 use unicode_width::UnicodeWidthStr;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::undo::UndoStack;
 
 #[cfg(feature = "clipboard")]
@@ -663,16 +663,16 @@ impl Component for TextArea {
             return Some(TextAreaMessage::Paste(text.clone()));
         }
         if let Some(key) = event.as_key() {
-            let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-            let shift = key.modifiers.contains(KeyModifiers::SHIFT);
-            match key.code {
+            let ctrl = key.modifiers.ctrl();
+            let shift = key.modifiers.shift();
+            match key.key {
                 // Undo/redo
-                KeyCode::Char('z') if ctrl => Some(TextAreaMessage::Undo),
-                KeyCode::Char('y') if ctrl => Some(TextAreaMessage::Redo),
+                Key::Char('z') if ctrl => Some(TextAreaMessage::Undo),
+                Key::Char('y') if ctrl => Some(TextAreaMessage::Redo),
                 // Clipboard
-                KeyCode::Char('c') if ctrl => Some(TextAreaMessage::Copy),
-                KeyCode::Char('x') if ctrl => Some(TextAreaMessage::Cut),
-                KeyCode::Char('v') if ctrl => {
+                Key::Char('c') if ctrl => Some(TextAreaMessage::Copy),
+                Key::Char('x') if ctrl => Some(TextAreaMessage::Cut),
+                Key::Char('v') if ctrl => {
                     // Try system clipboard first, fall back to internal
                     #[cfg(feature = "clipboard")]
                     if let Some(text) = system_clipboard_get() {
@@ -684,35 +684,35 @@ impl Component for TextArea {
                         Some(TextAreaMessage::Paste(state.clipboard.clone()))
                     }
                 }
-                KeyCode::Char('a') if ctrl => Some(TextAreaMessage::SelectAll),
-                KeyCode::Char(c) if !ctrl => Some(TextAreaMessage::Insert(c)),
-                KeyCode::Enter => Some(TextAreaMessage::NewLine),
+                Key::Char('a') if ctrl => Some(TextAreaMessage::SelectAll),
+                Key::Char(_) if !ctrl => key.raw_char.map(TextAreaMessage::Insert),
+                Key::Enter => Some(TextAreaMessage::NewLine),
                 // Selection movement
-                KeyCode::Left if ctrl && shift => Some(TextAreaMessage::SelectWordLeft),
-                KeyCode::Right if ctrl && shift => Some(TextAreaMessage::SelectWordRight),
-                KeyCode::Left if shift => Some(TextAreaMessage::SelectLeft),
-                KeyCode::Right if shift => Some(TextAreaMessage::SelectRight),
-                KeyCode::Up if shift => Some(TextAreaMessage::SelectUp),
-                KeyCode::Down if shift => Some(TextAreaMessage::SelectDown),
-                KeyCode::Home if shift => Some(TextAreaMessage::SelectHome),
-                KeyCode::End if shift => Some(TextAreaMessage::SelectEnd),
+                Key::Left if ctrl && shift => Some(TextAreaMessage::SelectWordLeft),
+                Key::Right if ctrl && shift => Some(TextAreaMessage::SelectWordRight),
+                Key::Left if shift => Some(TextAreaMessage::SelectLeft),
+                Key::Right if shift => Some(TextAreaMessage::SelectRight),
+                Key::Up if shift => Some(TextAreaMessage::SelectUp),
+                Key::Down if shift => Some(TextAreaMessage::SelectDown),
+                Key::Home if shift => Some(TextAreaMessage::SelectHome),
+                Key::End if shift => Some(TextAreaMessage::SelectEnd),
                 // Deletion
-                KeyCode::Backspace if ctrl => Some(TextAreaMessage::DeleteLine),
-                KeyCode::Backspace => Some(TextAreaMessage::Backspace),
-                KeyCode::Delete => Some(TextAreaMessage::Delete),
+                Key::Backspace if ctrl => Some(TextAreaMessage::DeleteLine),
+                Key::Backspace => Some(TextAreaMessage::Backspace),
+                Key::Delete => Some(TextAreaMessage::Delete),
                 // Navigation
-                KeyCode::Left if ctrl => Some(TextAreaMessage::WordLeft),
-                KeyCode::Right if ctrl => Some(TextAreaMessage::WordRight),
-                KeyCode::Left => Some(TextAreaMessage::Left),
-                KeyCode::Right => Some(TextAreaMessage::Right),
-                KeyCode::Up => Some(TextAreaMessage::Up),
-                KeyCode::Down => Some(TextAreaMessage::Down),
-                KeyCode::Home if ctrl => Some(TextAreaMessage::TextStart),
-                KeyCode::End if ctrl => Some(TextAreaMessage::TextEnd),
-                KeyCode::Home => Some(TextAreaMessage::Home),
-                KeyCode::End => Some(TextAreaMessage::End),
-                KeyCode::Char('k') if ctrl => Some(TextAreaMessage::DeleteToEnd),
-                KeyCode::Char('u') if ctrl => Some(TextAreaMessage::DeleteToStart),
+                Key::Left if ctrl => Some(TextAreaMessage::WordLeft),
+                Key::Right if ctrl => Some(TextAreaMessage::WordRight),
+                Key::Left => Some(TextAreaMessage::Left),
+                Key::Right => Some(TextAreaMessage::Right),
+                Key::Up => Some(TextAreaMessage::Up),
+                Key::Down => Some(TextAreaMessage::Down),
+                Key::Home if ctrl => Some(TextAreaMessage::TextStart),
+                Key::End if ctrl => Some(TextAreaMessage::TextEnd),
+                Key::Home => Some(TextAreaMessage::Home),
+                Key::End => Some(TextAreaMessage::End),
+                Key::Char('k') if ctrl => Some(TextAreaMessage::DeleteToEnd),
+                Key::Char('u') if ctrl => Some(TextAreaMessage::DeleteToStart),
                 _ => None,
             }
         } else {

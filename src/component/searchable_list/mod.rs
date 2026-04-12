@@ -41,7 +41,7 @@ use std::sync::Arc;
 use ratatui::widgets::ListState;
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 /// A matcher function that takes `(query, item_text)` and returns
@@ -726,51 +726,50 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
 
         if let Some(key) = event.as_key() {
             // Tab always toggles focus between filter and list
-            if key.code == KeyCode::Tab || key.code == KeyCode::BackTab {
+            if key.key == Key::Tab {
                 return Some(SearchableListMessage::ToggleFocus);
             }
 
             // Esc clears the filter
-            if key.code == KeyCode::Esc {
+            if key.key == Key::Esc {
                 return Some(SearchableListMessage::FilterClear);
             }
 
             match state.internal_focus {
                 Focus::Filter => {
-                    match key.code {
+                    match key.key {
                         // Navigation keys work from filter too
-                        KeyCode::Up | KeyCode::Char('k')
-                            if key.modifiers.contains(KeyModifiers::CONTROL) =>
-                        {
+                        Key::Up | Key::Char('k') if key.modifiers.ctrl() => {
                             Some(SearchableListMessage::Up)
                         }
-                        KeyCode::Down | KeyCode::Char('j')
-                            if key.modifiers.contains(KeyModifiers::CONTROL) =>
-                        {
+                        Key::Down | Key::Char('j') if key.modifiers.ctrl() => {
                             Some(SearchableListMessage::Down)
                         }
                         // Enter in filter moves focus to list
-                        KeyCode::Enter => Some(SearchableListMessage::ToggleFocus),
+                        Key::Enter => Some(SearchableListMessage::ToggleFocus),
                         // Backspace deletes from filter
-                        KeyCode::Backspace => Some(SearchableListMessage::FilterBackspace),
+                        Key::Backspace => Some(SearchableListMessage::FilterBackspace),
                         // Regular characters go to filter
-                        KeyCode::Char(c) => Some(SearchableListMessage::FilterChar(c)),
+                        Key::Char(_) => key.raw_char.map(SearchableListMessage::FilterChar),
                         _ => None,
                     }
                 }
                 Focus::List => {
-                    match key.code {
-                        KeyCode::Up | KeyCode::Char('k') => Some(SearchableListMessage::Up),
-                        KeyCode::Down | KeyCode::Char('j') => Some(SearchableListMessage::Down),
-                        KeyCode::Home | KeyCode::Char('g') => Some(SearchableListMessage::First),
-                        KeyCode::End | KeyCode::Char('G') => Some(SearchableListMessage::Last),
-                        KeyCode::PageUp => Some(SearchableListMessage::PageUp(10)),
-                        KeyCode::PageDown => Some(SearchableListMessage::PageDown(10)),
-                        KeyCode::Enter => Some(SearchableListMessage::Select),
+                    match key.key {
+                        Key::Up | Key::Char('k') => Some(SearchableListMessage::Up),
+                        Key::Down | Key::Char('j') => Some(SearchableListMessage::Down),
+                        Key::Char('g') if key.modifiers.shift() => {
+                            Some(SearchableListMessage::Last)
+                        }
+                        Key::Home | Key::Char('g') => Some(SearchableListMessage::First),
+                        Key::End => Some(SearchableListMessage::Last),
+                        Key::PageUp => Some(SearchableListMessage::PageUp(10)),
+                        Key::PageDown => Some(SearchableListMessage::PageDown(10)),
+                        Key::Enter => Some(SearchableListMessage::Select),
                         // In list mode, typing switches to filter
-                        KeyCode::Char(c) => {
+                        Key::Char(_) => {
                             // Let user type to start filtering from list view
-                            Some(SearchableListMessage::FilterChar(c))
+                            key.raw_char.map(SearchableListMessage::FilterChar)
                         }
                         _ => None,
                     }

@@ -46,7 +46,7 @@ mod render;
 pub use ansi::{AnsiSegment, parse_ansi};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode, KeyModifiers};
+use crate::input::{Event, Key};
 use crate::scroll::ScrollState;
 
 /// Messages that can be sent to a TerminalOutput component.
@@ -706,22 +706,22 @@ impl Component for TerminalOutput {
         }
 
         let key = event.as_key()?;
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-        let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+        let ctrl = key.modifiers.ctrl();
+        let shift = key.modifiers.shift();
 
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') if !ctrl => Some(TerminalOutputMessage::ScrollUp),
-            KeyCode::Down | KeyCode::Char('j') if !ctrl => Some(TerminalOutputMessage::ScrollDown),
-            KeyCode::PageUp => Some(TerminalOutputMessage::PageUp(10)),
-            KeyCode::PageDown => Some(TerminalOutputMessage::PageDown(10)),
-            KeyCode::Char('u') if ctrl => Some(TerminalOutputMessage::PageUp(10)),
-            KeyCode::Char('d') if ctrl => Some(TerminalOutputMessage::PageDown(10)),
-            KeyCode::Home | KeyCode::Char('g') if !shift => Some(TerminalOutputMessage::Home),
-            KeyCode::End | KeyCode::Char('G') if shift || key.code == KeyCode::End => {
+        match key.key {
+            Key::Up | Key::Char('k') if !ctrl => Some(TerminalOutputMessage::ScrollUp),
+            Key::Down | Key::Char('j') if !ctrl => Some(TerminalOutputMessage::ScrollDown),
+            Key::PageUp => Some(TerminalOutputMessage::PageUp(10)),
+            Key::PageDown => Some(TerminalOutputMessage::PageDown(10)),
+            Key::Char('u') if ctrl => Some(TerminalOutputMessage::PageUp(10)),
+            Key::Char('d') if ctrl => Some(TerminalOutputMessage::PageDown(10)),
+            Key::Home | Key::Char('g') if !shift => Some(TerminalOutputMessage::Home),
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
                 Some(TerminalOutputMessage::End)
             }
-            KeyCode::Char('a') if !ctrl => Some(TerminalOutputMessage::ToggleAutoScroll),
-            KeyCode::Char('n') if !ctrl => Some(TerminalOutputMessage::ToggleLineNumbers),
+            Key::Char('a') if !ctrl => Some(TerminalOutputMessage::ToggleAutoScroll),
+            Key::Char('n') if !ctrl => Some(TerminalOutputMessage::ToggleLineNumbers),
             _ => None,
         }
     }

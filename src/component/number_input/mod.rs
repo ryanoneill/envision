@@ -34,7 +34,7 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{Component, EventContext, RenderContext};
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 /// Messages that can be sent to a NumberInput.
 #[derive(Clone, Debug, PartialEq)]
@@ -540,21 +540,22 @@ impl Component for NumberInput {
         if let Some(key) = event.as_key() {
             if state.editing {
                 // Edit mode key handling
-                match key.code {
-                    KeyCode::Enter => Some(NumberInputMessage::ConfirmEdit),
-                    KeyCode::Esc => Some(NumberInputMessage::CancelEdit),
-                    KeyCode::Backspace => Some(NumberInputMessage::EditBackspace),
-                    KeyCode::Char(c) if is_valid_numeric_char(c, &state.edit_buffer) => {
-                        Some(NumberInputMessage::EditChar(c))
-                    }
+                match key.key {
+                    Key::Enter => Some(NumberInputMessage::ConfirmEdit),
+                    Key::Esc => Some(NumberInputMessage::CancelEdit),
+                    Key::Backspace => Some(NumberInputMessage::EditBackspace),
+                    Key::Char(_) => key
+                        .raw_char
+                        .filter(|c| is_valid_numeric_char(*c, &state.edit_buffer))
+                        .map(NumberInputMessage::EditChar),
                     _ => None,
                 }
             } else {
                 // Normal mode key handling
-                match key.code {
-                    KeyCode::Up | KeyCode::Char('k') => Some(NumberInputMessage::Increment),
-                    KeyCode::Down | KeyCode::Char('j') => Some(NumberInputMessage::Decrement),
-                    KeyCode::Enter => Some(NumberInputMessage::StartEdit),
+                match key.key {
+                    Key::Up | Key::Char('k') => Some(NumberInputMessage::Increment),
+                    Key::Down | Key::Char('j') => Some(NumberInputMessage::Decrement),
+                    Key::Enter => Some(NumberInputMessage::StartEdit),
                     _ => None,
                 }
             }

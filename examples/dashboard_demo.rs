@@ -376,16 +376,16 @@ impl App for DashboardApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if key.code == KeyCode::Char('t') && key.modifiers.contains(KeyModifiers::CONTROL) {
+            if key.key == Key::Char('t') && key.modifiers.ctrl() {
                 return Some(Msg::CycleTheme);
             }
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
-                KeyCode::Char(' ') => return Some(Msg::StartBuild),
-                KeyCode::Char('1') => return Some(Msg::AddToast(ToastLevel::Info)),
-                KeyCode::Char('2') => return Some(Msg::AddToast(ToastLevel::Success)),
-                KeyCode::Char('3') => return Some(Msg::AddToast(ToastLevel::Warning)),
-                KeyCode::Char('4') => return Some(Msg::AddToast(ToastLevel::Error)),
+            match key.key {
+                Key::Char('q') | Key::Esc => return Some(Msg::Quit),
+                Key::Char(' ') => return Some(Msg::StartBuild),
+                Key::Char('1') => return Some(Msg::AddToast(ToastLevel::Info)),
+                Key::Char('2') => return Some(Msg::AddToast(ToastLevel::Success)),
+                Key::Char('3') => return Some(Msg::AddToast(ToastLevel::Warning)),
+                Key::Char('4') => return Some(Msg::AddToast(ToastLevel::Error)),
                 _ => {}
             }
         }

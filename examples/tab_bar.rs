@@ -114,10 +114,10 @@ impl App for TabBarApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if matches!(key.code, KeyCode::Char('q') | KeyCode::Esc) {
+            if matches!(key.key, Key::Char('q') | Key::Esc) {
                 return Some(Msg::Quit);
             }
-            if matches!(key.code, KeyCode::Char('n')) {
+            if matches!(key.key, Key::Char('n')) {
                 return Some(Msg::AddNewTab);
             }
         }

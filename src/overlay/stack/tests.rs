@@ -1,5 +1,5 @@
 use super::*;
-use crossterm::event::KeyCode;
+use crate::input::Key;
 
 struct ConsumeOverlay;
 
@@ -145,7 +145,7 @@ fn test_stack_handle_event_dismiss() {
     impl Overlay<i32> for DismissOverlay {
         fn handle_event(&mut self, event: &Event) -> OverlayAction<i32> {
             if let Some(key) = event.as_key() {
-                if key.code == KeyCode::Esc {
+                if key.key == Key::Esc {
                     return OverlayAction::Dismiss;
                 }
             }
@@ -157,7 +157,7 @@ fn test_stack_handle_event_dismiss() {
     let mut stack: OverlayStack<i32> = OverlayStack::new();
     stack.push(Box::new(DismissOverlay));
 
-    let event = Event::key(KeyCode::Esc);
+    let event = Event::key(Key::Esc);
     let action = stack.handle_event(&event);
     assert!(matches!(action, OverlayAction::Dismiss));
 }

@@ -114,11 +114,11 @@ impl App for TooltipApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => Some(Msg::Quit),
-                KeyCode::Char('h') => Some(Msg::ShowHelp),
-                KeyCode::Char('w') => Some(Msg::ShowWarning),
-                KeyCode::Char('t') => Some(Msg::Tooltip(TooltipMessage::Toggle)),
+            match key.key {
+                Key::Char('q') | Key::Esc => Some(Msg::Quit),
+                Key::Char('h') => Some(Msg::ShowHelp),
+                Key::Char('w') => Some(Msg::ShowWarning),
+                Key::Char('t') => Some(Msg::Tooltip(TooltipMessage::Toggle)),
                 _ => None,
             }
         } else {

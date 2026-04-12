@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use super::*;
-use crate::input::{Event, KeyCode};
+use crate::input::{Event, Key};
 
 fn sample_entries() -> Vec<FileEntry> {
     vec![
@@ -150,7 +150,7 @@ fn test_pathbar_focus_only_handles_tab() {
     assert!(
         FileBrowser::handle_event(
             &state,
-            &Event::key(KeyCode::Enter),
+            &Event::key(Key::Enter),
             &EventContext::new().focused(true)
         )
         .is_none()
@@ -158,7 +158,7 @@ fn test_pathbar_focus_only_handles_tab() {
     // Tab still works
     let msg = FileBrowser::handle_event(
         &state,
-        &Event::key(KeyCode::Tab),
+        &Event::key(Key::Tab),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::CycleFocus));
@@ -188,7 +188,7 @@ fn test_filter_focus_backspace() {
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     let msg = FileBrowser::handle_event(
         &state,
-        &Event::key(KeyCode::Backspace),
+        &Event::key(Key::Backspace),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::FilterBackspace));
@@ -200,7 +200,7 @@ fn test_filter_focus_esc() {
     FileBrowser::update(&mut state, FileBrowserMessage::CycleFocus);
     let msg = FileBrowser::handle_event(
         &state,
-        &Event::key(KeyCode::Esc),
+        &Event::key(Key::Esc),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(FileBrowserMessage::FilterClear));

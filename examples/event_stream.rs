@@ -183,7 +183,7 @@ impl App for EventStreamApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if key.code == KeyCode::Char('q') && !state.stream.is_search_focused() {
+            if key.key == Key::Char('q') && !state.stream.is_search_focused() {
                 return Some(Msg::Quit);
             }
         }

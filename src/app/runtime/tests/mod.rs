@@ -371,9 +371,9 @@ impl App for EventApp {
     }
 
     fn handle_event(event: &crate::input::Event) -> Option<Self::Message> {
-        use crossterm::event::KeyCode;
+        use crate::input::Key;
         if let Some(key) = event.as_key() {
-            if let KeyCode::Char(c) = key.code {
+            if let Key::Char(c) = key.key {
                 if c == 'q' {
                     return Some(EventMsg::Quit);
                 }
@@ -641,9 +641,9 @@ mod overlay_tests {
     use super::*;
     use crate::app::Command;
     use crate::input::Event;
+    use crate::input::Key;
     use crate::overlay::{Overlay, OverlayAction};
     use crate::theme::Theme;
-    use crossterm::event::KeyCode;
     use ratatui::Frame;
     use ratatui::layout::Rect;
 
@@ -673,9 +673,9 @@ mod overlay_tests {
     impl Overlay<EventMsg> for DialogOverlay {
         fn handle_event(&mut self, event: &Event) -> OverlayAction<EventMsg> {
             if let Some(key) = event.as_key() {
-                match key.code {
-                    KeyCode::Esc => OverlayAction::Dismiss,
-                    KeyCode::Enter => OverlayAction::DismissWithMessage(EventMsg::KeyPressed('!')),
+                match key.key {
+                    Key::Esc => OverlayAction::Dismiss,
+                    Key::Enter => OverlayAction::DismissWithMessage(EventMsg::KeyPressed('!')),
                     _ => OverlayAction::Consumed,
                 }
             } else {
@@ -752,7 +752,7 @@ mod overlay_tests {
         assert_eq!(vt.overlay_count(), 1);
 
         // Esc dismisses the overlay
-        vt.send(Event::key(KeyCode::Esc));
+        vt.send(Event::key(Key::Esc));
         vt.tick().unwrap();
 
         assert_eq!(vt.overlay_count(), 0);
@@ -765,7 +765,7 @@ mod overlay_tests {
         vt.push_overlay(Box::new(DialogOverlay));
 
         // Enter dismisses with a message
-        vt.send(Event::key(KeyCode::Enter));
+        vt.send(Event::key(Key::Enter));
         vt.tick().unwrap();
 
         assert_eq!(vt.overlay_count(), 0);

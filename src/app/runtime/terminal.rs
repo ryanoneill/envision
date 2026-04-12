@@ -8,9 +8,7 @@ use std::io::{self, Stdout};
 use crate::error;
 
 use crossterm::ExecutableCommand;
-use crossterm::event::{
-    DisableMouseCapture, EnableMouseCapture, Event as CrosstermEvent, KeyEventKind,
-};
+use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::terminal::{
     EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
@@ -20,7 +18,6 @@ use super::Runtime;
 use super::config::RuntimeConfig;
 use crate::app::command::Command;
 use crate::app::model::App;
-use crate::input::Event;
 use crate::overlay::OverlayAction;
 
 // =============================================================================
@@ -196,7 +193,7 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
                 maybe_event = event_stream.next() => {
                     match maybe_event {
                         Some(Ok(event)) => {
-                            if let Some(envision_event) = Self::convert_crossterm_event(&event) {
+                            if let Some(envision_event) = crate::input::convert::from_crossterm_event(event) {
                                 #[cfg(feature = "tracing")]
                                 tracing::debug!(event = ?envision_event, "terminal received event");
 
@@ -350,25 +347,6 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
         }
 
         Ok(CrosstermBackend::new(stdout))
-    }
-
-    /// Converts a crossterm event to our Event type.
-    fn convert_crossterm_event(event: &CrosstermEvent) -> Option<Event> {
-        match event {
-            CrosstermEvent::Key(key_event) => {
-                // Only handle key press events, not release or repeat
-                if key_event.kind == KeyEventKind::Press {
-                    Some(Event::Key(*key_event))
-                } else {
-                    None
-                }
-            }
-            CrosstermEvent::Mouse(mouse_event) => Some(Event::Mouse(*mouse_event)),
-            CrosstermEvent::Resize(width, height) => Some(Event::Resize(*width, *height)),
-            CrosstermEvent::FocusGained => Some(Event::FocusGained),
-            CrosstermEvent::FocusLost => Some(Event::FocusLost),
-            CrosstermEvent::Paste(text) => Some(Event::Paste(text.clone())),
-        }
     }
 
     /// Cleans up terminal state.

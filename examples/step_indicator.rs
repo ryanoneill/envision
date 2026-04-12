@@ -127,17 +127,17 @@ impl App for StepIndicatorApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => return Some(Msg::Quit),
-                KeyCode::Char('c') => return Some(Msg::Step(StepIndicatorMessage::CompleteActive)),
-                KeyCode::Char('n') => return Some(Msg::Step(StepIndicatorMessage::ActivateNext)),
-                KeyCode::Char('f') => return Some(Msg::Step(StepIndicatorMessage::FailActive)),
-                KeyCode::Char('s') => {
+            match key.key {
+                Key::Char('q') | Key::Esc => return Some(Msg::Quit),
+                Key::Char('c') => return Some(Msg::Step(StepIndicatorMessage::CompleteActive)),
+                Key::Char('n') => return Some(Msg::Step(StepIndicatorMessage::ActivateNext)),
+                Key::Char('f') => return Some(Msg::Step(StepIndicatorMessage::FailActive)),
+                Key::Char('s') => {
                     if let Some(idx) = state.pipeline.active_step_index() {
                         return Some(Msg::Step(StepIndicatorMessage::Skip(idx)));
                     }
                 }
-                KeyCode::Char('r') => return Some(Msg::ResetPipeline),
+                Key::Char('r') => return Some(Msg::ResetPipeline),
                 _ => {}
             }
         }

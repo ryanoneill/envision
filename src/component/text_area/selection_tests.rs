@@ -296,7 +296,7 @@ fn test_shift_left_event() {
     let state = focused_state("hello");
     let msg = TextArea::handle_event(
         &state,
-        &Event::key_with(KeyCode::Left, KeyModifiers::SHIFT),
+        &Event::key_with(Key::Left, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::SelectLeft));
@@ -307,7 +307,7 @@ fn test_shift_right_event() {
     let state = focused_state("hello");
     let msg = TextArea::handle_event(
         &state,
-        &Event::key_with(KeyCode::Right, KeyModifiers::SHIFT),
+        &Event::key_with(Key::Right, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::SelectRight));
@@ -318,7 +318,7 @@ fn test_shift_up_event() {
     let state = focused_state("hello");
     let msg = TextArea::handle_event(
         &state,
-        &Event::key_with(KeyCode::Up, KeyModifiers::SHIFT),
+        &Event::key_with(Key::Up, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::SelectUp));
@@ -329,7 +329,7 @@ fn test_shift_down_event() {
     let state = focused_state("hello");
     let msg = TextArea::handle_event(
         &state,
-        &Event::key_with(KeyCode::Down, KeyModifiers::SHIFT),
+        &Event::key_with(Key::Down, Modifiers::SHIFT),
         &EventContext::new().focused(true),
     );
     assert_eq!(msg, Some(TextAreaMessage::SelectDown));

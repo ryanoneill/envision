@@ -2,6 +2,121 @@
 
 ## v0.13.x to v0.14.0
 
+### Envision-owned input types
+
+0.14.0 replaces crossterm event re-exports with envision-owned types. The
+key changes:
+
+| Before (v0.13.x) | After (v0.14.0) |
+|---|---|
+| `KeyCode` | `Key` |
+| `KeyModifiers` | `Modifiers` |
+| `key.code` | `key.key` |
+| `KeyCode::Char('a')` | `Key::Char('a')` |
+| `KeyCode::BackTab` | `Key::Tab` with `key.modifiers.shift()` |
+| `key.modifiers.contains(KeyModifiers::SHIFT)` | `key.modifiers.shift()` |
+| `key.modifiers.contains(KeyModifiers::CONTROL)` | `key.modifiers.ctrl()` |
+| `Event::key(KeyCode::Enter)` | `Event::key(Key::Enter)` |
+| `use envision::input::KeyCode` | `use envision::input::Key` |
+| `use envision::input::KeyModifiers` | `use envision::input::Modifiers` |
+
+#### Imports
+
+```rust
+// Before
+use envision::input::{Event, KeyCode, KeyModifiers};
+
+// After
+use envision::input::{Event, Key, Modifiers};
+```
+
+#### Keybindings (handle_event match arms)
+
+```rust
+// Before
+match key.code {
+    KeyCode::Enter => Some(Msg::Submit),
+    KeyCode::Char('q') => Some(Msg::Quit),
+    KeyCode::BackTab => Some(Msg::FocusPrev),
+    _ => None,
+}
+
+// After
+match key.key {
+    Key::Enter => Some(Msg::Submit),
+    Key::Char('q') => Some(Msg::Quit),
+    Key::Tab if key.modifiers.shift() => Some(Msg::FocusPrev),
+    _ => None,
+}
+```
+
+#### Modifier checking
+
+```rust
+// Before
+let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+
+// After
+let ctrl = key.modifiers.ctrl();
+let shift = key.modifiers.shift();
+```
+
+#### Text input (Insert(c) patterns)
+
+ASCII letter keys are normalized to lowercase in `key.key`. For text
+input, use `key.raw_char` which preserves the original character:
+
+```rust
+// Before
+KeyCode::Char(c) if !ctrl => Some(Msg::Insert(c)),
+
+// After
+Key::Char(_) if !ctrl => key.raw_char.map(Msg::Insert),
+```
+
+#### Shift+G (scroll-to-bottom) pattern
+
+With normalization, `Key::Char('G')` becomes `Key::Char('g')` with
+`modifiers.shift()`. Place the shift-guarded arm before the plain arm:
+
+```rust
+// Before
+KeyCode::Home | KeyCode::Char('g') => Some(Msg::Top),
+KeyCode::End | KeyCode::Char('G') if shift || key.code == KeyCode::End => Some(Msg::Bottom),
+
+// After
+Key::Char('g') if key.modifiers.shift() => Some(Msg::Bottom),
+Key::Home | Key::Char('g') => Some(Msg::Top),
+Key::End => Some(Msg::Bottom),
+```
+
+#### TerminalEventSubscription
+
+The handler now receives `Event` (envision's) instead of
+`crossterm::event::Event`:
+
+```rust
+// Before
+use crossterm::event::{Event, KeyCode, KeyEvent};
+let sub = terminal_events(|event| {
+    if let Event::Key(KeyEvent { code: KeyCode::Char('q'), .. }) = event {
+        Some(Msg::Quit)
+    } else { None }
+});
+
+// After
+use envision::input::{Event, Key};
+let sub = terminal_events(|event| {
+    if let Some(key) = event.as_key() {
+        if key.key == Key::Char('q') { return Some(Msg::Quit); }
+    }
+    None
+});
+```
+
+### RenderContext refactor
+
 0.14.0 introduces a large, cascading breakage around component rendering.
 `Component::view` now takes a single `&mut RenderContext<'_, '_>` argument
 instead of five separate arguments, and `ViewContext` has been renamed to
