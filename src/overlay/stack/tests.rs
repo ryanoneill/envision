@@ -145,7 +145,7 @@ fn test_stack_handle_event_dismiss() {
     impl Overlay<i32> for DismissOverlay {
         fn handle_event(&mut self, event: &Event) -> OverlayAction<i32> {
             if let Some(key) = event.as_key() {
-                if key.key == Key::Esc {
+                if key.code == Key::Esc {
                     return OverlayAction::Dismiss;
                 }
             }

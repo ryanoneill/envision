@@ -131,7 +131,7 @@ impl App for NumberInputApp {
 
         if let Some(key) = event.as_key() {
             if !any_editing {
-                match key.key {
+                match key.code {
                     Key::Char('q') | Key::Esc => return Some(Msg::Quit),
                     Key::Tab if key.modifiers.shift() => return Some(Msg::FocusPrev),
 

@@ -183,7 +183,7 @@ impl Component for Button {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Enter | Key::Char(' ') => Some(ButtonMessage::Press),
                 _ => None,
             }

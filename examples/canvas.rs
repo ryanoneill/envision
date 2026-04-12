@@ -101,7 +101,7 @@ impl App for CanvasApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Char('q') | Key::Esc => Some(Msg::Quit),
                 _ => None,
             }

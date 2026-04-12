@@ -152,7 +152,7 @@ impl App for CounterApp {
         use envision::input::Key;
 
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Char('+') | Key::Up => Some(Msg::Increment),
                 Key::Char('-') | Key::Down => Some(Msg::Decrement),
                 Key::Char('r') => Some(Msg::Reset),

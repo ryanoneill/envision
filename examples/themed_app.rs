@@ -263,7 +263,7 @@ impl App for ThemedApp {
         use envision::input::Key;
 
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Char('t') => Some(Msg::ToggleTheme),
                 Key::Char(' ') => Some(Msg::CheckboxToggled),
                 Key::Char('+') | Key::Char('=') => Some(Msg::IncreaseProgress),

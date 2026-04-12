@@ -655,7 +655,7 @@ impl Component for Dropdown {
         }
         if let Some(key) = event.as_key() {
             if state.is_open {
-                match key.key {
+                match key.code {
                     Key::Enter => Some(DropdownMessage::Confirm),
                     Key::Esc => Some(DropdownMessage::Close),
                     Key::Up => Some(DropdownMessage::Up),
@@ -665,7 +665,7 @@ impl Component for Dropdown {
                     _ => None,
                 }
             } else {
-                match key.key {
+                match key.code {
                     Key::Enter => Some(DropdownMessage::Toggle),
                     _ => None,
                 }

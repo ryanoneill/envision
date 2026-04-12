@@ -739,7 +739,7 @@ impl Component for Accordion {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Up | Key::Char('k') => Some(AccordionMessage::Up),
                 Key::Down | Key::Char('j') => Some(AccordionMessage::Down),
                 Key::Enter | Key::Char(' ') => Some(AccordionMessage::Toggle),

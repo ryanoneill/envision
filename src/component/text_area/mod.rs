@@ -665,7 +665,7 @@ impl Component for TextArea {
         if let Some(key) = event.as_key() {
             let ctrl = key.modifiers.ctrl();
             let shift = key.modifiers.shift();
-            match key.key {
+            match key.code {
                 // Undo/redo
                 Key::Char('z') if ctrl => Some(TextAreaMessage::Undo),
                 Key::Char('y') if ctrl => Some(TextAreaMessage::Redo),

@@ -30,7 +30,7 @@ use super::OverlayAction;
 /// impl Overlay<String> for ConfirmDialog {
 ///     fn handle_event(&mut self, event: &Event) -> OverlayAction<String> {
 ///         if let Some(key) = event.as_key() {
-///             match key.key {
+///             match key.code {
 ///                 Key::Char('y') => OverlayAction::DismissWithMessage("confirmed".into()),
 ///                 Key::Char('n') | Key::Esc => OverlayAction::Dismiss,
 ///                 _ => OverlayAction::Consumed,
@@ -67,7 +67,7 @@ mod tests {
     impl Overlay<String> for TestOverlay {
         fn handle_event(&mut self, event: &Event) -> OverlayAction<String> {
             if let Some(key) = event.as_key() {
-                match key.key {
+                match key.code {
                     Key::Esc => OverlayAction::Dismiss,
                     Key::Enter => OverlayAction::DismissWithMessage("confirmed".to_string()),
                     _ => {

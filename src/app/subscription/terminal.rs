@@ -20,10 +20,10 @@ use crate::input::Event;
 ///
 /// let sub = TerminalEventSubscription::new(|event| {
 ///     match &event {
-///         Event::Key(key) if key.key == Key::Char('q') => {
+///         Event::Key(key) if key.code == Key::Char('q') => {
 ///             Some("quit".to_string())
 ///         }
-///         Event::Key(key) if key.key == Key::Up => {
+///         Event::Key(key) if key.code == Key::Up => {
 ///             Some("up".to_string())
 ///         }
 ///         _ => None,
@@ -101,7 +101,7 @@ where
 ///
 /// let sub = terminal_events(|event| {
 ///     if let Event::Key(key) = &event {
-///         if key.key == Key::Char('q') {
+///         if key.code == Key::Char('q') {
 ///             return Some("quit".to_string());
 ///         }
 ///     }

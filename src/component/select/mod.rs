@@ -489,7 +489,7 @@ impl Component for Select {
         }
         if let Some(key) = event.as_key() {
             if state.is_open {
-                match key.key {
+                match key.code {
                     Key::Enter => Some(SelectMessage::Confirm),
                     Key::Esc => Some(SelectMessage::Close),
                     Key::Up | Key::Char('k') => Some(SelectMessage::Up),
@@ -497,7 +497,7 @@ impl Component for Select {
                     _ => None,
                 }
             } else {
-                match key.key {
+                match key.code {
                     Key::Enter | Key::Char(' ') => Some(SelectMessage::Toggle),
                     _ => None,
                 }

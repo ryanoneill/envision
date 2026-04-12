@@ -424,7 +424,7 @@ impl Component for Collapsible {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Char(' ') | Key::Enter => Some(CollapsibleMessage::Toggle),
                 Key::Right => Some(CollapsibleMessage::Expand),
                 Key::Left => Some(CollapsibleMessage::Collapse),

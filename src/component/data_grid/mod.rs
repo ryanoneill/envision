@@ -633,7 +633,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         if let Some(key) = event.as_key() {
             if state.editing {
                 // Editing mode key bindings
-                match key.key {
+                match key.code {
                     Key::Enter => Some(DataGridMessage::Enter),
                     Key::Esc => Some(DataGridMessage::Cancel),
                     Key::Char(_) => key.raw_char.map(DataGridMessage::Input),
@@ -645,7 +645,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                 }
             } else {
                 // Navigation mode key bindings
-                match key.key {
+                match key.code {
                     Key::Up | Key::Char('k') => Some(DataGridMessage::Up),
                     Key::Down | Key::Char('j') => Some(DataGridMessage::Down),
                     Key::Left | Key::Char('h') => Some(DataGridMessage::Left),

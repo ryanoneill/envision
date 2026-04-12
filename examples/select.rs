@@ -121,7 +121,7 @@ impl App for SelectApp {
             // Only allow quit/tab when dropdown is closed
             let any_open = state.color.is_open() || state.size.is_open();
             if !any_open {
-                match key.key {
+                match key.code {
                     Key::Char('q') | Key::Esc => return Some(Msg::Quit),
                     Key::Tab if key.modifiers.shift() => return Some(Msg::FocusPrev),
 

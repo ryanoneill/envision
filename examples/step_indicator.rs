@@ -127,7 +127,7 @@ impl App for StepIndicatorApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Char('q') | Key::Esc => return Some(Msg::Quit),
                 Key::Char('c') => return Some(Msg::Step(StepIndicatorMessage::CompleteActive)),
                 Key::Char('n') => return Some(Msg::Step(StepIndicatorMessage::ActivateNext)),

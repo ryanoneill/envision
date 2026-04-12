@@ -749,7 +749,7 @@ impl Component for TabBar {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Left | Key::Char('h') => Some(TabBarMessage::PrevTab),
                 Key::Right | Key::Char('l') => Some(TabBarMessage::NextTab),
                 Key::Home => Some(TabBarMessage::First),

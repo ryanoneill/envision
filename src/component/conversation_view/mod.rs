@@ -815,7 +815,7 @@ impl Component for ConversationView {
 
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Up | Key::Char('k') => Some(ConversationViewMessage::ScrollUp),
             Key::Down | Key::Char('j') => Some(ConversationViewMessage::ScrollDown),
             Key::Char('g') if key.modifiers.shift() => {

@@ -376,13 +376,13 @@ impl Component for SplitPanel {
 
         if let Some(key) = event.as_key() {
             // Tab toggles pane focus
-            if key.key == Key::Tab {
+            if key.code == Key::Tab {
                 return Some(SplitPanelMessage::FocusOther);
             }
 
             // Ctrl+arrow resizes
             if key.modifiers.ctrl() {
-                match key.key {
+                match key.code {
                     Key::Left | Key::Up => return Some(SplitPanelMessage::ShrinkFirst),
                     Key::Right | Key::Down => return Some(SplitPanelMessage::GrowFirst),
                     Key::Char('0') => return Some(SplitPanelMessage::ResetRatio),

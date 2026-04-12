@@ -805,7 +805,7 @@ impl Component for PaneLayout {
         let key = event.as_key()?;
         let ctrl = key.modifiers.ctrl();
 
-        match key.key {
+        match key.code {
             Key::Tab if key.modifiers.shift() => Some(PaneLayoutMessage::FocusPrev),
             Key::Tab if !ctrl => Some(PaneLayoutMessage::FocusNext),
             Key::Right | Key::Down if ctrl => Some(PaneLayoutMessage::GrowFocused),

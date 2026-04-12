@@ -437,7 +437,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Left | Key::Char('h') => Some(TabsMessage::Left),
                 Key::Right | Key::Char('l') => Some(TabsMessage::Right),
                 Key::Home => Some(TabsMessage::First),

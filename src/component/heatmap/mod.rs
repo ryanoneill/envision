@@ -625,7 +625,7 @@ impl Component for Heatmap {
 
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Up | Key::Char('k') => Some(HeatmapMessage::SelectUp),
             Key::Down | Key::Char('j') => Some(HeatmapMessage::SelectDown),
             Key::Left | Key::Char('h') => Some(HeatmapMessage::SelectLeft),

@@ -556,7 +556,7 @@ impl Component for CodeBlock {
         let ctrl = key.modifiers.ctrl();
         let shift = key.modifiers.shift();
 
-        match key.key {
+        match key.code {
             Key::Up | Key::Char('k') if !ctrl => Some(CodeBlockMessage::ScrollUp),
             Key::Down | Key::Char('j') if !ctrl => Some(CodeBlockMessage::ScrollDown),
             Key::Left | Key::Char('h') if !ctrl => Some(CodeBlockMessage::ScrollLeft),
@@ -566,7 +566,7 @@ impl Component for CodeBlock {
             Key::Char('u') if ctrl => Some(CodeBlockMessage::PageUp(10)),
             Key::Char('d') if ctrl => Some(CodeBlockMessage::PageDown(10)),
             Key::Home | Key::Char('g') if !shift => Some(CodeBlockMessage::Home),
-            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
                 Some(CodeBlockMessage::End)
             }
             Key::Char('n') if !ctrl => Some(CodeBlockMessage::ToggleLineNumbers),

@@ -491,7 +491,7 @@ impl Component for Paginator {
 
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Left | Key::Char('h') => Some(PaginatorMessage::PrevPage),
             Key::Right | Key::Char('l') => Some(PaginatorMessage::NextPage),
             Key::Home => Some(PaginatorMessage::FirstPage),

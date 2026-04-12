@@ -864,7 +864,7 @@ impl Component for FlameGraph {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Up | Key::Char('k') => Some(FlameGraphMessage::SelectUp),
                 Key::Down | Key::Char('j') => Some(FlameGraphMessage::SelectDown),
                 Key::Left | Key::Char('h') => Some(FlameGraphMessage::SelectLeft),

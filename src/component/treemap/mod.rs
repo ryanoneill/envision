@@ -667,7 +667,7 @@ impl Component for Treemap {
 
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Left | Key::Char('h') => Some(TreemapMessage::SelectPrev),
             Key::Right | Key::Char('l') => Some(TreemapMessage::SelectNext),
             Key::Down | Key::Char('j') => Some(TreemapMessage::SelectChild),

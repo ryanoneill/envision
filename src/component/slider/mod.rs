@@ -455,7 +455,7 @@ impl Component for Slider {
 
         if let Some(key) = event.as_key() {
             match state.orientation {
-                SliderOrientation::Horizontal => match key.key {
+                SliderOrientation::Horizontal => match key.code {
                     Key::Right | Key::Char('l') => Some(SliderMessage::Increment),
                     Key::Left | Key::Char('h') => Some(SliderMessage::Decrement),
                     Key::PageUp => Some(SliderMessage::IncrementPage),
@@ -464,7 +464,7 @@ impl Component for Slider {
                     Key::End => Some(SliderMessage::SetMax),
                     _ => None,
                 },
-                SliderOrientation::Vertical => match key.key {
+                SliderOrientation::Vertical => match key.code {
                     Key::Up | Key::Char('k') => Some(SliderMessage::Increment),
                     Key::Down | Key::Char('j') => Some(SliderMessage::Decrement),
                     Key::PageUp => Some(SliderMessage::IncrementPage),

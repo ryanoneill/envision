@@ -156,7 +156,7 @@ impl App for LogCorrelationApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if key.key == Key::Char('q') {
+            if key.code == Key::Char('q') {
                 return Some(Msg::Quit);
             }
         }

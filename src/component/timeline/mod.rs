@@ -634,7 +634,7 @@ impl Component for Timeline {
 
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Left | Key::Char('h') => Some(TimelineMessage::PanLeft),
             Key::Right | Key::Char('l') => Some(TimelineMessage::PanRight),
             Key::Char('+') | Key::Char('=') => Some(TimelineMessage::ZoomIn),

@@ -329,7 +329,7 @@ impl Component for MarkdownRenderer {
         let ctrl = key.modifiers.ctrl();
         let shift = key.modifiers.shift();
 
-        match key.key {
+        match key.code {
             Key::Up | Key::Char('k') if !ctrl => Some(MarkdownRendererMessage::ScrollUp),
             Key::Down | Key::Char('j') if !ctrl => Some(MarkdownRendererMessage::ScrollDown),
             Key::PageUp => Some(MarkdownRendererMessage::PageUp(10)),
@@ -337,7 +337,7 @@ impl Component for MarkdownRenderer {
             Key::Char('u') if ctrl => Some(MarkdownRendererMessage::PageUp(10)),
             Key::Char('d') if ctrl => Some(MarkdownRendererMessage::PageDown(10)),
             Key::Home | Key::Char('g') if !shift => Some(MarkdownRendererMessage::Home),
-            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
                 Some(MarkdownRendererMessage::End)
             }
             Key::Char('s') if !ctrl && !shift => Some(MarkdownRendererMessage::ToggleSource),

@@ -94,7 +94,7 @@ impl App for LogViewerApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if key.key == Key::Char('q') && !state.viewer.is_search_focused() {
+            if key.code == Key::Char('q') && !state.viewer.is_search_focused() {
                 return Some(Msg::Quit);
             }
         }

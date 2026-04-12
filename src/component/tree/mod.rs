@@ -920,7 +920,7 @@ impl<T: Clone + 'static> Component for Tree<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Up | Key::Char('k') => Some(TreeMessage::Up),
                 Key::Down | Key::Char('j') => Some(TreeMessage::Down),
                 Key::Left | Key::Char('h') => Some(TreeMessage::Collapse),

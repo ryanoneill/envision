@@ -77,7 +77,7 @@ impl Event {
     /// ```
     pub fn key_with(key: Key, modifiers: Modifiers) -> Self {
         Self::Key(KeyEvent {
-            key,
+            code: key,
             modifiers,
             kind: super::key::KeyEventKind::Press,
             raw_char: match key {
@@ -113,7 +113,7 @@ impl Event {
     /// ```
     pub fn alt(c: char) -> Self {
         Self::Key(KeyEvent {
-            key: Key::Char(c.to_ascii_lowercase()),
+            code: Key::Char(c.to_ascii_lowercase()),
             modifiers: Modifiers::ALT,
             kind: super::key::KeyEventKind::Press,
             raw_char: Some(c),
@@ -373,7 +373,7 @@ impl KeyEventBuilder {
     pub fn build(self) -> KeyEvent {
         let key = self.key.unwrap_or(Key::Esc);
         KeyEvent {
-            key,
+            code: key,
             modifiers: self.modifiers,
             kind: self.kind,
             raw_char: match key {

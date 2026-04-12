@@ -741,7 +741,7 @@ impl Component for Chart {
 
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Tab if key.modifiers.shift() => Some(ChartMessage::PrevSeries),
             Key::Tab => Some(ChartMessage::NextSeries),
             Key::Left | Key::Char('h') => Some(ChartMessage::CursorLeft),

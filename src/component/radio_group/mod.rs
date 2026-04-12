@@ -335,7 +335,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Up | Key::Char('k') => Some(RadioGroupMessage::Up),
                 Key::Down | Key::Char('j') => Some(RadioGroupMessage::Down),
                 Key::Enter => Some(RadioGroupMessage::Confirm),

@@ -460,21 +460,21 @@ impl Component for Form {
 
         if let Some(key) = event.as_key() {
             // Global keys (regardless of field type)
-            if key.key == Key::Tab && key.modifiers.shift() {
+            if key.code == Key::Tab && key.modifiers.shift() {
                 return Some(FormMessage::FocusPrev);
             }
-            if key.key == Key::Tab {
+            if key.code == Key::Tab {
                 return Some(FormMessage::FocusNext);
             }
 
             // Ctrl+Enter submits the form
-            if key.key == Key::Enter && key.modifiers.ctrl() {
+            if key.code == Key::Enter && key.modifiers.ctrl() {
                 return Some(FormMessage::Submit);
             }
 
             // Field-specific keys
             match &state.states.get(state.focused_index)? {
-                FieldState::Text(_) => match key.key {
+                FieldState::Text(_) => match key.code {
                     Key::Char(c) => Some(FormMessage::Input(c)),
                     Key::Backspace => Some(FormMessage::Backspace),
                     Key::Delete => Some(FormMessage::Delete),
@@ -484,13 +484,13 @@ impl Component for Form {
                     Key::End => Some(FormMessage::End),
                     _ => None,
                 },
-                FieldState::Checkbox(_) => match key.key {
+                FieldState::Checkbox(_) => match key.code {
                     Key::Char(' ') | Key::Enter => Some(FormMessage::Toggle),
                     _ => None,
                 },
                 FieldState::Select(s) => {
                     if s.is_open() {
-                        match key.key {
+                        match key.code {
                             Key::Up | Key::Char('k') => Some(FormMessage::SelectUp),
                             Key::Down | Key::Char('j') => Some(FormMessage::SelectDown),
                             Key::Enter => Some(FormMessage::SelectConfirm),
@@ -498,7 +498,7 @@ impl Component for Form {
                             _ => None,
                         }
                     } else {
-                        match key.key {
+                        match key.code {
                             Key::Enter | Key::Char(' ') => Some(FormMessage::Toggle),
                             _ => None,
                         }

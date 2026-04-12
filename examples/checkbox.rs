@@ -136,7 +136,7 @@ impl App for CheckboxApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Char('q') | Key::Esc => return Some(Msg::Quit),
                 Key::Tab if key.modifiers.shift() => return Some(Msg::FocusPrev),
 

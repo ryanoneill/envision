@@ -684,7 +684,7 @@ impl Component for Calendar {
         }
 
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Left | Key::Char('h') => Some(CalendarMessage::SelectPrevDay),
                 Key::Right | Key::Char('l') => Some(CalendarMessage::SelectNextDay),
                 Key::Up | Key::Char('k') => Some(CalendarMessage::SelectPrevWeek),

@@ -736,7 +736,7 @@ impl Component for LogCorrelation {
 
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Up | Key::Char('k') => Some(LogCorrelationMessage::ScrollUp),
             Key::Down | Key::Char('j') => Some(LogCorrelationMessage::ScrollDown),
             Key::Home => Some(LogCorrelationMessage::ScrollToTop),

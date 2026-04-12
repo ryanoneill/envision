@@ -11,7 +11,7 @@ fn test_simulated_event_char() {
     let event = Event::char('a');
     assert!(event.is_key());
     let key = event.as_key().unwrap();
-    assert_eq!(key.key, Key::Char('a'));
+    assert_eq!(key.code, Key::Char('a'));
     assert!(key.modifiers.is_none());
     assert_eq!(key.raw_char, Some('a'));
 }
@@ -21,7 +21,7 @@ fn test_simulated_event_char_with() {
     let event = Event::char_with('A', Modifiers::SHIFT);
     let key = event.as_key().unwrap();
     // KeyEvent::char('A') normalizes to lowercase
-    assert_eq!(key.key, Key::Char('a'));
+    assert_eq!(key.code, Key::Char('a'));
     assert!(key.modifiers.shift());
     assert_eq!(key.raw_char, Some('A'));
 }
@@ -30,7 +30,7 @@ fn test_simulated_event_char_with() {
 fn test_simulated_event_key() {
     let event = Event::key(Key::Enter);
     let key = event.as_key().unwrap();
-    assert_eq!(key.key, Key::Enter);
+    assert_eq!(key.code, Key::Enter);
     assert!(key.modifiers.is_none());
 }
 
@@ -38,7 +38,7 @@ fn test_simulated_event_key() {
 fn test_simulated_event_key_with() {
     let event = Event::key_with(Key::Tab, Modifiers::SHIFT);
     let key = event.as_key().unwrap();
-    assert_eq!(key.key, Key::Tab);
+    assert_eq!(key.code, Key::Tab);
     assert!(key.modifiers.shift());
 }
 
@@ -46,7 +46,7 @@ fn test_simulated_event_key_with() {
 fn test_simulated_event_ctrl() {
     let event = Event::ctrl('c');
     let key = event.as_key().unwrap();
-    assert_eq!(key.key, Key::Char('c'));
+    assert_eq!(key.code, Key::Char('c'));
     assert!(key.modifiers.ctrl());
 }
 
@@ -54,7 +54,7 @@ fn test_simulated_event_ctrl() {
 fn test_simulated_event_alt() {
     let event = Event::alt('x');
     let key = event.as_key().unwrap();
-    assert_eq!(key.key, Key::Char('x'));
+    assert_eq!(key.code, Key::Char('x'));
     assert!(key.modifiers.alt());
 }
 
@@ -178,7 +178,7 @@ fn test_from_mouse_event() {
 fn test_key_event_builder() {
     let event = KeyEventBuilder::new().char('x').ctrl().shift().build();
 
-    assert_eq!(event.key, Key::Char('x'));
+    assert_eq!(event.code, Key::Char('x'));
     assert!(event.modifiers.ctrl());
     assert!(event.modifiers.shift());
 }
@@ -187,7 +187,7 @@ fn test_key_event_builder() {
 fn test_key_event_builder_code() {
     let event = KeyEventBuilder::new().code(Key::F(1)).build();
 
-    assert_eq!(event.key, Key::F(1));
+    assert_eq!(event.code, Key::F(1));
 }
 
 #[test]
@@ -222,14 +222,14 @@ fn test_key_event_builder_into_event() {
     let event = KeyEventBuilder::new().char('b').into_event();
 
     assert!(event.is_key());
-    assert_eq!(event.as_key().unwrap().key, Key::Char('b'));
+    assert_eq!(event.as_key().unwrap().code, Key::Char('b'));
 }
 
 #[test]
 fn test_key_event_builder_default_code() {
     // When no key is set, should use Key::Esc
     let event = KeyEventBuilder::new().build();
-    assert_eq!(event.key, Key::Esc);
+    assert_eq!(event.code, Key::Esc);
 }
 
 // -------------------------------------------------------------------------

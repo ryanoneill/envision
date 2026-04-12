@@ -148,7 +148,7 @@ impl App for CustomApp {
 
     fn handle_event(event: &Event) -> Option<Self::Message> {
         if let Some(key) = event.as_key() {
-            if let Key::Char(c) = key.key {
+            if let Key::Char(c) = key.code {
                 if c == 'q' {
                     return Some(CustomMsg::Quit);
                 }

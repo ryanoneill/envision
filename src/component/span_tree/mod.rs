@@ -762,7 +762,7 @@ impl Component for SpanTree {
         }
         if let Some(key) = event.as_key() {
             let has_shift = key.modifiers.shift();
-            match key.key {
+            match key.code {
                 Key::Up | Key::Char('k') if !has_shift => Some(SpanTreeMessage::SelectUp),
                 Key::Down | Key::Char('j') if !has_shift => Some(SpanTreeMessage::SelectDown),
                 Key::Right | Key::Char('l') if has_shift => Some(SpanTreeMessage::SetLabelWidth(

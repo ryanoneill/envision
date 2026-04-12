@@ -568,7 +568,7 @@ impl App for ShowcaseApp {
         use envision::input::Key;
 
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Char('q') | Key::Esc => Some(Msg::Quit),
                 Key::Tab if key.modifiers.shift() => Some(Msg::FocusPrev),
 

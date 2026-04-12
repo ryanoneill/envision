@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   are normalized to lowercase; use `raw_char` for text input.
   `BackTab` is replaced by `Tab` with `modifiers.shift()`.
   See MIGRATION.md for the upgrade path.
+- **`KeyEvent` field `key` renamed to `code`** for readability.
+  `key.key` becomes `key.code` in all match expressions. The type
+  is still `Key`.
 - **`TerminalEventSubscription` handler now receives `Event`**
   instead of `crossterm::event::Event`. The subscription converts
   crossterm events internally before invoking the handler.
@@ -81,6 +84,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `KeyEvent::new(Key::Char('G'))` now normalizes uppercase letters
+  to lowercase with SHIFT modifier, matching the behavior of
+  `KeyEvent::char()` and `from_crossterm_key`. Previously, test code
+  using `Event::key(Key::Char('G'))` produced events that could never
+  occur from real terminal input.
 - `ConversationView` markdown rendering also recolors spans with
   `fg: None` (in addition to spans with the theme default foreground),
   defending against future markdown renderer changes.
