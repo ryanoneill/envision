@@ -84,7 +84,7 @@ fn test_worker_builder_custom_capacity() {
 #[tokio::test]
 async fn test_progress_sender_send() {
     let (tx, mut rx) = mpsc::channel(8);
-    let sender = ProgressSender { tx };
+    let sender: ProgressSender<WorkerProgress> = ProgressSender { tx };
 
     sender
         .send(WorkerProgress::new(0.5, Some("halfway".to_string())))
@@ -97,27 +97,57 @@ async fn test_progress_sender_send() {
 }
 
 #[tokio::test]
-async fn test_progress_sender_send_percentage() {
+async fn test_progress_sender_custom_type() {
+    #[derive(Debug, PartialEq)]
+    enum MyProgress {
+        Started,
+        ChapterCount(usize),
+        Finished,
+    }
+
     let (tx, mut rx) = mpsc::channel(8);
-    let sender = ProgressSender { tx };
+    let sender: ProgressSender<MyProgress> = ProgressSender { tx };
 
-    sender.send_percentage(0.75).await.unwrap();
+    sender.send(MyProgress::Started).await.unwrap();
+    sender.send(MyProgress::ChapterCount(12)).await.unwrap();
+    sender.send(MyProgress::Finished).await.unwrap();
 
-    let received = rx.recv().await.unwrap();
-    assert_eq!(received.percentage(), 0.75);
-    assert!(received.status().is_none());
+    assert_eq!(rx.recv().await.unwrap(), MyProgress::Started);
+    assert_eq!(rx.recv().await.unwrap(), MyProgress::ChapterCount(12));
+    assert_eq!(rx.recv().await.unwrap(), MyProgress::Finished);
 }
 
 #[tokio::test]
-async fn test_progress_sender_send_status() {
+async fn test_progress_sender_try_send_succeeds() {
     let (tx, mut rx) = mpsc::channel(8);
-    let sender = ProgressSender { tx };
+    let sender: ProgressSender<u32> = ProgressSender { tx };
 
-    sender.send_status(0.3, "processing").await.unwrap();
+    sender.try_send(42).unwrap();
+    sender.try_send(43).unwrap();
 
-    let received = rx.recv().await.unwrap();
-    assert_eq!(received.percentage(), 0.3);
-    assert_eq!(received.status(), Some("processing"));
+    assert_eq!(rx.recv().await.unwrap(), 42);
+    assert_eq!(rx.recv().await.unwrap(), 43);
+}
+
+#[tokio::test]
+async fn test_progress_sender_try_send_full_channel() {
+    // Channel capacity 1 — second try_send should fail
+    let (tx, _rx) = mpsc::channel(1);
+    let sender: ProgressSender<u32> = ProgressSender { tx };
+
+    sender.try_send(1).unwrap(); // fills the channel
+    let result = sender.try_send(2);
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn test_progress_sender_try_send_closed_channel() {
+    let (tx, rx) = mpsc::channel(8);
+    let sender: ProgressSender<u32> = ProgressSender { tx };
+    drop(rx);
+
+    let result = sender.try_send(1);
+    assert!(result.is_err());
 }
 
 #[tokio::test]
@@ -152,8 +182,8 @@ async fn test_spawn_with_progress() {
     }
 
     let (cmd, _subscription, handle) = WorkerBuilder::new("download").spawn(
-        |progress_sender, _cancel| async move {
-            progress_sender.send_percentage(0.5).await.ok();
+        |sender: ProgressSender<WorkerProgress>, _cancel| async move {
+            sender.send(WorkerProgress::new(0.5, None)).await.ok();
             Ok::<_, String>("done".to_string())
         },
         Msg::Progress,
@@ -166,6 +196,41 @@ async fn test_spawn_with_progress() {
     assert!(!cmd.is_none());
     assert!(!handle.is_cancelled());
     assert_eq!(handle.id(), "download");
+}
+
+#[tokio::test]
+async fn test_spawn_with_custom_progress_type() {
+    #[derive(Clone, Debug)]
+    #[allow(dead_code)]
+    enum Progress {
+        ChapterFound(String),
+        Encoding { percent: f32 },
+    }
+
+    #[derive(Clone, Debug)]
+    #[allow(dead_code)]
+    enum Msg {
+        Update(Progress),
+        Done(String),
+    }
+
+    let (cmd, _sub, handle) = WorkerBuilder::new("transcode")
+        .with_channel_capacity(128)
+        .spawn(
+            |sender: ProgressSender<Progress>, _cancel| async move {
+                sender
+                    .send(Progress::ChapterFound("Chapter 1".into()))
+                    .await
+                    .ok();
+                sender.try_send(Progress::Encoding { percent: 0.5 }).ok();
+                Ok::<_, String>("output.m4b".to_string())
+            },
+            Msg::Update,
+            |result: Result<String, String>| Msg::Done(result.unwrap_or_default()),
+        );
+
+    assert!(!cmd.is_none());
+    assert_eq!(handle.id(), "transcode");
 }
 
 #[tokio::test]
@@ -190,11 +255,11 @@ async fn test_spawn_simple_error_handling() {
 #[tokio::test]
 async fn test_progress_sender_clone() {
     let (tx, mut rx) = mpsc::channel(8);
-    let sender = ProgressSender { tx };
+    let sender: ProgressSender<WorkerProgress> = ProgressSender { tx };
     let sender2 = sender.clone();
 
-    sender.send_percentage(0.25).await.unwrap();
-    sender2.send_percentage(0.50).await.unwrap();
+    sender.send(WorkerProgress::new(0.25, None)).await.unwrap();
+    sender2.send(WorkerProgress::new(0.50, None)).await.unwrap();
 
     let p1 = rx.recv().await.unwrap();
     let p2 = rx.recv().await.unwrap();
@@ -205,10 +270,10 @@ async fn test_progress_sender_clone() {
 #[tokio::test]
 async fn test_progress_sender_fails_when_receiver_dropped() {
     let (tx, rx) = mpsc::channel(8);
-    let sender = ProgressSender { tx };
+    let sender: ProgressSender<WorkerProgress> = ProgressSender { tx };
     drop(rx);
 
-    let result = sender.send_percentage(0.5).await;
+    let result = sender.send(WorkerProgress::new(0.5, None)).await;
     assert!(result.is_err());
 }
 
