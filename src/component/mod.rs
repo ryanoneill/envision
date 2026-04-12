@@ -253,6 +253,7 @@ mod tooltip;
 pub mod markdown_renderer;
 
 // Always available
+mod context;
 mod focus_manager;
 
 // Input components
@@ -491,8 +492,13 @@ pub use tooltip::{Tooltip, TooltipMessage, TooltipOutput, TooltipPosition, Toolt
 pub use markdown_renderer::{MarkdownRenderer, MarkdownRendererMessage, MarkdownRendererState};
 
 // Always available
+pub use context::{EventContext, RenderContext};
 pub use focus_manager::FocusManager;
 
+/// **Deprecated:** `ViewContext` will be renamed to [`EventContext`] in 0.14.0
+/// (when [`Component::view`] switches to taking [`RenderContext`]). For new code,
+/// prefer `EventContext`.
+///
 /// Render-time context passed to [`Component::view`].
 ///
 /// `ViewContext` carries information that the parent determines at render
@@ -535,12 +541,14 @@ impl ViewContext {
     }
 
     /// Sets the focused state (builder pattern).
+    #[must_use]
     pub fn focused(mut self, focused: bool) -> Self {
         self.focused = focused;
         self
     }
 
     /// Sets the disabled state (builder pattern).
+    #[must_use]
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
