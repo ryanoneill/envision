@@ -271,7 +271,10 @@ pub use component::{MarkdownRenderer, MarkdownRendererMessage, MarkdownRendererS
 
 pub use error::{BoxedError, EnvisionError, Result};
 pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
-pub use input::{Event, EventQueue, Key, KeyEvent, Modifiers, MouseButton, MouseEvent};
+pub use input::{
+    Event, EventQueue, Key, KeyEvent, KeyEventKind, Modifiers, MouseButton, MouseEvent,
+    MouseEventKind,
+};
 pub use overlay::{Overlay, OverlayAction, OverlayStack};
 pub use scroll::{ScrollState, render_scrollbar, render_scrollbar_inside_border};
 pub use theme::Theme;
@@ -298,7 +301,10 @@ pub mod prelude {
     };
 
     // Input
-    pub use crate::input::{Event, EventQueue, Key, Modifiers};
+    pub use crate::input::{
+        Event, EventQueue, Key, KeyEvent, KeyEventKind, Modifiers, MouseButton, MouseEvent,
+        MouseEventKind,
+    };
 
     // Overlay
     pub use crate::overlay::{Overlay, OverlayAction, OverlayStack};

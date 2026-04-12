@@ -231,12 +231,23 @@ for a shorter lifetime, reborrows the theme, and preserves `focused` and
 `disabled`. When the child context goes out of scope, the parent `ctx` is
 usable again.
 
-If a child needs different focus/disabled state, mutate the fields on the
-returned context:
+If a child needs different focus/disabled state, you can chain the
+builder methods directly on the returned context:
+
+```rust
+// Chaining pattern (preferred for simple cases)
+Header::view(
+    &state.header,
+    &mut ctx.with_area(chunks[0]).focused(state.current_focus == FocusTarget::Header),
+);
+```
+
+Or mutate the fields explicitly for more complex logic:
 
 ```rust
 let mut child_ctx = ctx.with_area(chunks[0]);
 child_ctx.focused = state.current_focus == FocusTarget::Header;
+child_ctx.disabled = !state.header_enabled;
 Header::view(&state.header, &mut child_ctx);
 ```
 
@@ -305,6 +316,45 @@ migrated to `&mut RenderContext<'_, '_>`:
 
 Call sites need the same `&mut RenderContext::new(...)` treatment as
 `Component::view` call sites.
+
+### 8. Worker module: `ProgressSender<P>` and `Command::subscribe`
+
+`ProgressSender` is now generic over your progress type:
+
+```rust
+// Before (0.13.x)
+progress_sender.send_percentage(0.5).await?;
+progress_sender.send_status(0.3, "downloading").await?;
+
+// After (0.14.0)
+// Use any type — an enum, struct, or the built-in WorkerProgress
+progress_sender.send(WorkerProgress::new(0.5, None)).await?;
+progress_sender.send(MyProgress::ChapterCount(12)).await?;
+
+// Non-blocking for high-frequency updates
+progress_sender.try_send(MyProgress::Tick(0.5)).ok();
+```
+
+Workers can now be spawned on-demand from `update()` using
+`Command::subscribe` to register the progress subscription:
+
+```rust
+fn update(state: &mut State, msg: Msg) -> Command<Msg> {
+    match msg {
+        Msg::StartWork => {
+            let (cmd, subscription, handle) = WorkerBuilder::new("task")
+                .spawn(
+                    |sender, cancel| async move { /* ... */ },
+                    Msg::Progress,
+                    |result| Msg::Done(result),
+                );
+            state.handle = Some(handle);
+            Command::combine(vec![cmd, Command::subscribe(subscription)])
+        }
+        // ...
+    }
+}
+```
 
 ## v0.6.0 to v0.7.0
 
