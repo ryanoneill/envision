@@ -532,7 +532,7 @@ impl Component for MetricsDashboard {
 
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Left | Key::Char('h') => Some(MetricsDashboardMessage::Left),
             Key::Right | Key::Char('l') => Some(MetricsDashboardMessage::Right),
             Key::Up | Key::Char('k') => Some(MetricsDashboardMessage::Up),

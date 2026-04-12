@@ -100,7 +100,7 @@ impl App for DialogApp {
                 .map(Msg::Dialog);
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Char('q') | Key::Esc => Some(Msg::Quit),
                 Key::Char('d') => Some(Msg::ShowDialog),
                 _ => None,

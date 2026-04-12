@@ -310,7 +310,7 @@ impl App for Dashboard {
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Char('q') | Key::Esc => Some(Msg::Quit),
             Key::Left | Key::Char('h') => Some(Msg::Tab(TabsMessage::Left)),
             Key::Right | Key::Char('l') => Some(Msg::Tab(TabsMessage::Right)),

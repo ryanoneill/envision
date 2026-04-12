@@ -373,7 +373,7 @@ impl App for EventApp {
     fn handle_event(event: &crate::input::Event) -> Option<Self::Message> {
         use crate::input::Key;
         if let Some(key) = event.as_key() {
-            if let Key::Char(c) = key.key {
+            if let Key::Char(c) = key.code {
                 if c == 'q' {
                     return Some(EventMsg::Quit);
                 }
@@ -673,7 +673,7 @@ mod overlay_tests {
     impl Overlay<EventMsg> for DialogOverlay {
         fn handle_event(&mut self, event: &Event) -> OverlayAction<EventMsg> {
             if let Some(key) = event.as_key() {
-                match key.key {
+                match key.code {
                     Key::Esc => OverlayAction::Dismiss,
                     Key::Enter => OverlayAction::DismissWithMessage(EventMsg::KeyPressed('!')),
                     _ => OverlayAction::Consumed,

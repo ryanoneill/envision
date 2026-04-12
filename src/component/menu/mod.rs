@@ -515,7 +515,7 @@ impl Component for Menu {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Left => Some(MenuMessage::Left),
                 Key::Right => Some(MenuMessage::Right),
                 Key::Enter => Some(MenuMessage::Select),

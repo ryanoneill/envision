@@ -663,7 +663,7 @@ impl Component for Dialog {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Tab if key.modifiers.shift() => Some(DialogMessage::FocusPrev),
                 Key::Tab => Some(DialogMessage::FocusNext),
                 Key::Enter => Some(DialogMessage::Press),

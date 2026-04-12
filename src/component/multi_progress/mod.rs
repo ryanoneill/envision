@@ -706,7 +706,7 @@ impl Component for MultiProgress {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Up | Key::Char('k') => Some(MultiProgressMessage::ScrollUp),
                 Key::Down | Key::Char('j') => Some(MultiProgressMessage::ScrollDown),
                 Key::Enter => Some(MultiProgressMessage::Select),

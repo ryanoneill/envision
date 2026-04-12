@@ -102,7 +102,7 @@ impl App for FileBrowserApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if matches!(key.key, Key::Char('q') | Key::Esc)
+            if matches!(key.code, Key::Char('q') | Key::Esc)
                 && state.browser.filter_text().is_empty()
             {
                 return Some(Msg::Quit);

@@ -519,7 +519,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Up | Key::Char('k') => Some(SelectableListMessage::Up),
                 Key::Down | Key::Char('j') => Some(SelectableListMessage::Down),
                 Key::Char('g') if key.modifiers.shift() => Some(SelectableListMessage::Last),

@@ -695,7 +695,7 @@ impl Component for AlertPanel {
 
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Left | Key::Char('h') => Some(AlertPanelMessage::SelectPrev),
             Key::Right | Key::Char('l') => Some(AlertPanelMessage::SelectNext),
             Key::Up | Key::Char('k') => Some(AlertPanelMessage::SelectUp),

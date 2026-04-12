@@ -62,7 +62,7 @@ pub enum Key {
 ///
 /// # Two views of the same keypress
 ///
-/// - **`key`**: normalized for keybindings. ASCII letters are always
+/// - **`code`**: normalized for keybindings. ASCII letters are always
 ///   lowercase. Use this for `match` arms in `handle_event`.
 /// - **`raw_char`**: the character the terminal actually sent. Preserves
 ///   case (uppercase for Shift or Caps Lock). Use this for text input.
@@ -74,14 +74,14 @@ pub enum Key {
 ///
 /// // Constructors normalize automatically
 /// let event = KeyEvent::char('A');
-/// assert_eq!(event.key, Key::Char('a'));        // normalized
-/// assert!(event.modifiers.shift());             // shift inferred
-/// assert_eq!(event.raw_char, Some('A'));         // original preserved
+/// assert_eq!(event.code, Key::Char('a'));        // normalized
+/// assert!(event.modifiers.shift());              // shift inferred
+/// assert_eq!(event.raw_char, Some('A'));          // original preserved
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct KeyEvent {
     /// The key, normalized. ASCII letters are always lowercase.
-    pub key: Key,
+    pub code: Key,
     /// Modifier keys held during the event.
     pub modifiers: Modifiers,
     /// Whether this is a press, release, or repeat.
@@ -94,22 +94,52 @@ pub struct KeyEvent {
 impl KeyEvent {
     /// Creates a key press event with no modifiers.
     ///
+    /// For `Key::Char` variants, uppercase ASCII letters are normalized
+    /// to lowercase with SHIFT added, matching the behavior of
+    /// [`KeyEvent::char`] and the crossterm converter. Non-character keys
+    /// have `raw_char = None`.
+    ///
     /// # Example
     ///
     /// ```rust
     /// use envision::input::key::{Key, KeyEvent};
     ///
     /// let event = KeyEvent::new(Key::Enter);
-    /// assert_eq!(event.key, Key::Enter);
+    /// assert_eq!(event.code, Key::Enter);
     /// assert!(event.modifiers.is_none());
     /// assert!(event.raw_char.is_none());
+    ///
+    /// // Char keys set raw_char
+    /// let event = KeyEvent::new(Key::Char('a'));
+    /// assert_eq!(event.code, Key::Char('a'));
+    /// assert_eq!(event.raw_char, Some('a'));
+    ///
+    /// // Uppercase is normalized
+    /// let event = KeyEvent::new(Key::Char('G'));
+    /// assert_eq!(event.code, Key::Char('g'));
+    /// assert!(event.modifiers.shift());
+    /// assert_eq!(event.raw_char, Some('G'));
     /// ```
     pub fn new(key: Key) -> Self {
-        Self {
-            key,
-            modifiers: Modifiers::NONE,
-            kind: KeyEventKind::Press,
-            raw_char: None,
+        match key {
+            Key::Char(c) if c.is_ascii_uppercase() => Self {
+                code: Key::Char(c.to_ascii_lowercase()),
+                modifiers: Modifiers::SHIFT,
+                kind: KeyEventKind::Press,
+                raw_char: Some(c),
+            },
+            Key::Char(c) => Self {
+                code: Key::Char(c),
+                modifiers: Modifiers::NONE,
+                kind: KeyEventKind::Press,
+                raw_char: Some(c),
+            },
+            _ => Self {
+                code: key,
+                modifiers: Modifiers::NONE,
+                kind: KeyEventKind::Press,
+                raw_char: None,
+            },
         }
     }
 
@@ -124,26 +154,26 @@ impl KeyEvent {
     /// use envision::input::key::{Key, KeyEvent, Modifiers};
     ///
     /// let lower = KeyEvent::char('a');
-    /// assert_eq!(lower.key, Key::Char('a'));
+    /// assert_eq!(lower.code, Key::Char('a'));
     /// assert!(lower.modifiers.is_none());
     /// assert_eq!(lower.raw_char, Some('a'));
     ///
     /// let upper = KeyEvent::char('A');
-    /// assert_eq!(upper.key, Key::Char('a'));
+    /// assert_eq!(upper.code, Key::Char('a'));
     /// assert!(upper.modifiers.shift());
     /// assert_eq!(upper.raw_char, Some('A'));
     /// ```
     pub fn char(c: char) -> Self {
         if c.is_ascii_uppercase() {
             Self {
-                key: Key::Char(c.to_ascii_lowercase()),
+                code: Key::Char(c.to_ascii_lowercase()),
                 modifiers: Modifiers::SHIFT,
                 kind: KeyEventKind::Press,
                 raw_char: Some(c),
             }
         } else {
             Self {
-                key: Key::Char(c),
+                code: Key::Char(c),
                 modifiers: Modifiers::NONE,
                 kind: KeyEventKind::Press,
                 raw_char: Some(c),
@@ -159,12 +189,12 @@ impl KeyEvent {
     /// use envision::input::key::{Key, KeyEvent, Modifiers};
     ///
     /// let event = KeyEvent::ctrl('c');
-    /// assert_eq!(event.key, Key::Char('c'));
+    /// assert_eq!(event.code, Key::Char('c'));
     /// assert!(event.modifiers.ctrl());
     /// ```
     pub fn ctrl(c: char) -> Self {
         Self {
-            key: Key::Char(c.to_ascii_lowercase()),
+            code: Key::Char(c.to_ascii_lowercase()),
             modifiers: Modifiers::CONTROL,
             kind: KeyEventKind::Press,
             raw_char: Some(c),
@@ -280,18 +310,42 @@ mod tests {
     }
 
     #[test]
-    fn test_key_event_new() {
+    fn test_key_event_new_non_char() {
         let event = KeyEvent::new(Key::Enter);
-        assert_eq!(event.key, Key::Enter);
+        assert_eq!(event.code, Key::Enter);
         assert!(event.modifiers.is_none());
         assert_eq!(event.kind, KeyEventKind::Press);
         assert!(event.raw_char.is_none());
     }
 
     #[test]
+    fn test_key_event_new_lowercase_char() {
+        let event = KeyEvent::new(Key::Char('a'));
+        assert_eq!(event.code, Key::Char('a'));
+        assert!(event.modifiers.is_none());
+        assert_eq!(event.raw_char, Some('a'));
+    }
+
+    #[test]
+    fn test_key_event_new_uppercase_normalizes() {
+        let event = KeyEvent::new(Key::Char('G'));
+        assert_eq!(event.code, Key::Char('g'));
+        assert!(event.modifiers.shift());
+        assert_eq!(event.raw_char, Some('G'));
+    }
+
+    #[test]
+    fn test_key_event_new_non_letter_char() {
+        let event = KeyEvent::new(Key::Char('!'));
+        assert_eq!(event.code, Key::Char('!'));
+        assert!(event.modifiers.is_none());
+        assert_eq!(event.raw_char, Some('!'));
+    }
+
+    #[test]
     fn test_key_event_char_lowercase() {
         let event = KeyEvent::char('a');
-        assert_eq!(event.key, Key::Char('a'));
+        assert_eq!(event.code, Key::Char('a'));
         assert!(event.modifiers.is_none());
         assert_eq!(event.raw_char, Some('a'));
     }
@@ -299,7 +353,7 @@ mod tests {
     #[test]
     fn test_key_event_char_uppercase_normalizes() {
         let event = KeyEvent::char('A');
-        assert_eq!(event.key, Key::Char('a'));
+        assert_eq!(event.code, Key::Char('a'));
         assert!(event.modifiers.shift());
         assert_eq!(event.raw_char, Some('A'));
     }
@@ -307,7 +361,7 @@ mod tests {
     #[test]
     fn test_key_event_ctrl() {
         let event = KeyEvent::ctrl('c');
-        assert_eq!(event.key, Key::Char('c'));
+        assert_eq!(event.code, Key::Char('c'));
         assert!(event.modifiers.ctrl());
         assert!(!event.modifiers.shift());
         assert_eq!(event.raw_char, Some('c'));

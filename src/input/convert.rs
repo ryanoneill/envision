@@ -78,7 +78,7 @@ pub(crate) fn from_crossterm_key(key: crossterm::event::KeyEvent) -> Option<KeyE
     };
 
     Some(KeyEvent {
-        key: envision_key,
+        code: envision_key,
         modifiers,
         kind,
         raw_char,
@@ -160,7 +160,7 @@ mod tests {
     #[test]
     fn test_lowercase_char() {
         let result = from_crossterm_key(ct_key(ct::KeyCode::Char('a'))).unwrap();
-        assert_eq!(result.key, Key::Char('a'));
+        assert_eq!(result.code, Key::Char('a'));
         assert!(result.modifiers.is_none());
         assert_eq!(result.raw_char, Some('a'));
     }
@@ -172,7 +172,7 @@ mod tests {
             ct::KeyModifiers::SHIFT,
         ))
         .unwrap();
-        assert_eq!(result.key, Key::Char('a'));
+        assert_eq!(result.code, Key::Char('a'));
         assert!(result.modifiers.shift());
         assert_eq!(result.raw_char, Some('A'));
     }
@@ -181,7 +181,7 @@ mod tests {
     fn test_uppercase_without_shift_caps_lock() {
         // Caps lock sends uppercase without SHIFT modifier
         let result = from_crossterm_key(ct_key(ct::KeyCode::Char('A'))).unwrap();
-        assert_eq!(result.key, Key::Char('a'));
+        assert_eq!(result.code, Key::Char('a'));
         assert!(!result.modifiers.shift());
         assert_eq!(result.raw_char, Some('A'));
     }
@@ -193,7 +193,7 @@ mod tests {
             ct::KeyModifiers::SHIFT,
         ))
         .unwrap();
-        assert_eq!(result.key, Key::Char('!'));
+        assert_eq!(result.code, Key::Char('!'));
         assert!(result.modifiers.shift());
         assert_eq!(result.raw_char, Some('!'));
     }
@@ -205,7 +205,7 @@ mod tests {
             ct::KeyModifiers::CONTROL,
         ))
         .unwrap();
-        assert_eq!(result.key, Key::Char('c'));
+        assert_eq!(result.code, Key::Char('c'));
         assert!(result.modifiers.ctrl());
         assert_eq!(result.raw_char, Some('c'));
     }
@@ -214,7 +214,7 @@ mod tests {
     fn test_ctrl_c_from_raw_control_char() {
         // Some terminals send '\x03' instead of 'c' + CONTROL
         let result = from_crossterm_key(ct_key(ct::KeyCode::Char('\x03'))).unwrap();
-        assert_eq!(result.key, Key::Char('c'));
+        assert_eq!(result.code, Key::Char('c'));
         assert!(result.modifiers.ctrl());
         assert_eq!(result.raw_char, Some('\x03'));
     }
@@ -222,7 +222,7 @@ mod tests {
     #[test]
     fn test_backtab_becomes_tab_with_shift() {
         let result = from_crossterm_key(ct_key(ct::KeyCode::BackTab)).unwrap();
-        assert_eq!(result.key, Key::Tab);
+        assert_eq!(result.code, Key::Tab);
         assert!(result.modifiers.shift());
         assert!(result.raw_char.is_none());
     }
@@ -230,7 +230,7 @@ mod tests {
     #[test]
     fn test_enter() {
         let result = from_crossterm_key(ct_key(ct::KeyCode::Enter)).unwrap();
-        assert_eq!(result.key, Key::Enter);
+        assert_eq!(result.code, Key::Enter);
         assert!(result.modifiers.is_none());
         assert!(result.raw_char.is_none());
     }
@@ -238,26 +238,26 @@ mod tests {
     #[test]
     fn test_function_key() {
         let result = from_crossterm_key(ct_key(ct::KeyCode::F(5))).unwrap();
-        assert_eq!(result.key, Key::F(5));
+        assert_eq!(result.code, Key::F(5));
         assert!(result.raw_char.is_none());
     }
 
     #[test]
     fn test_arrows() {
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::Left)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::Left)).unwrap().code,
             Key::Left
         );
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::Right)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::Right)).unwrap().code,
             Key::Right
         );
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::Up)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::Up)).unwrap().code,
             Key::Up
         );
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::Down)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::Down)).unwrap().code,
             Key::Down
         );
     }
@@ -265,21 +265,23 @@ mod tests {
     #[test]
     fn test_navigation_keys() {
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::Home)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::Home)).unwrap().code,
             Key::Home
         );
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::End)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::End)).unwrap().code,
             Key::End
         );
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::PageUp)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::PageUp))
+                .unwrap()
+                .code,
             Key::PageUp
         );
         assert_eq!(
             from_crossterm_key(ct_key(ct::KeyCode::PageDown))
                 .unwrap()
-                .key,
+                .code,
             Key::PageDown
         );
     }
@@ -289,23 +291,27 @@ mod tests {
         assert_eq!(
             from_crossterm_key(ct_key(ct::KeyCode::Backspace))
                 .unwrap()
-                .key,
+                .code,
             Key::Backspace
         );
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::Delete)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::Delete))
+                .unwrap()
+                .code,
             Key::Delete
         );
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::Insert)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::Insert))
+                .unwrap()
+                .code,
             Key::Insert
         );
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::Tab)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::Tab)).unwrap().code,
             Key::Tab
         );
         assert_eq!(
-            from_crossterm_key(ct_key(ct::KeyCode::Esc)).unwrap().key,
+            from_crossterm_key(ct_key(ct::KeyCode::Esc)).unwrap().code,
             Key::Esc
         );
     }
@@ -431,7 +437,7 @@ mod tests {
     fn test_event_key_press() {
         let ct_event = ct::Event::Key(ct_key(ct::KeyCode::Enter));
         let result = from_crossterm_event(ct_event).unwrap();
-        assert!(matches!(result, Event::Key(ke) if ke.key == Key::Enter));
+        assert!(matches!(result, Event::Key(ke) if ke.code == Key::Enter));
     }
 
     #[test]

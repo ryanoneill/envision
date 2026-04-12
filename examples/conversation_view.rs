@@ -155,7 +155,7 @@ impl App for ConversationApp {
 
     fn handle_event_with_state(state: &Self::State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if matches!(key.key, Key::Esc) {
+            if matches!(key.code, Key::Esc) {
                 return Some(Msg::Quit);
             }
         }

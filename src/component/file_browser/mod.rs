@@ -655,11 +655,11 @@ impl Component for FileBrowser {
         let shift = key.modifiers.shift();
 
         match state.internal_focus {
-            FileBrowserFocus::FileList => match key.key {
+            FileBrowserFocus::FileList => match key.code {
                 Key::Up | Key::Char('k') if !ctrl => Some(FileBrowserMessage::Up),
                 Key::Down | Key::Char('j') if !ctrl => Some(FileBrowserMessage::Down),
                 Key::Home | Key::Char('g') if !shift => Some(FileBrowserMessage::First),
-                Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
+                Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
                     Some(FileBrowserMessage::Last)
                 }
                 Key::PageUp => Some(FileBrowserMessage::PageUp(10)),
@@ -677,11 +677,11 @@ impl Component for FileBrowser {
                     .map(FileBrowserMessage::FilterChar),
                 _ => None,
             },
-            FileBrowserFocus::PathBar => match key.key {
+            FileBrowserFocus::PathBar => match key.code {
                 Key::Tab => Some(FileBrowserMessage::CycleFocus),
                 _ => None,
             },
-            FileBrowserFocus::Filter => match key.key {
+            FileBrowserFocus::Filter => match key.code {
                 Key::Tab => Some(FileBrowserMessage::CycleFocus),
                 Key::Backspace => Some(FileBrowserMessage::FilterBackspace),
                 Key::Esc => Some(FileBrowserMessage::FilterClear),

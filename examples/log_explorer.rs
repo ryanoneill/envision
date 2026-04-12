@@ -343,7 +343,7 @@ impl App for LogExplorer {
 
         // Global shortcuts (always active)
         let ctrl = key.modifiers.ctrl();
-        match key.key {
+        match key.code {
             Key::Char('q') | Key::Esc => return Some(Msg::Quit),
             Key::Tab => return Some(Msg::FocusNext),
             Key::Char('p') if ctrl => return Some(Msg::TogglePalette),
@@ -376,7 +376,7 @@ impl App for LogExplorer {
         // SplitPanel resize (Shift+Left/Right)
         let shift = key.modifiers.shift();
         if shift {
-            match key.key {
+            match key.code {
                 Key::Left => return Some(Msg::Split(SplitPanelMessage::ShrinkFirst)),
                 Key::Right => return Some(Msg::Split(SplitPanelMessage::GrowFirst)),
                 _ => {}

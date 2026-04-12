@@ -455,7 +455,7 @@ impl Component for ScrollView {
         let ctrl = key.modifiers.ctrl();
         let shift = key.modifiers.shift();
 
-        match key.key {
+        match key.code {
             Key::Up | Key::Char('k') if !ctrl => Some(ScrollViewMessage::ScrollUp),
             Key::Down | Key::Char('j') if !ctrl => Some(ScrollViewMessage::ScrollDown),
             Key::PageUp => Some(ScrollViewMessage::PageUp),
@@ -463,7 +463,7 @@ impl Component for ScrollView {
             Key::Char('u') if ctrl => Some(ScrollViewMessage::PageUp),
             Key::Char('d') if ctrl => Some(ScrollViewMessage::PageDown),
             Key::Home | Key::Char('g') if !shift => Some(ScrollViewMessage::Home),
-            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
                 Some(ScrollViewMessage::End)
             }
             _ => None,

@@ -117,7 +117,7 @@ impl App for StatusBarApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Char('q') => Some(Msg::Quit),
                 Key::Char('i') => Some(Msg::SwitchToInsert),
                 Key::Esc => Some(Msg::SwitchToNormal),

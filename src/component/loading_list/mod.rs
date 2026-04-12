@@ -739,7 +739,7 @@ impl<T: Clone> Component for LoadingList<T> {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Up | Key::Char('k') => Some(LoadingListMessage::Up),
                 Key::Down | Key::Char('j') => Some(LoadingListMessage::Down),
                 Key::Enter => Some(LoadingListMessage::Select),

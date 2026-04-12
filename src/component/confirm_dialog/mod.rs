@@ -574,7 +574,7 @@ impl Component for ConfirmDialog {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Tab if key.modifiers.shift() => Some(ConfirmDialogMessage::FocusPrev),
                 Key::Tab => Some(ConfirmDialogMessage::FocusNext),
                 Key::Enter => Some(ConfirmDialogMessage::Press),

@@ -729,7 +729,7 @@ impl Component for StepIndicator {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Left | Key::Char('h') => Some(StepIndicatorMessage::FocusPrev),
                 Key::Right | Key::Char('l') => Some(StepIndicatorMessage::FocusNext),
                 Key::Home => Some(StepIndicatorMessage::First),

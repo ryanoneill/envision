@@ -381,7 +381,7 @@ impl App for ChatClient {
         }
 
         // Global shortcuts
-        match key.key {
+        match key.code {
             Key::Char('q') if ctrl => return Some(Msg::Quit),
             Key::Char('p') if ctrl => return Some(Msg::TogglePalette),
             Key::Char('n') if ctrl => return Some(Msg::NewTab),
@@ -399,7 +399,7 @@ impl App for ChatClient {
 
         // Input-focused: Ctrl+Enter submits, other keys go to TextArea
         if state.focus.is_focused(&Focus::Input) {
-            if ctrl && key.key == Key::Enter {
+            if ctrl && key.code == Key::Enter {
                 return Some(Msg::SubmitInput);
             }
             return TextArea::handle_event(&state.input, event, &EventContext::default())

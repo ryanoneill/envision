@@ -314,7 +314,7 @@ impl App for FileManager {
         }
 
         // Global shortcuts
-        match key.key {
+        match key.code {
             Key::Char('q') if ctrl => return Some(Msg::Quit),
             Key::Char('p') if ctrl => return Some(Msg::TogglePalette),
             Key::Char('h') if ctrl => {

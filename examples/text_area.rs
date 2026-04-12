@@ -65,7 +65,7 @@ impl App for TextAreaApp {
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            if key.key == Key::Esc {
+            if key.code == Key::Esc {
                 return Some(Msg::Quit);
             }
         }

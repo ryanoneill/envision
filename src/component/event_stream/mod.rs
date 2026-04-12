@@ -174,7 +174,7 @@ impl Component for EventStream {
         let key = event.as_key()?;
 
         match state.focus {
-            Focus::List => match key.key {
+            Focus::List => match key.code {
                 Key::Up | Key::Char('k') => Some(EventStreamMessage::ScrollUp),
                 Key::Down | Key::Char('j') => Some(EventStreamMessage::ScrollDown),
                 Key::Char('g') if key.modifiers.shift() => Some(EventStreamMessage::ScrollToBottom),
@@ -189,7 +189,7 @@ impl Component for EventStream {
                 Key::Char('f') => Some(EventStreamMessage::ToggleAutoScroll),
                 _ => None,
             },
-            Focus::Search => match key.key {
+            Focus::Search => match key.code {
                 Key::Esc => Some(EventStreamMessage::ClearSearch),
                 Key::Enter => Some(EventStreamMessage::FocusList),
                 Key::Char(c) => {

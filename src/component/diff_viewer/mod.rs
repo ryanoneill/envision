@@ -759,7 +759,7 @@ impl Component for DiffViewer {
         let ctrl = key.modifiers.ctrl();
         let shift = key.modifiers.shift();
 
-        match key.key {
+        match key.code {
             Key::Up | Key::Char('k') if !ctrl => Some(DiffViewerMessage::ScrollUp),
             Key::Down | Key::Char('j') if !ctrl => Some(DiffViewerMessage::ScrollDown),
             Key::Char('n') if !shift && !ctrl => Some(DiffViewerMessage::NextHunk),
@@ -770,7 +770,7 @@ impl Component for DiffViewer {
             Key::Char('u') if ctrl => Some(DiffViewerMessage::PageUp(10)),
             Key::Char('d') if ctrl => Some(DiffViewerMessage::PageDown(10)),
             Key::Home | Key::Char('g') if !shift => Some(DiffViewerMessage::Home),
-            Key::End | Key::Char('g') if key.modifiers.shift() || key.key == Key::End => {
+            Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
                 Some(DiffViewerMessage::End)
             }
             Key::Char('m') if !ctrl => Some(DiffViewerMessage::ToggleMode),

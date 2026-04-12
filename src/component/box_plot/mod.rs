@@ -838,7 +838,7 @@ impl Component for BoxPlot {
 
         let key = event.as_key()?;
 
-        match key.key {
+        match key.code {
             Key::Right | Key::Char('l') => Some(BoxPlotMessage::NextDataset),
             Key::Left | Key::Char('h') => Some(BoxPlotMessage::PrevDataset),
             Key::Char('o') => Some(BoxPlotMessage::ToggleOutliers),

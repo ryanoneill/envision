@@ -626,7 +626,7 @@ impl Component for CommandPalette {
         }
 
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Esc => Some(CommandPaletteMessage::Dismiss),
                 Key::Enter => Some(CommandPaletteMessage::Confirm),
                 Key::Backspace => Some(CommandPaletteMessage::Backspace),

@@ -933,7 +933,7 @@ impl<T: TableRow + 'static> Component for Table<T> {
         }
         if let Some(key) = event.as_key() {
             let has_shift = key.modifiers.shift();
-            match key.key {
+            match key.code {
                 Key::Up | Key::Char('k') => Some(TableMessage::Up),
                 Key::Down | Key::Char('j') => Some(TableMessage::Down),
                 Key::Home => Some(TableMessage::First),

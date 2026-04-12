@@ -120,7 +120,7 @@ impl App for RouterApp {
 
     fn handle_event(event: &Event) -> Option<Msg> {
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Char('q') | Key::Esc => Some(Msg::Quit),
                 Key::Char('s') => Some(Msg::Navigate(Screen::Settings)),
                 Key::Char('p') => Some(Msg::Navigate(Screen::Profile)),

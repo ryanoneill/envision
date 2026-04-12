@@ -673,7 +673,7 @@ impl Component for LineInput {
         let ctrl = key.modifiers.ctrl();
         let shift = key.modifiers.shift();
 
-        match key.key {
+        match key.code {
             // Undo/Redo
             Key::Char('z') if ctrl => Some(LineInputMessage::Undo),
             Key::Char('y') if ctrl => Some(LineInputMessage::Redo),

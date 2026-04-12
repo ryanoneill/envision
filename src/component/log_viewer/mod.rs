@@ -200,7 +200,7 @@ impl Component for LogViewer {
         let key = event.as_key()?;
 
         match state.focus {
-            Focus::Log => match key.key {
+            Focus::Log => match key.code {
                 Key::Up | Key::Char('k') => Some(LogViewerMessage::ScrollUp),
                 Key::Down | Key::Char('j') => Some(LogViewerMessage::ScrollDown),
                 Key::Home => Some(LogViewerMessage::ScrollToTop),
@@ -213,7 +213,7 @@ impl Component for LogViewer {
                 Key::Char('4') => Some(LogViewerMessage::ToggleError),
                 _ => None,
             },
-            Focus::Search => match key.key {
+            Focus::Search => match key.code {
                 Key::Esc => Some(LogViewerMessage::ClearSearch),
                 Key::Enter => Some(LogViewerMessage::ConfirmSearch),
                 Key::Up => Some(LogViewerMessage::SearchHistoryUp),

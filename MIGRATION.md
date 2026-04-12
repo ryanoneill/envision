@@ -11,7 +11,7 @@ key changes:
 |---|---|
 | `KeyCode` | `Key` |
 | `KeyModifiers` | `Modifiers` |
-| `key.code` | `key.key` |
+| `key.code` (crossterm) | `key.code` (envision) |
 | `KeyCode::Char('a')` | `Key::Char('a')` |
 | `KeyCode::BackTab` | `Key::Tab` with `key.modifiers.shift()` |
 | `key.modifiers.contains(KeyModifiers::SHIFT)` | `key.modifiers.shift()` |
@@ -42,7 +42,7 @@ match key.code {
 }
 
 // After
-match key.key {
+match key.code {
     Key::Enter => Some(Msg::Submit),
     Key::Char('q') => Some(Msg::Quit),
     Key::Tab if key.modifiers.shift() => Some(Msg::FocusPrev),
@@ -64,7 +64,7 @@ let shift = key.modifiers.shift();
 
 #### Text input (Insert(c) patterns)
 
-ASCII letter keys are normalized to lowercase in `key.key`. For text
+ASCII letter keys are normalized to lowercase in `key.code`. For text
 input, use `key.raw_char` which preserves the original character:
 
 ```rust
@@ -109,7 +109,7 @@ let sub = terminal_events(|event| {
 use envision::input::{Event, Key};
 let sub = terminal_events(|event| {
     if let Some(key) = event.as_key() {
-        if key.key == Key::Char('q') { return Some(Msg::Quit); }
+        if key.code == Key::Char('q') { return Some(Msg::Quit); }
     }
     None
 });

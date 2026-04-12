@@ -648,7 +648,7 @@ impl Component for Breadcrumb {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Left | Key::Char('h') => Some(BreadcrumbMessage::Left),
                 Key::Right | Key::Char('l') => Some(BreadcrumbMessage::Right),
                 Key::Home => Some(BreadcrumbMessage::First),

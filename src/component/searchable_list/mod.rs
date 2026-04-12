@@ -726,18 +726,18 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
 
         if let Some(key) = event.as_key() {
             // Tab always toggles focus between filter and list
-            if key.key == Key::Tab {
+            if key.code == Key::Tab {
                 return Some(SearchableListMessage::ToggleFocus);
             }
 
             // Esc clears the filter
-            if key.key == Key::Esc {
+            if key.code == Key::Esc {
                 return Some(SearchableListMessage::FilterClear);
             }
 
             match state.internal_focus {
                 Focus::Filter => {
-                    match key.key {
+                    match key.code {
                         // Navigation keys work from filter too
                         Key::Up | Key::Char('k') if key.modifiers.ctrl() => {
                             Some(SearchableListMessage::Up)
@@ -755,7 +755,7 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
                     }
                 }
                 Focus::List => {
-                    match key.key {
+                    match key.code {
                         Key::Up | Key::Char('k') => Some(SearchableListMessage::Up),
                         Key::Down | Key::Char('j') => Some(SearchableListMessage::Down),
                         Key::Char('g') if key.modifiers.shift() => {

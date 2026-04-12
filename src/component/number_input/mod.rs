@@ -540,7 +540,7 @@ impl Component for NumberInput {
         if let Some(key) = event.as_key() {
             if state.editing {
                 // Edit mode key handling
-                match key.key {
+                match key.code {
                     Key::Enter => Some(NumberInputMessage::ConfirmEdit),
                     Key::Esc => Some(NumberInputMessage::CancelEdit),
                     Key::Backspace => Some(NumberInputMessage::EditBackspace),
@@ -552,7 +552,7 @@ impl Component for NumberInput {
                 }
             } else {
                 // Normal mode key handling
-                match key.key {
+                match key.code {
                     Key::Up | Key::Char('k') => Some(NumberInputMessage::Increment),
                     Key::Down | Key::Char('j') => Some(NumberInputMessage::Decrement),
                     Key::Enter => Some(NumberInputMessage::StartEdit),

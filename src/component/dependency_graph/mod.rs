@@ -797,7 +797,7 @@ impl Component for DependencyGraph {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Tab if key.modifiers.shift() => Some(DependencyGraphMessage::SelectPrev),
                 Key::Down | Key::Char('j') | Key::Tab => Some(DependencyGraphMessage::SelectNext),
                 Key::Up | Key::Char('k') => Some(DependencyGraphMessage::SelectPrev),

@@ -696,7 +696,7 @@ impl Component for StatusLog {
             return None;
         }
         if let Some(key) = event.as_key() {
-            match key.key {
+            match key.code {
                 Key::Up | Key::Char('k') => Some(StatusLogMessage::ScrollUp),
                 Key::Down | Key::Char('j') => Some(StatusLogMessage::ScrollDown),
                 Key::Home => Some(StatusLogMessage::ScrollToTop),
