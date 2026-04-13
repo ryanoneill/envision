@@ -557,7 +557,7 @@ impl<M> Command<M> {
     /// ```
     pub fn subscribe(subscription: BoxedSubscription<M>) -> Self
     where
-        M: Send + Clone + 'static,
+        M: Send + 'static,
     {
         Self {
             actions: vec![CommandAction::Subscribe(subscription)],

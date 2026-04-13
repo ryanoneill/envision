@@ -370,7 +370,7 @@ impl WorkerBuilder {
         on_complete: C,
     ) -> (Command<M>, BoxedSubscription<M>, WorkerHandle)
     where
-        M: Send + Clone + 'static,
+        M: Send + 'static,
         P: Send + 'static,
         T: Send + 'static,
         E: Send + 'static,

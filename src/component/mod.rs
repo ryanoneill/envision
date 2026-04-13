@@ -523,13 +523,13 @@ pub trait Component: Sized {
     /// Messages this component can receive.
     ///
     /// These typically come from user input or parent components.
-    type Message: Clone;
+    type Message;
 
     /// Messages this component can emit to its parent.
     ///
     /// Use `()` if the component doesn't need to communicate upward.
     /// This enables child-to-parent communication without tight coupling.
-    type Output: Clone;
+    type Output;
 
     /// Initialize the component state.
     ///
