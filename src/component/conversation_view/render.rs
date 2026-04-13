@@ -314,6 +314,10 @@ fn format_text_block<'a>(
     theme: &Theme,
     lines: &mut Vec<Line<'a>>,
 ) {
+    // theme is used by the markdown rendering path below; suppress
+    // the unused-variable warning when the markdown feature is off.
+    let _ = &theme;
+
     if text.is_empty() {
         lines.push(Line::from(Span::styled(indent.to_string(), style)));
         return;
