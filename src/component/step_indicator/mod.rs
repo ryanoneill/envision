@@ -227,7 +227,13 @@ pub struct StepIndicatorState {
     /// Per-status style overrides. When set, these take precedence over
     /// the default theme-based styles.
     #[cfg_attr(feature = "serialization", serde(skip, default))]
-    step_style_overrides: HashMap<StepStatus, Style>,
+    status_style_overrides: HashMap<StepStatus, Style>,
+    /// Per-step-index style overrides. When set, these take precedence
+    /// over both status-based overrides and the default theme styles.
+    /// Use this to give specific steps (e.g., "intake", "review") a
+    /// fixed color regardless of their current status.
+    #[cfg_attr(feature = "serialization", serde(skip, default))]
+    step_style_overrides: HashMap<usize, Style>,
 }
 
 impl Default for StepIndicatorState {
@@ -240,6 +246,7 @@ impl Default for StepIndicatorState {
             title: None,
             connector: "───".to_string(),
             show_border: true,
+            status_style_overrides: HashMap::new(),
             step_style_overrides: HashMap::new(),
         }
     }
@@ -367,12 +374,43 @@ impl StepIndicatorState {
     /// use ratatui::style::{Color, Style};
     ///
     /// let state = StepIndicatorState::new(vec![Step::new("Build")])
-    ///     .with_step_style(StepStatus::Completed, Style::default().fg(Color::Cyan))
-    ///     .with_step_style(StepStatus::Failed, Style::default().fg(Color::Red));
-    /// assert!(state.step_style_override(&StepStatus::Completed).is_some());
+    ///     .with_status_style(StepStatus::Completed, Style::default().fg(Color::Cyan))
+    ///     .with_status_style(StepStatus::Failed, Style::default().fg(Color::Red));
+    /// assert!(state.status_style_override(&StepStatus::Completed).is_some());
     /// ```
-    pub fn with_step_style(mut self, status: StepStatus, style: Style) -> Self {
-        self.step_style_overrides.insert(status, style);
+    pub fn with_status_style(mut self, status: StepStatus, style: Style) -> Self {
+        self.status_style_overrides.insert(status, style);
+        self
+    }
+
+    /// Sets a style override for a specific step by index (builder pattern).
+    ///
+    /// When set, this style is used for the step at the given index
+    /// regardless of its current status. Per-index overrides take
+    /// precedence over per-status overrides.
+    ///
+    /// Use this to give specific steps a fixed color (e.g., "intake"
+    /// is always Cyan, "review" is always Yellow) regardless of whether
+    /// they are pending, active, or completed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let state = StepIndicatorState::new(vec![
+    ///     Step::new("Intake"),
+    ///     Step::new("Review"),
+    ///     Step::new("Approve"),
+    /// ])
+    /// .with_step_style(0, Style::default().fg(Color::Cyan))
+    /// .with_step_style(1, Style::default().fg(Color::Yellow));
+    /// assert!(state.step_style_override(0).is_some());
+    /// ```
+    pub fn with_step_style(mut self, index: usize, style: Style) -> Self {
+        self.step_style_overrides.insert(index, style);
         self
     }
 
@@ -565,12 +603,12 @@ impl StepIndicatorState {
         self.show_border = show;
     }
 
-    /// Returns the style override for a step status, if one is set.
-    pub fn step_style_override(&self, status: &StepStatus) -> Option<&Style> {
-        self.step_style_overrides.get(status)
+    /// Returns the per-status style override, if one is set.
+    pub fn status_style_override(&self, status: &StepStatus) -> Option<&Style> {
+        self.status_style_overrides.get(status)
     }
 
-    /// Sets a style override for a specific step status.
+    /// Sets a per-status style override.
     ///
     /// # Example
     ///
@@ -580,16 +618,43 @@ impl StepIndicatorState {
     /// use ratatui::style::{Color, Style};
     ///
     /// let mut state = StepIndicatorState::new(vec![Step::new("A")]);
-    /// state.set_step_style(StepStatus::Active, Style::default().fg(Color::Yellow));
-    /// assert!(state.step_style_override(&StepStatus::Active).is_some());
+    /// state.set_status_style(StepStatus::Active, Style::default().fg(Color::Yellow));
+    /// assert!(state.status_style_override(&StepStatus::Active).is_some());
     /// ```
-    pub fn set_step_style(&mut self, status: StepStatus, style: Style) {
-        self.step_style_overrides.insert(status, style);
+    pub fn set_status_style(&mut self, status: StepStatus, style: Style) {
+        self.status_style_overrides.insert(status, style);
     }
 
-    /// Removes a style override for a step status, reverting to the default.
-    pub fn clear_step_style(&mut self, status: &StepStatus) {
-        self.step_style_overrides.remove(status);
+    /// Removes a per-status style override.
+    pub fn clear_status_style(&mut self, status: &StepStatus) {
+        self.status_style_overrides.remove(status);
+    }
+
+    /// Returns the per-step-index style override, if one is set.
+    pub fn step_style_override(&self, index: usize) -> Option<&Style> {
+        self.step_style_overrides.get(&index)
+    }
+
+    /// Sets a per-step-index style override.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = StepIndicatorState::new(vec![Step::new("Intake"), Step::new("Review")]);
+    /// state.set_step_style(0, Style::default().fg(Color::Cyan));
+    /// assert!(state.step_style_override(0).is_some());
+    /// ```
+    pub fn set_step_style(&mut self, index: usize, style: Style) {
+        self.step_style_overrides.insert(index, style);
+    }
+
+    /// Removes a per-step-index style override.
+    pub fn clear_step_style(&mut self, index: usize) {
+        self.step_style_overrides.remove(&index);
     }
 
     /// Updates the state with a message, returning any output.
@@ -843,13 +908,17 @@ impl Component for StepIndicator {
 }
 
 fn step_style(
+    index: usize,
     status: &StepStatus,
     is_focused_step: bool,
     theme: &Theme,
-    overrides: &HashMap<StepStatus, Style>,
+    step_overrides: &HashMap<usize, Style>,
+    status_overrides: &HashMap<StepStatus, Style>,
 ) -> Style {
-    let base = overrides
-        .get(status)
+    // Priority: per-step-index > per-status > theme default
+    let base = step_overrides
+        .get(&index)
+        .or_else(|| status_overrides.get(status))
         .copied()
         .unwrap_or_else(|| match status {
             StepStatus::Completed => theme.success_style(),
@@ -884,10 +953,12 @@ fn render_horizontal(
 
         let is_focused_step = focused && i == state.focused_index;
         let style = step_style(
+            i,
             &step.status,
             is_focused_step,
             theme,
             &state.step_style_overrides,
+            &state.status_style_overrides,
         );
 
         spans.push(Span::styled(
@@ -917,10 +988,12 @@ fn render_vertical(
 
         let is_focused_step = focused && i == state.focused_index;
         let style = step_style(
+            i,
             &step.status,
             is_focused_step,
             theme,
             &state.step_style_overrides,
+            &state.status_style_overrides,
         );
 
         lines.push(Line::from(Span::styled(
