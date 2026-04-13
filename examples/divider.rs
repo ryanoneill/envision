@@ -101,7 +101,7 @@ impl App for DividerApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<DividerApp, _>::virtual_terminal(40, 10)?;
+    let mut vt = Runtime::<DividerApp, _>::virtual_builder(40, 10).build()?;
 
     println!("=== Divider Example ===\n");
 

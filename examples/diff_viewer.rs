@@ -112,7 +112,7 @@ fn main() {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<DiffViewerApp, _>::virtual_terminal(80, 24)?;
+    let mut vt = Runtime::<DiffViewerApp, _>::virtual_builder(80, 24).build()?;
 
     println!("=== DiffViewer Example ===\n");
 

@@ -167,7 +167,7 @@ impl App for CounterApp {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a virtual terminal for demonstration
-    let mut vt = Runtime::<CounterApp, _>::virtual_terminal(60, 20)?;
+    let mut vt = Runtime::<CounterApp, _>::virtual_builder(60, 20).build()?;
 
     // Simulate some user interactions
     println!("=== Counter App Demo ===\n");

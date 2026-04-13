@@ -129,7 +129,7 @@ impl App for TableApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TableApp, _>::virtual_terminal(60, 12)?;
+    let mut vt = Runtime::<TableApp, _>::virtual_builder(60, 12).build()?;
 
     println!("=== Table Example ===\n");
 

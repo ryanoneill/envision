@@ -101,7 +101,7 @@ impl App for ChartEnhancedApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<ChartEnhancedApp, _>::virtual_terminal(70, 30)?;
+    let mut vt = Runtime::<ChartEnhancedApp, _>::virtual_builder(70, 30).build()?;
 
     println!("=== Enhanced Chart Example ===\n");
 

@@ -69,7 +69,9 @@ fn bench_runtime_creation(c: &mut Criterion) {
             |b, &(w, h)| {
                 b.iter(|| {
                     let runtime: Runtime<BenchApp, _> =
-                        Runtime::virtual_terminal(black_box(w), black_box(h)).unwrap();
+                        Runtime::virtual_builder(black_box(w), black_box(h))
+                            .build()
+                            .unwrap();
                     runtime
                 });
             },
@@ -81,12 +83,11 @@ fn bench_runtime_creation(c: &mut Criterion) {
             |b, &(w, h)| {
                 let config = RuntimeConfig::new().with_history(10);
                 b.iter(|| {
-                    let runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal_with_config(
-                        black_box(w),
-                        black_box(h),
-                        config.clone(),
-                    )
-                    .unwrap();
+                    let runtime: Runtime<BenchApp, _> =
+                        Runtime::virtual_builder(black_box(w), black_box(h))
+                            .config(config.clone())
+                            .build()
+                            .unwrap();
                     runtime
                 });
             },
@@ -101,14 +102,14 @@ fn bench_runtime_dispatch(c: &mut Criterion) {
     let mut group = c.benchmark_group("runtime_dispatch");
 
     group.bench_function("single_message", |b| {
-        let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
         b.iter(|| {
             runtime.dispatch(black_box(BenchMsg::Increment));
         });
     });
 
     group.bench_function("batch_10", |b| {
-        let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
         let messages: Vec<_> = (0..10).map(|_| BenchMsg::Increment).collect();
         b.iter(|| {
             runtime.dispatch_all(black_box(messages.clone()));
@@ -116,7 +117,7 @@ fn bench_runtime_dispatch(c: &mut Criterion) {
     });
 
     group.bench_function("batch_100", |b| {
-        let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
         let messages: Vec<_> = (0..100).map(|_| BenchMsg::Increment).collect();
         b.iter(|| {
             runtime.dispatch_all(black_box(messages.clone()));
@@ -135,7 +136,8 @@ fn bench_runtime_tick(c: &mut Criterion) {
             BenchmarkId::new("tick", format!("{}x{}", width, height)),
             &(width, height),
             |b, &(w, h)| {
-                let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal(w, h).unwrap();
+                let mut runtime: Runtime<BenchApp, _> =
+                    Runtime::virtual_builder(w, h).build().unwrap();
                 b.iter(|| {
                     runtime.tick().unwrap();
                 });
@@ -146,7 +148,8 @@ fn bench_runtime_tick(c: &mut Criterion) {
             BenchmarkId::new("render_only", format!("{}x{}", width, height)),
             &(width, height),
             |b, &(w, h)| {
-                let mut runtime: Runtime<BenchApp, _> = Runtime::virtual_terminal(w, h).unwrap();
+                let mut runtime: Runtime<BenchApp, _> =
+                    Runtime::virtual_builder(w, h).build().unwrap();
                 b.iter(|| {
                     runtime.render().unwrap();
                 });

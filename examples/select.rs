@@ -141,7 +141,7 @@ impl App for SelectApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<SelectApp, _>::virtual_terminal(50, 14)?;
+    let mut vt = Runtime::<SelectApp, _>::virtual_builder(50, 14).build()?;
 
     println!("=== Select Example ===\n");
 

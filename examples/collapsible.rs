@@ -104,7 +104,7 @@ impl App for CollapsibleApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<CollapsibleApp, _>::virtual_terminal(60, 12)?;
+    let mut vt = Runtime::<CollapsibleApp, _>::virtual_builder(60, 12).build()?;
 
     println!("=== Collapsible Example ===\n");
 

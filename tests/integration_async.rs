@@ -218,7 +218,9 @@ impl App for ChainedApp {
 
 #[tokio::test]
 async fn test_command_perform_async_updates_state() {
-    let mut vt = Runtime::<AsyncLoaderApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<AsyncLoaderApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
 
     assert!(vt.state().data.is_none());
     assert!(!vt.state().loading);
@@ -237,7 +239,9 @@ async fn test_command_perform_async_updates_state() {
 
 #[tokio::test]
 async fn test_command_perform_async_chained() {
-    let mut vt = Runtime::<ChainedApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<ChainedApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
 
     // Start the chain
     vt.dispatch(ChainedMsg::StartChain);
@@ -260,7 +264,9 @@ async fn test_command_perform_async_chained() {
 
 #[tokio::test]
 async fn test_try_perform_async_error_reporting() {
-    let mut vt = Runtime::<FallibleApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<FallibleApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
 
     vt.dispatch(FallibleMsg::StartFailing);
     tokio::time::sleep(Duration::from_millis(50)).await;
@@ -277,7 +283,9 @@ async fn test_try_perform_async_error_reporting() {
 
 #[tokio::test]
 async fn test_try_perform_async_success_updates_state() {
-    let mut vt = Runtime::<FallibleApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<FallibleApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
 
     vt.dispatch(FallibleMsg::StartSucceeding);
     tokio::time::sleep(Duration::from_millis(50)).await;
@@ -288,7 +296,9 @@ async fn test_try_perform_async_success_updates_state() {
 
 #[tokio::test]
 async fn test_try_perform_async_error_then_success() {
-    let mut vt = Runtime::<FallibleApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<FallibleApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
 
     // First: a failing command
     vt.dispatch(FallibleMsg::StartFailing);
@@ -315,7 +325,9 @@ async fn test_try_perform_async_error_then_success() {
 
 #[tokio::test]
 async fn test_message_channel_delivers_messages() {
-    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
     let tx = vt.message_sender();
 
     // Send messages via the channel
@@ -329,7 +341,9 @@ async fn test_message_channel_delivers_messages() {
 
 #[tokio::test]
 async fn test_message_channel_interleaved_with_dispatch() {
-    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
     let tx = vt.message_sender();
 
     // Direct dispatch
@@ -348,7 +362,9 @@ async fn test_message_channel_interleaved_with_dispatch() {
 
 #[tokio::test]
 async fn test_message_channel_from_spawned_task() {
-    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
     let tx = vt.message_sender();
 
     // Spawn a task that sends messages
@@ -371,7 +387,9 @@ async fn test_message_channel_from_spawned_task() {
 
 #[tokio::test]
 async fn test_render_reflects_async_state() {
-    let mut vt = Runtime::<AsyncLoaderApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<AsyncLoaderApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
 
     vt.render().unwrap();
     assert!(vt.contains_text("Idle"));
@@ -389,7 +407,9 @@ async fn test_render_reflects_async_state() {
 
 #[tokio::test]
 async fn test_render_after_chained_async() {
-    let mut vt = Runtime::<ChainedApp, _>::virtual_terminal(60, 10).unwrap();
+    let mut vt = Runtime::<ChainedApp, _>::virtual_builder(60, 10)
+        .build()
+        .unwrap();
 
     vt.render().unwrap();
     assert!(vt.contains_text("pending"));
@@ -518,7 +538,9 @@ mod app_harness_tests {
 async fn test_tick_subscription_delivers_messages() {
     use envision::app::TickSubscription;
 
-    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
 
     // Subscribe with a 10ms tick interval
     let sub = TickSubscription::new(Duration::from_millis(10), || TickCounterMsg::Tick);
@@ -540,7 +562,9 @@ async fn test_tick_subscription_delivers_messages() {
 async fn test_timer_subscription_fires_once() {
     use envision::app::TimerSubscription;
 
-    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
 
     let sub = TimerSubscription::after(Duration::from_millis(20), TickCounterMsg::Tick);
     vt.subscribe(sub);
@@ -562,7 +586,9 @@ async fn test_timer_subscription_fires_once() {
 async fn test_channel_subscription_forwards_messages() {
     use tokio::sync::mpsc;
 
-    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
 
     let (tx, rx) = mpsc::channel::<TickCounterMsg>(10);
     let sub = envision::app::ChannelSubscription::new(rx);
@@ -584,7 +610,9 @@ async fn test_channel_subscription_forwards_messages() {
 async fn test_subscription_cancellation() {
     use envision::app::TickSubscription;
 
-    let mut vt = Runtime::<TickCounterApp, _>::virtual_terminal(40, 10).unwrap();
+    let mut vt = Runtime::<TickCounterApp, _>::virtual_builder(40, 10)
+        .build()
+        .unwrap();
 
     let sub = TickSubscription::new(Duration::from_millis(10), || TickCounterMsg::Tick);
     vt.subscribe(sub);

@@ -103,7 +103,7 @@ impl App for TerminalOutputApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TerminalOutputApp, _>::virtual_terminal(70, 25)?;
+    let mut vt = Runtime::<TerminalOutputApp, _>::virtual_builder(70, 25).build()?;
 
     println!("=== TerminalOutput Example ===\n");
 

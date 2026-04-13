@@ -501,13 +501,15 @@ async fn main() -> envision::Result<()> {
     let (state, _) = <DashboardApp as App>::init();
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<Msg>();
 
-    let mut runtime = TerminalRuntime::<DashboardChannelApp>::new_terminal_with_state(
-        ChannelState {
-            inner: state,
-            build_tx: tx,
-        },
-        Command::none(),
-    )?;
+    let mut runtime = Runtime::<DashboardChannelApp, _>::terminal_builder()?
+        .state(
+            ChannelState {
+                inner: state,
+                build_tx: tx,
+            },
+            Command::none(),
+        )
+        .build()?;
 
     runtime.subscribe(UnboundedChannelSubscription::new(rx));
 

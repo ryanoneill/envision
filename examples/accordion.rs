@@ -113,7 +113,7 @@ impl App for AccordionApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<AccordionApp, _>::virtual_terminal(60, 20)?;
+    let mut vt = Runtime::<AccordionApp, _>::virtual_builder(60, 20).build()?;
 
     println!("=== Accordion Example ===\n");
 

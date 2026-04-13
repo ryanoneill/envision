@@ -162,7 +162,7 @@ impl App for NumberInputApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<NumberInputApp, _>::virtual_terminal(60, 16)?;
+    let mut vt = Runtime::<NumberInputApp, _>::virtual_builder(60, 16).build()?;
 
     println!("=== Number Input Example ===\n");
 

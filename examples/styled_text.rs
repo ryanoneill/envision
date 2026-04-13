@@ -160,7 +160,8 @@ impl App for StyledTextApp {
 
 #[tokio::main]
 async fn main() -> envision::Result<()> {
-    let _final_state = TerminalRuntime::<StyledTextApp>::new_terminal()?
+    let _final_state = TerminalRuntime::<StyledTextApp>::terminal_builder()?
+        .build()?
         .run_terminal()
         .await?;
     Ok(())

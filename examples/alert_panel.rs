@@ -101,7 +101,7 @@ impl App for AlertPanelApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<AlertPanelApp, _>::virtual_terminal(80, 20)?;
+    let mut vt = Runtime::<AlertPanelApp, _>::virtual_builder(80, 20).build()?;
 
     println!("=== AlertPanel Example ===\n");
 

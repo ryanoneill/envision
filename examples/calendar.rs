@@ -89,7 +89,7 @@ impl App for CalendarApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<CalendarApp, _>::virtual_terminal(40, 14)?;
+    let mut vt = Runtime::<CalendarApp, _>::virtual_builder(40, 14).build()?;
 
     println!("=== Calendar Example ===\n");
 

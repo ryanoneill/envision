@@ -301,11 +301,10 @@ async fn main() -> envision::Result<()> {
         });
 
     // ── 5. Create the runtime with pre-built state (bypass App::init) ──
-    let mut runtime = TerminalRuntime::<ProcessorApp>::terminal_with_state_and_config(
-        state,
-        Command::none(),
-        runtime_config,
-    )?;
+    let mut runtime = Runtime::<ProcessorApp, _>::terminal_builder()?
+        .state(state, Command::none())
+        .config(runtime_config)
+        .build()?;
 
     // ── 6. Subscribe to background worker updates ───────────────────────
     //

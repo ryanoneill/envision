@@ -166,7 +166,7 @@ impl App for SliderApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<SliderApp, _>::virtual_terminal(60, 24)?;
+    let mut vt = Runtime::<SliderApp, _>::virtual_builder(60, 24).build()?;
 
     println!("=== Slider Example ===\n");
 

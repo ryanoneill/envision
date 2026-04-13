@@ -28,7 +28,10 @@
 //! # }
 //! #[tokio::main]
 //! async fn main() -> envision::Result<()> {
-//!     let _final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal().await?;
+//!     let _final_state = Runtime::<MyApp, _>::terminal_builder()?
+//!         .build()?
+//!         .run_terminal()
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```
@@ -55,7 +58,7 @@
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
-//! let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+//! let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
 //! vt.send(Event::key(Key::Char('j')));
 //! vt.tick()?;
 //! println!("{}", vt.display());
@@ -123,9 +126,9 @@ pub struct Runtime<A: App, B: Backend> {
 
 /// Alias for a runtime using the crossterm terminal backend (production).
 ///
-/// This is the type returned by [`Runtime::new_terminal()`] and
-/// [`Runtime::terminal_with_config()`]. Use this alias when you need to
-/// store or pass a terminal-mode runtime without spelling out the backend type.
+/// This is the type returned by [`Runtime::terminal_builder()`] followed by
+/// `.build()`. Use this alias when you need to store or pass a terminal-mode
+/// runtime without spelling out the backend type.
 ///
 /// # Example
 ///
@@ -144,16 +147,16 @@ pub struct Runtime<A: App, B: Backend> {
 /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 /// #     fn view(state: &MyState, frame: &mut Frame) {}
 /// # }
-/// let runtime: TerminalRuntime<MyApp> = Runtime::new_terminal()?;
+/// let runtime: TerminalRuntime<MyApp> = Runtime::terminal_builder()?.build()?;
 /// # Ok::<(), envision::EnvisionError>(())
 /// ```
 pub type TerminalRuntime<A> = Runtime<A, CrosstermBackend<Stdout>>;
 
 /// Alias for a runtime using the virtual capture backend (testing/automation).
 ///
-/// This is the type returned by [`Runtime::virtual_terminal()`] and
-/// [`Runtime::virtual_terminal_with_config()`]. Use this alias when you need
-/// to store or pass a virtual-terminal runtime without spelling out the backend type.
+/// This is the type returned by [`Runtime::virtual_builder()`] followed by
+/// `.build()`. Use this alias when you need to store or pass a
+/// virtual-terminal runtime without spelling out the backend type.
 ///
 /// # Example
 ///
@@ -172,7 +175,7 @@ pub type TerminalRuntime<A> = Runtime<A, CrosstermBackend<Stdout>>;
 /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 /// #     fn view(state: &MyState, frame: &mut Frame) {}
 /// # }
-/// let vt: VirtualRuntime<MyApp> = Runtime::virtual_terminal(80, 24)?;
+/// let vt: VirtualRuntime<MyApp> = Runtime::virtual_builder(80, 24).build()?;
 /// # Ok::<(), envision::EnvisionError>(())
 /// ```
 pub type VirtualRuntime<A> = Runtime<A, CaptureBackend>;
@@ -181,88 +184,19 @@ pub type VirtualRuntime<A> = Runtime<A, CaptureBackend>;
 // =============================================================================
 
 impl<A: App, B: Backend> Runtime<A, B> {
-    /// Creates a new runtime with the specified backend.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if creating the ratatui `Terminal` with the
-    /// provided backend fails.
-    pub fn with_backend(backend: B) -> error::Result<Self> {
-        Self::with_backend_and_config(backend, RuntimeConfig::default())
-    }
-
-    /// Creates a new runtime with a pre-built state, bypassing [`App::init()`].
-    ///
-    /// [`App::init()`] is **not called** — the provided `state` and `init_cmd`
-    /// are used instead. This is the simplest way to construct a runtime with
-    /// external state. Uses default configuration and executes the provided
-    /// startup command.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if creating the ratatui `Terminal` with the
-    /// provided backend fails.
-    pub fn with_backend_and_state(
-        backend: B,
-        state: A::State,
-        init_cmd: Command<A::Message>,
-    ) -> error::Result<Self> {
-        Self::with_backend_state_and_config(backend, state, init_cmd, RuntimeConfig::default())
-    }
-
-    /// Creates a new runtime with backend and config.
-    ///
-    /// Calls [`App::init()`] to obtain the initial state and startup command.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if creating the ratatui `Terminal` with the
-    /// provided backend fails.
-    pub fn with_backend_and_config(backend: B, config: RuntimeConfig) -> error::Result<Self> {
-        let (state, init_cmd) = A::init();
-        Self::with_backend_state_and_config(backend, state, init_cmd, config)
-    }
-
     /// Creates a new runtime with a pre-built state and startup command.
     ///
-    /// [`App::init()`] is **not called**. This allows callers to construct
-    /// the initial state from external sources (CLI arguments, config files,
-    /// databases, etc.) and pass it directly.
-    ///
-    /// The `init_cmd` parameter mirrors the command returned by `init()`.
-    /// Pass [`Command::none()`] if no startup command is needed.
+    /// This is an internal constructor used by [`RuntimeBuilder::build()`].
+    /// External callers should use the builder API instead:
+    /// - [`Runtime::builder()`] for any backend
+    /// - [`Runtime::terminal_builder()`] for real terminals
+    /// - [`Runtime::virtual_builder()`] for virtual terminals
     ///
     /// # Errors
     ///
     /// Returns an error if creating the ratatui `Terminal` with the
     /// provided backend fails.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// # use envision::prelude::*;
-    /// # struct MyApp;
-    /// # #[derive(Default, Clone)]
-    /// # struct MyState { count: i32 }
-    /// # #[derive(Clone)]
-    /// # enum MyMsg {}
-    /// # impl App for MyApp {
-    /// #     type State = MyState;
-    /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
-    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
-    /// #     fn view(state: &MyState, frame: &mut Frame) {}
-    /// # }
-    /// // Build state from external data instead of App::init()
-    /// let state = MyState { count: 42 };
-    /// let backend = CaptureBackend::new(80, 24);
-    /// let vt = Runtime::<MyApp, _>::with_backend_state_and_config(
-    ///     backend, state, Command::none(), RuntimeConfig::default(),
-    /// )?;
-    /// assert_eq!(vt.state().count, 42);
-    /// # Ok::<(), envision::EnvisionError>(())
-    /// ```
-    pub fn with_backend_state_and_config(
+    pub(crate) fn with_backend_state_and_config(
         backend: B,
         state: A::State,
         init_cmd: Command<A::Message>,
@@ -320,7 +254,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// let vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// let vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// assert_eq!(vt.state().count, 0);
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```
@@ -346,7 +280,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// vt.state_mut().count = 42;
     /// assert_eq!(vt.state().count, 42);
     /// # Ok::<(), envision::EnvisionError>(())
@@ -414,7 +348,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// # let runtime = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// # let runtime = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// let error_tx = runtime.error_sender();
     /// // error_tx can be sent to async tasks to report errors
     /// # Ok::<(), envision::EnvisionError>(())
@@ -444,7 +378,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// # let mut runtime = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// # let mut runtime = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// for error in runtime.take_errors() {
     ///     eprintln!("Async error: {}", error);
     /// }
@@ -541,7 +475,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// #     }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// vt.dispatch(MyMsg::Increment);
     /// assert_eq!(vt.state().count, 1);
     /// # Ok::<(), envision::EnvisionError>(())
@@ -692,7 +626,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// vt.send(Event::key(Key::Char('j')));
     /// vt.tick()?; // processes the 'j' event and re-renders
     /// # Ok::<(), envision::EnvisionError>(())
@@ -849,7 +783,7 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// vt.run_ticks(5)?;
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```

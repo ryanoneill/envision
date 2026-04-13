@@ -184,7 +184,7 @@ impl App for AsyncCounterApp {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create the runtime
-    let mut runtime = Runtime::<AsyncCounterApp, _>::virtual_terminal(60, 20)?;
+    let mut runtime = Runtime::<AsyncCounterApp, _>::virtual_builder(60, 20).build()?;
 
     // Add tick subscription manually (since subscriptions aren't part of App trait)
     runtime.subscribe(tick(Duration::from_millis(500)).with_message(|| Msg::Tick));

@@ -7,7 +7,7 @@
 //!
 //! ## Standard pattern — `init()` creates the state
 //!
-//! Use [`Runtime::new_terminal()`] or [`Runtime::virtual_terminal()`].
+//! Use [`Runtime::terminal_builder()`] or [`Runtime::virtual_builder()`].
 //! These call [`App::init()`] internally to create the initial state and
 //! any startup commands.
 //!
@@ -25,17 +25,16 @@
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
-//! let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+//! let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
 //! # Ok::<(), envision::EnvisionError>(())
 //! ```
 //!
 //! ## External state pattern — `init()` is bypassed
 //!
-//! Use [`Runtime::new_terminal_with_state()`],
-//! [`Runtime::virtual_terminal_with_state()`], or any `with_state` variant.
-//! These accept a pre-built state directly, so [`App::init()`] is **never
-//! called**. This is useful when initial state comes from external sources
-//! such as CLI arguments, config files, or databases.
+//! Use the builder's `.state()` method to provide a pre-built state directly.
+//! [`App::init()`] is **never called**. This is useful when initial state
+//! comes from external sources such as CLI arguments, config files, or
+//! databases.
 //!
 //! ```rust
 //! # use envision::prelude::*;
@@ -52,20 +51,18 @@
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
 //! let state = MyState::default();
-//! let mut vt = Runtime::<MyApp, _>::virtual_terminal_with_state(
-//!     80, 24, state, Command::none(),
-//! )?;
+//! let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24)
+//!     .state(state, Command::none())
+//!     .build()?;
 //! # Ok::<(), envision::EnvisionError>(())
 //! ```
 //!
-//! When using `with_state` constructors, `App::init()` does **not** need to
-//! be implemented — the default implementation will panic if called, which
-//! is safe because `with_state` constructors never call it.
+//! When using `.state()`, `App::init()` does **not** need to be
+//! implemented — the default implementation will panic if called, which
+//! is safe because `.state()` prevents it from being called.
 //!
-//! [`Runtime::new_terminal()`]: crate::app::Runtime::new_terminal
-//! [`Runtime::virtual_terminal()`]: crate::app::Runtime::virtual_terminal
-//! [`Runtime::new_terminal_with_state()`]: crate::app::Runtime::new_terminal_with_state
-//! [`Runtime::virtual_terminal_with_state()`]: crate::app::Runtime::virtual_terminal_with_state
+//! [`Runtime::terminal_builder()`]: crate::app::Runtime::terminal_builder
+//! [`Runtime::virtual_builder()`]: crate::app::Runtime::virtual_builder
 
 use ratatui::Frame;
 
@@ -93,14 +90,12 @@ use crate::input::Event;
 /// There are two ways to start an application, which determine whether
 /// [`init()`](App::init) is called:
 ///
-/// - **Standard**: [`Runtime::new_terminal()`](crate::app::Runtime::new_terminal) and
-///   [`Runtime::virtual_terminal()`](crate::app::Runtime::virtual_terminal) call `init()`
-///   to create the initial state.
-/// - **External state**: The `with_state` constructors
-///   ([`Runtime::new_terminal_with_state()`](crate::app::Runtime::new_terminal_with_state),
-///   [`Runtime::virtual_terminal_with_state()`](crate::app::Runtime::virtual_terminal_with_state),
-///   etc.) accept a pre-built state and **skip** `init()` entirely. In this
-///   case, `init()` does not need to be implemented.
+/// - **Standard**: [`Runtime::terminal_builder()`](crate::app::Runtime::terminal_builder) and
+///   [`Runtime::virtual_builder()`](crate::app::Runtime::virtual_builder) call `init()`
+///   to create the initial state (when `.state()` is not called on the builder).
+/// - **External state**: Use `.state(s, cmd)` on the builder to provide a
+///   pre-built state and **skip** `init()` entirely. In this case, `init()`
+///   does not need to be implemented.
 ///
 /// # Examples
 ///
@@ -196,30 +191,23 @@ pub trait App: Sized {
 
     /// Initializes the application state and optional startup commands.
     ///
-    /// This is called automatically when using [`Runtime::new_terminal()`] or
-    /// [`Runtime::virtual_terminal()`]. When using the `with_state` constructors
-    /// ([`Runtime::new_terminal_with_state()`],
-    /// [`Runtime::virtual_terminal_with_state()`]), this method is **not
+    /// This is called automatically when using the builder without `.state()`.
+    /// When using `.state(s, cmd)` on the builder, this method is **not
     /// called** — the provided state is used directly instead.
     ///
     /// # Panics
     ///
     /// The default implementation panics if called without being overridden.
-    /// This allows applications that exclusively use `with_state` constructors
+    /// This allows applications that exclusively use `.state()` on the builder
     /// to omit `init()` entirely, since it will never be called. If you
-    /// use [`Runtime::new_terminal()`] or [`Runtime::virtual_terminal()`],
-    /// you **must** override this method to provide valid initial state.
-    ///
-    /// [`Runtime::new_terminal()`]: crate::app::Runtime::new_terminal
-    /// [`Runtime::virtual_terminal()`]: crate::app::Runtime::virtual_terminal
-    /// [`Runtime::new_terminal_with_state()`]: crate::app::Runtime::new_terminal_with_state
-    /// [`Runtime::virtual_terminal_with_state()`]: crate::app::Runtime::virtual_terminal_with_state
+    /// build a runtime without calling `.state()`, you **must** override this
+    /// method to provide valid initial state.
     fn init() -> (Self::State, Command<Self::Message>) {
         panic!(
             "App::init() is not implemented. \
-             Override this method when using Runtime::new_terminal() or \
-             Runtime::virtual_terminal(). When using with_state constructors, \
-             this method is never called and can be left unimplemented."
+             Override this method when building a Runtime without .state(). \
+             When using .state() on the builder, this method is never called \
+             and can be left unimplemented."
         );
     }
 

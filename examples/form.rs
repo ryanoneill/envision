@@ -113,7 +113,7 @@ impl App for FormApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<FormApp, _>::virtual_terminal(60, 20)?;
+    let mut vt = Runtime::<FormApp, _>::virtual_builder(60, 20).build()?;
 
     println!("=== Form Example ===\n");
 

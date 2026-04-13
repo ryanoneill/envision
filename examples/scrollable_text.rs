@@ -88,7 +88,7 @@ impl App for ScrollableTextApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<ScrollableTextApp, _>::virtual_terminal(70, 20)?;
+    let mut vt = Runtime::<ScrollableTextApp, _>::virtual_builder(70, 20).build()?;
 
     println!("=== ScrollableText Example ===\n");
 

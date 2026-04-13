@@ -127,7 +127,7 @@ impl App for TabBarApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TabBarApp, _>::virtual_terminal(70, 10)?;
+    let mut vt = Runtime::<TabBarApp, _>::virtual_builder(70, 10).build()?;
 
     println!("=== TabBar Example ===\n");
 

@@ -785,7 +785,7 @@ fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
 // ---------------------------------------------------------------------------
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<ShowcaseApp, _>::virtual_terminal(80, 40)?;
+    let mut vt = Runtime::<ShowcaseApp, _>::virtual_builder(80, 40).build()?;
 
     println!("=== Component Showcase ===\n");
     println!("Demonstrating 18 Envision components with simplified event routing.\n");

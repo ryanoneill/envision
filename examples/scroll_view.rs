@@ -105,7 +105,7 @@ impl App for ScrollViewApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<ScrollViewApp, _>::virtual_terminal(70, 20)?;
+    let mut vt = Runtime::<ScrollViewApp, _>::virtual_builder(70, 20).build()?;
 
     println!("=== ScrollView Example ===\n");
 

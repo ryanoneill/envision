@@ -551,7 +551,7 @@ fn render_progress(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) 
 // =============================================================================
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<DashboardApp, _>::virtual_terminal(80, 30)?;
+    let mut vt = Runtime::<DashboardApp, _>::virtual_builder(80, 30).build()?;
 
     println!("=== Beautiful Dashboard ===\n");
     println!("Demonstrating Envision + Catppuccin Mocha theme.\n");

@@ -148,7 +148,8 @@ impl App for StepIndicatorApp {
 
 #[tokio::main]
 async fn main() -> envision::Result<()> {
-    let _final_state = TerminalRuntime::<StepIndicatorApp>::new_terminal()?
+    let _final_state = TerminalRuntime::<StepIndicatorApp>::terminal_builder()?
+        .build()?
         .run_terminal()
         .await?;
     Ok(())

@@ -173,7 +173,7 @@ impl App for CommandPaletteApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<CommandPaletteApp, _>::virtual_terminal(60, 24)?;
+    let mut vt = Runtime::<CommandPaletteApp, _>::virtual_builder(60, 24).build()?;
 
     println!("=== CommandPalette Example ===\n");
 

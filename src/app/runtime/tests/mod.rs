@@ -54,13 +54,13 @@ impl App for CounterApp {
 
 #[test]
 fn test_runtime_headless() {
-    let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     assert_eq!(runtime.state().count, 0);
 }
 
 #[test]
 fn test_runtime_dispatch() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     runtime.dispatch(CounterMsg::Increment);
     assert_eq!(runtime.state().count, 1);
@@ -75,7 +75,7 @@ fn test_runtime_dispatch() {
 
 #[test]
 fn test_runtime_render() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     runtime.dispatch(CounterMsg::Increment);
     runtime.dispatch(CounterMsg::Increment);
     runtime.render().unwrap();
@@ -85,7 +85,7 @@ fn test_runtime_render() {
 
 #[test]
 fn test_runtime_quit() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     assert!(!runtime.should_quit());
 
     runtime.dispatch(CounterMsg::Quit);
@@ -96,7 +96,7 @@ fn test_runtime_quit() {
 
 #[test]
 fn test_runtime_tick() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
 
     // Queue some events - we'd need to implement handle_event for this
     runtime.dispatch(CounterMsg::Increment);
@@ -136,29 +136,33 @@ fn test_runtime_config_default() {
 #[test]
 fn test_runtime_headless_with_config() {
     let config = RuntimeConfig::new().with_history(5);
-    let runtime: Runtime<CounterApp, _> =
-        Runtime::virtual_terminal_with_config(80, 24, config).unwrap();
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24)
+        .config(config)
+        .build()
+        .unwrap();
     assert_eq!(runtime.state().count, 0);
 }
 
 #[test]
 fn test_runtime_headless_with_config_no_history() {
     let config = RuntimeConfig::new();
-    let runtime: Runtime<CounterApp, _> =
-        Runtime::virtual_terminal_with_config(80, 24, config).unwrap();
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24)
+        .config(config)
+        .build()
+        .unwrap();
     assert_eq!(runtime.state().count, 0);
 }
 
 #[test]
 fn test_runtime_state_mut() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     runtime.state_mut().count = 42;
     assert_eq!(runtime.state().count, 42);
 }
 
 #[test]
 fn test_runtime_terminal_access() {
-    let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let terminal = runtime.terminal();
     assert_eq!(terminal.backend().width(), 80);
     assert_eq!(terminal.backend().height(), 24);
@@ -166,35 +170,35 @@ fn test_runtime_terminal_access() {
 
 #[test]
 fn test_runtime_terminal_mut() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let _terminal = runtime.terminal_mut();
     // Just verify we can get mutable access
 }
 
 #[test]
 fn test_runtime_backend_access() {
-    let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let backend = runtime.backend();
     assert_eq!(backend.width(), 80);
 }
 
 #[test]
 fn test_runtime_backend_mut() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let backend = runtime.backend_mut();
     assert_eq!(backend.width(), 80);
 }
 
 #[test]
 fn test_runtime_events_access() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let events = runtime.events();
     assert!(events.is_empty());
 }
 
 #[test]
 fn test_runtime_cancellation_token() {
-    let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let token = runtime.cancellation_token();
     assert!(!token.is_cancelled());
 }
@@ -229,7 +233,7 @@ fn test_command_request_cancel_token() {
         fn view(_state: &TokenState, _frame: &mut ratatui::Frame) {}
     }
 
-    let mut runtime: Runtime<TokenApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<TokenApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     runtime.tick().unwrap();
 
     // The cancel token should now be stored in state
@@ -246,19 +250,19 @@ fn test_command_request_cancel_token() {
 
 #[test]
 fn test_runtime_message_sender() {
-    let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let _sender = runtime.message_sender();
 }
 
 #[test]
 fn test_runtime_error_sender() {
-    let runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let _error_tx = runtime.error_sender();
 }
 
 #[test]
 fn test_runtime_dispatch_all() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     runtime.dispatch_all(vec![
         CounterMsg::Increment,
@@ -271,7 +275,7 @@ fn test_runtime_dispatch_all() {
 
 #[test]
 fn test_runtime_manual_quit() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     assert!(!runtime.should_quit());
     assert!(!runtime.cancellation_token().is_cancelled());
 
@@ -282,7 +286,7 @@ fn test_runtime_manual_quit() {
 
 #[test]
 fn test_runtime_run_ticks() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     runtime.dispatch(CounterMsg::Increment);
 
     runtime.run_ticks(3).unwrap();
@@ -291,7 +295,7 @@ fn test_runtime_run_ticks() {
 
 #[test]
 fn test_runtime_run_ticks_with_quit() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     runtime.dispatch(CounterMsg::Quit);
     runtime.tick().unwrap();
 
@@ -302,7 +306,7 @@ fn test_runtime_run_ticks_with_quit() {
 
 #[test]
 fn test_runtime_captured_output() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     runtime.render().unwrap();
 
     let output = runtime.display();
@@ -311,7 +315,7 @@ fn test_runtime_captured_output() {
 
 #[test]
 fn test_runtime_captured_ansi() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     runtime.render().unwrap();
 
     let ansi = runtime.display_ansi();
@@ -320,7 +324,7 @@ fn test_runtime_captured_ansi() {
 
 #[test]
 fn test_runtime_find_text() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     runtime.render().unwrap();
 
     let positions = runtime.find_text("Count");
@@ -396,7 +400,7 @@ impl App for EventApp {
 fn test_runtime_process_event() {
     use crate::input::Event;
 
-    let mut runtime: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     runtime.events().push(Event::char('a'));
     assert!(runtime.process_event());
@@ -410,7 +414,7 @@ fn test_runtime_process_event() {
 fn test_runtime_process_all_events() {
     use crate::input::Event;
 
-    let mut runtime: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     runtime.events().push(Event::char('a'));
     runtime.events().push(Event::char('b'));
@@ -422,7 +426,7 @@ fn test_runtime_process_all_events() {
 
 #[test]
 fn test_runtime_tick_with_on_tick() {
-    let mut runtime: Runtime<EventApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut runtime: Runtime<EventApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
 
     runtime.tick().unwrap();
     assert_eq!(runtime.state().ticks, 1);
@@ -435,7 +439,7 @@ fn test_runtime_tick_with_on_tick() {
 fn test_runtime_event_causes_quit() {
     use crate::input::Event;
 
-    let mut runtime: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     runtime.events().push(Event::char('q'));
 
     runtime.tick().unwrap();
@@ -489,7 +493,7 @@ fn test_runtime_process_commands() {
         fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
     }
 
-    let mut runtime: Runtime<CmdApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CmdApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // Process init command (Set(10))
     runtime.process_commands();
@@ -506,8 +510,10 @@ fn test_runtime_max_messages_per_tick() {
     use crate::input::Event;
 
     let config = RuntimeConfig::new().max_messages(2);
-    let mut runtime: Runtime<EventApp, _> =
-        Runtime::virtual_terminal_with_config(80, 24, config).unwrap();
+    let mut runtime: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24)
+        .config(config)
+        .build()
+        .unwrap();
 
     // Queue more events than max_messages_per_tick
     for _ in 0..5 {
@@ -528,7 +534,7 @@ fn test_runtime_max_messages_per_tick() {
 fn test_virtual_terminal_send_and_tick() {
     use crate::input::Event;
 
-    let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut vt: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // Send events
     vt.send(Event::char('a'));
@@ -542,7 +548,7 @@ fn test_virtual_terminal_send_and_tick() {
 
 #[test]
 fn test_virtual_terminal_display() {
-    let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut vt: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     vt.dispatch(CounterMsg::Increment);
     vt.tick().unwrap();
 
@@ -552,7 +558,7 @@ fn test_virtual_terminal_display() {
 
 #[test]
 fn test_virtual_terminal_display_ansi() {
-    let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut vt: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     vt.dispatch(CounterMsg::Increment);
     vt.tick().unwrap();
 
@@ -564,7 +570,7 @@ fn test_virtual_terminal_display_ansi() {
 fn test_virtual_terminal_quit_via_event() {
     use crate::input::Event;
 
-    let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut vt: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     vt.send(Event::char('q'));
     vt.tick().unwrap();
@@ -576,7 +582,7 @@ fn test_virtual_terminal_quit_via_event() {
 fn test_virtual_terminal_multiple_ticks() {
     use crate::input::Event;
 
-    let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut vt: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // First tick with one event
     vt.send(Event::char('a'));
@@ -592,7 +598,7 @@ fn test_virtual_terminal_multiple_ticks() {
 
 #[test]
 fn test_virtual_terminal_cell_at() {
-    let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut vt: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     vt.tick().unwrap();
 
     // Cell at (0,0) should have the 'C' from "Count: 0"
@@ -605,7 +611,7 @@ fn test_virtual_terminal_cell_at() {
 
 #[test]
 fn test_virtual_terminal_contains_text() {
-    let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut vt: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     vt.tick().unwrap();
 
     assert!(vt.contains_text("Count: 0"));
@@ -614,7 +620,7 @@ fn test_virtual_terminal_contains_text() {
 
 #[test]
 fn test_virtual_terminal_find_text() {
-    let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut vt: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
     vt.tick().unwrap();
 
     let positions = vt.find_text("Count");
@@ -685,7 +691,7 @@ mod overlay_tests {
 
     #[test]
     fn test_runtime_overlay_push_pop() {
-        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
         assert!(!vt.has_overlays());
         assert_eq!(vt.overlay_count(), 0);
@@ -707,7 +713,7 @@ mod overlay_tests {
 
     #[test]
     fn test_runtime_overlay_consumes_events() {
-        let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut vt: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
         // Push an overlay that consumes all events
         struct ConsumeAll;
@@ -730,7 +736,7 @@ mod overlay_tests {
 
     #[test]
     fn test_runtime_overlay_propagates_events() {
-        let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut vt: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
         // Push an overlay that propagates all events
         vt.push_overlay(Box::new(PropagateOverlay));
@@ -744,7 +750,7 @@ mod overlay_tests {
 
     #[test]
     fn test_runtime_overlay_dismiss() {
-        let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut vt: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
         vt.push_overlay(Box::new(DialogOverlay));
         assert_eq!(vt.overlay_count(), 1);
@@ -758,7 +764,7 @@ mod overlay_tests {
 
     #[test]
     fn test_runtime_overlay_dismiss_with_message() {
-        let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut vt: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
         vt.push_overlay(Box::new(DialogOverlay));
 
@@ -817,7 +823,7 @@ mod overlay_tests {
             fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
         }
 
-        let mut vt: Runtime<CmdOverlayApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut vt: Runtime<CmdOverlayApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
         // Dispatch push overlay message
         vt.dispatch(CmdOverlayMsg::PushOverlay);
@@ -833,7 +839,7 @@ mod overlay_tests {
 
     #[test]
     fn test_runtime_theme_access() {
-        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
         // Default theme should be set
         let _theme = vt.theme();
@@ -848,7 +854,7 @@ mod overlay_tests {
     #[test]
     fn test_runtime_render_with_overlay() {
         // Verifies the overlay rendering path in render()
-        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+        let mut vt: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
 
         vt.push_overlay(Box::new(ConsumeOverlay));
         vt.render().unwrap();
@@ -868,7 +874,7 @@ mod overlay_tests {
             fn view(&self, _ctx: &mut RenderContext<'_, '_>) {}
         }
 
-        let mut vt: Runtime<EventApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut vt: Runtime<EventApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
         vt.push_overlay(Box::new(MsgOverlay));
 
         vt.send(Event::char('x'));
@@ -919,7 +925,7 @@ mod overlay_tests {
             fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
         }
 
-        let mut vt: Runtime<CmdApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+        let mut vt: Runtime<CmdApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
         // Push two overlays via commands
         vt.dispatch(CmdMsg::Push);

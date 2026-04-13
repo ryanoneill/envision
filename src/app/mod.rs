@@ -35,25 +35,22 @@
 //!
 //! There are two ways to provide the initial state:
 //!
-//! - **Standard pattern**: Use [`Runtime::new_terminal()`] or
-//!   [`Runtime::virtual_terminal()`]. These call [`App::init()`] to create
+//! - **Standard pattern**: Use [`Runtime::terminal_builder()`] or
+//!   [`Runtime::virtual_builder()`]. These call [`App::init()`] to create
 //!   the initial state and any startup commands.
 //!
-//! - **External state pattern**: Use the `with_state` constructors
-//!   ([`Runtime::new_terminal_with_state()`],
-//!   [`Runtime::virtual_terminal_with_state()`], etc.). These accept a
-//!   pre-built state directly and **do not call** [`App::init()`]. This is
-//!   useful when initial state comes from CLI arguments, config files,
-//!   databases, or test fixtures.
+//! - **External state pattern**: Use the builder's `.state()` method
+//!   (e.g., `Runtime::virtual_builder(80, 24).state(s, cmd).build()?`).
+//!   This accepts a pre-built state directly and **does not call**
+//!   [`App::init()`]. Useful when initial state comes from CLI arguments,
+//!   config files, databases, or test fixtures.
 //!
-//! Even when using `with_state` constructors, [`App::init()`] must still
-//! be implemented because it is a required trait method. A simple stub
-//! returning default values is sufficient.
+//! Even when using `.state()`, [`App::init()`] must still be implemented
+//! because it is a required trait method. A simple stub returning default
+//! values is sufficient.
 //!
-//! [`Runtime::new_terminal()`]: Runtime::new_terminal
-//! [`Runtime::virtual_terminal()`]: Runtime::virtual_terminal
-//! [`Runtime::new_terminal_with_state()`]: Runtime::new_terminal_with_state
-//! [`Runtime::virtual_terminal_with_state()`]: Runtime::virtual_terminal_with_state
+//! [`Runtime::terminal_builder()`]: Runtime::terminal_builder
+//! [`Runtime::virtual_builder()`]: Runtime::virtual_builder
 //!
 //! # Example
 //!

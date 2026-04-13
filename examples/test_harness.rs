@@ -138,8 +138,10 @@ fn demo_basic_harness() {
 fn demo_runtime_testing() {
     println!("=== Demo 2: Virtual Terminal for App Testing ===\n");
 
-    // Use Runtime::virtual_terminal to test App implementations
-    let mut vt = Runtime::<TodoApp, _>::virtual_terminal(60, 12).unwrap();
+    // Use Runtime::virtual_builder to test App implementations
+    let mut vt = Runtime::<TodoApp, _>::virtual_builder(60, 12)
+        .build()
+        .unwrap();
 
     // Check initial state
     vt.tick().unwrap();

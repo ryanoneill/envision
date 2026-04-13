@@ -282,7 +282,7 @@ impl App for ThemedApp {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a virtual terminal for demonstration
-    let mut vt = Runtime::<ThemedApp, _>::virtual_terminal(60, 24)?;
+    let mut vt = Runtime::<ThemedApp, _>::virtual_builder(60, 24).build()?;
 
     println!("=== Themed App Demo ===\n");
     println!("This example demonstrates Envision's theming system.\n");

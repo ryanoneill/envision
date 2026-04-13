@@ -448,7 +448,7 @@ fn generate_response(msg_num: usize) -> String {
 // ---------------------------------------------------------------------------
 
 fn main() -> envision::Result<()> {
-    let mut vt = Runtime::<ChatClient, _>::virtual_terminal(90, 28)?;
+    let mut vt = Runtime::<ChatClient, _>::virtual_builder(90, 28).build()?;
 
     // Simulate a conversation using vt.dispatch() so that returned
     // Command::message() values are automatically processed on tick().

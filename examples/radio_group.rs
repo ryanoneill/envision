@@ -96,7 +96,7 @@ impl App for RadioGroupApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<RadioGroupApp, _>::virtual_terminal(50, 14)?;
+    let mut vt = Runtime::<RadioGroupApp, _>::virtual_builder(50, 14).build()?;
 
     println!("=== RadioGroup Example ===\n");
 

@@ -136,7 +136,7 @@ impl App for RouterApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<RouterApp, _>::virtual_terminal(50, 14)?;
+    let mut vt = Runtime::<RouterApp, _>::virtual_builder(50, 14).build()?;
 
     println!("=== Router Example ===\n");
 

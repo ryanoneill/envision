@@ -73,7 +73,7 @@ impl App for HistogramApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<HistogramApp, _>::virtual_terminal(70, 20)?;
+    let mut vt = Runtime::<HistogramApp, _>::virtual_builder(70, 20).build()?;
 
     println!("=== Histogram Example ===\n");
 

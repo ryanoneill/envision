@@ -101,7 +101,7 @@ impl App for SpinnerApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<SpinnerApp, _>::virtual_terminal(40, 6)?;
+    let mut vt = Runtime::<SpinnerApp, _>::virtual_builder(40, 6).build()?;
 
     println!("=== Spinner Example ===\n");
 

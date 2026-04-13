@@ -123,7 +123,7 @@ fn main() {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<CodeBlockApp, _>::virtual_terminal(80, 24)?;
+    let mut vt = Runtime::<CodeBlockApp, _>::virtual_builder(80, 24).build()?;
 
     println!("=== CodeBlock Example ===\n");
 

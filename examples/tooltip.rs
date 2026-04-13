@@ -128,7 +128,7 @@ impl App for TooltipApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TooltipApp, _>::virtual_terminal(55, 16)?;
+    let mut vt = Runtime::<TooltipApp, _>::virtual_builder(55, 16).build()?;
 
     println!("=== Tooltip Example ===\n");
 

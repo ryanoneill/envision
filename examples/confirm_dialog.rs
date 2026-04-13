@@ -152,7 +152,8 @@ impl App for ConfirmDialogApp {
 
 #[tokio::main]
 async fn main() -> envision::Result<()> {
-    let _final_state = TerminalRuntime::<ConfirmDialogApp>::new_terminal()?
+    let _final_state = TerminalRuntime::<ConfirmDialogApp>::terminal_builder()?
+        .build()?
         .run_terminal()
         .await?;
     Ok(())

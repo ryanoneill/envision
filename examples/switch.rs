@@ -196,7 +196,7 @@ impl App for SwitchApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<SwitchApp, _>::virtual_terminal(60, 14)?;
+    let mut vt = Runtime::<SwitchApp, _>::virtual_builder(60, 14).build()?;
 
     println!("=== Switch Example ===\n");
 

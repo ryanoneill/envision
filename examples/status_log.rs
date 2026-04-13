@@ -79,7 +79,7 @@ impl App for StatusLogApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<StatusLogApp, _>::virtual_terminal(55, 14)?;
+    let mut vt = Runtime::<StatusLogApp, _>::virtual_builder(55, 14).build()?;
 
     println!("=== StatusLog Example ===\n");
 

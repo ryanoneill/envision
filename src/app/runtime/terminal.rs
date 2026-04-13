@@ -16,7 +16,6 @@ use ratatui::backend::CrosstermBackend;
 
 use super::Runtime;
 use super::config::RuntimeConfig;
-use crate::app::command::Command;
 use crate::app::model::App;
 
 /// Restores the terminal to its normal state.
@@ -60,118 +59,6 @@ use crate::overlay::OverlayAction;
 // =============================================================================
 
 impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
-    /// Creates a new runtime connected to a real terminal.
-    ///
-    /// This sets up the terminal for TUI operation:
-    /// - Enables raw mode (input is not line-buffered)
-    /// - Enters alternate screen (preserves the original terminal content)
-    /// - Enables mouse capture
-    ///
-    /// Call `run_terminal()` to start the interactive event loop.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if enabling raw mode, entering alternate screen,
-    /// enabling mouse capture, or creating the terminal fails.
-    ///
-    /// # Example
-    ///
-    /// ```rust,no_run
-    /// # use envision::prelude::*;
-    /// # struct MyApp;
-    /// # #[derive(Default, Clone)]
-    /// # struct MyState;
-    /// # #[derive(Clone)]
-    /// # enum MyMsg {}
-    /// # impl App for MyApp {
-    /// #     type State = MyState;
-    /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
-    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
-    /// #     fn view(state: &MyState, frame: &mut Frame) {}
-    /// # }
-    /// #[tokio::main]
-    /// async fn main() -> envision::Result<()> {
-    ///     let _final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal().await?;
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn new_terminal() -> error::Result<Self> {
-        Self::terminal_with_config(RuntimeConfig::default())
-    }
-
-    /// Creates a terminal runtime with custom configuration.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if enabling raw mode, entering alternate screen,
-    /// enabling mouse capture, or creating the terminal fails.
-    pub fn terminal_with_config(config: RuntimeConfig) -> error::Result<Self> {
-        let backend = Self::setup_terminal(&config)?;
-        Self::with_backend_and_config(backend, config)
-    }
-
-    /// Creates a terminal runtime with a pre-built state, bypassing [`App::init()`].
-    ///
-    /// This allows constructing the initial state from external sources
-    /// (CLI arguments, config files, databases, etc.) and passing it directly.
-    /// [`App::init()`] is **not called** — the provided `state` and `init_cmd`
-    /// are used instead.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if enabling raw mode, entering alternate screen,
-    /// enabling mouse capture, or creating the terminal fails.
-    ///
-    /// # Example
-    ///
-    /// ```rust,no_run
-    /// # use envision::prelude::*;
-    /// # struct MyApp;
-    /// # #[derive(Default, Clone)]
-    /// # struct MyState;
-    /// # #[derive(Clone)]
-    /// # enum MyMsg {}
-    /// # impl App for MyApp {
-    /// #     type State = MyState;
-    /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
-    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
-    /// #     fn view(state: &MyState, frame: &mut Frame) {}
-    /// # }
-    /// # #[tokio::main]
-    /// # async fn main() -> envision::Result<()> {
-    /// let state = MyState::default();
-    /// let runtime = Runtime::<MyApp, _>::new_terminal_with_state(state, Command::none())?;
-    /// runtime.run_terminal().await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub fn new_terminal_with_state(
-        state: A::State,
-        init_cmd: Command<A::Message>,
-    ) -> error::Result<Self> {
-        Self::terminal_with_state_and_config(state, init_cmd, RuntimeConfig::default())
-    }
-
-    /// Creates a terminal runtime with a pre-built state and custom configuration.
-    ///
-    /// [`App::init()`] is **not called** — the provided `state` and `init_cmd`
-    /// are used instead.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if enabling raw mode, entering alternate screen,
-    /// enabling mouse capture, or creating the terminal fails.
-    pub fn terminal_with_state_and_config(
-        state: A::State,
-        init_cmd: Command<A::Message>,
-        config: RuntimeConfig,
-    ) -> error::Result<Self> {
-        let backend = Self::setup_terminal(&config)?;
-        Self::with_backend_state_and_config(backend, state, init_cmd, config)
-    }
-
     /// Runs the interactive event loop until the application quits.
     ///
     /// This is the main entry point for terminal applications. It uses
@@ -204,7 +91,10 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// # }
     /// #[tokio::main]
     /// async fn main() -> envision::Result<()> {
-    ///     let final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal().await?;
+    ///     let final_state = Runtime::<MyApp, _>::terminal_builder()?
+    ///         .build()?
+    ///         .run_terminal()
+    ///         .await?;
     ///     println!("Final count: {}", final_state.count);
     ///     Ok(())
     /// }
@@ -352,7 +242,9 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
     /// fn main() -> envision::Result<()> {
-    ///     let final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal_blocking()?;
+    ///     let final_state = Runtime::<MyApp, _>::terminal_builder()?
+    ///         .build()?
+    ///         .run_terminal_blocking()?;
     ///     println!("Final count: {}", final_state.count);
     ///     Ok(())
     /// }

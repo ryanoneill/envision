@@ -84,7 +84,7 @@ impl App for MultiProgressApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<MultiProgressApp, _>::virtual_terminal(60, 10)?;
+    let mut vt = Runtime::<MultiProgressApp, _>::virtual_builder(60, 10).build()?;
 
     println!("=== MultiProgress Example ===\n");
 

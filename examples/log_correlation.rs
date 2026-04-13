@@ -170,7 +170,7 @@ impl App for LogCorrelationApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<LogCorrelationApp, _>::virtual_terminal(85, 20)?;
+    let mut vt = Runtime::<LogCorrelationApp, _>::virtual_builder(85, 20).build()?;
 
     println!("=== LogCorrelation Example ===\n");
 

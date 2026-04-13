@@ -229,7 +229,7 @@ fn build_rich_text_content() -> styled_text::StyledContent {
         .text("Code blocks for source code:")
         .code_block(
             Some("rust"),
-            "use envision::prelude::*;\n\nfn main() -> envision::Result<()> {\n    let _state = TerminalRuntime::<MyApp>::new_terminal()?\n        .run_terminal()\n        .await?;\n    Ok(())\n}",
+            "use envision::prelude::*;\n\nfn main() -> envision::Result<()> {\n    let _state = TerminalRuntime::<MyApp>::terminal_builder()?.build()?\n        .run_terminal()\n        .await?;\n    Ok(())\n}",
         )
         .horizontal_rule()
         .text("Use Up/Down to scroll. Press Tab to switch panels. Press T to change themes.")
@@ -496,7 +496,8 @@ fn render_footer(frame: &mut Frame, area: Rect, theme: &Theme) {
 
 #[tokio::main]
 async fn main() -> envision::Result<()> {
-    let _final_state = TerminalRuntime::<StylingShowcaseApp>::new_terminal()?
+    let _final_state = TerminalRuntime::<StylingShowcaseApp>::terminal_builder()?
+        .build()?
         .run_terminal()
         .await?;
     Ok(())

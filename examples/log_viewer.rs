@@ -104,7 +104,7 @@ impl App for LogViewerApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<LogViewerApp, _>::virtual_terminal(75, 18)?;
+    let mut vt = Runtime::<LogViewerApp, _>::virtual_builder(75, 18).build()?;
 
     println!("=== LogViewer Example ===\n");
 

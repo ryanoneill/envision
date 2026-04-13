@@ -110,7 +110,7 @@ impl App for SplitPanelApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<SplitPanelApp, _>::virtual_terminal(60, 14)?;
+    let mut vt = Runtime::<SplitPanelApp, _>::virtual_builder(60, 14).build()?;
 
     println!("=== SplitPanel Example ===\n");
 

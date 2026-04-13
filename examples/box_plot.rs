@@ -78,7 +78,7 @@ impl App for BoxPlotApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<BoxPlotApp, _>::virtual_terminal(70, 22)?;
+    let mut vt = Runtime::<BoxPlotApp, _>::virtual_builder(70, 22).build()?;
 
     println!("=== Box Plot Example ===\n");
 

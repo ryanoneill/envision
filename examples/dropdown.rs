@@ -85,7 +85,7 @@ impl App for DropdownApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<DropdownApp, _>::virtual_terminal(40, 15)?;
+    let mut vt = Runtime::<DropdownApp, _>::virtual_builder(40, 15).build()?;
 
     println!("=== Dropdown Example ===\n");
 

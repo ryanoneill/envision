@@ -115,7 +115,8 @@ impl App for FileBrowserApp {
 
 #[tokio::main]
 async fn main() -> envision::Result<()> {
-    let _final_state = TerminalRuntime::<FileBrowserApp>::new_terminal()?
+    let _final_state = TerminalRuntime::<FileBrowserApp>::terminal_builder()?
+        .build()?
         .run_terminal()
         .await?;
     Ok(())

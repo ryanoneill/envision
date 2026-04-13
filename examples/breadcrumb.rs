@@ -117,7 +117,7 @@ impl App for BreadcrumbApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<BreadcrumbApp, _>::virtual_terminal(65, 14)?;
+    let mut vt = Runtime::<BreadcrumbApp, _>::virtual_builder(65, 14).build()?;
 
     println!("=== Breadcrumb Example ===\n");
 
