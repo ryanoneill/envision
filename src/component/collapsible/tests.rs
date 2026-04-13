@@ -7,7 +7,7 @@ use crate::input::{Event, Key};
 fn test_new() {
     let state = CollapsibleState::new("Details");
     assert_eq!(state.header(), "Details");
-    assert!(state.expanded());
+    assert!(state.is_expanded());
     assert_eq!(state.content_height(), 5);
 }
 
@@ -21,20 +21,20 @@ fn test_new_from_string() {
 fn test_default() {
     let state = CollapsibleState::default();
     assert_eq!(state.header(), "");
-    assert!(state.expanded());
+    assert!(state.is_expanded());
     assert_eq!(state.content_height(), 5);
 }
 
 #[test]
 fn test_with_expanded_true() {
     let state = CollapsibleState::new("Details").with_expanded(true);
-    assert!(state.expanded());
+    assert!(state.is_expanded());
 }
 
 #[test]
 fn test_with_expanded_false() {
     let state = CollapsibleState::new("Details").with_expanded(false);
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
 }
 
 #[test]
@@ -49,7 +49,7 @@ fn test_builder_chaining() {
         .with_expanded(false)
         .with_content_height(8);
     assert_eq!(state.header(), "Settings");
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
     assert_eq!(state.content_height(), 8);
 }
 
@@ -76,35 +76,28 @@ fn test_set_header_from_string() {
 }
 
 #[test]
-fn test_expanded() {
-    let state = CollapsibleState::new("Details");
-    assert!(state.expanded());
-}
-
-#[test]
 fn test_is_expanded() {
     let state = CollapsibleState::new("Details");
     assert!(state.is_expanded());
-    assert_eq!(state.expanded(), state.is_expanded());
 }
 
 #[test]
 fn test_set_expanded() {
     let mut state = CollapsibleState::new("Details");
     state.set_expanded(false);
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
     state.set_expanded(true);
-    assert!(state.expanded());
+    assert!(state.is_expanded());
 }
 
 #[test]
 fn test_toggle() {
     let mut state = CollapsibleState::new("Details");
-    assert!(state.expanded());
+    assert!(state.is_expanded());
     state.toggle();
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
     state.toggle();
-    assert!(state.expanded());
+    assert!(state.is_expanded());
 }
 
 #[test]
@@ -182,9 +175,9 @@ fn test_content_area_with_offset() {
 #[test]
 fn test_update_toggle_collapses() {
     let mut state = CollapsibleState::new("Details");
-    assert!(state.expanded());
+    assert!(state.is_expanded());
     let output = Collapsible::update(&mut state, CollapsibleMessage::Toggle);
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
     assert_eq!(output, Some(CollapsibleOutput::Toggled(false)));
 }
 
@@ -192,7 +185,7 @@ fn test_update_toggle_collapses() {
 fn test_update_toggle_expands() {
     let mut state = CollapsibleState::new("Details").with_expanded(false);
     let output = Collapsible::update(&mut state, CollapsibleMessage::Toggle);
-    assert!(state.expanded());
+    assert!(state.is_expanded());
     assert_eq!(output, Some(CollapsibleOutput::Toggled(true)));
 }
 
@@ -200,7 +193,7 @@ fn test_update_toggle_expands() {
 fn test_update_expand() {
     let mut state = CollapsibleState::new("Details").with_expanded(false);
     let output = Collapsible::update(&mut state, CollapsibleMessage::Expand);
-    assert!(state.expanded());
+    assert!(state.is_expanded());
     assert_eq!(output, Some(CollapsibleOutput::Expanded));
 }
 
@@ -208,7 +201,7 @@ fn test_update_expand() {
 fn test_update_expand_already_expanded() {
     let mut state = CollapsibleState::new("Details");
     let output = Collapsible::update(&mut state, CollapsibleMessage::Expand);
-    assert!(state.expanded());
+    assert!(state.is_expanded());
     assert_eq!(output, None);
 }
 
@@ -216,7 +209,7 @@ fn test_update_expand_already_expanded() {
 fn test_update_collapse() {
     let mut state = CollapsibleState::new("Details");
     let output = Collapsible::update(&mut state, CollapsibleMessage::Collapse);
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
     assert_eq!(output, Some(CollapsibleOutput::Collapsed));
 }
 
@@ -224,7 +217,7 @@ fn test_update_collapse() {
 fn test_update_collapse_already_collapsed() {
     let mut state = CollapsibleState::new("Details").with_expanded(false);
     let output = Collapsible::update(&mut state, CollapsibleMessage::Collapse);
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
     assert_eq!(output, None);
 }
 
@@ -362,7 +355,7 @@ fn test_dispatch_event_space_toggles() {
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CollapsibleOutput::Toggled(false)));
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
 }
 
 #[test]
@@ -374,7 +367,7 @@ fn test_dispatch_event_enter_toggles() {
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CollapsibleOutput::Toggled(true)));
-    assert!(state.expanded());
+    assert!(state.is_expanded());
 }
 
 #[test]
@@ -386,7 +379,7 @@ fn test_dispatch_event_right_expands() {
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CollapsibleOutput::Expanded));
-    assert!(state.expanded());
+    assert!(state.is_expanded());
 }
 
 #[test]
@@ -398,7 +391,7 @@ fn test_dispatch_event_left_collapses() {
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(CollapsibleOutput::Collapsed));
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
 }
 
 #[test]
@@ -407,7 +400,7 @@ fn test_dispatch_event_unfocused_returns_none() {
     let output =
         Collapsible::dispatch_event(&mut state, &Event::char(' '), &EventContext::default());
     assert_eq!(output, None);
-    assert!(state.expanded()); // Unchanged
+    assert!(state.is_expanded()); // Unchanged
 }
 
 // ========== Instance Method Tests ==========
@@ -417,7 +410,7 @@ fn test_instance_update() {
     let mut state = CollapsibleState::new("Details");
     let output = state.update(CollapsibleMessage::Collapse);
     assert_eq!(output, Some(CollapsibleOutput::Collapsed));
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
 }
 
 // ========== Focusable Trait Tests ==========
@@ -442,9 +435,9 @@ fn test_toggleable_is_visible_collapsed() {
 fn test_toggleable_set_visible() {
     let mut state = CollapsibleState::new("Details");
     Collapsible::set_visible(&mut state, false);
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
     Collapsible::set_visible(&mut state, true);
-    assert!(state.expanded());
+    assert!(state.is_expanded());
 }
 
 #[test]
@@ -461,14 +454,14 @@ fn test_toggleable_toggle() {
 fn test_toggleable_show() {
     let mut state = CollapsibleState::new("Details").with_expanded(false);
     Collapsible::show(&mut state);
-    assert!(state.expanded());
+    assert!(state.is_expanded());
 }
 
 #[test]
 fn test_toggleable_hide() {
     let mut state = CollapsibleState::new("Details");
     Collapsible::hide(&mut state);
-    assert!(!state.expanded());
+    assert!(!state.is_expanded());
 }
 
 // ========== Init Tests ==========
@@ -477,7 +470,7 @@ fn test_toggleable_hide() {
 fn test_init() {
     let state = Collapsible::init();
     assert_eq!(state.header(), "");
-    assert!(state.expanded());
+    assert!(state.is_expanded());
 }
 
 // ========== View Tests ==========

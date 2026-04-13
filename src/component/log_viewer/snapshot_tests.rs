@@ -70,7 +70,7 @@ fn test_snapshot_with_title() {
 
 #[test]
 fn test_snapshot_with_timestamps() {
-    let mut state = LogViewerState::new().with_timestamps(true);
+    let mut state = LogViewerState::new().with_show_timestamps(true);
     state.push_info_with_timestamp("Server started", "10:00:00");
     state.push_warning_with_timestamp("Memory high", "10:05:30");
     state.push_error_with_timestamp("Connection lost", "10:10:15");

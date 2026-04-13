@@ -85,7 +85,7 @@ impl Conversation {
             view: ConversationViewState::new()
                 .with_title(title)
                 .with_markdown(true)
-                .with_role_labels(true),
+                .with_show_role_labels(true),
             streaming_handle: None,
         }
     }
@@ -197,7 +197,7 @@ impl App for ChatClient {
                                 if state.active_tab >= state.conversations.len() {
                                     state.active_tab = state.conversations.len().saturating_sub(1);
                                 }
-                                state.tab_bar.set_active(Some(state.active_tab));
+                                state.tab_bar.set_selected(Some(state.active_tab));
                             }
                         }
                         _ => {}
@@ -295,7 +295,7 @@ impl App for ChatClient {
                     ),
                 );
                 state.active_tab = state.conversations.len() - 1;
-                state.tab_bar.set_active(Some(state.active_tab));
+                state.tab_bar.set_selected(Some(state.active_tab));
             }
 
             Msg::CloseTab => {
@@ -308,7 +308,7 @@ impl App for ChatClient {
                     if state.active_tab >= state.conversations.len() {
                         state.active_tab = state.conversations.len().saturating_sub(1);
                     }
-                    state.tab_bar.set_active(Some(state.active_tab));
+                    state.tab_bar.set_selected(Some(state.active_tab));
                 }
             }
 

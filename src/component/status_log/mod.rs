@@ -83,7 +83,7 @@ pub enum StatusLogOutput {
 ///
 /// let mut state = StatusLogState::new()
 ///     .with_max_entries(100)
-///     .with_timestamps(true);
+///     .with_show_timestamps(true);
 ///
 /// state.info("Application started");
 /// ```
@@ -159,10 +159,10 @@ impl StatusLogState {
     /// ```rust
     /// use envision::component::StatusLogState;
     ///
-    /// let state = StatusLogState::new().with_timestamps(true);
+    /// let state = StatusLogState::new().with_show_timestamps(true);
     /// assert!(state.show_timestamps());
     /// ```
-    pub fn with_timestamps(mut self, show: bool) -> Self {
+    pub fn with_show_timestamps(mut self, show: bool) -> Self {
         self.show_timestamps = show;
         self
     }

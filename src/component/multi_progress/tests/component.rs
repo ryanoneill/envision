@@ -94,7 +94,7 @@ fn test_update_complete() {
 
 #[test]
 fn test_update_complete_auto_remove() {
-    let mut state = MultiProgressState::new().with_auto_remove(true);
+    let mut state = MultiProgressState::new().with_auto_remove_completed(true);
     state.add("id1", "Item 1");
 
     let output = MultiProgress::update(
@@ -367,7 +367,7 @@ fn test_view_zero_size_area() {
 
 #[test]
 fn test_view_without_percentages() {
-    let mut state = MultiProgressState::new().with_percentages(false);
+    let mut state = MultiProgressState::new().with_show_percentages(false);
     state.add("id1", "Item 1");
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);

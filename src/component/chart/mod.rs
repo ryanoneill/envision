@@ -493,7 +493,7 @@ impl ChartState {
     }
 
     /// Sets whether to show the legend (builder pattern).
-    pub fn with_legend(mut self, show: bool) -> Self {
+    pub fn with_show_legend(mut self, show: bool) -> Self {
         self.show_legend = show;
         self
     }

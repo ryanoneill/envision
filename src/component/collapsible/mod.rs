@@ -25,12 +25,12 @@
 //! // Toggle the section (collapses it, since default is expanded)
 //! let output = Collapsible::update(&mut state, CollapsibleMessage::Toggle);
 //! assert_eq!(output, Some(CollapsibleOutput::Toggled(false)));
-//! assert!(!state.expanded());
+//! assert!(!state.is_expanded());
 //!
 //! // Expand the section
 //! let output = Collapsible::update(&mut state, CollapsibleMessage::Expand);
 //! assert_eq!(output, Some(CollapsibleOutput::Expanded));
-//! assert!(state.expanded());
+//! assert!(state.is_expanded());
 //! ```
 
 use ratatui::prelude::*;
@@ -76,7 +76,7 @@ pub enum CollapsibleOutput {
 ///     .with_expanded(false)
 ///     .with_content_height(10);
 /// assert_eq!(state.header(), "Settings");
-/// assert!(!state.expanded());
+/// assert!(!state.is_expanded());
 /// assert_eq!(state.content_height(), 10);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
@@ -115,7 +115,7 @@ impl CollapsibleState {
     ///
     /// let state = CollapsibleState::new("Details");
     /// assert_eq!(state.header(), "Details");
-    /// assert!(state.expanded());
+    /// assert!(state.is_expanded());
     /// assert_eq!(state.content_height(), 5);
     /// ```
     pub fn new(header: impl Into<String>) -> Self {
@@ -133,7 +133,7 @@ impl CollapsibleState {
     /// use envision::component::CollapsibleState;
     ///
     /// let state = CollapsibleState::new("Details").with_expanded(false);
-    /// assert!(!state.expanded());
+    /// assert!(!state.is_expanded());
     /// ```
     pub fn with_expanded(mut self, expanded: bool) -> Self {
         self.expanded = expanded;
@@ -192,22 +192,6 @@ impl CollapsibleState {
     /// use envision::component::CollapsibleState;
     ///
     /// let state = CollapsibleState::new("Details");
-    /// assert!(state.expanded());
-    /// ```
-    pub fn expanded(&self) -> bool {
-        self.expanded
-    }
-
-    /// Returns whether the section is expanded.
-    ///
-    /// This is an alias for [`expanded()`](Self::expanded).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::CollapsibleState;
-    ///
-    /// let state = CollapsibleState::new("Details");
     /// assert!(state.is_expanded());
     /// ```
     pub fn is_expanded(&self) -> bool {
@@ -223,7 +207,7 @@ impl CollapsibleState {
     ///
     /// let mut state = CollapsibleState::new("Details");
     /// state.set_expanded(false);
-    /// assert!(!state.expanded());
+    /// assert!(!state.is_expanded());
     /// ```
     pub fn set_expanded(&mut self, expanded: bool) {
         self.expanded = expanded;
@@ -237,11 +221,11 @@ impl CollapsibleState {
     /// use envision::component::CollapsibleState;
     ///
     /// let mut state = CollapsibleState::new("Details");
-    /// assert!(state.expanded());
+    /// assert!(state.is_expanded());
     /// state.toggle();
-    /// assert!(!state.expanded());
+    /// assert!(!state.is_expanded());
     /// state.toggle();
-    /// assert!(state.expanded());
+    /// assert!(state.is_expanded());
     /// ```
     pub fn toggle(&mut self) {
         self.expanded = !self.expanded;
@@ -325,7 +309,7 @@ impl CollapsibleState {
     /// let mut state = CollapsibleState::new("Details");
     /// let output = state.update(CollapsibleMessage::Collapse);
     /// assert_eq!(output, Some(CollapsibleOutput::Collapsed));
-    /// assert!(!state.expanded());
+    /// assert!(!state.is_expanded());
     /// ```
     pub fn update(&mut self, msg: CollapsibleMessage) -> Option<CollapsibleOutput> {
         Collapsible::update(self, msg)
@@ -365,11 +349,11 @@ impl CollapsibleState {
 ///
 /// // Collapse
 /// Collapsible::update(&mut state, CollapsibleMessage::Collapse);
-/// assert!(!state.expanded());
+/// assert!(!state.is_expanded());
 ///
 /// // Expand
 /// Collapsible::update(&mut state, CollapsibleMessage::Expand);
-/// assert!(state.expanded());
+/// assert!(state.is_expanded());
 /// ```
 pub struct Collapsible;
 

@@ -30,8 +30,8 @@ fn test_with_max_entries() {
 }
 
 #[test]
-fn test_with_timestamps() {
-    let state = LogViewerState::new().with_timestamps(true);
+fn test_with_show_timestamps() {
+    let state = LogViewerState::new().with_show_timestamps(true);
     assert!(state.show_timestamps());
 }
 

@@ -111,10 +111,10 @@ impl MultiProgressState {
     /// ```rust
     /// use envision::component::MultiProgressState;
     ///
-    /// let state = MultiProgressState::new().with_auto_remove(true);
+    /// let state = MultiProgressState::new().with_auto_remove_completed(true);
     /// assert!(state.auto_remove_completed());
     /// ```
-    pub fn with_auto_remove(mut self, auto_remove: bool) -> Self {
+    pub fn with_auto_remove_completed(mut self, auto_remove: bool) -> Self {
         self.auto_remove_completed = auto_remove;
         self
     }
@@ -141,10 +141,10 @@ impl MultiProgressState {
     /// ```rust
     /// use envision::component::MultiProgressState;
     ///
-    /// let state = MultiProgressState::new().with_percentages(false);
+    /// let state = MultiProgressState::new().with_show_percentages(false);
     /// assert!(!state.show_percentages());
     /// ```
-    pub fn with_percentages(mut self, show: bool) -> Self {
+    pub fn with_show_percentages(mut self, show: bool) -> Self {
         self.show_percentages = show;
         self
     }

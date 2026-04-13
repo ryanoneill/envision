@@ -66,8 +66,8 @@ fn test_state_with_max_entries() {
 }
 
 #[test]
-fn test_state_with_timestamps() {
-    let state = StatusLogState::new().with_timestamps(true);
+fn test_state_with_show_timestamps() {
+    let state = StatusLogState::new().with_show_timestamps(true);
     assert!(state.show_timestamps());
 }
 
@@ -517,8 +517,8 @@ fn test_view_with_title() {
 }
 
 #[test]
-fn test_view_with_timestamps() {
-    let mut state = StatusLogState::new().with_timestamps(true);
+fn test_view_with_show_timestamps() {
+    let mut state = StatusLogState::new().with_show_timestamps(true);
     state.info_with_timestamp("Message", "12:34");
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(60, 10);

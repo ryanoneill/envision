@@ -178,8 +178,8 @@ fn test_with_y_label() {
 }
 
 #[test]
-fn test_with_legend() {
-    let state = ChartState::line(vec![]).with_legend(false);
+fn test_with_show_legend() {
+    let state = ChartState::line(vec![]).with_show_legend(false);
     assert!(!state.show_legend());
 }
 

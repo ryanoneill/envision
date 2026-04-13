@@ -91,7 +91,7 @@ fn test_render_with_title() {
 
 #[test]
 fn test_render_with_timestamps() {
-    let mut state = LogViewerState::new().with_timestamps(true);
+    let mut state = LogViewerState::new().with_show_timestamps(true);
     state.push_info_with_timestamp("entry 1", "12:00:00");
     state.push_error_with_timestamp("entry 2", "12:00:01");
     let (mut terminal, theme) = test_utils::setup_render(60, 15);

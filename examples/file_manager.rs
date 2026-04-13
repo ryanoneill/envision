@@ -497,7 +497,7 @@ fn main() {
         .with_title("main.rs")
         .with_old_label("main.rs (old)")
         .with_new_label("main.rs (new)")
-        .with_show_line_numbers(true)
+        .with_line_numbers(true)
 }
 
 // ---------------------------------------------------------------------------

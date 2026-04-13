@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- **API consistency sweep:** aligned builder/setter/getter naming across
+  components.
+  - `CollapsibleState::expanded()` removed; use `is_expanded()` instead
+    (matches accordion/tree/span_tree pattern).
+  - `TabBarState::with_active()` renamed to `with_selected()`,
+    `active_index()` to `selected_index()`, `active()` to `selected()`,
+    `set_active()` to `set_selected()` (matches `TabsState` convention).
+  - `LogViewerState::with_regex()` renamed to `with_use_regex()`
+    (matches getter `use_regex()` and setter `set_use_regex()`).
+  - `MultiProgressState::with_percentages()` renamed to
+    `with_show_percentages()` (matches `set_show_percentages()`).
+  - `MultiProgressState::with_auto_remove()` renamed to
+    `with_auto_remove_completed()` (matches `set_auto_remove_completed()`).
+  - `DiffViewerState::with_show_line_numbers()` renamed to
+    `with_line_numbers()` (matches code_block, text_area, terminal_output).
+  - `ChartState::with_legend()` renamed to `with_show_legend()`
+    (matches getter `show_legend()` and setter `set_show_legend()`).
+  - `ConversationViewState::with_timestamps()` renamed to
+    `with_show_timestamps()` (matches setter `set_show_timestamps()`).
+  - `ConversationViewState::with_role_labels()` renamed to
+    `with_show_role_labels()` (matches setter `set_show_role_labels()`).
+  - `StatusLogState::with_timestamps()` renamed to
+    `with_show_timestamps()` (matches setter `set_show_timestamps()`).
+  - `LogViewerState::with_timestamps()` renamed to
+    `with_show_timestamps()` (matches setter `set_show_timestamps()`).
+
 ### Added
 
 - `RuntimeBuilder<A, B>` builder pattern for constructing `Runtime` instances.

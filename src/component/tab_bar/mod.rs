@@ -22,13 +22,13 @@
 //! ];
 //! let mut state = TabBarState::new(tabs);
 //!
-//! assert_eq!(state.active_index(), Some(0));
+//! assert_eq!(state.selected_index(), Some(0));
 //! assert_eq!(state.active_tab().map(|t| t.label()), Some("main.rs"));
 //!
 //! // Navigate to the next tab
 //! let output = TabBar::update(&mut state, TabBarMessage::NextTab);
 //! assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
-//! assert_eq!(state.active_index(), Some(1));
+//! assert_eq!(state.selected_index(), Some(1));
 //! ```
 
 use super::{Component, EventContext, RenderContext};
@@ -145,7 +145,7 @@ pub enum TabBarOutput {
 /// ];
 /// let state = TabBarState::new(tabs);
 /// assert_eq!(state.len(), 3);
-/// assert_eq!(state.active_index(), Some(0));
+/// assert_eq!(state.selected_index(), Some(0));
 /// ```
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(
@@ -186,7 +186,7 @@ impl TabBarState {
     ///     Tab::new("1", "One"),
     ///     Tab::new("2", "Two"),
     /// ]);
-    /// assert_eq!(state.active_index(), Some(0));
+    /// assert_eq!(state.selected_index(), Some(0));
     /// assert_eq!(state.len(), 2);
     /// ```
     pub fn new(tabs: Vec<Tab>) -> Self {
@@ -199,22 +199,22 @@ impl TabBarState {
         }
     }
 
-    /// Creates a tab bar state with a specific tab active.
+    /// Creates a tab bar state with a specific tab selected.
     ///
-    /// The index is clamped to the valid range. Empty tabs yield `None` active.
+    /// The index is clamped to the valid range. Empty tabs yield `None` selected.
     ///
     /// # Example
     ///
     /// ```rust
     /// use envision::component::{Tab, TabBarState};
     ///
-    /// let state = TabBarState::with_active(
+    /// let state = TabBarState::with_selected(
     ///     vec![Tab::new("a", "A"), Tab::new("b", "B"), Tab::new("c", "C")],
     ///     1,
     /// );
-    /// assert_eq!(state.active_index(), Some(1));
+    /// assert_eq!(state.selected_index(), Some(1));
     /// ```
-    pub fn with_active(tabs: Vec<Tab>, active: usize) -> Self {
+    pub fn with_selected(tabs: Vec<Tab>, active: usize) -> Self {
         let active = if tabs.is_empty() {
             None
         } else {
@@ -281,7 +281,7 @@ impl TabBarState {
         &mut self.tabs
     }
 
-    /// Returns the currently active tab index, or `None` if empty.
+    /// Returns the currently selected tab index, or `None` if empty.
     ///
     /// # Example
     ///
@@ -289,18 +289,18 @@ impl TabBarState {
     /// use envision::component::{Tab, TabBarState};
     ///
     /// let state = TabBarState::new(vec![Tab::new("a", "A"), Tab::new("b", "B")]);
-    /// assert_eq!(state.active_index(), Some(0));
+    /// assert_eq!(state.selected_index(), Some(0));
     ///
     /// let empty = TabBarState::new(vec![]);
-    /// assert_eq!(empty.active_index(), None);
+    /// assert_eq!(empty.selected_index(), None);
     /// ```
-    pub fn active_index(&self) -> Option<usize> {
+    pub fn selected_index(&self) -> Option<usize> {
         self.active
     }
 
-    /// Returns the active tab index, or `None` if the tab bar is empty.
+    /// Returns the selected tab index, or `None` if the tab bar is empty.
     ///
-    /// This is the getter counterpart to [`set_active`](Self::set_active).
+    /// This is the getter counterpart to [`set_selected`](Self::set_selected).
     ///
     /// # Example
     ///
@@ -311,15 +311,15 @@ impl TabBarState {
     ///     Tab::new("a", "A"),
     ///     Tab::new("b", "B"),
     /// ]);
-    /// assert_eq!(state.active(), Some(0));
+    /// assert_eq!(state.selected(), Some(0));
     ///
-    /// state.set_active(Some(1));
-    /// assert_eq!(state.active(), Some(1));
+    /// state.set_selected(Some(1));
+    /// assert_eq!(state.selected(), Some(1));
     ///
-    /// state.set_active(None);
-    /// assert_eq!(state.active(), None);
+    /// state.set_selected(None);
+    /// assert_eq!(state.selected(), None);
     /// ```
-    pub fn active(&self) -> Option<usize> {
+    pub fn selected(&self) -> Option<usize> {
         self.active
     }
 
@@ -414,7 +414,7 @@ impl TabBarState {
 
     // -- Mutators ------------------------------------------------------------
 
-    /// Sets the active tab by index.
+    /// Sets the selected tab by index.
     ///
     /// `None` clears the selection. `Some(i)` is clamped to the valid range.
     ///
@@ -427,13 +427,13 @@ impl TabBarState {
     ///     Tab::new("a", "A"),
     ///     Tab::new("b", "B"),
     /// ]);
-    /// state.set_active(Some(1));
-    /// assert_eq!(state.active_index(), Some(1));
+    /// state.set_selected(Some(1));
+    /// assert_eq!(state.selected_index(), Some(1));
     ///
-    /// state.set_active(None);
-    /// assert_eq!(state.active_index(), None);
+    /// state.set_selected(None);
+    /// assert_eq!(state.selected_index(), None);
     /// ```
-    pub fn set_active(&mut self, index: Option<usize>) {
+    pub fn set_selected(&mut self, index: Option<usize>) {
         match index {
             Some(i) if !self.tabs.is_empty() => {
                 self.active = Some(i.min(self.tabs.len() - 1));
@@ -556,7 +556,7 @@ impl TabBarState {
     /// ]);
     /// let output = state.update(TabBarMessage::NextTab);
     /// assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
-    /// assert_eq!(state.active_index(), Some(1));
+    /// assert_eq!(state.selected_index(), Some(1));
     /// ```
     pub fn update(&mut self, msg: TabBarMessage) -> Option<TabBarOutput> {
         TabBar::update(self, msg)

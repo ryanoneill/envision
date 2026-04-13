@@ -121,7 +121,7 @@ fn test_update_fail_without_message() {
 
 #[test]
 fn test_auto_remove_preserves_other_items() {
-    let mut state = MultiProgressState::new().with_auto_remove(true);
+    let mut state = MultiProgressState::new().with_auto_remove_completed(true);
     state.add("id1", "Item 1");
     state.add("id2", "Item 2");
     state.add("id3", "Item 3");
@@ -140,7 +140,7 @@ fn test_auto_remove_preserves_other_items() {
 
 #[test]
 fn test_auto_remove_all_items_sequentially() {
-    let mut state = MultiProgressState::new().with_auto_remove(true);
+    let mut state = MultiProgressState::new().with_auto_remove_completed(true);
     state.add("id1", "Item 1");
     state.add("id2", "Item 2");
 
@@ -160,7 +160,7 @@ fn test_auto_remove_all_items_sequentially() {
 
 #[test]
 fn test_auto_remove_does_not_affect_failed() {
-    let mut state = MultiProgressState::new().with_auto_remove(true);
+    let mut state = MultiProgressState::new().with_auto_remove_completed(true);
     state.add("id1", "Item 1");
 
     let output = MultiProgress::update(

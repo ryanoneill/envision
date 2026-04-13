@@ -92,7 +92,7 @@ fn test_snapshot_completed_and_failed() {
 
 #[test]
 fn test_snapshot_without_percentages() {
-    let mut state = MultiProgressState::new().with_percentages(false);
+    let mut state = MultiProgressState::new().with_show_percentages(false);
     state.add("a", "Task A");
     state.add("b", "Task B");
     let (mut terminal, theme) = test_utils::setup_render(50, 10);

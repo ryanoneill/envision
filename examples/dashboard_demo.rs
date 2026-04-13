@@ -115,12 +115,12 @@ impl Default for State {
         .with_color(Color::Green);
         let chart = ChartState::line(vec![build_series, test_series])
             .with_title("Pipeline History")
-            .with_legend(true);
+            .with_show_legend(true);
 
         // Multi-progress: build tasks
         let mut multi_progress = MultiProgressState::new()
             .with_title("Build Pipeline")
-            .with_percentages(true);
+            .with_show_percentages(true);
         for (id, label) in BUILD_TASKS {
             multi_progress.add(*id, *label);
         }
