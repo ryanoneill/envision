@@ -40,6 +40,37 @@ use crate::component::{Component, EventContext, RenderContext};
 use crate::input::{Event, Key};
 use crate::undo::UndoStack;
 
+/// Input keybinding mode for [`LineInput`].
+///
+/// Controls how certain Ctrl-key combinations are interpreted.
+///
+/// - **Desktop** (default): Ctrl-A = Select All, Ctrl-C/X/V = clipboard.
+///   Standard desktop text editor bindings.
+/// - **Readline**: Ctrl-A = Home, Ctrl-E = End, Ctrl-W = Delete Word Left,
+///   Ctrl-K = Delete to End. Unix shell / readline-style bindings.
+///   Ctrl-C/X/V clipboard operations are NOT available in this mode.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::line_input::InputMode;
+/// use envision::component::LineInputState;
+///
+/// let state = LineInputState::new().with_input_mode(InputMode::Readline);
+/// assert_eq!(state.input_mode(), &InputMode::Readline);
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub enum InputMode {
+    /// Standard desktop bindings (Ctrl-A = Select All, Ctrl-C/X/V = clipboard).
+    Desktop,
+    /// Unix readline bindings (Ctrl-A = Home, Ctrl-E = End, Ctrl-W = Delete Word Left).
+    Readline,
+}
+
 use chunking::{chunk_buffer, cursor_to_visual};
 use history::History;
 
@@ -86,6 +117,8 @@ pub struct LineInputState {
     /// Last known display width from the parent layout.
     #[cfg_attr(feature = "serialization", serde(skip))]
     last_display_width: usize,
+    /// Keybinding mode (Desktop or Readline).
+    input_mode: InputMode,
 }
 
 impl Default for LineInputState {
@@ -100,6 +133,7 @@ impl Default for LineInputState {
             history: History::default(),
             undo_stack: UndoStack::default(),
             last_display_width: 80,
+            input_mode: InputMode::Desktop,
         }
     }
 }
@@ -186,6 +220,24 @@ impl LineInputState {
     /// ```
     pub fn with_max_length(mut self, max: usize) -> Self {
         self.max_length = Some(max);
+        self
+    }
+
+    /// Sets the input keybinding mode (builder pattern).
+    ///
+    /// See [`InputMode`] for the available modes.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::line_input::InputMode;
+    /// use envision::component::LineInputState;
+    ///
+    /// let state = LineInputState::new().with_input_mode(InputMode::Readline);
+    /// assert_eq!(state.input_mode(), &InputMode::Readline);
+    /// ```
+    pub fn with_input_mode(mut self, mode: InputMode) -> Self {
+        self.input_mode = mode;
         self
     }
 
@@ -398,6 +450,16 @@ impl LineInputState {
     /// ```
     pub fn set_placeholder(&mut self, placeholder: impl Into<String>) {
         self.placeholder = placeholder.into();
+    }
+
+    /// Returns the current input keybinding mode.
+    pub fn input_mode(&self) -> &InputMode {
+        &self.input_mode
+    }
+
+    /// Sets the input keybinding mode.
+    pub fn set_input_mode(&mut self, mode: InputMode) {
+        self.input_mode = mode;
     }
 
     /// Returns the maximum number of history entries.
@@ -678,23 +740,36 @@ impl Component for LineInput {
             Key::Char('z') if ctrl => Some(LineInputMessage::Undo),
             Key::Char('y') if ctrl => Some(LineInputMessage::Redo),
 
-            // Clipboard
-            Key::Char('c') if ctrl => Some(LineInputMessage::Copy),
-            Key::Char('x') if ctrl => Some(LineInputMessage::Cut),
-            Key::Char('v') if ctrl => {
-                // Use internal clipboard
+            // Mode-dependent Ctrl bindings
+            Key::Char('a') if ctrl => match state.input_mode {
+                InputMode::Desktop => Some(LineInputMessage::SelectAll),
+                InputMode::Readline => Some(LineInputMessage::Home),
+            },
+            Key::Char('e') if ctrl => match state.input_mode {
+                InputMode::Desktop => Some(LineInputMessage::End),
+                InputMode::Readline => Some(LineInputMessage::End),
+            },
+            Key::Char('w') if ctrl => Some(LineInputMessage::DeleteWordBack),
+            Key::Char('k') if ctrl => match state.input_mode {
+                InputMode::Desktop => None,
+                InputMode::Readline => Some(LineInputMessage::DeleteToEnd),
+            },
+            Key::Char('u') if ctrl => Some(LineInputMessage::Clear),
+
+            // Clipboard (Desktop mode only; Readline uses Ctrl-A/E/W/K)
+            Key::Char('c') if ctrl && state.input_mode == InputMode::Desktop => {
+                Some(LineInputMessage::Copy)
+            }
+            Key::Char('x') if ctrl && state.input_mode == InputMode::Desktop => {
+                Some(LineInputMessage::Cut)
+            }
+            Key::Char('v') if ctrl && state.input_mode == InputMode::Desktop => {
                 if !state.clipboard.is_empty() {
                     Some(LineInputMessage::Paste(state.clipboard.clone()))
                 } else {
                     None
                 }
             }
-
-            // Select all
-            Key::Char('a') if ctrl => Some(LineInputMessage::SelectAll),
-
-            // Clear
-            Key::Char('u') if ctrl => Some(LineInputMessage::Clear),
 
             // Regular character insertion
             Key::Char(_) if !ctrl => key.raw_char.map(LineInputMessage::Insert),

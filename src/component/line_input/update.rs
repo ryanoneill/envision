@@ -121,6 +121,18 @@ pub(super) fn update(state: &mut LineInputState, msg: LineInputMessage) -> Optio
             }
         }
 
+        LineInputMessage::DeleteToEnd => {
+            if state.cursor >= state.buffer.len() {
+                return None;
+            }
+            let snapshot = state.snapshot();
+            state.undo_stack.save(snapshot, EditKind::Delete);
+            state.buffer.truncate(state.cursor);
+            state.clear_selection();
+            state.history.exit_browse();
+            Some(LineInputOutput::Changed(state.buffer.clone()))
+        }
+
         LineInputMessage::Clear => {
             if state.buffer.is_empty() {
                 return None;
