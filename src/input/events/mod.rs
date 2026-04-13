@@ -76,15 +76,9 @@ impl Event {
     /// assert!(event.is_key());
     /// ```
     pub fn key_with(key: Key, modifiers: Modifiers) -> Self {
-        Self::Key(KeyEvent {
-            code: key,
-            modifiers,
-            kind: super::key::KeyEventKind::Press,
-            raw_char: match key {
-                Key::Char(c) => Some(c),
-                _ => None,
-            },
-        })
+        let mut ev = KeyEvent::new(key);
+        ev.modifiers |= modifiers;
+        Self::Key(ev)
     }
 
     /// Creates a Ctrl+key event.
