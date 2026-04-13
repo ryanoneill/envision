@@ -247,19 +247,8 @@ impl ConversationViewState {
 
     /// Enables or disables markdown rendering for text blocks (builder pattern).
     ///
-    /// When enabled and the `markdown` feature is active, text blocks are
-    /// rendered as markdown (headings, bold, italic, code, lists, etc.)
-    /// instead of plain text.
-    ///
-    /// **Note:** This has no effect unless the `markdown` Cargo feature is
-    /// enabled. Add `envision = { features = ["markdown"] }` to your
-    /// `Cargo.toml`, or use the `full` feature (included in defaults).
-    pub fn with_markdown(mut self, enabled: bool) -> Self {
-        self.markdown_enabled = enabled;
-        self
-    }
-
-    /// Returns whether markdown rendering is enabled.
+    /// When enabled, text blocks are rendered as markdown (headings, bold,
+    /// italic, code, lists, etc.) instead of plain text.
     ///
     /// # Example
     ///
@@ -269,6 +258,16 @@ impl ConversationViewState {
     /// let state = ConversationViewState::new().with_markdown(true);
     /// assert!(state.markdown_enabled());
     /// ```
+    #[cfg(feature = "markdown")]
+    pub fn with_markdown(mut self, enabled: bool) -> Self {
+        self.markdown_enabled = enabled;
+        self
+    }
+
+    /// Returns whether markdown rendering is enabled.
+    ///
+    /// Always returns `false` when the `markdown` Cargo feature is not
+    /// enabled (since the setter methods are not available).
     pub fn markdown_enabled(&self) -> bool {
         self.markdown_enabled
     }
@@ -284,6 +283,7 @@ impl ConversationViewState {
     /// state.set_markdown_enabled(true);
     /// assert!(state.markdown_enabled());
     /// ```
+    #[cfg(feature = "markdown")]
     pub fn set_markdown_enabled(&mut self, enabled: bool) {
         self.markdown_enabled = enabled;
     }
