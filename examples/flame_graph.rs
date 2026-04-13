@@ -119,7 +119,7 @@ impl App for FlameGraphApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<FlameGraphApp, _>::virtual_terminal(70, 18)?;
+    let mut vt = Runtime::<FlameGraphApp, _>::virtual_builder(70, 18).build()?;
 
     println!("=== FlameGraph Example ===\n");
 

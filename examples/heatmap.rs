@@ -79,7 +79,7 @@ impl App for HeatmapApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<HeatmapApp, _>::virtual_terminal(60, 12)?;
+    let mut vt = Runtime::<HeatmapApp, _>::virtual_builder(60, 12).build()?;
 
     println!("=== Heatmap Example ===\n");
 

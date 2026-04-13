@@ -115,7 +115,7 @@ impl App for UsageDisplayApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<UsageDisplayApp, _>::virtual_terminal(60, 20)?;
+    let mut vt = Runtime::<UsageDisplayApp, _>::virtual_builder(60, 20).build()?;
 
     println!("=== UsageDisplay Example ===\n");
 

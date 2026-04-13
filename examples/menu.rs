@@ -100,7 +100,7 @@ impl App for MenuApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<MenuApp, _>::virtual_terminal(60, 10)?;
+    let mut vt = Runtime::<MenuApp, _>::virtual_builder(60, 10).build()?;
 
     println!("=== Menu Example ===\n");
 

@@ -140,7 +140,7 @@ impl App for PaginatorApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<PaginatorApp, _>::virtual_terminal(50, 14)?;
+    let mut vt = Runtime::<PaginatorApp, _>::virtual_builder(50, 14).build()?;
 
     println!("=== Paginator Example ===\n");
 

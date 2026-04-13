@@ -1,5 +1,78 @@
 # Migration Guide
 
+## v0.14.x to v0.15.0
+
+### Message `Clone` bound removed
+
+`Component::Message`, `Component::Output`, and `App::Message` no longer require `Clone`. Existing code with `#[derive(Clone)]` keeps compiling — the derive is now optional, not required.
+
+If you relied on the implied `Clone` bound in generic code (e.g., `fn foo<A: App>() where A::Message: Clone`), remove the bound or add it explicitly.
+
+### Runtime constructors replaced by builder
+
+The 12 `Runtime::new_terminal()` / `virtual_terminal()` / `with_backend()` constructors are removed. Use the builder instead:
+
+```rust
+// Before
+let rt = Runtime::<MyApp, _>::new_terminal()?;
+
+// After
+let rt = Runtime::<MyApp, _>::terminal_builder()?.build()?;
+```
+
+```rust
+// Before
+let rt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+
+// After
+let rt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
+```
+
+```rust
+// Before
+let rt = Runtime::<MyApp, _>::with_backend_state_and_config(
+    backend, state, cmd, config,
+)?;
+
+// After
+let rt = Runtime::<MyApp, _>::builder(backend)
+    .state(state, cmd)
+    .config(config)
+    .build()?;
+```
+
+### `ConversationView::view_from()` removed
+
+`view_from` and the public `MessageSource` trait are removed. Use the standard `ConversationView::view()` with messages stored in `ConversationViewState`.
+
+### `with_markdown()` requires the `markdown` feature
+
+Calling `with_markdown(true)` or `set_markdown_enabled(true)` without the `markdown` Cargo feature is now a compile error. Add `features = ["markdown"]` to your Cargo.toml or use the `full` feature (included in defaults).
+
+### API consistency renames
+
+| Before | After |
+|--------|-------|
+| `CollapsibleState::expanded()` | `is_expanded()` |
+| `TabBarState::active()` / `active_index()` / `set_active()` / `with_active()` | `selected()` / `selected_index()` / `set_selected()` / `with_selected()` |
+| `with_regex()` (log_viewer) | `with_use_regex()` |
+| `with_percentages()` (multi_progress) | `with_show_percentages()` |
+| `with_auto_remove()` (multi_progress) | `with_auto_remove_completed()` |
+| `with_show_line_numbers()` (diff_viewer) | `with_line_numbers()` |
+| `with_legend()` (chart) | `with_show_legend()` |
+| `with_timestamps()` (conversation_view, status_log, log_viewer) | `with_show_timestamps()` |
+| `with_role_labels()` (conversation_view) | `with_show_role_labels()` |
+
+### New features
+
+- `RuntimeBuilder` — `Runtime::terminal_builder()?.theme(t).tick_rate(d).build()?`
+- `envision::terminal::restore()` — standalone terminal cleanup for panic hooks
+- `InputMode::{Desktop, Readline}` on `LineInput` — `state.with_input_mode(InputMode::Readline)`
+- `StepIndicator` per-step-index styles — `state.with_step_style(0, Style::default().fg(Color::Cyan))`
+- `docs/CHOOSING.md` — component decision tree
+
+---
+
 ## v0.13.x to v0.14.0
 
 ### Envision-owned input types

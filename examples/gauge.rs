@@ -122,7 +122,7 @@ impl App for GaugeApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<GaugeApp, _>::virtual_terminal(60, 14)?;
+    let mut vt = Runtime::<GaugeApp, _>::virtual_builder(60, 14).build()?;
 
     println!("=== Gauge Example ===\n");
 

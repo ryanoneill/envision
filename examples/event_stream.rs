@@ -210,7 +210,7 @@ fn push_event(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<EventStreamApp, _>::virtual_terminal(90, 22)?;
+    let mut vt = Runtime::<EventStreamApp, _>::virtual_builder(90, 22).build()?;
 
     println!("=== EventStream Example ===\n");
 

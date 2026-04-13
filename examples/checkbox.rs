@@ -165,7 +165,7 @@ impl App for CheckboxApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<CheckboxApp, _>::virtual_terminal(55, 16)?;
+    let mut vt = Runtime::<CheckboxApp, _>::virtual_builder(55, 16).build()?;
 
     println!("=== Checkbox Example ===\n");
 

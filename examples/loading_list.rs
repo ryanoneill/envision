@@ -101,7 +101,7 @@ impl App for LoadingListApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<LoadingListApp, _>::virtual_terminal(55, 12)?;
+    let mut vt = Runtime::<LoadingListApp, _>::virtual_builder(55, 12).build()?;
 
     println!("=== LoadingList Example ===\n");
 

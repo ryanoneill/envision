@@ -88,7 +88,7 @@ impl App for MetricsDashboardApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<MetricsDashboardApp, _>::virtual_terminal(66, 14)?;
+    let mut vt = Runtime::<MetricsDashboardApp, _>::virtual_builder(66, 14).build()?;
 
     println!("=== MetricsDashboard Example ===\n");
 

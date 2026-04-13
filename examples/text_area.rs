@@ -75,7 +75,7 @@ impl App for TextAreaApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TextAreaApp, _>::virtual_terminal(50, 10)?;
+    let mut vt = Runtime::<TextAreaApp, _>::virtual_builder(50, 10).build()?;
 
     println!("=== TextArea Example ===\n");
 

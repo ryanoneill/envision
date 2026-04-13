@@ -98,7 +98,7 @@ impl App for InitCmdApp {
 }
 
 // ===========================================================================
-// Tests: Runtime::virtual_terminal_with_state
+// Tests: Runtime::virtual_builder().state().build()
 // ===========================================================================
 
 #[test]
@@ -107,7 +107,9 @@ fn test_virtual_terminal_with_state_bypasses_init() {
         count: 42,
         label: "custom".into(),
     };
-    let vt = Runtime::<CounterApp, _>::virtual_terminal_with_state(80, 24, state, Command::none())
+    let vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
+        .state(state, Command::none())
+        .build()
         .unwrap();
 
     assert_eq!(vt.state().count, 42);
@@ -120,9 +122,10 @@ fn test_virtual_terminal_with_state_renders_correctly() {
         count: 99,
         label: "score".into(),
     };
-    let mut vt =
-        Runtime::<CounterApp, _>::virtual_terminal_with_state(80, 24, state, Command::none())
-            .unwrap();
+    let mut vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
+        .state(state, Command::none())
+        .build()
+        .unwrap();
 
     vt.render().unwrap();
     assert!(vt.contains_text("score: 99"));
@@ -134,9 +137,10 @@ fn test_virtual_terminal_with_state_dispatch_works() {
         count: 10,
         label: "test".into(),
     };
-    let mut vt =
-        Runtime::<CounterApp, _>::virtual_terminal_with_state(80, 24, state, Command::none())
-            .unwrap();
+    let mut vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
+        .state(state, Command::none())
+        .build()
+        .unwrap();
 
     vt.dispatch(CounterMsg::Increment);
     assert_eq!(vt.state().count, 11);
@@ -151,8 +155,10 @@ fn test_virtual_terminal_with_state_init_cmd_executes() {
     let state = InitCmdState::default();
     let init_cmd = Command::message(InitCmdMsg::SetInitialized("from cmd".into()));
 
-    let mut vt =
-        Runtime::<InitCmdApp, _>::virtual_terminal_with_state(80, 24, state, init_cmd).unwrap();
+    let mut vt = Runtime::<InitCmdApp, _>::virtual_builder(80, 24)
+        .state(state, init_cmd)
+        .build()
+        .unwrap();
 
     // Synchronous init commands are queued and dispatched on process_commands()
     vt.process_commands();
@@ -167,16 +173,17 @@ fn test_virtual_terminal_with_state_negative_count() {
         count: -100,
         label: "negative".into(),
     };
-    let mut vt =
-        Runtime::<CounterApp, _>::virtual_terminal_with_state(80, 24, state, Command::none())
-            .unwrap();
+    let mut vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
+        .state(state, Command::none())
+        .build()
+        .unwrap();
 
     vt.render().unwrap();
     assert!(vt.contains_text("negative: -100"));
 }
 
 // ===========================================================================
-// Tests: Runtime::virtual_terminal_with_state_and_config
+// Tests: Runtime::virtual_builder().state().config().build()
 // ===========================================================================
 
 #[test]
@@ -192,25 +199,22 @@ fn test_virtual_terminal_with_state_and_config() {
         history_capacity: 5,
         ..RuntimeConfig::default()
     };
-    let mut vt = Runtime::<CounterApp, _>::virtual_terminal_with_state_and_config(
-        80,
-        24,
-        state,
-        Command::none(),
-        config,
-    )
-    .unwrap();
+    let mut vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
+        .state(state, Command::none())
+        .config(config)
+        .build()
+        .unwrap();
 
     vt.render().unwrap();
     assert!(vt.contains_text("config: 7"));
 }
 
 // ===========================================================================
-// Tests: Runtime::with_backend_and_state
+// Tests: Runtime::builder() with CaptureBackend
 // ===========================================================================
 
 #[test]
-fn test_with_backend_and_state() {
+fn test_builder_with_backend_and_state() {
     use envision::backend::CaptureBackend;
 
     let backend = CaptureBackend::new(60, 20);
@@ -218,8 +222,10 @@ fn test_with_backend_and_state() {
         count: 55,
         label: "backend".into(),
     };
-    let vt =
-        Runtime::<CounterApp, _>::with_backend_and_state(backend, state, Command::none()).unwrap();
+    let vt = Runtime::<CounterApp, _>::builder(backend)
+        .state(state, Command::none())
+        .build()
+        .unwrap();
 
     assert_eq!(vt.state().count, 55);
     assert_eq!(vt.state().label, "backend");
@@ -298,7 +304,9 @@ fn test_harness_with_state_and_config() {
 
 #[test]
 fn test_default_init_unchanged() {
-    let vt = Runtime::<CounterApp, _>::virtual_terminal(80, 24).unwrap();
+    let vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
+        .build()
+        .unwrap();
 
     assert_eq!(vt.state().count, 0);
     assert_eq!(vt.state().label, "default");

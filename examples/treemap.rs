@@ -107,7 +107,7 @@ impl App for TreemapApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TreemapApp, _>::virtual_terminal(60, 16)?;
+    let mut vt = Runtime::<TreemapApp, _>::virtual_builder(60, 16).build()?;
 
     println!("=== Treemap Example ===\n");
 

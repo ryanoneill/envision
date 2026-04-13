@@ -122,7 +122,7 @@ impl App for SearchableListApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<SearchableListApp, _>::virtual_terminal(50, 22)?;
+    let mut vt = Runtime::<SearchableListApp, _>::virtual_builder(50, 22).build()?;
 
     println!("=== SearchableList Example ===\n");
 

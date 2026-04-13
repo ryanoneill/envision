@@ -159,7 +159,7 @@ impl App for ButtonApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<ButtonApp, _>::virtual_terminal(50, 16)?;
+    let mut vt = Runtime::<ButtonApp, _>::virtual_builder(50, 16).build()?;
 
     println!("=== Button Example ===\n");
 

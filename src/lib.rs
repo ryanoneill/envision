@@ -27,7 +27,10 @@
 //! # }
 //! #[tokio::main]
 //! async fn main() -> envision::Result<()> {
-//!     let _final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal().await?;
+//!     let _final_state = Runtime::<MyApp, _>::terminal_builder()?
+//!         .build()?
+//!         .run_terminal()
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```
@@ -49,7 +52,9 @@
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
 //! fn main() -> envision::Result<()> {
-//!     let _final_state = Runtime::<MyApp, _>::new_terminal()?.run_terminal_blocking()?;
+//!     let _final_state = Runtime::<MyApp, _>::terminal_builder()?
+//!         .build()?
+//!         .run_terminal_blocking()?;
 //!     Ok(())
 //! }
 //! ```
@@ -71,7 +76,7 @@
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
 //! // Create a virtual terminal
-//! let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+//! let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
 //!
 //! // Inject events programmatically
 //! vt.send(Event::char('j'));

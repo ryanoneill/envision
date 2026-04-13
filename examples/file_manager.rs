@@ -505,7 +505,7 @@ fn main() {
 // ---------------------------------------------------------------------------
 
 fn main() -> envision::Result<()> {
-    let mut vt = Runtime::<FileManager, _>::virtual_terminal(100, 30)?;
+    let mut vt = Runtime::<FileManager, _>::virtual_builder(100, 30).build()?;
 
     // Simulate selecting a file using vt.dispatch() for proper command processing
     vt.dispatch(Msg::Browser(FileBrowserMessage::Down));

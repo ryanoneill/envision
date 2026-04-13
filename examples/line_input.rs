@@ -102,7 +102,7 @@ impl App for LineInputApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<LineInputApp, _>::virtual_terminal(60, 16)?;
+    let mut vt = Runtime::<LineInputApp, _>::virtual_builder(60, 16).build()?;
 
     println!("=== LineInput Example ===\n");
 

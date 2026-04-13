@@ -120,7 +120,7 @@ impl App for HelpPanelApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<HelpPanelApp, _>::virtual_terminal(50, 24)?;
+    let mut vt = Runtime::<HelpPanelApp, _>::virtual_builder(50, 24).build()?;
 
     println!("=== HelpPanel Example ===\n");
 

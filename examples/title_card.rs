@@ -115,7 +115,7 @@ impl App for TitleCardApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TitleCardApp, _>::virtual_terminal(60, 20)?;
+    let mut vt = Runtime::<TitleCardApp, _>::virtual_builder(60, 20).build()?;
 
     println!("=== TitleCard Example ===\n");
 

@@ -110,7 +110,7 @@ impl App for SpanTreeApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<SpanTreeApp, _>::virtual_terminal(70, 16)?;
+    let mut vt = Runtime::<SpanTreeApp, _>::virtual_builder(70, 16).build()?;
 
     println!("=== SpanTree Example ===\n");
 

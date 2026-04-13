@@ -121,7 +121,7 @@ impl App for DataGridApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<DataGridApp, _>::virtual_terminal(70, 12)?;
+    let mut vt = Runtime::<DataGridApp, _>::virtual_builder(70, 12).build()?;
 
     println!("=== DataGrid Example ===\n");
 

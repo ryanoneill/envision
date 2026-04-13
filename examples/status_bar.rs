@@ -138,7 +138,7 @@ impl App for StatusBarApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<StatusBarApp, _>::virtual_terminal(60, 10)?;
+    let mut vt = Runtime::<StatusBarApp, _>::virtual_builder(60, 10).build()?;
 
     println!("=== StatusBar Example ===\n");
 

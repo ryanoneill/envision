@@ -9,8 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking
 
-- **API consistency sweep:** aligned builder/setter/getter naming across
-  components.
+- **Message `Clone` bound removed** from `Component::Message`,
+  `Component::Output`, `App::Message`, `Command::subscribe`, and
+  `WorkerBuilder::spawn`. The bound was never exercised — removal is
+  backward-compatible for users who keep `#[derive(Clone)]`. (#420)
+- **`ConversationView::view_from()` removed** along with the public
+  `MessageSource` trait. The API was unused by its target customer. (#423)
+- **`with_markdown()` and `set_markdown_enabled()` gated on `markdown`
+  feature.** Calling them without the feature is now a compile error
+  instead of a silent no-op. (#424)
+- **12 old `Runtime` constructors deleted.** `new_terminal()`,
+  `terminal_with_config()`, `new_terminal_with_state()`,
+  `terminal_with_state_and_config()`, `virtual_terminal()`,
+  `virtual_terminal_with_config()`, `virtual_terminal_with_state()`,
+  `virtual_terminal_with_state_and_config()`, `with_backend()`,
+  `with_backend_and_config()`, `with_backend_and_state()`, and
+  `with_backend_state_and_config()` (now `pub(crate)`) are removed.
+  Use `Runtime::builder()`, `Runtime::terminal_builder()`, or
+  `Runtime::virtual_builder()` instead.
+- **API consistency sweep — 11 renames:** (#425)
   - `CollapsibleState::expanded()` removed; use `is_expanded()` instead
     (matches accordion/tree/span_tree pattern).
   - `TabBarState::with_active()` renamed to `with_selected()`,
@@ -37,13 +54,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `RuntimeBuilder<A, B>` builder pattern for constructing `Runtime` instances.
-  Three entry points: `Runtime::builder(backend)` for any backend,
-  `Runtime::terminal_builder()` for real terminals, and
+- `RuntimeBuilder<A, B>` builder pattern for constructing `Runtime`
+  instances. Three entry points: `Runtime::builder(backend)` for any
+  backend, `Runtime::terminal_builder()` for real terminals, and
   `Runtime::virtual_builder(w, h)` for virtual terminals. Supports
   `.state()`, `.config()`, `.tick_rate()`, `.frame_rate()`,
-  `.max_messages()`, and `.channel_capacity()` builder methods.
-  Existing constructors are preserved for backward compatibility.
+  `.max_messages()`, and `.channel_capacity()` builder methods. (#421)
+- `envision::terminal::restore()` standalone function for terminal
+  cleanup in panic handlers. (#422)
+- `docs/CHOOSING.md` component decision tree. (#422)
+- `InputMode::{Desktop, Readline}` for `LineInput` keybinding mode.
+  Desktop mode (default) uses standard keybindings; Readline mode adds
+  Emacs-style shortcuts (Ctrl-A, Ctrl-E, Ctrl-K, etc.). (#426)
+- `LineInputMessage::DeleteToEnd` for readline Ctrl-K. (#426)
+- `StepIndicatorState::with_step_style(index, style)` per-step-index
+  style overrides. (#417)
+- `StepIndicatorState::with_status_style(status, style)` per-status
+  style overrides (renamed from `with_step_style`). (#417)
 
 ## [0.14.1] - 2026-04-12
 

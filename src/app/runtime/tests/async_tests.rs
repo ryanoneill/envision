@@ -9,7 +9,7 @@ use std::time::Duration;
 
 #[tokio::test]
 async fn test_runtime_async_command() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // Create an async command
     let cmd = Command::perform_async(async { Some(CounterMsg::IncrementBy(5)) });
@@ -27,7 +27,7 @@ async fn test_runtime_async_command() {
 
 #[tokio::test]
 async fn test_runtime_message_channel() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let sender = runtime.message_sender();
 
     // Send a message via the channel
@@ -45,7 +45,7 @@ async fn test_runtime_message_channel() {
 
 #[tokio::test]
 async fn test_runtime_take_errors() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let error_tx = runtime.error_sender();
 
     // No errors initially
@@ -68,7 +68,7 @@ async fn test_runtime_take_errors() {
 
 #[tokio::test]
 async fn test_runtime_has_errors() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let error_tx = runtime.error_sender();
 
     // No errors initially
@@ -93,7 +93,7 @@ async fn test_runtime_has_errors() {
 
 #[tokio::test]
 async fn test_runtime_error_from_spawned_task() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let error_tx = runtime.error_sender();
 
     // Spawn a task that reports an error
@@ -116,7 +116,7 @@ async fn test_runtime_error_from_spawned_task() {
 
 #[tokio::test]
 async fn test_runtime_multiple_errors() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
     let error_tx = runtime.error_sender();
 
     // Send multiple errors
@@ -184,7 +184,7 @@ impl App for FallibleApp {
 
 #[tokio::test]
 async fn test_runtime_try_perform_async_success() {
-    let mut runtime: Runtime<FallibleApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<FallibleApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // Dispatch a message that triggers a successful async operation
     runtime.dispatch(FallibleMsg::FetchSuccess);
@@ -204,7 +204,7 @@ async fn test_runtime_try_perform_async_success() {
 
 #[tokio::test]
 async fn test_runtime_try_perform_async_failure() {
-    let mut runtime: Runtime<FallibleApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<FallibleApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // Dispatch a message that triggers a failing async operation
     runtime.dispatch(FallibleMsg::FetchFailure);
@@ -232,7 +232,7 @@ async fn test_runtime_try_perform_async_failure() {
 async fn test_runtime_subscribe() {
     use crate::app::subscription::TickSubscription;
 
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // Subscribe to a tick that fires every 10ms
     let sub = TickSubscription::new(Duration::from_millis(10), || CounterMsg::Increment);
@@ -256,7 +256,7 @@ async fn test_runtime_subscribe() {
 async fn test_runtime_subscribe_all() {
     use crate::app::subscription::{BoxedSubscription, TickSubscription};
 
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // Create multiple subscriptions
     let sub1: BoxedSubscription<CounterMsg> =
@@ -283,7 +283,7 @@ async fn test_runtime_subscribe_all() {
 
 #[tokio::test]
 async fn test_runtime_run() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(40, 10).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(40, 10).build().unwrap();
 
     // Increment counter
     runtime.dispatch(CounterMsg::Increment);
@@ -305,7 +305,7 @@ async fn test_runtime_run() {
 
 #[tokio::test]
 async fn test_runtime_run_cancelled() {
-    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<CounterApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     let token = runtime.cancellation_token();
 
@@ -362,7 +362,7 @@ impl App for InitCommandApp {
 
 #[test]
 fn test_runtime_init_command() {
-    let mut runtime: Runtime<InitCommandApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<InitCommandApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // Process sync commands from init
     runtime.process_pending();
@@ -420,7 +420,7 @@ impl App for TickingApp {
 
 #[test]
 fn test_runtime_ticking_app() {
-    let mut runtime: Runtime<TickingApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<TickingApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // Each tick should increment
     runtime.tick().unwrap();
@@ -437,7 +437,7 @@ fn test_runtime_ticking_app() {
 
 #[tokio::test]
 async fn test_runtime_run_with_on_tick() {
-    let mut runtime: Runtime<TickingApp, _> = Runtime::virtual_terminal(80, 24).unwrap();
+    let mut runtime: Runtime<TickingApp, _> = Runtime::virtual_builder(80, 24).build().unwrap();
 
     // Run the event loop - should quit after 3 ticks
     runtime.run().await.unwrap();

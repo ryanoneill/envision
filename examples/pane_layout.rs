@@ -124,7 +124,8 @@ impl App for PaneLayoutApp {
 
 #[tokio::main]
 async fn main() -> envision::Result<()> {
-    let _final_state = TerminalRuntime::<PaneLayoutApp>::new_terminal()?
+    let _final_state = TerminalRuntime::<PaneLayoutApp>::terminal_builder()?
+        .build()?
         .run_terminal()
         .await?;
     Ok(())

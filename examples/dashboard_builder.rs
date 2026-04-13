@@ -419,7 +419,7 @@ impl std::fmt::Display for DashTab {
 // ---------------------------------------------------------------------------
 
 fn main() -> envision::Result<()> {
-    let mut vt = Runtime::<Dashboard, _>::virtual_terminal(100, 30)?;
+    let mut vt = Runtime::<Dashboard, _>::virtual_builder(100, 30).build()?;
 
     // Run a few ticks to populate data
     for _ in 0..10 {

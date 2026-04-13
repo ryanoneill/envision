@@ -100,7 +100,7 @@ impl App for TabsApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TabsApp, _>::virtual_terminal(60, 10)?;
+    let mut vt = Runtime::<TabsApp, _>::virtual_builder(60, 10).build()?;
 
     println!("=== Tabs Example ===\n");
 

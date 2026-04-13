@@ -208,7 +208,7 @@ fn panel_name(panel: Option<&Panel>) -> &'static str {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<FocusManagerApp, _>::virtual_terminal(80, 18)?;
+    let mut vt = Runtime::<FocusManagerApp, _>::virtual_builder(80, 18).build()?;
 
     println!("=== FocusManager Example ===\n");
 

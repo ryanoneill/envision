@@ -490,7 +490,7 @@ fn simulated_event(counter: u64) -> (String, EventLevel, Vec<(String, String)>) 
 // ---------------------------------------------------------------------------
 
 fn main() -> envision::Result<()> {
-    let mut vt = Runtime::<LogExplorer, _>::virtual_terminal(100, 30)?;
+    let mut vt = Runtime::<LogExplorer, _>::virtual_builder(100, 30).build()?;
 
     // Simulate some initial data
     for _ in 0..8 {

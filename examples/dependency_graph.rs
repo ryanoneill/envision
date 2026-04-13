@@ -142,7 +142,7 @@ impl App for DependencyGraphApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<DependencyGraphApp, _>::virtual_terminal(100, 24)?;
+    let mut vt = Runtime::<DependencyGraphApp, _>::virtual_builder(100, 24).build()?;
 
     println!("=== DependencyGraph Example ===\n");
 

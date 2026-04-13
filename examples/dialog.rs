@@ -112,7 +112,7 @@ impl App for DialogApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<DialogApp, _>::virtual_terminal(60, 14)?;
+    let mut vt = Runtime::<DialogApp, _>::virtual_builder(60, 14).build()?;
 
     println!("=== Dialog Example ===\n");
 

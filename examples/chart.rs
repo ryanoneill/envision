@@ -89,7 +89,7 @@ impl App for ChartApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<ChartApp, _>::virtual_terminal(70, 20)?;
+    let mut vt = Runtime::<ChartApp, _>::virtual_builder(70, 20).build()?;
 
     println!("=== Chart Example ===\n");
 

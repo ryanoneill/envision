@@ -96,7 +96,7 @@ impl App for TreeApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TreeApp, _>::virtual_terminal(50, 15)?;
+    let mut vt = Runtime::<TreeApp, _>::virtual_builder(50, 15).build()?;
 
     println!("=== Tree Example ===\n");
 

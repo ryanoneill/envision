@@ -97,7 +97,7 @@ impl App for TimelineApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TimelineApp, _>::virtual_terminal(80, 20)?;
+    let mut vt = Runtime::<TimelineApp, _>::virtual_builder(80, 20).build()?;
 
     println!("=== Timeline Example ===\n");
 

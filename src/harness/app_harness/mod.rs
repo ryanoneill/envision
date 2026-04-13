@@ -82,7 +82,7 @@ impl<A: App> AppHarness<A> {
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn new(width: u16, height: u16) -> error::Result<Self> {
-        let runtime = Runtime::virtual_terminal(width, height)?;
+        let runtime = Runtime::virtual_builder(width, height).build()?;
         Ok(Self { runtime })
     }
 
@@ -92,7 +92,9 @@ impl<A: App> AppHarness<A> {
     ///
     /// Returns an error if creating the virtual terminal fails.
     pub fn with_config(width: u16, height: u16, config: RuntimeConfig) -> error::Result<Self> {
-        let runtime = Runtime::virtual_terminal_with_config(width, height, config)?;
+        let runtime = Runtime::virtual_builder(width, height)
+            .config(config)
+            .build()?;
         Ok(Self { runtime })
     }
 
@@ -133,7 +135,9 @@ impl<A: App> AppHarness<A> {
         state: A::State,
         init_cmd: Command<A::Message>,
     ) -> error::Result<Self> {
-        let runtime = Runtime::virtual_terminal_with_state(width, height, state, init_cmd)?;
+        let runtime = Runtime::virtual_builder(width, height)
+            .state(state, init_cmd)
+            .build()?;
         Ok(Self { runtime })
     }
 
@@ -149,9 +153,10 @@ impl<A: App> AppHarness<A> {
         init_cmd: Command<A::Message>,
         config: RuntimeConfig,
     ) -> error::Result<Self> {
-        let runtime = Runtime::virtual_terminal_with_state_and_config(
-            width, height, state, init_cmd, config,
-        )?;
+        let runtime = Runtime::virtual_builder(width, height)
+            .state(state, init_cmd)
+            .config(config)
+            .build()?;
         Ok(Self { runtime })
     }
 

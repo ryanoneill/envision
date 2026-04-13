@@ -4,11 +4,7 @@
 //! capture backend, useful for programmatic control (AI agents, automation,
 //! testing).
 
-use crate::error;
-
 use super::Runtime;
-use super::config::RuntimeConfig;
-use crate::app::command::Command;
 use crate::app::model::App;
 use crate::backend::CaptureBackend;
 use crate::input::Event;
@@ -18,140 +14,6 @@ use crate::input::Event;
 // =============================================================================
 
 impl<A: App> Runtime<A, CaptureBackend> {
-    /// Creates a virtual terminal for programmatic control.
-    ///
-    /// A virtual terminal is not connected to a physical terminal. Instead:
-    /// - Events are injected via `send()`
-    /// - The application is advanced via `tick()`
-    /// - The display can be inspected via `display()`
-    ///
-    /// This is useful for:
-    /// - AI agents driving the application
-    /// - Automation and scripting
-    /// - Testing
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if creating the ratatui `Terminal` with the
-    /// capture backend fails.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// # use envision::prelude::*;
-    /// # struct MyApp;
-    /// # #[derive(Default, Clone)]
-    /// # struct MyState;
-    /// # #[derive(Clone)]
-    /// # enum MyMsg {}
-    /// # impl App for MyApp {
-    /// #     type State = MyState;
-    /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
-    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
-    /// #     fn view(state: &MyState, frame: &mut Frame) {}
-    /// # }
-    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
-    /// vt.send(Event::key(Key::Char('j')));
-    /// vt.tick()?;
-    /// # Ok::<(), envision::EnvisionError>(())
-    /// ```
-    pub fn virtual_terminal(width: u16, height: u16) -> error::Result<Self> {
-        let backend = CaptureBackend::new(width, height);
-        Self::with_backend(backend)
-    }
-
-    /// Creates a virtual terminal with custom configuration.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if creating the ratatui `Terminal` with the
-    /// capture backend fails.
-    pub fn virtual_terminal_with_config(
-        width: u16,
-        height: u16,
-        config: RuntimeConfig,
-    ) -> error::Result<Self> {
-        let backend = if config.capture_history {
-            CaptureBackend::with_history(width, height, config.history_capacity)
-        } else {
-            CaptureBackend::new(width, height)
-        };
-        Self::with_backend_and_config(backend, config)
-    }
-
-    /// Creates a virtual terminal with a pre-built state, bypassing [`App::init()`].
-    ///
-    /// [`App::init()`] is **not called** — the provided `state` and `init_cmd`
-    /// are used instead. This is the primary way to test or automate an
-    /// application starting from a specific state. The `init_cmd` is executed
-    /// immediately; pass [`Command::none()`] if no startup command is needed.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if creating the ratatui `Terminal` with the
-    /// capture backend fails.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// # use envision::prelude::*;
-    /// # struct MyApp;
-    /// # #[derive(Default, Clone)]
-    /// # struct MyState { count: i32 }
-    /// # #[derive(Clone)]
-    /// # enum MyMsg {}
-    /// # impl App for MyApp {
-    /// #     type State = MyState;
-    /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
-    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
-    /// #     fn view(state: &MyState, frame: &mut Frame) {}
-    /// # }
-    /// // Start from a specific state instead of App::init()
-    /// let state = MyState { count: 10 };
-    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal_with_state(
-    ///     80, 24, state, Command::none(),
-    /// )?;
-    /// assert_eq!(vt.state().count, 10);
-    /// # Ok::<(), envision::EnvisionError>(())
-    /// ```
-    pub fn virtual_terminal_with_state(
-        width: u16,
-        height: u16,
-        state: A::State,
-        init_cmd: Command<A::Message>,
-    ) -> error::Result<Self> {
-        let backend = CaptureBackend::new(width, height);
-        Self::with_backend_and_state(backend, state, init_cmd)
-    }
-
-    /// Creates a virtual terminal with a pre-built state and custom configuration.
-    ///
-    /// [`App::init()`] is **not called** — the provided `state` and `init_cmd`
-    /// are used instead. Combines
-    /// [`virtual_terminal_with_state`](Self::virtual_terminal_with_state)
-    /// with custom [`RuntimeConfig`] options.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if creating the ratatui `Terminal` with the
-    /// capture backend fails.
-    pub fn virtual_terminal_with_state_and_config(
-        width: u16,
-        height: u16,
-        state: A::State,
-        init_cmd: Command<A::Message>,
-        config: RuntimeConfig,
-    ) -> error::Result<Self> {
-        let backend = if config.capture_history {
-            CaptureBackend::with_history(width, height, config.history_capacity)
-        } else {
-            CaptureBackend::new(width, height)
-        };
-        Self::with_backend_state_and_config(backend, state, init_cmd, config)
-    }
-
     /// Sends an event to the virtual terminal.
     ///
     /// The event is queued and will be processed on the next `tick()`.
@@ -172,7 +34,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// vt.send(Event::key(Key::Enter));
     /// vt.tick()?;
     /// # Ok::<(), envision::EnvisionError>(())
@@ -201,7 +63,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// vt.tick()?;
     /// let screen = vt.display();
     /// # Ok::<(), envision::EnvisionError>(())
@@ -238,7 +100,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// # let vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// # let vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// let cell = vt.cell_at(5, 3);
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```
@@ -268,7 +130,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// #         frame.render_widget(ratatui::widgets::Paragraph::new("Hello"), frame.area());
     /// #     }
     /// # }
-    /// let mut vt = Runtime::<MyApp, _>::virtual_terminal(80, 24)?;
+    /// let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// vt.tick()?;
     /// assert!(vt.contains_text("Hello"));
     /// # Ok::<(), envision::EnvisionError>(())

@@ -135,7 +135,7 @@ impl App for MarkdownRendererApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<MarkdownRendererApp, _>::virtual_terminal(70, 30)?;
+    let mut vt = Runtime::<MarkdownRendererApp, _>::virtual_builder(70, 30).build()?;
 
     println!("=== MarkdownRenderer Example ===\n");
 

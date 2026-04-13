@@ -119,7 +119,7 @@ impl App for KeyHintsApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<KeyHintsApp, _>::virtual_terminal(70, 10)?;
+    let mut vt = Runtime::<KeyHintsApp, _>::virtual_builder(70, 10).build()?;
 
     println!("=== KeyHints Example ===\n");
 

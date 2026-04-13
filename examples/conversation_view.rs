@@ -170,7 +170,7 @@ impl App for ConversationApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<ConversationApp, _>::virtual_terminal(80, 30)?;
+    let mut vt = Runtime::<ConversationApp, _>::virtual_builder(80, 30).build()?;
 
     println!("=== Conversation View Example ===\n");
 

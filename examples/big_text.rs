@@ -118,7 +118,7 @@ impl App for BigTextApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<BigTextApp, _>::virtual_terminal(60, 24)?;
+    let mut vt = Runtime::<BigTextApp, _>::virtual_builder(60, 24).build()?;
 
     println!("=== BigText Dashboard Example ===\n");
 

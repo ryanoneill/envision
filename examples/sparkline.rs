@@ -94,7 +94,7 @@ impl App for SparklineApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<SparklineApp, _>::virtual_terminal(40, 8)?;
+    let mut vt = Runtime::<SparklineApp, _>::virtual_builder(40, 8).build()?;
 
     println!("=== Sparkline Example ===\n");
 

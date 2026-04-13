@@ -89,7 +89,7 @@ impl App for SelectableListApp {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<SelectableListApp, _>::virtual_terminal(40, 12)?;
+    let mut vt = Runtime::<SelectableListApp, _>::virtual_builder(40, 12).build()?;
 
     println!("=== SelectableList Example ===\n");
 
