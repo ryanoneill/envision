@@ -165,18 +165,49 @@ impl DataSeries {
     }
 
     /// Sets the upper bound values for error bands (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("CPU", vec![50.0, 60.0])
+    ///     .with_upper_bound(vec![55.0, 65.0]);
+    /// assert_eq!(series.upper_bound(), Some([55.0, 65.0].as_slice()));
+    /// ```
     pub fn with_upper_bound(mut self, upper: Vec<f64>) -> Self {
         self.upper_bound = Some(upper);
         self
     }
 
     /// Sets the lower bound values for error bands (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("CPU", vec![50.0, 60.0])
+    ///     .with_lower_bound(vec![45.0, 55.0]);
+    /// assert_eq!(series.lower_bound(), Some([45.0, 55.0].as_slice()));
+    /// ```
     pub fn with_lower_bound(mut self, lower: Vec<f64>) -> Self {
         self.lower_bound = Some(lower);
         self
     }
 
     /// Sets both upper and lower bound values for error bands (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("CPU", vec![50.0])
+    ///     .with_bounds(vec![45.0], vec![55.0]);
+    /// assert!(series.lower_bound().is_some());
+    /// assert!(series.upper_bound().is_some());
+    /// ```
     pub fn with_bounds(mut self, lower: Vec<f64>, upper: Vec<f64>) -> Self {
         self.lower_bound = Some(lower);
         self.upper_bound = Some(upper);
@@ -184,16 +215,44 @@ impl DataSeries {
     }
 
     /// Returns the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("Temperature", vec![20.0, 22.0]);
+    /// assert_eq!(series.label(), "Temperature");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Returns the values.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("CPU", vec![10.0, 20.0, 30.0]);
+    /// assert_eq!(series.values(), &[10.0, 20.0, 30.0]);
+    /// ```
     pub fn values(&self) -> &[f64] {
         &self.values
     }
 
     /// Returns the color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    /// use ratatui::style::Color;
+    ///
+    /// let series = DataSeries::new("CPU", vec![50.0]).with_color(Color::Green);
+    /// assert_eq!(series.color(), Color::Green);
+    /// ```
     pub fn color(&self) -> Color {
         self.color
     }
@@ -219,11 +278,31 @@ impl DataSeries {
     }
 
     /// Returns the upper bound values, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("CPU", vec![50.0]).with_upper_bound(vec![55.0]);
+    /// assert_eq!(series.upper_bound(), Some([55.0].as_slice()));
+    /// assert_eq!(DataSeries::new("A", vec![1.0]).upper_bound(), None);
+    /// ```
     pub fn upper_bound(&self) -> Option<&[f64]> {
         self.upper_bound.as_deref()
     }
 
     /// Returns the lower bound values, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("CPU", vec![50.0]).with_lower_bound(vec![45.0]);
+    /// assert_eq!(series.lower_bound(), Some([45.0].as_slice()));
+    /// assert_eq!(DataSeries::new("A", vec![1.0]).lower_bound(), None);
+    /// ```
     pub fn lower_bound(&self) -> Option<&[f64]> {
         self.lower_bound.as_deref()
     }
@@ -295,31 +374,90 @@ impl DataSeries {
     }
 
     /// Returns the most recent value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("Temp", vec![10.0, 20.0, 30.0]);
+    /// assert_eq!(series.last(), Some(30.0));
+    /// assert_eq!(DataSeries::new("Empty", vec![]).last(), None);
+    /// ```
     pub fn last(&self) -> Option<f64> {
         self.values.last().copied()
     }
 
     /// Returns the number of data points.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let series = DataSeries::new("CPU", vec![10.0, 20.0, 30.0]);
+    /// assert_eq!(series.len(), 3);
+    /// ```
     pub fn len(&self) -> usize {
         self.values.len()
     }
 
     /// Returns true if the series has no data points.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// assert!(DataSeries::new("Empty", vec![]).is_empty());
+    /// assert!(!DataSeries::new("CPU", vec![50.0]).is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.values.is_empty()
     }
 
     /// Clears all values.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let mut series = DataSeries::new("CPU", vec![10.0, 20.0]);
+    /// series.clear();
+    /// assert!(series.is_empty());
+    /// ```
     pub fn clear(&mut self) {
         self.values.clear();
     }
 
     /// Sets the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let mut series = DataSeries::new("Old", vec![1.0]);
+    /// series.set_label("New");
+    /// assert_eq!(series.label(), "New");
+    /// ```
     pub fn set_label(&mut self, label: impl Into<String>) {
         self.label = label.into();
     }
 
     /// Sets the color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    /// use ratatui::style::Color;
+    ///
+    /// let mut series = DataSeries::new("CPU", vec![50.0]);
+    /// series.set_color(Color::Red);
+    /// assert_eq!(series.color(), Color::Red);
+    /// ```
     pub fn set_color(&mut self, color: Color) {
         self.color = color;
     }
@@ -348,11 +486,35 @@ impl DataSeries {
     }
 
     /// Sets the upper bound values for error bands.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let mut series = DataSeries::new("CPU", vec![50.0]);
+    /// series.set_upper_bound(Some(vec![55.0]));
+    /// assert_eq!(series.upper_bound(), Some([55.0].as_slice()));
+    /// series.set_upper_bound(None);
+    /// assert_eq!(series.upper_bound(), None);
+    /// ```
     pub fn set_upper_bound(&mut self, upper: Option<Vec<f64>>) {
         self.upper_bound = upper;
     }
 
     /// Sets the lower bound values for error bands.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DataSeries;
+    ///
+    /// let mut series = DataSeries::new("CPU", vec![50.0]);
+    /// series.set_lower_bound(Some(vec![45.0]));
+    /// assert_eq!(series.lower_bound(), Some([45.0].as_slice()));
+    /// series.set_lower_bound(None);
+    /// assert_eq!(series.lower_bound(), None);
+    /// ```
     pub fn set_lower_bound(&mut self, lower: Option<Vec<f64>>) {
         self.lower_bound = lower;
     }

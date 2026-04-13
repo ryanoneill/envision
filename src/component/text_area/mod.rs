@@ -314,6 +314,17 @@ impl TextAreaState {
     }
 
     /// Returns the cursor position as (row, char_column).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new();
+    /// TextArea::update(&mut state, TextAreaMessage::Insert('H'));
+    /// TextArea::update(&mut state, TextAreaMessage::Insert('i'));
+    /// assert_eq!(state.cursor_position(), (0, 2));
+    /// ```
     pub fn cursor_position(&self) -> (usize, usize) {
         let char_col = self.lines[self.cursor_row][..self.cursor_col]
             .chars()
@@ -504,6 +515,22 @@ impl TextAreaState {
     }
 
     /// Ensures the cursor is visible within the viewport.
+    ///
+    /// Adjusts `scroll_offset` so that the cursor row is within the range
+    /// `[scroll_offset, scroll_offset + visible_lines)`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new();
+    /// for _ in 0..10 {
+    ///     TextArea::update(&mut state, TextAreaMessage::NewLine);
+    /// }
+    /// state.ensure_cursor_visible(5);
+    /// assert!(state.scroll_offset() + 5 > state.cursor_position().0);
+    /// ```
     pub fn ensure_cursor_visible(&mut self, visible_lines: usize) {
         if visible_lines == 0 {
             return;
@@ -612,6 +639,17 @@ impl TextAreaState {
     }
 
     /// Updates the textarea state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextAreaMessage, TextAreaOutput, TextAreaState};
+    ///
+    /// let mut state = TextAreaState::new();
+    /// state.update(TextAreaMessage::Insert('a'));
+    /// state.update(TextAreaMessage::Insert('b'));
+    /// assert_eq!(state.value(), "ab");
+    /// ```
     pub fn update(&mut self, msg: TextAreaMessage) -> Option<TextAreaOutput> {
         TextArea::update(self, msg)
     }

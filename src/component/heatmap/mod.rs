@@ -523,21 +523,63 @@ impl HeatmapState {
     }
 
     /// Returns the row labels.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HeatmapState;
+    ///
+    /// let state = HeatmapState::new(2, 3)
+    ///     .with_row_labels(vec!["Row A".into(), "Row B".into()]);
+    /// assert_eq!(state.row_labels(), &["Row A", "Row B"]);
+    /// ```
     pub fn row_labels(&self) -> &[String] {
         &self.row_labels
     }
 
     /// Returns the column labels.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HeatmapState;
+    ///
+    /// let state = HeatmapState::new(2, 3)
+    ///     .with_col_labels(vec!["Mon".into(), "Tue".into(), "Wed".into()]);
+    /// assert_eq!(state.col_labels(), &["Mon", "Tue", "Wed"]);
+    /// ```
     pub fn col_labels(&self) -> &[String] {
         &self.col_labels
     }
 
     /// Returns the color scale.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{HeatmapState, HeatmapColorScale};
+    ///
+    /// let state = HeatmapState::new(2, 2)
+    ///     .with_color_scale(HeatmapColorScale::BlueToRed);
+    /// assert_eq!(state.color_scale(), &HeatmapColorScale::BlueToRed);
+    /// ```
     pub fn color_scale(&self) -> &HeatmapColorScale {
         &self.color_scale
     }
 
     /// Returns the title, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HeatmapState;
+    ///
+    /// let state = HeatmapState::new(2, 2).with_title("Error Rates");
+    /// assert_eq!(state.title(), Some("Error Rates"));
+    ///
+    /// let no_title = HeatmapState::new(2, 2);
+    /// assert_eq!(no_title.title(), None);
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -558,6 +600,15 @@ impl HeatmapState {
     }
 
     /// Returns whether values are shown in cells.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HeatmapState;
+    ///
+    /// let state = HeatmapState::new(2, 2).with_show_values(true);
+    /// assert!(state.show_values());
+    /// ```
     pub fn show_values(&self) -> bool {
         self.show_values
     }
@@ -580,6 +631,16 @@ impl HeatmapState {
     // ---- Instance methods ----
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{HeatmapMessage, HeatmapOutput, HeatmapState};
+    ///
+    /// let mut state = HeatmapState::new(3, 3);
+    /// let output = state.update(HeatmapMessage::SelectDown);
+    /// assert_eq!(output, Some(HeatmapOutput::SelectionChanged { row: 1, col: 0 }));
+    /// ```
     pub fn update(&mut self, msg: HeatmapMessage) -> Option<HeatmapOutput> {
         Heatmap::update(self, msg)
     }

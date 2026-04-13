@@ -418,6 +418,15 @@ impl StatusLogState {
     }
 
     /// Returns the maximum number of entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let state = StatusLogState::new();
+    /// assert_eq!(state.max_entries(), 50); // default
+    /// ```
     pub fn max_entries(&self) -> usize {
         self.max_entries
     }
@@ -449,6 +458,15 @@ impl StatusLogState {
     }
 
     /// Returns whether timestamps are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusLogState;
+    ///
+    /// let state = StatusLogState::new();
+    /// assert!(!state.show_timestamps()); // disabled by default
+    /// ```
     pub fn show_timestamps(&self) -> bool {
         self.show_timestamps
     }

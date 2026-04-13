@@ -180,6 +180,26 @@ impl FileBrowserState {
     }
 
     /// Creates a new file browser with a directory provider.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::sync::Arc;
+    /// use envision::component::file_browser::{
+    ///     FileBrowserState, DirectoryProvider, FileEntry,
+    /// };
+    ///
+    /// struct TestProvider;
+    /// impl DirectoryProvider for TestProvider {
+    ///     fn list_entries(&self, _path: &str) -> Vec<FileEntry> {
+    ///         vec![FileEntry::file("main.rs", "/main.rs")]
+    ///     }
+    ///     fn parent_path(&self, _path: &str) -> Option<String> { None }
+    /// }
+    ///
+    /// let state = FileBrowserState::with_provider("/", Arc::new(TestProvider));
+    /// assert_eq!(state.entries().len(), 1);
+    /// ```
     pub fn with_provider(path: impl Into<String>, provider: Arc<dyn DirectoryProvider>) -> Self {
         let path_str = path.into();
         let entries = provider.list_entries(&path_str);
@@ -253,6 +273,19 @@ impl FileBrowserState {
     }
 
     /// Sets whether directories are shown first (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// // With directories_first=true (default), directories sort before files.
+    /// let state = FileBrowserState::new("/", vec![
+    ///     FileEntry::file("a.txt", "/a.txt"),
+    ///     FileEntry::directory("src", "/src"),
+    /// ]).with_directories_first(true);
+    /// assert_eq!(state.filtered_entries()[0].name(), "src");
+    /// ```
     pub fn with_directories_first(mut self, directories_first: bool) -> Self {
         self.directories_first = directories_first;
         self.sort_and_filter();
@@ -260,6 +293,15 @@ impl FileBrowserState {
     }
 
     /// Sets whether hidden files are shown (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![]).with_show_hidden(true);
+    /// assert!(state.show_hidden());
+    /// ```
     pub fn with_show_hidden(mut self, show: bool) -> Self {
         self.show_hidden = show;
         self.sort_and_filter();
@@ -314,6 +356,18 @@ impl FileBrowserState {
     }
 
     /// Returns the indices of visible (filtered) entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![
+    ///     FileEntry::file("a.txt", "/a.txt"),
+    ///     FileEntry::file("b.txt", "/b.txt"),
+    /// ]);
+    /// assert_eq!(state.filtered_indices(), &[0, 1]);
+    /// ```
     pub fn filtered_indices(&self) -> &[usize] {
         &self.filtered_indices
     }
@@ -378,6 +432,15 @@ impl FileBrowserState {
     ///
     /// This is an alias for [`selected_index()`](Self::selected_index) that provides a
     /// consistent accessor name across all selection-based components.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![FileEntry::file("a.txt", "/a.txt")]);
+    /// assert_eq!(state.selected(), Some(0));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
@@ -386,6 +449,15 @@ impl FileBrowserState {
     ///
     /// This is an alias for [`selected_entry()`](Self::selected_entry) that provides a
     /// consistent accessor name across all selection-based components.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    ///
+    /// let state = FileBrowserState::new("/", vec![FileEntry::file("notes.txt", "/notes.txt")]);
+    /// assert_eq!(state.selected_item().unwrap().name(), "notes.txt");
+    /// ```
     pub fn selected_item(&self) -> Option<&FileEntry> {
         self.selected_entry()
     }
@@ -448,6 +520,16 @@ impl FileBrowserState {
     }
 
     /// Returns the sort direction.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState, FileSortDirection};
+    ///
+    /// let state = FileBrowserState::new("/", vec![])
+    ///     .with_sort_direction(FileSortDirection::Descending);
+    /// assert_eq!(state.sort_direction(), &FileSortDirection::Descending);
+    /// ```
     pub fn sort_direction(&self) -> &FileSortDirection {
         &self.sort_direction
     }

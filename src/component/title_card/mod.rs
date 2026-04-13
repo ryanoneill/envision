@@ -240,11 +240,29 @@ impl TitleCardState {
     }
 
     /// Returns the subtitle text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let state = TitleCardState::new("App").with_subtitle("v1.0");
+    /// assert_eq!(state.subtitle(), Some("v1.0"));
+    /// ```
     pub fn subtitle(&self) -> Option<&str> {
         self.subtitle.as_deref()
     }
 
     /// Returns the prefix decoration.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let state = TitleCardState::new("App").with_prefix(">> ");
+    /// assert_eq!(state.prefix(), Some(">> "));
+    /// ```
     pub fn prefix(&self) -> Option<&str> {
         self.prefix.as_deref()
     }
@@ -264,16 +282,47 @@ impl TitleCardState {
     }
 
     /// Returns the title style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let style = Style::default().fg(Color::Magenta);
+    /// let state = TitleCardState::new("App").with_title_style(style);
+    /// assert_eq!(state.title_style(), style);
+    /// ```
     pub fn title_style(&self) -> Style {
         self.title_style
     }
 
     /// Returns the subtitle style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let style = Style::default().fg(Color::Gray);
+    /// let state = TitleCardState::new("App").with_subtitle_style(style);
+    /// assert_eq!(state.subtitle_style(), style);
+    /// ```
     pub fn subtitle_style(&self) -> Style {
         self.subtitle_style
     }
 
     /// Returns whether the border is shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    ///
+    /// let state = TitleCardState::new("App").with_bordered(false);
+    /// assert!(!state.is_bordered());
+    /// ```
     pub fn is_bordered(&self) -> bool {
         self.bordered
     }
@@ -355,11 +404,35 @@ impl TitleCardState {
     }
 
     /// Sets the title style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = TitleCardState::new("App");
+    /// let style = Style::default().fg(Color::Green);
+    /// state.set_title_style(style);
+    /// assert_eq!(state.title_style(), style);
+    /// ```
     pub fn set_title_style(&mut self, style: Style) {
         self.title_style = style;
     }
 
     /// Sets the subtitle style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TitleCardState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = TitleCardState::new("App");
+    /// let style = Style::default().fg(Color::White);
+    /// state.set_subtitle_style(style);
+    /// assert_eq!(state.subtitle_style(), style);
+    /// ```
     pub fn set_subtitle_style(&mut self, style: Style) {
         self.subtitle_style = style;
     }

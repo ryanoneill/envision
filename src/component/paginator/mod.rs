@@ -286,21 +286,57 @@ impl PaginatorState {
     }
 
     /// Returns the total number of pages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::PaginatorState;
+    ///
+    /// let state = PaginatorState::new(12);
+    /// assert_eq!(state.total_pages(), 12);
+    /// ```
     pub fn total_pages(&self) -> usize {
         self.total_pages
     }
 
     /// Returns the total number of items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::PaginatorState;
+    ///
+    /// let state = PaginatorState::from_items(247, 25);
+    /// assert_eq!(state.total_items(), 247);
+    /// ```
     pub fn total_items(&self) -> usize {
         self.total_items
     }
 
     /// Returns the page size (items per page).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::PaginatorState;
+    ///
+    /// let state = PaginatorState::from_items(100, 20);
+    /// assert_eq!(state.page_size(), 20);
+    /// ```
     pub fn page_size(&self) -> usize {
         self.page_size
     }
 
     /// Returns the display style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{PaginatorState, PaginatorStyle};
+    ///
+    /// let state = PaginatorState::new(5).with_style(PaginatorStyle::Compact);
+    /// assert_eq!(state.style(), &PaginatorStyle::Compact);
+    /// ```
     pub fn style(&self) -> &PaginatorStyle {
         &self.style
     }

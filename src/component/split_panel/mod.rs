@@ -176,6 +176,15 @@ impl SplitPanelState {
     }
 
     /// Returns the current orientation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SplitPanelState, SplitOrientation};
+    ///
+    /// let state = SplitPanelState::new(SplitOrientation::Horizontal);
+    /// assert_eq!(state.orientation(), &SplitOrientation::Horizontal);
+    /// ```
     pub fn orientation(&self) -> &SplitOrientation {
         &self.orientation
     }
@@ -199,6 +208,15 @@ impl SplitPanelState {
     ///
     /// 0.5 means equal split. Values closer to 1.0 give more space
     /// to the first pane.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SplitPanelState, SplitOrientation};
+    ///
+    /// let state = SplitPanelState::new(SplitOrientation::Vertical).with_ratio(0.4);
+    /// assert!((state.ratio() - 0.4).abs() < f32::EPSILON);
+    /// ```
     pub fn ratio(&self) -> f32 {
         self.ratio
     }
@@ -234,11 +252,30 @@ impl SplitPanelState {
     }
 
     /// Returns true if the second pane has focus.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SplitPanelState, SplitPanelMessage, SplitOrientation};
+    ///
+    /// let mut state = SplitPanelState::new(SplitOrientation::Vertical);
+    /// state.update(SplitPanelMessage::FocusSecond);
+    /// assert!(state.is_second_pane_focused());
+    /// ```
     pub fn is_second_pane_focused(&self) -> bool {
         self.focused_pane == Pane::Second
     }
 
     /// Returns the resize step size (default 0.1 = 10%).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SplitPanelState, SplitOrientation};
+    ///
+    /// let state = SplitPanelState::new(SplitOrientation::Vertical).with_resize_step(0.05);
+    /// assert!((state.resize_step() - 0.05).abs() < f32::EPSILON);
+    /// ```
     pub fn resize_step(&self) -> f32 {
         self.resize_step
     }
@@ -277,6 +314,16 @@ impl SplitPanelState {
     }
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SplitPanelState, SplitPanelMessage, SplitPanelOutput, SplitOrientation};
+    ///
+    /// let mut state = SplitPanelState::new(SplitOrientation::Vertical);
+    /// let output = state.update(SplitPanelMessage::FocusSecond);
+    /// assert_eq!(output, Some(SplitPanelOutput::FocusedSecond));
+    /// ```
     pub fn update(&mut self, msg: SplitPanelMessage) -> Option<SplitPanelOutput> {
         SplitPanel::update(self, msg)
     }

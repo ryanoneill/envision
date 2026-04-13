@@ -124,6 +124,18 @@ impl CheckboxState {
     }
 
     /// Returns true if the checkbox is checked.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CheckboxState;
+    ///
+    /// let unchecked = CheckboxState::new("Accept");
+    /// assert!(!unchecked.is_checked());
+    ///
+    /// let checked = CheckboxState::checked("Remember me");
+    /// assert!(checked.is_checked());
+    /// ```
     pub fn is_checked(&self) -> bool {
         self.checked
     }

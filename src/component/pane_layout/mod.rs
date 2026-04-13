@@ -171,11 +171,29 @@ impl PaneConfig {
     }
 
     /// Returns the pane ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let pane = PaneConfig::new("main");
+    /// assert_eq!(pane.id(), "main");
+    /// ```
     pub fn id(&self) -> &str {
         &self.id
     }
 
     /// Returns the pane title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let pane = PaneConfig::new("sidebar").with_title("Files");
+    /// assert_eq!(pane.title(), Some("Files"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -196,11 +214,29 @@ impl PaneConfig {
     }
 
     /// Returns the pane proportion.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let pane = PaneConfig::new("main").with_proportion(0.6);
+    /// assert!((pane.proportion() - 0.6).abs() < f32::EPSILON);
+    /// ```
     pub fn proportion(&self) -> f32 {
         self.proportion
     }
 
     /// Returns the minimum size.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let pane = PaneConfig::new("sidebar").with_min_size(15);
+    /// assert_eq!(pane.min_size(), 15);
+    /// ```
     pub fn min_size(&self) -> u16 {
         self.min_size
     }
@@ -221,6 +257,17 @@ impl PaneConfig {
     }
 
     /// Returns the maximum size.
+    ///
+    /// A value of 0 means no maximum.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    ///
+    /// let pane = PaneConfig::new("sidebar").with_max_size(80);
+    /// assert_eq!(pane.max_size(), 80);
+    /// ```
     pub fn max_size(&self) -> u16 {
         self.max_size
     }

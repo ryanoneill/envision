@@ -347,21 +347,57 @@ impl SpanTreeState {
     }
 
     /// Returns the earliest start time across all spans.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let state = SpanTreeState::new(vec![SpanNode::new("r", "root", 50.0, 200.0)]);
+    /// assert_eq!(state.global_start(), 50.0);
+    /// ```
     pub fn global_start(&self) -> f64 {
         self.global_start
     }
 
     /// Returns the latest end time across all spans.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let state = SpanTreeState::new(vec![SpanNode::new("r", "root", 0.0, 750.0)]);
+    /// assert_eq!(state.global_end(), 750.0);
+    /// ```
     pub fn global_end(&self) -> f64 {
         self.global_end
     }
 
     /// Returns the label column width.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let state = SpanTreeState::new(vec![]).with_label_width(40);
+    /// assert_eq!(state.label_width(), 40);
+    /// ```
     pub fn label_width(&self) -> u16 {
         self.label_width
     }
 
     /// Returns the title, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanTreeState;
+    ///
+    /// let state = SpanTreeState::new(vec![]).with_title("Trace View");
+    /// assert_eq!(state.title(), Some("Trace View"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -395,6 +431,17 @@ impl SpanTreeState {
     }
 
     /// Returns the set of expanded node IDs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let root = SpanNode::new("r", "root", 0.0, 100.0)
+    ///     .with_child(SpanNode::new("c", "child", 10.0, 50.0));
+    /// let state = SpanTreeState::new(vec![root]);
+    /// assert!(state.expanded_ids().contains("r"));
+    /// ```
     pub fn expanded_ids(&self) -> &HashSet<String> {
         &self.expanded
     }
@@ -521,6 +568,18 @@ impl SpanTreeState {
     // ---- Instance methods ----
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanTreeMessage, SpanNode};
+    ///
+    /// let root = SpanNode::new("r", "root", 0.0, 100.0)
+    ///     .with_child(SpanNode::new("c", "child", 10.0, 50.0));
+    /// let mut state = SpanTreeState::new(vec![root]);
+    /// state.update(SpanTreeMessage::SelectDown);
+    /// assert_eq!(state.selected_index(), Some(1));
+    /// ```
     pub fn update(&mut self, msg: SpanTreeMessage) -> Option<SpanTreeOutput> {
         SpanTree::update(self, msg)
     }

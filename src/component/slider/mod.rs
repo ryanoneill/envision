@@ -251,16 +251,43 @@ impl SliderState {
     }
 
     /// Returns the minimum value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SliderState;
+    ///
+    /// let state = SliderState::new(10.0, 90.0);
+    /// assert_eq!(state.min(), 10.0);
+    /// ```
     pub fn min(&self) -> f64 {
         self.min
     }
 
     /// Returns the maximum value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SliderState;
+    ///
+    /// let state = SliderState::new(10.0, 90.0);
+    /// assert_eq!(state.max(), 90.0);
+    /// ```
     pub fn max(&self) -> f64 {
         self.max
     }
 
     /// Returns the step size.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SliderState;
+    ///
+    /// let state = SliderState::new(0.0, 100.0).with_step(5.0);
+    /// assert_eq!(state.step(), 5.0);
+    /// ```
     pub fn step(&self) -> f64 {
         self.step
     }
@@ -290,11 +317,29 @@ impl SliderState {
     }
 
     /// Returns the label, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SliderState;
+    ///
+    /// let state = SliderState::new(0.0, 100.0).with_label("Volume");
+    /// assert_eq!(state.label(), Some("Volume"));
+    /// ```
     pub fn label(&self) -> Option<&str> {
         self.label.as_deref()
     }
 
     /// Returns whether the value display is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SliderState;
+    ///
+    /// let state = SliderState::new(0.0, 100.0).with_show_value(false);
+    /// assert!(!state.show_value());
+    /// ```
     pub fn show_value(&self) -> bool {
         self.show_value
     }
@@ -315,6 +360,15 @@ impl SliderState {
     }
 
     /// Returns the orientation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SliderState, SliderOrientation};
+    ///
+    /// let state = SliderState::new(0.0, 100.0).with_orientation(SliderOrientation::Vertical);
+    /// assert_eq!(state.orientation(), &SliderOrientation::Vertical);
+    /// ```
     pub fn orientation(&self) -> &SliderOrientation {
         &self.orientation
     }

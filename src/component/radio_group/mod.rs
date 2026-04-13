@@ -272,6 +272,16 @@ impl<T: Clone> RadioGroupState<T> {
 
 impl<T: Clone + std::fmt::Display + 'static> RadioGroupState<T> {
     /// Updates the radio group state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{RadioGroupState, RadioGroupMessage, RadioGroupOutput};
+    ///
+    /// let mut state = RadioGroupState::new(vec!["Small", "Medium", "Large"]);
+    /// let output = state.update(RadioGroupMessage::Down);
+    /// assert_eq!(output, Some(RadioGroupOutput::SelectionChanged(1)));
+    /// ```
     pub fn update(&mut self, msg: RadioGroupMessage) -> Option<RadioGroupOutput<T>> {
         RadioGroup::<T>::update(self, msg)
     }

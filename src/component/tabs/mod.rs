@@ -312,6 +312,16 @@ impl<T: Clone> TabsState<T> {
 
 impl<T: Clone + std::fmt::Display + 'static> TabsState<T> {
     /// Updates the tabs state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TabsState, TabsMessage, TabsOutput};
+    ///
+    /// let mut state = TabsState::new(vec!["Home", "Settings"]);
+    /// let output = state.update(TabsMessage::Right);
+    /// assert_eq!(output, Some(TabsOutput::SelectionChanged(1)));
+    /// ```
     pub fn update(&mut self, msg: TabsMessage) -> Option<TabsOutput<T>> {
         Tabs::update(self, msg)
     }

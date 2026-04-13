@@ -87,11 +87,29 @@ impl KeyBinding {
     }
 
     /// Returns the key string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyBinding;
+    ///
+    /// let binding = KeyBinding::new("Ctrl+S", "Save");
+    /// assert_eq!(binding.key(), "Ctrl+S");
+    /// ```
     pub fn key(&self) -> &str {
         &self.key
     }
 
     /// Returns the description.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyBinding;
+    ///
+    /// let binding = KeyBinding::new("q", "Quit");
+    /// assert_eq!(binding.description(), "Quit");
+    /// ```
     pub fn description(&self) -> &str {
         &self.description
     }
@@ -148,11 +166,29 @@ impl KeyBindingGroup {
     }
 
     /// Returns the group title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{KeyBinding, KeyBindingGroup};
+    ///
+    /// let group = KeyBindingGroup::new("Navigation", vec![]);
+    /// assert_eq!(group.title(), "Navigation");
+    /// ```
     pub fn title(&self) -> &str {
         &self.title
     }
 
     /// Returns the bindings in this group.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{KeyBinding, KeyBindingGroup};
+    ///
+    /// let group = KeyBindingGroup::new("General", vec![KeyBinding::new("q", "Quit")]);
+    /// assert_eq!(group.bindings().len(), 1);
+    /// ```
     pub fn bindings(&self) -> &[KeyBinding] {
         &self.bindings
     }

@@ -129,21 +129,57 @@ impl KeyHint {
     }
 
     /// Returns the key string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHint;
+    ///
+    /// let hint = KeyHint::new("Ctrl+S", "Save");
+    /// assert_eq!(hint.key(), "Ctrl+S");
+    /// ```
     pub fn key(&self) -> &str {
         &self.key
     }
 
     /// Returns the action description.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHint;
+    ///
+    /// let hint = KeyHint::new("Enter", "Select");
+    /// assert_eq!(hint.action(), "Select");
+    /// ```
     pub fn action(&self) -> &str {
         &self.action
     }
 
     /// Returns whether the hint is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHint;
+    ///
+    /// let hint = KeyHint::new("q", "Quit");
+    /// assert!(hint.is_enabled()); // enabled by default
+    /// ```
     pub fn is_enabled(&self) -> bool {
         self.enabled
     }
 
     /// Returns the priority value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHint;
+    ///
+    /// let hint = KeyHint::new("q", "Quit").with_priority(5);
+    /// assert_eq!(hint.priority(), 5);
+    /// ```
     pub fn priority(&self) -> u8 {
         self.priority
     }
@@ -469,16 +505,43 @@ impl KeyHintsState {
     }
 
     /// Returns the layout style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{KeyHintsState, KeyHintsLayout};
+    ///
+    /// let state = KeyHintsState::new().with_layout(KeyHintsLayout::Spaced);
+    /// assert_eq!(state.layout(), KeyHintsLayout::Spaced);
+    /// ```
     pub fn layout(&self) -> KeyHintsLayout {
         self.layout
     }
 
     /// Returns the number of hints.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let state = KeyHintsState::new().hint("q", "Quit").hint("Enter", "Select");
+    /// assert_eq!(state.len(), 2);
+    /// ```
     pub fn len(&self) -> usize {
         self.hints.len()
     }
 
     /// Returns true if there are no hints.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::KeyHintsState;
+    ///
+    /// let state = KeyHintsState::new();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.hints.is_empty()
     }

@@ -142,21 +142,58 @@ impl UsageMetric {
     }
 
     /// Returns the metric label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::UsageMetric;
+    ///
+    /// let metric = UsageMetric::new("CPU", "45%");
+    /// assert_eq!(metric.label(), "CPU");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Returns the metric value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::UsageMetric;
+    ///
+    /// let metric = UsageMetric::new("CPU", "45%");
+    /// assert_eq!(metric.value(), "45%");
+    /// ```
     pub fn value(&self) -> &str {
         &self.value
     }
 
     /// Returns the optional color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::UsageMetric;
+    /// use ratatui::style::Color;
+    ///
+    /// let metric = UsageMetric::new("CPU", "45%").with_color(Color::Green);
+    /// assert_eq!(metric.color(), Some(Color::Green));
+    /// ```
     pub fn color(&self) -> Option<Color> {
         self.color
     }
 
     /// Returns the optional icon.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::UsageMetric;
+    ///
+    /// let metric = UsageMetric::new("CPU", "45%").with_icon("*");
+    /// assert_eq!(metric.icon(), Some("*"));
+    /// ```
     pub fn icon(&self) -> Option<&str> {
         self.icon.as_deref()
     }

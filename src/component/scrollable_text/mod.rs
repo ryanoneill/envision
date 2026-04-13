@@ -213,6 +213,15 @@ impl ScrollableTextState {
     // ---- Scroll accessors ----
 
     /// Returns the current scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ScrollableTextState;
+    ///
+    /// let state = ScrollableTextState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
     }

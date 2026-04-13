@@ -218,6 +218,15 @@ impl SparklineState {
     }
 
     /// Returns the data points.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SparklineState;
+    ///
+    /// let state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
+    /// assert_eq!(state.data(), &[1.0, 2.0, 3.0]);
+    /// ```
     pub fn data(&self) -> &[f64] {
         &self.data
     }
@@ -272,11 +281,29 @@ impl SparklineState {
     }
 
     /// Returns the number of data points.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SparklineState;
+    ///
+    /// let state = SparklineState::with_data(vec![1.0, 2.0, 3.0]);
+    /// assert_eq!(state.len(), 3);
+    /// ```
     pub fn len(&self) -> usize {
         self.data.len()
     }
 
     /// Returns true if there are no data points.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SparklineState;
+    ///
+    /// let state = SparklineState::new();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
@@ -327,6 +354,15 @@ impl SparklineState {
     }
 
     /// Returns the title, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SparklineState;
+    ///
+    /// let state = SparklineState::new().with_title("Memory");
+    /// assert_eq!(state.title(), Some("Memory"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -347,11 +383,29 @@ impl SparklineState {
     }
 
     /// Returns the render direction.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SparklineDirection, SparklineState};
+    ///
+    /// let state = SparklineState::new().with_direction(SparklineDirection::RightToLeft);
+    /// assert_eq!(state.direction(), &SparklineDirection::RightToLeft);
+    /// ```
     pub fn direction(&self) -> &SparklineDirection {
         &self.direction
     }
 
     /// Returns the maximum display points setting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SparklineState;
+    ///
+    /// let state = SparklineState::new().with_max_display_points(50);
+    /// assert_eq!(state.max_display_points(), Some(50));
+    /// ```
     pub fn max_display_points(&self) -> Option<usize> {
         self.max_display_points
     }
@@ -372,6 +426,16 @@ impl SparklineState {
     }
 
     /// Returns the color override, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SparklineState;
+    /// use ratatui::style::Color;
+    ///
+    /// let state = SparklineState::new().with_color(Color::Cyan);
+    /// assert_eq!(state.color(), Some(Color::Cyan));
+    /// ```
     pub fn color(&self) -> Option<Color> {
         self.color
     }

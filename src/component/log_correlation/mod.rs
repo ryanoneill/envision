@@ -63,6 +63,16 @@ pub enum CorrelationLevel {
 
 impl CorrelationLevel {
     /// Returns the display color for this severity level.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CorrelationLevel;
+    /// use ratatui::prelude::Color;
+    ///
+    /// assert_eq!(CorrelationLevel::Error.color(), Color::Red);
+    /// assert_eq!(CorrelationLevel::Info.color(), Color::Blue);
+    /// ```
     pub fn color(&self) -> Color {
         match self {
             CorrelationLevel::Debug => Color::DarkGray,
@@ -73,6 +83,15 @@ impl CorrelationLevel {
     }
 
     /// Returns the short label for this severity level.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CorrelationLevel;
+    ///
+    /// assert_eq!(CorrelationLevel::Warning.label(), "WRN");
+    /// assert_eq!(CorrelationLevel::Debug.label(), "DBG");
+    /// ```
     pub fn label(&self) -> &'static str {
         match self {
             CorrelationLevel::Debug => "DBG",

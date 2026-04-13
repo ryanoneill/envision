@@ -230,6 +230,15 @@ impl<T: Clone> SelectableListState<T> {
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectableListState;
+    ///
+    /// let state = SelectableListState::new(vec!["a", "b", "c"]);
+    /// assert_eq!(state.selected(), Some(0));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
@@ -342,11 +351,29 @@ impl<T: Clone> SelectableListState<T> {
     }
 
     /// Returns the current filter text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectableListState;
+    ///
+    /// let state = SelectableListState::new(vec!["apple".to_string(), "banana".to_string()]);
+    /// assert_eq!(state.filter_text(), "");
+    /// ```
     pub fn filter_text(&self) -> &str {
         &self.filter_text
     }
 
     /// Returns the number of items visible after filtering.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectableListState;
+    ///
+    /// let state = SelectableListState::new(vec!["apple".to_string(), "banana".to_string(), "cherry".to_string()]);
+    /// assert_eq!(state.visible_count(), 3);
+    /// ```
     pub fn visible_count(&self) -> usize {
         self.filtered_indices.len()
     }
@@ -436,12 +463,35 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
     /// Items whose `Display` output contains the filter text (case-insensitive)
     /// are shown. Selection is preserved if the selected item remains visible,
     /// otherwise it moves to the first visible item.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectableListState;
+    ///
+    /// let mut state = SelectableListState::new(vec!["apple".to_string(), "banana".to_string(), "cherry".to_string()]);
+    /// state.set_filter_text("an");
+    /// assert_eq!(state.visible_count(), 1); // only "banana" contains "an"
+    /// assert_eq!(state.filter_text(), "an");
+    /// ```
     pub fn set_filter_text(&mut self, text: &str) {
         self.filter_text = text.to_string();
         self.apply_filter();
     }
 
     /// Clears the filter, showing all items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SelectableListState;
+    ///
+    /// let mut state = SelectableListState::new(vec!["apple".to_string(), "banana".to_string()]);
+    /// state.set_filter_text("apple");
+    /// assert_eq!(state.visible_count(), 1);
+    /// state.clear_filter();
+    /// assert_eq!(state.visible_count(), 2);
+    /// ```
     pub fn clear_filter(&mut self) {
         self.filter_text.clear();
         self.apply_filter();
@@ -483,6 +533,16 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
     }
 
     /// Updates the selectable list state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SelectableListState, SelectableListMessage, SelectableListOutput};
+    ///
+    /// let mut state = SelectableListState::new(vec!["a".to_string(), "b".to_string()]);
+    /// let output = state.update(SelectableListMessage::Down);
+    /// assert_eq!(output, Some(SelectableListOutput::SelectionChanged(1)));
+    /// ```
     pub fn update(&mut self, msg: SelectableListMessage) -> Option<SelectableListOutput<T>> {
         SelectableList::<T>::update(self, msg)
     }

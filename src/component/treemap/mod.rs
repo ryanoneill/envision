@@ -542,6 +542,15 @@ impl TreemapState {
     }
 
     /// Returns the title, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreemapState;
+    ///
+    /// let state = TreemapState::new().with_title("Disk Usage");
+    /// assert_eq!(state.title(), Some("Disk Usage"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -562,6 +571,15 @@ impl TreemapState {
     }
 
     /// Returns whether labels are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreemapState;
+    ///
+    /// let state = TreemapState::new();
+    /// assert!(state.show_labels());
+    /// ```
     pub fn show_labels(&self) -> bool {
         self.show_labels
     }
@@ -582,6 +600,15 @@ impl TreemapState {
     }
 
     /// Returns whether values are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreemapState;
+    ///
+    /// let state = TreemapState::new();
+    /// assert!(!state.show_values());
+    /// ```
     pub fn show_values(&self) -> bool {
         self.show_values
     }
@@ -609,6 +636,21 @@ impl TreemapState {
     // ---- Instance methods ----
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreemapMessage, TreemapNode, TreemapOutput, TreemapState};
+    ///
+    /// let root = TreemapNode::new("root", 0.0)
+    ///     .with_child(
+    ///         TreemapNode::new("parent", 0.0)
+    ///             .with_child(TreemapNode::new("leaf", 10.0)),
+    ///     );
+    /// let mut state = TreemapState::new().with_root(root);
+    /// let output = state.update(TreemapMessage::ZoomIn);
+    /// assert_eq!(output, Some(TreemapOutput::ZoomedIn("parent".to_string())));
+    /// ```
     pub fn update(&mut self, msg: TreemapMessage) -> Option<TreemapOutput> {
         Treemap::update(self, msg)
     }

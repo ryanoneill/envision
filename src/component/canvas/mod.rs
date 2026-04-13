@@ -432,11 +432,29 @@ impl CanvasState {
     }
 
     /// Returns the x-axis bounds.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CanvasState;
+    ///
+    /// let state = CanvasState::new().with_x_bounds(0.0, 50.0);
+    /// assert_eq!(state.x_bounds(), [0.0, 50.0]);
+    /// ```
     pub fn x_bounds(&self) -> [f64; 2] {
         self.x_bounds
     }
 
     /// Returns the y-axis bounds.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CanvasState;
+    ///
+    /// let state = CanvasState::new().with_y_bounds(0.0, 200.0);
+    /// assert_eq!(state.y_bounds(), [0.0, 200.0]);
+    /// ```
     pub fn y_bounds(&self) -> [f64; 2] {
         self.y_bounds
     }
@@ -472,21 +490,59 @@ impl CanvasState {
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CanvasState;
+    ///
+    /// let state = CanvasState::new().with_title("Overview");
+    /// assert_eq!(state.title(), Some("Overview"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CanvasState;
+    ///
+    /// let mut state = CanvasState::new();
+    /// state.set_title(Some("Updated".to_string()));
+    /// assert_eq!(state.title(), Some("Updated"));
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
 
     /// Returns the marker type.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{CanvasMarker, CanvasState};
+    ///
+    /// let state = CanvasState::new().with_marker(CanvasMarker::Dot);
+    /// assert_eq!(state.marker(), &CanvasMarker::Dot);
+    /// ```
     pub fn marker(&self) -> &CanvasMarker {
         &self.marker
     }
 
     /// Sets the marker type.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{CanvasMarker, CanvasState};
+    ///
+    /// let mut state = CanvasState::new();
+    /// state.set_marker(CanvasMarker::Block);
+    /// assert_eq!(state.marker(), &CanvasMarker::Block);
+    /// ```
     pub fn set_marker(&mut self, marker: CanvasMarker) {
         self.marker = marker;
     }
@@ -494,6 +550,19 @@ impl CanvasState {
     // ---- Instance methods ----
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{CanvasState, CanvasMessage, CanvasShape};
+    /// use ratatui::style::Color;
+    ///
+    /// let mut state = CanvasState::new();
+    /// state.update(CanvasMessage::AddShape(CanvasShape::Circle {
+    ///     x: 50.0, y: 50.0, radius: 10.0, color: Color::Cyan,
+    /// }));
+    /// assert_eq!(state.shapes().len(), 1);
+    /// ```
     pub fn update(&mut self, msg: CanvasMessage) -> Option<()> {
         Canvas::update(self, msg)
     }

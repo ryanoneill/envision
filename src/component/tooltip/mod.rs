@@ -260,16 +260,43 @@ impl TooltipState {
     }
 
     /// Returns the tooltip content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    ///
+    /// let state = TooltipState::new("Click to submit");
+    /// assert_eq!(state.content(), "Click to submit");
+    /// ```
     pub fn content(&self) -> &str {
         &self.content
     }
 
     /// Returns the tooltip title, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TooltipState;
+    ///
+    /// let state = TooltipState::new("Content").with_title("Info");
+    /// assert_eq!(state.title(), Some("Info"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
     /// Returns the preferred position.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TooltipState, TooltipPosition};
+    ///
+    /// let state = TooltipState::new("Content").with_position(TooltipPosition::Above);
+    /// assert_eq!(state.position(), TooltipPosition::Above);
+    /// ```
     pub fn position(&self) -> TooltipPosition {
         self.position
     }

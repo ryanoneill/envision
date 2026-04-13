@@ -263,6 +263,25 @@ impl<T: TableRow> DataGridState<T> {
     }
 
     /// Returns the currently selected row index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, DataGridState, TableRow};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected_row
     }
@@ -380,6 +399,25 @@ impl<T: TableRow> DataGridState<T> {
     }
 
     /// Returns the currently selected column index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, DataGridState, TableRow};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// assert_eq!(state.selected_column(), 0);
+    /// ```
     pub fn selected_column(&self) -> usize {
         self.selected_column
     }
@@ -568,6 +606,26 @@ impl<T: TableRow> DataGridState<T> {
 
 impl<T: TableRow + 'static> DataGridState<T> {
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, DataGridMessage, DataGridOutput, DataGridState, TableRow};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = DataGridState::new(
+    ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
+    ///     vec![Column::new("Name", Constraint::Min(10))],
+    /// );
+    /// let output = state.update(DataGridMessage::Down);
+    /// assert_eq!(output, Some(DataGridOutput::SelectionChanged(1)));
+    /// ```
     pub fn update(&mut self, msg: DataGridMessage) -> Option<DataGridOutput<T>> {
         DataGrid::<T>::update(self, msg)
     }

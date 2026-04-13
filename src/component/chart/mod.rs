@@ -201,6 +201,18 @@ pub struct VerticalLine {
 
 impl VerticalLine {
     /// Creates a new vertical reference line.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::VerticalLine;
+    /// use ratatui::style::Color;
+    ///
+    /// let vline = VerticalLine::new(500.0, "Deploy", Color::Green);
+    /// assert_eq!(vline.x_value, 500.0);
+    /// assert_eq!(vline.label, "Deploy");
+    /// assert_eq!(vline.color, Color::Green);
+    /// ```
     pub fn new(x_value: f64, label: impl Into<String>, color: Color) -> Self {
         Self {
             x_value,
@@ -402,6 +414,17 @@ impl ChartState {
     }
 
     /// Creates a horizontal bar chart state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartKind, ChartState, DataSeries};
+    ///
+    /// let state = ChartState::bar_horizontal(vec![
+    ///     DataSeries::new("Memory", vec![512.0, 768.0, 1024.0]),
+    /// ]);
+    /// assert_eq!(state.kind(), &ChartKind::BarHorizontal);
+    /// ```
     pub fn bar_horizontal(series: Vec<DataSeries>) -> Self {
         Self {
             series: Self::apply_palette_colors(series),
@@ -487,30 +510,80 @@ impl ChartState {
     }
 
     /// Sets the Y-axis label (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0])])
+    ///     .with_y_label("Percent");
+    /// assert_eq!(state.y_label(), Some("Percent"));
+    /// ```
     pub fn with_y_label(mut self, label: impl Into<String>) -> Self {
         self.y_label = Some(label.into());
         self
     }
 
     /// Sets whether to show the legend (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0])])
+    ///     .with_show_legend(false);
+    /// assert!(!state.show_legend());
+    /// ```
     pub fn with_show_legend(mut self, show: bool) -> Self {
         self.show_legend = show;
         self
     }
 
     /// Sets the maximum display points for line charts (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("Temp", vec![20.0, 22.0])])
+    ///     .with_max_display_points(200);
+    /// assert_eq!(state.max_display_points(), 200);
+    /// ```
     pub fn with_max_display_points(mut self, max: usize) -> Self {
         self.max_display_points = max;
         self
     }
 
     /// Sets the bar width (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::bar_vertical(vec![DataSeries::new("Sales", vec![10.0])])
+    ///     .with_bar_width(5);
+    /// assert_eq!(state.bar_width(), 5);
+    /// ```
     pub fn with_bar_width(mut self, width: u16) -> Self {
         self.bar_width = width.max(1);
         self
     }
 
     /// Sets the bar gap (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::bar_vertical(vec![DataSeries::new("Sales", vec![10.0])])
+    ///     .with_bar_gap(2);
+    /// assert_eq!(state.bar_gap(), 2);
+    /// ```
     pub fn with_bar_gap(mut self, gap: u16) -> Self {
         self.bar_gap = gap;
         self
@@ -640,6 +713,16 @@ impl ChartState {
     }
 
     /// Sets whether to show grid lines at tick positions (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let state = ChartState::line(vec![DataSeries::new("CPU", vec![50.0])])
+    ///     .with_grid(true);
+    /// assert!(state.show_grid());
+    /// ```
     pub fn with_grid(mut self, show: bool) -> Self {
         self.show_grid = show;
         self
