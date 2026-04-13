@@ -14,6 +14,8 @@ pub enum LineInputMessage {
     DeleteWordBack,
     /// Delete the word after the cursor.
     DeleteWordForward,
+    /// Delete from the cursor to the end of the buffer.
+    DeleteToEnd,
     /// Clear the buffer.
     Clear,
     /// Set the buffer to the given value.

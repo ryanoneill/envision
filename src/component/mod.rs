@@ -98,7 +98,7 @@ mod dropdown;
 #[cfg(feature = "input-components")]
 mod input_field;
 #[cfg(feature = "input-components")]
-mod line_input;
+pub mod line_input;
 #[cfg(feature = "input-components")]
 mod number_input;
 #[cfg(feature = "input-components")]
