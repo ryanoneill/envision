@@ -250,6 +250,10 @@ impl ConversationViewState {
     /// When enabled and the `markdown` feature is active, text blocks are
     /// rendered as markdown (headings, bold, italic, code, lists, etc.)
     /// instead of plain text.
+    ///
+    /// **Note:** This has no effect unless the `markdown` Cargo feature is
+    /// enabled. Add `envision = { features = ["markdown"] }` to your
+    /// `Cargo.toml`, or use the `full` feature (included in defaults).
     pub fn with_markdown(mut self, enabled: bool) -> Self {
         self.markdown_enabled = enabled;
         self

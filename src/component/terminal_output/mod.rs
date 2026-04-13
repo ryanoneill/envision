@@ -707,7 +707,6 @@ impl Component for TerminalOutput {
 
         let key = event.as_key()?;
         let ctrl = key.modifiers.ctrl();
-        let shift = key.modifiers.shift();
 
         match key.code {
             Key::Up | Key::Char('k') if !ctrl => Some(TerminalOutputMessage::ScrollUp),
@@ -716,10 +715,9 @@ impl Component for TerminalOutput {
             Key::PageDown => Some(TerminalOutputMessage::PageDown(10)),
             Key::Char('u') if ctrl => Some(TerminalOutputMessage::PageUp(10)),
             Key::Char('d') if ctrl => Some(TerminalOutputMessage::PageDown(10)),
-            Key::Home | Key::Char('g') if !shift => Some(TerminalOutputMessage::Home),
-            Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
-                Some(TerminalOutputMessage::End)
-            }
+            Key::Char('g') if key.modifiers.shift() => Some(TerminalOutputMessage::End),
+            Key::Home | Key::Char('g') => Some(TerminalOutputMessage::Home),
+            Key::End => Some(TerminalOutputMessage::End),
             Key::Char('a') if !ctrl => Some(TerminalOutputMessage::ToggleAutoScroll),
             Key::Char('n') if !ctrl => Some(TerminalOutputMessage::ToggleLineNumbers),
             _ => None,

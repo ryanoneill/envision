@@ -381,7 +381,6 @@ impl Component for StyledText {
 
         let key = event.as_key()?;
         let ctrl = key.modifiers.ctrl();
-        let shift = key.modifiers.shift();
 
         match key.code {
             Key::Up | Key::Char('k') if !ctrl => Some(StyledTextMessage::ScrollUp),
@@ -390,10 +389,9 @@ impl Component for StyledText {
             Key::PageDown => Some(StyledTextMessage::PageDown(10)),
             Key::Char('u') if ctrl => Some(StyledTextMessage::PageUp(10)),
             Key::Char('d') if ctrl => Some(StyledTextMessage::PageDown(10)),
-            Key::Home | Key::Char('g') if !shift => Some(StyledTextMessage::Home),
-            Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
-                Some(StyledTextMessage::End)
-            }
+            Key::Char('g') if key.modifiers.shift() => Some(StyledTextMessage::End),
+            Key::Home | Key::Char('g') => Some(StyledTextMessage::Home),
+            Key::End => Some(StyledTextMessage::End),
             _ => None,
         }
     }

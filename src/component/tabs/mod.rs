@@ -5,6 +5,8 @@
 //! State is stored in [`TabsState<T>`], updated via [`TabsMessage`], and produces
 //! [`TabsOutput`].
 //!
+//! See also [`TabBar`](super::TabBar) for a richer variant with closable tabs,
+//! modified indicators, and horizontal scrolling.
 //!
 //! # Example
 //!

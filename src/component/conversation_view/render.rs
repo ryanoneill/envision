@@ -145,7 +145,7 @@ pub(super) fn build_display_lines<'a>(
     messages: &[ConversationMessage],
     state: &ConversationViewState,
     width: usize,
-    _theme: &Theme,
+    theme: &Theme,
 ) -> Vec<Line<'a>> {
     let mut lines = Vec::new();
 
@@ -153,7 +153,7 @@ pub(super) fn build_display_lines<'a>(
         if i > 0 {
             lines.push(Line::from(""));
         }
-        format_message(msg, state, width, &mut lines);
+        format_message(msg, state, width, theme, &mut lines);
     }
 
     lines
@@ -163,6 +163,7 @@ fn format_message<'a>(
     msg: &ConversationMessage,
     state: &ConversationViewState,
     width: usize,
+    theme: &Theme,
     lines: &mut Vec<Line<'a>>,
 ) {
     let role = msg.role();
@@ -202,7 +203,7 @@ fn format_message<'a>(
 
     let indent = if state.show_role_labels { "  " } else { "" };
     for block in msg.blocks() {
-        format_block(block, state, width, indent, role_style, lines);
+        format_block(block, state, width, indent, role_style, theme, lines);
     }
 }
 
@@ -212,6 +213,7 @@ fn format_block<'a>(
     width: usize,
     indent: &str,
     role_style: Style,
+    theme: &Theme,
     lines: &mut Vec<Line<'a>>,
 ) {
     match block {
@@ -222,6 +224,7 @@ fn format_block<'a>(
                 indent,
                 role_style,
                 state.markdown_enabled,
+                theme,
                 lines,
             );
         }
@@ -308,6 +311,7 @@ fn format_text_block<'a>(
     indent: &str,
     style: Style,
     markdown_enabled: bool,
+    theme: &Theme,
     lines: &mut Vec<Line<'a>>,
 ) {
     if text.is_empty() {
@@ -317,13 +321,12 @@ fn format_text_block<'a>(
 
     #[cfg(feature = "markdown")]
     if markdown_enabled {
-        let theme = crate::theme::Theme::default();
         let indent_display_width = UnicodeWidthStr::width(indent);
         let available_width = width.saturating_sub(indent_display_width);
         let md_lines = crate::component::markdown_renderer::render::render_markdown(
             text,
             available_width as u16,
-            &theme,
+            theme,
         );
         for mut md_line in md_lines {
             for span in md_line.spans.iter_mut() {

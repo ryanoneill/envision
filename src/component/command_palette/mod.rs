@@ -7,6 +7,9 @@
 //!
 //! Implements [`Toggleable`].
 //!
+//! See also [`SearchableList`](super::SearchableList) for an inline
+//! (non-overlay) searchable list.
+//!
 //! # Example
 //!
 //! ```rust

@@ -336,10 +336,9 @@ impl Component for MarkdownRenderer {
             Key::PageDown => Some(MarkdownRendererMessage::PageDown(10)),
             Key::Char('u') if ctrl => Some(MarkdownRendererMessage::PageUp(10)),
             Key::Char('d') if ctrl => Some(MarkdownRendererMessage::PageDown(10)),
-            Key::Home | Key::Char('g') if !shift => Some(MarkdownRendererMessage::Home),
-            Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
-                Some(MarkdownRendererMessage::End)
-            }
+            Key::Char('g') if key.modifiers.shift() => Some(MarkdownRendererMessage::End),
+            Key::Home | Key::Char('g') => Some(MarkdownRendererMessage::Home),
+            Key::End => Some(MarkdownRendererMessage::End),
             Key::Char('s') if !ctrl && !shift => Some(MarkdownRendererMessage::ToggleSource),
             _ => None,
         }
