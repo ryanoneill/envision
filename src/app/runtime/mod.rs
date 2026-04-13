@@ -66,7 +66,7 @@
 
 mod builder;
 mod config;
-mod terminal;
+pub(crate) mod terminal;
 mod virtual_terminal;
 pub use builder::RuntimeBuilder;
 pub use config::{RuntimeConfig, TerminalHook};

@@ -150,6 +150,14 @@ pub mod theme;
 pub(crate) mod undo;
 pub mod util;
 
+/// Terminal lifecycle utilities.
+///
+/// Provides `restore()` for cleaning up terminal state in panic
+/// handlers or other non-runtime cleanup paths.
+pub mod terminal {
+    pub use crate::app::restore_terminal as restore;
+}
+
 // Re-export commonly used types
 pub use adapter::{DualBackend, DualBackendBuilder};
 pub use annotation::{
