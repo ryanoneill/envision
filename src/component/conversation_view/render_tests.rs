@@ -77,7 +77,7 @@ fn test_render_with_title() {
 
 #[test]
 fn test_render_with_timestamps() {
-    let mut state = ConversationViewState::new().with_timestamps(true);
+    let mut state = ConversationViewState::new().with_show_timestamps(true);
     state.push_message(
         ConversationMessage::new(ConversationRole::User, "Hello").with_timestamp("14:30"),
     );
@@ -94,7 +94,7 @@ fn test_render_with_timestamps() {
 
 #[test]
 fn test_render_without_role_labels() {
-    let mut state = ConversationViewState::new().with_role_labels(false);
+    let mut state = ConversationViewState::new().with_show_role_labels(false);
     state.push_user("Hello");
     state.push_assistant("Hi!");
     let (mut terminal, theme) = test_utils::setup_render(60, 20);

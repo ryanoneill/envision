@@ -132,10 +132,10 @@ impl LogViewerState {
     /// ```rust
     /// use envision::component::LogViewerState;
     ///
-    /// let state = LogViewerState::new().with_timestamps(true);
+    /// let state = LogViewerState::new().with_show_timestamps(true);
     /// assert!(state.show_timestamps());
     /// ```
-    pub fn with_timestamps(mut self, show: bool) -> Self {
+    pub fn with_show_timestamps(mut self, show: bool) -> Self {
         self.show_timestamps = show;
         self
     }
@@ -183,10 +183,10 @@ impl LogViewerState {
     /// ```rust
     /// use envision::component::LogViewerState;
     ///
-    /// let state = LogViewerState::new().with_regex(true);
+    /// let state = LogViewerState::new().with_use_regex(true);
     /// assert!(state.use_regex());
     /// ```
-    pub fn with_regex(mut self, use_regex: bool) -> Self {
+    pub fn with_use_regex(mut self, use_regex: bool) -> Self {
         self.use_regex = use_regex;
         self
     }
@@ -275,7 +275,7 @@ impl LogViewerState {
     /// ```rust
     /// use envision::component::LogViewerState;
     ///
-    /// let mut state = LogViewerState::new().with_timestamps(true);
+    /// let mut state = LogViewerState::new().with_show_timestamps(true);
     /// let id = state.push_info_with_timestamp("Server started", "12:00:00");
     /// assert_eq!(state.len(), 1);
     /// ```
@@ -520,7 +520,7 @@ impl LogViewerState {
     /// let state = LogViewerState::new();
     /// assert!(!state.show_timestamps()); // disabled by default
     ///
-    /// let state = LogViewerState::new().with_timestamps(true);
+    /// let state = LogViewerState::new().with_show_timestamps(true);
     /// assert!(state.show_timestamps());
     /// ```
     pub fn show_timestamps(&self) -> bool {

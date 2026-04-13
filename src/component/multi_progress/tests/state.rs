@@ -20,8 +20,8 @@ fn test_state_with_max_visible() {
 }
 
 #[test]
-fn test_state_with_auto_remove() {
-    let state = MultiProgressState::new().with_auto_remove(true);
+fn test_state_with_auto_remove_completed() {
+    let state = MultiProgressState::new().with_auto_remove_completed(true);
     assert!(state.auto_remove_completed());
 }
 
@@ -32,8 +32,8 @@ fn test_state_with_title() {
 }
 
 #[test]
-fn test_state_with_percentages() {
-    let state = MultiProgressState::new().with_percentages(false);
+fn test_state_with_show_percentages() {
+    let state = MultiProgressState::new().with_show_percentages(false);
     assert!(!state.show_percentages());
 }
 
@@ -312,9 +312,9 @@ fn test_len_and_is_empty() {
 fn test_builder_chaining() {
     let state = MultiProgressState::new()
         .with_max_visible(5)
-        .with_auto_remove(true)
+        .with_auto_remove_completed(true)
         .with_title("Downloads")
-        .with_percentages(false);
+        .with_show_percentages(false);
 
     assert_eq!(state.max_visible(), 5);
     assert!(state.auto_remove_completed());

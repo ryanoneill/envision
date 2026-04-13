@@ -448,31 +448,31 @@ fn test_tab_bar_add_close_navigate() {
     let mut state = TabBarState::new(tabs);
 
     assert_eq!(state.len(), 3);
-    assert_eq!(state.active_index(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.active_tab().map(|t| t.label()), Some("main.rs"));
 
     // Navigate to next tab
     let output = TabBar::update(&mut state, TabBarMessage::NextTab);
     assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
-    assert_eq!(state.active_index(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.active_tab().map(|t| t.label()), Some("lib.rs"));
     assert!(state.active_tab().map(|t| t.modified()).unwrap_or(false));
 
     // Navigate to last tab
     TabBar::update(&mut state, TabBarMessage::NextTab);
-    assert_eq!(state.active_index(), Some(2));
+    assert_eq!(state.selected_index(), Some(2));
     assert_eq!(state.active_tab().map(|t| t.label()), Some("test.rs"));
 
     // NextTab at last position does not wrap - stays at last
     let output = TabBar::update(&mut state, TabBarMessage::NextTab);
     assert_eq!(output, None);
-    assert_eq!(state.active_index(), Some(2));
+    assert_eq!(state.selected_index(), Some(2));
 
     // PrevTab at first position does not wrap - stays at first
     TabBar::update(&mut state, TabBarMessage::First);
     let output = TabBar::update(&mut state, TabBarMessage::PrevTab);
     assert_eq!(output, None);
-    assert_eq!(state.active_index(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 
     // Navigate to last tab for further testing
     TabBar::update(&mut state, TabBarMessage::Last);
@@ -484,7 +484,7 @@ fn test_tab_bar_add_close_navigate() {
     );
     assert_eq!(output, Some(TabBarOutput::TabAdded(3)));
     assert_eq!(state.len(), 4);
-    assert_eq!(state.active_index(), Some(3)); // new tab becomes active
+    assert_eq!(state.selected_index(), Some(3)); // new tab becomes active
 
     // Close the closable tab at index 2 (test.rs)
     let output = TabBar::update(&mut state, TabBarMessage::CloseTab(2));
@@ -493,16 +493,16 @@ fn test_tab_bar_add_close_navigate() {
 
     // Jump to first
     TabBar::update(&mut state, TabBarMessage::First);
-    assert_eq!(state.active_index(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 
     // Jump to last
     TabBar::update(&mut state, TabBarMessage::Last);
-    assert_eq!(state.active_index(), Some(2));
+    assert_eq!(state.selected_index(), Some(2));
 
     // Select by index
     let output = TabBar::update(&mut state, TabBarMessage::SelectTab(1));
     assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
-    assert_eq!(state.active_index(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
 
     // Render
     let backend = CaptureBackend::new(60, 3);

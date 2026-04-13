@@ -31,7 +31,7 @@ impl App for ConversationApp {
     fn init() -> (State, Command<Msg>) {
         let mut conversation = ConversationViewState::new()
             .with_title("AI Conversation")
-            .with_timestamps(true);
+            .with_show_timestamps(true);
 
         // System message
         conversation.push_message(

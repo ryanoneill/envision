@@ -124,8 +124,8 @@ fn test_with_context_lines() {
 }
 
 #[test]
-fn test_with_show_line_numbers() {
-    let state = DiffViewerState::new().with_show_line_numbers(false);
+fn test_with_line_numbers() {
+    let state = DiffViewerState::new().with_line_numbers(false);
     assert!(!state.show_line_numbers);
 }
 
@@ -798,7 +798,7 @@ fn test_view_side_by_side() {
 
 #[test]
 fn test_view_with_line_numbers() {
-    let state = DiffViewerState::from_diff(sample_diff_text()).with_show_line_numbers(true);
+    let state = DiffViewerState::from_diff(sample_diff_text()).with_line_numbers(true);
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {
@@ -810,7 +810,7 @@ fn test_view_with_line_numbers() {
 
 #[test]
 fn test_view_without_line_numbers() {
-    let state = DiffViewerState::from_diff(sample_diff_text()).with_show_line_numbers(false);
+    let state = DiffViewerState::from_diff(sample_diff_text()).with_line_numbers(false);
     let (mut terminal, theme) = test_utils::setup_render(60, 12);
     terminal
         .draw(|frame| {

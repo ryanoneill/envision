@@ -37,14 +37,14 @@ fn test_with_max_messages() {
 }
 
 #[test]
-fn test_with_timestamps() {
-    let state = ConversationViewState::new().with_timestamps(true);
+fn test_with_show_timestamps() {
+    let state = ConversationViewState::new().with_show_timestamps(true);
     assert!(state.show_timestamps());
 }
 
 #[test]
-fn test_with_role_labels() {
-    let state = ConversationViewState::new().with_role_labels(false);
+fn test_with_show_role_labels() {
+    let state = ConversationViewState::new().with_show_role_labels(false);
     assert!(!state.show_role_labels());
 }
 

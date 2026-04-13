@@ -221,10 +221,10 @@ impl ConversationViewState {
     /// ```rust
     /// use envision::component::ConversationViewState;
     ///
-    /// let state = ConversationViewState::new().with_timestamps(true);
+    /// let state = ConversationViewState::new().with_show_timestamps(true);
     /// assert!(state.show_timestamps());
     /// ```
-    pub fn with_timestamps(mut self, show: bool) -> Self {
+    pub fn with_show_timestamps(mut self, show: bool) -> Self {
         self.show_timestamps = show;
         self
     }
@@ -236,10 +236,10 @@ impl ConversationViewState {
     /// ```rust
     /// use envision::component::ConversationViewState;
     ///
-    /// let state = ConversationViewState::new().with_role_labels(false);
+    /// let state = ConversationViewState::new().with_show_role_labels(false);
     /// assert!(!state.show_role_labels());
     /// ```
-    pub fn with_role_labels(mut self, show: bool) -> Self {
+    pub fn with_show_role_labels(mut self, show: bool) -> Self {
         self.show_role_labels = show;
         self
     }

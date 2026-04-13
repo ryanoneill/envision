@@ -157,8 +157,8 @@ fn test_default_regex_disabled() {
 }
 
 #[test]
-fn test_with_regex_builder() {
-    let state = LogViewerState::new().with_regex(true);
+fn test_with_use_regex_builder() {
+    let state = LogViewerState::new().with_use_regex(true);
     assert!(state.use_regex());
 }
 

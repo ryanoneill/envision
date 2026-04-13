@@ -318,9 +318,9 @@ impl DiffViewerState {
     /// ```rust
     /// use envision::component::DiffViewerState;
     ///
-    /// let state = DiffViewerState::new().with_show_line_numbers(false);
+    /// let state = DiffViewerState::new().with_line_numbers(false);
     /// ```
-    pub fn with_show_line_numbers(mut self, show: bool) -> Self {
+    pub fn with_line_numbers(mut self, show: bool) -> Self {
         self.show_line_numbers = show;
         self
     }

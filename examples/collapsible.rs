@@ -73,7 +73,7 @@ impl App for CollapsibleApp {
             }
         }
 
-        let expanded_label = if state.collapsible.expanded() {
+        let expanded_label = if state.collapsible.is_expanded() {
             "expanded"
         } else {
             "collapsed"
