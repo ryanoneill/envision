@@ -1,6 +1,6 @@
 [package]
 name = "envision"
-version = "0.14.1"
+version = "0.15.0"
 edition = "2024"
 rust-version = "1.85"
 description = "A ratatui framework for collaborative TUI development with headless testing support"
