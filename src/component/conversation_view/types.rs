@@ -1,59 +1,15 @@
 //! Core types for the ConversationView component.
 //!
-//! Contains [`ConversationRole`], [`MessageBlock`], [`ConversationMessage`],
-//! and [`MessageSource`] which model an AI conversation with structured
-//! message content including text, code blocks, tool use, thinking, and errors.
+//! Contains [`ConversationRole`], [`MessageBlock`], and [`ConversationMessage`]
+//! which model an AI conversation with structured message content including
+//! text, code blocks, tool use, thinking, and errors.
 
 use ratatui::style::Color;
 
-/// A source of conversation messages for rendering.
-///
-/// This trait allows [`super::ConversationView::view_from()`] to render messages
-/// from an external source without the view owning a copy. This eliminates
-/// the "dual-store" pattern where an application keeps its own canonical
-/// message list and also pushes copies into [`super::ConversationViewState`].
-///
-/// # Provided implementations
-///
-/// - `Vec<ConversationMessage>` -- render from a plain vector.
-/// - [`super::ConversationViewState`] -- delegates to the state's internal
-///   message list, providing backwards compatibility.
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::{
-///     ConversationMessage, ConversationRole, ConversationViewState, MessageSource,
-/// };
-///
-/// // Vec implements MessageSource
-/// let messages = vec![
-///     ConversationMessage::new(ConversationRole::User, "Hello"),
-///     ConversationMessage::new(ConversationRole::Assistant, "Hi there!"),
-/// ];
-/// assert_eq!(messages.message_count(), 2);
-///
-/// // ConversationViewState also implements MessageSource
-/// let mut state = ConversationViewState::new();
-/// state.push_user("Hello");
-/// assert_eq!(state.source_messages().len(), 1);
-/// ```
-pub trait MessageSource {
+/// Internal trait for accessing messages from a state type.
+pub(crate) trait MessageSource {
     /// Returns the messages to render.
     fn source_messages(&self) -> &[ConversationMessage];
-
-    /// Returns the number of messages.
-    ///
-    /// The default implementation delegates to `source_messages().len()`.
-    fn message_count(&self) -> usize {
-        self.source_messages().len()
-    }
-}
-
-impl MessageSource for Vec<ConversationMessage> {
-    fn source_messages(&self) -> &[ConversationMessage] {
-        self
-    }
 }
 
 /// An opaque handle to a conversation message for streaming updates.

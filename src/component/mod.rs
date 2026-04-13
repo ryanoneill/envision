@@ -346,7 +346,7 @@ pub use chart::{
 #[cfg(feature = "compound-components")]
 pub use conversation_view::{
     ConversationMessage, ConversationRole, ConversationView, ConversationViewMessage,
-    ConversationViewOutput, ConversationViewState, MessageBlock, MessageHandle, MessageSource,
+    ConversationViewOutput, ConversationViewState, MessageBlock, MessageHandle,
 };
 #[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
