@@ -18,6 +18,41 @@ use super::Runtime;
 use super::config::RuntimeConfig;
 use crate::app::command::Command;
 use crate::app::model::App;
+
+/// Restores the terminal to its normal state.
+///
+/// Disables raw mode, leaves the alternate screen, disables mouse capture,
+/// and shows the cursor. Call this in panic handlers or cleanup code to
+/// ensure the terminal is left in a usable state.
+///
+/// This is a standalone function that does not require a [`Runtime`]
+/// instance — use it when you need terminal cleanup outside the normal
+/// runtime lifecycle (e.g., in a `std::panic::set_hook` handler).
+///
+/// # Errors
+///
+/// Returns an error if any of the terminal cleanup operations fail.
+/// Errors are generally non-fatal — the terminal may already be in the
+/// correct state.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// // Install a panic hook that restores the terminal
+/// let original_hook = std::panic::take_hook();
+/// std::panic::set_hook(Box::new(move |info| {
+///     let _ = envision::terminal::restore();
+///     original_hook(info);
+/// }));
+/// ```
+pub fn restore_terminal() -> crate::error::Result<()> {
+    disable_raw_mode()?;
+    io::stdout().execute(LeaveAlternateScreen)?;
+    io::stdout().execute(DisableMouseCapture)?;
+    // Show cursor using crossterm directly (no Terminal instance needed)
+    crossterm::execute!(io::stdout(), crossterm::cursor::Show)?;
+    Ok(())
+}
 use crate::overlay::OverlayAction;
 
 // =============================================================================
