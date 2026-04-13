@@ -64,9 +64,11 @@
 //!
 //! Events are injected programmatically and the display can be inspected.
 
+mod builder;
 mod config;
 mod terminal;
 mod virtual_terminal;
+pub use builder::RuntimeBuilder;
 pub use config::{RuntimeConfig, TerminalHook};
 
 use std::io::Stdout;

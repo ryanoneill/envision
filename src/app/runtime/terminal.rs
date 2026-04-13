@@ -335,7 +335,9 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// - Enters alternate screen
     /// - Enables mouse capture
     /// - Runs the `on_setup` hook if configured
-    fn setup_terminal(config: &RuntimeConfig) -> error::Result<CrosstermBackend<Stdout>> {
+    pub(super) fn setup_terminal(
+        config: &RuntimeConfig,
+    ) -> error::Result<CrosstermBackend<Stdout>> {
         enable_raw_mode()?;
         let mut stdout = io::stdout();
         stdout.execute(EnterAlternateScreen)?;

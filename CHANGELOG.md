@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `RuntimeBuilder<A, B>` builder pattern for constructing `Runtime` instances.
+  Three entry points: `Runtime::builder(backend)` for any backend,
+  `Runtime::terminal_builder()` for real terminals, and
+  `Runtime::virtual_builder(w, h)` for virtual terminals. Supports
+  `.state()`, `.config()`, `.tick_rate()`, `.frame_rate()`,
+  `.max_messages()`, and `.channel_capacity()` builder methods.
+  Existing constructors are preserved for backward compatibility.
+
 ## [0.14.1] - 2026-04-12
 
 ### Fixed
