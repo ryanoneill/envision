@@ -37,9 +37,8 @@
 mod render;
 pub mod types;
 
-pub use types::{
-    ConversationMessage, ConversationRole, MessageBlock, MessageHandle, MessageSource,
-};
+use types::MessageSource;
+pub use types::{ConversationMessage, ConversationRole, MessageBlock, MessageHandle};
 
 use std::collections::{HashMap, HashSet};
 use std::marker::PhantomData;
@@ -917,71 +916,6 @@ impl Component for ConversationView {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
-        );
-
-        crate::annotation::with_registry(|reg| {
-            reg.close();
-        });
-    }
-}
-
-impl ConversationView {
-    /// Renders the conversation using messages from an external [`MessageSource`]
-    /// instead of the messages stored in the state.
-    ///
-    /// This is the key method for avoiding the "dual-store" pattern: your
-    /// application can own the canonical message list and pass it directly
-    /// for rendering, while [`ConversationViewState`] only tracks scroll
-    /// position, collapsed blocks, and display configuration.
-    ///
-    /// The `state` parameter still provides all non-message configuration
-    /// (scroll offset, collapsed blocks, auto-scroll, title, etc.).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{
-    ///     ConversationMessage,
-    ///     ConversationRole,
-    ///     ConversationView,
-    ///     ConversationViewState,
-    ///     MessageSource,
-    /// };
-    ///
-    /// // Application owns the canonical message list
-    /// let messages = vec![
-    ///     ConversationMessage::new(ConversationRole::User, "Hello"),
-    ///     ConversationMessage::new(ConversationRole::Assistant, "Hi!"),
-    /// ];
-    /// assert_eq!(messages.source_messages().len(), 2);
-    ///
-    /// // State tracks only view configuration (scroll, collapsed blocks, etc.)
-    /// let state = ConversationViewState::new();
-    /// // Call ConversationView::view_from(&messages, &state, &mut ctx)
-    /// // to render from the external source without mirroring.
-    /// ```
-    pub fn view_from(
-        source: &dyn MessageSource,
-        state: &ConversationViewState,
-        ctx: &mut RenderContext<'_, '_>,
-    ) {
-        if ctx.area.height < 3 || ctx.area.width < 5 {
-            return;
-        }
-
-        let focused = ctx.focused;
-        let disabled = ctx.disabled;
-        crate::annotation::with_registry(|reg| {
-            reg.open(
-                ctx.area,
-                crate::annotation::Annotation::container("conversation_view")
-                    .with_focus(focused)
-                    .with_disabled(disabled),
-            );
-        });
-
-        render::render_from(
-            source, state, ctx.frame, ctx.area, ctx.theme, focused, disabled,
         );
 
         crate::annotation::with_registry(|reg| {

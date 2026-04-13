@@ -15,6 +15,5 @@ fn state_with_messages() -> ConversationViewState {
 
 mod events;
 mod handles;
-mod source;
 mod state;
 mod types;
