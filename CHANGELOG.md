@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-04-12
+
+### Fixed
+
+- `Event::key_with()` now normalizes `Key::Char` like all other
+  constructors. Previously constructed `KeyEvent` directly without
+  normalizing — `key_with(Key::Char('G'), Modifiers::CONTROL)` produced
+  uppercase `Char('G')` violating the invariant that letter keys are
+  always lowercase. Now routes through `KeyEvent::new()` then ORs in
+  the additional modifiers.
+
 ## [0.14.0] - 2026-04-12
 
 ### Breaking
