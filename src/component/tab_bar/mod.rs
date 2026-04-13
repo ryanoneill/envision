@@ -5,6 +5,8 @@
 //! and horizontal scrolling for overflow. State is stored in [`TabBarState`],
 //! updated via [`TabBarMessage`], and produces [`TabBarOutput`].
 //!
+//! See also [`Tabs`](super::Tabs) for a simpler tab component without
+//! closable tabs or overflow scrolling.
 //!
 //! # Example
 //!

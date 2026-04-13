@@ -194,59 +194,102 @@ Envision provides a comprehensive library of 73 reusable UI components, all foll
 | `Breadcrumb` | Navigation breadcrumb trail |
 | `Menu` | Keyboard-navigable menu with shortcuts |
 | `Router` | Multi-screen navigation with history |
+| `StepIndicator` | Pipeline/workflow visualization with per-step styles |
 | `Tabs` | Horizontal tab navigation |
-| `Tree` | Hierarchical tree view with expand/collapse |
+| `TabBar` | Tab bar with closeable tabs and overflow |
 
 ### Data Components
 
 | Component | Description |
 |-----------|-------------|
-| `Table` | Data table with sorting and selection |
-| `SelectableList` | Scrollable list with keyboard navigation |
 | `LoadingList` | List with per-item loading and error states |
+| `SelectableList` | Scrollable list with keyboard navigation |
+| `Table` | Data table with sorting and selection |
+| `Tree` | Hierarchical tree view with expand/collapse |
+
+### Display Components
+
+| Component | Description |
+|-----------|-------------|
+| `BigText` | Large block-character text rendering |
+| `Calendar` | Month calendar with event markers |
+| `Canvas` | General-purpose drawing surface with shape primitives |
+| `CodeBlock` | Syntax-highlighted code display |
+| `Collapsible` | Expandable/collapsible content panel |
+| `Divider` | Horizontal or vertical separator |
+| `Gauge` | Ratio and measurement display with thresholds |
+| `HelpPanel` | Keyboard shortcut reference panel |
+| `KeyHints` | Contextual keyboard shortcut bar |
+| `MultiProgress` | Multiple concurrent progress trackers |
+| `Paginator` | Page navigation indicators |
+| `ProgressBar` | Progress display with ETA and rate |
+| `ScrollView` | Scrollable container for arbitrary content |
+| `ScrollableText` | Scrollable multi-line text display |
+| `Sparkline` | Inline trend visualization |
+| `Spinner` | Animated loading indicator (multiple styles) |
+| `StatusBar` | Application status bar with sections |
+| `StatusLog` | Timestamped status message log |
+| `StyledText` | Rich text display with styled content |
+| `TerminalOutput` | ANSI-capable terminal output display |
+| `TitleCard` | Styled title with optional subtitle |
+| `Toast` | Timed notification messages |
+| `UsageDisplay` | Resource usage metrics display |
 
 ### Overlay Components
 
 | Component | Description |
 |-----------|-------------|
 | `ConfirmDialog` | Preset confirmation dialog with Yes/No buttons |
-| `Dialog` | Modal dialog overlay with buttons |
+| `Dialog` | Modal dialog overlay with custom buttons |
+| `Tooltip` | Positioned tooltip with auto-dismiss |
 
 ### Compound Components
 
 | Component | Description |
 |-----------|-------------|
-| `ChatView` | Chat interface with message history and markdown rendering |
-| `Chart` | Data visualization with line and bar charts |
+| `AlertPanel` | Alert metrics dashboard with sparklines |
+| `BoxPlot` | Statistical box-and-whisker plots |
+| `Chart` | Line, bar, area, and scatter charts with annotations |
+| `CommandPalette` | Fuzzy-searchable command palette overlay |
+| `ConversationView` | AI conversation display with role colors and markdown |
 | `DataGrid` | Editable data table with cell navigation |
+| `DependencyGraph` | Node-edge dependency visualization |
+| `DiffViewer` | Side-by-side and unified diff display |
+| `EventStream` | Real-time event log with levels and timestamps |
 | `FileBrowser` | File system browser with pluggable backend |
+| `FlameGraph` | Hierarchical flame graph visualization |
 | `Form` | Multi-field form with validation |
+| `Heatmap` | 2D color-mapped data visualization |
+| `Histogram` | Distribution visualization with adaptive binning |
+| `LogCorrelation` | Multi-stream synchronized log viewer |
 | `LogViewer` | Filterable log display with search |
+| `MarkdownRenderer` | Markdown text rendering (headings, bold, code, lists) |
 | `MetricsDashboard` | Dashboard with charts, counters, and gauges |
-| `PaneLayout` | Resizable split-pane layouts with configurable proportions |
+| `PaneLayout` | Resizable split-pane layouts |
 | `SearchableList` | Filterable list with search input |
+| `SpanTree` | Hierarchical span/trace tree |
 | `SplitPanel` | Resizable dual-panel layout |
+| `Timeline` | Time-based event and span visualization |
+| `Treemap` | Proportional area-based data visualization |
 
 ### Utility
 
 | Component | Description |
 |-----------|-------------|
 | `FocusManager` | Keyboard focus coordination |
+| `AppShell` | Consistent header/content/footer layout splits |
 
 ### Component Example
 
 ```rust
-use envision::component::{Button, ButtonMessage, ButtonState, Component, Focusable};
+use envision::component::{Button, ButtonMessage, ButtonOutput, ButtonState, Component};
 
 // Initialize state
 let mut state = ButtonState::new("Submit");
 
 // Handle messages
-Button::update(&mut state, ButtonMessage::Press);
-
-// Focus management
-Button::set_focused(&mut state, true);
-assert!(Button::is_focused(&state));
+let output = Button::update(&mut state, ButtonMessage::Press);
+assert_eq!(output, Some(ButtonOutput::Pressed));
 ```
 
 ## Architecture

@@ -312,7 +312,6 @@ impl Component for ScrollableText {
 
         let key = event.as_key()?;
         let ctrl = key.modifiers.ctrl();
-        let shift = key.modifiers.shift();
 
         match key.code {
             Key::Up | Key::Char('k') if !ctrl => Some(ScrollableTextMessage::ScrollUp),
@@ -321,10 +320,9 @@ impl Component for ScrollableText {
             Key::PageDown => Some(ScrollableTextMessage::PageDown(10)),
             Key::Char('u') if ctrl => Some(ScrollableTextMessage::PageUp(10)),
             Key::Char('d') if ctrl => Some(ScrollableTextMessage::PageDown(10)),
-            Key::Home | Key::Char('g') if !shift => Some(ScrollableTextMessage::Home),
-            Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
-                Some(ScrollableTextMessage::End)
-            }
+            Key::Char('g') if key.modifiers.shift() => Some(ScrollableTextMessage::End),
+            Key::Home | Key::Char('g') => Some(ScrollableTextMessage::Home),
+            Key::End => Some(ScrollableTextMessage::End),
             _ => None,
         }
     }

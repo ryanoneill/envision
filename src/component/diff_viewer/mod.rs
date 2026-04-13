@@ -769,10 +769,9 @@ impl Component for DiffViewer {
             Key::PageDown => Some(DiffViewerMessage::PageDown(10)),
             Key::Char('u') if ctrl => Some(DiffViewerMessage::PageUp(10)),
             Key::Char('d') if ctrl => Some(DiffViewerMessage::PageDown(10)),
-            Key::Home | Key::Char('g') if !shift => Some(DiffViewerMessage::Home),
-            Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
-                Some(DiffViewerMessage::End)
-            }
+            Key::Char('g') if key.modifiers.shift() => Some(DiffViewerMessage::End),
+            Key::Home | Key::Char('g') => Some(DiffViewerMessage::Home),
+            Key::End => Some(DiffViewerMessage::End),
             Key::Char('m') if !ctrl => Some(DiffViewerMessage::ToggleMode),
             _ => None,
         }

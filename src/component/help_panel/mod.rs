@@ -633,7 +633,6 @@ impl Component for HelpPanel {
 
         let key = event.as_key()?;
         let ctrl = key.modifiers.ctrl();
-        let shift = key.modifiers.shift();
 
         match key.code {
             Key::Up | Key::Char('k') if !ctrl => Some(HelpPanelMessage::ScrollUp),
@@ -642,10 +641,9 @@ impl Component for HelpPanel {
             Key::PageDown => Some(HelpPanelMessage::PageDown(10)),
             Key::Char('u') if ctrl => Some(HelpPanelMessage::PageUp(10)),
             Key::Char('d') if ctrl => Some(HelpPanelMessage::PageDown(10)),
-            Key::Home | Key::Char('g') if !shift => Some(HelpPanelMessage::Home),
-            Key::End | Key::Char('g') if key.modifiers.shift() || key.code == Key::End => {
-                Some(HelpPanelMessage::End)
-            }
+            Key::Char('g') if key.modifiers.shift() => Some(HelpPanelMessage::End),
+            Key::Home | Key::Char('g') => Some(HelpPanelMessage::Home),
+            Key::End => Some(HelpPanelMessage::End),
             _ => None,
         }
     }
