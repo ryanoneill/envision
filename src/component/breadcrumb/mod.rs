@@ -100,11 +100,32 @@ impl BreadcrumbSegment {
     }
 
     /// Returns the display label for this segment.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbSegment;
+    ///
+    /// let segment = BreadcrumbSegment::new("Products");
+    /// assert_eq!(segment.label(), "Products");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Returns the data associated with this segment, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BreadcrumbSegment;
+    ///
+    /// let segment = BreadcrumbSegment::new("Products").with_data("/products");
+    /// assert_eq!(segment.data(), Some("/products"));
+    ///
+    /// let no_data = BreadcrumbSegment::new("Home");
+    /// assert_eq!(no_data.data(), None);
+    /// ```
     pub fn data(&self) -> Option<&str> {
         self.data.as_deref()
     }
@@ -536,6 +557,16 @@ impl BreadcrumbState {
     }
 
     /// Updates the breadcrumb state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BreadcrumbMessage, BreadcrumbOutput, BreadcrumbState};
+    ///
+    /// let mut state = BreadcrumbState::from_labels(vec!["Home", "Products", "Item"]);
+    /// let output = state.update(BreadcrumbMessage::Right);
+    /// assert_eq!(output, Some(BreadcrumbOutput::FocusChanged(1)));
+    /// ```
     pub fn update(&mut self, msg: BreadcrumbMessage) -> Option<BreadcrumbOutput> {
         Breadcrumb::update(self, msg)
     }

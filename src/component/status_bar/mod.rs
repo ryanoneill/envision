@@ -413,6 +413,15 @@ impl StatusBarState {
     }
 
     /// Returns the separator string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarState;
+    ///
+    /// let state = StatusBarState::new();
+    /// assert_eq!(state.separator(), " | "); // default separator
+    /// ```
     pub fn separator(&self) -> &str {
         &self.separator
     }
@@ -560,6 +569,16 @@ impl StatusBarState {
     }
 
     /// Returns a mutable reference to the items in the specified section.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem, Section};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.push_left(StatusBarItem::new("Mode"));
+    /// assert_eq!(state.section_mut(Section::Left).len(), 1);
+    /// ```
     pub fn section_mut(&mut self, section: Section) -> &mut Vec<StatusBarItem> {
         match section {
             Section::Left => &mut self.left,
@@ -569,6 +588,17 @@ impl StatusBarState {
     }
 
     /// Returns a mutable reference to an item by section and index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarState, StatusBarItem, Section};
+    ///
+    /// let mut state = StatusBarState::new();
+    /// state.push_left(StatusBarItem::new("Mode"));
+    /// assert!(state.get_item_mut(Section::Left, 0).is_some());
+    /// assert!(state.get_item_mut(Section::Left, 99).is_none());
+    /// ```
     pub fn get_item_mut(&mut self, section: Section, index: usize) -> Option<&mut StatusBarItem> {
         self.section_mut(section).get_mut(index)
     }

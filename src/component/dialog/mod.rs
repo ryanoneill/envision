@@ -80,11 +80,29 @@ impl DialogButton {
     }
 
     /// Returns the button's unique identifier.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DialogButton;
+    ///
+    /// let button = DialogButton::new("confirm", "Confirm");
+    /// assert_eq!(button.id(), "confirm");
+    /// ```
     pub fn id(&self) -> &str {
         &self.id
     }
 
     /// Returns the button's display label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DialogButton;
+    ///
+    /// let button = DialogButton::new("save", "Save Changes");
+    /// assert_eq!(button.label(), "Save Changes");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
@@ -356,6 +374,19 @@ impl DialogState {
     /// Sets the dialog buttons.
     ///
     /// Resets focus to the first button or primary button index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{DialogState, DialogButton};
+    ///
+    /// let mut state = DialogState::alert("Info", "Done");
+    /// state.set_buttons(vec![
+    ///     DialogButton::new("yes", "Yes"),
+    ///     DialogButton::new("no", "No"),
+    /// ]);
+    /// assert_eq!(state.buttons().len(), 2);
+    /// ```
     pub fn set_buttons(&mut self, buttons: Vec<DialogButton>) {
         self.buttons = buttons;
         if self.buttons.is_empty() {

@@ -327,21 +327,59 @@ impl GaugeState {
     }
 
     /// Returns the current value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::GaugeState;
+    ///
+    /// let state = GaugeState::new(42.0, 100.0);
+    /// assert_eq!(state.value(), 42.0);
+    /// ```
     pub fn value(&self) -> f64 {
         self.value
     }
 
     /// Returns the maximum value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::GaugeState;
+    ///
+    /// let state = GaugeState::new(0.0, 200.0);
+    /// assert_eq!(state.max(), 200.0);
+    /// ```
     pub fn max(&self) -> f64 {
         self.max
     }
 
     /// Sets the current value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::GaugeState;
+    ///
+    /// let mut state = GaugeState::new(0.0, 100.0);
+    /// state.set_value(60.0);
+    /// assert_eq!(state.value(), 60.0);
+    /// ```
     pub fn set_value(&mut self, value: f64) {
         self.value = value;
     }
 
     /// Sets the maximum value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::GaugeState;
+    ///
+    /// let mut state = GaugeState::new(50.0, 100.0);
+    /// state.set_max(200.0);
+    /// assert_eq!(state.max(), 200.0);
+    /// ```
     pub fn set_max(&mut self, max: f64) {
         self.max = max;
     }
@@ -472,6 +510,16 @@ impl GaugeState {
     /// Maps an event to a gauge message, if applicable.
     ///
     /// Since Gauge is display-only, this always returns `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::GaugeState;
+    /// use envision::input::Event;
+    ///
+    /// let state = GaugeState::new(50.0, 100.0);
+    /// assert!(state.handle_event(&Event::char('k')).is_none());
+    /// ```
     pub fn handle_event(&self, event: &crate::input::Event) -> Option<GaugeMessage> {
         Gauge::handle_event(self, event, &EventContext::default())
     }
@@ -479,6 +527,16 @@ impl GaugeState {
     /// Dispatches an event, updating state and returning any output.
     ///
     /// Since Gauge is display-only, this always returns `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::GaugeState;
+    /// use envision::input::Event;
+    ///
+    /// let mut state = GaugeState::new(50.0, 100.0);
+    /// assert!(state.dispatch_event(&Event::char('k')).is_none());
+    /// ```
     pub fn dispatch_event(&mut self, event: &crate::input::Event) -> Option<GaugeOutput> {
         Gauge::dispatch_event(self, event, &EventContext::default())
     }

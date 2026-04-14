@@ -169,6 +169,15 @@ impl ProgressBarState {
     }
 
     /// Returns the progress as a percentage (0 to 100).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::with_progress(0.75);
+    /// assert_eq!(state.percentage(), 75);
+    /// ```
     pub fn percentage(&self) -> u16 {
         (self.progress * 100.0).round() as u16
     }
@@ -336,16 +345,43 @@ impl ProgressBarState {
     }
 
     /// Returns whether the percentage is shown in the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::new();
+    /// assert!(state.show_percentage()); // enabled by default
+    /// ```
     pub fn show_percentage(&self) -> bool {
         self.show_percentage
     }
 
     /// Returns whether the ETA is shown in the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::new();
+    /// assert!(state.show_eta()); // enabled by default
+    /// ```
     pub fn show_eta(&self) -> bool {
         self.show_eta
     }
 
     /// Returns whether the rate is shown in the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressBarState;
+    ///
+    /// let state = ProgressBarState::new();
+    /// assert!(state.show_rate()); // enabled by default
+    /// ```
     pub fn show_rate(&self) -> bool {
         self.show_rate
     }

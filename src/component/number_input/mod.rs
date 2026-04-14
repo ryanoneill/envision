@@ -293,21 +293,60 @@ impl NumberInputState {
     }
 
     /// Returns true if the component is in text edit mode.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{NumberInputState, NumberInputMessage, NumberInput, Component};
+    ///
+    /// let mut state = NumberInputState::new(0.0);
+    /// assert!(!state.is_editing());
+    /// NumberInput::update(&mut state, NumberInputMessage::StartEdit);
+    /// assert!(state.is_editing());
+    /// ```
     pub fn is_editing(&self) -> bool {
         self.editing
     }
 
     /// Returns the current edit buffer contents.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{NumberInputState, NumberInputMessage, NumberInput, Component};
+    ///
+    /// let mut state = NumberInputState::new(42.0);
+    /// NumberInput::update(&mut state, NumberInputMessage::StartEdit);
+    /// assert_eq!(state.edit_buffer(), "42");
+    /// ```
     pub fn edit_buffer(&self) -> &str {
         &self.edit_buffer
     }
 
     /// Returns the label, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::NumberInputState;
+    ///
+    /// let state = NumberInputState::new(0.0).with_label("Speed");
+    /// assert_eq!(state.label(), Some("Speed"));
+    /// ```
     pub fn label(&self) -> Option<&str> {
         self.label.as_deref()
     }
 
     /// Returns the placeholder, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::NumberInputState;
+    ///
+    /// let state = NumberInputState::new(0.0).with_placeholder("Enter value");
+    /// assert_eq!(state.placeholder(), Some("Enter value"));
+    /// ```
     pub fn placeholder(&self) -> Option<&str> {
         self.placeholder.as_deref()
     }
@@ -328,21 +367,57 @@ impl NumberInputState {
     }
 
     /// Returns the step size.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::NumberInputState;
+    ///
+    /// let state = NumberInputState::new(0.0).with_step(0.5);
+    /// assert_eq!(state.step(), 0.5);
+    /// ```
     pub fn step(&self) -> f64 {
         self.step
     }
 
     /// Returns the precision (decimal places).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::NumberInputState;
+    ///
+    /// let state = NumberInputState::new(0.0).with_precision(2);
+    /// assert_eq!(state.precision(), 2);
+    /// ```
     pub fn precision(&self) -> usize {
         self.precision
     }
 
     /// Returns the minimum bound, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::NumberInputState;
+    ///
+    /// let state = NumberInputState::new(0.0).with_min(0.0);
+    /// assert_eq!(state.min(), Some(0.0));
+    /// ```
     pub fn min(&self) -> Option<f64> {
         self.min
     }
 
     /// Returns the maximum bound, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::NumberInputState;
+    ///
+    /// let state = NumberInputState::new(0.0).with_max(100.0);
+    /// assert_eq!(state.max(), Some(100.0));
+    /// ```
     pub fn max(&self) -> Option<f64> {
         self.max
     }

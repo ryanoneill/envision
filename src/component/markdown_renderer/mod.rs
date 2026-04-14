@@ -212,6 +212,16 @@ impl MarkdownRendererState {
     }
 
     /// Sets the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MarkdownRendererState;
+    ///
+    /// let mut state = MarkdownRendererState::new();
+    /// state.set_title(Some("Document".to_string()));
+    /// assert_eq!(state.title(), Some("Document"));
+    /// ```
     pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
@@ -233,6 +243,16 @@ impl MarkdownRendererState {
     }
 
     /// Sets whether to show raw source.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MarkdownRendererState;
+    ///
+    /// let mut state = MarkdownRendererState::new();
+    /// state.set_show_source(true);
+    /// assert!(state.show_source());
+    /// ```
     pub fn set_show_source(&mut self, show: bool) {
         self.show_source = show;
     }
@@ -254,6 +274,17 @@ impl MarkdownRendererState {
     }
 
     /// Sets the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MarkdownRendererState;
+    ///
+    /// let mut state = MarkdownRendererState::new()
+    ///     .with_source("line1\nline2\nline3\nline4\nline5");
+    /// state.set_scroll_offset(2);
+    /// assert_eq!(state.scroll_offset(), 2);
+    /// ```
     pub fn set_scroll_offset(&mut self, offset: usize) {
         self.scroll.set_offset(offset);
     }

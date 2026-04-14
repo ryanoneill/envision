@@ -267,6 +267,15 @@ impl ConversationViewState {
     ///
     /// Always returns `false` when the `markdown` Cargo feature is not
     /// enabled (since the setter methods are not available).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let state = ConversationViewState::new();
+    /// assert!(!state.markdown_enabled());
+    /// ```
     pub fn markdown_enabled(&self) -> bool {
         self.markdown_enabled
     }
@@ -311,6 +320,18 @@ impl ConversationViewState {
     }
 
     /// Returns the style override for a role, if one is set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationViewState, ConversationRole};
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let state = ConversationViewState::new()
+    ///     .with_role_style(ConversationRole::User, Style::default().fg(Color::Cyan));
+    /// assert!(state.role_style_override(&ConversationRole::User).is_some());
+    /// assert!(state.role_style_override(&ConversationRole::Assistant).is_none());
+    /// ```
     pub fn role_style_override(&self, role: &ConversationRole) -> Option<&Style> {
         self.role_style_overrides.get(role)
     }
@@ -335,6 +356,18 @@ impl ConversationViewState {
     }
 
     /// Removes a style override for a role, reverting to the default color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationViewState, ConversationRole};
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = ConversationViewState::new()
+    ///     .with_role_style(ConversationRole::User, Style::default().fg(Color::Cyan));
+    /// state.clear_role_style(&ConversationRole::User);
+    /// assert!(state.role_style_override(&ConversationRole::User).is_none());
+    /// ```
     pub fn clear_role_style(&mut self, role: &ConversationRole) {
         self.role_style_overrides.remove(role);
     }
@@ -578,16 +611,44 @@ impl ConversationViewState {
     }
 
     /// Returns the number of messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.push_user("Hello");
+    /// assert_eq!(state.message_count(), 1);
+    /// ```
     pub fn message_count(&self) -> usize {
         self.messages.len()
     }
 
     /// Returns true if there are no messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let state = ConversationViewState::new();
+    /// assert!(state.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.messages.is_empty()
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let state = ConversationViewState::new().with_title("Chat");
+    /// assert_eq!(state.title(), Some("Chat"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -636,16 +697,46 @@ impl ConversationViewState {
     /// When `Some`, a single line is rendered at the bottom of the
     /// viewport inside the border. When `None`, the full viewport
     /// is used for messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.set_status(Some("Connecting..."));
+    /// assert_eq!(state.status(), Some("Connecting..."));
+    /// state.set_status(None::<&str>);
+    /// assert!(state.status().is_none());
+    /// ```
     pub fn set_status(&mut self, status: Option<impl Into<String>>) {
         self.status = status.map(|s| s.into());
     }
 
     /// Returns the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let state = ConversationViewState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
     }
 
     /// Returns the maximum number of messages.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let state = ConversationViewState::new();
+    /// assert_eq!(state.max_messages(), 1000);
+    /// ```
     pub fn max_messages(&self) -> usize {
         self.max_messages
     }
@@ -671,31 +762,88 @@ impl ConversationViewState {
     }
 
     /// Returns whether timestamps are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let state = ConversationViewState::new().with_show_timestamps(true);
+    /// assert!(state.show_timestamps());
+    /// ```
     pub fn show_timestamps(&self) -> bool {
         self.show_timestamps
     }
 
     /// Sets whether timestamps are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.set_show_timestamps(true);
+    /// assert!(state.show_timestamps());
+    /// ```
     pub fn set_show_timestamps(&mut self, show: bool) {
         self.show_timestamps = show;
     }
 
     /// Returns whether role labels are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let state = ConversationViewState::new();
+    /// assert!(state.show_role_labels());
+    /// ```
     pub fn show_role_labels(&self) -> bool {
         self.show_role_labels
     }
 
     /// Sets whether role labels are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.set_show_role_labels(false);
+    /// assert!(!state.show_role_labels());
+    /// ```
     pub fn set_show_role_labels(&mut self, show: bool) {
         self.show_role_labels = show;
     }
 
     /// Returns whether auto-scroll is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let state = ConversationViewState::new();
+    /// assert!(state.auto_scroll());
+    /// ```
     pub fn auto_scroll(&self) -> bool {
         self.auto_scroll
     }
 
     /// Sets whether auto-scroll is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.set_auto_scroll(false);
+    /// assert!(!state.auto_scroll());
+    /// ```
     pub fn set_auto_scroll(&mut self, auto_scroll: bool) {
         self.auto_scroll = auto_scroll;
     }
@@ -725,16 +873,48 @@ impl ConversationViewState {
     }
 
     /// Returns whether a block is collapsed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// assert!(!state.is_collapsed("thinking"));
+    /// state.collapse("thinking");
+    /// assert!(state.is_collapsed("thinking"));
+    /// ```
     pub fn is_collapsed(&self, key: &str) -> bool {
         self.collapsed_blocks.contains(key)
     }
 
     /// Collapses a named block.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.collapse("tool-use");
+    /// assert!(state.is_collapsed("tool-use"));
+    /// ```
     pub fn collapse(&mut self, key: &str) {
         self.collapsed_blocks.insert(key.to_string());
     }
 
     /// Expands a named block.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConversationViewState;
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.collapse("thinking");
+    /// state.expand("thinking");
+    /// assert!(!state.is_collapsed("thinking"));
+    /// ```
     pub fn expand(&mut self, key: &str) {
         self.collapsed_blocks.remove(key);
     }

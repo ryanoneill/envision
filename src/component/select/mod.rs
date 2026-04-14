@@ -210,6 +210,15 @@ impl SelectState {
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SelectState};
+    ///
+    /// let state = SelectState::with_selection(vec!["A", "B", "C"], 1);
+    /// assert_eq!(state.selected(), Some(1));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }

@@ -418,6 +418,19 @@ impl<S: Clone + PartialEq> Router<S> {
     /// This inherent method is available for all screen types that implement
     /// `Clone + PartialEq`. Screen types that also implement `Default` can
     /// use the [`Component`] trait methods instead.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Router, RouterMessage, RouterOutput, RouterState};
+    ///
+    /// #[derive(Clone, Debug, PartialEq, Eq)]
+    /// enum Screen { Home, Settings }
+    ///
+    /// let mut state = RouterState::new(Screen::Home);
+    /// let output = Router::update(&mut state, RouterMessage::Navigate(Screen::Settings));
+    /// assert_eq!(output, Some(RouterOutput::ScreenChanged { from: Screen::Home, to: Screen::Settings }));
+    /// ```
     pub fn update(state: &mut RouterState<S>, msg: RouterMessage<S>) -> Option<RouterOutput<S>> {
         match msg {
             RouterMessage::Navigate(screen) => {
@@ -479,6 +492,20 @@ impl<S: Clone + PartialEq> Router<S> {
     ///
     /// Router is state-only, so this is a no-op. The parent application
     /// should render based on `state.current()`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Router, RouterState};
+    ///
+    /// #[derive(Clone, Debug, PartialEq, Eq)]
+    /// enum Screen { Home }
+    ///
+    /// // Router does not render anything — it is state-only.
+    /// // The parent application renders based on state.current():
+    /// let state = RouterState::new(Screen::Home);
+    /// assert_eq!(state.current(), &Screen::Home);
+    /// ```
     pub fn view(_state: &RouterState<S>, _ctx: &mut RenderContext<'_, '_>) {
         // Router is state-only - no view implementation.
         // The parent application should render based on state.current()

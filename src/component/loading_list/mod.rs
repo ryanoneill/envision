@@ -276,6 +276,19 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Returns a mutable reference to all items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["a".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// state.items_mut()[0].set_label("updated");
+    /// assert_eq!(state.get(0).unwrap().label(), "updated");
+    /// ```
     pub fn items_mut(&mut self) -> &mut Vec<LoadingListItem<T>> {
         &mut self.items
     }
@@ -329,6 +342,18 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::with_items(
+    ///     vec!["a".to_string()],
+    ///     |s| s.clone(),
+    /// ).with_selected(0);
+    /// assert_eq!(state.selected(), Some(0));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
@@ -359,21 +384,74 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Returns the selected item's data.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::with_items(
+    ///     vec!["hello".to_string()],
+    ///     |s| s.clone(),
+    /// ).with_selected(0);
+    /// assert_eq!(state.selected_data(), Some(&"hello".to_string()));
+    /// ```
     pub fn selected_data(&self) -> Option<&T> {
         self.selected_item().map(|item| item.data())
     }
 
     /// Sets the selected index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["a".to_string(), "b".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// state.set_selected(Some(1));
+    /// assert_eq!(state.selected_index(), Some(1));
+    /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         self.selected = index.map(|i| i.min(self.items.len().saturating_sub(1)));
     }
 
     /// Returns an item by index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::with_items(
+    ///     vec!["first".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// assert_eq!(state.get(0).unwrap().label(), "first");
+    /// assert!(state.get(99).is_none());
+    /// ```
     pub fn get(&self, index: usize) -> Option<&LoadingListItem<T>> {
         self.items.get(index)
     }
 
     /// Returns a mutable item by index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["task".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// if let Some(item) = state.get_mut(0) {
+    ///     item.set_label("updated");
+    /// }
+    /// assert_eq!(state.get(0).unwrap().label(), "updated");
+    /// ```
     pub fn get_mut(&mut self, index: usize) -> Option<&mut LoadingListItem<T>> {
         self.items.get_mut(index)
     }
@@ -402,6 +480,20 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Sets the ready state for an item.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LoadingListState, ItemState};
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["item".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// state.set_loading(0);
+    /// state.set_ready(0);
+    /// assert!(!state.has_loading());
+    /// ```
     pub fn set_ready(&mut self, index: usize) {
         if let Some(item) = self.items.get_mut(index) {
             item.state = ItemState::Ready;
@@ -409,6 +501,19 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Sets the error state for an item.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["item".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// state.set_error(0, "Connection refused");
+    /// assert!(state.has_errors());
+    /// ```
     pub fn set_error(&mut self, index: usize, message: impl Into<String>) {
         if let Some(item) = self.items.get_mut(index) {
             item.state = ItemState::Error(message.into());
@@ -465,6 +570,20 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Returns true if any item is loading.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["item".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// assert!(!state.has_loading());
+    /// state.set_loading(0);
+    /// assert!(state.has_loading());
+    /// ```
     pub fn has_loading(&self) -> bool {
         self.items.iter().any(|i| i.is_loading())
     }
@@ -535,11 +654,30 @@ impl<T: Clone> LoadingListState<T> {
     }
 
     /// Sets whether to show indicators.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::<String>::new();
+    /// state.set_show_indicators(false);
+    /// assert!(!state.show_indicators());
+    /// ```
     pub fn set_show_indicators(&mut self, show: bool) {
         self.show_indicators = show;
     }
 
     /// Returns the current spinner frame.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let state = LoadingListState::<String>::new();
+    /// assert_eq!(state.spinner_frame(), 0);
+    /// ```
     pub fn spinner_frame(&self) -> usize {
         self.spinner_frame
     }
@@ -568,6 +706,19 @@ impl<T: Clone> LoadingListState<T> {
 
 impl<T: Clone + 'static> LoadingListState<T> {
     /// Updates the loading list state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LoadingListState, LoadingListMessage, LoadingListOutput, ItemState};
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["task".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// let output = state.update(LoadingListMessage::SetLoading(0));
+    /// assert!(matches!(output, Some(LoadingListOutput::ItemStateChanged { state: ItemState::Loading, .. })));
+    /// ```
     pub fn update(&mut self, msg: LoadingListMessage<T>) -> Option<LoadingListOutput<T>> {
         LoadingList::update(self, msg)
     }

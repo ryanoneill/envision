@@ -100,6 +100,19 @@ impl ItemState {
     }
 
     /// Returns the style for this state using the theme.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ItemState;
+    /// use envision::Theme;
+    ///
+    /// let theme = Theme::default();
+    /// let ready_style = ItemState::Ready.style(&theme);
+    /// let loading_style = ItemState::Loading.style(&theme);
+    /// // Styles are non-equal for ready vs loading states
+    /// assert_ne!(ready_style, loading_style);
+    /// ```
     pub fn style(&self, theme: &Theme) -> Style {
         match self {
             Self::Ready => theme.normal_style(),
@@ -194,6 +207,16 @@ impl<T: Clone> LoadingListItem<T> {
     }
 
     /// Sets the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListItem;
+    ///
+    /// let mut item = LoadingListItem::new("data", "Old Name");
+    /// item.set_label("New Name");
+    /// assert_eq!(item.label(), "New Name");
+    /// ```
     pub fn set_label(&mut self, label: impl Into<String>) {
         self.label = label.into();
     }
@@ -228,16 +251,47 @@ impl<T: Clone> LoadingListItem<T> {
     }
 
     /// Returns true if the item is loading.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ItemState, LoadingListItem};
+    ///
+    /// let mut item = LoadingListItem::new("data", "Task");
+    /// assert!(!item.is_loading());
+    /// item.set_state(ItemState::Loading);
+    /// assert!(item.is_loading());
+    /// ```
     pub fn is_loading(&self) -> bool {
         self.state.is_loading()
     }
 
     /// Returns true if the item has an error.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ItemState, LoadingListItem};
+    ///
+    /// let mut item = LoadingListItem::new("data", "Task");
+    /// assert!(!item.is_error());
+    /// item.set_state(ItemState::Error("failed".into()));
+    /// assert!(item.is_error());
+    /// ```
     pub fn is_error(&self) -> bool {
         self.state.is_error()
     }
 
     /// Returns true if the item is ready.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ItemState, LoadingListItem};
+    ///
+    /// let item = LoadingListItem::new("data", "Task");
+    /// assert!(item.is_ready());
+    /// ```
     pub fn is_ready(&self) -> bool {
         self.state.is_ready()
     }

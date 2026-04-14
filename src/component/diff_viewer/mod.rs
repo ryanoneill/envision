@@ -402,16 +402,43 @@ impl DiffViewerState {
     }
 
     /// Returns a reference to the diff hunks.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::from_texts("old", "new");
+    /// assert!(!state.hunks().is_empty());
+    /// ```
     pub fn hunks(&self) -> &[DiffHunk] {
         &self.hunks
     }
 
     /// Returns the number of hunks in the diff.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::from_texts("old line", "new line");
+    /// assert_eq!(state.hunk_count(), 1);
+    /// ```
     pub fn hunk_count(&self) -> usize {
         self.hunks.len()
     }
 
     /// Returns the current hunk index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new();
+    /// assert_eq!(state.current_hunk(), 0);
+    /// ```
     pub fn current_hunk(&self) -> usize {
         self.current_hunk
     }
@@ -599,6 +626,15 @@ impl DiffViewerState {
     }
 
     /// Returns the current scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::DiffViewerState;
+    ///
+    /// let state = DiffViewerState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
     }

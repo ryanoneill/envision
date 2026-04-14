@@ -142,41 +142,116 @@ impl BoxPlotData {
     }
 
     /// Returns the label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    ///
+    /// let data = BoxPlotData::new("P99 Latency", 1.0, 2.0, 3.0, 4.0, 5.0);
+    /// assert_eq!(data.label(), "P99 Latency");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Returns the minimum value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    ///
+    /// let data = BoxPlotData::new("Latency", 5.0, 15.0, 25.0, 35.0, 45.0);
+    /// assert_eq!(data.min(), 5.0);
+    /// ```
     pub fn min(&self) -> f64 {
         self.min
     }
 
     /// Returns the first quartile (Q1).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    ///
+    /// let data = BoxPlotData::new("Latency", 5.0, 15.0, 25.0, 35.0, 45.0);
+    /// assert_eq!(data.q1(), 15.0);
+    /// ```
     pub fn q1(&self) -> f64 {
         self.q1
     }
 
     /// Returns the median.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    ///
+    /// let data = BoxPlotData::new("Latency", 5.0, 15.0, 25.0, 35.0, 45.0);
+    /// assert_eq!(data.median(), 25.0);
+    /// ```
     pub fn median(&self) -> f64 {
         self.median
     }
 
     /// Returns the third quartile (Q3).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    ///
+    /// let data = BoxPlotData::new("Latency", 5.0, 15.0, 25.0, 35.0, 45.0);
+    /// assert_eq!(data.q3(), 35.0);
+    /// ```
     pub fn q3(&self) -> f64 {
         self.q3
     }
 
     /// Returns the maximum value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    ///
+    /// let data = BoxPlotData::new("Latency", 5.0, 15.0, 25.0, 35.0, 45.0);
+    /// assert_eq!(data.max(), 45.0);
+    /// ```
     pub fn max(&self) -> f64 {
         self.max
     }
 
     /// Returns the outliers.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    ///
+    /// let data = BoxPlotData::new("Latency", 5.0, 15.0, 25.0, 35.0, 45.0)
+    ///     .with_outliers(vec![100.0]);
+    /// assert_eq!(data.outliers(), &[100.0]);
+    /// ```
     pub fn outliers(&self) -> &[f64] {
         &self.outliers
     }
 
     /// Returns the color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::BoxPlotData;
+    /// use ratatui::style::Color;
+    ///
+    /// let data = BoxPlotData::new("CPU", 1.0, 2.0, 3.0, 4.0, 5.0)
+    ///     .with_color(Color::Blue);
+    /// assert_eq!(data.color(), Color::Blue);
+    /// ```
     pub fn color(&self) -> Color {
         self.color
     }
@@ -787,6 +862,16 @@ impl BoxPlotState {
     // ---- Instance methods ----
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BoxPlotState, BoxPlotData, BoxPlotMessage, BoxPlotOrientation};
+    ///
+    /// let mut state = BoxPlotState::default();
+    /// state.update(BoxPlotMessage::SetOrientation(BoxPlotOrientation::Horizontal));
+    /// assert_eq!(state.orientation(), &BoxPlotOrientation::Horizontal);
+    /// ```
     pub fn update(&mut self, msg: BoxPlotMessage) -> Option<()> {
         BoxPlot::update(self, msg)
     }

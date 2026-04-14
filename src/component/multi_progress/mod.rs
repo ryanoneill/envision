@@ -392,6 +392,16 @@ impl MultiProgressState {
     }
 
     /// Sets the maximum visible items.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.set_max_visible(5);
+    /// assert_eq!(state.max_visible(), 5);
+    /// ```
     pub fn set_max_visible(&mut self, max: usize) {
         self.max_visible = max;
     }
@@ -411,16 +421,48 @@ impl MultiProgressState {
     }
 
     /// Returns the currently selected item index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("t1", "Task 1");
+    /// assert_eq!(state.selected(), Some(0));
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected
     }
 
     /// Returns a reference to the currently selected item.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("t1", "Task 1");
+    /// assert_eq!(state.selected_item().unwrap().label(), "Task 1");
+    /// ```
     pub fn selected_item(&self) -> Option<&ProgressItem> {
         self.selected.and_then(|i| self.items.get(i))
     }
 
     /// Sets the selected item index. Clamped to valid range.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MultiProgressState;
+    ///
+    /// let mut state = MultiProgressState::new();
+    /// state.add("t1", "Task 1");
+    /// state.add("t2", "Task 2");
+    /// state.set_selected(Some(1));
+    /// assert_eq!(state.selected(), Some(1));
+    /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         self.selected = index.map(|i| i.min(self.items.len().saturating_sub(1)));
     }
@@ -535,6 +577,19 @@ impl MultiProgressState {
     }
 
     /// Updates the multi-progress state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{MultiProgressMessage, MultiProgressOutput, MultiProgressState};
+    ///
+    /// let mut state = MultiProgressState::default();
+    /// let output = state.update(MultiProgressMessage::Add {
+    ///     id: "task1".to_string(),
+    ///     label: "Task 1".to_string(),
+    /// });
+    /// assert_eq!(output, Some(MultiProgressOutput::Added("task1".to_string())));
+    /// ```
     pub fn update(&mut self, msg: MultiProgressMessage) -> Option<MultiProgressOutput> {
         MultiProgress::update(self, msg)
     }

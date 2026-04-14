@@ -469,26 +469,73 @@ impl HistogramState {
     }
 
     /// Returns the effective number of bins.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    ///
+    /// let state = HistogramState::new().with_bin_count(15);
+    /// assert_eq!(state.bin_count(), 15);
+    /// ```
     pub fn bin_count(&self) -> usize {
         self.bin_method.compute_bin_count(&self.data)
     }
 
     /// Sets the number of bins (convenience, sets `Fixed` method).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    ///
+    /// let mut state = HistogramState::new();
+    /// state.set_bin_count(25);
+    /// assert_eq!(state.bin_count(), 25);
+    /// ```
     pub fn set_bin_count(&mut self, count: usize) {
         self.bin_method = BinMethod::Fixed(count.max(1));
     }
 
     /// Returns the current binning method.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BinMethod, HistogramState};
+    ///
+    /// let state = HistogramState::new();
+    /// assert_eq!(state.bin_method(), &BinMethod::Fixed(10));
+    /// ```
     pub fn bin_method(&self) -> &BinMethod {
         &self.bin_method
     }
 
     /// Sets the binning method.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{BinMethod, HistogramState};
+    ///
+    /// let mut state = HistogramState::new();
+    /// state.set_bin_method(BinMethod::Sturges);
+    /// assert_eq!(state.bin_method(), &BinMethod::Sturges);
+    /// ```
     pub fn set_bin_method(&mut self, method: BinMethod) {
         self.bin_method = method;
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    ///
+    /// let state = HistogramState::new().with_title("Distribution");
+    /// assert_eq!(state.title(), Some("Distribution"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -509,16 +556,44 @@ impl HistogramState {
     }
 
     /// Returns the x-axis label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    ///
+    /// let state = HistogramState::new().with_x_label("Value");
+    /// assert_eq!(state.x_label(), Some("Value"));
+    /// ```
     pub fn x_label(&self) -> Option<&str> {
         self.x_label.as_deref()
     }
 
     /// Returns the y-axis label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    ///
+    /// let state = HistogramState::new().with_y_label("Count");
+    /// assert_eq!(state.y_label(), Some("Count"));
+    /// ```
     pub fn y_label(&self) -> Option<&str> {
         self.y_label.as_deref()
     }
 
     /// Returns the bar color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    /// use ratatui::style::Color;
+    ///
+    /// let state = HistogramState::new().with_color(Color::Green);
+    /// assert_eq!(state.color(), Some(Color::Green));
+    /// ```
     pub fn color(&self) -> Option<Color> {
         self.color
     }
@@ -540,6 +615,15 @@ impl HistogramState {
     }
 
     /// Returns whether count labels are shown on bars.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    ///
+    /// let state = HistogramState::new().with_show_counts(true);
+    /// assert!(state.show_counts());
+    /// ```
     pub fn show_counts(&self) -> bool {
         self.show_counts
     }
@@ -678,16 +762,50 @@ impl HistogramState {
     // ---- Instance methods ----
 
     /// Maps an input event to a histogram message.
+    ///
+    /// The histogram is display-only; this always returns `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    /// use envision::input::Event;
+    ///
+    /// let state = HistogramState::new();
+    /// assert!(state.handle_event(&Event::key(envision::input::Key::Enter)).is_none());
+    /// ```
     pub fn handle_event(&self, event: &Event) -> Option<HistogramMessage> {
         Histogram::handle_event(self, event, &EventContext::default())
     }
 
     /// Dispatches an event, updating state and returning any output.
+    ///
+    /// The histogram is display-only; this always returns `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::HistogramState;
+    /// use envision::input::Event;
+    ///
+    /// let mut state = HistogramState::new();
+    /// assert!(state.dispatch_event(&Event::key(envision::input::Key::Enter)).is_none());
+    /// ```
     pub fn dispatch_event(&mut self, event: &Event) -> Option<()> {
         Histogram::dispatch_event(self, event, &EventContext::default())
     }
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{HistogramState, HistogramMessage};
+    ///
+    /// let mut state = HistogramState::new();
+    /// state.update(HistogramMessage::PushData(42.0));
+    /// assert_eq!(state.data(), &[42.0]);
+    /// ```
     pub fn update(&mut self, msg: HistogramMessage) -> Option<()> {
         Histogram::update(self, msg)
     }

@@ -198,6 +198,16 @@ impl TimelineState {
     // ---- Accessors ----
 
     /// Returns the point events.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TimelineState, TimelineEvent};
+    ///
+    /// let state = TimelineState::new()
+    ///     .with_events(vec![TimelineEvent::new("e1", 100.0, "Deploy")]);
+    /// assert_eq!(state.events().len(), 1);
+    /// ```
     pub fn events(&self) -> &[TimelineEvent] {
         &self.events
     }
@@ -222,6 +232,16 @@ impl TimelineState {
     }
 
     /// Returns the duration spans.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TimelineState, TimelineSpan};
+    ///
+    /// let state = TimelineState::new()
+    ///     .with_spans(vec![TimelineSpan::new("s1", 0.0, 500.0, "Request")]);
+    /// assert_eq!(state.spans().len(), 1);
+    /// ```
     pub fn spans(&self) -> &[TimelineSpan] {
         &self.spans
     }
@@ -444,6 +464,15 @@ impl TimelineState {
     }
 
     /// Returns the title, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TimelineState;
+    ///
+    /// let state = TimelineState::new().with_title("Deployment Timeline");
+    /// assert_eq!(state.title(), Some("Deployment Timeline"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -464,6 +493,15 @@ impl TimelineState {
     }
 
     /// Returns whether labels are shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TimelineState;
+    ///
+    /// let state = TimelineState::new().with_show_labels(false);
+    /// assert!(!state.show_labels());
+    /// ```
     pub fn show_labels(&self) -> bool {
         self.show_labels
     }
@@ -484,6 +522,17 @@ impl TimelineState {
     }
 
     /// Returns the effective lane count (auto-computed if not set).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TimelineState, TimelineSpan};
+    ///
+    /// let state = TimelineState::new()
+    ///     .with_spans(vec![TimelineSpan::new("s1", 0.0, 500.0, "Request")]);
+    /// // No spans have lane set, so effective count is 1 (lane 0 + 1)
+    /// assert_eq!(state.effective_lane_count(), 1);
+    /// ```
     pub fn effective_lane_count(&self) -> usize {
         if self.lane_count > 0 {
             self.lane_count
@@ -592,6 +641,18 @@ impl TimelineState {
     // ---- Instance methods ----
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TimelineState, TimelineMessage, TimelineEvent};
+    ///
+    /// let mut state = TimelineState::new()
+    ///     .with_events(vec![TimelineEvent::new("e1", 100.0, "Start")]);
+    /// state.update(TimelineMessage::FitAll);
+    /// let (start, end) = state.view_range();
+    /// assert!(end > start);
+    /// ```
     pub fn update(&mut self, msg: TimelineMessage) -> Option<TimelineOutput> {
         Timeline::update(self, msg)
     }

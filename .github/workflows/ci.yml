@@ -54,6 +54,12 @@ jobs:
 
       - name: Run doc tests
         shell: bash
+        env:
+          # Windows defaults the main thread stack to 1 MB. The merged doctest
+          # binary exceeds that at init under Rust 1.85; bump to 16 MB to leave
+          # headroom over Linux/macOS's 8 MB default. RUSTDOCFLAGS is what
+          # rustdoc reads to compile doctest binaries. Scoped to Windows.
+          RUSTDOCFLAGS: ${{ matrix.os == 'windows-latest' && '-C link-args=/STACK:16777216' || '' }}
         run: |
           if [ "${{ matrix.rust }}" = "stable" ]; then
             cargo test --doc --all-features

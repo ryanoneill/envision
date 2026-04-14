@@ -253,6 +253,24 @@ impl<T: TableRow> TableState<T> {
     /// Returns the currently selected display index.
     ///
     /// This is the index in the display order, not the original row index.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let state = TableState::new(
+    ///     vec![Item { name: "Alice".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// assert_eq!(state.selected_index(), Some(0));
+    /// ```
     pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
@@ -561,6 +579,25 @@ impl<T: TableRow> TableState<T> {
     ///
     /// Rows where any cell contains the filter text (case-insensitive) are shown.
     /// Selection is preserved if the selected row remains visible.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState};
+    ///
+    /// #[derive(Clone)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = TableState::new(
+    ///     vec![Item { name: "Alice".into() }, Item { name: "Bob".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// state.set_filter_text("ali");
+    /// assert_eq!(state.visible_count(), 1);
+    /// ```
     pub fn set_filter_text(&mut self, text: &str) {
         self.filter_text = text.to_string();
         self.rebuild_display_order();
@@ -673,6 +710,25 @@ impl<T: TableRow> TableState<T> {
 
 impl<T: TableRow + 'static> TableState<T> {
     /// Updates the table state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, TableRow, TableState, TableMessage, TableOutput};
+    ///
+    /// #[derive(Clone, Debug, PartialEq)]
+    /// struct Item { name: String }
+    /// impl TableRow for Item {
+    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    /// }
+    ///
+    /// let mut state = TableState::new(
+    ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
+    ///     vec![Column::fixed("Name", 10)],
+    /// );
+    /// let output = state.update(TableMessage::Down);
+    /// assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
+    /// ```
     pub fn update(&mut self, msg: TableMessage) -> Option<TableOutput<T>> {
         Table::update(self, msg)
     }

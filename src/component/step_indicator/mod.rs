@@ -143,16 +143,43 @@ impl Step {
     }
 
     /// Returns the step label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    ///
+    /// let step = Step::new("Build");
+    /// assert_eq!(step.label(), "Build");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Returns the step status.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::{Step, StepStatus};
+    ///
+    /// let step = Step::new("Test");
+    /// assert_eq!(step.status(), &StepStatus::Pending);
+    /// ```
     pub fn status(&self) -> &StepStatus {
         &self.status
     }
 
     /// Returns the step description, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    ///
+    /// let step = Step::new("Deploy");
+    /// assert_eq!(step.description(), None);
+    /// ```
     pub fn description(&self) -> Option<&str> {
         self.description.as_deref()
     }
@@ -328,6 +355,17 @@ impl StepIndicatorState {
     }
 
     /// Sets whether descriptions are shown (builder pattern).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A")])
+    ///     .with_show_descriptions(true);
+    /// assert!(state.show_descriptions());
+    /// ```
     pub fn with_show_descriptions(mut self, show: bool) -> Self {
         self.show_descriptions = show;
         self
@@ -415,6 +453,16 @@ impl StepIndicatorState {
     }
 
     /// Returns the steps.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("Build"), Step::new("Test")]);
+    /// assert_eq!(state.steps().len(), 2);
+    /// ```
     pub fn steps(&self) -> &[Step] {
         &self.steps
     }
@@ -436,6 +484,16 @@ impl StepIndicatorState {
     }
 
     /// Returns the orientation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::{Step, StepOrientation};
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A")]);
+    /// assert_eq!(state.orientation(), &StepOrientation::Horizontal);
+    /// ```
     pub fn orientation(&self) -> &StepOrientation {
         &self.orientation
     }
@@ -499,11 +557,31 @@ impl StepIndicatorState {
     }
 
     /// Returns the connector string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A")]).with_connector("→");
+    /// assert_eq!(state.connector(), "→");
+    /// ```
     pub fn connector(&self) -> &str {
         &self.connector
     }
 
     /// Returns the title, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A")]);
+    /// assert_eq!(state.title(), None);
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -604,6 +682,19 @@ impl StepIndicatorState {
     }
 
     /// Returns the per-status style override, if one is set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::{Step, StepStatus};
+    /// use envision::component::StepIndicatorState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A")])
+    ///     .with_status_style(StepStatus::Active, Style::default().fg(Color::Yellow));
+    /// assert!(state.status_style_override(&StepStatus::Active).is_some());
+    /// assert!(state.status_style_override(&StepStatus::Pending).is_none());
+    /// ```
     pub fn status_style_override(&self, status: &StepStatus) -> Option<&Style> {
         self.status_style_overrides.get(status)
     }
@@ -626,11 +717,37 @@ impl StepIndicatorState {
     }
 
     /// Removes a per-status style override.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::{Step, StepStatus};
+    /// use envision::component::StepIndicatorState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = StepIndicatorState::new(vec![Step::new("A")])
+    ///     .with_status_style(StepStatus::Active, Style::default().fg(Color::Yellow));
+    /// state.clear_status_style(&StepStatus::Active);
+    /// assert!(state.status_style_override(&StepStatus::Active).is_none());
+    /// ```
     pub fn clear_status_style(&mut self, status: &StepStatus) {
         self.status_style_overrides.remove(status);
     }
 
     /// Returns the per-step-index style override, if one is set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")])
+    ///     .with_step_style(0, Style::default().fg(Color::Cyan));
+    /// assert!(state.step_style_override(0).is_some());
+    /// assert!(state.step_style_override(1).is_none());
+    /// ```
     pub fn step_style_override(&self, index: usize) -> Option<&Style> {
         self.step_style_overrides.get(&index)
     }
@@ -653,6 +770,19 @@ impl StepIndicatorState {
     }
 
     /// Removes a per-step-index style override.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = StepIndicatorState::new(vec![Step::new("A")])
+    ///     .with_step_style(0, Style::default().fg(Color::Cyan));
+    /// state.clear_step_style(0);
+    /// assert!(state.step_style_override(0).is_none());
+    /// ```
     pub fn clear_step_style(&mut self, index: usize) {
         self.step_style_overrides.remove(&index);
     }

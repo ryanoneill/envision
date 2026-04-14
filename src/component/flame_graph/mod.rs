@@ -540,6 +540,20 @@ impl FlameGraphState {
     /// Moves selection up to parent depth.
     ///
     /// Returns true if the selection changed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FlameGraphState, FlameNode};
+    ///
+    /// let root = FlameNode::new("main()", 500)
+    ///     .with_child(FlameNode::new("compute()", 300));
+    /// let mut state = FlameGraphState::with_root(root);
+    /// state.select_down();
+    /// assert_eq!(state.selected_depth(), 1);
+    /// assert!(state.select_up());
+    /// assert_eq!(state.selected_depth(), 0);
+    /// ```
     pub fn select_up(&mut self) -> bool {
         if self.root.is_none() {
             return false;
@@ -561,6 +575,18 @@ impl FlameGraphState {
     /// at the next depth level.
     ///
     /// Returns true if the selection changed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FlameGraphState, FlameNode};
+    ///
+    /// let root = FlameNode::new("main()", 500)
+    ///     .with_child(FlameNode::new("compute()", 300));
+    /// let mut state = FlameGraphState::with_root(root);
+    /// assert!(state.select_down());
+    /// assert_eq!(state.selected_depth(), 1);
+    /// ```
     pub fn select_down(&mut self) -> bool {
         let view_root = match self.current_view_root() {
             Some(r) => r,
@@ -595,6 +621,22 @@ impl FlameGraphState {
     /// Moves selection to the previous sibling at the current depth.
     ///
     /// Returns true if the selection changed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FlameGraphState, FlameNode};
+    ///
+    /// let root = FlameNode::new("main()", 500)
+    ///     .with_child(FlameNode::new("a()", 200))
+    ///     .with_child(FlameNode::new("b()", 300));
+    /// let mut state = FlameGraphState::with_root(root);
+    /// state.select_down();
+    /// state.select_right();
+    /// assert_eq!(state.selected_index(), 1);
+    /// assert!(state.select_left());
+    /// assert_eq!(state.selected_index(), 0);
+    /// ```
     pub fn select_left(&mut self) -> bool {
         if self.root.is_none() {
             return false;
@@ -610,6 +652,21 @@ impl FlameGraphState {
     /// Moves selection to the next sibling at the current depth.
     ///
     /// Returns true if the selection changed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FlameGraphState, FlameNode};
+    ///
+    /// let root = FlameNode::new("main()", 500)
+    ///     .with_child(FlameNode::new("a()", 200))
+    ///     .with_child(FlameNode::new("b()", 300));
+    /// let mut state = FlameGraphState::with_root(root);
+    /// state.select_down();
+    /// assert_eq!(state.selected_index(), 0);
+    /// assert!(state.select_right());
+    /// assert_eq!(state.selected_index(), 1);
+    /// ```
     pub fn select_right(&mut self) -> bool {
         let view_root = match self.current_view_root() {
             Some(r) => r,
@@ -627,6 +684,18 @@ impl FlameGraphState {
     // ---- Instance methods ----
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FlameGraphMessage, FlameGraphOutput, FlameGraphState, FlameNode};
+    ///
+    /// let root = FlameNode::new("main()", 500)
+    ///     .with_child(FlameNode::new("compute()", 300));
+    /// let mut state = FlameGraphState::with_root(root);
+    /// let output = state.update(FlameGraphMessage::SelectDown);
+    /// assert!(matches!(output, Some(FlameGraphOutput::FrameSelected { .. })));
+    /// ```
     pub fn update(&mut self, msg: FlameGraphMessage) -> Option<FlameGraphOutput> {
         FlameGraph::update(self, msg)
     }

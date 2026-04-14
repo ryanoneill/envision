@@ -340,6 +340,15 @@ impl ConfirmDialogState {
     }
 
     /// Returns the button configuration.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConfirmDialogState, confirm_dialog::ButtonConfig};
+    ///
+    /// let state = ConfirmDialogState::yes_no("Delete?", "Are you sure?");
+    /// assert_eq!(state.button_config(), &ButtonConfig::YesNo);
+    /// ```
     pub fn button_config(&self) -> &ButtonConfig {
         &self.button_config
     }
@@ -359,6 +368,15 @@ impl ConfirmDialogState {
     }
 
     /// Returns the destructive button index, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ConfirmDialogState;
+    ///
+    /// let state = ConfirmDialogState::new("Title", "Message");
+    /// assert_eq!(state.destructive_button(), None);
+    /// ```
     pub fn destructive_button(&self) -> Option<usize> {
         self.destructive_button
     }

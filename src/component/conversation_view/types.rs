@@ -306,26 +306,71 @@ impl MessageBlock {
     }
 
     /// Returns true if this is a text block.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MessageBlock;
+    ///
+    /// assert!(MessageBlock::text("hello").is_text());
+    /// assert!(!MessageBlock::thinking("thoughts").is_text());
+    /// ```
     pub fn is_text(&self) -> bool {
         matches!(self, Self::Text(_))
     }
 
     /// Returns true if this is a code block.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MessageBlock;
+    ///
+    /// assert!(MessageBlock::code("let x = 1;", Some("rust")).is_code());
+    /// assert!(!MessageBlock::text("hello").is_code());
+    /// ```
     pub fn is_code(&self) -> bool {
         matches!(self, Self::Code { .. })
     }
 
     /// Returns true if this is a tool use block.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MessageBlock;
+    ///
+    /// assert!(MessageBlock::tool_use("search").is_tool_use());
+    /// assert!(!MessageBlock::text("hello").is_tool_use());
+    /// ```
     pub fn is_tool_use(&self) -> bool {
         matches!(self, Self::ToolUse { .. })
     }
 
     /// Returns true if this is a thinking block.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MessageBlock;
+    ///
+    /// assert!(MessageBlock::thinking("reasoning...").is_thinking());
+    /// assert!(!MessageBlock::text("hello").is_thinking());
+    /// ```
     pub fn is_thinking(&self) -> bool {
         matches!(self, Self::Thinking(_))
     }
 
     /// Returns true if this is an error block.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MessageBlock;
+    ///
+    /// assert!(MessageBlock::error("timeout").is_error());
+    /// assert!(!MessageBlock::text("hello").is_error());
+    /// ```
     pub fn is_error(&self) -> bool {
         matches!(self, Self::Error(_))
     }
@@ -445,11 +490,29 @@ impl ConversationMessage {
     }
 
     /// Returns the role of the message sender.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationMessage, ConversationRole};
+    ///
+    /// let msg = ConversationMessage::new(ConversationRole::User, "Hi");
+    /// assert_eq!(*msg.role(), ConversationRole::User);
+    /// ```
     pub fn role(&self) -> &ConversationRole {
         &self.role
     }
 
     /// Returns the content blocks.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationMessage, ConversationRole};
+    ///
+    /// let msg = ConversationMessage::new(ConversationRole::Assistant, "Hello");
+    /// assert_eq!(msg.blocks().len(), 1);
+    /// ```
     pub fn blocks(&self) -> &[MessageBlock] {
         &self.blocks
     }
@@ -487,16 +550,50 @@ impl ConversationMessage {
     }
 
     /// Returns the timestamp if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationMessage, ConversationRole};
+    ///
+    /// let msg = ConversationMessage::new(ConversationRole::User, "Hi");
+    /// assert_eq!(msg.timestamp(), None);
+    ///
+    /// let msg = ConversationMessage::new(ConversationRole::User, "Hi")
+    ///     .with_timestamp("14:30");
+    /// assert_eq!(msg.timestamp(), Some("14:30"));
+    /// ```
     pub fn timestamp(&self) -> Option<&str> {
         self.timestamp.as_deref()
     }
 
     /// Returns whether the message is still being streamed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationMessage, ConversationRole};
+    ///
+    /// let msg = ConversationMessage::new(ConversationRole::Assistant, "Thinking")
+    ///     .with_streaming(true);
+    /// assert!(msg.is_streaming());
+    /// ```
     pub fn is_streaming(&self) -> bool {
         self.streaming
     }
 
     /// Sets the streaming flag.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationMessage, ConversationRole};
+    ///
+    /// let mut msg = ConversationMessage::new(ConversationRole::Assistant, "Thinking");
+    /// assert!(!msg.is_streaming());
+    /// msg.set_streaming(true);
+    /// assert!(msg.is_streaming());
+    /// ```
     pub fn set_streaming(&mut self, streaming: bool) {
         self.streaming = streaming;
     }
