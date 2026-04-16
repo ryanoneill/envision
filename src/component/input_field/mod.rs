@@ -507,6 +507,17 @@ impl InputFieldState {
     }
 
     /// Updates the input field state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{InputFieldMessage, InputFieldState};
+    ///
+    /// let mut state = InputFieldState::new();
+    /// state.update(InputFieldMessage::Insert('h'));
+    /// state.update(InputFieldMessage::Insert('i'));
+    /// assert_eq!(state.value(), "hi");
+    /// ```
     pub fn update(&mut self, msg: InputFieldMessage) -> Option<InputFieldOutput> {
         InputField::update(self, msg)
     }

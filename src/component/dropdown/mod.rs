@@ -222,6 +222,15 @@ impl DropdownState {
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::prelude::*;
+    ///
+    /// let state = DropdownState::with_selection(vec!["A", "B"], 1);
+    /// assert_eq!(state.selected(), state.selected_index());
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }

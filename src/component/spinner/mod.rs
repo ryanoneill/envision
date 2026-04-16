@@ -95,6 +95,14 @@ impl SpinnerStyle {
     ///
     /// For `Custom` styles, returns the provided frames.
     /// For empty `Custom` styles, returns a single space character.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpinnerStyle;
+    ///
+    /// assert_eq!(SpinnerStyle::Line.frames(), &['|', '/', '-', '\\']);
+    /// ```
     pub fn frames(&self) -> &[char] {
         // Static arrays for built-in styles
         const DOTS: &[char] = &['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];

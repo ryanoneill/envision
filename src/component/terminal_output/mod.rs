@@ -423,6 +423,18 @@ impl TerminalOutputState {
     // ---- Configuration accessors ----
 
     /// Returns the maximum number of lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "display-components")]
+    /// # {
+    /// use envision::component::TerminalOutputState;
+    ///
+    /// let state = TerminalOutputState::new().with_max_lines(500);
+    /// assert_eq!(state.max_lines(), 500);
+    /// # }
+    /// ```
     pub fn max_lines(&self) -> usize {
         self.max_lines
     }

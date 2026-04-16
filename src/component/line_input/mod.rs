@@ -453,11 +453,32 @@ impl LineInputState {
     }
 
     /// Returns the current input keybinding mode.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    /// use envision::component::line_input::InputMode;
+    ///
+    /// let state = LineInputState::new().with_input_mode(InputMode::Readline);
+    /// assert_eq!(state.input_mode(), &InputMode::Readline);
+    /// ```
     pub fn input_mode(&self) -> &InputMode {
         &self.input_mode
     }
 
     /// Sets the input keybinding mode.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LineInputState;
+    /// use envision::component::line_input::InputMode;
+    ///
+    /// let mut state = LineInputState::new();
+    /// state.set_input_mode(InputMode::Readline);
+    /// assert_eq!(state.input_mode(), &InputMode::Readline);
+    /// ```
     pub fn set_input_mode(&mut self, mode: InputMode) {
         self.input_mode = mode;
     }

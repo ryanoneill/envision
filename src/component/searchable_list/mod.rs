@@ -310,6 +310,15 @@ impl<T: Clone> SearchableListState<T> {
     }
 
     /// Alias for [`selected_index()`](Self::selected_index).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SearchableListState;
+    ///
+    /// let state = SearchableListState::new(vec!["A".to_string(), "B".to_string()]);
+    /// assert_eq!(state.selected(), state.selected_index());
+    /// ```
     pub fn selected(&self) -> Option<usize> {
         self.selected_index()
     }
