@@ -224,6 +224,15 @@ impl CodeBlockState {
     // ---- Code accessors ----
 
     /// Returns the source code content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CodeBlockState;
+    ///
+    /// let state = CodeBlockState::new().with_code("fn main() {}");
+    /// assert_eq!(state.code(), "fn main() {}");
+    /// ```
     pub fn code(&self) -> &str {
         &self.code
     }

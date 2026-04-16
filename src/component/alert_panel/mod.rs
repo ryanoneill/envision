@@ -601,6 +601,24 @@ impl AlertPanelState {
     }
 
     /// Returns the number of rows in the grid.
+    ///
+    /// The row count is derived from the number of metrics and the configured
+    /// column count (rounded up so partial rows still count).
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use envision::component::{AlertMetric, AlertPanelState, AlertThreshold};
+    ///
+    /// let state = AlertPanelState::new()
+    ///     .with_metrics(vec![
+    ///         AlertMetric::new("a", "A", AlertThreshold::new(70.0, 90.0)),
+    ///         AlertMetric::new("b", "B", AlertThreshold::new(70.0, 90.0)),
+    ///         AlertMetric::new("c", "C", AlertThreshold::new(70.0, 90.0)),
+    ///     ])
+    ///     .with_columns(2);
+    /// assert_eq!(state.rows(), 2);
+    /// ```
     pub fn rows(&self) -> usize {
         if self.metrics.is_empty() {
             0

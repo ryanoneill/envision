@@ -99,6 +99,15 @@ impl<T: Clone> TreeNode<T> {
     }
 
     /// Returns the node's label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TreeNode;
+    ///
+    /// let node = TreeNode::new("Documents", ());
+    /// assert_eq!(node.label(), "Documents");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
@@ -744,6 +753,18 @@ impl<T: Clone> TreeState<T> {
 
 impl<T: Clone + 'static> TreeState<T> {
     /// Updates the tree state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TreeMessage, TreeNode, TreeState};
+    ///
+    /// let mut root = TreeNode::new("Root", ());
+    /// root.add_child(TreeNode::new("Child", ()));
+    /// let mut state = TreeState::new(vec![root]);
+    /// state.update(TreeMessage::Expand);
+    /// assert!(state.roots()[0].is_expanded());
+    /// ```
     pub fn update(&mut self, msg: TreeMessage) -> Option<TreeOutput> {
         Tree::update(self, msg)
     }
