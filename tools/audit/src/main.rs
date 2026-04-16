@@ -8,6 +8,7 @@ mod cargo_checks;
 mod code_analysis;
 mod file_stats;
 mod project_analysis;
+mod scorecard;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -33,6 +34,7 @@ fn main() {
         Some("cargo") => cargo_checks::run(&project_root),
         Some("project") => project_analysis::run(&project_root),
         Some("api") => api_quality::run(&project_root),
+        Some("scorecard") => scorecard::run(&project_root),
         Some("all") | None => {
             file_stats::run(&project_root);
             println!();
@@ -43,6 +45,8 @@ fn main() {
             project_analysis::run(&project_root);
             println!();
             cargo_checks::run(&project_root);
+            println!();
+            scorecard::run(&project_root);
         }
         Some(cmd) => {
             eprintln!("Unknown command: {cmd}");
@@ -126,6 +130,7 @@ fn print_usage() {
     eprintln!("  api      API quality checks (re-exports, dependency leakage, test gating)");
     eprintln!("  project  Project-level analysis (files, deps, CI, examples)");
     eprintln!("  cargo    Run cargo checks (test, clippy, doc)");
+    eprintln!("  scorecard Pass/fail metrics for tracking release quality");
     eprintln!("  all      Run all analyses (default)");
     eprintln!();
     eprintln!("Options:");
