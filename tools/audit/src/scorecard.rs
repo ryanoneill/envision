@@ -372,7 +372,11 @@ fn extract_method_names(content: &str, prefix: &str) -> Vec<String> {
         let trimmed = line.trim();
         if let Some(rest) = trimmed.strip_prefix(prefix) {
             if let Some(name_end) = rest.find(['(', '<', ' ']) {
-                names.push(format!("{}{}", prefix.strip_prefix("pub fn ").unwrap_or(prefix), &rest[..name_end]));
+                names.push(format!(
+                    "{}{}",
+                    prefix.strip_prefix("pub fn ").unwrap_or(prefix),
+                    &rest[..name_end]
+                ));
             }
         }
     }
@@ -501,26 +505,23 @@ fn extract_state_derives(content: &str) -> Vec<String> {
     }
 
     if let Some(ref state_name) = state_type_name {
+        // Trait paths to recognize. The leading `impl` token may be followed by
+        // a generic parameter list (e.g. `impl<T: TableRow + PartialEq>`), so we
+        // scan impl lines for the `{TraitPath} for {StateName}` signature rather
+        // than anchoring on `impl {TraitPath} for`.
         let trait_patterns: &[(&str, &[&str])] = &[
             (
                 "Debug",
-                &[
-                    "impl Debug for",
-                    "impl std::fmt::Debug for",
-                    "impl core::fmt::Debug for",
-                ],
+                &["Debug for", "std::fmt::Debug for", "core::fmt::Debug for"],
             ),
-            ("Clone", &["impl Clone for", "impl std::clone::Clone for"]),
-            (
-                "Default",
-                &["impl Default for", "impl std::default::Default for"],
-            ),
+            ("Clone", &["Clone for", "std::clone::Clone for"]),
+            ("Default", &["Default for", "std::default::Default for"]),
             (
                 "PartialEq",
                 &[
-                    "impl PartialEq for",
-                    "impl std::cmp::PartialEq for",
-                    "impl core::cmp::PartialEq for",
+                    "PartialEq for",
+                    "std::cmp::PartialEq for",
+                    "core::cmp::PartialEq for",
                 ],
             ),
         ];
@@ -529,15 +530,113 @@ fn extract_state_derives(content: &str) -> Vec<String> {
             if derives.iter().any(|d| d == *trait_name) {
                 continue;
             }
-            for pattern_prefix in *patterns {
-                let pattern = format!("{} {}", pattern_prefix, state_name);
-                if content.contains(&pattern) {
-                    derives.push(trait_name.to_string());
-                    break;
-                }
+            if has_manual_trait_impl(content, patterns, state_name) {
+                derives.push(trait_name.to_string());
             }
         }
     }
 
     derives
+}
+
+/// Returns true if `content` contains a manual trait impl for `state_name`
+/// matching any of the given trait path patterns (e.g. `"PartialEq for"`).
+///
+/// Handles both non-generic (`impl PartialEq for FooState`) and generic
+/// (`impl<T: Clone> PartialEq for FooState<T>`) impls by scanning lines that
+/// begin with `impl` and checking for the `{trait} for {state_name}` signature
+/// anywhere on that line. A word-boundary check prevents `FooState` from
+/// matching `FooStateExt`.
+fn has_manual_trait_impl(content: &str, trait_patterns: &[&str], state_name: &str) -> bool {
+    for line in content.lines() {
+        let trimmed = line.trim_start();
+        if !trimmed.starts_with("impl") {
+            continue;
+        }
+        // After the `impl` keyword we expect either whitespace (`impl Foo`) or
+        // a generic parameter list (`impl<T> Foo`). Anything else (e.g. an
+        // identifier like `implementation`) is not an impl block.
+        let after_impl = &trimmed[4..];
+        if !after_impl.starts_with(' ') && !after_impl.starts_with('<') {
+            continue;
+        }
+        for pattern in trait_patterns {
+            let needle = format!("{pattern} {state_name}");
+            if let Some(idx) = trimmed.find(&needle) {
+                let end = idx + needle.len();
+                let next_char = trimmed[end..].chars().next();
+                let is_boundary = match next_char {
+                    None => true,
+                    Some(c) => !c.is_alphanumeric() && c != '_',
+                };
+                if is_boundary {
+                    return true;
+                }
+            }
+        }
+    }
+    false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extracts_derive_list_from_attribute() {
+        let content = "#[derive(Clone, Debug, PartialEq)]\npub struct FooState { x: u8 }";
+        let derives = extract_state_derives(content);
+        assert!(derives.contains(&"Clone".to_string()));
+        assert!(derives.contains(&"Debug".to_string()));
+        assert!(derives.contains(&"PartialEq".to_string()));
+        assert!(!derives.contains(&"Default".to_string()));
+    }
+
+    #[test]
+    fn detects_manual_non_generic_impl() {
+        let content =
+            "pub struct FooState { x: u8 }\nimpl Default for FooState { fn default() -> Self { unimplemented!() } }";
+        let derives = extract_state_derives(content);
+        assert!(derives.contains(&"Default".to_string()));
+    }
+
+    #[test]
+    fn detects_manual_generic_impl() {
+        // Regression test: audit previously missed generic manual impls.
+        let content = "pub struct FooState<T: Clone> { x: T }\nimpl<T: Clone + PartialEq> PartialEq for FooState<T> { fn eq(&self, other: &Self) -> bool { true } }";
+        let derives = extract_state_derives(content);
+        assert!(derives.contains(&"PartialEq".to_string()));
+    }
+
+    #[test]
+    fn detects_manual_generic_default_impl() {
+        let content = "pub struct FooState<T: Clone> { x: T }\nimpl<T: Clone> Default for FooState<T> { fn default() -> Self { unimplemented!() } }";
+        let derives = extract_state_derives(content);
+        assert!(derives.contains(&"Default".to_string()));
+    }
+
+    #[test]
+    fn detects_fully_qualified_path() {
+        let content =
+            "pub struct FooState;\nimpl std::cmp::PartialEq for FooState { fn eq(&self, _other: &Self) -> bool { true } }";
+        let derives = extract_state_derives(content);
+        assert!(derives.contains(&"PartialEq".to_string()));
+    }
+
+    #[test]
+    fn does_not_match_state_with_extended_name() {
+        // `FooState` should not match `FooStateExt` due to word boundary.
+        let content = "pub struct FooState;\nimpl PartialEq for FooStateExt { fn eq(&self, _other: &Self) -> bool { true } }";
+        let derives = extract_state_derives(content);
+        assert!(!derives.contains(&"PartialEq".to_string()));
+    }
+
+    #[test]
+    fn ignores_impl_like_words_in_comments() {
+        // Lines like `// implementation notes` should not trigger detection.
+        let content =
+            "pub struct FooState;\n// implementation of PartialEq for FooState would be...";
+        let derives = extract_state_derives(content);
+        assert!(!derives.contains(&"PartialEq".to_string()));
+    }
 }

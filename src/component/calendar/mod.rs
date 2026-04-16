@@ -213,6 +213,29 @@ pub struct CalendarState {
     title: Option<String>,
 }
 
+impl Default for CalendarState {
+    /// Returns a calendar for January 1970 with no selected day, no events,
+    /// and no title.
+    ///
+    /// This mirrors the conventional Unix epoch default used by date libraries
+    /// like `chrono`'s `NaiveDate::default()`. For meaningful UI, construct
+    /// state with [`CalendarState::new`] for the desired year and month.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::CalendarState;
+    ///
+    /// let state = CalendarState::default();
+    /// assert_eq!(state.year(), 1970);
+    /// assert_eq!(state.month(), 1);
+    /// assert_eq!(state.selected_day(), None);
+    /// ```
+    fn default() -> Self {
+        Self::new(1970, 1)
+    }
+}
+
 impl CalendarState {
     /// Creates a new calendar for the given year and month.
     ///
