@@ -150,10 +150,9 @@ fn count_accessor_gaps(src: &Path) -> usize {
         if !mod_file.exists() {
             continue;
         }
-        let content = fs::read_to_string(&mod_file).unwrap_or_default();
-        let filtered = non_test_content(&content);
-        let setters = extract_method_names(&filtered, "pub fn set_");
-        let getters = extract_getter_methods(&filtered);
+        let content = read_non_test_sources(&entry.path());
+        let setters = extract_method_names(&content, "pub fn set_");
+        let getters = extract_getter_methods(&content);
 
         for setter in &setters {
             let getter_name = setter.strip_prefix("set_").unwrap_or(setter);
@@ -186,7 +185,7 @@ fn count_doctest_coverage(src: &Path) -> (usize, usize) {
         if !mod_file.exists() {
             continue;
         }
-        let content = fs::read_to_string(&mod_file).unwrap_or_default();
+        let content = read_non_test_sources(&entry.path());
         let (pub_fns, with_doctest) = count_doctest_in_content(&content);
         total_pub += pub_fns;
         total_with += with_doctest;
@@ -270,6 +269,35 @@ fn count_clippy_suppressions(src: &Path) -> usize {
 }
 
 // --- Helper functions ---
+
+fn read_non_test_sources(component_dir: &Path) -> String {
+    let mut combined = String::new();
+    let test_filenames = ["tests.rs", "snapshot_tests.rs"];
+
+    let Ok(entries) = fs::read_dir(component_dir) else {
+        return combined;
+    };
+    let mut files: Vec<_> = entries.flatten().collect();
+    files.sort_by_key(|e| e.path());
+
+    for entry in files {
+        let path = entry.path();
+        if !path.is_file() || path.extension().is_some_and(|e| e != "rs") {
+            continue;
+        }
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            if test_filenames.contains(&name) {
+                continue;
+            }
+        }
+        if let Ok(content) = fs::read_to_string(&path) {
+            let filtered = non_test_content(&content);
+            combined.push_str(&filtered);
+            combined.push('\n');
+        }
+    }
+    combined
+}
 
 fn walk_rs_files(dir: &Path, callback: &mut dyn FnMut(&Path, &str)) {
     let Ok(entries) = fs::read_dir(dir) else {
