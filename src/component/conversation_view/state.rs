@@ -180,6 +180,28 @@ impl ConversationViewState {
         self.role_style_overrides.get(role)
     }
 
+    /// Returns the style override for a specific role, if one has been set.
+    ///
+    /// This is an alias for [`role_style_override`](Self::role_style_override).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ConversationViewState, ConversationRole};
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = ConversationViewState::new();
+    /// state.set_role_style(ConversationRole::User, Style::default().fg(Color::Cyan));
+    /// assert_eq!(
+    ///     state.role_style(&ConversationRole::User),
+    ///     Some(&Style::default().fg(Color::Cyan)),
+    /// );
+    /// assert!(state.role_style(&ConversationRole::Assistant).is_none());
+    /// ```
+    pub fn role_style(&self, role: &ConversationRole) -> Option<&Style> {
+        self.role_style_override(role)
+    }
+
     /// Sets a style override for a specific role.
     ///
     /// # Example

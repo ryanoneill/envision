@@ -520,6 +520,79 @@ impl<T: Clone> LoadingListState<T> {
         }
     }
 
+    /// Returns whether the item at the given index is in the loading state.
+    ///
+    /// Returns `false` if the index is out of bounds.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["task".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// assert!(!state.is_loading(0));
+    /// state.set_loading(0);
+    /// assert!(state.is_loading(0));
+    /// assert!(!state.is_loading(99));
+    /// ```
+    pub fn is_loading(&self, index: usize) -> bool {
+        self.items
+            .get(index)
+            .is_some_and(|item| item.state == ItemState::Loading)
+    }
+
+    /// Returns whether the item at the given index is in the ready state.
+    ///
+    /// Returns `false` if the index is out of bounds.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["task".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// assert!(state.is_ready(0));
+    /// state.set_loading(0);
+    /// assert!(!state.is_ready(0));
+    /// state.set_ready(0);
+    /// assert!(state.is_ready(0));
+    /// ```
+    pub fn is_ready(&self, index: usize) -> bool {
+        self.items
+            .get(index)
+            .is_some_and(|item| item.state == ItemState::Ready)
+    }
+
+    /// Returns whether the item at the given index is in an error state.
+    ///
+    /// Returns `false` if the index is out of bounds.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LoadingListState;
+    ///
+    /// let mut state = LoadingListState::with_items(
+    ///     vec!["task".to_string()],
+    ///     |s| s.clone(),
+    /// );
+    /// assert!(!state.is_error(0));
+    /// state.set_error(0, "Connection refused");
+    /// assert!(state.is_error(0));
+    /// assert!(!state.is_error(99));
+    /// ```
+    pub fn is_error(&self, index: usize) -> bool {
+        self.items
+            .get(index)
+            .is_some_and(|item| item.state.is_error())
+    }
+
     /// Returns the number of items currently loading.
     ///
     /// # Example

@@ -785,6 +785,24 @@ impl ChartState {
         self.y_max = max;
     }
 
+    /// Returns the manual Y-axis range as a `(min, max)` tuple.
+    ///
+    /// Each bound is `None` when auto-scaling from data is used.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ChartState, DataSeries};
+    ///
+    /// let mut state = ChartState::area(vec![DataSeries::new("CPU", vec![50.0])]);
+    /// assert_eq!(state.y_range(), (None, None));
+    /// state.set_y_range(Some(0.0), Some(100.0));
+    /// assert_eq!(state.y_range(), (Some(0.0), Some(100.0)));
+    /// ```
+    pub fn y_range(&self) -> (Option<f64>, Option<f64>) {
+        (self.y_min, self.y_max)
+    }
+
     // ---- Computed properties ----
 
     /// Computes the global min value across all series.

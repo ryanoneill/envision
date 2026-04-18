@@ -156,9 +156,11 @@ fn count_accessor_gaps(src: &Path) -> usize {
 
         for setter in &setters {
             let getter_name = setter.strip_prefix("set_").unwrap_or(setter);
-            let has_getter = getters
-                .iter()
-                .any(|g| g == getter_name || g == &format!("is_{}", getter_name));
+            let has_getter = getters.iter().any(|g| {
+                g == getter_name
+                    || g == &format!("is_{}", getter_name)
+                    || g == &format!("{}_value", getter_name)
+            });
             if !has_getter {
                 total_gaps += 1;
             }

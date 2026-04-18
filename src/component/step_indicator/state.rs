@@ -430,6 +430,29 @@ impl StepIndicatorState {
         self.status_style_overrides.get(status)
     }
 
+    /// Returns the per-status style override, if one is set.
+    ///
+    /// This is an alias for [`status_style_override`](Self::status_style_override).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::{Step, StepStatus};
+    /// use envision::component::StepIndicatorState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = StepIndicatorState::new(vec![Step::new("A")]);
+    /// state.set_status_style(StepStatus::Active, Style::default().fg(Color::Yellow));
+    /// assert_eq!(
+    ///     state.status_style(&StepStatus::Active),
+    ///     Some(&Style::default().fg(Color::Yellow)),
+    /// );
+    /// assert!(state.status_style(&StepStatus::Pending).is_none());
+    /// ```
+    pub fn status_style(&self, status: &StepStatus) -> Option<&Style> {
+        self.status_style_override(status)
+    }
+
     /// Sets a per-status style override.
     ///
     /// # Example
@@ -481,6 +504,29 @@ impl StepIndicatorState {
     /// ```
     pub fn step_style_override(&self, index: usize) -> Option<&Style> {
         self.step_style_overrides.get(&index)
+    }
+
+    /// Returns the per-step-index style override, if one is set.
+    ///
+    /// This is an alias for [`step_style_override`](Self::step_style_override).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::step_indicator::Step;
+    /// use envision::component::StepIndicatorState;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let mut state = StepIndicatorState::new(vec![Step::new("A"), Step::new("B")]);
+    /// state.set_step_style(0, Style::default().fg(Color::Cyan));
+    /// assert_eq!(
+    ///     state.step_style(0),
+    ///     Some(&Style::default().fg(Color::Cyan)),
+    /// );
+    /// assert!(state.step_style(1).is_none());
+    /// ```
+    pub fn step_style(&self, index: usize) -> Option<&Style> {
+        self.step_style_override(index)
     }
 
     /// Sets a per-step-index style override.

@@ -94,6 +94,21 @@ impl TimelineEvent {
     pub fn set_color(&mut self, color: Color) {
         self.color = color;
     }
+
+    /// Returns the color for this event marker.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TimelineEvent;
+    /// use ratatui::style::Color;
+    ///
+    /// let event = TimelineEvent::new("e1", 0.0, "Start").with_color(Color::Red);
+    /// assert_eq!(event.color(), Color::Red);
+    /// ```
+    pub fn color(&self) -> Color {
+        self.color
+    }
 }
 
 /// A span (duration) on the timeline.
@@ -194,6 +209,21 @@ impl TimelineSpan {
     /// ```
     pub fn set_color(&mut self, color: Color) {
         self.color = color;
+    }
+
+    /// Returns the color for this span bar.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::TimelineSpan;
+    /// use ratatui::style::Color;
+    ///
+    /// let span = TimelineSpan::new("s1", 0.0, 100.0, "task").with_color(Color::Red);
+    /// assert_eq!(span.color(), Color::Red);
+    /// ```
+    pub fn color(&self) -> Color {
+        self.color
     }
 
     /// Sets the lane (builder pattern).

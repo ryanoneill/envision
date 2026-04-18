@@ -245,10 +245,11 @@ fn print_accessor_symmetry(components: &BTreeMap<String, ComponentInfo>) {
             .iter()
             .filter(|setter| {
                 let getter_name = setter.strip_prefix("set_").unwrap_or(setter);
-                !info
-                    .getter_methods
-                    .iter()
-                    .any(|g| g == getter_name || g == &format!("is_{}", getter_name))
+                !info.getter_methods.iter().any(|g| {
+                    g == getter_name
+                        || g == &format!("is_{}", getter_name)
+                        || g == &format!("{}_value", getter_name)
+                })
             })
             .collect();
         if !missing.is_empty() {

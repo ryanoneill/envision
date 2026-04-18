@@ -404,6 +404,23 @@ impl EventStreamState {
     }
 
     /// Returns the current text filter.
+    ///
+    /// This is an alias for [`filter_text`](Self::filter_text).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.set_filter("error".to_string());
+    /// assert_eq!(state.filter(), "error");
+    /// ```
+    pub fn filter(&self) -> &str {
+        self.filter_text()
+    }
+
+    /// Returns the current text filter.
     pub fn filter_text(&self) -> &str {
         &self.filter_text
     }
