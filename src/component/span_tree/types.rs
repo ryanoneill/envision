@@ -141,26 +141,72 @@ impl SpanNode {
     }
 
     /// Returns the node's unique identifier.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanNode;
+    ///
+    /// let node = SpanNode::new("svc-1", "api/handler", 0.0, 100.0);
+    /// assert_eq!(node.id(), "svc-1");
+    /// ```
     pub fn id(&self) -> &str {
         &self.id
     }
 
     /// Returns the node's display label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanNode;
+    ///
+    /// let node = SpanNode::new("id", "api/handler", 0.0, 100.0);
+    /// assert_eq!(node.label(), "api/handler");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Returns the start time.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanNode;
+    ///
+    /// let node = SpanNode::new("id", "svc", 42.0, 100.0);
+    /// assert_eq!(node.start(), 42.0);
+    /// ```
     pub fn start(&self) -> f64 {
         self.start
     }
 
     /// Returns the end time.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanNode;
+    ///
+    /// let node = SpanNode::new("id", "svc", 0.0, 250.0);
+    /// assert_eq!(node.end(), 250.0);
+    /// ```
     pub fn end(&self) -> f64 {
         self.end
     }
 
     /// Returns the bar color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanNode;
+    /// use ratatui::style::Color;
+    ///
+    /// let node = SpanNode::new("id", "svc", 0.0, 10.0);
+    /// assert_eq!(node.color(), Color::Cyan); // default color
+    /// ```
     pub fn color(&self) -> Color {
         self.color
     }
@@ -182,11 +228,34 @@ impl SpanNode {
     }
 
     /// Returns the status text, if set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanNode;
+    ///
+    /// let node = SpanNode::new("id", "svc", 0.0, 10.0).with_status("200 OK");
+    /// assert_eq!(node.status(), Some("200 OK"));
+    ///
+    /// let plain = SpanNode::new("id", "svc", 0.0, 10.0);
+    /// assert_eq!(plain.status(), None);
+    /// ```
     pub fn status(&self) -> Option<&str> {
         self.status.as_deref()
     }
 
     /// Returns the children.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanNode;
+    ///
+    /// let node = SpanNode::new("p", "parent", 0.0, 100.0)
+    ///     .with_child(SpanNode::new("c", "child", 10.0, 50.0));
+    /// assert_eq!(node.children().len(), 1);
+    /// assert_eq!(node.children()[0].id(), "c");
+    /// ```
     pub fn children(&self) -> &[SpanNode] {
         &self.children
     }
@@ -206,6 +275,19 @@ impl SpanNode {
     }
 
     /// Returns true if this node has children.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::SpanNode;
+    ///
+    /// let leaf = SpanNode::new("l", "leaf", 0.0, 10.0);
+    /// assert!(!leaf.has_children());
+    ///
+    /// let parent = SpanNode::new("p", "parent", 0.0, 10.0)
+    ///     .with_child(SpanNode::new("c", "child", 1.0, 5.0));
+    /// assert!(parent.has_children());
+    /// ```
     pub fn has_children(&self) -> bool {
         !self.children.is_empty()
     }
@@ -243,51 +325,162 @@ pub struct FlatSpan {
 
 impl FlatSpan {
     /// Returns the span's unique identifier.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let state = SpanTreeState::new(vec![SpanNode::new("r", "root", 0.0, 10.0)]);
+    /// let flat = state.flatten();
+    /// assert_eq!(flat[0].id(), "r");
+    /// ```
     pub fn id(&self) -> &str {
         &self.id
     }
 
     /// Returns the display label.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let state = SpanTreeState::new(vec![SpanNode::new("r", "api/handler", 0.0, 10.0)]);
+    /// let flat = state.flatten();
+    /// assert_eq!(flat[0].label(), "api/handler");
+    /// ```
     pub fn label(&self) -> &str {
         &self.label
     }
 
     /// Returns the start time.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let state = SpanTreeState::new(vec![SpanNode::new("r", "root", 50.0, 200.0)]);
+    /// let flat = state.flatten();
+    /// assert_eq!(flat[0].start(), 50.0);
+    /// ```
     pub fn start(&self) -> f64 {
         self.start
     }
 
     /// Returns the end time.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let state = SpanTreeState::new(vec![SpanNode::new("r", "root", 0.0, 200.0)]);
+    /// let flat = state.flatten();
+    /// assert_eq!(flat[0].end(), 200.0);
+    /// ```
     pub fn end(&self) -> f64 {
         self.end
     }
 
     /// Returns the bar color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    /// use ratatui::style::Color;
+    ///
+    /// let node = SpanNode::new("r", "root", 0.0, 10.0).with_color(Color::Red);
+    /// let state = SpanTreeState::new(vec![node]);
+    /// let flat = state.flatten();
+    /// assert_eq!(flat[0].color(), Color::Red);
+    /// ```
     pub fn color(&self) -> Color {
         self.color
     }
 
     /// Returns the status text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let node = SpanNode::new("r", "root", 0.0, 10.0).with_status("200 OK");
+    /// let state = SpanTreeState::new(vec![node]);
+    /// let flat = state.flatten();
+    /// assert_eq!(flat[0].status(), Some("200 OK"));
+    /// ```
     pub fn status(&self) -> Option<&str> {
         self.status.as_deref()
     }
 
     /// Returns the depth in the hierarchy.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let root = SpanNode::new("r", "root", 0.0, 100.0)
+    ///     .with_child(SpanNode::new("c", "child", 10.0, 50.0));
+    /// let state = SpanTreeState::new(vec![root]);
+    /// let flat = state.flatten();
+    /// assert_eq!(flat[0].depth(), 0);
+    /// assert_eq!(flat[1].depth(), 1);
+    /// ```
     pub fn depth(&self) -> usize {
         self.depth
     }
 
     /// Returns true if this node has children.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let root = SpanNode::new("r", "root", 0.0, 100.0)
+    ///     .with_child(SpanNode::new("c", "child", 10.0, 50.0));
+    /// let state = SpanTreeState::new(vec![root]);
+    /// let flat = state.flatten();
+    /// assert!(flat[0].has_children());
+    /// assert!(!flat[1].has_children());
+    /// ```
     pub fn has_children(&self) -> bool {
         self.has_children
     }
 
     /// Returns true if this node is expanded.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let root = SpanNode::new("r", "root", 0.0, 100.0)
+    ///     .with_child(SpanNode::new("c", "child", 10.0, 50.0));
+    /// let state = SpanTreeState::new(vec![root]);
+    /// let flat = state.flatten();
+    /// assert!(flat[0].is_expanded()); // expanded by default
+    /// ```
     pub fn is_expanded(&self) -> bool {
         self.is_expanded
     }
 
     /// Returns the duration (end - start).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{SpanTreeState, SpanNode};
+    ///
+    /// let state = SpanTreeState::new(vec![SpanNode::new("r", "root", 50.0, 200.0)]);
+    /// let flat = state.flatten();
+    /// assert_eq!(flat[0].duration(), 150.0);
+    /// ```
     pub fn duration(&self) -> f64 {
         self.end - self.start
     }

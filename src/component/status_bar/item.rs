@@ -51,11 +51,29 @@ pub enum StatusBarItemContent {
 
 impl StatusBarItemContent {
     /// Creates static text content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItemContent;
+    ///
+    /// let content = StatusBarItemContent::static_text("Ready");
+    /// assert!(matches!(content, StatusBarItemContent::Static(_)));
+    /// ```
     pub fn static_text(text: impl Into<String>) -> Self {
         Self::Static(text.into())
     }
 
     /// Creates an elapsed time display.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItemContent;
+    ///
+    /// let content = StatusBarItemContent::elapsed_time();
+    /// assert!(matches!(content, StatusBarItemContent::ElapsedTime { .. }));
+    /// ```
     pub fn elapsed_time() -> Self {
         Self::ElapsedTime {
             elapsed_ms: 0,
@@ -65,6 +83,15 @@ impl StatusBarItemContent {
     }
 
     /// Creates a counter display.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItemContent;
+    ///
+    /// let content = StatusBarItemContent::counter();
+    /// assert!(matches!(content, StatusBarItemContent::Counter { value: 0, label: None }));
+    /// ```
     pub fn counter() -> Self {
         Self::Counter {
             value: 0,
@@ -73,6 +100,15 @@ impl StatusBarItemContent {
     }
 
     /// Creates a heartbeat indicator.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItemContent;
+    ///
+    /// let content = StatusBarItemContent::heartbeat();
+    /// assert!(matches!(content, StatusBarItemContent::Heartbeat { active: false, .. }));
+    /// ```
     pub fn heartbeat() -> Self {
         Self::Heartbeat {
             active: false,
@@ -213,6 +249,15 @@ impl StatusBarItem {
     }
 
     /// Creates an elapsed time display with long format (HH:MM:SS).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let item = StatusBarItem::elapsed_time_long();
+    /// assert_eq!(item.text(), "00:00:00");
+    /// ```
     pub fn elapsed_time_long() -> Self {
         Self {
             content: StatusBarItemContent::ElapsedTime {
@@ -262,6 +307,15 @@ impl StatusBarItem {
     /// Sets the label for counter items.
     ///
     /// This only has an effect on Counter content types.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let item = StatusBarItem::counter().with_label("Items");
+    /// assert_eq!(item.text(), "Items: 0");
+    /// ```
     pub fn with_label(mut self, label: impl Into<String>) -> Self {
         if let StatusBarItemContent::Counter {
             value,
@@ -280,6 +334,15 @@ impl StatusBarItem {
     /// Sets long format for elapsed time items.
     ///
     /// This only has an effect on ElapsedTime content types.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let item = StatusBarItem::elapsed_time().with_long_format(true);
+    /// assert_eq!(item.text(), "00:00:00");
+    /// ```
     pub fn with_long_format(mut self, long: bool) -> Self {
         if let StatusBarItemContent::ElapsedTime {
             elapsed_ms,
@@ -327,46 +390,134 @@ impl StatusBarItem {
     }
 
     /// Returns the display text for this item.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let item = StatusBarItem::new("Ready");
+    /// assert_eq!(item.text(), "Ready");
+    /// ```
     pub fn text(&self) -> String {
         self.content.display_text()
     }
 
     /// Returns the content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarItem, StatusBarItemContent};
+    ///
+    /// let item = StatusBarItem::new("Status");
+    /// assert!(matches!(item.content(), StatusBarItemContent::Static(_)));
+    /// ```
     pub fn content(&self) -> &StatusBarItemContent {
         &self.content
     }
 
     /// Returns a mutable reference to the content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarItem, StatusBarItemContent};
+    ///
+    /// let mut item = StatusBarItem::new("Status");
+    /// *item.content_mut() = StatusBarItemContent::static_text("Updated");
+    /// assert_eq!(item.text(), "Updated");
+    /// ```
     pub fn content_mut(&mut self) -> &mut StatusBarItemContent {
         &mut self.content
     }
 
     /// Sets the text content (converts to static content).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let mut item = StatusBarItem::new("Old");
+    /// item.set_text("New");
+    /// assert_eq!(item.text(), "New");
+    /// ```
     pub fn set_text(&mut self, text: impl Into<String>) {
         self.content = StatusBarItemContent::Static(text.into());
     }
 
     /// Returns the style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarItem, StatusBarStyle};
+    ///
+    /// let item = StatusBarItem::new("OK").with_style(StatusBarStyle::Success);
+    /// assert_eq!(item.style(), StatusBarStyle::Success);
+    /// ```
     pub fn style(&self) -> StatusBarStyle {
         self.style
     }
 
     /// Sets the style.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{StatusBarItem, StatusBarStyle};
+    ///
+    /// let mut item = StatusBarItem::new("Error");
+    /// item.set_style(StatusBarStyle::Error);
+    /// assert_eq!(item.style(), StatusBarStyle::Error);
+    /// ```
     pub fn set_style(&mut self, style: StatusBarStyle) {
         self.style = style;
     }
 
     /// Returns whether this item has a separator.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let item = StatusBarItem::new("Text");
+    /// assert!(item.has_separator()); // enabled by default
+    /// ```
     pub fn has_separator(&self) -> bool {
         self.separator
     }
 
     /// Sets whether to show a separator.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let mut item = StatusBarItem::new("Last");
+    /// item.set_separator(false);
+    /// assert!(!item.has_separator());
+    /// ```
     pub fn set_separator(&mut self, separator: bool) {
         self.separator = separator;
     }
 
     /// Returns true if this item has dynamic content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    ///
+    /// let static_item = StatusBarItem::new("Text");
+    /// assert!(!static_item.is_dynamic());
+    ///
+    /// let timer = StatusBarItem::elapsed_time();
+    /// assert!(timer.is_dynamic());
+    /// ```
     pub fn is_dynamic(&self) -> bool {
         self.content.is_dynamic()
     }

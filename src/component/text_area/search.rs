@@ -7,26 +7,80 @@ use super::TextAreaState;
 
 impl TextAreaState {
     /// Returns the current search query, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new().with_value("hello world");
+    /// assert_eq!(state.search_query(), None);
+    ///
+    /// TextArea::update(&mut state, TextAreaMessage::SetSearchQuery("hello".into()));
+    /// assert_eq!(state.search_query(), Some("hello"));
+    /// ```
     pub fn search_query(&self) -> Option<&str> {
         self.search_query.as_deref()
     }
 
     /// Returns the list of search matches as (line, byte_col) pairs.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new().with_value("foo bar foo");
+    /// TextArea::update(&mut state, TextAreaMessage::SetSearchQuery("foo".into()));
+    /// assert_eq!(state.search_matches().len(), 2);
+    /// ```
     pub fn search_matches(&self) -> &[(usize, usize)] {
         &self.search_matches
     }
 
     /// Returns the index of the current match within the match list.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new().with_value("aaa");
+    /// TextArea::update(&mut state, TextAreaMessage::SetSearchQuery("a".into()));
+    /// assert_eq!(state.current_match_index(), 0);
+    /// ```
     pub fn current_match_index(&self) -> usize {
         self.current_match
     }
 
     /// Returns the current match as (line, byte_col), if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new().with_value("hello");
+    /// TextArea::update(&mut state, TextAreaMessage::SetSearchQuery("hello".into()));
+    /// assert_eq!(state.current_match_position(), Some((0, 0)));
+    /// ```
     pub fn current_match_position(&self) -> Option<(usize, usize)> {
         self.search_matches.get(self.current_match).copied()
     }
 
     /// Returns true if search mode is active.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new();
+    /// assert!(!state.is_searching());
+    ///
+    /// TextArea::update(&mut state, TextAreaMessage::StartSearch);
+    /// assert!(state.is_searching());
+    /// ```
     pub fn is_searching(&self) -> bool {
         self.search_query.is_some()
     }

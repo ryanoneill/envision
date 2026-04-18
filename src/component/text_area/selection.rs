@@ -6,6 +6,18 @@ use super::TextAreaState;
 
 impl TextAreaState {
     /// Returns true if there is an active text selection.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new().with_value("hello");
+    /// assert!(!state.has_selection());
+    ///
+    /// TextArea::update(&mut state, TextAreaMessage::SelectAll);
+    /// assert!(state.has_selection());
+    /// ```
     pub fn has_selection(&self) -> bool {
         match self.selection_anchor {
             Some((r, c)) => r != self.cursor_row || c != self.cursor_col,
@@ -14,6 +26,17 @@ impl TextAreaState {
     }
 
     /// Returns the ordered selection positions as `((start_row, start_col), (end_row, end_col))`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new().with_value("hello");
+    /// TextArea::update(&mut state, TextAreaMessage::SelectAll);
+    /// let positions = state.selection_positions();
+    /// assert_eq!(positions, Some(((0, 0), (0, 5))));
+    /// ```
     pub fn selection_positions(&self) -> Option<((usize, usize), (usize, usize))> {
         let (ar, ac) = self.selection_anchor?;
         if ar == self.cursor_row && ac == self.cursor_col {
@@ -25,6 +48,18 @@ impl TextAreaState {
     }
 
     /// Returns the selected text, or None if no selection.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new().with_value("hello");
+    /// assert_eq!(state.selected_text(), None);
+    ///
+    /// TextArea::update(&mut state, TextAreaMessage::SelectAll);
+    /// assert_eq!(state.selected_text(), Some("hello".to_string()));
+    /// ```
     pub fn selected_text(&self) -> Option<String> {
         let ((sr, sc), (er, ec)) = self.selection_positions()?;
         if sr == er {
@@ -42,6 +77,17 @@ impl TextAreaState {
     }
 
     /// Returns the internal clipboard contents.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{TextArea, TextAreaMessage, TextAreaState, Component};
+    ///
+    /// let mut state = TextAreaState::new().with_value("hello");
+    /// TextArea::update(&mut state, TextAreaMessage::SelectAll);
+    /// TextArea::update(&mut state, TextAreaMessage::Copy);
+    /// assert_eq!(state.clipboard(), "hello");
+    /// ```
     pub fn clipboard(&self) -> &str {
         &self.clipboard
     }

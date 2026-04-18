@@ -399,6 +399,15 @@ impl EventStreamState {
     }
 
     /// Returns the maximum number of events to retain.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new();
+    /// assert_eq!(state.max_events(), 5000); // default
+    /// ```
     pub fn max_events(&self) -> usize {
         self.max_events
     }
@@ -421,46 +430,129 @@ impl EventStreamState {
     }
 
     /// Returns the current text filter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let mut state = EventStreamState::new();
+    /// state.set_filter("warn".to_string());
+    /// assert_eq!(state.filter_text(), "warn");
+    /// ```
     pub fn filter_text(&self) -> &str {
         &self.filter_text
     }
 
     /// Returns the current level filter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{EventStreamState, EventLevel, EventStreamMessage};
+    ///
+    /// let state = EventStreamState::new();
+    /// assert_eq!(state.level_filter(), None);
+    /// ```
     pub fn level_filter(&self) -> Option<&EventLevel> {
         self.level_filter.as_ref()
     }
 
     /// Returns the current source filter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new();
+    /// assert_eq!(state.source_filter(), None);
+    /// ```
     pub fn source_filter(&self) -> Option<&str> {
         self.source_filter.as_deref()
     }
 
     /// Returns the visible column keys.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new()
+    ///     .with_visible_columns(vec!["path".into()]);
+    /// assert_eq!(state.visible_columns(), &["path"]);
+    /// ```
     pub fn visible_columns(&self) -> &[String] {
         &self.visible_columns
     }
 
     /// Returns whether auto-scroll is enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new();
+    /// assert!(state.auto_scroll()); // enabled by default
+    /// ```
     pub fn auto_scroll(&self) -> bool {
         self.auto_scroll
     }
 
     /// Returns whether the timestamp column is shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new();
+    /// assert!(state.show_timestamps()); // shown by default
+    /// ```
     pub fn show_timestamps(&self) -> bool {
         self.show_timestamps
     }
 
     /// Returns whether the level column is shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new();
+    /// assert!(state.show_level()); // shown by default
+    /// ```
     pub fn show_level(&self) -> bool {
         self.show_level
     }
 
     /// Returns whether the source column is shown.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new();
+    /// assert!(state.show_source()); // shown by default
+    /// ```
     pub fn show_source(&self) -> bool {
         self.show_source
     }
 
     /// Returns the title.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new().with_title("Events");
+    /// assert_eq!(state.title(), Some("Events"));
+    /// ```
     pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
@@ -578,21 +670,57 @@ impl EventStreamState {
     }
 
     /// Returns the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new();
+    /// assert_eq!(state.scroll_offset(), 0);
+    /// ```
     pub fn scroll_offset(&self) -> usize {
         self.scroll.offset()
     }
 
     /// Returns whether the search bar is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new();
+    /// assert!(!state.is_search_focused());
+    /// ```
     pub fn is_search_focused(&self) -> bool {
         self.focus == Focus::Search
     }
 
     /// Returns the current value of the search input field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new();
+    /// assert_eq!(state.search_value(), "");
+    /// ```
     pub fn search_value(&self) -> &str {
         self.search.value()
     }
 
     /// Returns the cursor display position in the search field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::EventStreamState;
+    ///
+    /// let state = EventStreamState::new();
+    /// assert_eq!(state.search_cursor_position(), 0);
+    /// ```
     pub fn search_cursor_position(&self) -> usize {
         self.search.cursor_display_position()
     }
@@ -669,6 +797,17 @@ impl EventStreamState {
     // =========================================================================
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{EventStreamState, EventStreamMessage, EventStreamOutput, EventLevel, StreamEvent};
+    ///
+    /// let mut state = EventStreamState::new();
+    /// let event = StreamEvent::new(1, 0.0, EventLevel::Info, "hello");
+    /// let output = state.update(EventStreamMessage::PushEvent(event));
+    /// assert!(matches!(output, Some(EventStreamOutput::EventAdded(1))));
+    /// ```
     pub fn update(&mut self, msg: EventStreamMessage) -> Option<EventStreamOutput> {
         EventStream::update(self, msg)
     }
