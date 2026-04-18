@@ -378,23 +378,18 @@ impl StatusBarItem {
         match &mut self.content {
             StatusBarItemContent::ElapsedTime {
                 elapsed_ms,
-                running,
+                running: true,
                 ..
             } => {
-                if *running {
-                    *elapsed_ms += delta_ms;
-                    true
-                } else {
-                    false
-                }
+                *elapsed_ms += delta_ms;
+                true
             }
-            StatusBarItemContent::Heartbeat { active, frame } => {
-                if *active {
-                    *frame = (*frame + 1) % 4;
-                    true
-                } else {
-                    false
-                }
+            StatusBarItemContent::Heartbeat {
+                active: true,
+                frame,
+            } => {
+                *frame = (*frame + 1) % 4;
+                true
             }
             _ => false,
         }

@@ -423,13 +423,12 @@ impl App for ShowcaseApp {
                         );
                     }
                     Some(FocusId::SubmitButton) => {
-                        if Button::dispatch_event(
+                        let output = Button::dispatch_event(
                             &mut state.submit_button,
                             &event,
                             &EventContext::new().focused(true),
-                        )
-                        .is_some()
-                        {
+                        );
+                        if output.is_some() {
                             Dialog::update(&mut state.dialog, DialogMessage::Open);
                         }
                     }

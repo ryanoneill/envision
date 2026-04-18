@@ -556,7 +556,7 @@ impl CommandPaletteState {
                     fuzzy_score(&self.query, &item.label).map(|score| (i, score))
                 })
                 .collect();
-            scored.sort_by(|a, b| b.1.cmp(&a.1));
+            scored.sort_by_key(|b| std::cmp::Reverse(b.1));
             self.filtered_indices = scored.into_iter().map(|(i, _)| i).collect();
         }
 
