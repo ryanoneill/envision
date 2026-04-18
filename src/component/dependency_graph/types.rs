@@ -160,6 +160,24 @@ impl GraphNode {
         self.color = color;
     }
 
+    /// Returns the override color, if one has been set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::GraphNode;
+    /// use ratatui::style::Color;
+    ///
+    /// let node = GraphNode::new("svc", "Service").with_color(Color::Cyan);
+    /// assert_eq!(node.color(), Some(Color::Cyan));
+    ///
+    /// let plain = GraphNode::new("svc", "Service");
+    /// assert_eq!(plain.color(), None);
+    /// ```
+    pub fn color(&self) -> Option<Color> {
+        self.color
+    }
+
     /// Adds a metadata key-value pair (builder pattern).
     ///
     /// # Example
@@ -277,5 +295,23 @@ impl GraphEdge {
     /// ```
     pub fn set_color(&mut self, color: Option<Color>) {
         self.color = color;
+    }
+
+    /// Returns the override color, if one has been set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::GraphEdge;
+    /// use ratatui::style::Color;
+    ///
+    /// let edge = GraphEdge::new("a", "b").with_color(Color::Red);
+    /// assert_eq!(edge.color(), Some(Color::Red));
+    ///
+    /// let plain = GraphEdge::new("a", "b");
+    /// assert_eq!(plain.color(), None);
+    /// ```
+    pub fn color(&self) -> Option<Color> {
+        self.color
     }
 }

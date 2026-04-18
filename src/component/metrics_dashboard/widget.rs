@@ -216,6 +216,98 @@ impl MetricWidget {
         }
     }
 
+    /// Returns the counter value, if this is a counter widget.
+    ///
+    /// Returns `None` for non-counter widgets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MetricWidget;
+    ///
+    /// let widget = MetricWidget::counter("Requests", 42);
+    /// assert_eq!(widget.counter_value(), Some(42));
+    ///
+    /// let gauge = MetricWidget::gauge("Mem", 50, 100);
+    /// assert_eq!(gauge.counter_value(), None);
+    /// ```
+    pub fn counter_value(&self) -> Option<i64> {
+        if let MetricKind::Counter { value } = &self.kind {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the gauge value and max, if this is a gauge widget.
+    ///
+    /// Returns `None` for non-gauge widgets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MetricWidget;
+    ///
+    /// let widget = MetricWidget::gauge("Memory", 512, 1024);
+    /// assert_eq!(widget.gauge_value(), Some((512, 1024)));
+    ///
+    /// let counter = MetricWidget::counter("Ops", 0);
+    /// assert_eq!(counter.gauge_value(), None);
+    /// ```
+    pub fn gauge_value(&self) -> Option<(u64, u64)> {
+        if let MetricKind::Gauge { value, max } = &self.kind {
+            Some((*value, *max))
+        } else {
+            None
+        }
+    }
+
+    /// Returns the status (up/down), if this is a status widget.
+    ///
+    /// Returns `None` for non-status widgets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MetricWidget;
+    ///
+    /// let widget = MetricWidget::status("API", true);
+    /// assert_eq!(widget.is_status(), Some(true));
+    ///
+    /// let counter = MetricWidget::counter("Ops", 0);
+    /// assert_eq!(counter.is_status(), None);
+    /// ```
+    pub fn is_status(&self) -> Option<bool> {
+        if let MetricKind::Status { up } = &self.kind {
+            Some(*up)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the text value, if this is a text widget.
+    ///
+    /// Returns `None` for non-text widgets.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::MetricWidget;
+    ///
+    /// let widget = MetricWidget::text("Version", "1.2.3");
+    /// assert_eq!(widget.text_value(), Some("1.2.3"));
+    ///
+    /// let counter = MetricWidget::counter("Ops", 0);
+    /// assert_eq!(counter.text_value(), None);
+    /// ```
+    pub fn text_value(&self) -> Option<&str> {
+        if let MetricKind::Text { text } = &self.kind {
+            Some(text)
+        } else {
+            None
+        }
+    }
+
     /// Sets the counter value.
     ///
     /// # Example

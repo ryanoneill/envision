@@ -641,7 +641,7 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
                     matcher(&self.filter_text, &text).map(|score| (i, score))
                 })
                 .collect();
-            scored.sort_by(|a, b| b.1.cmp(&a.1));
+            scored.sort_by_key(|b| std::cmp::Reverse(b.1));
             self.filtered_indices = scored.into_iter().map(|(i, _)| i).collect();
         } else {
             // Default: case-insensitive substring match

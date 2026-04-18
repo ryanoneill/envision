@@ -72,7 +72,7 @@ fn analyze_components(src: &Path) -> BTreeMap<String, ComponentInfo> {
 
 fn analyze_single_component(dir: &Path) -> ComponentInfo {
     let all_content = read_all_rs_in_dir(dir);
-    let mod_content = fs::read_to_string(dir.join("mod.rs")).unwrap_or_default();
+    let source_content = read_non_test_sources(dir);
 
     let focusable_re = Regex::new(r"impl\b[^{{]*\bFocusable\b\s+for\b").unwrap();
     let toggleable_re = Regex::new(r"impl\b[^{{]*\bToggleable\b\s+for\b").unwrap();
@@ -80,15 +80,15 @@ fn analyze_single_component(dir: &Path) -> ComponentInfo {
     let has_focusable = focusable_re.is_match(&all_content);
     let has_toggleable = toggleable_re.is_match(&all_content);
     let has_disabled =
-        mod_content.contains("fn is_disabled") && mod_content.contains("fn set_disabled");
+        source_content.contains("fn is_disabled") && source_content.contains("fn set_disabled");
     let has_visible =
-        mod_content.contains("fn is_visible") && mod_content.contains("fn set_visible");
+        source_content.contains("fn is_visible") && source_content.contains("fn set_visible");
 
-    let builder_methods = extract_method_names(&mod_content, "pub fn with_");
-    let setter_methods = extract_method_names(&mod_content, "pub fn set_");
-    let getter_methods = extract_getter_methods(&mod_content);
-    let public_method_names = extract_all_public_fn_names(&mod_content);
-    let (pub_fn_count, pub_fn_with_doctest) = count_doctest_coverage(&mod_content);
+    let builder_methods = extract_method_names(&source_content, "pub fn with_");
+    let setter_methods = extract_method_names(&source_content, "pub fn set_");
+    let getter_methods = extract_getter_methods(&source_content);
+    let public_method_names = extract_all_public_fn_names(&source_content);
+    let (pub_fn_count, pub_fn_with_doctest) = count_doctest_coverage(&source_content);
 
     let test_content = read_test_files(dir);
     let unit_test_count =
@@ -97,11 +97,11 @@ fn analyze_single_component(dir: &Path) -> ComponentInfo {
     let snapshot_content = fs::read_to_string(dir.join("snapshot_tests.rs")).unwrap_or_default();
     let snapshot_test_count = snapshot_content.matches("#[test]").count();
 
-    // Instance method checks (methods that take &self or &mut self)
-    let has_instance_handle_event = mod_content.contains("pub fn handle_event(&self")
-        || mod_content.contains("pub fn handle_event(&mut self");
-    let has_instance_dispatch_event = mod_content.contains("pub fn dispatch_event(&mut self");
-    let has_instance_update = mod_content.contains("pub fn update(&mut self");
+    let has_instance_handle_event = source_content.contains("pub fn handle_event(&self")
+        || source_content.contains("pub fn handle_event(&mut self");
+    let has_instance_dispatch_event =
+        source_content.contains("pub fn dispatch_event(&mut self");
+    let has_instance_update = source_content.contains("pub fn update(&mut self");
 
     // Standard trait derives on State type (check all files, not just mod.rs,
     // since some components define their State struct in a separate state.rs)
@@ -245,10 +245,11 @@ fn print_accessor_symmetry(components: &BTreeMap<String, ComponentInfo>) {
             .iter()
             .filter(|setter| {
                 let getter_name = setter.strip_prefix("set_").unwrap_or(setter);
-                !info
-                    .getter_methods
-                    .iter()
-                    .any(|g| g == getter_name || g == &format!("is_{}", getter_name))
+                !info.getter_methods.iter().any(|g| {
+                    g == getter_name
+                        || g == &format!("is_{}", getter_name)
+                        || g == &format!("{}_value", getter_name)
+                })
             })
             .collect();
         if !missing.is_empty() {
@@ -813,6 +814,35 @@ fn non_test_lines(content: &str) -> impl Iterator<Item = &str> {
     }
 
     result.into_iter()
+}
+
+fn read_non_test_sources(dir: &Path) -> String {
+    let mut combined = String::new();
+    let test_filenames = ["tests.rs", "snapshot_tests.rs"];
+
+    let Ok(entries) = fs::read_dir(dir) else {
+        return combined;
+    };
+    let mut files: Vec<_> = entries.flatten().collect();
+    files.sort_by_key(|e| e.path());
+
+    for entry in files {
+        let path = entry.path();
+        if !path.is_file() || !path.extension().is_some_and(|e| e == "rs") {
+            continue;
+        }
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            if test_filenames.contains(&name) {
+                continue;
+            }
+        }
+        if let Ok(content) = fs::read_to_string(&path) {
+            let filtered = non_test_content(&content);
+            combined.push_str(&filtered);
+            combined.push('\n');
+        }
+    }
+    combined
 }
 
 fn read_all_rs_in_dir(dir: &Path) -> String {

@@ -170,14 +170,13 @@ fn apply_sgr(params: &str, mut style: Style) -> Style {
             37 => style = style.fg(Color::White),
 
             // 256-color foreground: 38;5;n
-            38 => {
-                if i + 2 < codes.len() && codes[i + 1] == "5" {
-                    if let Ok(n) = codes[i + 2].parse::<u8>() {
-                        style = style.fg(Color::Indexed(n));
-                        i += 2;
-                    }
+            38 if i + 2 < codes.len() && codes[i + 1] == "5" => {
+                if let Ok(n) = codes[i + 2].parse::<u8>() {
+                    style = style.fg(Color::Indexed(n));
+                    i += 2;
                 }
             }
+            38 => {}
 
             // Default foreground
             39 => style = style.fg(Color::Reset),
@@ -193,14 +192,13 @@ fn apply_sgr(params: &str, mut style: Style) -> Style {
             47 => style = style.bg(Color::White),
 
             // 256-color background: 48;5;n
-            48 => {
-                if i + 2 < codes.len() && codes[i + 1] == "5" {
-                    if let Ok(n) = codes[i + 2].parse::<u8>() {
-                        style = style.bg(Color::Indexed(n));
-                        i += 2;
-                    }
+            48 if i + 2 < codes.len() && codes[i + 1] == "5" => {
+                if let Ok(n) = codes[i + 2].parse::<u8>() {
+                    style = style.bg(Color::Indexed(n));
+                    i += 2;
                 }
             }
+            48 => {}
 
             // Default background
             49 => style = style.bg(Color::Reset),
