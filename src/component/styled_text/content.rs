@@ -91,6 +91,16 @@ pub struct StyledContent {
 
 impl StyledContent {
     /// Creates an empty styled content builder.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledContent;
+    ///
+    /// let content = StyledContent::new();
+    /// assert!(content.is_empty());
+    /// assert_eq!(content.len(), 0);
+    /// ```
     pub fn new() -> Self {
         Self::default()
     }
@@ -114,6 +124,17 @@ impl StyledContent {
     }
 
     /// Adds a heading block.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledContent;
+    ///
+    /// let content = StyledContent::new()
+    ///     .heading(1, "Main Title")
+    ///     .heading(2, "Subtitle");
+    /// assert_eq!(content.len(), 2);
+    /// ```
     pub fn heading(mut self, level: u8, text: impl Into<String>) -> Self {
         self.blocks.push(StyledBlock::Heading {
             level: level.clamp(1, 3),
@@ -123,6 +144,19 @@ impl StyledContent {
     }
 
     /// Adds a paragraph composed of inline elements.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::{StyledContent, StyledInline};
+    ///
+    /// let content = StyledContent::new()
+    ///     .paragraph(vec![
+    ///         StyledInline::Plain("Hello, ".to_string()),
+    ///         StyledInline::Bold("world".to_string()),
+    ///     ]);
+    /// assert_eq!(content.len(), 1);
+    /// ```
     pub fn paragraph(mut self, inlines: Vec<StyledInline>) -> Self {
         self.blocks.push(StyledBlock::Paragraph(inlines));
         self
@@ -144,18 +178,54 @@ impl StyledContent {
     }
 
     /// Adds a bulleted list.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::{StyledContent, StyledInline};
+    ///
+    /// let content = StyledContent::new()
+    ///     .bullet_list(vec![
+    ///         vec![StyledInline::Plain("First item".to_string())],
+    ///         vec![StyledInline::Plain("Second item".to_string())],
+    ///     ]);
+    /// assert_eq!(content.len(), 1);
+    /// ```
     pub fn bullet_list(mut self, items: Vec<Vec<StyledInline>>) -> Self {
         self.blocks.push(StyledBlock::BulletList(items));
         self
     }
 
     /// Adds a numbered list.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::{StyledContent, StyledInline};
+    ///
+    /// let content = StyledContent::new()
+    ///     .numbered_list(vec![
+    ///         vec![StyledInline::Plain("Step one".to_string())],
+    ///         vec![StyledInline::Plain("Step two".to_string())],
+    ///     ]);
+    /// assert_eq!(content.len(), 1);
+    /// ```
     pub fn numbered_list(mut self, items: Vec<Vec<StyledInline>>) -> Self {
         self.blocks.push(StyledBlock::NumberedList(items));
         self
     }
 
     /// Adds a code block with optional language annotation.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledContent;
+    ///
+    /// let content = StyledContent::new()
+    ///     .code_block(Some("rust"), "let x = 42;");
+    /// assert_eq!(content.len(), 1);
+    /// ```
     pub fn code_block(
         mut self,
         language: Option<impl Into<String>>,
@@ -169,40 +239,118 @@ impl StyledContent {
     }
 
     /// Adds a horizontal rule.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledContent;
+    ///
+    /// let content = StyledContent::new()
+    ///     .text("Above")
+    ///     .horizontal_rule()
+    ///     .text("Below");
+    /// assert_eq!(content.len(), 3);
+    /// ```
     pub fn horizontal_rule(mut self) -> Self {
         self.blocks.push(StyledBlock::HorizontalRule);
         self
     }
 
     /// Adds a blank line.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledContent;
+    ///
+    /// let content = StyledContent::new()
+    ///     .text("Paragraph 1")
+    ///     .blank_line()
+    ///     .text("Paragraph 2");
+    /// assert_eq!(content.len(), 3);
+    /// ```
     pub fn blank_line(mut self) -> Self {
         self.blocks.push(StyledBlock::BlankLine);
         self
     }
 
     /// Adds raw pre-rendered lines.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledContent;
+    /// use ratatui::text::Line;
+    ///
+    /// let content = StyledContent::new()
+    ///     .raw(vec![Line::from("Custom rendered line")]);
+    /// assert_eq!(content.len(), 1);
+    /// ```
     pub fn raw(mut self, lines: Vec<RatLine<'static>>) -> Self {
         self.blocks.push(StyledBlock::Raw(lines));
         self
     }
 
     /// Pushes any block element.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::{StyledContent, StyledBlock};
+    ///
+    /// let content = StyledContent::new()
+    ///     .push(StyledBlock::HorizontalRule)
+    ///     .push(StyledBlock::BlankLine);
+    /// assert_eq!(content.len(), 2);
+    /// ```
     pub fn push(mut self, block: StyledBlock) -> Self {
         self.blocks.push(block);
         self
     }
 
     /// Returns true if there are no blocks.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledContent;
+    ///
+    /// assert!(StyledContent::new().is_empty());
+    /// assert!(!StyledContent::new().text("hello").is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.blocks.is_empty()
     }
 
     /// Returns the number of blocks.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledContent;
+    ///
+    /// let content = StyledContent::new()
+    ///     .heading(1, "Title")
+    ///     .text("Body");
+    /// assert_eq!(content.len(), 2);
+    /// ```
     pub fn len(&self) -> usize {
         self.blocks.len()
     }
 
     /// Returns a reference to the blocks.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::{StyledContent, StyledBlock};
+    ///
+    /// let content = StyledContent::new()
+    ///     .heading(1, "Title")
+    ///     .blank_line();
+    /// assert_eq!(content.blocks().len(), 2);
+    /// assert!(matches!(content.blocks()[1], StyledBlock::BlankLine));
+    /// ```
     pub fn blocks(&self) -> &[StyledBlock] {
         &self.blocks
     }

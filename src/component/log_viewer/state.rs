@@ -288,6 +288,16 @@ impl LogViewerState {
     }
 
     /// Adds a success-level entry with a timestamp, returning its ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new().with_show_timestamps(true);
+    /// let id = state.push_success_with_timestamp("Build passed", "14:30:00");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn push_success_with_timestamp(
         &mut self,
         message: impl Into<String>,
@@ -301,6 +311,16 @@ impl LogViewerState {
     }
 
     /// Adds a warning-level entry with a timestamp, returning its ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new().with_show_timestamps(true);
+    /// let id = state.push_warning_with_timestamp("Disk space low", "15:00:00");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn push_warning_with_timestamp(
         &mut self,
         message: impl Into<String>,
@@ -314,6 +334,16 @@ impl LogViewerState {
     }
 
     /// Adds an error-level entry with a timestamp, returning its ID.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new().with_show_timestamps(true);
+    /// let id = state.push_error_with_timestamp("Connection refused", "15:30:00");
+    /// assert_eq!(state.len(), 1);
+    /// ```
     pub fn push_error_with_timestamp(
         &mut self,
         message: impl Into<String>,
@@ -450,6 +480,15 @@ impl LogViewerState {
     }
 
     /// Returns the maximum number of entries.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert_eq!(state.max_entries(), 1000); // default
+    /// ```
     pub fn max_entries(&self) -> usize {
         self.max_entries
     }
@@ -503,6 +542,18 @@ impl LogViewerState {
     }
 
     /// Sets the scroll offset.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.push_info("entry 1");
+    /// state.push_info("entry 2");
+    /// state.set_scroll_offset(1);
+    /// assert_eq!(state.scroll_offset(), 1);
+    /// ```
     pub fn set_scroll_offset(&mut self, offset: usize) {
         let len = self.visible_entries().len();
         self.scroll.set_content_length(len);
@@ -702,6 +753,16 @@ impl LogViewerState {
     }
 
     /// Sets follow mode.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.set_follow(false);
+    /// assert!(!state.follow());
+    /// ```
     pub fn set_follow(&mut self, follow: bool) {
         self.follow = follow;
     }
@@ -721,21 +782,59 @@ impl LogViewerState {
     }
 
     /// Sets regex search mode.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.set_use_regex(true);
+    /// assert!(state.use_regex());
+    /// ```
     pub fn set_use_regex(&mut self, use_regex: bool) {
         self.use_regex = use_regex;
     }
 
     /// Returns the search history.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert!(state.search_history().is_empty());
+    /// ```
     pub fn search_history(&self) -> &[String] {
         &self.search_history
     }
 
     /// Returns the maximum search history size.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert_eq!(state.max_history(), 20); // default
+    /// ```
     pub fn max_history(&self) -> usize {
         self.max_history
     }
 
     /// Sets the maximum search history size.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.set_max_history(50);
+    /// assert_eq!(state.max_history(), 50);
+    /// ```
     pub fn set_max_history(&mut self, max: usize) {
         self.max_history = max;
         if self.search_history.len() > max {
@@ -745,16 +844,43 @@ impl LogViewerState {
     }
 
     /// Returns whether the search bar is focused.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert!(!state.is_search_focused());
+    /// ```
     pub fn is_search_focused(&self) -> bool {
         self.focus == Focus::Search
     }
 
     /// Returns the current value of the search input field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert_eq!(state.search_value(), "");
+    /// ```
     pub fn search_value(&self) -> &str {
         self.search.value()
     }
 
     /// Returns the cursor display position in the search field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::LogViewerState;
+    ///
+    /// let state = LogViewerState::new();
+    /// assert_eq!(state.search_cursor_position(), 0);
+    /// ```
     pub fn search_cursor_position(&self) -> usize {
         self.search.cursor_display_position()
     }
@@ -832,6 +958,18 @@ impl LogViewerState {
     // ---- Instance methods ----
 
     /// Updates the state with a message, returning any output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{LogViewerState, LogViewerMessage, LogViewerOutput};
+    ///
+    /// let mut state = LogViewerState::new();
+    /// state.push_info("hello");
+    /// let output = state.update(LogViewerMessage::Clear);
+    /// assert_eq!(output, Some(LogViewerOutput::Cleared));
+    /// assert!(state.is_empty());
+    /// ```
     pub fn update(&mut self, msg: LogViewerMessage) -> Option<LogViewerOutput> {
         LogViewer::update(self, msg)
     }
