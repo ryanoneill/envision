@@ -26,6 +26,17 @@ use crate::theme::Theme;
 /// Paragraph text and list items are word-wrapped at `width` to prevent
 /// overflow, preserving inline styling (bold, italic, etc.) across
 /// wrapped lines.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::markdown_renderer::render::render_markdown;
+/// use envision::Theme;
+///
+/// let theme = Theme::default();
+/// let lines = render_markdown("# Hello\n\nSome text.", 40, &theme);
+/// assert!(!lines.is_empty());
+/// ```
 pub fn render_markdown(source: &str, width: u16, theme: &Theme) -> Vec<Line<'static>> {
     let mut options = Options::empty();
     options.insert(Options::ENABLE_STRIKETHROUGH);

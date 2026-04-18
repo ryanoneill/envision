@@ -162,11 +162,31 @@ impl Column {
     }
 
     /// Returns the column header text.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("Name", Constraint::Length(20));
+    /// assert_eq!(col.header(), "Name");
+    /// ```
     pub fn header(&self) -> &str {
         &self.header
     }
 
     /// Returns the column width constraint.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("Price", Constraint::Length(10));
+    /// assert_eq!(col.width(), Constraint::Length(10));
+    /// ```
     pub fn width(&self) -> Constraint {
         self.width
     }
@@ -218,6 +238,19 @@ impl Column {
     }
 
     /// Returns whether this column is sortable.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("Name", Constraint::Length(20));
+    /// assert!(!col.is_sortable());
+    ///
+    /// let sortable = col.sortable();
+    /// assert!(sortable.is_sortable());
+    /// ```
     pub fn is_sortable(&self) -> bool {
         self.sortable
     }
@@ -244,6 +277,19 @@ impl Column {
     /// Returns whether this column is editable.
     ///
     /// Defaults to `true`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("Name", Constraint::Length(10));
+    /// assert!(col.is_editable());
+    ///
+    /// let read_only = col.with_editable(false);
+    /// assert!(!read_only.is_editable());
+    /// ```
     pub fn is_editable(&self) -> bool {
         self.editable
     }
@@ -270,16 +316,53 @@ impl Column {
     /// Returns whether this column is visible.
     ///
     /// Defaults to `true`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let col = Column::new("Name", Constraint::Length(10));
+    /// assert!(col.is_visible());
+    ///
+    /// let hidden = col.with_visible(false);
+    /// assert!(!hidden.is_visible());
+    /// ```
     pub fn is_visible(&self) -> bool {
         self.visible
     }
 
     /// Sets column visibility.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let mut col = Column::new("Internal", Constraint::Length(10));
+    /// assert!(col.is_visible());
+    /// col.set_visible(false);
+    /// assert!(!col.is_visible());
+    /// ```
     pub fn set_visible(&mut self, visible: bool) {
         self.visible = visible;
     }
 
     /// Sets whether this column is editable.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let mut col = Column::new("Name", Constraint::Length(10));
+    /// assert!(col.is_editable());
+    /// col.set_editable(false);
+    /// assert!(!col.is_editable());
+    /// ```
     pub fn set_editable(&mut self, editable: bool) {
         self.editable = editable;
     }
@@ -309,6 +392,18 @@ impl Column {
     }
 
     /// Returns the custom comparator for this column, if any.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{Column, numeric_comparator};
+    ///
+    /// let col = Column::fixed("Name", 10);
+    /// assert!(col.comparator().is_none());
+    ///
+    /// let numeric = Column::fixed("Price", 10).with_comparator(numeric_comparator());
+    /// assert!(numeric.comparator().is_some());
+    /// ```
     pub fn comparator(&self) -> Option<&SortComparator> {
         self.comparator.as_ref()
     }
@@ -316,6 +411,18 @@ impl Column {
     /// Sets the width of this column (builder method).
     ///
     /// This is useful for column resizing operations.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::Column;
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let mut col = Column::fixed("Name", 10);
+    /// assert_eq!(col.width(), Constraint::Length(10));
+    /// col.set_width(Constraint::Length(20));
+    /// assert_eq!(col.width(), Constraint::Length(20));
+    /// ```
     pub fn set_width(&mut self, width: Constraint) {
         self.width = width;
     }

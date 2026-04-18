@@ -120,6 +120,27 @@ fn assign_layers(nodes: &[GraphNode], edges: &[GraphEdge]) -> HashMap<String, us
 ///
 /// Returns `(layout_nodes, layout_edges)` where each node has a position and
 /// size, and each edge has start and end coordinates.
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::dependency_graph::layout::compute_layout;
+/// use envision::component::{GraphNode, GraphEdge, GraphOrientation};
+/// use ratatui::prelude::Rect;
+///
+/// let nodes = vec![
+///     GraphNode::new("api", "API"),
+///     GraphNode::new("db", "Database"),
+/// ];
+/// let edges = vec![GraphEdge::new("api", "db")];
+/// let area = Rect::new(0, 0, 80, 24);
+///
+/// let (layout_nodes, layout_edges) = compute_layout(
+///     &nodes, &edges, area, &GraphOrientation::LeftToRight,
+/// );
+/// assert_eq!(layout_nodes.len(), 2);
+/// assert_eq!(layout_edges.len(), 1);
+/// ```
 pub fn compute_layout(
     nodes: &[GraphNode],
     edges: &[GraphEdge],

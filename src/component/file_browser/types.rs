@@ -192,26 +192,80 @@ impl FileEntry {
     }
 
     /// Returns the entry name.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let entry = FileEntry::file("README.md", "/README.md");
+    /// assert_eq!(entry.name(), "README.md");
+    /// ```
     pub fn name(&self) -> &str {
         &self.name
     }
 
     /// Returns the full path.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let entry = FileEntry::file("main.rs", "/src/main.rs");
+    /// assert_eq!(entry.path(), "/src/main.rs");
+    /// ```
     pub fn path(&self) -> &str {
         &self.path
     }
 
     /// Returns true if this is a directory.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let file = FileEntry::file("main.rs", "/main.rs");
+    /// assert!(!file.is_dir());
+    ///
+    /// let dir = FileEntry::directory("src", "/src");
+    /// assert!(dir.is_dir());
+    /// ```
     pub fn is_dir(&self) -> bool {
         self.is_dir
     }
 
     /// Returns the file size in bytes, if known.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let entry = FileEntry::file("data.bin", "/data.bin");
+    /// assert_eq!(entry.size(), None);
+    ///
+    /// let sized = entry.with_size(4096);
+    /// assert_eq!(sized.size(), Some(4096));
+    /// ```
     pub fn size(&self) -> Option<u64> {
         self.size
     }
 
     /// Returns the modification timestamp, if known.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::file_browser::FileEntry;
+    ///
+    /// let entry = FileEntry::file("data.bin", "/data.bin");
+    /// assert_eq!(entry.modified(), None);
+    ///
+    /// let timed = entry.with_modified(1700000000);
+    /// assert_eq!(timed.modified(), Some(1700000000));
+    /// ```
     pub fn modified(&self) -> Option<u64> {
         self.modified
     }
