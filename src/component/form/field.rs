@@ -166,6 +166,18 @@ impl FormField {
     }
 
     /// Returns the field kind.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{FormField, FormFieldKind};
+    ///
+    /// let text_field = FormField::text("name", "Name");
+    /// assert!(matches!(text_field.kind(), FormFieldKind::Text));
+    ///
+    /// let checkbox = FormField::checkbox("agree", "I agree");
+    /// assert!(matches!(checkbox.kind(), FormFieldKind::Checkbox));
+    /// ```
     pub fn kind(&self) -> &FormFieldKind {
         &self.kind
     }

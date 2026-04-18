@@ -86,6 +86,22 @@ impl ItemState {
     }
 
     /// Returns the symbol for this state.
+    ///
+    /// The `spinner_frame` parameter controls which animation frame is
+    /// displayed for the loading state.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ItemState;
+    ///
+    /// assert_eq!(ItemState::Ready.symbol(0), " ");
+    /// assert_eq!(ItemState::Error("failed".into()).symbol(0), "✗");
+    ///
+    /// // Loading state cycles through braille spinner frames
+    /// let sym = ItemState::Loading.symbol(0);
+    /// assert!(!sym.is_empty());
+    /// ```
     pub fn symbol(&self, spinner_frame: usize) -> &'static str {
         match self {
             Self::Ready => " ",

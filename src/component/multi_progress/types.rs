@@ -22,6 +22,19 @@ pub enum ProgressItemStatus {
 
 impl ProgressItemStatus {
     /// Returns the style for this status using the theme.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressItemStatus;
+    /// use envision::Theme;
+    ///
+    /// let theme = Theme::default();
+    /// let pending_style = ProgressItemStatus::Pending.style(&theme);
+    /// let active_style = ProgressItemStatus::Active.style(&theme);
+    /// // Different statuses produce different styles
+    /// assert_ne!(pending_style, active_style);
+    /// ```
     pub fn style(&self, theme: &Theme) -> Style {
         match self {
             Self::Pending => theme.disabled_style(),
@@ -32,6 +45,17 @@ impl ProgressItemStatus {
     }
 
     /// Returns the symbol for this status.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressItemStatus;
+    ///
+    /// assert_eq!(ProgressItemStatus::Pending.symbol(), "○");
+    /// assert_eq!(ProgressItemStatus::Active.symbol(), "●");
+    /// assert_eq!(ProgressItemStatus::Completed.symbol(), "✓");
+    /// assert_eq!(ProgressItemStatus::Failed.symbol(), "✗");
+    /// ```
     pub fn symbol(&self) -> &'static str {
         match self {
             Self::Pending => "○",
@@ -114,6 +138,15 @@ impl ProgressItem {
     }
 
     /// Returns the progress (0.0 to 1.0).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressItem;
+    ///
+    /// let item = ProgressItem::new("dl", "Download");
+    /// assert_eq!(item.progress(), 0.0);
+    /// ```
     pub fn progress(&self) -> f32 {
         self.progress
     }
@@ -147,6 +180,15 @@ impl ProgressItem {
     }
 
     /// Returns the progress as a percentage (0-100).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ProgressItem;
+    ///
+    /// let item = ProgressItem::new("dl", "Download");
+    /// assert_eq!(item.percentage(), 0);
+    /// ```
     pub fn percentage(&self) -> u16 {
         (self.progress * 100.0).round() as u16
     }
