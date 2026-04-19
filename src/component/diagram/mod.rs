@@ -33,6 +33,7 @@ mod graph;
 pub mod layout;
 mod navigation;
 mod render;
+mod search;
 pub mod types;
 mod viewport;
 
@@ -102,6 +103,10 @@ pub struct DiagramState {
     // Edge follow mode
     #[cfg_attr(feature = "serialization", serde(skip))]
     pub(crate) follow_targets: Option<Vec<String>>,
+
+    // Search
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    pub(crate) search: search::SearchState,
 }
 
 // Manual PartialEq (skip cached_layout since it's derived from data)
@@ -951,12 +956,32 @@ pub enum DiagramMessage {
     // Display
     /// Toggle minimap visibility.
     ToggleMinimap,
+    /// Toggle expanded node view (show metadata).
+    ToggleNodeExpand,
+    /// Toggle cluster expand/collapse for the selected node's cluster.
+    ToggleCluster,
     /// Set layout mode.
     SetLayoutMode(LayoutMode),
     /// Set layout orientation.
     SetOrientation(Orientation),
     /// Set render mode.
     SetRenderMode(RenderMode),
+
+    // Search
+    /// Enter search mode.
+    StartSearch,
+    /// Type a character in search mode.
+    SearchInput(char),
+    /// Delete last character in search mode.
+    SearchBackspace,
+    /// Jump to next match.
+    SearchNext,
+    /// Jump to previous match.
+    SearchPrev,
+    /// Confirm search and select the matched node.
+    ConfirmSearch,
+    /// Cancel search mode.
+    CancelSearch,
 }
 
 /// Outputs emitted by the Diagram component.
@@ -997,6 +1022,20 @@ pub enum DiagramOutput {
         /// New status.
         new_status: NodeStatus,
     },
+    /// A cluster was toggled (expanded/collapsed).
+    ClusterToggled {
+        /// Cluster ID.
+        id: String,
+        /// Whether the cluster is now collapsed.
+        collapsed: bool,
+    },
+    /// A search match was found and selected.
+    SearchMatched {
+        /// Matched node ID.
+        id: String,
+        /// Total number of matches.
+        total_matches: usize,
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -1030,6 +1069,18 @@ impl Component for Diagram {
         use crate::input::Key;
 
         match event {
+            Event::Key(key) if state.search.active => {
+                // Search mode: capture typing
+                match key.code {
+                    Key::Esc => Some(DiagramMessage::CancelSearch),
+                    Key::Enter => Some(DiagramMessage::ConfirmSearch),
+                    Key::Backspace => Some(DiagramMessage::SearchBackspace),
+                    Key::Char('n') if key.modifiers.shift() => Some(DiagramMessage::SearchPrev),
+                    Key::Char('n') => Some(DiagramMessage::SearchNext),
+                    Key::Char(c) => Some(DiagramMessage::SearchInput(c)),
+                    _ => None,
+                }
+            }
             Event::Key(key) => match key.code {
                 // Spatial navigation
                 Key::Down | Key::Char('j') => Some(DiagramMessage::SelectDown),
@@ -1052,6 +1103,9 @@ impl Component for Diagram {
                 Key::Char('0') => Some(DiagramMessage::FitToView),
                 // Display toggles
                 Key::Char('m') => Some(DiagramMessage::ToggleMinimap),
+                Key::Char(' ') => Some(DiagramMessage::ToggleNodeExpand),
+                Key::Char('c') => Some(DiagramMessage::ToggleCluster),
+                Key::Char('/') => Some(DiagramMessage::StartSearch),
                 // Edge follow choice (1-9)
                 Key::Char(c @ '1'..='9') if state.follow_targets.is_some() => {
                     let idx = (c as usize) - ('1' as usize);
@@ -1216,6 +1270,36 @@ impl Component for Diagram {
                 state.show_minimap = !state.show_minimap;
                 None
             }
+            DiagramMessage::ToggleNodeExpand => {
+                if let Some(node) = state.selected_node() {
+                    let id = node.id().to_string();
+                    if state.expanded_nodes.contains(&id) {
+                        state.expanded_nodes.remove(&id);
+                    } else {
+                        state.expanded_nodes.insert(id);
+                    }
+                }
+                None
+            }
+            DiagramMessage::ToggleCluster => {
+                if let Some(node) = state.selected_node() {
+                    if let Some(cluster_id) = node.cluster_id() {
+                        let cluster_id = cluster_id.to_string();
+                        let collapsed = if state.collapsed_clusters.contains(&cluster_id) {
+                            state.collapsed_clusters.remove(&cluster_id);
+                            false
+                        } else {
+                            state.collapsed_clusters.insert(cluster_id.clone());
+                            true
+                        };
+                        return Some(DiagramOutput::ClusterToggled {
+                            id: cluster_id,
+                            collapsed,
+                        });
+                    }
+                }
+                None
+            }
             DiagramMessage::SetLayoutMode(mode) => {
                 state.set_layout_mode(mode);
                 None
@@ -1226,6 +1310,61 @@ impl Component for Diagram {
             }
             DiagramMessage::SetRenderMode(mode) => {
                 state.render_mode = mode;
+                None
+            }
+            DiagramMessage::StartSearch => {
+                state.search.start();
+                None
+            }
+            DiagramMessage::SearchInput(ch) => {
+                state.search.input(ch, &state.nodes);
+                None
+            }
+            DiagramMessage::SearchBackspace => {
+                state.search.backspace(&state.nodes);
+                None
+            }
+            DiagramMessage::SearchNext => {
+                state.search.next_match();
+                if let Some(idx) = state.search.current_node_index() {
+                    state.selected = Some(idx);
+                    state.selected_node().map(|n| DiagramOutput::SearchMatched {
+                        id: n.id().to_string(),
+                        total_matches: state.search.matches.len(),
+                    })
+                } else {
+                    None
+                }
+            }
+            DiagramMessage::SearchPrev => {
+                state.search.prev_match();
+                if let Some(idx) = state.search.current_node_index() {
+                    state.selected = Some(idx);
+                    state.selected_node().map(|n| DiagramOutput::SearchMatched {
+                        id: n.id().to_string(),
+                        total_matches: state.search.matches.len(),
+                    })
+                } else {
+                    None
+                }
+            }
+            DiagramMessage::ConfirmSearch => {
+                if let Some(idx) = state.search.current_node_index() {
+                    state.selected = Some(idx);
+                    let id = state.nodes[idx].id().to_string();
+                    let total = state.search.matches.len();
+                    state.search.cancel();
+                    Some(DiagramOutput::SearchMatched {
+                        id,
+                        total_matches: total,
+                    })
+                } else {
+                    state.search.cancel();
+                    None
+                }
+            }
+            DiagramMessage::CancelSearch => {
+                state.search.cancel();
                 None
             }
         }
