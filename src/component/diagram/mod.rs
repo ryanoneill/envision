@@ -30,6 +30,7 @@ use crate::input::Event;
 
 mod graph;
 pub mod layout;
+mod navigation;
 mod render;
 pub mod types;
 mod viewport;
@@ -96,6 +97,10 @@ pub struct DiagramState {
     pub(crate) show_minimap: bool,
     pub(crate) expanded_nodes: HashSet<String>,
     pub(crate) collapsed_clusters: HashSet<String>,
+
+    // Edge follow mode
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    pub(crate) follow_targets: Option<Vec<String>>,
 }
 
 // Manual PartialEq (skip cached_layout since it's derived from data)
@@ -695,6 +700,129 @@ impl DiagramState {
         true
     }
 
+    /// Selects the nearest node in the given direction using spatial navigation.
+    ///
+    /// Returns `true` if the selection changed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::component::diagram::{DiagramState, DiagramNode};
+    ///
+    /// let mut state = DiagramState::new()
+    ///     .with_node(DiagramNode::new("a", "A"))
+    ///     .with_node(DiagramNode::new("b", "B"));
+    /// // Spatial nav requires layout to be computed first
+    /// state.select_next(); // select something first
+    /// ```
+    pub(crate) fn select_direction(&mut self, direction: navigation::Direction) -> bool {
+        let current = match self.selected {
+            Some(idx) => idx,
+            None => {
+                // No selection — select first node
+                if !self.nodes.is_empty() {
+                    self.selected = Some(0);
+                    return true;
+                }
+                return false;
+            }
+        };
+
+        let layout = self.ensure_layout().clone();
+        if let Some(target) =
+            navigation::find_nearest_in_direction(current, layout.node_positions(), direction)
+        {
+            self.selected = Some(target);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Follows an outgoing edge from the selected node.
+    ///
+    /// If the node has exactly one outgoing edge, jumps directly.
+    /// If it has multiple, sets `follow_targets` for the caller to
+    /// show a picker.
+    ///
+    /// Returns the appropriate output, or `None` if no selection or no edges.
+    pub(crate) fn follow_edge(&mut self) -> Option<DiagramOutput> {
+        let sel_idx = self.selected?;
+        let graph = IndexedGraph::build(&self.nodes, &self.edges);
+        let targets = navigation::outgoing_targets(sel_idx, &graph);
+
+        match targets.len() {
+            0 => None,
+            1 => {
+                let target_idx = targets[0];
+                let from_id = self.nodes[sel_idx].id().to_string();
+                let to_id = self.nodes[target_idx].id().to_string();
+                self.selection_history.push(sel_idx);
+                self.selected = Some(target_idx);
+                Some(DiagramOutput::EdgeFollowed {
+                    from: from_id,
+                    to: to_id,
+                })
+            }
+            _ => {
+                let from_id = self.nodes[sel_idx].id().to_string();
+                let target_ids: Vec<String> = targets
+                    .iter()
+                    .filter_map(|&idx| self.nodes.get(idx).map(|n| n.id().to_string()))
+                    .collect();
+                self.follow_targets = Some(target_ids.clone());
+                Some(DiagramOutput::EdgeChoiceRequired {
+                    from: from_id,
+                    targets: target_ids,
+                })
+            }
+        }
+    }
+
+    /// Follows a specific edge choice from the follow targets list.
+    pub(crate) fn follow_edge_choice(&mut self, choice_idx: usize) -> Option<DiagramOutput> {
+        let targets = self.follow_targets.take()?;
+        let target_id = targets.get(choice_idx)?;
+        let sel_idx = self.selected?;
+        let from_id = self.nodes[sel_idx].id().to_string();
+
+        if let Some(target_idx) = self.nodes.iter().position(|n| n.id() == target_id) {
+            self.selection_history.push(sel_idx);
+            self.selected = Some(target_idx);
+            Some(DiagramOutput::EdgeFollowed {
+                from: from_id,
+                to: target_id.clone(),
+            })
+        } else {
+            None
+        }
+    }
+
+    /// Goes back to the previous node in selection history.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::component::diagram::{DiagramState, DiagramNode};
+    ///
+    /// let mut state = DiagramState::new()
+    ///     .with_node(DiagramNode::new("a", "A"))
+    ///     .with_node(DiagramNode::new("b", "B"));
+    /// state.select_next(); // select a (index 0)
+    /// state.select_next(); // select b (index 1)
+    /// // go_back not available here since we used select_next, not follow_edge
+    /// assert!(!state.go_back());
+    /// ```
+    pub fn go_back(&mut self) -> bool {
+        if let Some(prev) = self.selection_history.pop() {
+            self.selected = Some(prev);
+            self.follow_targets = None;
+            true
+        } else {
+            false
+        }
+    }
+
     /// Computes the layout if dirty, returning a reference to the cached result.
     pub(crate) fn ensure_layout(&mut self) -> &LayoutResult {
         if self.layout_dirty || self.cached_layout.is_none() {
@@ -776,7 +904,7 @@ pub enum DiagramMessage {
     /// Clear all data.
     Clear,
 
-    // Navigation
+    // Navigation — insertion order
     /// Select next node (insertion order).
     SelectNext,
     /// Select previous node (insertion order).
@@ -784,7 +912,34 @@ pub enum DiagramMessage {
     /// Select node by ID.
     SelectNode(String),
 
+    // Navigation — spatial
+    /// Select nearest node above.
+    SelectUp,
+    /// Select nearest node below.
+    SelectDown,
+    /// Select nearest node to the left.
+    SelectLeft,
+    /// Select nearest node to the right.
+    SelectRight,
+
+    // Edge following
+    /// Follow outgoing edge from selected node.
+    FollowEdge,
+    /// Pick a target when multiple outgoing edges exist.
+    FollowEdgeChoice(usize),
+    /// Go back to previous node in selection history.
+    GoBack,
+    /// Cancel edge follow mode.
+    CancelFollow,
+
     // Viewport
+    /// Pan the viewport by (dx, dy) in step units.
+    Pan {
+        /// Horizontal direction (-1.0 left, 1.0 right).
+        dx: f64,
+        /// Vertical direction (-1.0 up, 1.0 down).
+        dy: f64,
+    },
     /// Zoom in.
     ZoomIn,
     /// Zoom out.
@@ -818,6 +973,20 @@ pub enum DiagramOutput {
     NodeSelected(String),
     /// Selection was cleared.
     NodeDeselected,
+    /// An edge was followed from one node to another.
+    EdgeFollowed {
+        /// Source node ID.
+        from: String,
+        /// Target node ID.
+        to: String,
+    },
+    /// Multiple outgoing edges exist — caller should show a picker.
+    EdgeChoiceRequired {
+        /// Source node ID.
+        from: String,
+        /// Target node IDs to choose from.
+        targets: Vec<String>,
+    },
     /// A node's status changed.
     StatusChanged {
         /// Node ID.
@@ -849,7 +1018,7 @@ impl Component for Diagram {
     }
 
     fn handle_event(
-        _state: &Self::State,
+        state: &Self::State,
         event: &Event,
         ctx: &EventContext,
     ) -> Option<Self::Message> {
@@ -861,14 +1030,33 @@ impl Component for Diagram {
 
         match event {
             Event::Key(key) => match key.code {
-                Key::Down | Key::Char('j') => Some(DiagramMessage::SelectNext),
-                Key::Up | Key::Char('k') => Some(DiagramMessage::SelectPrev),
+                // Spatial navigation
+                Key::Down | Key::Char('j') => Some(DiagramMessage::SelectDown),
+                Key::Up | Key::Char('k') => Some(DiagramMessage::SelectUp),
+                Key::Left | Key::Char('h') => Some(DiagramMessage::SelectLeft),
+                Key::Right | Key::Char('l') => Some(DiagramMessage::SelectRight),
+                // Insertion-order cycling
                 Key::Tab if key.modifiers.shift() => Some(DiagramMessage::SelectPrev),
                 Key::Tab => Some(DiagramMessage::SelectNext),
+                // Edge following
+                Key::Enter => Some(DiagramMessage::FollowEdge),
+                Key::Backspace => Some(DiagramMessage::GoBack),
+                // Viewport
+                Key::Char('H') => Some(DiagramMessage::Pan { dx: -1.0, dy: 0.0 }),
+                Key::Char('J') => Some(DiagramMessage::Pan { dx: 0.0, dy: 1.0 }),
+                Key::Char('K') => Some(DiagramMessage::Pan { dx: 0.0, dy: -1.0 }),
+                Key::Char('L') => Some(DiagramMessage::Pan { dx: 1.0, dy: 0.0 }),
                 Key::Char('+') | Key::Char('=') => Some(DiagramMessage::ZoomIn),
                 Key::Char('-') => Some(DiagramMessage::ZoomOut),
                 Key::Char('0') => Some(DiagramMessage::FitToView),
+                // Display toggles
                 Key::Char('m') => Some(DiagramMessage::ToggleMinimap),
+                // Edge follow choice (1-9)
+                Key::Char(c @ '1'..='9') if state.follow_targets.is_some() => {
+                    let idx = (c as usize) - ('1' as usize);
+                    Some(DiagramMessage::FollowEdgeChoice(idx))
+                }
+                Key::Esc if state.follow_targets.is_some() => Some(DiagramMessage::CancelFollow),
                 _ => None,
             },
             _ => None,
@@ -955,6 +1143,61 @@ impl Component for Diagram {
                 } else {
                     None
                 }
+            }
+            DiagramMessage::SelectUp => {
+                if state.select_direction(navigation::Direction::Up) {
+                    state
+                        .selected_node()
+                        .map(|n| DiagramOutput::NodeSelected(n.id().to_string()))
+                } else {
+                    None
+                }
+            }
+            DiagramMessage::SelectDown => {
+                if state.select_direction(navigation::Direction::Down) {
+                    state
+                        .selected_node()
+                        .map(|n| DiagramOutput::NodeSelected(n.id().to_string()))
+                } else {
+                    None
+                }
+            }
+            DiagramMessage::SelectLeft => {
+                if state.select_direction(navigation::Direction::Left) {
+                    state
+                        .selected_node()
+                        .map(|n| DiagramOutput::NodeSelected(n.id().to_string()))
+                } else {
+                    None
+                }
+            }
+            DiagramMessage::SelectRight => {
+                if state.select_direction(navigation::Direction::Right) {
+                    state
+                        .selected_node()
+                        .map(|n| DiagramOutput::NodeSelected(n.id().to_string()))
+                } else {
+                    None
+                }
+            }
+            DiagramMessage::FollowEdge => state.follow_edge(),
+            DiagramMessage::FollowEdgeChoice(idx) => state.follow_edge_choice(idx),
+            DiagramMessage::GoBack => {
+                if state.go_back() {
+                    state
+                        .selected_node()
+                        .map(|n| DiagramOutput::NodeSelected(n.id().to_string()))
+                } else {
+                    None
+                }
+            }
+            DiagramMessage::CancelFollow => {
+                state.follow_targets = None;
+                None
+            }
+            DiagramMessage::Pan { dx, dy } => {
+                state.viewport.pan_step(dx, dy);
+                None
             }
             DiagramMessage::ZoomIn => {
                 state.viewport.zoom_in();
