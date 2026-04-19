@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-04-18
+
+### Added
+
+- **Audit scorecard** — `envision-audit scorecard` subcommand with 9 pass/fail
+  quality metrics for tracking release health. (#429)
+- **16 missing getter methods** for accessor symmetry — `role_style()`,
+  `status_style()`, `step_style()`, `y_range()`, `filter()`, `counter_value()`,
+  `gauge_value()`, `text_value()`, `is_status()`, `color()` on GraphNode,
+  GraphEdge, TimelineEvent, TimelineSpan. (#433)
+- **`CalendarState` Default impl** — returns January 1970. (#432)
+- **107 doc tests** across 14 components bringing public API doc test coverage
+  to 100% (1713/1713 methods). (#428, #431, #434, #435)
+
+### Fixed
+
+- **Windows 1.85 CI stack overflow** — merged doctest binary exceeded Windows
+  1 MB default stack; set `RUSTDOCFLAGS=-C link-args=/STACK:16777216` for
+  Windows doc test step. (#428)
+- **6 clippy lints** from newer stable toolchain — `sort_by` → `sort_by_key`,
+  `collapsible-match` in status_bar, terminal_output, component_showcase. (#433)
+- **Audit tool false positives** — generic manual trait impls
+  (`impl<T> PartialEq for FooState<T>`) were not detected; fixed with
+  line-by-line scanner. (#432)
+- **Audit tool scope** — `read_non_test_sources` now scans all public API
+  files (mod.rs + `pub mod` + `pub use` re-export modules), not just mod.rs,
+  while correctly excluding private helper modules. (#433, #436)
+
+### Internal
+
+- **8 components refactored** to stay under 1000-line limit by extracting
+  State impl blocks into state.rs/builders.rs files: step_indicator,
+  conversation_view, chart, table, histogram, box_plot, data_grid,
+  usage_display. (#430)
+- Scorecard: 9/9 checks passing (files, accessors, doc tests, derives,
+  unsafe, clippy).
+
 ## [0.15.0] - 2026-04-13
 
 ### Breaking
