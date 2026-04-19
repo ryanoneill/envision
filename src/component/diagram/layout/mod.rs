@@ -241,6 +241,11 @@ impl EdgePath {
     pub fn segments(&self) -> &[PathSegment] {
         &self.segments
     }
+
+    /// Returns mutable access to the path segments.
+    pub(crate) fn segments_mut(&mut self) -> &mut Vec<PathSegment> {
+        &mut self.segments
+    }
 }
 
 /// The complete output of a layout algorithm.

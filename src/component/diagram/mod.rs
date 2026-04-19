@@ -28,6 +28,7 @@ use crate::component::Component;
 use crate::component::context::{EventContext, RenderContext};
 use crate::input::Event;
 
+mod edge_routing;
 mod graph;
 pub mod layout;
 mod navigation;
