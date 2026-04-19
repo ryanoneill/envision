@@ -193,7 +193,7 @@ mod tests {
 
         search.backspace(&nodes);
         // "ap" still matches "api"/"API Gateway"
-        assert!(search.matches.len() >= 1);
+        assert!(!search.matches.is_empty());
 
         search.backspace(&nodes);
         search.backspace(&nodes);
@@ -215,7 +215,7 @@ mod tests {
 
     #[test]
     fn test_empty_query_no_matches() {
-        let nodes = make_nodes();
+        let _nodes = make_nodes();
         let mut search = SearchState::default();
         search.start();
 
