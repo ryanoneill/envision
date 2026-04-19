@@ -4,8 +4,10 @@
 //! Each algorithm produces a [`LayoutResult`] with positioned nodes and
 //! edge paths.
 
+mod force;
 mod sugiyama;
 
+pub(crate) use force::ForceDirectedLayout;
 pub(crate) use sugiyama::SugiyamaLayout;
 
 use super::graph::IndexedGraph;

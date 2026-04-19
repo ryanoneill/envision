@@ -45,7 +45,7 @@ pub use types::{
 pub use viewport::{BoundingBox, Viewport2D};
 
 use graph::IndexedGraph;
-use layout::{LayoutAlgorithm, LayoutHints, SugiyamaLayout};
+use layout::{ForceDirectedLayout, LayoutAlgorithm, LayoutHints, SugiyamaLayout};
 
 /// State for the Diagram component.
 ///
@@ -847,16 +847,13 @@ impl DiagramState {
                     &self.clusters,
                     &hints,
                 ),
-                LayoutMode::ForceDirected => {
-                    // TODO: Implement force-directed layout (Phase 7)
-                    SugiyamaLayout::default().compute(
-                        &graph,
-                        &self.nodes,
-                        &self.edges,
-                        &self.clusters,
-                        &hints,
-                    )
-                }
+                LayoutMode::ForceDirected => ForceDirectedLayout::default().compute(
+                    &graph,
+                    &self.nodes,
+                    &self.edges,
+                    &self.clusters,
+                    &hints,
+                ),
             };
 
             self.viewport
