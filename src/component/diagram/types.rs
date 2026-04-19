@@ -13,7 +13,7 @@ pub use crate::component::dependency_graph::NodeStatus;
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::NodeShape;
+/// use envision::component::diagram::NodeShape;
 ///
 /// let shape = NodeShape::default();
 /// assert_eq!(shape, NodeShape::Rectangle);
@@ -38,7 +38,7 @@ pub enum NodeShape {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::EdgeStyle;
+/// use envision::component::diagram::EdgeStyle;
 ///
 /// let style = EdgeStyle::default();
 /// assert_eq!(style, EdgeStyle::Solid);
@@ -63,7 +63,7 @@ pub enum EdgeStyle {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::LayoutMode;
+/// use envision::component::diagram::LayoutMode;
 ///
 /// let mode = LayoutMode::default();
 /// assert_eq!(mode, LayoutMode::Hierarchical);
@@ -88,7 +88,7 @@ pub enum LayoutMode {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::RenderMode;
+/// use envision::component::diagram::RenderMode;
 ///
 /// let mode = RenderMode::default();
 /// assert_eq!(mode, RenderMode::BoxDrawing);
@@ -112,7 +112,7 @@ pub enum RenderMode {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::Orientation;
+/// use envision::component::diagram::Orientation;
 ///
 /// let o = Orientation::default();
 /// assert_eq!(o, Orientation::LeftToRight);
@@ -143,7 +143,7 @@ pub enum Orientation {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::{DiagramNode, NodeStatus, NodeShape};
+/// use envision::component::diagram::{DiagramNode, NodeStatus, NodeShape};
 ///
 /// let node = DiagramNode::new("api", "API Gateway")
 ///     .with_status(NodeStatus::Healthy)
@@ -180,7 +180,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     ///
     /// let node = DiagramNode::new("db", "Database");
     /// assert_eq!(node.id(), "db");
@@ -203,7 +203,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramNode, NodeStatus};
+    /// use envision::component::diagram::{DiagramNode, NodeStatus};
     ///
     /// let node = DiagramNode::new("db", "DB").with_status(NodeStatus::Degraded);
     /// assert_eq!(node.status(), &NodeStatus::Degraded);
@@ -218,7 +218,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     /// use ratatui::style::Color;
     ///
     /// let node = DiagramNode::new("api", "API").with_color(Color::Cyan);
@@ -234,7 +234,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramNode, NodeShape};
+    /// use envision::component::diagram::{DiagramNode, NodeShape};
     ///
     /// let node = DiagramNode::new("decision", "Approve?")
     ///     .with_shape(NodeShape::Diamond);
@@ -252,7 +252,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     ///
     /// let node = DiagramNode::new("pod", "nginx-abc123")
     ///     .with_metadata("namespace", "default")
@@ -270,7 +270,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     ///
     /// let node = DiagramNode::new("api", "API").with_cluster("us-east");
     /// assert_eq!(node.cluster_id(), Some("us-east"));
@@ -285,7 +285,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     ///
     /// let node = DiagramNode::new("svc", "Service");
     /// assert_eq!(node.id(), "svc");
@@ -299,7 +299,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     ///
     /// let node = DiagramNode::new("svc", "My Service");
     /// assert_eq!(node.label(), "My Service");
@@ -313,7 +313,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramNode, NodeStatus};
+    /// use envision::component::diagram::{DiagramNode, NodeStatus};
     ///
     /// let node = DiagramNode::new("db", "DB");
     /// assert_eq!(node.status(), &NodeStatus::Healthy);
@@ -327,7 +327,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramNode, NodeStatus};
+    /// use envision::component::diagram::{DiagramNode, NodeStatus};
     ///
     /// let mut node = DiagramNode::new("db", "DB");
     /// node.set_status(NodeStatus::Down);
@@ -342,7 +342,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     ///
     /// let node = DiagramNode::new("api", "API");
     /// assert_eq!(node.color(), None);
@@ -356,7 +356,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     /// use ratatui::style::Color;
     ///
     /// let mut node = DiagramNode::new("api", "API");
@@ -372,7 +372,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramNode, NodeShape};
+    /// use envision::component::diagram::{DiagramNode, NodeShape};
     ///
     /// let node = DiagramNode::new("x", "X");
     /// assert_eq!(node.shape(), &NodeShape::Rectangle);
@@ -386,7 +386,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     ///
     /// let node = DiagramNode::new("x", "X");
     /// assert!(node.metadata().is_empty());
@@ -400,7 +400,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     ///
     /// let node = DiagramNode::new("api", "API").with_cluster("prod");
     /// assert_eq!(node.cluster_id(), Some("prod"));
@@ -414,7 +414,7 @@ impl DiagramNode {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramNode;
+    /// use envision::component::diagram::DiagramNode;
     ///
     /// let mut node = DiagramNode::new("api", "API");
     /// node.set_label("API v2");
@@ -437,7 +437,7 @@ impl DiagramNode {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::{DiagramEdge, EdgeStyle};
+/// use envision::component::diagram::{DiagramEdge, EdgeStyle};
 ///
 /// let edge = DiagramEdge::new("api", "db")
 ///     .with_label("SQL")
@@ -469,7 +469,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramEdge;
+    /// use envision::component::diagram::DiagramEdge;
     ///
     /// let edge = DiagramEdge::new("a", "b");
     /// assert_eq!(edge.from(), "a");
@@ -491,7 +491,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramEdge;
+    /// use envision::component::diagram::DiagramEdge;
     ///
     /// let edge = DiagramEdge::new("a", "b").with_label("HTTP");
     /// assert_eq!(edge.label(), Some("HTTP"));
@@ -506,7 +506,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramEdge;
+    /// use envision::component::diagram::DiagramEdge;
     /// use ratatui::style::Color;
     ///
     /// let edge = DiagramEdge::new("a", "b").with_color(Color::Yellow);
@@ -522,7 +522,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramEdge, EdgeStyle};
+    /// use envision::component::diagram::{DiagramEdge, EdgeStyle};
     ///
     /// let edge = DiagramEdge::new("a", "b").with_style(EdgeStyle::Dotted);
     /// assert_eq!(edge.style(), &EdgeStyle::Dotted);
@@ -537,7 +537,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramEdge;
+    /// use envision::component::diagram::DiagramEdge;
     ///
     /// let edge = DiagramEdge::new("a", "b").with_bidirectional(true);
     /// assert!(edge.bidirectional());
@@ -552,7 +552,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramEdge;
+    /// use envision::component::diagram::DiagramEdge;
     ///
     /// let edge = DiagramEdge::new("src", "dst");
     /// assert_eq!(edge.from(), "src");
@@ -566,7 +566,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramEdge;
+    /// use envision::component::diagram::DiagramEdge;
     ///
     /// let edge = DiagramEdge::new("src", "dst");
     /// assert_eq!(edge.to(), "dst");
@@ -580,7 +580,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramEdge;
+    /// use envision::component::diagram::DiagramEdge;
     ///
     /// let edge = DiagramEdge::new("a", "b");
     /// assert_eq!(edge.label(), None);
@@ -594,7 +594,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramEdge;
+    /// use envision::component::diagram::DiagramEdge;
     ///
     /// let edge = DiagramEdge::new("a", "b");
     /// assert_eq!(edge.color(), None);
@@ -608,7 +608,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramEdge;
+    /// use envision::component::diagram::DiagramEdge;
     /// use ratatui::style::Color;
     ///
     /// let mut edge = DiagramEdge::new("a", "b");
@@ -624,7 +624,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramEdge, EdgeStyle};
+    /// use envision::component::diagram::{DiagramEdge, EdgeStyle};
     ///
     /// let edge = DiagramEdge::new("a", "b");
     /// assert_eq!(edge.style(), &EdgeStyle::Solid);
@@ -638,7 +638,7 @@ impl DiagramEdge {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramEdge;
+    /// use envision::component::diagram::DiagramEdge;
     ///
     /// let edge = DiagramEdge::new("a", "b");
     /// assert!(!edge.bidirectional());
@@ -660,7 +660,7 @@ impl DiagramEdge {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::DiagramCluster;
+/// use envision::component::diagram::DiagramCluster;
 /// use ratatui::style::Color;
 ///
 /// let cluster = DiagramCluster::new("us-east", "US East")
@@ -687,7 +687,7 @@ impl DiagramCluster {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramCluster;
+    /// use envision::component::diagram::DiagramCluster;
     ///
     /// let cluster = DiagramCluster::new("prod", "Production");
     /// assert_eq!(cluster.id(), "prod");
@@ -706,7 +706,7 @@ impl DiagramCluster {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramCluster;
+    /// use envision::component::diagram::DiagramCluster;
     /// use ratatui::style::Color;
     ///
     /// let cluster = DiagramCluster::new("dev", "Dev").with_color(Color::Gray);
@@ -722,7 +722,7 @@ impl DiagramCluster {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramCluster;
+    /// use envision::component::diagram::DiagramCluster;
     ///
     /// let cluster = DiagramCluster::new("c1", "Cluster");
     /// assert_eq!(cluster.id(), "c1");
@@ -736,7 +736,7 @@ impl DiagramCluster {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramCluster;
+    /// use envision::component::diagram::DiagramCluster;
     ///
     /// let cluster = DiagramCluster::new("c1", "My Cluster");
     /// assert_eq!(cluster.label(), "My Cluster");
@@ -750,7 +750,7 @@ impl DiagramCluster {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramCluster;
+    /// use envision::component::diagram::DiagramCluster;
     ///
     /// let cluster = DiagramCluster::new("c1", "C");
     /// assert_eq!(cluster.color(), None);
@@ -764,7 +764,7 @@ impl DiagramCluster {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramCluster;
+    /// use envision::component::diagram::DiagramCluster;
     /// use ratatui::style::Color;
     ///
     /// let mut cluster = DiagramCluster::new("c1", "C");
@@ -780,7 +780,7 @@ impl DiagramCluster {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramCluster;
+    /// use envision::component::diagram::DiagramCluster;
     ///
     /// let mut cluster = DiagramCluster::new("c1", "Old");
     /// cluster.set_label("New Label");

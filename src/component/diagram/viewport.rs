@@ -10,7 +10,7 @@ use ratatui::layout::Rect;
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::BoundingBox;
+/// use envision::component::diagram::BoundingBox;
 ///
 /// let bbox = BoundingBox::new(0.0, 0.0, 100.0, 50.0);
 /// assert_eq!(bbox.width(), 100.0);
@@ -38,7 +38,7 @@ impl BoundingBox {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::BoundingBox;
+    /// use envision::component::diagram::BoundingBox;
     ///
     /// let bbox = BoundingBox::new(-10.0, -5.0, 90.0, 45.0);
     /// assert_eq!(bbox.min_x, -10.0);
@@ -58,7 +58,7 @@ impl BoundingBox {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::BoundingBox;
+    /// use envision::component::diagram::BoundingBox;
     ///
     /// let bbox = BoundingBox::new(10.0, 0.0, 50.0, 30.0);
     /// assert_eq!(bbox.width(), 40.0);
@@ -72,7 +72,7 @@ impl BoundingBox {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::BoundingBox;
+    /// use envision::component::diagram::BoundingBox;
     ///
     /// let bbox = BoundingBox::new(0.0, 5.0, 100.0, 25.0);
     /// assert_eq!(bbox.height(), 20.0);
@@ -102,7 +102,7 @@ impl Default for BoundingBox {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::{Viewport2D, BoundingBox};
+/// use envision::component::diagram::{Viewport2D, BoundingBox};
 /// use ratatui::layout::Rect;
 ///
 /// let mut vp = Viewport2D::new();
@@ -143,7 +143,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let vp = Viewport2D::new();
     /// assert_eq!(vp.offset_x(), 0.0);
@@ -166,7 +166,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let vp = Viewport2D::new();
     /// assert_eq!(vp.offset_x(), 0.0);
@@ -180,7 +180,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let vp = Viewport2D::new();
     /// assert_eq!(vp.offset_y(), 0.0);
@@ -194,7 +194,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let vp = Viewport2D::new();
     /// assert_eq!(vp.zoom(), 1.0);
@@ -208,7 +208,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let mut vp = Viewport2D::new();
     /// vp.pan(5.0, -3.0);
@@ -225,7 +225,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let mut vp = Viewport2D::new();
     /// vp.pan_step(1.0, 0.0); // pan right
@@ -242,7 +242,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let mut vp = Viewport2D::new();
     /// let before = vp.zoom();
@@ -258,7 +258,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let mut vp = Viewport2D::new();
     /// let before = vp.zoom();
@@ -274,7 +274,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let mut vp = Viewport2D::new();
     /// vp.set_viewport_size(120, 40);
@@ -289,7 +289,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{Viewport2D, BoundingBox};
+    /// use envision::component::diagram::{Viewport2D, BoundingBox};
     ///
     /// let mut vp = Viewport2D::new();
     /// vp.set_content_bounds(BoundingBox::new(0.0, 0.0, 200.0, 100.0));
@@ -303,7 +303,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{Viewport2D, BoundingBox};
+    /// use envision::component::diagram::{Viewport2D, BoundingBox};
     ///
     /// let mut vp = Viewport2D::new();
     /// vp.set_viewport_size(80, 24);
@@ -341,7 +341,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let mut vp = Viewport2D::new();
     /// vp.set_viewport_size(80, 24);
@@ -372,7 +372,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     ///
     /// let mut vp = Viewport2D::new();
     /// vp.set_viewport_size(80, 24);
@@ -397,7 +397,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     /// use ratatui::layout::Rect;
     ///
     /// let vp = Viewport2D::new();
@@ -417,7 +417,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::Viewport2D;
+    /// use envision::component::diagram::Viewport2D;
     /// use ratatui::layout::Rect;
     ///
     /// let vp = Viewport2D::new();
@@ -437,7 +437,7 @@ impl Viewport2D {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{Viewport2D, BoundingBox};
+    /// use envision::component::diagram::{Viewport2D, BoundingBox};
     ///
     /// let mut vp = Viewport2D::new();
     /// vp.set_viewport_size(80, 24);

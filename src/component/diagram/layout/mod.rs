@@ -1,8 +1,8 @@
 //! Layout engine for the Diagram component.
 //!
 //! Provides pluggable layout algorithms that position nodes in graph space.
-//! Each algorithm implements the [`LayoutAlgorithm`] trait and produces a
-//! [`LayoutResult`] with positioned nodes and edge paths.
+//! Each algorithm produces a [`LayoutResult`] with positioned nodes and
+//! edge paths.
 
 mod sugiyama;
 
@@ -17,7 +17,7 @@ use super::viewport::BoundingBox;
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::NodePosition;
+/// use envision::component::diagram::NodePosition;
 ///
 /// let pos = NodePosition::new("api".to_string(), 10.0, 5.0, 20.0, 3.0);
 /// assert_eq!(pos.id(), "api");
@@ -41,7 +41,7 @@ impl NodePosition {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::NodePosition;
+    /// use envision::component::diagram::NodePosition;
     ///
     /// let pos = NodePosition::new("n1".to_string(), 0.0, 0.0, 15.0, 3.0);
     /// assert_eq!(pos.id(), "n1");
@@ -61,7 +61,7 @@ impl NodePosition {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::NodePosition;
+    /// use envision::component::diagram::NodePosition;
     ///
     /// let pos = NodePosition::new("abc".to_string(), 0.0, 0.0, 10.0, 3.0);
     /// assert_eq!(pos.id(), "abc");
@@ -75,7 +75,7 @@ impl NodePosition {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::NodePosition;
+    /// use envision::component::diagram::NodePosition;
     ///
     /// let pos = NodePosition::new("n".to_string(), 25.0, 10.0, 10.0, 3.0);
     /// assert_eq!(pos.x(), 25.0);
@@ -89,7 +89,7 @@ impl NodePosition {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::NodePosition;
+    /// use envision::component::diagram::NodePosition;
     ///
     /// let pos = NodePosition::new("n".to_string(), 25.0, 10.0, 10.0, 3.0);
     /// assert_eq!(pos.y(), 10.0);
@@ -103,7 +103,7 @@ impl NodePosition {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::NodePosition;
+    /// use envision::component::diagram::NodePosition;
     ///
     /// let pos = NodePosition::new("n".to_string(), 0.0, 0.0, 18.0, 3.0);
     /// assert_eq!(pos.width(), 18.0);
@@ -117,7 +117,7 @@ impl NodePosition {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::NodePosition;
+    /// use envision::component::diagram::NodePosition;
     ///
     /// let pos = NodePosition::new("n".to_string(), 0.0, 0.0, 18.0, 5.0);
     /// assert_eq!(pos.height(), 5.0);
@@ -142,7 +142,7 @@ impl NodePosition {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::PathSegment;
+/// use envision::component::diagram::PathSegment;
 ///
 /// let seg = PathSegment::LineTo(50.0, 25.0);
 /// ```
@@ -159,7 +159,7 @@ pub enum PathSegment {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::{EdgePath, PathSegment};
+/// use envision::component::diagram::{EdgePath, PathSegment};
 ///
 /// let path = EdgePath::new(
 ///     "api".to_string(),
@@ -187,7 +187,7 @@ impl EdgePath {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{EdgePath, PathSegment};
+    /// use envision::component::diagram::{EdgePath, PathSegment};
     ///
     /// let path = EdgePath::new("a".to_string(), "b".to_string(), vec![]);
     /// assert_eq!(path.from_id(), "a");
@@ -205,7 +205,7 @@ impl EdgePath {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::EdgePath;
+    /// use envision::component::diagram::EdgePath;
     ///
     /// let path = EdgePath::new("src".to_string(), "dst".to_string(), vec![]);
     /// assert_eq!(path.from_id(), "src");
@@ -219,7 +219,7 @@ impl EdgePath {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::EdgePath;
+    /// use envision::component::diagram::EdgePath;
     ///
     /// let path = EdgePath::new("src".to_string(), "dst".to_string(), vec![]);
     /// assert_eq!(path.to_id(), "dst");
@@ -233,7 +233,7 @@ impl EdgePath {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::EdgePath;
+    /// use envision::component::diagram::EdgePath;
     ///
     /// let path = EdgePath::new("a".to_string(), "b".to_string(), vec![]);
     /// assert!(path.segments().is_empty());
@@ -260,7 +260,7 @@ impl LayoutResult {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::LayoutResult;
+    /// use envision::component::diagram::LayoutResult;
     ///
     /// let result = LayoutResult::empty();
     /// assert!(result.node_positions().is_empty());
@@ -274,7 +274,7 @@ impl LayoutResult {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::LayoutResult;
+    /// use envision::component::diagram::LayoutResult;
     ///
     /// let result = LayoutResult::empty();
     /// assert!(result.edge_paths().is_empty());
@@ -288,7 +288,7 @@ impl LayoutResult {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::LayoutResult;
+    /// use envision::component::diagram::LayoutResult;
     ///
     /// let result = LayoutResult::empty();
     /// assert_eq!(result.bounding_box().width(), 0.0);
@@ -302,7 +302,7 @@ impl LayoutResult {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::LayoutResult;
+    /// use envision::component::diagram::LayoutResult;
     ///
     /// let result = LayoutResult::empty();
     /// assert!(result.node_positions().is_empty());

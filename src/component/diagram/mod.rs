@@ -9,7 +9,7 @@
 //! # Examples
 //!
 //! ```
-//! use envision::diagram::{DiagramState, DiagramNode, DiagramEdge, NodeStatus};
+//! use envision::component::diagram::{DiagramState, DiagramNode, DiagramEdge, NodeStatus};
 //!
 //! let state = DiagramState::new()
 //!     .with_node(DiagramNode::new("api", "API Gateway").with_status(NodeStatus::Healthy))
@@ -57,7 +57,7 @@ use layout::{LayoutAlgorithm, LayoutHints, SugiyamaLayout};
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::{DiagramState, DiagramNode, DiagramEdge};
+/// use envision::component::diagram::{DiagramState, DiagramNode, DiagramEdge};
 ///
 /// let state = DiagramState::new()
 ///     .with_node(DiagramNode::new("a", "Node A"))
@@ -126,7 +126,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new();
     /// assert!(state.nodes().is_empty());
@@ -144,7 +144,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramNode};
+    /// use envision::component::diagram::{DiagramState, DiagramNode};
     ///
     /// let state = DiagramState::new()
     ///     .with_node(DiagramNode::new("api", "API"));
@@ -161,7 +161,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramNode, DiagramEdge};
+    /// use envision::component::diagram::{DiagramState, DiagramNode, DiagramEdge};
     ///
     /// let state = DiagramState::new()
     ///     .with_node(DiagramNode::new("a", "A"))
@@ -180,7 +180,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramCluster};
+    /// use envision::component::diagram::{DiagramState, DiagramCluster};
     ///
     /// let state = DiagramState::new()
     ///     .with_cluster(DiagramCluster::new("prod", "Production"));
@@ -197,7 +197,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new().with_title("My Diagram");
     /// assert_eq!(state.title(), Some("My Diagram"));
@@ -212,7 +212,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, LayoutMode};
+    /// use envision::component::diagram::{DiagramState, LayoutMode};
     ///
     /// let state = DiagramState::new().with_layout_mode(LayoutMode::ForceDirected);
     /// assert_eq!(state.layout_mode(), &LayoutMode::ForceDirected);
@@ -228,7 +228,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, Orientation};
+    /// use envision::component::diagram::{DiagramState, Orientation};
     ///
     /// let state = DiagramState::new().with_orientation(Orientation::TopToBottom);
     /// assert_eq!(state.orientation(), &Orientation::TopToBottom);
@@ -244,7 +244,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, RenderMode};
+    /// use envision::component::diagram::{DiagramState, RenderMode};
     ///
     /// let state = DiagramState::new().with_render_mode(RenderMode::Braille);
     /// assert_eq!(state.render_mode(), &RenderMode::Braille);
@@ -259,7 +259,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new().with_show_edge_labels(true);
     /// assert!(state.show_edge_labels());
@@ -274,7 +274,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new().with_show_minimap(true);
     /// assert!(state.show_minimap());
@@ -291,7 +291,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new();
     /// assert!(state.nodes().is_empty());
@@ -305,7 +305,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramNode};
+    /// use envision::component::diagram::{DiagramState, DiagramNode};
     ///
     /// let mut state = DiagramState::new()
     ///     .with_node(DiagramNode::new("a", "A"));
@@ -322,7 +322,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new();
     /// assert!(state.edges().is_empty());
@@ -336,7 +336,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramEdge};
+    /// use envision::component::diagram::{DiagramState, DiagramEdge};
     ///
     /// let mut state = DiagramState::new();
     /// state.edges_mut().push(DiagramEdge::new("a", "b"));
@@ -352,7 +352,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new();
     /// assert!(state.clusters().is_empty());
@@ -366,7 +366,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new();
     /// assert_eq!(state.selected(), None);
@@ -380,7 +380,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramNode};
+    /// use envision::component::diagram::{DiagramState, DiagramNode};
     ///
     /// let state = DiagramState::new()
     ///     .with_node(DiagramNode::new("api", "API"));
@@ -395,7 +395,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new();
     /// assert_eq!(state.title(), None);
@@ -409,7 +409,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, LayoutMode};
+    /// use envision::component::diagram::{DiagramState, LayoutMode};
     ///
     /// let state = DiagramState::new();
     /// assert_eq!(state.layout_mode(), &LayoutMode::Hierarchical);
@@ -423,7 +423,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, Orientation};
+    /// use envision::component::diagram::{DiagramState, Orientation};
     ///
     /// let state = DiagramState::new();
     /// assert_eq!(state.orientation(), &Orientation::LeftToRight);
@@ -437,7 +437,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, RenderMode};
+    /// use envision::component::diagram::{DiagramState, RenderMode};
     ///
     /// let state = DiagramState::new();
     /// assert_eq!(state.render_mode(), &RenderMode::BoxDrawing);
@@ -451,7 +451,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new();
     /// assert!(!state.show_edge_labels());
@@ -465,7 +465,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new();
     /// assert!(!state.show_minimap());
@@ -481,7 +481,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::DiagramState;
+    /// use envision::component::diagram::DiagramState;
     ///
     /// let mut state = DiagramState::new();
     /// state.set_title("Updated");
@@ -496,7 +496,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, LayoutMode};
+    /// use envision::component::diagram::{DiagramState, LayoutMode};
     ///
     /// let mut state = DiagramState::new();
     /// state.set_layout_mode(LayoutMode::ForceDirected);
@@ -512,7 +512,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, Orientation};
+    /// use envision::component::diagram::{DiagramState, Orientation};
     ///
     /// let mut state = DiagramState::new();
     /// state.set_orientation(Orientation::TopToBottom);
@@ -530,7 +530,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramNode};
+    /// use envision::component::diagram::{DiagramState, DiagramNode};
     ///
     /// let mut state = DiagramState::new();
     /// state.add_node(DiagramNode::new("a", "A"));
@@ -546,7 +546,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramEdge};
+    /// use envision::component::diagram::{DiagramState, DiagramEdge};
     ///
     /// let mut state = DiagramState::new();
     /// state.add_edge(DiagramEdge::new("a", "b"));
@@ -562,7 +562,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramNode};
+    /// use envision::component::diagram::{DiagramState, DiagramNode};
     ///
     /// let mut state = DiagramState::new()
     ///     .with_node(DiagramNode::new("a", "A"));
@@ -587,7 +587,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramEdge};
+    /// use envision::component::diagram::{DiagramState, DiagramEdge};
     ///
     /// let mut state = DiagramState::new()
     ///     .with_edge(DiagramEdge::new("a", "b"));
@@ -609,7 +609,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramNode, NodeStatus};
+    /// use envision::component::diagram::{DiagramState, DiagramNode, NodeStatus};
     ///
     /// let mut state = DiagramState::new()
     ///     .with_node(DiagramNode::new("db", "Database"));
@@ -630,7 +630,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramNode};
+    /// use envision::component::diagram::{DiagramState, DiagramNode};
     ///
     /// let mut state = DiagramState::new()
     ///     .with_node(DiagramNode::new("a", "A"));
@@ -653,7 +653,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramNode};
+    /// use envision::component::diagram::{DiagramState, DiagramNode};
     ///
     /// let mut state = DiagramState::new()
     ///     .with_node(DiagramNode::new("a", "A"))
@@ -679,7 +679,7 @@ impl DiagramState {
     /// # Examples
     ///
     /// ```
-    /// use envision::diagram::{DiagramState, DiagramNode};
+    /// use envision::component::diagram::{DiagramState, DiagramNode};
     ///
     /// let mut state = DiagramState::new()
     ///     .with_node(DiagramNode::new("a", "A"))
@@ -749,7 +749,7 @@ impl DiagramState {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::{DiagramMessage, DiagramNode};
+/// use envision::component::diagram::{DiagramMessage, DiagramNode};
 ///
 /// let msg = DiagramMessage::AddNode(DiagramNode::new("x", "X"));
 /// ```
@@ -814,7 +814,7 @@ pub enum DiagramMessage {
 /// # Examples
 ///
 /// ```
-/// use envision::diagram::DiagramOutput;
+/// use envision::component::diagram::DiagramOutput;
 ///
 /// let output = DiagramOutput::NodeSelected("api".to_string());
 /// ```
