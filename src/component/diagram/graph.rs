@@ -14,6 +14,7 @@ use super::types::{DiagramEdge, DiagramNode};
 /// from scratch whenever the node or edge data changes — this is fast
 /// (O(V + E)) and avoids incremental consistency bugs.
 #[derive(Clone, Debug)]
+#[allow(dead_code)] // Fields/methods used across phases 4-8 (navigation, search)
 pub(crate) struct IndexedGraph {
     node_to_index: HashMap<String, usize>,
     index_to_node: Vec<String>,
@@ -22,6 +23,7 @@ pub(crate) struct IndexedGraph {
     edge_pairs: Vec<(usize, usize)>,
 }
 
+#[allow(dead_code)] // Methods used in phases 4-8 (navigation, search)
 impl IndexedGraph {
     /// Builds the indexed graph from nodes and edges.
     ///

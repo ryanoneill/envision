@@ -28,10 +28,9 @@ use crate::component::Component;
 use crate::component::context::{EventContext, RenderContext};
 use crate::input::Event;
 
-// TODO(Phase 3): Remove dead_code allow when render.rs uses graph/layout
-#[allow(dead_code)]
 mod graph;
 pub mod layout;
+mod render;
 pub mod types;
 mod viewport;
 
@@ -42,10 +41,7 @@ pub use types::{
 };
 pub use viewport::{BoundingBox, Viewport2D};
 
-// TODO(Phase 3): Remove dead_code allow when render.rs uses layout
-#[allow(unused_imports)]
 use graph::IndexedGraph;
-#[allow(unused_imports)]
 use layout::{LayoutAlgorithm, LayoutHints, SugiyamaLayout};
 
 /// State for the Diagram component.
@@ -87,7 +83,6 @@ pub struct DiagramState {
     pub(crate) layout_mode: LayoutMode,
     pub(crate) orientation: Orientation,
     #[cfg_attr(feature = "serialization", serde(skip))]
-    #[allow(dead_code)] // Used in Phase 3 rendering
     pub(crate) cached_layout: Option<LayoutResult>,
     pub(crate) layout_dirty: bool,
 
@@ -701,7 +696,6 @@ impl DiagramState {
     }
 
     /// Computes the layout if dirty, returning a reference to the cached result.
-    #[allow(dead_code)] // Used in Phase 3 rendering
     pub(crate) fn ensure_layout(&mut self) -> &LayoutResult {
         if self.layout_dirty || self.cached_layout.is_none() {
             let graph = IndexedGraph::build(&self.nodes, &self.edges);
@@ -994,28 +988,18 @@ impl Component for Diagram {
     }
 
     fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
-        use ratatui::widgets::{Block, Borders, Paragraph};
+        // Compute layout (uses cached result if available)
+        let mut state_clone = state.clone();
+        let layout = state_clone.ensure_layout().clone();
 
-        let block = Block::default().borders(Borders::ALL).title(
-            state
-                .title
-                .as_deref()
-                .map(|t| format!(" {} ", t))
-                .unwrap_or_default(),
+        render::render_diagram(
+            state,
+            &layout,
+            ctx.frame,
+            ctx.area,
+            ctx.theme,
+            ctx.focused,
+            ctx.disabled,
         );
-
-        let inner = block.inner(ctx.area);
-        ctx.frame.render_widget(block, ctx.area);
-
-        if state.nodes.is_empty() {
-            let msg = Paragraph::new("(empty diagram)");
-            ctx.frame.render_widget(msg, inner);
-            return;
-        }
-
-        // Render will be implemented in Phase 3
-        let info = format!("{} nodes, {} edges", state.nodes.len(), state.edges.len());
-        let msg = Paragraph::new(info);
-        ctx.frame.render_widget(msg, inner);
     }
 }
