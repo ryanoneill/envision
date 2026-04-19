@@ -276,6 +276,26 @@ fn read_non_test_sources(component_dir: &Path) -> String {
     let mut combined = String::new();
     let test_filenames = ["tests.rs", "snapshot_tests.rs"];
 
+    // Parse mod.rs to find which submodules are part of the public API:
+    // - `pub mod X;` → X.rs is directly public
+    // - `pub use X::...;` → X.rs has re-exported types whose methods are public
+    let mod_rs = fs::read_to_string(component_dir.join("mod.rs")).unwrap_or_default();
+    let mut api_modules: Vec<String> = Vec::new();
+    for line in mod_rs.lines() {
+        let trimmed = line.trim();
+        if let Some(name) = trimmed
+            .strip_prefix("pub mod ")
+            .and_then(|rest| rest.strip_suffix(';'))
+        {
+            api_modules.push(format!("{name}.rs"));
+        }
+        if let Some(rest) = trimmed.strip_prefix("pub use ") {
+            if let Some(module) = rest.split("::").next() {
+                api_modules.push(format!("{module}.rs"));
+            }
+        }
+    }
+
     let Ok(entries) = fs::read_dir(component_dir) else {
         return combined;
     };
@@ -287,16 +307,26 @@ fn read_non_test_sources(component_dir: &Path) -> String {
         if !path.is_file() || path.extension().is_some_and(|e| e != "rs") {
             continue;
         }
-        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-            if test_filenames.contains(&name) {
-                continue;
-            }
+        let Some(filename) = path.file_name().and_then(|n| n.to_str()) else {
+            continue;
+        };
+        if test_filenames.contains(&filename) {
+            continue;
         }
-        if let Ok(content) = fs::read_to_string(&path) {
-            let filtered = non_test_content(&content);
-            combined.push_str(&filtered);
-            combined.push('\n');
+
+        let Ok(content) = fs::read_to_string(&path) else {
+            continue;
+        };
+
+        // mod.rs and API module files: include fully
+        // Private modules without re-exports: skip (internal helpers)
+        if filename != "mod.rs" && !api_modules.contains(&filename.to_string()) {
+            continue;
         }
+
+        let filtered = non_test_content(&content);
+        combined.push_str(&filtered);
+        combined.push('\n');
     }
     combined
 }
