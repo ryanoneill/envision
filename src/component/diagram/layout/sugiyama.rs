@@ -8,7 +8,8 @@
 
 use std::collections::VecDeque;
 
-use super::{EdgePath, LayoutAlgorithm, LayoutHints, LayoutResult, NodePosition, PathSegment};
+use super::{LayoutAlgorithm, LayoutHints, LayoutResult, NodePosition};
+use crate::component::diagram::edge_routing;
 use crate::component::diagram::graph::IndexedGraph;
 use crate::component::diagram::types::{DiagramCluster, DiagramEdge, DiagramNode, Orientation};
 use crate::component::diagram::viewport::BoundingBox;
@@ -57,8 +58,14 @@ impl LayoutAlgorithm for SugiyamaLayout {
         // Phase 3: Coordinate assignment
         let node_positions = self.assign_coordinates(&layer_groups, nodes, hints);
 
-        // Phase 4: Edge paths
-        let edge_paths = self.compute_edge_paths(graph, nodes, &node_positions, hints);
+        // Phase 4: Edge routing
+        let node_ids: Vec<String> = nodes.iter().map(|n| n.id().to_string()).collect();
+        let edge_paths = edge_routing::compute_routed_edges(
+            graph.edge_pairs(),
+            &node_ids,
+            &node_positions,
+            &hints.orientation,
+        );
 
         // Compute bounding box
         let bounding_box = compute_bounding_box(&node_positions);
@@ -279,64 +286,6 @@ impl SugiyamaLayout {
         }
 
         positions
-    }
-
-    /// Computes edge paths as simple L-shaped routes between node positions.
-    fn compute_edge_paths(
-        &self,
-        graph: &IndexedGraph,
-        nodes: &[DiagramNode],
-        positions: &[NodePosition],
-        hints: &LayoutHints<'_>,
-    ) -> Vec<EdgePath> {
-        graph
-            .edge_pairs()
-            .iter()
-            .filter_map(|&(from_idx, to_idx)| {
-                let from_pos = positions.get(from_idx)?;
-                let to_pos = positions.get(to_idx)?;
-                let from_id = nodes.get(from_idx)?.id().to_string();
-                let to_id = nodes.get(to_idx)?.id().to_string();
-
-                let (start_x, start_y, end_x, end_y) = match hints.orientation {
-                    Orientation::LeftToRight => (
-                        from_pos.x() + from_pos.width(),
-                        from_pos.center_y(),
-                        to_pos.x(),
-                        to_pos.center_y(),
-                    ),
-                    Orientation::TopToBottom => (
-                        from_pos.center_x(),
-                        from_pos.y() + from_pos.height(),
-                        to_pos.center_x(),
-                        to_pos.y(),
-                    ),
-                };
-
-                let segments = match hints.orientation {
-                    Orientation::LeftToRight => {
-                        let mid_x = (start_x + end_x) / 2.0;
-                        vec![
-                            PathSegment::MoveTo(start_x, start_y),
-                            PathSegment::LineTo(mid_x, start_y),
-                            PathSegment::LineTo(mid_x, end_y),
-                            PathSegment::LineTo(end_x, end_y),
-                        ]
-                    }
-                    Orientation::TopToBottom => {
-                        let mid_y = (start_y + end_y) / 2.0;
-                        vec![
-                            PathSegment::MoveTo(start_x, start_y),
-                            PathSegment::LineTo(start_x, mid_y),
-                            PathSegment::LineTo(end_x, mid_y),
-                            PathSegment::LineTo(end_x, end_y),
-                        ]
-                    }
-                };
-
-                Some(EdgePath::new(from_id, to_id, segments))
-            })
-            .collect()
     }
 }
 

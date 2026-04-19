@@ -9,6 +9,7 @@ use ratatui::layout::{Position, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Block, Borders, Paragraph};
 
+use super::edge_routing;
 use super::layout::{EdgePath, LayoutResult, NodePosition, PathSegment};
 use super::types::{DiagramEdge, DiagramNode, NodeShape, NodeStatus};
 use super::viewport::Viewport2D;
@@ -156,7 +157,7 @@ fn render_edges(
         let is_dashed = edge.is_some_and(|e| *e.style() == super::types::EdgeStyle::Dashed);
         let is_dotted = edge.is_some_and(|e| *e.style() == super::types::EdgeStyle::Dotted);
 
-        // Walk segments and draw characters
+        // Walk segments and draw line characters + corners
         let segments = path.segments();
         for i in 0..segments.len().saturating_sub(1) {
             let (x0, y0) = segment_coords(&segments[i]);
@@ -169,6 +170,21 @@ fn render_edges(
                 is_last: i + 1 == segments.len() - 1,
             };
             draw_line_segment(buf, params, (x0, y0, x1, y1), &ls);
+
+            // Draw corner character at the bend point between two segments
+            if i + 2 < segments.len() {
+                let (x2, y2) = segment_coords(&segments[i + 2]);
+                let corner = edge_routing::corner_char(x0, y0, x1, y1, x2, y2);
+                let (sx, sy) = params.viewport.to_screen(x1, y1, params.clip);
+                if sx >= params.clip.x as i32
+                    && sx < params.clip.right() as i32
+                    && sy >= params.clip.y as i32
+                    && sy < params.clip.bottom() as i32
+                {
+                    let buf_area = Rect::new(0, 0, buf.area.width, buf.area.height);
+                    set_cell(buf, sx as u16, sy as u16, corner, style, buf_area);
+                }
+            }
         }
 
         // Edge label at midpoint
