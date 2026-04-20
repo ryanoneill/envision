@@ -335,6 +335,20 @@ impl DiagramState {
         &self.render_mode
     }
 
+    /// Returns whether search mode is currently active.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::component::diagram::DiagramState;
+    ///
+    /// let state = DiagramState::new();
+    /// assert!(!state.is_searching());
+    /// ```
+    pub fn is_searching(&self) -> bool {
+        self.search.active
+    }
+
     /// Returns whether edge labels are shown.
     ///
     /// # Examples

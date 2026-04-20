@@ -1,7 +1,19 @@
-//! Diagram component example showing a service topology.
+//! Diagram component example — interactive service topology.
 //!
-//! Demonstrates the Diagram component with nodes, edges, clusters,
-//! edge styles, and interactive navigation.
+//! Demonstrates the Diagram component as an interactive terminal
+//! application with keyboard navigation, edge following, and search.
+//!
+//! Controls:
+//!   h/j/k/l or arrows — spatial navigation (nearest node)
+//!   Tab/Shift+Tab     — cycle through nodes
+//!   Enter             — follow outgoing edge
+//!   Backspace         — go back
+//!   /                 — search nodes
+//!   +/-               — zoom in/out
+//!   H/J/K/L           — pan viewport
+//!   0                 — fit to view
+//!   m                 — toggle minimap
+//!   q                 — quit
 //!
 //! Run with: cargo run --example diagram
 
@@ -21,6 +33,7 @@ struct AppState {
 #[derive(Clone, Debug)]
 enum Msg {
     Diagram(DiagramMessage),
+    Quit,
 }
 
 impl envision::app::App for App {
@@ -39,23 +52,32 @@ impl envision::app::App for App {
             .with_node(
                 DiagramNode::new("api-1", "API v2.1")
                     .with_status(NodeStatus::Healthy)
-                    .with_cluster("us-east"),
+                    .with_cluster("us-east")
+                    .with_metadata("replicas", "3"),
             )
             .with_node(
-                DiagramNode::new("api-2", "API v2.1")
+                DiagramNode::new("api-2", "API v2.0")
                     .with_status(NodeStatus::Degraded)
-                    .with_cluster("eu-west"),
+                    .with_cluster("eu-west")
+                    .with_metadata("replicas", "2")
+                    .with_metadata("cpu", "89%"),
             )
             .with_node(
                 DiagramNode::new("db", "PostgreSQL")
                     .with_status(NodeStatus::Healthy)
-                    .with_cluster("us-east"),
+                    .with_cluster("us-east")
+                    .with_metadata("version", "15.4"),
             )
-            .with_node(DiagramNode::new("cache", "Redis").with_status(NodeStatus::Healthy))
+            .with_node(
+                DiagramNode::new("cache", "Redis")
+                    .with_status(NodeStatus::Healthy)
+                    .with_metadata("memory", "2.1GB"),
+            )
             .with_node(
                 DiagramNode::new("queue", "RabbitMQ")
                     .with_status(NodeStatus::Down)
-                    .with_cluster("eu-west"),
+                    .with_cluster("eu-west")
+                    .with_metadata("pending", "45,231"),
             )
             .with_edge(DiagramEdge::new("lb", "api-1").with_label("HTTP"))
             .with_edge(DiagramEdge::new("lb", "api-2").with_label("HTTP"))
@@ -64,17 +86,17 @@ impl envision::app::App for App {
             .with_edge(DiagramEdge::new("api-2", "queue").with_style(EdgeStyle::Dotted))
             .with_edge(DiagramEdge::new("api-2", "cache"))
             .with_show_edge_labels(true)
-            .with_title("Service Topology");
+            .with_title("Service Topology — q to quit, / to search, arrows to navigate");
 
         (AppState { diagram }, Command::none())
     }
 
     fn update(state: &mut AppState, msg: Msg) -> Command<Msg> {
-        let Msg::Diagram(diagram_msg) = msg;
-        if let Some(DiagramOutput::NodeSelected(_id)) =
-            Diagram::update(&mut state.diagram, diagram_msg)
-        {
-            // Could update a status bar or detail panel here
+        match msg {
+            Msg::Diagram(diagram_msg) => {
+                Diagram::update(&mut state.diagram, diagram_msg);
+            }
+            Msg::Quit => return Command::quit(),
         }
         Command::none()
     }
@@ -88,15 +110,21 @@ impl envision::app::App for App {
     }
 
     fn handle_event_with_state(state: &AppState, event: &Event) -> Option<Msg> {
+        if let Event::Key(key) = event {
+            if key.code == Key::Char('q') && !state.diagram.is_searching() {
+                return Some(Msg::Quit);
+            }
+        }
         let ctx = EventContext::new().focused(true);
         Diagram::handle_event(&state.diagram, event, &ctx).map(Msg::Diagram)
     }
 }
 
-fn main() {
-    // Virtual terminal demo (no real terminal needed)
-    let mut vt = Runtime::<App, _>::virtual_builder(100, 30).build().unwrap();
-    vt.send(Event::char('j')); // Select first node
-    vt.tick().unwrap();
-    println!("{}", vt.display());
+#[tokio::main]
+async fn main() -> envision::error::Result<()> {
+    Runtime::<App, _>::terminal_builder()?
+        .build()?
+        .run_terminal()
+        .await?;
+    Ok(())
 }
