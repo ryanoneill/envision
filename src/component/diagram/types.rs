@@ -5,8 +5,32 @@
 
 use ratatui::style::Color;
 
-// Re-use NodeStatus from dependency_graph
-pub use crate::component::dependency_graph::NodeStatus;
+/// Status of a node in the diagram.
+///
+/// # Examples
+///
+/// ```
+/// use envision::component::diagram::NodeStatus;
+///
+/// let status = NodeStatus::default();
+/// assert_eq!(status, NodeStatus::Healthy);
+/// ```
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub enum NodeStatus {
+    /// The node is operating normally.
+    #[default]
+    Healthy,
+    /// The node is experiencing issues but still functional.
+    Degraded,
+    /// The node is not operational.
+    Down,
+    /// The node status is not known.
+    Unknown,
+}
 
 /// Shape of a diagram node's border.
 ///
@@ -788,36 +812,5 @@ impl DiagramCluster {
     /// ```
     pub fn set_label(&mut self, label: impl Into<String>) {
         self.label = label.into();
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Migration from DependencyGraph
-// ---------------------------------------------------------------------------
-
-impl From<crate::component::dependency_graph::GraphNode> for DiagramNode {
-    fn from(node: crate::component::dependency_graph::GraphNode) -> Self {
-        Self {
-            id: node.id.clone(),
-            label: node.label.clone(),
-            status: node.status.clone(),
-            color: node.color(),
-            shape: NodeShape::default(),
-            metadata: node.metadata.clone(),
-            cluster_id: None,
-        }
-    }
-}
-
-impl From<crate::component::dependency_graph::GraphEdge> for DiagramEdge {
-    fn from(edge: crate::component::dependency_graph::GraphEdge) -> Self {
-        Self {
-            from: edge.from.clone(),
-            to: edge.to.clone(),
-            label: edge.label.clone(),
-            color: edge.color,
-            style: EdgeStyle::default(),
-            bidirectional: false,
-        }
     }
 }

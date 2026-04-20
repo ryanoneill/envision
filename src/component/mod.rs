@@ -124,8 +124,6 @@ mod conversation_view;
 #[cfg(feature = "compound-components")]
 mod data_grid;
 #[cfg(feature = "compound-components")]
-pub mod dependency_graph;
-#[cfg(feature = "compound-components")]
 pub mod diagram;
 
 #[cfg(feature = "compound-components")]
@@ -353,18 +351,10 @@ pub use conversation_view::{
 #[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
 #[cfg(feature = "compound-components")]
-#[allow(deprecated)]
-pub use dependency_graph::{
-    DependencyGraph, DependencyGraphMessage, DependencyGraphOutput, DependencyGraphState,
-    GraphEdge, GraphNode, GraphOrientation, NodeStatus,
-    layout::LayoutEdge as DependencyGraphLayoutEdge,
-    layout::LayoutNode as DependencyGraphLayoutNode,
-};
-#[cfg(feature = "compound-components")]
 pub use diagram::{
     BoundingBox, Diagram, DiagramCluster, DiagramEdge, DiagramMessage, DiagramNode, DiagramOutput,
     DiagramState, EdgePath, EdgeStyle, LayoutMode, LayoutResult, NodePosition, NodeShape,
-    Orientation as DiagramOrientation, PathSegment, RenderMode, Viewport2D,
+    NodeStatus, Orientation as DiagramOrientation, PathSegment, RenderMode, Viewport2D,
 };
 #[cfg(feature = "compound-components")]
 pub use diff_viewer::{

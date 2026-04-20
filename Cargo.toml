@@ -137,10 +137,6 @@ name = "data_grid"
 required-features = ["compound-components"]
 
 [[example]]
-name = "dependency_graph"
-required-features = ["compound-components"]
-
-[[example]]
 name = "diff_viewer"
 required-features = ["compound-components"]
 
