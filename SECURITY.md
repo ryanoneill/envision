@@ -4,9 +4,8 @@
 
 | Version | Supported |
 |---------|-----------|
-| 0.7.x   | Yes       |
-| 0.6.x   | Yes       |
-| < 0.6   | No        |
+| 0.15.x  | Yes       |
+| < 0.15  | No        |
 
 ## Security Model
 
@@ -33,6 +32,7 @@ Terminal applications face a unique attack surface: malicious content rendered t
 - **Ratatui handles rendering.** All text output goes through ratatui's `Buffer` abstraction, which maps styled characters to cells rather than writing raw escape sequences. Ratatui and crossterm together handle the translation from logical cells to terminal output.
 - **No raw `write!` to stdout.** Envision never writes raw bytes to the terminal directly. All rendering is mediated by ratatui's `Backend` trait.
 - **Component API is safe by default.** Components such as `ConversationView` (renders via `Paragraph`) and `TerminalOutput` (parses ANSI codes into ratatui `Style` values via `parse_ansi`, then renders them as `Span::styled`) never forward raw escape bytes to the terminal. User-provided text passed through envision's component API is inherently safe against terminal escape injection.
+- **ANSI parser is hardened.** The `parse_ansi` function (`src/component/terminal_output/ansi.rs`) only processes SGR codes (Select Graphic Rendition — text styling). It supports standard colors (16), 256-color indexed palette (`38;5;n`), 24-bit RGB (`38;2;r;g;b`), and text modifiers (bold, italic, underline). All non-SGR sequences (cursor movement, window manipulation, etc.) are silently dropped. The parser is fuzz-tested with proptest using arbitrary Unicode input to verify it never panics.
 - **CaptureBackend for testing.** The headless `CaptureBackend` never interacts with a real terminal, eliminating escape sequence concerns in test environments entirely.
 
 ### Exception: direct ratatui primitive usage
@@ -46,7 +46,7 @@ If your application displays user-provided or external content (log files, chat 
 1. **Sanitize before storing.** Strip or replace control characters (U+0000–U+001F, U+007F, U+0080–U+009F) from untrusted input before storing it in your application state. The TEA pattern makes this straightforward — validate in your `update` function.
 2. **Prefer envision components over raw ratatui primitives.** Rendering user-provided strings through envision components (`ConversationView`, `TerminalOutput`, `StyledText`, etc.) is safer than constructing `Span::raw()` directly from unsanitized input.
 3. **Limit string lengths.** Unbounded strings can cause excessive memory use or slow rendering. Truncate or paginate long content.
-4. **Be cautious with ANSI in content.** If you display content that may contain ANSI escape codes (e.g., log output), consider stripping them before rendering through envision components.
+4. **ANSI content is safe through TerminalOutput.** The `TerminalOutput` component's `parse_ansi` function safely extracts styling from ANSI escape codes and discards everything else. It is safe to render log output, command output, and other ANSI-containing content through this component without stripping.
 
 ## Input Validation
 
