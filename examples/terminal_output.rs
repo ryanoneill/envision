@@ -55,6 +55,21 @@ impl App for TerminalOutputApp {
         output.push_line("");
         output.push_line("\x1b[32m    Finished\x1b[0m `dev` profile in 4.2s");
         output.push_line("\x1b[1;34m==>\x1b[0m 1 warning, 1 error");
+        output.push_line("");
+        output.push_line("\x1b[1m--- 24-bit RGB Color Demo ---\x1b[0m");
+        output.push_line(
+            "\x1b[38;2;255;100;0mOrange text\x1b[0m  \
+             \x1b[38;2;0;200;100mTeal text\x1b[0m  \
+             \x1b[38;2;180;80;255mPurple text\x1b[0m",
+        );
+        output.push_line(
+            "\x1b[48;2;40;40;80m\x1b[38;2;200;200;255m Syntax-highlighted block \x1b[0m",
+        );
+        output.push_line(
+            "\x1b[38;2;255;0;0mR\x1b[38;2;255;128;0mA\x1b[38;2;255;255;0mI\
+             \x1b[38;2;0;255;0mN\x1b[38;2;0;128;255mB\x1b[38;2;128;0;255mO\
+             \x1b[38;2;255;0;128mW\x1b[0m gradient",
+        );
 
         output.set_running(false);
         output.set_exit_code(Some(1));
@@ -102,29 +117,11 @@ impl App for TerminalOutputApp {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<TerminalOutputApp, _>::virtual_builder(70, 25).build()?;
-
-    println!("=== TerminalOutput Example ===\n");
-
-    // Initial render
-    vt.tick()?;
-    println!("Build output with ANSI colors:");
-    println!("{}\n", vt.display());
-
-    // Toggle line numbers
-    vt.dispatch(Msg::Output(TerminalOutputMessage::ToggleLineNumbers));
-    vt.tick()?;
-    println!("With line numbers:");
-    println!("{}\n", vt.display());
-
-    // Scroll to top
-    vt.dispatch(Msg::Output(TerminalOutputMessage::Home));
-    vt.tick()?;
-    println!("Scrolled to top:");
-    println!("{}\n", vt.display());
-
-    println!("Final line count: {}", vt.state().output.line_count());
-
+#[tokio::main]
+async fn main() -> envision::error::Result<()> {
+    Runtime::<TerminalOutputApp, _>::terminal_builder()?
+        .build()?
+        .run_terminal()
+        .await?;
     Ok(())
 }
