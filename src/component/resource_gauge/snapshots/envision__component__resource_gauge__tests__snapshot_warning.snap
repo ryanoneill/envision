@@ -1,0 +1,7 @@
+---
+source: src/component/resource_gauge/tests.rs
+expression: terminal.backend().to_string()
+---
+┌────────────────────────────────────────────────┐
+│CPU ████████████│█░░░░░░░░░░ 600m / 500m / 1000m│
+└────────────────────────────────────────────────┘
