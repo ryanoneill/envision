@@ -70,17 +70,11 @@ impl envision::app::App for App {
     }
 
     fn update(state: &mut AppState, msg: Msg) -> Command<Msg> {
-        match msg {
-            Msg::Diagram(diagram_msg) => {
-                if let Some(output) = Diagram::update(&mut state.diagram, diagram_msg) {
-                    match output {
-                        DiagramOutput::NodeSelected(id) => {
-                            let _ = id;
-                        }
-                        _ => {}
-                    }
-                }
-            }
+        let Msg::Diagram(diagram_msg) = msg;
+        if let Some(DiagramOutput::NodeSelected(_id)) =
+            Diagram::update(&mut state.diagram, diagram_msg)
+        {
+            // Could update a status bar or detail panel here
         }
         Command::none()
     }
