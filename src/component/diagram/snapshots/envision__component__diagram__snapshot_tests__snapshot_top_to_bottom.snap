@@ -1,0 +1,20 @@
+---
+source: src/component/diagram/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+┌ Vertical ────────────────────────────┐
+│┌ Top ─────┐                          │
+││● Healthy │                          │
+│└──────────┘                          │
+│      │                               │
+│      │                               │
+│      │                               │
+│      │                               │
+│      │                               │
+│      │                               │
+│      │                               │
+│      │                               │
+│┌ Bottom ──┐                          │
+││● Healthy │                          │
+│└──────────┘                          │
+└──────────────────────────────────────┘

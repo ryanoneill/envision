@@ -113,6 +113,23 @@ pub(super) fn render_diagram(
         focused,
     );
 
+    // Minimap in bottom-right corner
+    if state.show_minimap && state.viewport.needs_scroll() && inner.width >= 20 && inner.height >= 8
+    {
+        render_minimap(
+            frame.buffer_mut(),
+            layout.node_positions(),
+            &state.nodes,
+            &state.viewport,
+            inner,
+        );
+    }
+
+    // Search bar at bottom
+    if state.search.active {
+        render_search_bar(frame, &state.search, inner, theme);
+    }
+
     // Info bar at bottom showing selected node details
     if let Some(sel_idx) = state.selected {
         if let Some(node) = state.nodes.get(sel_idx) {
@@ -478,6 +495,202 @@ fn render_info_bar(
     };
 
     frame.render_widget(Paragraph::new(info).style(style), bar_area);
+}
+
+/// Renders a minimap in the bottom-right corner showing the full graph
+/// with a viewport indicator rectangle.
+fn render_minimap(
+    buf: &mut Buffer,
+    positions: &[NodePosition],
+    nodes: &[DiagramNode],
+    viewport: &Viewport2D,
+    area: Rect,
+) {
+    let map_w: u16 = 16;
+    let map_h: u16 = 6;
+    let map_x = area.right().saturating_sub(map_w + 1);
+    let map_y = area.bottom().saturating_sub(map_h + 1);
+    let map_area = Rect::new(map_x, map_y, map_w, map_h);
+
+    if map_area.width < 4 || map_area.height < 3 {
+        return;
+    }
+
+    let buf_area = buf.area;
+
+    // Clear minimap area with dark background
+    for y in map_area.y..map_area.bottom() {
+        for x in map_area.x..map_area.right() {
+            set_cell(buf, x, y, " ", Style::default().bg(Color::Black), buf_area);
+        }
+    }
+
+    // Draw border
+    let border_style = Style::default().fg(Color::DarkGray);
+    for x in map_area.x..map_area.right() {
+        set_cell(buf, x, map_area.y, "\u{2500}", border_style, buf_area);
+        set_cell(
+            buf,
+            x,
+            map_area.bottom() - 1,
+            "\u{2500}",
+            border_style,
+            buf_area,
+        );
+    }
+    for y in map_area.y..map_area.bottom() {
+        set_cell(buf, map_area.x, y, "\u{2502}", border_style, buf_area);
+        set_cell(
+            buf,
+            map_area.right() - 1,
+            y,
+            "\u{2502}",
+            border_style,
+            buf_area,
+        );
+    }
+    set_cell(
+        buf,
+        map_area.x,
+        map_area.y,
+        "\u{250c}",
+        border_style,
+        buf_area,
+    );
+    set_cell(
+        buf,
+        map_area.right() - 1,
+        map_area.y,
+        "\u{2510}",
+        border_style,
+        buf_area,
+    );
+    set_cell(
+        buf,
+        map_area.x,
+        map_area.bottom() - 1,
+        "\u{2514}",
+        border_style,
+        buf_area,
+    );
+    set_cell(
+        buf,
+        map_area.right() - 1,
+        map_area.bottom() - 1,
+        "\u{2518}",
+        border_style,
+        buf_area,
+    );
+
+    // Compute scale to fit all nodes in the minimap inner area
+    let inner = Rect::new(map_area.x + 1, map_area.y + 1, map_w - 2, map_h - 2);
+    if inner.width == 0 || inner.height == 0 || positions.is_empty() {
+        return;
+    }
+
+    let bbox = &viewport;
+    let content_w = bbox.offset_x() + f64::from(area.width) / bbox.zoom();
+    let content_h = bbox.offset_y() + f64::from(area.height) / bbox.zoom();
+
+    // Find actual content bounds from positions
+    let max_x = positions
+        .iter()
+        .map(|p| p.x() + p.width())
+        .fold(0.0f64, f64::max);
+    let max_y = positions
+        .iter()
+        .map(|p| p.y() + p.height())
+        .fold(0.0f64, f64::max);
+    let total_w = max_x.max(content_w);
+    let total_h = max_y.max(content_h);
+
+    if total_w <= 0.0 || total_h <= 0.0 {
+        return;
+    }
+
+    let scale_x = f64::from(inner.width) / total_w;
+    let scale_y = f64::from(inner.height) / total_h;
+
+    // Draw nodes as dots
+    for (i, pos) in positions.iter().enumerate() {
+        let mx = inner.x + (pos.center_x() * scale_x) as u16;
+        let my = inner.y + (pos.center_y() * scale_y) as u16;
+        if mx >= inner.x && mx < inner.right() && my >= inner.y && my < inner.bottom() {
+            let color = nodes.get(i).and_then(|n| n.color()).unwrap_or_else(|| {
+                nodes
+                    .get(i)
+                    .map_or(Color::White, |n| status_color(n.status()))
+            });
+            set_cell(
+                buf,
+                mx,
+                my,
+                "\u{25cf}",
+                Style::default().fg(color),
+                buf_area,
+            );
+        }
+    }
+
+    // Draw viewport rectangle
+    let vp_x = inner.x + (viewport.offset_x() * scale_x) as u16;
+    let vp_y = inner.y + (viewport.offset_y() * scale_y) as u16;
+    let vp_w = ((f64::from(area.width) / viewport.zoom()) * scale_x) as u16;
+    let vp_h = ((f64::from(area.height) / viewport.zoom()) * scale_y) as u16;
+    let vp_style = Style::default().fg(Color::Cyan);
+
+    let vp_right = (vp_x + vp_w).min(inner.right() - 1);
+    let vp_bottom = (vp_y + vp_h).min(inner.bottom() - 1);
+
+    for x in vp_x..=vp_right {
+        if x >= inner.x && x < inner.right() {
+            if vp_y >= inner.y && vp_y < inner.bottom() {
+                set_cell(buf, x, vp_y, "\u{2500}", vp_style, buf_area);
+            }
+            if vp_bottom >= inner.y && vp_bottom < inner.bottom() {
+                set_cell(buf, x, vp_bottom, "\u{2500}", vp_style, buf_area);
+            }
+        }
+    }
+    for y in vp_y..=vp_bottom {
+        if y >= inner.y && y < inner.bottom() {
+            if vp_x >= inner.x && vp_x < inner.right() {
+                set_cell(buf, vp_x, y, "\u{2502}", vp_style, buf_area);
+            }
+            if vp_right >= inner.x && vp_right < inner.right() {
+                set_cell(buf, vp_right, y, "\u{2502}", vp_style, buf_area);
+            }
+        }
+    }
+}
+
+/// Renders the search bar at the bottom of the diagram.
+fn render_search_bar(
+    frame: &mut ratatui::Frame,
+    search: &super::search::SearchState,
+    area: Rect,
+    theme: &Theme,
+) {
+    if area.height < 2 {
+        return;
+    }
+
+    let bar_area = Rect::new(area.x, area.bottom() - 1, area.width, 1);
+
+    let match_info = if search.matches.is_empty() {
+        if search.query.is_empty() {
+            String::new()
+        } else {
+            " (no matches)".to_string()
+        }
+    } else {
+        format!(" [{}/{}]", search.current_match + 1, search.matches.len())
+    };
+
+    let text = format!("/{}{}", search.query, match_info);
+    let style = Style::default().fg(theme.focused_style().fg.unwrap_or(Color::Yellow));
+
+    frame.render_widget(Paragraph::new(text).style(style), bar_area);
 }
 
 #[cfg(test)]
