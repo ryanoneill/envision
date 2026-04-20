@@ -18,8 +18,8 @@
 //! Run with: cargo run --example diagram
 
 use envision::component::diagram::{
-    Diagram, DiagramCluster, DiagramEdge, DiagramMessage, DiagramNode, DiagramOutput, DiagramState,
-    EdgeStyle, NodeStatus,
+    Diagram, DiagramCluster, DiagramEdge, DiagramMessage, DiagramNode, DiagramState, EdgeStyle,
+    NodeStatus,
 };
 use envision::prelude::*;
 
