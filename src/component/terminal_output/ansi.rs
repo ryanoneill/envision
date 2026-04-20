@@ -809,3 +809,173 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod property_tests {
+    use super::*;
+    use proptest::prelude::*;
+    use ratatui::style::Style;
+
+    /// Generates plain text that contains no ESC (\x1b) characters.
+    fn plain_text(max_len: usize) -> impl Strategy<Value = String> {
+        prop::collection::vec(
+            prop::char::range('\u{20}', '\u{7E}').prop_filter("no ESC", |c| *c != '\x1b'),
+            1..=max_len,
+        )
+        .prop_map(|chars| chars.into_iter().collect())
+    }
+
+    /// Generates a valid SGR escape sequence (e.g., `\x1b[1;31m`).
+    fn sgr_sequence() -> impl Strategy<Value = String> {
+        prop_oneof![
+            // Single SGR code
+            prop::sample::select(vec![
+                0u16, 1, 2, 3, 4, 22, 23, 24, 30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 41, 42, 43,
+                44, 45, 46, 47, 49, 90, 91, 92, 93, 94, 95, 96, 97, 100, 101, 102, 103, 104, 105,
+                106, 107,
+            ])
+            .prop_map(|code| format!("\x1b[{code}m")),
+            // 256-color foreground: 38;5;n
+            (0..=255u8).prop_map(|n| format!("\x1b[38;5;{n}m")),
+            // 256-color background: 48;5;n
+            (0..=255u8).prop_map(|n| format!("\x1b[48;5;{n}m")),
+            // 24-bit RGB foreground: 38;2;r;g;b
+            (0..=255u8, 0..=255u8, 0..=255u8)
+                .prop_map(|(r, g, b)| format!("\x1b[38;2;{r};{g};{b}m")),
+            // 24-bit RGB background: 48;2;r;g;b
+            (0..=255u8, 0..=255u8, 0..=255u8)
+                .prop_map(|(r, g, b)| format!("\x1b[48;2;{r};{g};{b}m")),
+            // Combined: bold + color
+            prop::sample::select(vec![31u16, 32, 33, 34, 35, 36, 37])
+                .prop_map(|code| format!("\x1b[1;{code}m")),
+            // Combined: bold + italic + underline
+            Just("\x1b[1;3;4m".to_string()),
+            // Reset
+            Just("\x1b[0m".to_string()),
+            // Bare reset (ESC[m)
+            Just("\x1b[m".to_string()),
+        ]
+    }
+
+    /// Builds an input string by interleaving SGR sequences and plain text.
+    fn ansi_input() -> impl Strategy<Value = String> {
+        prop::collection::vec(prop_oneof![plain_text(20), sgr_sequence()], 0..=10)
+            .prop_map(|parts| parts.into_iter().collect::<String>())
+    }
+
+    /// Strips ANSI escape sequences, returning only visible text (test oracle).
+    fn strip_ansi(input: &str) -> String {
+        let mut result = String::new();
+        let mut chars = input.chars().peekable();
+        while let Some(ch) = chars.next() {
+            if ch == '\x1b' {
+                if chars.peek() == Some(&'[') {
+                    chars.next(); // consume '['
+                    // Consume parameter bytes and the final byte
+                    while let Some(&c) = chars.peek() {
+                        if c.is_ascii_digit() || c == ';' {
+                            chars.next();
+                        } else {
+                            break;
+                        }
+                    }
+                    // Consume final byte
+                    chars.next();
+                }
+                // Bare ESC without '[' — just skip the ESC
+            } else {
+                result.push(ch);
+            }
+        }
+        result
+    }
+
+    proptest! {
+        /// Concatenating all segment text values reproduces the original
+        /// input with escape sequences stripped.
+        #[test]
+        fn round_trip_text_preservation(input in ansi_input()) {
+            let segments = parse_ansi(&input);
+            let reconstructed: String = segments.iter().map(|s| s.text.as_str()).collect();
+            let expected = strip_ansi(&input);
+            prop_assert_eq!(reconstructed, expected);
+        }
+
+        /// The parser never panics on arbitrary input bytes.
+        #[test]
+        fn no_panics_on_arbitrary_input(input in "\\PC{0,200}") {
+            let _ = parse_ansi(&input);
+        }
+
+        /// After an explicit reset sequence (\x1b[0m), the next segment's
+        /// style must be Style::default() (assuming no further SGR codes
+        /// intervene before the text).
+        #[test]
+        fn style_resets_after_reset_code(
+            pre_text in plain_text(10),
+            post_text in plain_text(10),
+            sgr in sgr_sequence(),
+        ) {
+            // Build: <sgr><pre_text>\x1b[0m<post_text>
+            let input = format!("{sgr}{pre_text}\x1b[0m{post_text}");
+            let segments = parse_ansi(&input);
+
+            // Find the segment containing post_text — it should be the last one
+            let last = segments.last().expect("should have at least one segment");
+            prop_assert_eq!(
+                &last.text, &post_text,
+                "last segment text should be the post-reset text"
+            );
+            prop_assert_eq!(
+                last.style,
+                Style::default(),
+                "style after reset should be default, got {:?}",
+                last.style
+            );
+        }
+
+        /// Every AnsiSegment produced by the parser has non-empty text.
+        /// Escape-only sequences produce no segments.
+        #[test]
+        fn segment_text_is_never_empty(input in ansi_input()) {
+            let segments = parse_ansi(&input);
+            for (i, segment) in segments.iter().enumerate() {
+                prop_assert!(
+                    !segment.text.is_empty(),
+                    "segment {} has empty text in parse of {:?}",
+                    i,
+                    input
+                );
+            }
+        }
+
+        /// An input consisting entirely of escape sequences yields no segments.
+        #[test]
+        fn escape_only_input_yields_no_segments(
+            escapes in prop::collection::vec(sgr_sequence(), 1..=5),
+        ) {
+            let input: String = escapes.into_iter().collect();
+            let segments = parse_ansi(&input);
+            prop_assert!(
+                segments.is_empty(),
+                "expected no segments for escape-only input {:?}, got {}",
+                input,
+                segments.len()
+            );
+        }
+
+        /// The bare reset sequence ESC[m behaves identically to ESC[0m.
+        #[test]
+        fn bare_reset_equals_explicit_reset(
+            pre_text in plain_text(10),
+            post_text in plain_text(10),
+            sgr in sgr_sequence(),
+        ) {
+            let with_bare = format!("{sgr}{pre_text}\x1b[m{post_text}");
+            let with_explicit = format!("{sgr}{pre_text}\x1b[0m{post_text}");
+            let segments_bare = parse_ansi(&with_bare);
+            let segments_explicit = parse_ansi(&with_explicit);
+            prop_assert_eq!(segments_bare, segments_explicit);
+        }
+    }
+}
