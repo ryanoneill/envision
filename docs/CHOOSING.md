@@ -1,6 +1,6 @@
 # Choosing the Right Component
 
-Envision has 73 components. This guide helps you find the right one.
+Envision has 74 components. This guide helps you find the right one.
 
 ## I want to show a list of things
 
@@ -35,7 +35,8 @@ Envision has 73 components. This guide helps you find the right one.
 | Box-and-whisker plots | [`BoxPlot`] | Statistical summaries with outliers |
 | Inline trend line | [`Sparkline`] | Compact, fits in a status bar |
 | Flame graph | [`FlameGraph`] | Hierarchical profiling data |
-| Dependency graph | [`DependencyGraph`] | Node-edge relationships |
+| Graph / topology visualization | [`Diagram`] | Sugiyama hierarchical and force-directed layout, spatial navigation, edge following, node search, clusters, minimap, viewport pan/zoom, edge styles, node shapes, status indicators |
+| Dependency graph (deprecated) | [`DependencyGraph`] | Simple node-edge relationships (use `Diagram` instead) |
 | Treemap | [`Treemap`] | Proportional area visualization |
 | Timeline / Gantt | [`Timeline`] | Events and spans on a time axis |
 | Span/trace tree | [`SpanTree`] | Distributed tracing hierarchies |
@@ -119,3 +120,4 @@ your `view()` reads the focus state and passes it through.
 - **`Tabs` vs `TabBar`**: `Tabs` is minimal (label + selection). `TabBar` adds close buttons, icons, modified indicators, overflow scrolling.
 - **`Table` vs `DataGrid`**: `Table` is read-only with sorting. `DataGrid` adds cell-level editing.
 - **`ConversationView` vs `ScrollableText`**: Use `ConversationView` for multi-role chat with structured message blocks. Use `ScrollableText` for simple read-only text.
+- **`Diagram` vs `DependencyGraph`**: `Diagram` supersedes `DependencyGraph` with hierarchical and force-directed layout algorithms, clusters, minimap, edge following, and node search. Use `Diagram` for new work; `DependencyGraph` is deprecated.
