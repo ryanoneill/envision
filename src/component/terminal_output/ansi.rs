@@ -176,6 +176,17 @@ fn apply_sgr(params: &str, mut style: Style) -> Style {
                     i += 2;
                 }
             }
+            // 24-bit RGB foreground: 38;2;r;g;b
+            38 if i + 4 < codes.len() && codes[i + 1] == "2" => {
+                if let (Ok(r), Ok(g), Ok(b)) = (
+                    codes[i + 2].parse::<u8>(),
+                    codes[i + 3].parse::<u8>(),
+                    codes[i + 4].parse::<u8>(),
+                ) {
+                    style = style.fg(Color::Rgb(r, g, b));
+                    i += 4;
+                }
+            }
             38 => {}
 
             // Default foreground
@@ -196,6 +207,17 @@ fn apply_sgr(params: &str, mut style: Style) -> Style {
                 if let Ok(n) = codes[i + 2].parse::<u8>() {
                     style = style.bg(Color::Indexed(n));
                     i += 2;
+                }
+            }
+            // 24-bit RGB background: 48;2;r;g;b
+            48 if i + 4 < codes.len() && codes[i + 1] == "2" => {
+                if let (Ok(r), Ok(g), Ok(b)) = (
+                    codes[i + 2].parse::<u8>(),
+                    codes[i + 3].parse::<u8>(),
+                    codes[i + 4].parse::<u8>(),
+                ) {
+                    style = style.bg(Color::Rgb(r, g, b));
+                    i += 4;
                 }
             }
             48 => {}
@@ -520,6 +542,65 @@ mod tests {
     fn test_256_fg_max() {
         let segments = parse_ansi("\x1b[38;5;255mtext");
         assert_eq!(segments[0].style, Style::default().fg(Color::Indexed(255)));
+    }
+
+    // =========================================================================
+    // 24-bit RGB colors
+    // =========================================================================
+
+    #[test]
+    fn test_rgb_fg_color() {
+        let segments = parse_ansi("\x1b[38;2;255;128;0mtext");
+        assert_eq!(
+            segments[0].style,
+            Style::default().fg(Color::Rgb(255, 128, 0))
+        );
+    }
+
+    #[test]
+    fn test_rgb_bg_color() {
+        let segments = parse_ansi("\x1b[48;2;0;100;200mtext");
+        assert_eq!(
+            segments[0].style,
+            Style::default().bg(Color::Rgb(0, 100, 200))
+        );
+    }
+
+    #[test]
+    fn test_rgb_fg_black() {
+        let segments = parse_ansi("\x1b[38;2;0;0;0mtext");
+        assert_eq!(segments[0].style, Style::default().fg(Color::Rgb(0, 0, 0)));
+    }
+
+    #[test]
+    fn test_rgb_fg_white() {
+        let segments = parse_ansi("\x1b[38;2;255;255;255mtext");
+        assert_eq!(
+            segments[0].style,
+            Style::default().fg(Color::Rgb(255, 255, 255))
+        );
+    }
+
+    #[test]
+    fn test_rgb_fg_and_bg() {
+        let segments = parse_ansi("\x1b[38;2;255;0;0;48;2;0;0;255mtext");
+        assert_eq!(
+            segments[0].style,
+            Style::default()
+                .fg(Color::Rgb(255, 0, 0))
+                .bg(Color::Rgb(0, 0, 255))
+        );
+    }
+
+    #[test]
+    fn test_rgb_with_bold() {
+        let segments = parse_ansi("\x1b[1;38;2;128;64;32mtext");
+        assert_eq!(
+            segments[0].style,
+            Style::default()
+                .fg(Color::Rgb(128, 64, 32))
+                .add_modifier(Modifier::BOLD)
+        );
     }
 
     // =========================================================================
