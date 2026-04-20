@@ -253,7 +253,7 @@ Envision provides a comprehensive library of 73 reusable UI components, all foll
 | `CommandPalette` | Fuzzy-searchable command palette overlay |
 | `ConversationView` | AI conversation display with role colors and markdown |
 | `DataGrid` | Editable data table with cell navigation |
-| `DependencyGraph` | Node-edge dependency visualization |
+| `Diagram` | Graph visualization with Sugiyama and force-directed layout |
 | `DiffViewer` | Side-by-side and unified diff display |
 | `EventStream` | Real-time event log with levels and timestamps |
 | `FileBrowser` | File system browser with pluggable backend |

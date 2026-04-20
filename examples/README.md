@@ -118,7 +118,7 @@ cargo run --example <name>
 |-----------|---------|-------------|
 | ChatView | [chat_view.rs](chat_view.rs) | Chat interface with input field and message history |
 | ConversationView | [conversation_view.rs](conversation_view.rs) | Read-only AI conversation display with structured blocks |
-| DependencyGraph | [dependency_graph.rs](dependency_graph.rs) | Directed graph visualization for dependencies |
+| Diagram | [diagram.rs](diagram.rs) | Graph visualization with layout algorithms |
 | DiffViewer | [diff_viewer.rs](diff_viewer.rs) | Side-by-side and unified diff viewer |
 | FileBrowser | [file_browser.rs](file_browser.rs) | File system browser with directory navigation |
 | PaneLayout | [pane_layout.rs](pane_layout.rs) | Resizable multi-pane layout manager |
