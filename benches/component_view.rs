@@ -7,8 +7,8 @@ use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_ma
 use envision::backend::CaptureBackend;
 use envision::component::RenderContext;
 use envision::component::{
-    Column, Component, SelectableList, SelectableListState, Table, TableRow, TableState, Tree,
-    TreeNode, TreeState,
+    Column, Component, Diagram, DiagramEdge, DiagramNode, DiagramState, NodeStatus, SelectableList,
+    SelectableListState, Table, TableRow, TableState, Tree, TreeNode, TreeState,
 };
 use envision::theme::Theme;
 use ratatui::Terminal;
@@ -212,11 +212,86 @@ fn bench_tree_view(c: &mut Criterion) {
     group.finish();
 }
 
+// ========================================
+// Diagram Benchmarks
+// ========================================
+
+fn build_diagram_state(node_count: usize) -> DiagramState {
+    let statuses = [
+        NodeStatus::Healthy,
+        NodeStatus::Degraded,
+        NodeStatus::Down,
+        NodeStatus::Unknown,
+    ];
+
+    let mut state = DiagramState::new();
+
+    // Create nodes
+    for i in 0..node_count {
+        let id = format!("node-{i}");
+        let label = format!("Service {i}");
+        let status = statuses[i % statuses.len()].clone();
+        state.add_node(DiagramNode::new(id, label).with_status(status));
+    }
+
+    // Create edges: chain + some cross-links for realistic topology
+    for i in 0..node_count.saturating_sub(1) {
+        state.add_edge(DiagramEdge::new(
+            format!("node-{i}"),
+            format!("node-{}", i + 1),
+        ));
+    }
+    // Cross-links every 5 nodes
+    for i in (0..node_count.saturating_sub(3)).step_by(5) {
+        state.add_edge(DiagramEdge::new(
+            format!("node-{i}"),
+            format!("node-{}", i + 3),
+        ));
+    }
+
+    state
+}
+
+fn bench_diagram_view(c: &mut Criterion) {
+    let mut group = c.benchmark_group("diagram_view");
+
+    for node_count in [10, 50, 100] {
+        for (width, height) in [(80, 24), (120, 40)] {
+            let label = format!("{}_nodes/{}x{}", node_count, width, height);
+
+            group.bench_with_input(
+                BenchmarkId::new("render", &label),
+                &(node_count, width, height),
+                |b, &(count, w, h)| {
+                    let state = build_diagram_state(count);
+                    let backend = CaptureBackend::new(w, h);
+                    let mut terminal = Terminal::new(backend).unwrap();
+                    let theme = Theme::default();
+
+                    b.iter(|| {
+                        terminal
+                            .draw(|frame| {
+                                Diagram::view(
+                                    black_box(&state),
+                                    &mut RenderContext::new(frame, frame.area(), &theme),
+                                );
+                            })
+                            .unwrap();
+                    });
+                },
+            );
+        }
+    }
+
+    group.finish();
+}
+
 criterion_group!(
     benches,
     bench_selectable_list_view,
     bench_table_view,
     bench_tree_view,
+    bench_diagram_view,
 );
 
 criterion_main!(benches);
