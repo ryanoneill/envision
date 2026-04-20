@@ -353,6 +353,7 @@ pub use conversation_view::{
 #[cfg(feature = "compound-components")]
 pub use data_grid::{DataGrid, DataGridMessage, DataGridOutput, DataGridState};
 #[cfg(feature = "compound-components")]
+#[allow(deprecated)]
 pub use dependency_graph::{
     DependencyGraph, DependencyGraphMessage, DependencyGraphOutput, DependencyGraphState,
     GraphEdge, GraphNode, GraphOrientation, NodeStatus,

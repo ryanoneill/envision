@@ -245,6 +245,7 @@ pub use component::{
 
 // Compound components
 #[cfg(feature = "compound-components")]
+#[allow(deprecated)] // DependencyGraph is deprecated but still re-exported
 pub use component::{
     AlertMetric, AlertPanel, AlertPanelMessage, AlertPanelOutput, AlertPanelState, AlertState,
     AlertThreshold, BarMode, BinMethod, BoxPlot, BoxPlotData, BoxPlotMessage, BoxPlotOrientation,

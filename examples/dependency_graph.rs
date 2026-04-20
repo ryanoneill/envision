@@ -1,3 +1,4 @@
+#![allow(deprecated)] // DependencyGraph is deprecated in favor of Diagram
 //! DependencyGraph example -- microservice architecture visualization.
 //!
 //! Demonstrates the DependencyGraph component displaying service

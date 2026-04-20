@@ -165,6 +165,10 @@ name = "canvas"
 required-features = ["display-components"]
 
 [[example]]
+name = "diagram"
+required-features = ["compound-components"]
+
+[[example]]
 name = "chart"
 required-features = ["compound-components"]
 

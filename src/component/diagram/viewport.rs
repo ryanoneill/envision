@@ -269,6 +269,21 @@ impl Viewport2D {
         self.zoom = (self.zoom / Self::ZOOM_STEP).max(Self::MIN_ZOOM);
     }
 
+    /// Returns the viewport width in graph units.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::component::diagram::Viewport2D;
+    ///
+    /// let mut vp = Viewport2D::new();
+    /// vp.set_viewport_size(120, 40);
+    /// assert_eq!(vp.viewport_size(), (120.0, 40.0));
+    /// ```
+    pub fn viewport_size(&self) -> (f64, f64) {
+        (self.viewport_width, self.viewport_height)
+    }
+
     /// Sets the viewport size in terminal cells.
     ///
     /// # Examples
@@ -278,10 +293,26 @@ impl Viewport2D {
     ///
     /// let mut vp = Viewport2D::new();
     /// vp.set_viewport_size(120, 40);
+    /// assert_eq!(vp.viewport_size(), (120.0, 40.0));
     /// ```
     pub fn set_viewport_size(&mut self, width: u16, height: u16) {
         self.viewport_width = f64::from(width);
         self.viewport_height = f64::from(height);
+    }
+
+    /// Returns the content bounding box.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use envision::component::diagram::{Viewport2D, BoundingBox};
+    ///
+    /// let mut vp = Viewport2D::new();
+    /// vp.set_content_bounds(BoundingBox::new(10.0, 20.0, 100.0, 50.0));
+    /// assert_eq!(vp.content_bounds().min_x, 10.0);
+    /// ```
+    pub fn content_bounds(&self) -> &BoundingBox {
+        &self.content_bbox
     }
 
     /// Updates the content bounding box (from layout results).
@@ -293,6 +324,7 @@ impl Viewport2D {
     ///
     /// let mut vp = Viewport2D::new();
     /// vp.set_content_bounds(BoundingBox::new(0.0, 0.0, 200.0, 100.0));
+    /// assert_eq!(vp.content_bounds().width(), 200.0);
     /// ```
     pub fn set_content_bounds(&mut self, bbox: BoundingBox) {
         self.content_bbox = bbox;

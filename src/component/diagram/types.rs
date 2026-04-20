@@ -790,3 +790,34 @@ impl DiagramCluster {
         self.label = label.into();
     }
 }
+
+// ---------------------------------------------------------------------------
+// Migration from DependencyGraph
+// ---------------------------------------------------------------------------
+
+impl From<crate::component::dependency_graph::GraphNode> for DiagramNode {
+    fn from(node: crate::component::dependency_graph::GraphNode) -> Self {
+        Self {
+            id: node.id.clone(),
+            label: node.label.clone(),
+            status: node.status.clone(),
+            color: node.color(),
+            shape: NodeShape::default(),
+            metadata: node.metadata.clone(),
+            cluster_id: None,
+        }
+    }
+}
+
+impl From<crate::component::dependency_graph::GraphEdge> for DiagramEdge {
+    fn from(edge: crate::component::dependency_graph::GraphEdge) -> Self {
+        Self {
+            from: edge.from.clone(),
+            to: edge.to.clone(),
+            label: edge.label.clone(),
+            color: edge.color,
+            style: EdgeStyle::default(),
+            bidirectional: false,
+        }
+    }
+}
