@@ -195,6 +195,8 @@ mod paginator;
 #[cfg(feature = "display-components")]
 pub mod progress_bar;
 #[cfg(feature = "display-components")]
+pub mod resource_gauge;
+#[cfg(feature = "display-components")]
 mod scroll_view;
 #[cfg(feature = "display-components")]
 mod scrollable_text;
@@ -322,6 +324,10 @@ pub use paginator::{Paginator, PaginatorMessage, PaginatorOutput, PaginatorState
 #[cfg(feature = "display-components")]
 pub use progress_bar::{
     ProgressBar, ProgressBarMessage, ProgressBarOutput, ProgressBarState, format_eta,
+};
+#[cfg(feature = "display-components")]
+pub use resource_gauge::{
+    GaugeOrientation, ResourceGauge, ResourceGaugeMessage, ResourceGaugeOutput, ResourceGaugeState,
 };
 #[cfg(feature = "display-components")]
 pub use sparkline::{

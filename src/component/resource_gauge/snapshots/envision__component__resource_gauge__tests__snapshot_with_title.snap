@@ -1,0 +1,7 @@
+---
+source: src/component/resource_gauge/tests.rs
+expression: terminal.backend().to_string()
+---
+┌ Container CPU ─────────────────────────────────┐
+│█████████▓▓▓▓▓│░░░░░░░░░░░░░ 350m / 500m / 1000m│
+└────────────────────────────────────────────────┘
