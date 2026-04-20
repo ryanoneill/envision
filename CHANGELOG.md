@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-04-20
+
+### Breaking
+
+- **`DependencyGraph` removed.** Replaced entirely by `Diagram`, which
+  provides Sugiyama hierarchical and Fruchterman-Reingold force-directed
+  layout, crossing minimization, spatial navigation, edge following,
+  clusters, search, minimap, viewport pan/zoom, and batch buffer
+  rendering. `GraphNode`, `GraphEdge`, `GraphOrientation`, and all
+  `DependencyGraph*` types are removed. `NodeStatus` is now defined in
+  `diagram::types`. (#437–#445, #451)
+
+### Added
+
+- **`Diagram` component** — world-class graph visualization with:
+  - Sugiyama hierarchical layout with barycenter crossing minimization
+  - Fruchterman-Reingold force-directed layout with incremental stability
+  - Spatial keyboard navigation (arrow keys select nearest node)
+  - Edge following with multi-target picker
+  - Node search (`/` to filter by ID or label)
+  - Cluster grouping with expand/collapse
+  - Minimap for large graphs
+  - Viewport pan/zoom (H/J/K/L, +/-, 0 to fit)
+  - Edge styles (solid, dashed, dotted) with arrowheads and corner chars
+  - Node shapes (rectangle, rounded rectangle, diamond)
+  - Self-loop and bidirectional edge rendering
+  - Batch buffer writes for edges (dramatically faster than per-cell widgets)
+  - Layout caching (recomputes only on data changes)
+  - Performance: 100 nodes in ~250µs
+  (#437–#445)
+- **24-bit RGB color support** in ANSI parser — `ESC[38;2;r;g;b;m`
+  foreground and `ESC[48;2;r;g;b;m` background. (#447)
+- **Diagram benchmark** in CI — 10/50/100 nodes at two terminal sizes. (#446)
+- **Diagram performance guide** in module docs — layout caching, viewport
+  culling, benchmark numbers, force-directed complexity. (#452)
+- **Diagram in CHOOSING.md** — component selection guide updated. (#449)
+
+### Fixed
+
+- **`terminal_output` example** now runs as interactive terminal app
+  (was virtual terminal with no colors). (#445, #448)
+
+### Internal
+
+- Property-based testing (proptest) for ANSI parser — 6 properties
+  including round-trip text preservation and no-panics on arbitrary
+  input. (#450)
+- Property-based testing for Sugiyama layout — 8 properties including
+  no-overlap, bounding box containment, cycle/self-loop handling. (#453)
+- Diagram integration and stress tests — 500-node render, navigation,
+  edge following, search, full lifecycle. (#454)
+- Updated SECURITY.md with ANSI parser hardening details. (#455)
+- Audit grade: A (4.09 GPA), scorecard 9/9, 25/25 categories A or above.
+
 ## [0.15.1] - 2026-04-18
 
 ### Added
