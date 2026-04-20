@@ -528,3 +528,241 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod property_tests {
+    use super::*;
+    use proptest::prelude::*;
+    use std::collections::HashSet;
+
+    /// Returns a node ID string like "n0", "n1", etc.
+    fn node_id(index: usize) -> String {
+        format!("n{index}")
+    }
+
+    /// Strategy that generates edges referencing valid node indices.
+    fn edges_strategy(
+        node_count: usize,
+        max_edges: usize,
+    ) -> impl Strategy<Value = Vec<DiagramEdge>> {
+        let edge_count = std::cmp::min(max_edges, node_count * node_count);
+        prop::collection::vec((0..node_count, 0..node_count), 0..=edge_count).prop_map(|pairs| {
+            pairs
+                .into_iter()
+                .map(|(from, to)| DiagramEdge::new(node_id(from), node_id(to)))
+                .collect()
+        })
+    }
+
+    /// Strategy that generates a random graph: (nodes, edges).
+    fn graph_strategy(
+        max_nodes: usize,
+        max_edges: usize,
+    ) -> impl Strategy<Value = (Vec<DiagramNode>, Vec<DiagramEdge>)> {
+        (1..=max_nodes).prop_flat_map(move |count| {
+            let nodes = Just(
+                (0..count)
+                    .map(|i| {
+                        let id = node_id(i);
+                        DiagramNode::new(&id, &id)
+                    })
+                    .collect::<Vec<_>>(),
+            );
+            let edges = edges_strategy(count, max_edges);
+            (nodes, edges)
+        })
+    }
+
+    fn run_layout(nodes: &[DiagramNode], edges: &[DiagramEdge]) -> LayoutResult {
+        let graph = IndexedGraph::build(nodes, edges);
+        let layout = SugiyamaLayout::default();
+        layout.compute(&graph, nodes, edges, &[], &LayoutHints::default())
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(200))]
+
+        #[test]
+        fn no_node_overlap(
+            (nodes, edges) in graph_strategy(50, 100)
+        ) {
+            let result = run_layout(&nodes, &edges);
+
+            for i in 0..result.node_positions.len() {
+                for j in (i + 1)..result.node_positions.len() {
+                    let a = &result.node_positions[i];
+                    let b = &result.node_positions[j];
+                    let overlaps_x =
+                        a.x() < b.x() + b.width() && b.x() < a.x() + a.width();
+                    let overlaps_y =
+                        a.y() < b.y() + b.height() && b.y() < a.y() + a.height();
+                    prop_assert!(
+                        !(overlaps_x && overlaps_y),
+                        "Nodes {} and {} overlap: ({}, {}, {}x{}) vs ({}, {}, {}x{})",
+                        a.id(), b.id(),
+                        a.x(), a.y(), a.width(), a.height(),
+                        b.x(), b.y(), b.width(), b.height(),
+                    );
+                }
+            }
+        }
+
+        #[test]
+        fn all_nodes_positioned(
+            (nodes, edges) in graph_strategy(50, 100)
+        ) {
+            let result = run_layout(&nodes, &edges);
+
+            prop_assert_eq!(
+                result.node_positions.len(),
+                nodes.len(),
+                "Expected {} positions, got {}",
+                nodes.len(),
+                result.node_positions.len(),
+            );
+
+            let positioned_ids: HashSet<&str> =
+                result.node_positions.iter().map(|p| p.id()).collect();
+            for node in &nodes {
+                prop_assert!(
+                    positioned_ids.contains(node.id()),
+                    "Node {} not found in layout output",
+                    node.id(),
+                );
+            }
+        }
+
+        #[test]
+        fn bounding_box_contains_all_nodes(
+            (nodes, edges) in graph_strategy(50, 100)
+        ) {
+            let result = run_layout(&nodes, &edges);
+            let bbox = &result.bounding_box;
+
+            for pos in &result.node_positions {
+                prop_assert!(
+                    pos.x() >= bbox.min_x,
+                    "Node {} x={} is below bbox min_x={}",
+                    pos.id(), pos.x(), bbox.min_x,
+                );
+                prop_assert!(
+                    pos.y() >= bbox.min_y,
+                    "Node {} y={} is below bbox min_y={}",
+                    pos.id(), pos.y(), bbox.min_y,
+                );
+                prop_assert!(
+                    pos.x() + pos.width() <= bbox.max_x,
+                    "Node {} right edge {} exceeds bbox max_x={}",
+                    pos.id(), pos.x() + pos.width(), bbox.max_x,
+                );
+                prop_assert!(
+                    pos.y() + pos.height() <= bbox.max_y,
+                    "Node {} bottom edge {} exceeds bbox max_y={}",
+                    pos.id(), pos.y() + pos.height(), bbox.max_y,
+                );
+            }
+        }
+
+        #[test]
+        fn no_panics_on_arbitrary_input(
+            (nodes, edges) in graph_strategy(50, 100)
+        ) {
+            // Simply running layout without panicking is the assertion.
+            let _result = run_layout(&nodes, &edges);
+        }
+
+        #[test]
+        fn edge_paths_generated_for_all_valid_edges(
+            (nodes, edges) in graph_strategy(50, 100)
+        ) {
+            let result = run_layout(&nodes, &edges);
+
+            let node_ids: HashSet<&str> = nodes.iter().map(|n| n.id()).collect();
+
+            // Collect valid edges: both endpoints exist in node set.
+            // Deduplicate since the layout may deduplicate edge paths.
+            let valid_edges: HashSet<(&str, &str)> = edges
+                .iter()
+                .filter(|e| node_ids.contains(e.from()) && node_ids.contains(e.to()))
+                .map(|e| (e.from(), e.to()))
+                .collect();
+
+            let path_edges: HashSet<(&str, &str)> = result
+                .edge_paths
+                .iter()
+                .map(|p| (p.from_id(), p.to_id()))
+                .collect();
+
+            for (from, to) in &valid_edges {
+                prop_assert!(
+                    path_edges.contains(&(*from, *to)),
+                    "Missing edge path from {} to {}",
+                    from, to,
+                );
+            }
+        }
+
+        #[test]
+        fn cycles_do_not_hang(
+            node_count in 2..20usize,
+        ) {
+            // Create a cycle: n0 -> n1 -> n2 -> ... -> n0
+            let nodes: Vec<DiagramNode> = (0..node_count)
+                .map(|i| {
+                    let id = node_id(i);
+                    DiagramNode::new(&id, &id)
+                })
+                .collect();
+            let edges: Vec<DiagramEdge> = (0..node_count)
+                .map(|i| DiagramEdge::new(node_id(i), node_id((i + 1) % node_count)))
+                .collect();
+
+            let result = run_layout(&nodes, &edges);
+            prop_assert_eq!(result.node_positions.len(), node_count);
+        }
+
+        #[test]
+        fn self_loops_handled(
+            node_count in 1..20usize,
+        ) {
+            let nodes: Vec<DiagramNode> = (0..node_count)
+                .map(|i| {
+                    let id = node_id(i);
+                    DiagramNode::new(&id, &id)
+                })
+                .collect();
+            // Every node has a self-loop
+            let edges: Vec<DiagramEdge> = (0..node_count)
+                .map(|i| DiagramEdge::new(node_id(i), node_id(i)))
+                .collect();
+
+            let result = run_layout(&nodes, &edges);
+            prop_assert_eq!(result.node_positions.len(), node_count);
+        }
+
+        #[test]
+        fn disconnected_components_positioned(
+            component_count in 2..6usize,
+            nodes_per_component in 1..10usize,
+        ) {
+            // Create multiple disconnected linear chains
+            let total = component_count * nodes_per_component;
+            let nodes: Vec<DiagramNode> = (0..total)
+                .map(|i| {
+                    let id = node_id(i);
+                    DiagramNode::new(&id, &id)
+                })
+                .collect();
+            let edges: Vec<DiagramEdge> = (0..component_count)
+                .flat_map(|c| {
+                    let start = c * nodes_per_component;
+                    (start..start + nodes_per_component - 1)
+                        .map(move |i| DiagramEdge::new(node_id(i), node_id(i + 1)))
+                })
+                .collect();
+
+            let result = run_layout(&nodes, &edges);
+            prop_assert_eq!(result.node_positions.len(), total);
+        }
+    }
+}
