@@ -1,3 +1,4 @@
+#![allow(deprecated)] // This module uses its own deprecated type internally
 //! A dependency graph component for visualizing service/component relationships.
 //!
 //! [`DependencyGraph`] renders a directed graph of nodes and edges,
@@ -715,6 +716,10 @@ impl DependencyGraphState {
 /// DependencyGraph::update(&mut state, DependencyGraphMessage::SelectNext);
 /// assert_eq!(state.selected_node().unwrap().id, "api");
 /// ```
+#[deprecated(
+    since = "0.16.0",
+    note = "Use `Diagram` instead, which provides crossing minimization, spatial navigation, force-directed layout, clusters, search, and viewport scrolling."
+)]
 pub struct DependencyGraph;
 
 impl Component for DependencyGraph {
