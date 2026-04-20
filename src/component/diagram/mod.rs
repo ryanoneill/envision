@@ -21,6 +21,30 @@
 //! assert_eq!(state.edges().len(), 1);
 //! assert_eq!(state.title(), Some("Service Mesh"));
 //! ```
+//!
+//! # Performance
+//!
+//! Layout is cached and only recomputed when graph data (nodes, edges, clusters)
+//! changes — selection, zoom, and pan operations skip layout entirely.
+//!
+//! During rendering, viewport culling ensures only visible nodes and edges are
+//! drawn. Edge paths use batch buffer writes rather than per-cell widget
+//! allocation, reducing overhead for dense graphs.
+//!
+//! Benchmark results (release mode, single-threaded):
+//!
+//! | Nodes | Hierarchical layout + render |
+//! |------:|-----------------------------:|
+//! |    10 |                        ~55µs |
+//! |    50 |                       ~110µs |
+//! |   100 |                       ~250µs |
+//!
+//! For large graphs (500+ nodes), enable the minimap and use viewport pan/zoom
+//! to keep frame times low.
+//!
+//! The force-directed layout runs O(V²) per iteration with 50 iterations by
+//! default, making it suitable for graphs up to ~200 nodes. For larger graphs,
+//! prefer `LayoutMode::Hierarchical`.
 
 use std::collections::HashSet;
 
