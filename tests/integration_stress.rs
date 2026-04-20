@@ -2,6 +2,9 @@
 //! Stress tests exercising components with large datasets (10,000+ items).
 use envision::RenderContext;
 
+use envision::component::diagram::{
+    Diagram, DiagramEdge, DiagramMessage, DiagramNode, DiagramState, NodeStatus,
+};
 use envision::component::{DataGrid, DataGridMessage, DataGridState};
 use envision::{
     Accordion, AccordionMessage, AccordionPanel, AccordionState, CaptureBackend, Column, Component,
@@ -366,4 +369,149 @@ fn test_rapid_input_10000_events() {
     }
     // Clamped to last item (index 99)
     assert_eq!(state.selected_index(), Some(99));
+}
+
+// ---------------------------------------------------------------------------
+// Diagram stress test: 500 nodes
+// ---------------------------------------------------------------------------
+
+fn make_diagram_state(node_count: usize) -> DiagramState {
+    let statuses = [
+        NodeStatus::Healthy,
+        NodeStatus::Degraded,
+        NodeStatus::Down,
+        NodeStatus::Unknown,
+    ];
+
+    let mut state = DiagramState::new();
+    for i in 0..node_count {
+        state.add_node(
+            DiagramNode::new(format!("n{i}"), format!("Service {i}"))
+                .with_status(statuses[i % statuses.len()].clone()),
+        );
+    }
+    // Chain edges + cross-links
+    for i in 0..node_count.saturating_sub(1) {
+        state.add_edge(DiagramEdge::new(format!("n{i}"), format!("n{}", i + 1)));
+    }
+    for i in (0..node_count.saturating_sub(3)).step_by(5) {
+        state.add_edge(DiagramEdge::new(format!("n{i}"), format!("n{}", i + 3)));
+    }
+    state
+}
+
+#[test]
+fn test_diagram_stress_500_nodes_render() {
+    let state = make_diagram_state(500);
+    assert_renders_ok("Diagram (500 nodes)", 120, 40, |frame, area, theme| {
+        Diagram::view(&state, &mut RenderContext::new(frame, area, theme));
+    });
+}
+
+#[test]
+fn test_diagram_stress_500_nodes_navigation() {
+    let mut state = make_diagram_state(500);
+    let ctx = envision::EventContext::new().focused(true);
+    let down = envision::Event::char('j');
+
+    // Navigate through 200 nodes
+    for _ in 0..200 {
+        if let Some(msg) = Diagram::handle_event(&state, &down, &ctx) {
+            Diagram::update(&mut state, msg);
+        }
+    }
+    assert!(state.selected().is_some());
+}
+
+#[test]
+fn test_diagram_stress_edge_following() {
+    let mut state = make_diagram_state(100);
+    let ctx = envision::EventContext::new().focused(true);
+    let enter = envision::Event::key(envision::Key::Enter);
+    let tab = envision::Event::key(envision::Key::Tab);
+
+    // Select first node
+    if let Some(msg) = Diagram::handle_event(&state, &tab, &ctx) {
+        Diagram::update(&mut state, msg);
+    }
+    assert_eq!(state.selected(), Some(0));
+
+    // Follow edges 50 times
+    for _ in 0..50 {
+        if let Some(msg) = Diagram::handle_event(&state, &enter, &ctx) {
+            Diagram::update(&mut state, msg);
+        }
+    }
+    // Should have followed the chain without panicking
+    assert!(state.selected().is_some());
+}
+
+#[test]
+fn test_diagram_stress_search() {
+    let mut state = make_diagram_state(200);
+
+    // Enter search mode
+    Diagram::update(&mut state, DiagramMessage::StartSearch);
+    assert!(state.is_searching());
+
+    // Search for "Service 15"
+    for ch in "Service 15".chars() {
+        Diagram::update(&mut state, DiagramMessage::SearchInput(ch));
+    }
+
+    // Should find matches
+    Diagram::update(&mut state, DiagramMessage::SearchNext);
+    Diagram::update(&mut state, DiagramMessage::ConfirmSearch);
+    assert!(!state.is_searching());
+    assert!(state.selected().is_some());
+}
+
+#[test]
+fn test_diagram_full_lifecycle() {
+    let mut state = DiagramState::new()
+        .with_node(DiagramNode::new("api", "API").with_status(NodeStatus::Healthy))
+        .with_node(DiagramNode::new("db", "DB").with_status(NodeStatus::Healthy))
+        .with_edge(DiagramEdge::new("api", "db"))
+        .with_title("Test");
+
+    // Render
+    assert_renders_ok("Diagram lifecycle", 80, 24, |frame, area, theme| {
+        Diagram::view(&state, &mut RenderContext::new(frame, area, theme));
+    });
+
+    // Navigate
+    Diagram::update(&mut state, DiagramMessage::SelectNext);
+    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_node().unwrap().id(), "api");
+
+    // Follow edge
+    let output = Diagram::update(&mut state, DiagramMessage::FollowEdge);
+    assert!(output.is_some());
+    assert_eq!(state.selected_node().unwrap().id(), "db");
+
+    // Go back
+    assert!(state.go_back());
+    assert_eq!(state.selected_node().unwrap().id(), "api");
+
+    // Update status
+    let old = state.update_node_status("db", NodeStatus::Down);
+    assert_eq!(old, Some(NodeStatus::Healthy));
+    assert_eq!(state.nodes()[1].status(), &NodeStatus::Down);
+
+    // Add/remove nodes
+    state.add_node(DiagramNode::new("cache", "Cache"));
+    assert_eq!(state.nodes().len(), 3);
+    state.remove_node("cache");
+    assert_eq!(state.nodes().len(), 2);
+
+    // Zoom/pan
+    Diagram::update(&mut state, DiagramMessage::ZoomIn);
+    Diagram::update(&mut state, DiagramMessage::ZoomOut);
+    Diagram::update(&mut state, DiagramMessage::FitToView);
+    Diagram::update(&mut state, DiagramMessage::Pan { dx: 1.0, dy: -1.0 });
+
+    // Re-render after all mutations
+    assert_renders_ok("Diagram after mutations", 80, 24, |frame, area, theme| {
+        Diagram::view(&state, &mut RenderContext::new(frame, area, theme));
+    });
 }
