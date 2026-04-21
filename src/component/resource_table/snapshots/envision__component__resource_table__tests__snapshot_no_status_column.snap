@@ -1,0 +1,12 @@
+---
+source: src/component/resource_table/tests.rs
+expression: terminal.backend().to_string()
+---
+┌ Plain ───────────────────────────────┐
+│COL1       COL2                       │
+│a          b                          │
+│c          d                          │
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘

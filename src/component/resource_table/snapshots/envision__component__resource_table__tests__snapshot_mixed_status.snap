@@ -1,0 +1,14 @@
+---
+source: src/component/resource_table/tests.rs
+expression: terminal.backend().to_string()
+---
+┌ Pods (mixed) ────────────────────────────────────────────────────────────────┐
+│   NAME                 STATUS               RESTARTS   AGE                   │
+│●  nginx-abc            Running              0          3m12s                 │
+│✖  redis-def            CrashLoopBackOff     5          1m                    │
+│▲  worker-ghi           Pending              0          10s                   │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
