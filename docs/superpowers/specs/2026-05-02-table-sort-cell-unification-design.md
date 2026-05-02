@@ -48,7 +48,7 @@ This spec is the result of a brainstorm conducted on 2026-05-01/02 with leadline
 
 ```
 src/component/
-    cell.rs              (NEW — Cell, CellStyle, SortKey, RowStatus, ~300 lines)
+    cell.rs              (NEW — Cell, CellStyle, SortKey, RowStatus; realistic floor ~500–700 lines with doc tests)
     table/
         mod.rs           (MODIFIED — gains status() on TableRow, switches to Cell, new sort variant arms)
         types.rs         (MODIFIED — Column loses comparator field, gains default_sort; TableMessage rewritten)
@@ -129,6 +129,19 @@ fn ms_cell(v: f64) -> Cell { Cell::number(v).with_text(format!("{:.2} ms", v)) }
 ```
 
 A runtime format-string variant (`Cell::number(v).with_format("{:.2}")`) was considered and rejected: implementing it requires a custom format-spec mini-parser (error-prone, edge cases on fill/width/alignment/precision/sign), pulling in `strfmt`/`dyn-fmt` (extra dep + runtime-parsing perf), or a closed enum of preset patterns (won't cover the long tail). None justifies the cost.
+
+#### `Cell::int` / `Cell::uint` integer-data caveat
+
+`Cell::int(5)` and `Cell::number(5.0)` both render `"5"`; only the sort key differs (`I64` vs `F64`). For a column that mixes whole and fractional values (e.g. `5.0` and `5.5`), `Cell::int` would silently truncate the value passed to it before constructing the sort key. The doc test on `Cell::int` will state explicitly: *"Use `Cell::int`/`Cell::uint` only when the column's data is integer-valued. For fractional or naturally-`f64` data, use `Cell::number` to preserve precision in the sort key."* Cheap insurance against a foot-gun the migration table doesn't otherwise signal.
+
+#### Naming: why `Cell`, not `TableCell` / `DataCell`
+
+The unqualified name `Cell` is short and the obvious choice for a type that's used by every tabular component in the framework (today `Table` + `data_grid`; tomorrow any future tabular UI). The alternatives:
+
+- **`TableCell`** — implies tables are special, but the design deliberately collapses all tabular cells into one type. Re-introducing a Table prefix re-introduces the inconsistency this spec was built to remove.
+- **`DataCell`** — generic-feeling, no obvious advantage over `Cell`.
+
+Collision risk: `ratatui::buffer::Cell` exists (a single styled terminal character — different concept entirely). Users importing both `envision::Cell` and `ratatui::buffer::Cell` in the same module will need to alias one. That's an acceptable cost for the shorter, more ergonomic name in the common case where only one of them appears. Users with collisions can `use envision::Cell as TableCell` at the import site.
 
 ### `SortKey` (new)
 
@@ -505,7 +518,7 @@ Grouped by module.
 
 **`src/component/table/state.rs` (sort behavior):**
 
-2. Cross-variant fallback: column with `I64(7)` and `F64(3.5)` rows sorts deterministically by discriminant order; emits exactly **one** `tracing::warn!` per `(render_pass, column_index)` regardless of row count (test with 100-row mixed-variant column → 1 warn).
+2. Cross-variant fallback: column with `I64(7)` and `F64(3.5)` rows sorts deterministically by discriminant order; emits exactly **one** `tracing::warn!` per `(render_pass, column_index)` regardless of row count (test with 100-row mixed-variant column → 1 warn). **Assertion:** in ascending order, the `I64(7)` row appears before the `F64(3.5)` row — order follows discriminant position (`I64 < F64` in the enum), not numeric comparison (where `3.5 < 7`).
 4. `SortToggle` 2-cycle never clears: dispatch 10× → state always `Some((col, _))`, direction strictly alternates.
 5. `SortToggle` honors `with_default_sort(Descending)` on first activation: column with no current sort, dispatch `SortToggle(col)` → direction is `Descending`.
 6. `with_initial_sort(col, Descending)` produces sorted rows on frame 1 (no `update()` calls). Same for `with_initial_sorts(vec![...])`.
@@ -518,7 +531,7 @@ Grouped by module.
    - `SortClear` when stack already empty → `None`
 9. Idempotent dispatches: `SortAsc(col)` when `(col, Asc)` already primary → `None`. Same for `SortDesc`, `AddSortAsc`, `AddSortDesc`.
 13. `SortToggle` / `SortAsc` / `SortDesc` / `AddSort*` on a non-sortable column → state unchanged, output `None`. Pinned per the forward-compat hedge so a future "be strict on bad input" cleanup must consciously change the test.
-15. **`sort_toggle_arrow_persists_on_repeated_press`** — the originating bug. Dispatch `SortToggle(col)` 10×; query the rendered column header for the indicator character on every iteration; assert it's always present. Pinned by name so future cleanup can't silently regress.
+15a. **`sort_toggle_state_persists_on_repeated_press`** — the originating bug, state-layer half. Dispatch `SortToggle(col)` 10×; assert `state.sort()` is `Some((col, _))` on every iteration. Pinned by name. (The render-layer half is test 15b under render.rs.)
 16. `SortToggle` column-switch honors the new column's `default_sort`: stack already has `(col_A, Asc)`; dispatch `SortToggle(col_B)` where `col_B` has `with_default_sort(Descending)` → result is `(col_B, Descending)`. Catches "first activation" being mistakenly read as "stack empty" rather than "this column is new to the stack."
 17. `AddSort*` position-preservation on existing entries: stack `[(0, Asc), (1, Desc), (2, Asc)]`; dispatch `AddSortAsc(1)` → result `[(0, Asc), (1, Asc), (2, Asc)]` — col 1 stays at position 1, doesn't move to the end. Same shape for `AddSortToggle`.
 
@@ -527,6 +540,7 @@ Grouped by module.
 10. Status column: not rendered when all rows return `RowStatus::None`; rendered when at least one row returns non-None; correct symbol+color per variant.
 11. Per-cell `CellStyle`: snapshot per variant (`Default`, `Success`, `Warning`, `Error`, `Muted`, `Custom(Style)`); one snapshot showing mixed styles in one row.
 8. Sort indicator visibility: indicator disappears on `SortClear` output; reappears on `SortAsc`/`SortDesc`/`SortToggle`.
+15b. **`sort_toggle_arrow_persists_on_repeated_press`** — the originating bug, render-layer half. Dispatch `SortToggle(col)` 10×; query the rendered column header for the indicator character on every iteration; assert it's always present. Pinned by name so future cleanup can't silently regress the end-user-visible behavior.
 
 ### Property-based tests (proptest)
 
@@ -557,7 +571,9 @@ In `src/component/cell.rs` and `src/component/table/sort_proptests.rs`:
 
 Add a sort-performance benchmark to `benches/component_view.rs` (or `component_events.rs`):
 
-- Measures: 10k rows × 10 columns, primary sort by a numeric column. Records baseline before merge; CI bench gate fails on >10% regression.
+- **Primary metric**: wall-time per sort, measured by `criterion`. Records baseline before merge; CI bench gate fails on >10% regression in median wall time.
+- **Secondary observation** (logged but not gating): allocation count per sort, via `criterion`'s allocation counters when available, to surface implementations that trade time for memory or vice versa. The 10% regression threshold applies only to wall time so that a tuning that reduces both time and allocations doesn't silently mask a future regression in the other dimension.
+- Workload: 10k rows × 10 columns, primary sort by a `SortKey::F64` column with realistic value distribution (uniform random in `[0.0, 1000.0]`).
 - Rationale: the new `Cell` carries text + style + sort_key bytes per cell vs the old `String`. Sort allocates `Vec<Cell>` per row via `cells()`. Sets a perf floor before the redesign ships so post-merge regressions surface visibly.
 
 ### Audit-scorecard targets
@@ -566,7 +582,7 @@ Add a sort-performance benchmark to `benches/component_view.rs` (or `component_e
 - Doc-test coverage: 100% on `cell.rs`; no regression elsewhere.
 - Accessor symmetry: every `with_*` builder has matching getter; every `set_*` mirrors a field.
 - Standard derives: `Cell`, `SortKey`, `CellStyle`, `RowStatus` all derive `Clone + Debug + PartialEq` (and `Default` where the default has clear semantics — `Cell::default()` = empty, `CellStyle::default()` = `Default`, `RowStatus::default()` = `None`).
-- Public-item count: net should be lower (deleted RT exports + `numeric_comparator`/`date_comparator`/`SortComparator` outweigh added Cell/SortKey/`InitialSort`/new TableMessage variants).
+- Public-item count: net public surface grows. Removed items (~20–25): `SortBy`/`AddSort`/`ClearSort`, `with_comparator`/`comparator`/`SortComparator`, `numeric_comparator`/`date_comparator`, the seven `ResourceTable*` types, `ResourceCell`'s constructors. Added items (~50–60): `Cell` with ~20 methods/From impls, `SortKey` enum + 8 variants + `compare`, `CellStyle`, `RowStatus` + `indicator`, 8 new `TableMessage` variants, `Column::with_default_sort`/`default_sort`, `TableState::with_initial_sort`/`with_initial_sorts`, `InitialSort`, `TableRow::status`. The growth is justified — the additions cover use cases that previously required either consumer-side workarounds (e.g., the `apply_table_msg` wrapper) or a parallel component (`ResourceTable`). Verify exact count with the audit tool before merge; relax this expectation if the count crosses a threshold the scorecard cares about.
 - Target: **9/9 scorecard before merge**.
 
 ### Pre-merge verification checklist
@@ -596,6 +612,10 @@ Once this spec doc lands and the implementation PR opens (with PR number `#N`), 
 - Removal trigger gains: "removed once envision PR #N lands"
 
 Trail closes on both sides.
+
+## Downstream consumer impact
+
+leadline is the sole external consumer at time of writing. The breaking change has no other known downstream impact. This is documented here so future review of this spec doesn't have to reconstruct that fact.
 
 ## References
 
