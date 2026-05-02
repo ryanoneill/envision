@@ -1,0 +1,14 @@
+---
+source: src/component/table/view_tests.rs
+expression: plain
+---
+┌──────────────────────────────────────┐
+│Name       Value                      │
+│                                      │
+│alpha      beta                       │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘

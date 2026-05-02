@@ -252,8 +252,8 @@ fn test_table_state_round_trip() {
     }
 
     impl TableRow for TestRow {
-        fn cells(&self) -> Vec<String> {
-            vec![self.name.clone(), self.value.to_string()]
+        fn cells(&self) -> Vec<Cell> {
+            vec![Cell::new(&self.name), Cell::int(self.value as i64)]
         }
     }
 

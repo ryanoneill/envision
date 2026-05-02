@@ -1,9 +1,8 @@
 //! Types for the table component.
 
-use std::cmp::Ordering;
-use std::sync::Arc;
-
 use ratatui::layout::Constraint;
+
+use crate::component::cell::{Cell, RowStatus};
 
 /// Trait for types that can be displayed as table rows.
 ///
@@ -13,6 +12,7 @@ use ratatui::layout::Constraint;
 ///
 /// ```rust
 /// use envision::component::TableRow;
+/// use envision::component::cell::Cell;
 ///
 /// #[derive(Clone)]
 /// struct Product {
@@ -22,21 +22,28 @@ use ratatui::layout::Constraint;
 /// }
 ///
 /// impl TableRow for Product {
-///     fn cells(&self) -> Vec<String> {
+///     fn cells(&self) -> Vec<Cell> {
 ///         vec![
-///             self.name.clone(),
-///             format!("${:.2}", self.price),
-///             self.quantity.to_string(),
+///             Cell::new(&self.name),
+///             Cell::new(format!("${:.2}", self.price)),
+///             Cell::uint(self.quantity as u64),
 ///         ]
 ///     }
 /// }
 /// ```
 pub trait TableRow: Clone {
-    /// Returns the cell values for this row.
+    /// Returns the cells for this row, one per column.
     ///
-    /// The order of values should match the order of columns
+    /// The order of cells should match the order of columns
     /// defined in the table.
-    fn cells(&self) -> Vec<String>;
+    fn cells(&self) -> Vec<Cell>;
+
+    /// Optional row-level status indicator. Default: `RowStatus::None` —
+    /// no status column rendered. If any row in the table returns non-None,
+    /// the status column is rendered for all rows.
+    fn status(&self) -> RowStatus {
+        RowStatus::None
+    }
 }
 
 /// Column definition for a table.
@@ -54,29 +61,7 @@ pub trait TableRow: Clone {
 /// assert_eq!(col.header(), "Name");
 /// assert!(col.is_sortable());
 /// ```
-/// A type alias for custom sort comparator functions.
-///
-/// Comparators receive two string cell values and return an [`Ordering`].
-/// Use [`numeric_comparator`] or [`date_comparator`] for common cases,
-/// or provide your own closure.
-pub type SortComparator = Arc<dyn Fn(&str, &str) -> Ordering + Send + Sync>;
-
-/// Column definition for a table.
-///
-/// Columns define the header text, width, whether the column
-/// is sortable, and an optional custom sort comparator.
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::Column;
-/// use ratatui::layout::Constraint;
-///
-/// let col = Column::new("Name", Constraint::Length(20)).sortable();
-/// assert_eq!(col.header(), "Name");
-/// assert!(col.is_sortable());
-/// ```
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
@@ -88,32 +73,7 @@ pub struct Column {
     sortable: bool,
     editable: bool,
     visible: bool,
-    #[cfg_attr(feature = "serialization", serde(skip))]
-    comparator: Option<SortComparator>,
-}
-
-impl std::fmt::Debug for Column {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Column")
-            .field("header", &self.header)
-            .field("width", &self.width)
-            .field("sortable", &self.sortable)
-            .field("editable", &self.editable)
-            .field("visible", &self.visible)
-            .field("comparator", &self.comparator.as_ref().map(|_| ".."))
-            .finish()
-    }
-}
-
-impl PartialEq for Column {
-    fn eq(&self, other: &Self) -> bool {
-        self.header == other.header
-            && self.width == other.width
-            && self.sortable == other.sortable
-            && self.editable == other.editable
-            && self.visible == other.visible
-        // comparator is not compared (function equality is not meaningful)
-    }
+    default_sort: SortDirection,
 }
 
 impl Column {
@@ -138,14 +98,14 @@ impl Column {
             sortable: false,
             editable: true,
             visible: true,
-            comparator: None,
+            default_sort: SortDirection::Ascending,
         }
     }
 
     /// Makes this column sortable.
     ///
     /// Sortable columns can be sorted by clicking/selecting the header
-    /// or using `TableMessage::SortBy`.
+    /// or using `TableMessage::SortAsc` / `SortDesc` / `SortToggle`.
     ///
     /// # Example
     ///
@@ -367,45 +327,50 @@ impl Column {
         self.editable = editable;
     }
 
-    /// Sets a custom sort comparator for this column.
+    /// Declares this column's natural sort direction. `SortToggle` and
+    /// `AddSortToggle` use this when activating the column for the first
+    /// time. Default: `Ascending`.
     ///
-    /// The comparator receives two cell values as `&str` and returns an
-    /// [`Ordering`]. When sorting, this comparator is used instead of
-    /// the default lexicographic comparison.
-    ///
-    /// Setting a comparator also makes the column sortable.
+    /// Use `Descending` for columns where bigger-is-worse (latency,
+    /// regression delta, error count).
     ///
     /// # Example
     ///
-    /// ```rust
-    /// use envision::component::{Column, numeric_comparator};
-    ///
-    /// let col = Column::fixed("Price", 10)
-    ///     .with_comparator(numeric_comparator());
-    /// assert!(col.is_sortable());
-    /// assert!(col.comparator().is_some());
     /// ```
-    pub fn with_comparator(mut self, comparator: SortComparator) -> Self {
-        self.comparator = Some(comparator);
-        self.sortable = true;
+    /// use envision::component::{Column, SortDirection};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let c = Column::new("delta", Constraint::Length(10))
+    ///     .with_default_sort(SortDirection::Descending);
+    /// assert_eq!(c.default_sort(), SortDirection::Descending);
+    /// ```
+    pub fn with_default_sort(mut self, dir: SortDirection) -> Self {
+        self.default_sort = dir;
         self
     }
 
-    /// Returns the custom comparator for this column, if any.
+    /// Returns the column's natural sort direction.
+    ///
+    /// Defaults to [`SortDirection::Ascending`] for newly constructed
+    /// columns; override with [`Column::with_default_sort`] when a column
+    /// reads more naturally in descending order (timestamps, percentages,
+    /// load counters, etc.).
     ///
     /// # Example
     ///
-    /// ```rust
-    /// use envision::component::{Column, numeric_comparator};
-    ///
-    /// let col = Column::fixed("Name", 10);
-    /// assert!(col.comparator().is_none());
-    ///
-    /// let numeric = Column::fixed("Price", 10).with_comparator(numeric_comparator());
-    /// assert!(numeric.comparator().is_some());
     /// ```
-    pub fn comparator(&self) -> Option<&SortComparator> {
-        self.comparator.as_ref()
+    /// use envision::component::{Column, SortDirection};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let asc = Column::new("name", Constraint::Length(10));
+    /// assert_eq!(asc.default_sort(), SortDirection::Ascending);
+    ///
+    /// let desc = Column::new("age", Constraint::Length(8))
+    ///     .with_default_sort(SortDirection::Descending);
+    /// assert_eq!(desc.default_sort(), SortDirection::Descending);
+    /// ```
+    pub fn default_sort(&self) -> SortDirection {
+        self.default_sort
     }
 
     /// Sets the width of this column (builder method).
@@ -426,78 +391,6 @@ impl Column {
     pub fn set_width(&mut self, width: Constraint) {
         self.width = width;
     }
-}
-
-/// Returns a comparator that sorts cell values as numbers.
-///
-/// Values that cannot be parsed as `f64` sort after valid numbers.
-/// Two unparseable values are compared lexicographically.
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::numeric_comparator;
-/// use std::cmp::Ordering;
-///
-/// let cmp = numeric_comparator();
-/// assert_eq!(cmp("2", "10"), Ordering::Less);
-/// assert_eq!(cmp("10", "2"), Ordering::Greater);
-/// assert_eq!(cmp("abc", "10"), Ordering::Greater);
-/// ```
-pub fn numeric_comparator() -> SortComparator {
-    Arc::new(|a: &str, b: &str| {
-        let pa = a.parse::<f64>();
-        let pb = b.parse::<f64>();
-        match (pa, pb) {
-            (Ok(va), Ok(vb)) => va.partial_cmp(&vb).unwrap_or(Ordering::Equal),
-            (Ok(_), Err(_)) => Ordering::Less,
-            (Err(_), Ok(_)) => Ordering::Greater,
-            (Err(_), Err(_)) => a.cmp(b),
-        }
-    })
-}
-
-/// Returns a comparator that sorts cell values as dates in `YYYY-MM-DD` format.
-///
-/// Values that do not match the `YYYY-MM-DD` pattern sort after valid dates.
-/// Two unparseable values are compared lexicographically.
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::date_comparator;
-/// use std::cmp::Ordering;
-///
-/// let cmp = date_comparator();
-/// assert_eq!(cmp("2024-01-15", "2024-02-01"), Ordering::Less);
-/// assert_eq!(cmp("2024-02-01", "2024-01-15"), Ordering::Greater);
-/// ```
-pub fn date_comparator() -> SortComparator {
-    Arc::new(|a: &str, b: &str| {
-        let pa = parse_date(a);
-        let pb = parse_date(b);
-        match (pa, pb) {
-            (Some(va), Some(vb)) => va.cmp(&vb),
-            (Some(_), None) => Ordering::Less,
-            (None, Some(_)) => Ordering::Greater,
-            (None, None) => a.cmp(b),
-        }
-    })
-}
-
-/// Parses a `YYYY-MM-DD` date string into a comparable tuple.
-fn parse_date(s: &str) -> Option<(i32, u32, u32)> {
-    let parts: Vec<&str> = s.split('-').collect();
-    if parts.len() != 3 {
-        return None;
-    }
-    let year = parts[0].parse::<i32>().ok()?;
-    let month = parts[1].parse::<u32>().ok()?;
-    let day = parts[2].parse::<u32>().ok()?;
-    if !(1..=12).contains(&month) || !(1..=31).contains(&day) {
-        return None;
-    }
-    Some((year, month, day))
 }
 
 /// Sort direction for table columns.
@@ -533,6 +426,30 @@ impl SortDirection {
     }
 }
 
+/// Pair of (column index, direction) for declarative initial sort.
+///
+/// Used with `TableState::with_initial_sorts` to bootstrap the table
+/// into a sorted state on frame 1.
+///
+/// # Example
+///
+/// ```
+/// use envision::component::{InitialSort, SortDirection};
+/// let s = InitialSort { column: 4, direction: SortDirection::Descending };
+/// assert_eq!(s.column, 4);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub struct InitialSort {
+    /// Index of the column to sort by.
+    pub column: usize,
+    /// Sort direction to apply.
+    pub direction: SortDirection,
+}
+
 /// Messages that can be sent to a Table component.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TableMessage {
@@ -550,20 +467,53 @@ pub enum TableMessage {
     PageDown(usize),
     /// Confirm the current selection.
     Select,
-    /// Sort by the given column index (primary sort).
-    ///
-    /// If already the primary sort column, toggles direction.
-    /// If sorted ascending, becomes descending.
-    /// If sorted descending, clears the sort.
-    /// If a different column, replaces all sorts with this column ascending.
-    SortBy(usize),
-    /// Add a column to the sort stack as a tiebreaker.
-    ///
-    /// If the column is already in the sort stack, toggles its direction.
-    /// If not present, adds it as the lowest-priority sort.
-    AddSort(usize),
-    /// Clear all sorts, returning to original order.
-    ClearSort,
+
+    /// Set the primary sort to this column, ascending. Replaces the entire
+    /// sort stack with just this entry.
+    #[allow(dead_code)] // Handler lands in Phase 2; allow until then.
+    SortAsc(usize),
+
+    /// Set the primary sort to this column, descending. Replaces the entire
+    /// sort stack with just this entry.
+    #[allow(dead_code)]
+    SortDesc(usize),
+
+    /// 2-cycle toggle. Never clears.
+    /// - If this column is already the primary sort: flip Asc <-> Desc.
+    /// - If this column is not currently in the sort stack: activate it
+    ///   using `Column::default_sort()`. Default fallback: `Ascending`.
+    #[allow(dead_code)]
+    SortToggle(usize),
+
+    /// Drop the primary sort and any tiebreakers. Returns to load order.
+    /// (Renamed from `ClearSort` for naming consistency with the rest of
+    /// the family. The old `ClearSort` is removed in Phase 2 Task 16.)
+    #[allow(dead_code)]
+    SortClear,
+
+    /// Drop just one column from the multi-sort stack. The remaining
+    /// columns keep their relative order. If the dropped column was
+    /// primary, the next tiebreaker is promoted.
+    #[allow(dead_code)]
+    RemoveSort(usize),
+
+    // ----- NEW tiebreaker family -----
+    /// Add this column to the sort stack as a lowest-priority Asc
+    /// tiebreaker. If the column is already in the stack, replace its
+    /// direction in place -- do not reorder.
+    #[allow(dead_code)]
+    AddSortAsc(usize),
+
+    /// Add this column to the sort stack as a lowest-priority Desc
+    /// tiebreaker. If already in the stack, replace direction in place.
+    #[allow(dead_code)]
+    AddSortDesc(usize),
+
+    /// Toggle this column's tiebreaker direction. If not in the stack,
+    /// add it using `Column::default_sort()`.
+    #[allow(dead_code)]
+    AddSortToggle(usize),
+
     /// Increase the width of the column at the given index.
     IncreaseColumnWidth(usize),
     /// Decrease the width of the column at the given index.

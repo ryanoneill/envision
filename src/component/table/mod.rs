@@ -11,7 +11,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Column, Component, SortDirection, Table, TableMessage, TableOutput,
+//!     Cell, Column, Component, SortDirection, Table, TableMessage, TableOutput,
 //!     TableRow, TableState,
 //! };
 //! use ratatui::layout::Constraint;
@@ -24,8 +24,8 @@
 //! }
 //!
 //! impl TableRow for User {
-//!     fn cells(&self) -> Vec<String> {
-//!         vec![self.name.clone(), self.email.clone()]
+//!     fn cells(&self) -> Vec<Cell> {
+//!         vec![Cell::new(&self.name), Cell::new(&self.email)]
 //!     }
 //! }
 //!
@@ -47,7 +47,7 @@
 //! assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
 //!
 //! // Sort by name column
-//! let output = Table::<User>::update(&mut state, TableMessage::SortBy(0));
+//! let output = Table::<User>::update(&mut state, TableMessage::SortAsc(0));
 //! assert_eq!(output, Some(TableOutput::Sorted {
 //!     column: 0,
 //!     direction: SortDirection::Ascending,
@@ -58,11 +58,9 @@ mod render;
 mod state;
 mod types;
 
-pub use types::{
-    Column, SortComparator, SortDirection, TableMessage, TableOutput, TableRow, date_comparator,
-    numeric_comparator,
-};
+pub use types::{Column, InitialSort, SortDirection, TableMessage, TableOutput, TableRow};
 
+use std::collections::HashSet;
 use std::marker::PhantomData;
 
 use ratatui::prelude::*;
@@ -92,10 +90,22 @@ pub struct TableState<T: TableRow> {
     filter_text: String,
     #[cfg_attr(feature = "serialization", serde(skip))]
     scroll: ScrollState,
+    /// Dedup keys for cross-variant `SortKey` warnings: column indices
+    /// that already emitted a warning during the current render pass.
+    /// Cleared at the start of each `rebuild_display_order` call so
+    /// each pass emits at most one warning per affected column.
+    ///
+    /// Runtime-only state; not part of logical equality and not
+    /// serialized.
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    cross_variant_warned_cols: HashSet<usize>,
 }
 
 impl<T: TableRow + PartialEq> PartialEq for TableState<T> {
     fn eq(&self, other: &Self) -> bool {
+        // `cross_variant_warned_cols` is intentionally excluded — it's
+        // transient, render-pass-scoped diagnostics state, not part of
+        // the logical equality of the table.
         self.rows == other.rows
             && self.columns == other.columns
             && self.selected == other.selected
@@ -115,6 +125,7 @@ impl<T: TableRow> Default for TableState<T> {
             display_order: Vec::new(),
             filter_text: String::new(),
             scroll: ScrollState::default(),
+            cross_variant_warned_cols: HashSet::new(),
         }
     }
 }
@@ -135,19 +146,19 @@ impl<T: TableRow> Default for TableState<T> {
 /// - `First` / `Last` - Jump to beginning/end
 /// - `PageUp` / `PageDown` - Move by page size
 /// - `Select` - Confirm the current selection
-/// - `SortBy(column)` - Sort by the given column
-/// - `ClearSort` - Clear the current sort
+/// - `SortAsc(column)` / `SortDesc(column)` / `SortToggle(column)` - Sort by the given column
+/// - `SortClear` - Clear the current sort
 ///
 /// # Sorting
 ///
-/// Clicking the same column cycles through: Ascending -> Descending -> None.
+/// `SortToggle` flips Ascending <-> Descending without clearing.
 /// Only columns marked as `sortable()` can be sorted.
 ///
 /// # Example
 ///
 /// ```rust
 /// use envision::component::{
-///     Column, Component, Table, TableMessage, TableRow, TableState,
+///     Cell, Column, Component, Table, TableMessage, TableRow, TableState,
 /// };
 /// use ratatui::layout::Constraint;
 ///
@@ -158,8 +169,8 @@ impl<T: TableRow> Default for TableState<T> {
 /// }
 ///
 /// impl TableRow for Person {
-///     fn cells(&self) -> Vec<String> {
-///         vec![self.name.clone(), self.age.to_string()]
+///     fn cells(&self) -> Vec<Cell> {
+///         vec![Cell::new(&self.name), Cell::uint(self.age as u64)]
 ///     }
 /// }
 ///
@@ -258,78 +269,6 @@ impl<T: TableRow + 'static> Component for Table<T> {
                     return Some(TableOutput::Selected(row));
                 }
             }
-            TableMessage::SortBy(col) => {
-                // Check if column exists and is sortable
-                if let Some(column) = state.columns.get(col) {
-                    if !column.is_sortable() {
-                        return None;
-                    }
-
-                    // If this column is already the primary sort, toggle direction
-                    // If primary ascending -> descending
-                    // If primary descending -> clear all
-                    // Otherwise, replace all sorts with this column ascending
-                    let primary = state.sort_columns.first().copied();
-                    match primary {
-                        Some((c, SortDirection::Ascending)) if c == col => {
-                            state.sort_columns = vec![(col, SortDirection::Descending)];
-                            state.rebuild_display_order();
-                            return Some(TableOutput::Sorted {
-                                column: col,
-                                direction: SortDirection::Descending,
-                            });
-                        }
-                        Some((c, SortDirection::Descending)) if c == col => {
-                            state.sort_columns.clear();
-                            state.rebuild_display_order();
-                            return Some(TableOutput::SortCleared);
-                        }
-                        _ => {
-                            state.sort_columns = vec![(col, SortDirection::Ascending)];
-                            state.rebuild_display_order();
-                            return Some(TableOutput::Sorted {
-                                column: col,
-                                direction: SortDirection::Ascending,
-                            });
-                        }
-                    }
-                }
-            }
-            TableMessage::AddSort(col) => {
-                // Check if column exists and is sortable
-                if let Some(column) = state.columns.get(col) {
-                    if !column.is_sortable() {
-                        return None;
-                    }
-
-                    // If the column is already in the sort stack, toggle its direction
-                    if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
-                        let (_, dir) = state.sort_columns[pos];
-                        let new_dir = dir.toggle();
-                        state.sort_columns[pos] = (col, new_dir);
-                        state.rebuild_display_order();
-                        return Some(TableOutput::Sorted {
-                            column: col,
-                            direction: new_dir,
-                        });
-                    }
-
-                    // Otherwise, add it as a new tiebreaker
-                    state.sort_columns.push((col, SortDirection::Ascending));
-                    state.rebuild_display_order();
-                    return Some(TableOutput::Sorted {
-                        column: col,
-                        direction: SortDirection::Ascending,
-                    });
-                }
-            }
-            TableMessage::ClearSort => {
-                if !state.sort_columns.is_empty() {
-                    state.sort_columns.clear();
-                    state.rebuild_display_order();
-                    return Some(TableOutput::SortCleared);
-                }
-            }
             TableMessage::IncreaseColumnWidth(col) => {
                 if let Some(column) = state.columns.get_mut(col) {
                     if let Constraint::Length(w) = column.width() {
@@ -358,6 +297,153 @@ impl<T: TableRow + 'static> Component for Table<T> {
             }
             TableMessage::SetFilter(_) | TableMessage::ClearFilter => {
                 unreachable!("handled above")
+            }
+            TableMessage::SortAsc(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    // Idempotent: already (col, Ascending) primary → no-op.
+                    if state.sort_columns.first() == Some(&(col, SortDirection::Ascending)) {
+                        return None;
+                    }
+                    state.sort_columns = vec![(col, SortDirection::Ascending)];
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: SortDirection::Ascending,
+                    });
+                }
+            }
+            TableMessage::SortDesc(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    // Idempotent: already (col, Descending) primary → no-op.
+                    if state.sort_columns.first() == Some(&(col, SortDirection::Descending)) {
+                        return None;
+                    }
+                    state.sort_columns = vec![(col, SortDirection::Descending)];
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: SortDirection::Descending,
+                    });
+                }
+            }
+            TableMessage::SortToggle(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    let primary = state.sort_columns.first().copied();
+                    let new_dir = match primary {
+                        Some((c, dir)) if c == col => dir.toggle(),
+                        _ => column.default_sort(),
+                    };
+                    state.sort_columns = vec![(col, new_dir)];
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: new_dir,
+                    });
+                }
+            }
+            TableMessage::SortClear => {
+                if !state.sort_columns.is_empty() {
+                    state.sort_columns.clear();
+                    state.rebuild_display_order();
+                    return Some(TableOutput::SortCleared);
+                }
+            }
+            TableMessage::RemoveSort(col) => {
+                if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
+                    let was_primary = pos == 0;
+                    state.sort_columns.remove(pos);
+                    state.rebuild_display_order();
+                    if state.sort_columns.is_empty() {
+                        return Some(TableOutput::SortCleared);
+                    }
+                    if was_primary {
+                        // Primary removed; next entry is promoted to primary.
+                        let (next_col, next_dir) = state.sort_columns[0];
+                        return Some(TableOutput::Sorted {
+                            column: next_col,
+                            direction: next_dir,
+                        });
+                    }
+                    // Tiebreaker removed; primary unchanged → no observable
+                    // change in primary sort, emit None.
+                    return None;
+                }
+            }
+            TableMessage::AddSortAsc(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
+                        // Idempotent: already Ascending in stack at this slot.
+                        if state.sort_columns[pos].1 == SortDirection::Ascending {
+                            return None;
+                        }
+                        // Replace direction in place; preserve stack position.
+                        state.sort_columns[pos].1 = SortDirection::Ascending;
+                    } else {
+                        state.sort_columns.push((col, SortDirection::Ascending));
+                    }
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: SortDirection::Ascending,
+                    });
+                }
+            }
+            TableMessage::AddSortDesc(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
+                        // Idempotent: already Descending in stack at this slot.
+                        if state.sort_columns[pos].1 == SortDirection::Descending {
+                            return None;
+                        }
+                        // Replace direction in place; preserve stack position.
+                        state.sort_columns[pos].1 = SortDirection::Descending;
+                    } else {
+                        state.sort_columns.push((col, SortDirection::Descending));
+                    }
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: SortDirection::Descending,
+                    });
+                }
+            }
+            TableMessage::AddSortToggle(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    let new_dir =
+                        if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
+                            let (_, dir) = state.sort_columns[pos];
+                            let toggled = dir.toggle();
+                            state.sort_columns[pos] = (col, toggled);
+                            toggled
+                        } else {
+                            let dir = column.default_sort();
+                            state.sort_columns.push((col, dir));
+                            dir
+                        };
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: new_dir,
+                    });
+                }
             }
         }
 
@@ -421,6 +507,8 @@ mod filter_tests;
 mod multi_sort_tests;
 #[cfg(test)]
 mod resize_tests;
+#[cfg(test)]
+mod sort_proptests;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]

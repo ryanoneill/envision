@@ -2,8 +2,13 @@
 //!
 //! Extracted from the main table module to keep file sizes manageable.
 
-use super::{Column, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState};
+use std::collections::HashSet;
+
+use super::{
+    Column, InitialSort, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState,
+};
 use crate::component::Component;
+use crate::component::cell::{RowStatus, SortKey};
 use crate::scroll::ScrollState;
 
 impl<T: TableRow> TableState<T> {
@@ -14,15 +19,15 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     ///
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> {
-    ///         vec![self.name.clone()]
+    ///     fn cells(&self) -> Vec<Cell> {
+    ///         vec![Cell::new(&self.name)]
     ///     }
     /// }
     ///
@@ -45,6 +50,7 @@ impl<T: TableRow> TableState<T> {
             display_order,
             filter_text: String::new(),
             scroll,
+            cross_variant_warned_cols: HashSet::new(),
         }
     }
 
@@ -55,13 +61,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::with_selected(
@@ -87,7 +93,81 @@ impl<T: TableRow> TableState<T> {
             display_order,
             filter_text: String::new(),
             scroll,
+            cross_variant_warned_cols: HashSet::new(),
         }
+    }
+
+    /// Sets the initial primary sort declaratively.
+    ///
+    /// Rebuilds the display order immediately so the first frame renders
+    /// sorted — no "dispatch SortAsc/Desc twice in init" bootstrap dance.
+    ///
+    /// If `col` is non-sortable, the sort is set anyway (this is a
+    /// declarative bootstrap and the consumer is asserting intent).
+    /// Downstream `SortToggle(col)` etc. on a non-sortable column
+    /// remain silent no-ops (per the relevant message handlers).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::cell::Cell;
+    /// use envision::component::{Column, SortDirection, TableRow, TableState};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct R(u8);
+    /// impl TableRow for R {
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::int(self.0 as i64)] }
+    /// }
+    ///
+    /// let columns = vec![Column::new("V", Constraint::Length(5)).sortable()];
+    /// let state = TableState::new(vec![R(3), R(1), R(2)], columns)
+    ///     .with_initial_sort(0, SortDirection::Ascending);
+    /// // No update() calls needed — rows render in sorted order.
+    /// assert_eq!(state.sort(), Some((0, SortDirection::Ascending)));
+    /// ```
+    pub fn with_initial_sort(mut self, col: usize, dir: SortDirection) -> Self {
+        self.sort_columns = vec![(col, dir)];
+        self.rebuild_display_order();
+        self
+    }
+
+    /// Sets the initial multi-column sort declaratively.
+    ///
+    /// The first entry is the primary sort, the rest are tiebreakers in
+    /// priority order. Rebuilds the display order immediately so the
+    /// first frame renders sorted.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::cell::Cell;
+    /// use envision::component::{Column, InitialSort, SortDirection, TableRow, TableState};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct R(u8, u8);
+    /// impl TableRow for R {
+    ///     fn cells(&self) -> Vec<Cell> {
+    ///         vec![Cell::int(self.0 as i64), Cell::int(self.1 as i64)]
+    ///     }
+    /// }
+    ///
+    /// let columns = vec![
+    ///     Column::new("A", Constraint::Length(5)).sortable(),
+    ///     Column::new("B", Constraint::Length(5)).sortable(),
+    /// ];
+    /// let state = TableState::new(vec![R(1, 2), R(2, 1), R(1, 1)], columns)
+    ///     .with_initial_sorts(vec![
+    ///         InitialSort { column: 0, direction: SortDirection::Ascending },
+    ///         InitialSort { column: 1, direction: SortDirection::Ascending },
+    ///     ]);
+    /// assert_eq!(state.sort_columns().len(), 2);
+    /// ```
+    pub fn with_initial_sorts(mut self, sorts: Vec<InitialSort>) -> Self {
+        self.sort_columns = sorts.into_iter().map(|s| (s.column, s.direction)).collect();
+        self.rebuild_display_order();
+        self
     }
 
     /// Returns a reference to the rows.
@@ -100,7 +180,7 @@ impl<T: TableRow> TableState<T> {
     /// #[derive(Clone, Debug, PartialEq)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -124,7 +204,7 @@ impl<T: TableRow> TableState<T> {
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -145,12 +225,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -168,13 +248,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -199,7 +279,7 @@ impl<T: TableRow> TableState<T> {
     /// #[derive(Clone, Debug, PartialEq)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -222,12 +302,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone, Debug, PartialEq)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -248,13 +328,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, Table, TableRow, TableState, TableMessage, SortDirection, Component};
+    /// use envision::component::{Cell, Column, Table, TableRow, TableState, TableMessage, SortDirection, Component};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -263,7 +343,7 @@ impl<T: TableRow> TableState<T> {
     /// );
     /// assert_eq!(state.sort(), None);
     ///
-    /// Table::<Item>::update(&mut state, TableMessage::SortBy(0));
+    /// Table::<Item>::update(&mut state, TableMessage::SortAsc(0));
     /// assert_eq!(state.sort(), Some((0, SortDirection::Ascending)));
     /// ```
     pub fn sort(&self) -> Option<(usize, SortDirection)> {
@@ -278,19 +358,19 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, Table, TableMessage, TableRow, TableState, Component};
+    /// use envision::component::{Cell, Column, Table, TableMessage, TableRow, TableState, Component};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
     ///     vec![Item { name: "B".into() }, Item { name: "A".into() }],
     ///     vec![Column::fixed("Name", 10).sortable()],
     /// );
-    /// Table::<Item>::update(&mut state, TableMessage::SortBy(0));
+    /// Table::<Item>::update(&mut state, TableMessage::SortAsc(0));
     /// assert_eq!(state.sort_columns().len(), 1);
     /// ```
     pub fn sort_columns(&self) -> &[(usize, SortDirection)] {
@@ -302,13 +382,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -326,12 +406,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let empty: TableState<Item> = TableState::default();
@@ -349,12 +429,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -393,7 +473,7 @@ impl<T: TableRow> TableState<T> {
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -416,13 +496,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -442,13 +522,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -463,6 +543,16 @@ impl<T: TableRow> TableState<T> {
         self.display_order.len()
     }
 
+    /// Returns `true` if any row in the table has a non-`RowStatus::None`
+    /// status. When `true`, the renderer prepends a 2-cell-wide status
+    /// column to the table; when `false`, no status column is rendered
+    /// and the table layout matches Phase 1 behavior exactly.
+    pub(super) fn has_status_column(&self) -> bool {
+        self.rows
+            .iter()
+            .any(|r| !matches!(r.status(), RowStatus::None))
+    }
+
     /// Sets the filter text for case-insensitive substring matching on cell content.
     ///
     /// Rows where any cell contains the filter text (case-insensitive) are shown.
@@ -471,12 +561,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -496,12 +586,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -520,6 +610,10 @@ impl<T: TableRow> TableState<T> {
 
     /// Rebuilds the display order by applying filter, then sort.
     pub(super) fn rebuild_display_order(&mut self) {
+        // Reset cross-variant warn dedup state for this render pass so each
+        // affected column emits at most one warning per pass.
+        self.cross_variant_warned_cols.clear();
+
         let selected_original = self
             .selected
             .and_then(|i| self.display_order.get(i).copied());
@@ -536,35 +630,68 @@ impl<T: TableRow> TableState<T> {
                 .filter(|(_, row)| {
                     row.cells()
                         .iter()
-                        .any(|cell| cell.to_lowercase().contains(&filter_lower))
+                        .any(|cell| cell.text().to_lowercase().contains(&filter_lower))
                 })
                 .map(|(i, _)| i)
                 .collect();
         }
 
-        // Multi-column sort
+        // Multi-column sort, driven by typed `SortKey` per cell.
         if !self.sort_columns.is_empty() {
-            let columns = &self.columns;
             let sort_spec: Vec<(usize, SortDirection)> = self.sort_columns.clone();
-            self.display_order.sort_by(|&a, &b| {
-                let cells_a = self.rows[a].cells();
-                let cells_b = self.rows[b].cells();
+            // Take ownership of `display_order` and `cross_variant_warned_cols`
+            // for the duration of the sort so the comparator can borrow `&self.rows`
+            // immutably while we hold a `&mut` on the dedup set. (We can't borrow
+            // `&mut self` inside the closure because we already borrow `&self.rows`.)
+            let mut display_order = std::mem::take(&mut self.display_order);
+            let mut warned_cols = std::mem::take(&mut self.cross_variant_warned_cols);
+            let rows = &self.rows;
+
+            // MUST be `sort_by` (stable) — preserves insertion order on
+            // equal keys (e.g., consecutive `SortKey::None` rows). See
+            // spec test #14.
+            display_order.sort_by(|&a, &b| {
+                let cells_a = rows[a].cells();
+                let cells_b = rows[b].cells();
                 for &(col, direction) in &sort_spec {
-                    let val_a = cells_a.get(col).map(|s| s.as_str());
-                    let val_b = cells_b.get(col).map(|s| s.as_str());
-                    let cmp = match (val_a, val_b) {
-                        (Some(a_str), Some(b_str)) => {
-                            if let Some(comparator) = columns.get(col).and_then(|c| c.comparator())
-                            {
-                                comparator(a_str, b_str)
-                            } else {
-                                a_str.cmp(b_str)
-                            }
-                        }
-                        (Some(_), None) => std::cmp::Ordering::Less,
-                        (None, Some(_)) => std::cmp::Ordering::Greater,
-                        (None, None) => std::cmp::Ordering::Equal,
-                    };
+                    let key_a = cells_a
+                        .get(col)
+                        .and_then(|c| c.sort_key().cloned())
+                        .unwrap_or_else(|| {
+                            SortKey::String(
+                                cells_a
+                                    .get(col)
+                                    .map(|c| c.text().into())
+                                    .unwrap_or_default(),
+                            )
+                        });
+                    let key_b = cells_b
+                        .get(col)
+                        .and_then(|c| c.sort_key().cloned())
+                        .unwrap_or_else(|| {
+                            SortKey::String(
+                                cells_b
+                                    .get(col)
+                                    .map(|c| c.text().into())
+                                    .unwrap_or_default(),
+                            )
+                        });
+
+                    // Cross-variant warn (deduped per `(render_pass, col)`).
+                    // `HashSet::insert` returns `true` only on first insertion
+                    // for this pass, so the warning fires exactly once per
+                    // column per render pass.
+                    if std::mem::discriminant(&key_a) != std::mem::discriminant(&key_b)
+                        && warned_cols.insert(col)
+                    {
+                        #[cfg(feature = "tracing")]
+                        tracing::warn!(
+                            column = col,
+                            "sortable column has mixed SortKey variants; sort falling back to discriminant order"
+                        );
+                    }
+
+                    let cmp = SortKey::compare(&key_a, &key_b);
                     let ordered = match direction {
                         SortDirection::Ascending => cmp,
                         SortDirection::Descending => cmp.reverse(),
@@ -575,6 +702,9 @@ impl<T: TableRow> TableState<T> {
                 }
                 std::cmp::Ordering::Equal
             });
+
+            self.display_order = display_order;
+            self.cross_variant_warned_cols = warned_cols;
         }
 
         self.scroll.set_content_length(self.display_order.len());
@@ -602,12 +732,12 @@ impl<T: TableRow + 'static> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState, TableMessage, TableOutput};
+    /// use envision::component::{Cell, Column, TableRow, TableState, TableMessage, TableOutput};
     ///
     /// #[derive(Clone, Debug, PartialEq)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(

@@ -10,7 +10,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Component, DataGrid, DataGridState,
+//!     Cell, Component, DataGrid, DataGridState,
 //!     DataGridMessage, DataGridOutput, TableRow, Column,
 //! };
 //! use ratatui::layout::Constraint;
@@ -19,8 +19,8 @@
 //! struct Person { name: String, age: String }
 //!
 //! impl TableRow for Person {
-//!     fn cells(&self) -> Vec<String> {
-//!         vec![self.name.clone(), self.age.clone()]
+//!     fn cells(&self) -> Vec<Cell> {
+//!         vec![Cell::new(&self.name), Cell::new(&self.age)]
 //!     }
 //! }
 //!
@@ -475,7 +475,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                             // Show editor content for the cell being edited
                             state.editor.value().to_string()
                         } else {
-                            cell.clone()
+                            cell.text().to_string()
                         }
                     })
                     .collect();

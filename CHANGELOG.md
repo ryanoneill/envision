@@ -5,7 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased] — Breaking: Table sort & cell API redesign
+
+### Removed
+
+- `TableMessage::SortBy`, `TableMessage::AddSort`, `TableMessage::ClearSort` —
+  replaced by explicit primitives.
+- `Column::with_comparator` / `Column::comparator` / `SortComparator` /
+  `numeric_comparator` / `date_comparator`.
+- `ResourceTable`, `ResourceRow`, `ResourceCell`, `ResourceColumn`,
+  `ResourceTableState`, `ResourceTableMessage`, `ResourceTableOutput`.
+
+### Added
+
+- `Cell { text, style, sort_key }` — unified cell type for all tabular components.
+- `SortKey` enum (`String`, `I64`, `U64`, `F64`, `Bool`, `Duration`, `DateTime`, `None`).
+- `TableMessage::{SortAsc, SortDesc, SortToggle, SortClear, RemoveSort,
+  AddSortAsc, AddSortDesc, AddSortToggle}`.
+- `Column::with_default_sort(SortDirection)` — declare per-column natural direction.
+- `TableState::with_initial_sort(col, dir)` and `with_initial_sorts(Vec<InitialSort>)`.
+- `TableRow::status()` (default `RowStatus::None`) — optional row-status dot column.
+- `CellStyle` enum and per-cell styling in `Table` rendering.
+
+### Changed
+
+- `TableRow::cells()` now returns `Vec<Cell>` instead of `Vec<String>`.
+- Sort comparator is `SortKey`-driven (no more parsing display strings on every comparison).
+
+### Migration
+
+| Old | New |
+|---|---|
+| `TableMessage::SortBy(col)` for header-click intent | `TableMessage::SortToggle(col)` |
+| `TableMessage::SortBy(col)` for "always Asc" | `TableMessage::SortAsc(col)` |
+| `TableMessage::SortBy(col)` for "always Desc" | `TableMessage::SortDesc(col)` |
+| `SortBy(col); SortBy(col)` (init bootstrap to Desc) | `TableState::with_initial_sort(col, Descending)` |
+| `TableMessage::AddSort(col)` for tiebreaker click | `TableMessage::AddSortToggle(col)` |
+| `TableMessage::AddSort(col)` for "always Asc tiebreaker" | `TableMessage::AddSortAsc(col)` |
+| `TableMessage::ClearSort` | `TableMessage::SortClear` |
+| `Column::with_comparator(numeric_comparator())` | `Cell::number(value)` per cell. Mixed-precision: `Cell::number(value).with_text(format!("{:.2}", value))` |
+| `Column::with_comparator(date_comparator())` | `Cell::datetime(value)` per cell |
+| `Column::with_comparator(custom_fn)` | `Cell::new(text).with_sort_key(SortKey::...)` per cell |
+| `TableRow::cells() -> Vec<String>` | `TableRow::cells() -> Vec<Cell>` (use `Cell::new(s)` or `s.into()`) |
+| `ResourceTable*` | `Table` with optional `TableRow::status()` for the status dot |
+| `ResourceCell::*` constructors | `Cell::*` (constructors map 1:1) |
+| `RowStatus` (formerly in `resource_table`) | `RowStatus` (in `envision::cell`, re-exported at crate root) |
+
+See `docs/customer-feedback/2026-05-01-leadline-gaps.md` for the trail of consumer-side workarounds this redesign retires.
+
+See `docs/superpowers/specs/2026-05-02-table-sort-cell-unification-design.md` for the full design.
 
 ## [0.16.0] - 2026-04-20
 

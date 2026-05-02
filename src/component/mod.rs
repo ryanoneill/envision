@@ -197,8 +197,6 @@ pub mod progress_bar;
 #[cfg(feature = "display-components")]
 pub mod resource_gauge;
 #[cfg(feature = "display-components")]
-pub mod resource_table;
-#[cfg(feature = "display-components")]
 mod scroll_view;
 #[cfg(feature = "display-components")]
 mod scrollable_text;
@@ -252,6 +250,7 @@ mod tooltip;
 pub mod markdown_renderer;
 
 // Always available
+pub mod cell;
 mod context;
 mod focus_manager;
 
@@ -281,6 +280,8 @@ pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
 
 // Data components
 #[cfg(feature = "data-components")]
+pub use cell::{Cell, CellStyle, RowStatus, SortKey};
+#[cfg(feature = "data-components")]
 pub use loading_list::{
     ItemState, LoadingList, LoadingListItem, LoadingListMessage, LoadingListOutput,
     LoadingListState,
@@ -291,8 +292,7 @@ pub use selectable_list::{
 };
 #[cfg(feature = "data-components")]
 pub use table::{
-    Column, SortComparator, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState,
-    date_comparator, numeric_comparator,
+    Column, InitialSort, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState,
 };
 #[cfg(feature = "data-components")]
 pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};
@@ -330,11 +330,6 @@ pub use progress_bar::{
 #[cfg(feature = "display-components")]
 pub use resource_gauge::{
     GaugeOrientation, ResourceGauge, ResourceGaugeMessage, ResourceGaugeOutput, ResourceGaugeState,
-};
-#[cfg(feature = "display-components")]
-pub use resource_table::{
-    CellStyle, ResourceCell, ResourceColumn, ResourceRow, ResourceTable, ResourceTableMessage,
-    ResourceTableOutput, ResourceTableState, RowStatus,
 };
 #[cfg(feature = "display-components")]
 pub use sparkline::{

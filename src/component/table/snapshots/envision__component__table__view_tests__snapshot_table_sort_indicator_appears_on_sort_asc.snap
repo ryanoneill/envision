@@ -1,0 +1,14 @@
+---
+source: src/component/table/view_tests.rs
+expression: rendered
+---
+┌──────────────────────────────────────┐
+│  Name ↑     Value                    │
+│                                      │
+│  Alice      10                       │
+│  Bob        20                       │
+│> Charlie    30                       │
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘

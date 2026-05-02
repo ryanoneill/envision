@@ -17,8 +17,9 @@ impl TestRow {
 }
 
 impl TableRow for TestRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.name.clone(), self.value.clone()]
+    fn cells(&self) -> Vec<crate::component::cell::Cell> {
+        use crate::component::cell::Cell;
+        vec![Cell::new(&self.name), Cell::new(&self.value)]
     }
 }
 
@@ -42,7 +43,9 @@ fn test_rows() -> Vec<TestRow> {
 #[test]
 fn test_tablerow_impl() {
     let row = TestRow::new("Test", "123");
-    assert_eq!(row.cells(), vec!["Test", "123"]);
+    let cells = row.cells();
+    let texts: Vec<&str> = cells.iter().map(|c| c.text()).collect();
+    assert_eq!(texts, vec!["Test", "123"]);
 }
 
 #[test]
@@ -51,7 +54,7 @@ fn test_tablerow_empty_cells() {
     struct EmptyRow;
 
     impl TableRow for EmptyRow {
-        fn cells(&self) -> Vec<String> {
+        fn cells(&self) -> Vec<crate::component::cell::Cell> {
             vec![]
         }
     }
@@ -334,7 +337,7 @@ fn test_empty_navigation() {
 #[test]
 fn test_sort_ascending() {
     let mut state = TableState::new(test_rows(), test_columns());
-    let output = Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    let output = Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     assert_eq!(
         output,
         Some(TableOutput::Sorted {
@@ -352,8 +355,7 @@ fn test_sort_ascending() {
 #[test]
 fn test_sort_descending() {
     let mut state = TableState::new(test_rows(), test_columns());
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0)); // Ascending
-    let output = Table::<TestRow>::update(&mut state, TableMessage::SortBy(0)); // Descending
+    let output = Table::<TestRow>::update(&mut state, TableMessage::SortDesc(0));
     assert_eq!(
         output,
         Some(TableOutput::Sorted {
@@ -369,11 +371,14 @@ fn test_sort_descending() {
 }
 
 #[test]
-fn test_sort_clear() {
+fn test_sort_clear_via_explicit_clear() {
+    // The new sort vocabulary uses explicit `SortClear` to drop the sort
+    // (the old `SortBy` 3-cycle that auto-cleared on the third press is gone;
+    // `SortToggle` is now strict 2-cycle Asc <-> Desc).
     let mut state = TableState::new(test_rows(), test_columns());
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0)); // Ascending
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0)); // Descending
-    let output = Table::<TestRow>::update(&mut state, TableMessage::SortBy(0)); // Clear
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortDesc(0));
+    let output = Table::<TestRow>::update(&mut state, TableMessage::SortClear);
     assert_eq!(output, Some(TableOutput::SortCleared));
     assert!(state.sort().is_none());
 
@@ -390,7 +395,7 @@ fn test_sort_unsortable_column() {
         Column::new("Value", Constraint::Length(10)).sortable(),
     ];
     let mut state = TableState::new(test_rows(), columns);
-    let output = Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    let output = Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     assert_eq!(output, None);
 }
 
@@ -399,7 +404,7 @@ fn test_sort_preserves_selection() {
     let mut state = TableState::with_selected(test_rows(), test_columns(), 1);
     // Initially selected: Alice (index 1 in original order)
 
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0)); // Sort ascending
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0)); // Sort ascending
 
     // After sort, Alice should still be selected but at a different display index
     let selected = state.selected_row().unwrap();
@@ -420,7 +425,7 @@ fn test_sort_numeric_strings() {
     ];
     let mut state = TableState::new(rows, columns);
 
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(1));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(1));
 
     // Lexicographic: "10" < "2" < "9"
     assert_eq!(state.rows()[state.display_order[0]].value, "10");
@@ -431,10 +436,10 @@ fn test_sort_numeric_strings() {
 #[test]
 fn test_clear_sort() {
     let mut state = TableState::new(test_rows(), test_columns());
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     assert!(state.sort().is_some());
 
-    let output = Table::<TestRow>::update(&mut state, TableMessage::ClearSort);
+    let output = Table::<TestRow>::update(&mut state, TableMessage::SortClear);
     assert_eq!(output, Some(TableOutput::SortCleared));
     assert!(state.sort().is_none());
 }
@@ -442,7 +447,7 @@ fn test_clear_sort() {
 #[test]
 fn test_clear_sort_when_not_sorted() {
     let mut state = TableState::new(test_rows(), test_columns());
-    let output = Table::<TestRow>::update(&mut state, TableMessage::ClearSort);
+    let output = Table::<TestRow>::update(&mut state, TableMessage::SortClear);
     assert_eq!(output, None);
 }
 
@@ -451,11 +456,11 @@ fn test_sort_different_column() {
     let mut state = TableState::new(test_rows(), test_columns());
 
     // Sort by column 0
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     assert_eq!(state.sort(), Some((0, SortDirection::Ascending)));
 
     // Sort by column 1 - should reset to ascending on new column
-    let output = Table::<TestRow>::update(&mut state, TableMessage::SortBy(1));
+    let output = Table::<TestRow>::update(&mut state, TableMessage::SortAsc(1));
     assert_eq!(
         output,
         Some(TableOutput::Sorted {
@@ -484,7 +489,7 @@ fn test_full_workflow() {
     assert_eq!(state.selected_index(), Some(2));
 
     // Sort
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     // Selection should follow the row, not the position
 
     // Navigate after sort
@@ -506,7 +511,7 @@ fn test_navigation_with_sort() {
     // Initially selected: Charlie (position 0 in original order)
 
     // Sort ascending by name
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
 
     // Now display order is: Alice, Bob, Charlie
     // But selection is preserved on the same ROW (Charlie), now at position 2
@@ -527,7 +532,7 @@ fn test_navigation_with_sort() {
 #[test]
 fn test_sort_out_of_bounds_column() {
     let mut state = TableState::new(test_rows(), test_columns());
-    let output = Table::<TestRow>::update(&mut state, TableMessage::SortBy(99));
+    let output = Table::<TestRow>::update(&mut state, TableMessage::SortAsc(99));
     assert_eq!(output, None);
 }
 
@@ -587,11 +592,11 @@ fn test_clear_sort_preserves_selection() {
     // Initially selected: Alice (index 1 in original order)
 
     // Sort ascending by name
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     // Alice is now at display position 0
 
     // Clear sort
-    Table::<TestRow>::update(&mut state, TableMessage::ClearSort);
+    Table::<TestRow>::update(&mut state, TableMessage::SortClear);
 
     // Selection should still point to Alice (back at index 1)
     let selected = state.selected_row().unwrap();
@@ -673,7 +678,7 @@ fn test_sort_after_row_mutation() {
     let mut state = TableState::new(test_rows(), test_columns());
 
     // Sort by first column (ascending)
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     assert!(state.sort().is_some());
 
     // Now mutate rows - set_rows resets sort
@@ -908,3 +913,41 @@ fn test_annotation_emitted() {
 
 // NOTE: Multi-column sort, comparator, and resize tests are in
 // multi_sort_tests.rs and resize_tests.rs respectively.
+
+// Column::default_sort tests
+
+#[test]
+fn column_default_sort_defaults_to_ascending() {
+    let c = Column::new("X", Constraint::Length(5));
+    assert_eq!(c.default_sort(), SortDirection::Ascending);
+}
+
+#[test]
+fn column_with_default_sort_round_trips() {
+    let c = Column::new("X", Constraint::Length(5)).with_default_sort(SortDirection::Descending);
+    assert_eq!(c.default_sort(), SortDirection::Descending);
+}
+
+// New TableMessage sort variants (Task 12) -- additive, handlers land in Phase 2 Task 16.
+
+#[test]
+fn new_table_message_variants_derive_traits() {
+    use crate::component::TableMessage;
+    let m = TableMessage::SortAsc(0);
+    let m2 = m.clone();
+    assert_eq!(m, m2);
+    let _ = format!("{:?}", m); // Debug
+}
+
+#[test]
+fn all_new_sort_variants_exist() {
+    use crate::component::TableMessage;
+    let _ = TableMessage::SortAsc(0);
+    let _ = TableMessage::SortDesc(0);
+    let _ = TableMessage::SortToggle(0);
+    let _ = TableMessage::SortClear;
+    let _ = TableMessage::RemoveSort(0);
+    let _ = TableMessage::AddSortAsc(0);
+    let _ = TableMessage::AddSortDesc(0);
+    let _ = TableMessage::AddSortToggle(0);
+}

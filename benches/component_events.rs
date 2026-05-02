@@ -6,7 +6,7 @@
 
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use envision::component::{
-    Column, Component, EventContext, InputField, InputFieldState, SelectableList,
+    Cell, Column, Component, EventContext, InputField, InputFieldState, SelectableList,
     SelectableListState, Table, TableRow, TableState, TextArea, TextAreaState,
 };
 use envision::input::{Event, Key};
@@ -24,8 +24,12 @@ struct BenchRow {
 }
 
 impl TableRow for BenchRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.id.to_string(), self.name.clone(), self.email.clone()]
+    fn cells(&self) -> Vec<Cell> {
+        vec![
+            Cell::uint(self.id as u64),
+            Cell::new(&self.name),
+            Cell::new(&self.email),
+        ]
     }
 }
 

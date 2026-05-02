@@ -8,8 +8,9 @@ struct Person {
 }
 
 impl TableRow for Person {
-    fn cells(&self) -> Vec<String> {
-        vec![self.name.clone(), self.age.clone()]
+    fn cells(&self) -> Vec<crate::component::cell::Cell> {
+        use crate::component::cell::Cell;
+        vec![Cell::new(&self.name), Cell::new(&self.age)]
     }
 }
 

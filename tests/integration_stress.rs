@@ -7,10 +7,10 @@ use envision::component::diagram::{
 };
 use envision::component::{DataGrid, DataGridMessage, DataGridState};
 use envision::{
-    Accordion, AccordionMessage, AccordionPanel, AccordionState, CaptureBackend, Column, Component,
-    LoadingList, LoadingListMessage, LoadingListState, SelectableList, SelectableListMessage,
-    SelectableListState, Table, TableMessage, TableRow, TableState, Theme, Tree, TreeMessage,
-    TreeNode, TreeState,
+    Accordion, AccordionMessage, AccordionPanel, AccordionState, CaptureBackend, Cell, Column,
+    Component, LoadingList, LoadingListMessage, LoadingListState, SelectableList,
+    SelectableListMessage, SelectableListState, Table, TableMessage, TableRow, TableState, Theme,
+    Tree, TreeMessage, TreeNode, TreeState,
 };
 use ratatui::Terminal;
 use ratatui::prelude::*;
@@ -27,8 +27,12 @@ struct StressRow {
 }
 
 impl TableRow for StressRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.id.to_string(), self.name.clone(), self.value.clone()]
+    fn cells(&self) -> Vec<Cell> {
+        vec![
+            Cell::uint(self.id as u64),
+            Cell::new(&self.name),
+            Cell::new(&self.value),
+        ]
     }
 }
 
@@ -94,7 +98,7 @@ fn test_table_stress_10000_rows() {
     assert_eq!(state.selected_row().unwrap().name, "Item 0");
 
     // Sort by column 0 (ascending)
-    let output = Table::<StressRow>::update(&mut state, TableMessage::SortBy(0));
+    let output = Table::<StressRow>::update(&mut state, TableMessage::SortAsc(0));
     assert!(output.is_some());
 
     // Render to verify no panics with large dataset

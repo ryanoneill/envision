@@ -10,7 +10,7 @@
 
 use envision::{
     Accordion, AccordionMessage, AccordionPanel, AccordionState, Breadcrumb, BreadcrumbMessage,
-    BreadcrumbState, Column, Component, Dropdown, DropdownMessage, DropdownState, LineInput,
+    BreadcrumbState, Cell, Column, Component, Dropdown, DropdownMessage, DropdownState, LineInput,
     LineInputMessage, LineInputState, LoadingList, LoadingListMessage, LoadingListState, Menu,
     MenuItem, MenuMessage, MenuState, ScrollableText, ScrollableTextMessage, ScrollableTextState,
     Table, TableMessage, TableRow, TableState, TextArea, TextAreaMessage, TextAreaState, Tree,
@@ -185,8 +185,8 @@ struct TestRow {
 }
 
 impl TableRow for TestRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.name.clone()]
+    fn cells(&self) -> Vec<Cell> {
+        vec![Cell::new(&self.name)]
     }
 }
 

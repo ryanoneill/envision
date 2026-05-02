@@ -33,8 +33,8 @@ use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_ma
 use envision::backend::CaptureBackend;
 use envision::component::RenderContext;
 use envision::component::{
-    Column, Component, SelectableList, SelectableListState, Table, TableRow, TableState, Tree,
-    TreeNode, TreeState,
+    Cell, Column, Component, SelectableList, SelectableListState, Table, TableRow, TableState,
+    Tree, TreeNode, TreeState,
 };
 use envision::theme::Theme;
 use ratatui::Terminal;
@@ -96,8 +96,12 @@ struct BenchRow {
 }
 
 impl TableRow for BenchRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.id.to_string(), self.name.clone(), self.email.clone()]
+    fn cells(&self) -> Vec<Cell> {
+        vec![
+            Cell::uint(self.id as u64),
+            Cell::new(&self.name),
+            Cell::new(&self.email),
+        ]
     }
 }
 

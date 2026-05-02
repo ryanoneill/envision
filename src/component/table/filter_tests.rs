@@ -7,8 +7,9 @@ struct TestRow {
 }
 
 impl TableRow for TestRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.name.clone(), self.category.clone()]
+    fn cells(&self) -> Vec<crate::component::cell::Cell> {
+        use crate::component::cell::Cell;
+        vec![Cell::new(&self.name), Cell::new(&self.category)]
     }
 }
 
@@ -153,7 +154,7 @@ fn test_filter_select_returns_original_row() {
 fn test_filter_with_sort() {
     let mut state = TableState::new(test_rows(), test_columns());
     // Sort by name ascending
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
 
     // Filter to "ap" — should show Apple and Apricot, sorted
     state.set_filter_text("ap");

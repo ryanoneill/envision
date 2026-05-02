@@ -1,0 +1,14 @@
+---
+source: src/component/table/view_tests.rs
+expression: plain
+---
+┌──────────────────────────────────────┐
+│S        E        M                   │
+│                                      │
+│ok       fail     idle                │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘
