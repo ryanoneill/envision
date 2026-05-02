@@ -908,3 +908,17 @@ fn test_annotation_emitted() {
 
 // NOTE: Multi-column sort, comparator, and resize tests are in
 // multi_sort_tests.rs and resize_tests.rs respectively.
+
+// Column::default_sort tests
+
+#[test]
+fn column_default_sort_defaults_to_ascending() {
+    let c = Column::new("X", Constraint::Length(5));
+    assert_eq!(c.default_sort(), SortDirection::Ascending);
+}
+
+#[test]
+fn column_with_default_sort_round_trips() {
+    let c = Column::new("X", Constraint::Length(5)).with_default_sort(SortDirection::Descending);
+    assert_eq!(c.default_sort(), SortDirection::Descending);
+}

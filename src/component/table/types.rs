@@ -88,6 +88,7 @@ pub struct Column {
     sortable: bool,
     editable: bool,
     visible: bool,
+    default_sort: SortDirection,
     #[cfg_attr(feature = "serialization", serde(skip))]
     comparator: Option<SortComparator>,
 }
@@ -100,6 +101,7 @@ impl std::fmt::Debug for Column {
             .field("sortable", &self.sortable)
             .field("editable", &self.editable)
             .field("visible", &self.visible)
+            .field("default_sort", &self.default_sort)
             .field("comparator", &self.comparator.as_ref().map(|_| ".."))
             .finish()
     }
@@ -112,6 +114,7 @@ impl PartialEq for Column {
             && self.sortable == other.sortable
             && self.editable == other.editable
             && self.visible == other.visible
+            && self.default_sort == other.default_sort
         // comparator is not compared (function equality is not meaningful)
     }
 }
@@ -138,6 +141,7 @@ impl Column {
             sortable: false,
             editable: true,
             visible: true,
+            default_sort: SortDirection::Ascending,
             comparator: None,
         }
     }
@@ -365,6 +369,33 @@ impl Column {
     /// ```
     pub fn set_editable(&mut self, editable: bool) {
         self.editable = editable;
+    }
+
+    /// Declares this column's natural sort direction. `SortToggle` and
+    /// `AddSortToggle` use this when activating the column for the first
+    /// time. Default: `Ascending`.
+    ///
+    /// Use `Descending` for columns where bigger-is-worse (latency,
+    /// regression delta, error count).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::{Column, SortDirection};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let c = Column::new("delta", Constraint::Length(10))
+    ///     .with_default_sort(SortDirection::Descending);
+    /// assert_eq!(c.default_sort(), SortDirection::Descending);
+    /// ```
+    pub fn with_default_sort(mut self, dir: SortDirection) -> Self {
+        self.default_sort = dir;
+        self
+    }
+
+    /// Returns the column's natural sort direction.
+    pub fn default_sort(&self) -> SortDirection {
+        self.default_sort
     }
 
     /// Sets a custom sort comparator for this column.
