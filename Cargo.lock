@@ -425,6 +425,7 @@ dependencies = [
  "pretty_assertions",
  "proptest",
  "pulldown-cmark",
+ "rand",
  "ratatui",
  "regex",
  "serde",

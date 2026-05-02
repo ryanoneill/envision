@@ -684,6 +684,7 @@ impl<T: TableRow> TableState<T> {
                     if std::mem::discriminant(&key_a) != std::mem::discriminant(&key_b)
                         && warned_cols.insert(col)
                     {
+                        #[cfg(feature = "tracing")]
                         tracing::warn!(
                             column = col,
                             "sortable column has mixed SortKey variants; sort falling back to discriminant order"
