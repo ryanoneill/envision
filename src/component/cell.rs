@@ -51,8 +51,46 @@ impl SortKey {
     /// (which shouldn't happen in well-formed code) fall back to
     /// discriminant order and emit a `tracing::warn!` once per
     /// `(render_pass, column_index)` (deduped at the call site, not here).
-    pub fn compare(_a: &Self, _b: &Self) -> std::cmp::Ordering {
-        unimplemented!("filled in next task (Task 3)")
+    pub fn compare(a: &Self, b: &Self) -> std::cmp::Ordering {
+        use SortKey::*;
+        use std::cmp::Ordering;
+
+        // None policy: any non-None always sorts before None in ascending.
+        match (a, b) {
+            (None, None) => return Ordering::Equal,
+            (None, _) => return Ordering::Greater,
+            (_, None) => return Ordering::Less,
+            _ => {}
+        }
+
+        // Same-variant fast paths.
+        match (a, b) {
+            (String(x), String(y)) => return x.cmp(y),
+            (I64(x), I64(y)) => return x.cmp(y),
+            (U64(x), U64(y)) => return x.cmp(y),
+            (F64(x), F64(y)) => return x.total_cmp(y),
+            (Bool(x), Bool(y)) => return x.cmp(y),
+            (Duration(x), Duration(y)) => return x.cmp(y),
+            (DateTime(x), DateTime(y)) => return x.cmp(y),
+            _ => {}
+        }
+
+        // Cross-variant: fall back to discriminant order.
+        Self::discriminant(a).cmp(&Self::discriminant(b))
+    }
+
+    fn discriminant(k: &Self) -> u8 {
+        use SortKey::*;
+        match k {
+            String(_) => 0,
+            I64(_) => 1,
+            U64(_) => 2,
+            F64(_) => 3,
+            Bool(_) => 4,
+            Duration(_) => 5,
+            DateTime(_) => 6,
+            None => 7,
+        }
     }
 }
 
@@ -129,5 +167,28 @@ mod sort_key_tests {
             SortKey::compare(&SortKey::None, &SortKey::None),
             Ordering::Equal
         );
+    }
+
+    #[test]
+    fn cross_variant_falls_back_to_discriminant_order() {
+        // I64 < F64 in the enum; in ascending, I64(7) appears before F64(3.5)
+        // even though numerically 3.5 < 7.
+        let a = SortKey::I64(7);
+        let b = SortKey::F64(3.5);
+        assert_eq!(SortKey::compare(&a, &b), Ordering::Less);
+    }
+
+    #[test]
+    fn none_sorts_last_in_ascending_against_real_value() {
+        // None > Some(real) — None sorts last in ascending order.
+        let real = SortKey::F64(0.0);
+        assert_eq!(SortKey::compare(&real, &SortKey::None), Ordering::Less);
+        assert_eq!(SortKey::compare(&SortKey::None, &real), Ordering::Greater);
+    }
+
+    #[test]
+    fn none_sorts_after_nan() {
+        let nan = SortKey::F64(f64::NAN);
+        assert_eq!(SortKey::compare(&nan, &SortKey::None), Ordering::Less);
     }
 }
