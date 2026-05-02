@@ -200,37 +200,37 @@ pub use component::{
 // Data components
 #[cfg(feature = "data-components")]
 pub use component::{
-    Cell, Column, InitialSort, ItemState, LoadingList, LoadingListItem, LoadingListMessage,
-    LoadingListOutput, LoadingListState, SelectableList, SelectableListMessage,
-    SelectableListOutput, SelectableListState, SortDirection, SortKey, Table, TableMessage,
-    TableOutput, TableRow, TableState, Tree, TreeMessage, TreeNode, TreeOutput, TreeState,
+    Cell, CellStyle, Column, InitialSort, ItemState, LoadingList, LoadingListItem,
+    LoadingListMessage, LoadingListOutput, LoadingListState, RowStatus, SelectableList,
+    SelectableListMessage, SelectableListOutput, SelectableListState, SortDirection, SortKey,
+    Table, TableMessage, TableOutput, TableRow, TableState, Tree, TreeMessage, TreeNode,
+    TreeOutput, TreeState,
 };
 
 // Display components
 #[cfg(feature = "display-components")]
 pub use component::{
     BigText, BigTextMessage, BigTextState, Calendar, CalendarMessage, CalendarOutput,
-    CalendarState, Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState, CellStyle,
-    CodeBlock, CodeBlockMessage, CodeBlockState, Collapsible, CollapsibleMessage,
-    CollapsibleOutput, CollapsibleState, Divider, DividerMessage, DividerOrientation, DividerState,
-    Gauge, GaugeMessage, GaugeOrientation, GaugeOutput, GaugeState, GaugeVariant, HelpPanel,
+    CalendarState, Canvas, CanvasMarker, CanvasMessage, CanvasShape, CanvasState, CodeBlock,
+    CodeBlockMessage, CodeBlockState, Collapsible, CollapsibleMessage, CollapsibleOutput,
+    CollapsibleState, Divider, DividerMessage, DividerOrientation, DividerState, Gauge,
+    GaugeMessage, GaugeOrientation, GaugeOutput, GaugeState, GaugeVariant, HelpPanel,
     HelpPanelMessage, HelpPanelState, KeyBinding, KeyBindingGroup, KeyHint, KeyHints,
     KeyHintsLayout, KeyHintsMessage, KeyHintsState, MultiProgress, MultiProgressMessage,
     MultiProgressOutput, MultiProgressState, Paginator, PaginatorMessage, PaginatorOutput,
     PaginatorState, PaginatorStyle, ProgressBar, ProgressBarMessage, ProgressBarOutput,
-    ProgressBarState, ProgressItem, ProgressItemStatus, ResourceCell, ResourceColumn,
-    ResourceGauge, ResourceGaugeMessage, ResourceGaugeOutput, ResourceGaugeState, ResourceRow,
-    ResourceTable, ResourceTableMessage, ResourceTableOutput, ResourceTableState, RowStatus,
-    ScrollView, ScrollViewMessage, ScrollViewState, ScrollableText, ScrollableTextMessage,
-    ScrollableTextOutput, ScrollableTextState, Section, Sparkline, SparklineDirection,
-    SparklineMessage, SparklineOutput, SparklineState, Spinner, SpinnerMessage, SpinnerState,
-    SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent, StatusBarMessage, StatusBarState,
-    StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput,
-    StatusLogState, StyledText, StyledTextMessage, StyledTextOutput, StyledTextState,
-    TerminalOutput, TerminalOutputMessage, TerminalOutputOutput, TerminalOutputState,
-    ThresholdZone, TitleCard, TitleCardMessage, TitleCardState, Toast, ToastItem, ToastLevel,
-    ToastMessage, ToastOutput, ToastState, UsageDisplay, UsageDisplayMessage, UsageDisplayState,
-    UsageLayout, UsageMetric, big_char, big_char_width, format_eta,
+    ProgressBarState, ProgressItem, ProgressItemStatus, ResourceGauge, ResourceGaugeMessage,
+    ResourceGaugeOutput, ResourceGaugeState, ScrollView, ScrollViewMessage, ScrollViewState,
+    ScrollableText, ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section,
+    Sparkline, SparklineDirection, SparklineMessage, SparklineOutput, SparklineState, Spinner,
+    SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
+    StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
+    StatusLogMessage, StatusLogOutput, StatusLogState, StyledText, StyledTextMessage,
+    StyledTextOutput, StyledTextState, TerminalOutput, TerminalOutputMessage, TerminalOutputOutput,
+    TerminalOutputState, ThresholdZone, TitleCard, TitleCardMessage, TitleCardState, Toast,
+    ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, UsageDisplay,
+    UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric, big_char, big_char_width,
+    format_eta,
 };
 
 // Navigation components
