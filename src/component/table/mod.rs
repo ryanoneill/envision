@@ -508,6 +508,8 @@ mod multi_sort_tests;
 #[cfg(test)]
 mod resize_tests;
 #[cfg(test)]
+mod sort_proptests;
+#[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod view_tests;
