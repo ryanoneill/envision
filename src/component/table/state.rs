@@ -2,7 +2,9 @@
 //!
 //! Extracted from the main table module to keep file sizes manageable.
 
-use super::{Column, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState};
+use super::{
+    Column, InitialSort, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState,
+};
 use crate::component::Component;
 use crate::scroll::ScrollState;
 
@@ -88,6 +90,79 @@ impl<T: TableRow> TableState<T> {
             filter_text: String::new(),
             scroll,
         }
+    }
+
+    /// Sets the initial primary sort declaratively.
+    ///
+    /// Rebuilds the display order immediately so the first frame renders
+    /// sorted — no "dispatch SortAsc/Desc twice in init" bootstrap dance.
+    ///
+    /// If `col` is non-sortable, the sort is set anyway (this is a
+    /// declarative bootstrap and the consumer is asserting intent).
+    /// Downstream `SortToggle(col)` etc. on a non-sortable column
+    /// remain silent no-ops (per the relevant message handlers).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::cell::Cell;
+    /// use envision::component::{Column, SortDirection, TableRow, TableState};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct R(u8);
+    /// impl TableRow for R {
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::int(self.0 as i64)] }
+    /// }
+    ///
+    /// let columns = vec![Column::new("V", Constraint::Length(5)).sortable()];
+    /// let state = TableState::new(vec![R(3), R(1), R(2)], columns)
+    ///     .with_initial_sort(0, SortDirection::Ascending);
+    /// // No update() calls needed — rows render in sorted order.
+    /// assert_eq!(state.sort(), Some((0, SortDirection::Ascending)));
+    /// ```
+    pub fn with_initial_sort(mut self, col: usize, dir: SortDirection) -> Self {
+        self.sort_columns = vec![(col, dir)];
+        self.rebuild_display_order();
+        self
+    }
+
+    /// Sets the initial multi-column sort declaratively.
+    ///
+    /// The first entry is the primary sort, the rest are tiebreakers in
+    /// priority order. Rebuilds the display order immediately so the
+    /// first frame renders sorted.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::cell::Cell;
+    /// use envision::component::{Column, InitialSort, SortDirection, TableRow, TableState};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// #[derive(Clone)]
+    /// struct R(u8, u8);
+    /// impl TableRow for R {
+    ///     fn cells(&self) -> Vec<Cell> {
+    ///         vec![Cell::int(self.0 as i64), Cell::int(self.1 as i64)]
+    ///     }
+    /// }
+    ///
+    /// let columns = vec![
+    ///     Column::new("A", Constraint::Length(5)).sortable(),
+    ///     Column::new("B", Constraint::Length(5)).sortable(),
+    /// ];
+    /// let state = TableState::new(vec![R(1, 2), R(2, 1), R(1, 1)], columns)
+    ///     .with_initial_sorts(vec![
+    ///         InitialSort { column: 0, direction: SortDirection::Ascending },
+    ///         InitialSort { column: 1, direction: SortDirection::Ascending },
+    ///     ]);
+    /// assert_eq!(state.sort_columns().len(), 2);
+    /// ```
+    pub fn with_initial_sorts(mut self, sorts: Vec<InitialSort>) -> Self {
+        self.sort_columns = sorts.into_iter().map(|s| (s.column, s.direction)).collect();
+        self.rebuild_display_order();
+        self
     }
 
     /// Returns a reference to the rows.

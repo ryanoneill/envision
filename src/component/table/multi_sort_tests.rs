@@ -349,3 +349,79 @@ fn remove_sort_primary_promotes_next_emits_sorted_with_new_primary() {
     assert_eq!(state.sort_columns().len(), 1);
     assert_eq!(state.sort(), Some((1, SortDirection::Descending)));
 }
+
+// ========== Initial Sort Builder Tests ==========
+
+#[test]
+fn with_initial_sort_renders_sorted_on_frame_1() {
+    use crate::component::cell::Cell;
+    use crate::component::{Column, SortDirection, TableRow, TableState};
+    use ratatui::layout::Constraint;
+
+    #[derive(Clone)]
+    struct R(u8);
+    impl TableRow for R {
+        fn cells(&self) -> Vec<Cell> {
+            vec![Cell::int(self.0 as i64)]
+        }
+    }
+    let columns = vec![Column::new("V", Constraint::Length(5)).sortable()];
+    let state = TableState::new(vec![R(3), R(1), R(2)], columns)
+        .with_initial_sort(0, SortDirection::Ascending);
+    // Without any update() calls, sort_columns is set
+    assert_eq!(state.sort(), Some((0, SortDirection::Ascending)));
+    // And display_order should reflect sorted order: row 1 (val 1), row 2 (val 2), row 0 (val 3)
+    assert_eq!(state.display_order, vec![1, 2, 0]);
+}
+
+#[test]
+fn with_initial_sort_non_sortable_col_still_sets_sort() {
+    use crate::component::cell::Cell;
+    use crate::component::{Column, SortDirection, TableRow, TableState};
+    use ratatui::layout::Constraint;
+
+    #[derive(Clone)]
+    struct R(u8);
+    impl TableRow for R {
+        fn cells(&self) -> Vec<Cell> {
+            vec![Cell::int(self.0 as i64)]
+        }
+    }
+    let columns = vec![Column::new("V", Constraint::Length(5))]; // NOT sortable
+    let state =
+        TableState::new(vec![R(1)], columns).with_initial_sort(0, SortDirection::Descending);
+    // Initial sort declarative — set anyway
+    assert_eq!(state.sort(), Some((0, SortDirection::Descending)));
+}
+
+#[test]
+fn with_initial_sorts_multi_column() {
+    use crate::component::cell::Cell;
+    use crate::component::{Column, InitialSort, SortDirection, TableRow, TableState};
+    use ratatui::layout::Constraint;
+
+    #[derive(Clone)]
+    struct R(u8, u8);
+    impl TableRow for R {
+        fn cells(&self) -> Vec<Cell> {
+            vec![Cell::int(self.0 as i64), Cell::int(self.1 as i64)]
+        }
+    }
+    let columns = vec![
+        Column::new("A", Constraint::Length(5)).sortable(),
+        Column::new("B", Constraint::Length(5)).sortable(),
+    ];
+    let state = TableState::new(vec![R(1, 2), R(2, 1), R(1, 1)], columns).with_initial_sorts(vec![
+        InitialSort {
+            column: 0,
+            direction: SortDirection::Ascending,
+        },
+        InitialSort {
+            column: 1,
+            direction: SortDirection::Ascending,
+        },
+    ]);
+    assert_eq!(state.sort_columns().len(), 2);
+    // R(1,1) before R(1,2) (tiebreaker on col 1 ascending), then R(2,1)
+    assert_eq!(state.display_order, vec![2, 0, 1]);
+}
