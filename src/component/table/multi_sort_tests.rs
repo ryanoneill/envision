@@ -187,3 +187,165 @@ fn test_multi_sort_preserves_selection() {
 // and the SortComparator/numeric_comparator/date_comparator API were
 // dropped (Phase 2 Task 15). Replacement coverage for SortKey-driven
 // sorting lands in Phase 3 Task 28.
+
+// ========== Idempotency Tests ==========
+//
+// Spec invariant: a sort message that produces no observable change in
+// the primary sort or in the stack contents must return `None`. Only an
+// observable mutation emits `Sorted { .. }` or `SortCleared`.
+
+/// SortAsc on a column already (Asc) primary must be a no-op (returns None).
+#[test]
+fn sort_asc_idempotent_when_already_primary_asc() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    let first = Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    assert_eq!(
+        first,
+        Some(TableOutput::Sorted {
+            column: 0,
+            direction: SortDirection::Ascending,
+        }),
+    );
+    let second = Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    assert_eq!(
+        second, None,
+        "SortAsc on already-Asc primary must return None"
+    );
+    // Stack unchanged.
+    assert_eq!(state.sort_columns().len(), 1);
+    assert_eq!(state.sort_columns()[0], (0, SortDirection::Ascending));
+}
+
+/// SortDesc on a column already (Desc) primary must be a no-op (returns None).
+#[test]
+fn sort_desc_idempotent_when_already_primary_desc() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    let first = Table::<TestRow>::update(&mut state, TableMessage::SortDesc(0));
+    assert_eq!(
+        first,
+        Some(TableOutput::Sorted {
+            column: 0,
+            direction: SortDirection::Descending,
+        }),
+    );
+    let second = Table::<TestRow>::update(&mut state, TableMessage::SortDesc(0));
+    assert_eq!(
+        second, None,
+        "SortDesc on already-Desc primary must return None"
+    );
+    assert_eq!(state.sort_columns().len(), 1);
+    assert_eq!(state.sort_columns()[0], (0, SortDirection::Descending));
+}
+
+/// AddSortAsc on a column already in stack with Asc must be a no-op (returns None).
+#[test]
+fn add_sort_asc_idempotent_when_already_asc_in_stack() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    // Build a 2-column stack: primary (0, Asc), tiebreaker (1, Asc).
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    let added = Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
+    assert_eq!(
+        added,
+        Some(TableOutput::Sorted {
+            column: 1,
+            direction: SortDirection::Ascending,
+        }),
+    );
+    // Re-issue AddSortAsc on the same tiebreaker — must be a no-op.
+    let again = Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
+    assert_eq!(
+        again, None,
+        "AddSortAsc on already-Asc entry must return None"
+    );
+    // Stack contents unchanged.
+    assert_eq!(state.sort_columns().len(), 2);
+    assert_eq!(state.sort_columns()[0], (0, SortDirection::Ascending));
+    assert_eq!(state.sort_columns()[1], (1, SortDirection::Ascending));
+}
+
+/// AddSortDesc on a column already in stack with Desc must be a no-op (returns None).
+#[test]
+fn add_sort_desc_idempotent_when_already_desc_in_stack() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    let added = Table::<TestRow>::update(&mut state, TableMessage::AddSortDesc(1));
+    assert_eq!(
+        added,
+        Some(TableOutput::Sorted {
+            column: 1,
+            direction: SortDirection::Descending,
+        }),
+    );
+    let again = Table::<TestRow>::update(&mut state, TableMessage::AddSortDesc(1));
+    assert_eq!(
+        again, None,
+        "AddSortDesc on already-Desc entry must return None"
+    );
+    assert_eq!(state.sort_columns().len(), 2);
+    assert_eq!(state.sort_columns()[0], (0, SortDirection::Ascending));
+    assert_eq!(state.sort_columns()[1], (1, SortDirection::Descending));
+}
+
+/// AddSortAsc on a column already in stack with Desc must flip direction in
+/// place (preserve stack position) and emit Sorted.
+#[test]
+fn add_sort_asc_flips_existing_desc_in_place() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    Table::<TestRow>::update(&mut state, TableMessage::AddSortDesc(1));
+    // Now flip the tiebreaker from Desc to Asc.
+    let flipped = Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
+    assert_eq!(
+        flipped,
+        Some(TableOutput::Sorted {
+            column: 1,
+            direction: SortDirection::Ascending,
+        }),
+    );
+    // Position preserved: (0, Asc) primary, (1, Asc) tiebreaker.
+    assert_eq!(state.sort_columns().len(), 2);
+    assert_eq!(state.sort_columns()[0], (0, SortDirection::Ascending));
+    assert_eq!(state.sort_columns()[1], (1, SortDirection::Ascending));
+}
+
+/// RemoveSort on a tiebreaker (non-primary) entry must return None — the
+/// primary is unchanged, so there is no observable sort change.
+#[test]
+fn remove_sort_tiebreaker_returns_none_with_unchanged_primary() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0)); // primary
+    Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1)); // tiebreaker
+    assert_eq!(state.sort_columns().len(), 2);
+
+    let result = Table::<TestRow>::update(&mut state, TableMessage::RemoveSort(1));
+    assert_eq!(
+        result, None,
+        "Removing a tiebreaker, primary unchanged → None",
+    );
+    // Primary still in place.
+    assert_eq!(state.sort_columns().len(), 1);
+    assert_eq!(state.sort(), Some((0, SortDirection::Ascending)));
+}
+
+/// RemoveSort on the primary while tiebreakers remain must promote the next
+/// stack entry to primary and emit Sorted with the new primary's column/dir.
+#[test]
+fn remove_sort_primary_promotes_next_emits_sorted_with_new_primary() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0)); // primary
+    Table::<TestRow>::update(&mut state, TableMessage::AddSortDesc(1)); // tiebreaker
+    assert_eq!(state.sort_columns().len(), 2);
+
+    // Remove the primary (col 0); col 1 (Desc) must promote.
+    let result = Table::<TestRow>::update(&mut state, TableMessage::RemoveSort(0));
+    assert_eq!(
+        result,
+        Some(TableOutput::Sorted {
+            column: 1,
+            direction: SortDirection::Descending,
+        }),
+        "Removing primary with tiebreakers remaining must emit Sorted with the new primary",
+    );
+    assert_eq!(state.sort_columns().len(), 1);
+    assert_eq!(state.sort(), Some((1, SortDirection::Descending)));
+}

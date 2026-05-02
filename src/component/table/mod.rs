@@ -289,6 +289,10 @@ impl<T: TableRow + 'static> Component for Table<T> {
                     if !column.is_sortable() {
                         return None;
                     }
+                    // Idempotent: already (col, Ascending) primary → no-op.
+                    if state.sort_columns.first() == Some(&(col, SortDirection::Ascending)) {
+                        return None;
+                    }
                     state.sort_columns = vec![(col, SortDirection::Ascending)];
                     state.rebuild_display_order();
                     return Some(TableOutput::Sorted {
@@ -300,6 +304,10 @@ impl<T: TableRow + 'static> Component for Table<T> {
             TableMessage::SortDesc(col) => {
                 if let Some(column) = state.columns.get(col) {
                     if !column.is_sortable() {
+                        return None;
+                    }
+                    // Idempotent: already (col, Descending) primary → no-op.
+                    if state.sort_columns.first() == Some(&(col, SortDirection::Descending)) {
                         return None;
                     }
                     state.sort_columns = vec![(col, SortDirection::Descending)];
@@ -337,16 +345,23 @@ impl<T: TableRow + 'static> Component for Table<T> {
             }
             TableMessage::RemoveSort(col) => {
                 if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
+                    let was_primary = pos == 0;
                     state.sort_columns.remove(pos);
                     state.rebuild_display_order();
                     if state.sort_columns.is_empty() {
                         return Some(TableOutput::SortCleared);
                     }
-                    let (next_col, next_dir) = state.sort_columns[0];
-                    return Some(TableOutput::Sorted {
-                        column: next_col,
-                        direction: next_dir,
-                    });
+                    if was_primary {
+                        // Primary removed; next entry is promoted to primary.
+                        let (next_col, next_dir) = state.sort_columns[0];
+                        return Some(TableOutput::Sorted {
+                            column: next_col,
+                            direction: next_dir,
+                        });
+                    }
+                    // Tiebreaker removed; primary unchanged → no observable
+                    // change in primary sort, emit None.
+                    return None;
                 }
             }
             TableMessage::AddSortAsc(col) => {
@@ -355,7 +370,12 @@ impl<T: TableRow + 'static> Component for Table<T> {
                         return None;
                     }
                     if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
-                        state.sort_columns[pos] = (col, SortDirection::Ascending);
+                        // Idempotent: already Ascending in stack at this slot.
+                        if state.sort_columns[pos].1 == SortDirection::Ascending {
+                            return None;
+                        }
+                        // Replace direction in place; preserve stack position.
+                        state.sort_columns[pos].1 = SortDirection::Ascending;
                     } else {
                         state.sort_columns.push((col, SortDirection::Ascending));
                     }
@@ -372,7 +392,12 @@ impl<T: TableRow + 'static> Component for Table<T> {
                         return None;
                     }
                     if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
-                        state.sort_columns[pos] = (col, SortDirection::Descending);
+                        // Idempotent: already Descending in stack at this slot.
+                        if state.sort_columns[pos].1 == SortDirection::Descending {
+                            return None;
+                        }
+                        // Replace direction in place; preserve stack position.
+                        state.sort_columns[pos].1 = SortDirection::Descending;
                     } else {
                         state.sort_columns.push((col, SortDirection::Descending));
                     }
