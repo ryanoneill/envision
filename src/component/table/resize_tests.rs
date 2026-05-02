@@ -162,7 +162,7 @@ mod key_binding_tests {
         let mut state = TableState::new(test_rows(), test_columns());
 
         // Sort by column 1
-        Table::<TestRow>::update(&mut state, TableMessage::SortBy(1));
+        Table::<TestRow>::update(&mut state, TableMessage::SortAsc(1));
 
         let msg = Table::<TestRow>::handle_event(
             &state,

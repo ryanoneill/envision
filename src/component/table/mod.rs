@@ -47,7 +47,7 @@
 //! assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
 //!
 //! // Sort by name column
-//! let output = Table::<User>::update(&mut state, TableMessage::SortBy(0));
+//! let output = Table::<User>::update(&mut state, TableMessage::SortAsc(0));
 //! assert_eq!(output, Some(TableOutput::Sorted {
 //!     column: 0,
 //!     direction: SortDirection::Ascending,
@@ -132,12 +132,12 @@ impl<T: TableRow> Default for TableState<T> {
 /// - `First` / `Last` - Jump to beginning/end
 /// - `PageUp` / `PageDown` - Move by page size
 /// - `Select` - Confirm the current selection
-/// - `SortBy(column)` - Sort by the given column
-/// - `ClearSort` - Clear the current sort
+/// - `SortAsc(column)` / `SortDesc(column)` / `SortToggle(column)` - Sort by the given column
+/// - `SortClear` - Clear the current sort
 ///
 /// # Sorting
 ///
-/// Clicking the same column cycles through: Ascending -> Descending -> None.
+/// `SortToggle` flips Ascending <-> Descending without clearing.
 /// Only columns marked as `sortable()` can be sorted.
 ///
 /// # Example
@@ -255,78 +255,6 @@ impl<T: TableRow + 'static> Component for Table<T> {
                     return Some(TableOutput::Selected(row));
                 }
             }
-            TableMessage::SortBy(col) => {
-                // Check if column exists and is sortable
-                if let Some(column) = state.columns.get(col) {
-                    if !column.is_sortable() {
-                        return None;
-                    }
-
-                    // If this column is already the primary sort, toggle direction
-                    // If primary ascending -> descending
-                    // If primary descending -> clear all
-                    // Otherwise, replace all sorts with this column ascending
-                    let primary = state.sort_columns.first().copied();
-                    match primary {
-                        Some((c, SortDirection::Ascending)) if c == col => {
-                            state.sort_columns = vec![(col, SortDirection::Descending)];
-                            state.rebuild_display_order();
-                            return Some(TableOutput::Sorted {
-                                column: col,
-                                direction: SortDirection::Descending,
-                            });
-                        }
-                        Some((c, SortDirection::Descending)) if c == col => {
-                            state.sort_columns.clear();
-                            state.rebuild_display_order();
-                            return Some(TableOutput::SortCleared);
-                        }
-                        _ => {
-                            state.sort_columns = vec![(col, SortDirection::Ascending)];
-                            state.rebuild_display_order();
-                            return Some(TableOutput::Sorted {
-                                column: col,
-                                direction: SortDirection::Ascending,
-                            });
-                        }
-                    }
-                }
-            }
-            TableMessage::AddSort(col) => {
-                // Check if column exists and is sortable
-                if let Some(column) = state.columns.get(col) {
-                    if !column.is_sortable() {
-                        return None;
-                    }
-
-                    // If the column is already in the sort stack, toggle its direction
-                    if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
-                        let (_, dir) = state.sort_columns[pos];
-                        let new_dir = dir.toggle();
-                        state.sort_columns[pos] = (col, new_dir);
-                        state.rebuild_display_order();
-                        return Some(TableOutput::Sorted {
-                            column: col,
-                            direction: new_dir,
-                        });
-                    }
-
-                    // Otherwise, add it as a new tiebreaker
-                    state.sort_columns.push((col, SortDirection::Ascending));
-                    state.rebuild_display_order();
-                    return Some(TableOutput::Sorted {
-                        column: col,
-                        direction: SortDirection::Ascending,
-                    });
-                }
-            }
-            TableMessage::ClearSort => {
-                if !state.sort_columns.is_empty() {
-                    state.sort_columns.clear();
-                    state.rebuild_display_order();
-                    return Some(TableOutput::SortCleared);
-                }
-            }
             TableMessage::IncreaseColumnWidth(col) => {
                 if let Some(column) = state.columns.get_mut(col) {
                     if let Constraint::Length(w) = column.width() {
@@ -356,15 +284,128 @@ impl<T: TableRow + 'static> Component for Table<T> {
             TableMessage::SetFilter(_) | TableMessage::ClearFilter => {
                 unreachable!("handled above")
             }
-            // New sort variants land in Phase 2 Task 16 (additive in Phase 1).
-            TableMessage::SortAsc(_)
-            | TableMessage::SortDesc(_)
-            | TableMessage::SortToggle(_)
-            | TableMessage::SortClear
-            | TableMessage::RemoveSort(_)
-            | TableMessage::AddSortAsc(_)
-            | TableMessage::AddSortDesc(_)
-            | TableMessage::AddSortToggle(_) => {}
+            TableMessage::SortAsc(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    state.sort_columns = vec![(col, SortDirection::Ascending)];
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: SortDirection::Ascending,
+                    });
+                }
+            }
+            TableMessage::SortDesc(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    state.sort_columns = vec![(col, SortDirection::Descending)];
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: SortDirection::Descending,
+                    });
+                }
+            }
+            TableMessage::SortToggle(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    let primary = state.sort_columns.first().copied();
+                    let new_dir = match primary {
+                        Some((c, dir)) if c == col => dir.toggle(),
+                        _ => column.default_sort(),
+                    };
+                    state.sort_columns = vec![(col, new_dir)];
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: new_dir,
+                    });
+                }
+            }
+            TableMessage::SortClear => {
+                if !state.sort_columns.is_empty() {
+                    state.sort_columns.clear();
+                    state.rebuild_display_order();
+                    return Some(TableOutput::SortCleared);
+                }
+            }
+            TableMessage::RemoveSort(col) => {
+                if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
+                    state.sort_columns.remove(pos);
+                    state.rebuild_display_order();
+                    if state.sort_columns.is_empty() {
+                        return Some(TableOutput::SortCleared);
+                    }
+                    let (next_col, next_dir) = state.sort_columns[0];
+                    return Some(TableOutput::Sorted {
+                        column: next_col,
+                        direction: next_dir,
+                    });
+                }
+            }
+            TableMessage::AddSortAsc(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
+                        state.sort_columns[pos] = (col, SortDirection::Ascending);
+                    } else {
+                        state.sort_columns.push((col, SortDirection::Ascending));
+                    }
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: SortDirection::Ascending,
+                    });
+                }
+            }
+            TableMessage::AddSortDesc(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
+                        state.sort_columns[pos] = (col, SortDirection::Descending);
+                    } else {
+                        state.sort_columns.push((col, SortDirection::Descending));
+                    }
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: SortDirection::Descending,
+                    });
+                }
+            }
+            TableMessage::AddSortToggle(col) => {
+                if let Some(column) = state.columns.get(col) {
+                    if !column.is_sortable() {
+                        return None;
+                    }
+                    let new_dir =
+                        if let Some(pos) = state.sort_columns.iter().position(|&(c, _)| c == col) {
+                            let (_, dir) = state.sort_columns[pos];
+                            let toggled = dir.toggle();
+                            state.sort_columns[pos] = (col, toggled);
+                            toggled
+                        } else {
+                            let dir = column.default_sort();
+                            state.sort_columns.push((col, dir));
+                            dir
+                        };
+                    state.rebuild_display_order();
+                    return Some(TableOutput::Sorted {
+                        column: col,
+                        direction: new_dir,
+                    });
+                }
+            }
         }
 
         None

@@ -48,9 +48,9 @@ fn test_sort_columns_initially_empty() {
 }
 
 #[test]
-fn test_sort_by_sets_single_column() {
+fn test_sort_asc_sets_single_column() {
     let mut state = TableState::new(test_rows(), test_columns());
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     assert_eq!(state.sort_columns().len(), 1);
     assert_eq!(state.sort_columns()[0], (0, SortDirection::Ascending));
     // backward compat: sort() returns primary
@@ -58,15 +58,15 @@ fn test_sort_by_sets_single_column() {
 }
 
 #[test]
-fn test_add_sort_creates_multi_column_sort() {
+fn test_add_sort_asc_creates_multi_column_sort() {
     let mut state = TableState::new(test_rows(), test_columns());
 
     // Primary sort by name
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     assert_eq!(state.sort_columns().len(), 1);
 
     // Add secondary sort by value
-    let output = Table::<TestRow>::update(&mut state, TableMessage::AddSort(1));
+    let output = Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
     assert_eq!(
         output,
         Some(TableOutput::Sorted {
@@ -80,14 +80,14 @@ fn test_add_sort_creates_multi_column_sort() {
 }
 
 #[test]
-fn test_add_sort_toggles_existing() {
+fn test_add_sort_toggle_flips_existing() {
     let mut state = TableState::new(test_rows(), test_columns());
 
     // Primary sort by name ascending
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
 
-    // Add sort on same column should toggle direction
-    let output = Table::<TestRow>::update(&mut state, TableMessage::AddSort(0));
+    // AddSortToggle on the same column flips direction in place
+    let output = Table::<TestRow>::update(&mut state, TableMessage::AddSortToggle(0));
     assert_eq!(
         output,
         Some(TableOutput::Sorted {
@@ -106,9 +106,9 @@ fn test_add_sort_unsortable_column() {
         Column::new("Value", Constraint::Length(10)), // not sortable
     ];
     let mut state = TableState::new(test_rows(), columns);
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
 
-    let output = Table::<TestRow>::update(&mut state, TableMessage::AddSort(1));
+    let output = Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
     assert_eq!(output, None);
     assert_eq!(state.sort_columns().len(), 1);
 }
@@ -125,9 +125,9 @@ fn test_multi_column_sort_order() {
     let mut state = TableState::new(rows, test_columns());
 
     // Primary sort by name (ascending)
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     // Then add secondary sort by value (ascending)
-    Table::<TestRow>::update(&mut state, TableMessage::AddSort(1));
+    Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
 
     // Expect: Alice 10, Alice 20, Bob 30, Charlie 10
     assert_eq!(state.rows()[state.display_order[0]].name, "Alice");
@@ -139,28 +139,28 @@ fn test_multi_column_sort_order() {
 }
 
 #[test]
-fn test_sort_by_replaces_multi_column_sort() {
+fn test_sort_asc_replaces_multi_column_sort() {
     let mut state = TableState::new(test_rows(), test_columns());
 
     // Set up multi-column sort
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
-    Table::<TestRow>::update(&mut state, TableMessage::AddSort(1));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
     assert_eq!(state.sort_columns().len(), 2);
 
-    // SortBy on a different column replaces all
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(1));
+    // SortAsc on a different column replaces all
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(1));
     assert_eq!(state.sort_columns().len(), 1);
     assert_eq!(state.sort_columns()[0], (1, SortDirection::Ascending));
 }
 
 #[test]
-fn test_clear_sort_clears_all_columns() {
+fn test_sort_clear_clears_all_columns() {
     let mut state = TableState::new(test_rows(), test_columns());
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
-    Table::<TestRow>::update(&mut state, TableMessage::AddSort(1));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
     assert_eq!(state.sort_columns().len(), 2);
 
-    let output = Table::<TestRow>::update(&mut state, TableMessage::ClearSort);
+    let output = Table::<TestRow>::update(&mut state, TableMessage::SortClear);
     assert_eq!(output, Some(TableOutput::SortCleared));
     assert!(state.sort_columns().is_empty());
 }
@@ -175,8 +175,8 @@ fn test_multi_sort_preserves_selection() {
     let mut state = TableState::with_selected(rows, test_columns(), 2);
     // Selected: Alice 10
 
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
-    Table::<TestRow>::update(&mut state, TableMessage::AddSort(1));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
 
     let selected = state.selected_row().unwrap();
     assert_eq!(selected.name, "Alice");

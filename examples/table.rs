@@ -124,7 +124,7 @@ impl App for TableApp {
         if let Some(key) = event.as_key() {
             match key.code {
                 Key::Char('q') | Key::Esc => return Some(Msg::Quit),
-                Key::Char('s') => return Some(Msg::Table(TableMessage::SortBy(0))),
+                Key::Char('s') => return Some(Msg::Table(TableMessage::SortToggle(0))),
                 _ => {}
             }
         }
@@ -147,7 +147,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("After navigating to Haskell:");
     println!("{}\n", vt.display());
 
-    vt.dispatch(Msg::Table(TableMessage::SortBy(0)));
+    vt.dispatch(Msg::Table(TableMessage::SortAsc(0)));
     vt.tick()?;
     println!("After sorting by Language (ascending):");
     println!("{}\n", vt.display());

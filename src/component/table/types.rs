@@ -105,7 +105,7 @@ impl Column {
     /// Makes this column sortable.
     ///
     /// Sortable columns can be sorted by clicking/selecting the header
-    /// or using `TableMessage::SortBy`.
+    /// or using `TableMessage::SortAsc` / `SortDesc` / `SortToggle`.
     ///
     /// # Example
     ///
@@ -467,22 +467,7 @@ pub enum TableMessage {
     PageDown(usize),
     /// Confirm the current selection.
     Select,
-    /// Sort by the given column index (primary sort).
-    ///
-    /// If already the primary sort column, toggles direction.
-    /// If sorted ascending, becomes descending.
-    /// If sorted descending, clears the sort.
-    /// If a different column, replaces all sorts with this column ascending.
-    SortBy(usize),
-    /// Add a column to the sort stack as a tiebreaker.
-    ///
-    /// If the column is already in the sort stack, toggles its direction.
-    /// If not present, adds it as the lowest-priority sort.
-    AddSort(usize),
-    /// Clear all sorts, returning to original order.
-    ClearSort,
 
-    // ----- NEW primary sort family (Phase 2 Task 16 deletes the old SortBy/AddSort/ClearSort) -----
     /// Set the primary sort to this column, ascending. Replaces the entire
     /// sort stack with just this entry.
     #[allow(dead_code)] // Handler lands in Phase 2; allow until then.

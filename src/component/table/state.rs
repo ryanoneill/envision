@@ -263,7 +263,7 @@ impl<T: TableRow> TableState<T> {
     /// );
     /// assert_eq!(state.sort(), None);
     ///
-    /// Table::<Item>::update(&mut state, TableMessage::SortBy(0));
+    /// Table::<Item>::update(&mut state, TableMessage::SortAsc(0));
     /// assert_eq!(state.sort(), Some((0, SortDirection::Ascending)));
     /// ```
     pub fn sort(&self) -> Option<(usize, SortDirection)> {
@@ -290,7 +290,7 @@ impl<T: TableRow> TableState<T> {
     ///     vec![Item { name: "B".into() }, Item { name: "A".into() }],
     ///     vec![Column::fixed("Name", 10).sortable()],
     /// );
-    /// Table::<Item>::update(&mut state, TableMessage::SortBy(0));
+    /// Table::<Item>::update(&mut state, TableMessage::SortAsc(0));
     /// assert_eq!(state.sort_columns().len(), 1);
     /// ```
     pub fn sort_columns(&self) -> &[(usize, SortDirection)] {

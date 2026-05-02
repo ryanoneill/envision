@@ -71,7 +71,7 @@ fn test_view_with_header() {
 #[test]
 fn test_view_with_sort_indicator() {
     let mut state = TableState::new(test_rows(), test_columns());
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
@@ -119,9 +119,8 @@ fn test_view_empty() {
 #[test]
 fn test_view_descending_sort_indicator() {
     let mut state = TableState::new(test_rows(), test_columns());
-    // Sort ascending first, then descending
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    // Set descending sort directly
+    Table::<TestRow>::update(&mut state, TableMessage::SortDesc(0));
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
@@ -153,8 +152,8 @@ fn test_view_unfocused() {
 fn test_view_multi_column_sort_indicators() {
     let mut state = TableState::new(test_rows(), test_columns());
     // Sort by name ascending (primary), then add value ascending (secondary)
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
-    Table::<TestRow>::update(&mut state, TableMessage::AddSort(1));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 

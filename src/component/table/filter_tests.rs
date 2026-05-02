@@ -154,7 +154,7 @@ fn test_filter_select_returns_original_row() {
 fn test_filter_with_sort() {
     let mut state = TableState::new(test_rows(), test_columns());
     // Sort by name ascending
-    Table::<TestRow>::update(&mut state, TableMessage::SortBy(0));
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
 
     // Filter to "ap" — should show Apple and Apricot, sorted
     state.set_filter_text("ap");

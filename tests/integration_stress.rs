@@ -98,7 +98,7 @@ fn test_table_stress_10000_rows() {
     assert_eq!(state.selected_row().unwrap().name, "Item 0");
 
     // Sort by column 0 (ascending)
-    let output = Table::<StressRow>::update(&mut state, TableMessage::SortBy(0));
+    let output = Table::<StressRow>::update(&mut state, TableMessage::SortAsc(0));
     assert!(output.is_some());
 
     // Render to verify no panics with large dataset
