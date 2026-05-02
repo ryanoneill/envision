@@ -278,6 +278,26 @@ impl Cell {
     pub fn datetime(t: std::time::SystemTime) -> Self {
         Self::new(format_systemtime(t)).with_sort_key(SortKey::DateTime(t))
     }
+
+    /// Success-styled cell (theme green).
+    pub fn success(text: impl Into<CompactString>) -> Self {
+        Self::new(text).with_style(CellStyle::Success)
+    }
+
+    /// Warning-styled cell (theme yellow).
+    pub fn warning(text: impl Into<CompactString>) -> Self {
+        Self::new(text).with_style(CellStyle::Warning)
+    }
+
+    /// Error-styled cell (theme red).
+    pub fn error(text: impl Into<CompactString>) -> Self {
+        Self::new(text).with_style(CellStyle::Error)
+    }
+
+    /// Muted-styled cell (theme dark gray).
+    pub fn muted(text: impl Into<CompactString>) -> Self {
+        Self::new(text).with_style(CellStyle::Muted)
+    }
 }
 
 fn format_duration(d: std::time::Duration) -> String {
@@ -558,5 +578,32 @@ mod cell_typed_constructor_tests {
         let c = Cell::datetime(t);
         assert_eq!(c.sort_key(), Some(&SortKey::DateTime(t)));
         assert!(!c.text().is_empty());
+    }
+}
+
+#[cfg(test)]
+mod cell_style_constructor_tests {
+    use super::*;
+
+    #[test]
+    fn success_sets_style() {
+        let c = Cell::success("running");
+        assert_eq!(c.text(), "running");
+        assert_eq!(*c.style(), CellStyle::Success);
+    }
+
+    #[test]
+    fn warning_sets_style() {
+        assert_eq!(*Cell::warning("retry").style(), CellStyle::Warning);
+    }
+
+    #[test]
+    fn error_sets_style() {
+        assert_eq!(*Cell::error("crash").style(), CellStyle::Error);
+    }
+
+    #[test]
+    fn muted_sets_style() {
+        assert_eq!(*Cell::muted("idle").style(), CellStyle::Muted);
     }
 }
