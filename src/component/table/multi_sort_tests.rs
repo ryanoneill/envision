@@ -425,3 +425,290 @@ fn with_initial_sorts_multi_column() {
     // R(1,1) before R(1,2) (tiebreaker on col 1 ascending), then R(2,1)
     assert_eq!(state.display_order, vec![2, 0, 1]);
 }
+
+// ========== Spec #14: SortKey::None preserves insertion order under stable sort ==========
+
+/// End-to-end pin that proves `slice::sort_by` (stable) — not
+/// `sort_unstable_by` — is in use. With three consecutive `SortKey::None`
+/// rows interleaved among real values, ascending sort must place real
+/// values first (`SortKey::None` sorts last in ascending) and the Nones
+/// must remain in their original insertion order.
+#[test]
+fn sort_key_none_rows_preserve_insertion_order_under_stable_sort() {
+    use crate::component::cell::{Cell, SortKey};
+
+    #[derive(Clone, PartialEq, Debug)]
+    struct R {
+        id: u8,
+        key: SortKey,
+    }
+    impl TableRow for R {
+        fn cells(&self) -> Vec<Cell> {
+            vec![Cell::new(format!("{}", self.id)).with_sort_key(self.key.clone())]
+        }
+    }
+    let rows = vec![
+        R {
+            id: 1,
+            key: SortKey::I64(1),
+        },
+        R {
+            id: 2,
+            key: SortKey::None,
+        }, // a
+        R {
+            id: 3,
+            key: SortKey::None,
+        }, // b
+        R {
+            id: 4,
+            key: SortKey::None,
+        }, // c
+        R {
+            id: 5,
+            key: SortKey::I64(2),
+        },
+    ];
+    let columns = vec![Column::new("V", Constraint::Length(5)).sortable()];
+    let mut state = TableState::new(rows.clone(), columns);
+    let _ = Table::<R>::update(&mut state, TableMessage::SortAsc(0));
+    // Real values first (1, 5), then Nones in original order (2, 3, 4)
+    let order: Vec<u8> = state.display_order.iter().map(|&i| rows[i].id).collect();
+    assert_eq!(
+        order,
+        vec![1, 5, 2, 3, 4],
+        "Real values first, then Nones in insertion order — proves stable sort"
+    );
+}
+
+// ========== Spec #15a: originating leadline bug pin ==========
+
+/// The originating leadline bug: dispatching `SortToggle` 10× must always
+/// leave `state.sort()` = `Some(_)`, never `None`. The pre-redesign
+/// `SortBy(col)` 3-cycle (Asc → Desc → cleared) had this bug; `SortToggle`
+/// is now a strict 2-cycle Asc ↔ Desc that never clears.
+#[test]
+fn sort_toggle_state_persists_on_repeated_press() {
+    use crate::component::cell::Cell;
+
+    #[derive(Clone)]
+    struct R(u8);
+    impl TableRow for R {
+        fn cells(&self) -> Vec<Cell> {
+            vec![Cell::int(self.0 as i64)]
+        }
+    }
+    let rows = vec![R(1), R(2), R(3)];
+    let columns = vec![Column::new("V", Constraint::Length(5)).sortable()];
+    let mut state = TableState::new(rows, columns);
+
+    for i in 0..10 {
+        let _ = Table::<R>::update(&mut state, TableMessage::SortToggle(0));
+        assert!(
+            state.sort().is_some(),
+            "SortToggle press {} cleared the sort — bug regressed",
+            i + 1,
+        );
+    }
+}
+
+// ========== Spec #16: SortToggle column-switch honors new column's default_sort ==========
+
+/// When `SortToggle` switches to a column not currently primary, it must
+/// activate that column at its declared `default_sort` (not always Asc).
+#[test]
+fn sort_toggle_column_switch_honors_new_column_default_sort() {
+    use crate::component::cell::Cell;
+
+    #[derive(Clone)]
+    struct R(u8, u8);
+    impl TableRow for R {
+        fn cells(&self) -> Vec<Cell> {
+            vec![Cell::int(self.0 as i64), Cell::int(self.1 as i64)]
+        }
+    }
+    let columns = vec![
+        Column::new("A", Constraint::Length(5)).sortable(),
+        Column::new("B", Constraint::Length(5))
+            .sortable()
+            .with_default_sort(SortDirection::Descending),
+    ];
+    let mut state = TableState::new(vec![R(1, 1), R(2, 2)], columns);
+    // Stack starts (col 0, Asc)
+    let _ = Table::<R>::update(&mut state, TableMessage::SortAsc(0));
+    assert_eq!(state.sort(), Some((0, SortDirection::Ascending)));
+    // Toggle col 1: should activate using col 1's default_sort = Descending
+    let _ = Table::<R>::update(&mut state, TableMessage::SortToggle(1));
+    assert_eq!(state.sort(), Some((1, SortDirection::Descending)));
+}
+
+// ========== Spec #17: AddSort* position preservation on existing entries ==========
+
+/// AddSortAsc on a column already in the stack must replace its direction
+/// in place — the column's stack position must not change.
+#[test]
+fn add_sort_asc_replaces_direction_in_place_no_reorder() {
+    // Stack: [(0, Asc), (1, Desc), (2, Asc)]; dispatch AddSortAsc(1)
+    // Expect: [(0, Asc), (1, Asc), (2, Asc)] — col 1 stays at position 1
+    use crate::component::cell::Cell;
+
+    #[derive(Clone)]
+    struct R(u8, u8, u8);
+    impl TableRow for R {
+        fn cells(&self) -> Vec<Cell> {
+            vec![
+                Cell::int(self.0 as i64),
+                Cell::int(self.1 as i64),
+                Cell::int(self.2 as i64),
+            ]
+        }
+    }
+    let columns = vec![
+        Column::new("A", Constraint::Length(5)).sortable(),
+        Column::new("B", Constraint::Length(5)).sortable(),
+        Column::new("C", Constraint::Length(5)).sortable(),
+    ];
+    let mut state = TableState::new(vec![R(1, 1, 1), R(2, 2, 2)], columns);
+    // Build stack [(0, Asc), (1, Desc), (2, Asc)]
+    let _ = Table::<R>::update(&mut state, TableMessage::SortAsc(0));
+    let _ = Table::<R>::update(&mut state, TableMessage::AddSortDesc(1));
+    let _ = Table::<R>::update(&mut state, TableMessage::AddSortAsc(2));
+    assert_eq!(
+        state.sort_columns(),
+        &[
+            (0, SortDirection::Ascending),
+            (1, SortDirection::Descending),
+            (2, SortDirection::Ascending),
+        ]
+    );
+    // Flip col 1 from Desc to Asc
+    let _ = Table::<R>::update(&mut state, TableMessage::AddSortAsc(1));
+    // Position must be unchanged — col 1 stays at index 1
+    assert_eq!(
+        state.sort_columns(),
+        &[
+            (0, SortDirection::Ascending),
+            (1, SortDirection::Ascending),
+            (2, SortDirection::Ascending),
+        ]
+    );
+}
+
+/// AddSortToggle on a column already in the stack must flip its direction
+/// in place — the column's stack position must not change.
+#[test]
+fn add_sort_toggle_replaces_direction_in_place_no_reorder() {
+    use crate::component::cell::Cell;
+
+    #[derive(Clone)]
+    struct R(u8, u8, u8);
+    impl TableRow for R {
+        fn cells(&self) -> Vec<Cell> {
+            vec![
+                Cell::int(self.0 as i64),
+                Cell::int(self.1 as i64),
+                Cell::int(self.2 as i64),
+            ]
+        }
+    }
+    let columns = vec![
+        Column::new("A", Constraint::Length(5)).sortable(),
+        Column::new("B", Constraint::Length(5)).sortable(),
+        Column::new("C", Constraint::Length(5)).sortable(),
+    ];
+    let mut state = TableState::new(vec![R(1, 1, 1), R(2, 2, 2)], columns);
+    let _ = Table::<R>::update(&mut state, TableMessage::SortAsc(0));
+    let _ = Table::<R>::update(&mut state, TableMessage::AddSortDesc(1));
+    let _ = Table::<R>::update(&mut state, TableMessage::AddSortAsc(2));
+    // Toggle col 1 from Desc to Asc — position-preserving
+    let _ = Table::<R>::update(&mut state, TableMessage::AddSortToggle(1));
+    assert_eq!(
+        state.sort_columns(),
+        &[
+            (0, SortDirection::Ascending),
+            (1, SortDirection::Ascending), // toggled from Desc, position 1 preserved
+            (2, SortDirection::Ascending),
+        ]
+    );
+}
+
+// ========== Spec #13 expanded: non-sortable column silent no-op for ALL variants ==========
+
+/// Every column-taking sort variant must silently no-op (return `None` and
+/// leave `sort()` unchanged) when dispatched against a non-sortable column.
+/// `SortClear` is excluded because it does not take a column index.
+#[test]
+fn all_sort_variants_silent_noop_on_nonsortable_column() {
+    use crate::component::cell::Cell;
+
+    #[derive(Clone)]
+    struct R(u8);
+    impl TableRow for R {
+        fn cells(&self) -> Vec<Cell> {
+            vec![Cell::int(self.0 as i64)]
+        }
+    }
+    let columns = vec![Column::new("V", Constraint::Length(5))]; // NOT sortable
+    let mut state = TableState::new(vec![R(1)], columns);
+
+    let variants = [
+        TableMessage::SortAsc(0),
+        TableMessage::SortDesc(0),
+        TableMessage::SortToggle(0),
+        TableMessage::RemoveSort(0),
+        TableMessage::AddSortAsc(0),
+        TableMessage::AddSortDesc(0),
+        TableMessage::AddSortToggle(0),
+    ];
+    for variant in variants {
+        let result = Table::<R>::update(&mut state, variant.clone());
+        assert!(
+            result.is_none(),
+            "{:?} on non-sortable col must return None",
+            variant,
+        );
+        assert!(
+            state.sort().is_none(),
+            "{:?} must not change sort state",
+            variant,
+        );
+    }
+}
+
+// ========== RemoveSort completeness ==========
+
+/// `RemoveSort(col)` removing the only sort entry must clear the stack
+/// and emit `SortCleared`.
+#[test]
+fn remove_sort_only_entry_emits_sort_cleared() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    assert_eq!(state.sort_columns().len(), 1);
+
+    let result = Table::<TestRow>::update(&mut state, TableMessage::RemoveSort(0));
+    assert_eq!(
+        result,
+        Some(TableOutput::SortCleared),
+        "Removing the sole sort entry must emit SortCleared"
+    );
+    assert!(state.sort_columns().is_empty());
+    assert_eq!(state.sort(), None);
+}
+
+/// `RemoveSort(col)` where `col` is not in the stack must return `None`
+/// and leave the sort stack unchanged.
+#[test]
+fn remove_sort_column_not_in_stack_returns_none() {
+    let mut state = TableState::new(test_rows(), test_columns());
+    Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
+    assert_eq!(state.sort_columns().len(), 1);
+
+    // Col 1 is sortable but not in the stack.
+    let result = Table::<TestRow>::update(&mut state, TableMessage::RemoveSort(1));
+    assert_eq!(
+        result, None,
+        "RemoveSort on a column not in the stack must return None"
+    );
+    assert_eq!(state.sort_columns().len(), 1);
+    assert_eq!(state.sort(), Some((0, SortDirection::Ascending)));
+}
