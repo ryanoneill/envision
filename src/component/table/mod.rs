@@ -60,6 +60,7 @@ mod types;
 
 pub use types::{Column, InitialSort, SortDirection, TableMessage, TableOutput, TableRow};
 
+use std::collections::HashSet;
 use std::marker::PhantomData;
 
 use ratatui::prelude::*;
@@ -89,10 +90,22 @@ pub struct TableState<T: TableRow> {
     filter_text: String,
     #[cfg_attr(feature = "serialization", serde(skip))]
     scroll: ScrollState,
+    /// Dedup keys for cross-variant `SortKey` warnings: column indices
+    /// that already emitted a warning during the current render pass.
+    /// Cleared at the start of each `rebuild_display_order` call so
+    /// each pass emits at most one warning per affected column.
+    ///
+    /// Runtime-only state; not part of logical equality and not
+    /// serialized.
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    cross_variant_warned_cols: HashSet<usize>,
 }
 
 impl<T: TableRow + PartialEq> PartialEq for TableState<T> {
     fn eq(&self, other: &Self) -> bool {
+        // `cross_variant_warned_cols` is intentionally excluded — it's
+        // transient, render-pass-scoped diagnostics state, not part of
+        // the logical equality of the table.
         self.rows == other.rows
             && self.columns == other.columns
             && self.selected == other.selected
@@ -112,6 +125,7 @@ impl<T: TableRow> Default for TableState<T> {
             display_order: Vec::new(),
             filter_text: String::new(),
             scroll: ScrollState::default(),
+            cross_variant_warned_cols: HashSet::new(),
         }
     }
 }

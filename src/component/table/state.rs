@@ -2,10 +2,13 @@
 //!
 //! Extracted from the main table module to keep file sizes manageable.
 
+use std::collections::HashSet;
+
 use super::{
     Column, InitialSort, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState,
 };
 use crate::component::Component;
+use crate::component::cell::SortKey;
 use crate::scroll::ScrollState;
 
 impl<T: TableRow> TableState<T> {
@@ -47,6 +50,7 @@ impl<T: TableRow> TableState<T> {
             display_order,
             filter_text: String::new(),
             scroll,
+            cross_variant_warned_cols: HashSet::new(),
         }
     }
 
@@ -89,6 +93,7 @@ impl<T: TableRow> TableState<T> {
             display_order,
             filter_text: String::new(),
             scroll,
+            cross_variant_warned_cols: HashSet::new(),
         }
     }
 
@@ -595,6 +600,10 @@ impl<T: TableRow> TableState<T> {
 
     /// Rebuilds the display order by applying filter, then sort.
     pub(super) fn rebuild_display_order(&mut self) {
+        // Reset cross-variant warn dedup state for this render pass so each
+        // affected column emits at most one warning per pass.
+        self.cross_variant_warned_cols.clear();
+
         let selected_original = self
             .selected
             .and_then(|i| self.display_order.get(i).copied());
@@ -617,21 +626,61 @@ impl<T: TableRow> TableState<T> {
                 .collect();
         }
 
-        // Multi-column sort
+        // Multi-column sort, driven by typed `SortKey` per cell.
         if !self.sort_columns.is_empty() {
             let sort_spec: Vec<(usize, SortDirection)> = self.sort_columns.clone();
-            self.display_order.sort_by(|&a, &b| {
-                let cells_a = self.rows[a].cells();
-                let cells_b = self.rows[b].cells();
+            // Take ownership of `display_order` and `cross_variant_warned_cols`
+            // for the duration of the sort so the comparator can borrow `&self.rows`
+            // immutably while we hold a `&mut` on the dedup set. (We can't borrow
+            // `&mut self` inside the closure because we already borrow `&self.rows`.)
+            let mut display_order = std::mem::take(&mut self.display_order);
+            let mut warned_cols = std::mem::take(&mut self.cross_variant_warned_cols);
+            let rows = &self.rows;
+
+            // MUST be `sort_by` (stable) — preserves insertion order on
+            // equal keys (e.g., consecutive `SortKey::None` rows). See
+            // spec test #14.
+            display_order.sort_by(|&a, &b| {
+                let cells_a = rows[a].cells();
+                let cells_b = rows[b].cells();
                 for &(col, direction) in &sort_spec {
-                    let val_a = cells_a.get(col).map(|c| c.text());
-                    let val_b = cells_b.get(col).map(|c| c.text());
-                    let cmp = match (val_a, val_b) {
-                        (Some(a_str), Some(b_str)) => a_str.cmp(b_str),
-                        (Some(_), None) => std::cmp::Ordering::Less,
-                        (None, Some(_)) => std::cmp::Ordering::Greater,
-                        (None, None) => std::cmp::Ordering::Equal,
-                    };
+                    let key_a = cells_a
+                        .get(col)
+                        .and_then(|c| c.sort_key().cloned())
+                        .unwrap_or_else(|| {
+                            SortKey::String(
+                                cells_a
+                                    .get(col)
+                                    .map(|c| c.text().into())
+                                    .unwrap_or_default(),
+                            )
+                        });
+                    let key_b = cells_b
+                        .get(col)
+                        .and_then(|c| c.sort_key().cloned())
+                        .unwrap_or_else(|| {
+                            SortKey::String(
+                                cells_b
+                                    .get(col)
+                                    .map(|c| c.text().into())
+                                    .unwrap_or_default(),
+                            )
+                        });
+
+                    // Cross-variant warn (deduped per `(render_pass, col)`).
+                    // `HashSet::insert` returns `true` only on first insertion
+                    // for this pass, so the warning fires exactly once per
+                    // column per render pass.
+                    if std::mem::discriminant(&key_a) != std::mem::discriminant(&key_b)
+                        && warned_cols.insert(col)
+                    {
+                        tracing::warn!(
+                            column = col,
+                            "sortable column has mixed SortKey variants; sort falling back to discriminant order"
+                        );
+                    }
+
+                    let cmp = SortKey::compare(&key_a, &key_b);
                     let ordered = match direction {
                         SortDirection::Ascending => cmp,
                         SortDirection::Descending => cmp.reverse(),
@@ -642,6 +691,9 @@ impl<T: TableRow> TableState<T> {
                 }
                 std::cmp::Ordering::Equal
             });
+
+            self.display_order = display_order;
+            self.cross_variant_warned_cols = warned_cols;
         }
 
         self.scroll.set_content_length(self.display_order.len());
