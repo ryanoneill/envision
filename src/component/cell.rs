@@ -300,6 +300,24 @@ impl Cell {
     }
 }
 
+impl From<&str> for Cell {
+    fn from(s: &str) -> Self {
+        Cell::new(s)
+    }
+}
+
+impl From<String> for Cell {
+    fn from(s: String) -> Self {
+        Cell::new(s)
+    }
+}
+
+impl From<CompactString> for Cell {
+    fn from(s: CompactString) -> Self {
+        Cell::new(s)
+    }
+}
+
 fn format_duration(d: std::time::Duration) -> String {
     let secs = d.as_secs();
     if secs < 60 {
@@ -605,5 +623,31 @@ mod cell_style_constructor_tests {
     #[test]
     fn muted_sets_style() {
         assert_eq!(*Cell::muted("idle").style(), CellStyle::Muted);
+    }
+}
+
+#[cfg(test)]
+mod cell_from_impls_tests {
+    use super::*;
+    use compact_str::CompactString;
+
+    #[test]
+    fn from_str_round_trips() {
+        let c: Cell = "alice".into();
+        assert_eq!(c.text(), "alice");
+        assert_eq!(*c.style(), CellStyle::Default);
+        assert_eq!(c.sort_key(), None);
+    }
+
+    #[test]
+    fn from_string_round_trips() {
+        let c: Cell = String::from("bob").into();
+        assert_eq!(c.text(), "bob");
+    }
+
+    #[test]
+    fn from_compact_string_round_trips() {
+        let c: Cell = CompactString::from("carol").into();
+        assert_eq!(c.text(), "carol");
     }
 }
