@@ -46,11 +46,14 @@ pub enum SortKey {
 impl SortKey {
     /// Compares two sort keys per the documented rules.
     ///
-    /// Same-variant comparisons use the natural ordering for the type
-    /// (with `f64::total_cmp` for `F64`). Cross-variant comparisons
-    /// (which shouldn't happen in well-formed code) fall back to
-    /// discriminant order and emit a `tracing::warn!` once per
-    /// `(render_pass, column_index)` (deduped at the call site, not here).
+    /// Same-variant comparisons use the natural ordering for the type.
+    /// `F64` uses `f64::total_cmp` (not `partial_cmp`) — NaN sorts after
+    /// `+∞` per IEEE 754 total ordering, so the result is always a
+    /// concrete `Ordering` and the caller never sees `Option<Ordering>`.
+    /// Cross-variant comparisons (which shouldn't happen in well-formed
+    /// code) fall back to discriminant order and emit a `tracing::warn!`
+    /// once per `(render_pass, column_index)` (deduped at the call site,
+    /// not here).
     pub fn compare(a: &Self, b: &Self) -> std::cmp::Ordering {
         use SortKey::*;
         use std::cmp::Ordering;
@@ -79,6 +82,14 @@ impl SortKey {
         Self::discriminant(a).cmp(&Self::discriminant(b))
     }
 
+    /// Returns the discriminant byte used as cross-variant fallback ordering.
+    ///
+    /// **Numeric values MUST mirror the enum's variant declaration order.**
+    /// If you add a `SortKey` variant, insert it at the matching position
+    /// here (renumbering subsequent values). The exhaustive match catches a
+    /// missing arm at compile time, but it cannot detect *misordered* arms —
+    /// a drift between this assignment and the enum order silently produces
+    /// wrong cross-variant sort results.
     fn discriminant(k: &Self) -> u8 {
         use SortKey::*;
         match k {
