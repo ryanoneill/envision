@@ -166,6 +166,72 @@ impl RowStatus {
     }
 }
 
+/// Unified cell type for tabular components.
+///
+/// Carries display text, optional `CellStyle`, and an optional `SortKey`
+/// for typed sorting.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Cell {
+    text: CompactString,
+    style: CellStyle,
+    sort_key: Option<SortKey>,
+}
+
+impl Cell {
+    /// Plain cell — default style, no typed sort key. Sort falls back to
+    /// lexicographic on the cell text.
+    pub fn new(text: impl Into<CompactString>) -> Self {
+        Self {
+            text: text.into(),
+            style: CellStyle::Default,
+            sort_key: Option::None,
+        }
+    }
+
+    /// Builder: set the cell style.
+    pub fn with_style(mut self, style: CellStyle) -> Self {
+        self.style = style;
+        self
+    }
+
+    /// Builder: set the typed sort key.
+    pub fn with_sort_key(mut self, key: SortKey) -> Self {
+        self.sort_key = Some(key);
+        self
+    }
+
+    /// Builder: replace the display text without changing other fields.
+    /// Useful in the mixed-precision pattern:
+    ///
+    /// ```ignore
+    /// use envision::component::cell::Cell;
+    /// let cell = Cell::number(840.16).with_text(format!("{:.2}", 840.16));
+    /// assert_eq!(cell.text(), "840.16");
+    /// ```
+    ///
+    /// (Doc-test references `Cell::number` which lands in Task 7. Until
+    /// then, the doc-test is marked `ignore`.)
+    pub fn with_text(mut self, text: impl Into<CompactString>) -> Self {
+        self.text = text.into();
+        self
+    }
+
+    /// Display text.
+    pub fn text(&self) -> &str {
+        &self.text
+    }
+
+    /// Cell style.
+    pub fn style(&self) -> &CellStyle {
+        &self.style
+    }
+
+    /// Optional typed sort key.
+    pub fn sort_key(&self) -> Option<&SortKey> {
+        self.sort_key.as_ref()
+    }
+}
+
 #[cfg(test)]
 mod sort_key_tests {
     use super::*;
@@ -319,5 +385,49 @@ mod row_status_tests {
             color: Color::Magenta,
         };
         assert_eq!(custom.indicator(), Some(("★", Color::Magenta)));
+    }
+}
+
+#[cfg(test)]
+mod cell_struct_tests {
+    use super::*;
+
+    #[test]
+    fn new_default_style_no_sort_key() {
+        let c = Cell::new("alice");
+        assert_eq!(c.text(), "alice");
+        assert_eq!(*c.style(), CellStyle::Default);
+        assert_eq!(c.sort_key(), None);
+    }
+
+    #[test]
+    fn with_style_round_trips() {
+        let c = Cell::new("ok").with_style(CellStyle::Success);
+        assert_eq!(*c.style(), CellStyle::Success);
+    }
+
+    #[test]
+    fn with_sort_key_round_trips() {
+        let c = Cell::new("7").with_sort_key(SortKey::I64(7));
+        assert_eq!(c.sort_key(), Some(&SortKey::I64(7)));
+    }
+
+    #[test]
+    fn with_text_replaces_text_only() {
+        let c = Cell::new("v1")
+            .with_style(CellStyle::Warning)
+            .with_sort_key(SortKey::I64(1))
+            .with_text("v2");
+        assert_eq!(c.text(), "v2");
+        assert_eq!(*c.style(), CellStyle::Warning);
+        assert_eq!(c.sort_key(), Some(&SortKey::I64(1)));
+    }
+
+    #[test]
+    fn default_cell_is_empty() {
+        let c = Cell::default();
+        assert_eq!(c.text(), "");
+        assert_eq!(*c.style(), CellStyle::Default);
+        assert_eq!(c.sort_key(), None);
     }
 }
