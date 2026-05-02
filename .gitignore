@@ -3,3 +3,4 @@
 *.proptest-regressions
 tools/audit/target/
 .claude/worktrees/
+.claude/*.lock
