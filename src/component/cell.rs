@@ -203,14 +203,11 @@ impl Cell {
     /// Builder: replace the display text without changing other fields.
     /// Useful in the mixed-precision pattern:
     ///
-    /// ```ignore
+    /// ```
     /// use envision::component::cell::Cell;
     /// let cell = Cell::number(840.16).with_text(format!("{:.2}", 840.16));
     /// assert_eq!(cell.text(), "840.16");
     /// ```
-    ///
-    /// (Doc-test references `Cell::number` which lands in Task 7. Until
-    /// then, the doc-test is marked `ignore`.)
     pub fn with_text(mut self, text: impl Into<CompactString>) -> Self {
         self.text = text.into();
         self
@@ -229,6 +226,78 @@ impl Cell {
     /// Optional typed sort key.
     pub fn sort_key(&self) -> Option<&SortKey> {
         self.sort_key.as_ref()
+    }
+
+    /// Numeric cell with `f64` sort key. Display text is `format!("{}", value)`.
+    ///
+    /// For fixed-precision columns, chain `.with_text(format!(...))`:
+    ///
+    /// ```
+    /// use envision::component::cell::Cell;
+    /// let c = Cell::number(840.16).with_text(format!("{:.2} ms", 840.16));
+    /// assert_eq!(c.text(), "840.16 ms");
+    /// ```
+    pub fn number(value: f64) -> Self {
+        Self::new(format!("{}", value)).with_sort_key(SortKey::F64(value))
+    }
+
+    /// Signed-integer cell. Use only when the column's data is integer-valued —
+    /// for fractional or naturally-`f64` data, use [`Cell::number`] to preserve
+    /// precision in the sort key.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::cell::Cell;
+    /// let c = Cell::int(-42);
+    /// assert_eq!(c.text(), "-42");
+    /// ```
+    pub fn int(value: i64) -> Self {
+        Self::new(format!("{}", value)).with_sort_key(SortKey::I64(value))
+    }
+
+    /// Unsigned-integer cell. Use only for non-negative integer data —
+    /// for naturally-`f64` data, use [`Cell::number`].
+    pub fn uint(value: u64) -> Self {
+        Self::new(format!("{}", value)).with_sort_key(SortKey::U64(value))
+    }
+
+    /// Boolean cell. Renders as `"true"` / `"false"`.
+    pub fn bool(value: bool) -> Self {
+        Self::new(format!("{}", value)).with_sort_key(SortKey::Bool(value))
+    }
+
+    /// Duration cell. Display text is a compact form (`"3m12s"`, `"2h15m"`,
+    /// `"3d4h"`); sort key is the underlying `Duration`.
+    pub fn duration(d: std::time::Duration) -> Self {
+        Self::new(format_duration(d)).with_sort_key(SortKey::Duration(d))
+    }
+
+    /// Datetime cell. Display text is an ISO-ish string; sort key is the
+    /// underlying `SystemTime`.
+    pub fn datetime(t: std::time::SystemTime) -> Self {
+        Self::new(format_systemtime(t)).with_sort_key(SortKey::DateTime(t))
+    }
+}
+
+fn format_duration(d: std::time::Duration) -> String {
+    let secs = d.as_secs();
+    if secs < 60 {
+        format!("{}s", secs)
+    } else if secs < 3600 {
+        format!("{}m{}s", secs / 60, secs % 60)
+    } else if secs < 86_400 {
+        format!("{}h{}m", secs / 3600, (secs % 3600) / 60)
+    } else {
+        format!("{}d{}h", secs / 86_400, (secs % 86_400) / 3600)
+    }
+}
+
+fn format_systemtime(t: std::time::SystemTime) -> String {
+    use std::time::UNIX_EPOCH;
+    match t.duration_since(UNIX_EPOCH) {
+        Ok(d) => format!("{}s", d.as_secs()),
+        Err(_) => "before-epoch".to_string(),
     }
 }
 
@@ -429,5 +498,65 @@ mod cell_struct_tests {
         assert_eq!(c.text(), "");
         assert_eq!(*c.style(), CellStyle::Default);
         assert_eq!(c.sort_key(), None);
+    }
+}
+
+#[cfg(test)]
+mod cell_typed_constructor_tests {
+    use super::*;
+    use std::time::{Duration, SystemTime};
+
+    #[test]
+    fn number_uses_display_fmt_and_f64_sort_key() {
+        let c = Cell::number(840.0);
+        assert_eq!(c.text(), "840");
+        assert_eq!(c.sort_key(), Some(&SortKey::F64(840.0)));
+    }
+
+    #[test]
+    fn number_with_text_overrides_display_for_mixed_precision() {
+        let c = Cell::number(840.16).with_text(format!("{:.2}", 840.16));
+        assert_eq!(c.text(), "840.16");
+        assert_eq!(c.sort_key(), Some(&SortKey::F64(840.16)));
+    }
+
+    #[test]
+    fn int_renders_and_sorts_as_i64() {
+        let c = Cell::int(-42);
+        assert_eq!(c.text(), "-42");
+        assert_eq!(c.sort_key(), Some(&SortKey::I64(-42)));
+    }
+
+    #[test]
+    fn uint_renders_and_sorts_as_u64() {
+        let c = Cell::uint(7);
+        assert_eq!(c.text(), "7");
+        assert_eq!(c.sort_key(), Some(&SortKey::U64(7)));
+    }
+
+    #[test]
+    fn bool_renders_and_sorts() {
+        let t = Cell::bool(true);
+        assert_eq!(t.text(), "true");
+        assert_eq!(t.sort_key(), Some(&SortKey::Bool(true)));
+    }
+
+    #[test]
+    fn duration_renders_compact_and_sorts() {
+        let c = Cell::duration(Duration::from_secs(192));
+        assert_eq!(
+            c.sort_key(),
+            Some(&SortKey::Duration(Duration::from_secs(192)))
+        );
+        assert!(c.text().contains("3m"));
+        assert!(c.text().contains("12s"));
+    }
+
+    #[test]
+    fn datetime_carries_systemtime_sort_key() {
+        let t = SystemTime::UNIX_EPOCH;
+        let c = Cell::datetime(t);
+        assert_eq!(c.sort_key(), Some(&SortKey::DateTime(t)));
+        assert!(!c.text().is_empty());
     }
 }
