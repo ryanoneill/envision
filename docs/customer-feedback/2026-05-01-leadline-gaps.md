@@ -10,11 +10,13 @@ Surfaced while building the leadline TUI on top of envision.
 
 ## Items
 
-### Folded into current Table/Sort/Cell brainstorm
+### Resolved 2026-05-02 — Table/Sort/Cell unification
 
-- **G1** Typed `TableRow::sort_key` — covered by `SortKey` enum on `Cell`
-- **G3 / D4** Per-cell styling — covered by unified `Cell { text, style, sort_key }` type
-- **G7** `SortBy` 3-cycle redesign — covered by `SortAsc/Desc/Toggle/Clear/RemoveSort` vocabulary + `Column::with_default_sort` + `TableState::with_initial_sort(s)`
+Spec PR #459, plan PR #460, implementation PR #461 (`235bcae`). Leadline migration verified in their commit `e429a6a`.
+
+- **G1** ✅ Typed `TableRow::sort_key` — shipped via `SortKey` enum on `Cell` with same-variant + cross-variant fallback compare
+- **G3 / D4** ✅ Per-cell styling — shipped as unified `Cell { text, style, sort_key }` type with style-flavored constructors and theme-mapped render
+- **G7** ✅ `SortBy` 3-cycle redesign — shipped as `SortAsc/Desc/Toggle/Clear/RemoveSort` vocabulary + `Column::with_default_sort` + `TableState::with_initial_sort(s)`. Leadline confirmed: net -33 lines after migration; three workaround helpers (`apply_table_msg`, `apply_sort_persistent`, `strip_suffix_numeric_comparator`) deleted.
 
 ### High-leverage follow-ups (leadline's stated priorities)
 
@@ -45,7 +47,7 @@ Surfaced while building the leadline TUI on top of envision.
 
 This is a sketch — treat as draft until reviewed.
 
-1. **Current brainstorm PR**: G1 + G3 + D4 + G7 (Table/Sort/Cell unification, ResourceTable merger, sort vocabulary redesign).
+1. ~~**Current brainstorm PR**: G1 + G3 + D4 + G7 (Table/Sort/Cell unification, ResourceTable merger, sort vocabulary redesign).~~ ✅ shipped 2026-05-02 via PR #461
 2. **High-leverage batch — separate PRs each**:
    - D1 (`App::init` args + `Runtime` builder)
    - D2 (`PaneLayout::view_with` closure flow)
