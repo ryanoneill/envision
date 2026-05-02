@@ -252,6 +252,7 @@ mod tooltip;
 pub mod markdown_renderer;
 
 // Always available
+pub mod cell;
 mod context;
 mod focus_manager;
 
