@@ -359,6 +359,15 @@ impl<T: TableRow + 'static> Component for Table<T> {
             TableMessage::SetFilter(_) | TableMessage::ClearFilter => {
                 unreachable!("handled above")
             }
+            // New sort variants land in Phase 2 Task 16 (additive in Phase 1).
+            TableMessage::SortAsc(_)
+            | TableMessage::SortDesc(_)
+            | TableMessage::SortToggle(_)
+            | TableMessage::SortClear
+            | TableMessage::RemoveSort(_)
+            | TableMessage::AddSortAsc(_)
+            | TableMessage::AddSortDesc(_)
+            | TableMessage::AddSortToggle(_) => {}
         }
 
         None

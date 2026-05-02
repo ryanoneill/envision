@@ -922,3 +922,27 @@ fn column_with_default_sort_round_trips() {
     let c = Column::new("X", Constraint::Length(5)).with_default_sort(SortDirection::Descending);
     assert_eq!(c.default_sort(), SortDirection::Descending);
 }
+
+// New TableMessage sort variants (Task 12) -- additive, handlers land in Phase 2 Task 16.
+
+#[test]
+fn new_table_message_variants_derive_traits() {
+    use crate::component::TableMessage;
+    let m = TableMessage::SortAsc(0);
+    let m2 = m.clone();
+    assert_eq!(m, m2);
+    let _ = format!("{:?}", m); // Debug
+}
+
+#[test]
+fn all_new_sort_variants_exist() {
+    use crate::component::TableMessage;
+    let _ = TableMessage::SortAsc(0);
+    let _ = TableMessage::SortDesc(0);
+    let _ = TableMessage::SortToggle(0);
+    let _ = TableMessage::SortClear;
+    let _ = TableMessage::RemoveSort(0);
+    let _ = TableMessage::AddSortAsc(0);
+    let _ = TableMessage::AddSortDesc(0);
+    let _ = TableMessage::AddSortToggle(0);
+}

@@ -619,6 +619,54 @@ pub enum TableMessage {
     AddSort(usize),
     /// Clear all sorts, returning to original order.
     ClearSort,
+
+    // ----- NEW primary sort family (Phase 2 Task 16 deletes the old SortBy/AddSort/ClearSort) -----
+    /// Set the primary sort to this column, ascending. Replaces the entire
+    /// sort stack with just this entry.
+    #[allow(dead_code)] // Handler lands in Phase 2; allow until then.
+    SortAsc(usize),
+
+    /// Set the primary sort to this column, descending. Replaces the entire
+    /// sort stack with just this entry.
+    #[allow(dead_code)]
+    SortDesc(usize),
+
+    /// 2-cycle toggle. Never clears.
+    /// - If this column is already the primary sort: flip Asc <-> Desc.
+    /// - If this column is not currently in the sort stack: activate it
+    ///   using `Column::default_sort()`. Default fallback: `Ascending`.
+    #[allow(dead_code)]
+    SortToggle(usize),
+
+    /// Drop the primary sort and any tiebreakers. Returns to load order.
+    /// (Renamed from `ClearSort` for naming consistency with the rest of
+    /// the family. The old `ClearSort` is removed in Phase 2 Task 16.)
+    #[allow(dead_code)]
+    SortClear,
+
+    /// Drop just one column from the multi-sort stack. The remaining
+    /// columns keep their relative order. If the dropped column was
+    /// primary, the next tiebreaker is promoted.
+    #[allow(dead_code)]
+    RemoveSort(usize),
+
+    // ----- NEW tiebreaker family -----
+    /// Add this column to the sort stack as a lowest-priority Asc
+    /// tiebreaker. If the column is already in the stack, replace its
+    /// direction in place -- do not reorder.
+    #[allow(dead_code)]
+    AddSortAsc(usize),
+
+    /// Add this column to the sort stack as a lowest-priority Desc
+    /// tiebreaker. If already in the stack, replace direction in place.
+    #[allow(dead_code)]
+    AddSortDesc(usize),
+
+    /// Toggle this column's tiebreaker direction. If not in the stack,
+    /// add it using `Column::default_sort()`.
+    #[allow(dead_code)]
+    AddSortToggle(usize),
+
     /// Increase the width of the column at the given index.
     IncreaseColumnWidth(usize),
     /// Decrease the width of the column at the given index.
