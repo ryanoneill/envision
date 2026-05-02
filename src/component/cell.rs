@@ -10,6 +10,7 @@
 #![allow(dead_code)] // Placeholder during Phase 1; tasks 2–9 fill this in.
 
 use compact_str::CompactString;
+use ratatui::style::Style;
 
 /// A typed sort key carried by a `Cell` for typed comparison.
 ///
@@ -103,6 +104,28 @@ impl SortKey {
             None => 7,
         }
     }
+}
+
+/// Semantic cell styling.
+///
+/// `Default` renders with no override (theme-driven). `Success`,
+/// `Warning`, `Error`, `Muted` map to the theme's semantic colors.
+/// `Custom(Style)` applies a raw `ratatui::style::Style` directly.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub enum CellStyle {
+    /// No override — render with the theme's default cell style.
+    #[default]
+    Default,
+    /// Maps to the theme's success color (typically green).
+    Success,
+    /// Maps to the theme's warning color (typically yellow).
+    Warning,
+    /// Maps to the theme's error color (typically red).
+    Error,
+    /// Maps to the theme's muted color (typically dark gray) for de-emphasized text.
+    Muted,
+    /// Applies a raw `ratatui::style::Style` directly, bypassing theme mapping.
+    Custom(Style),
 }
 
 #[cfg(test)]
@@ -201,5 +224,22 @@ mod sort_key_tests {
     fn none_sorts_after_nan() {
         let nan = SortKey::F64(f64::NAN);
         assert_eq!(SortKey::compare(&nan, &SortKey::None), Ordering::Less);
+    }
+}
+
+#[cfg(test)]
+mod cell_style_tests {
+    use super::*;
+    use ratatui::style::{Color, Style};
+
+    #[test]
+    fn default_is_default_variant() {
+        assert_eq!(CellStyle::default(), CellStyle::Default);
+    }
+
+    #[test]
+    fn custom_carries_style() {
+        let style = Style::default().fg(Color::Red);
+        assert_eq!(CellStyle::Custom(style), CellStyle::Custom(style));
     }
 }
