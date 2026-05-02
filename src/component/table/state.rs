@@ -544,7 +544,6 @@ impl<T: TableRow> TableState<T> {
 
         // Multi-column sort
         if !self.sort_columns.is_empty() {
-            let columns = &self.columns;
             let sort_spec: Vec<(usize, SortDirection)> = self.sort_columns.clone();
             self.display_order.sort_by(|&a, &b| {
                 let cells_a = self.rows[a].cells();
@@ -553,14 +552,7 @@ impl<T: TableRow> TableState<T> {
                     let val_a = cells_a.get(col).map(|c| c.text());
                     let val_b = cells_b.get(col).map(|c| c.text());
                     let cmp = match (val_a, val_b) {
-                        (Some(a_str), Some(b_str)) => {
-                            if let Some(comparator) = columns.get(col).and_then(|c| c.comparator())
-                            {
-                                comparator(a_str, b_str)
-                            } else {
-                                a_str.cmp(b_str)
-                            }
-                        }
+                        (Some(a_str), Some(b_str)) => a_str.cmp(b_str),
                         (Some(_), None) => std::cmp::Ordering::Less,
                         (None, Some(_)) => std::cmp::Ordering::Greater,
                         (None, None) => std::cmp::Ordering::Equal,

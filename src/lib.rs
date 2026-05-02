@@ -202,9 +202,8 @@ pub use component::{
 pub use component::{
     Cell, Column, InitialSort, ItemState, LoadingList, LoadingListItem, LoadingListMessage,
     LoadingListOutput, LoadingListState, SelectableList, SelectableListMessage,
-    SelectableListOutput, SelectableListState, SortComparator, SortDirection, SortKey, Table,
-    TableMessage, TableOutput, TableRow, TableState, Tree, TreeMessage, TreeNode, TreeOutput,
-    TreeState, date_comparator, numeric_comparator,
+    SelectableListOutput, SelectableListState, SortDirection, SortKey, Table, TableMessage,
+    TableOutput, TableRow, TableState, Tree, TreeMessage, TreeNode, TreeOutput, TreeState,
 };
 
 // Display components

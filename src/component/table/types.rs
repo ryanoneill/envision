@@ -1,8 +1,5 @@
 //! Types for the table component.
 
-use std::cmp::Ordering;
-use std::sync::Arc;
-
 use ratatui::layout::Constraint;
 
 use crate::component::cell::{Cell, RowStatus};
@@ -64,29 +61,7 @@ pub trait TableRow: Clone {
 /// assert_eq!(col.header(), "Name");
 /// assert!(col.is_sortable());
 /// ```
-/// A type alias for custom sort comparator functions.
-///
-/// Comparators receive two string cell values and return an [`Ordering`].
-/// Use [`numeric_comparator`] or [`date_comparator`] for common cases,
-/// or provide your own closure.
-pub type SortComparator = Arc<dyn Fn(&str, &str) -> Ordering + Send + Sync>;
-
-/// Column definition for a table.
-///
-/// Columns define the header text, width, whether the column
-/// is sortable, and an optional custom sort comparator.
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::Column;
-/// use ratatui::layout::Constraint;
-///
-/// let col = Column::new("Name", Constraint::Length(20)).sortable();
-/// assert_eq!(col.header(), "Name");
-/// assert!(col.is_sortable());
-/// ```
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
@@ -99,34 +74,6 @@ pub struct Column {
     editable: bool,
     visible: bool,
     default_sort: SortDirection,
-    #[cfg_attr(feature = "serialization", serde(skip))]
-    comparator: Option<SortComparator>,
-}
-
-impl std::fmt::Debug for Column {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Column")
-            .field("header", &self.header)
-            .field("width", &self.width)
-            .field("sortable", &self.sortable)
-            .field("editable", &self.editable)
-            .field("visible", &self.visible)
-            .field("default_sort", &self.default_sort)
-            .field("comparator", &self.comparator.as_ref().map(|_| ".."))
-            .finish()
-    }
-}
-
-impl PartialEq for Column {
-    fn eq(&self, other: &Self) -> bool {
-        self.header == other.header
-            && self.width == other.width
-            && self.sortable == other.sortable
-            && self.editable == other.editable
-            && self.visible == other.visible
-            && self.default_sort == other.default_sort
-        // comparator is not compared (function equality is not meaningful)
-    }
 }
 
 impl Column {
@@ -152,7 +99,6 @@ impl Column {
             editable: true,
             visible: true,
             default_sort: SortDirection::Ascending,
-            comparator: None,
         }
     }
 
@@ -427,47 +373,6 @@ impl Column {
         self.default_sort
     }
 
-    /// Sets a custom sort comparator for this column.
-    ///
-    /// The comparator receives two cell values as `&str` and returns an
-    /// [`Ordering`]. When sorting, this comparator is used instead of
-    /// the default lexicographic comparison.
-    ///
-    /// Setting a comparator also makes the column sortable.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Column, numeric_comparator};
-    ///
-    /// let col = Column::fixed("Price", 10)
-    ///     .with_comparator(numeric_comparator());
-    /// assert!(col.is_sortable());
-    /// assert!(col.comparator().is_some());
-    /// ```
-    pub fn with_comparator(mut self, comparator: SortComparator) -> Self {
-        self.comparator = Some(comparator);
-        self.sortable = true;
-        self
-    }
-
-    /// Returns the custom comparator for this column, if any.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Column, numeric_comparator};
-    ///
-    /// let col = Column::fixed("Name", 10);
-    /// assert!(col.comparator().is_none());
-    ///
-    /// let numeric = Column::fixed("Price", 10).with_comparator(numeric_comparator());
-    /// assert!(numeric.comparator().is_some());
-    /// ```
-    pub fn comparator(&self) -> Option<&SortComparator> {
-        self.comparator.as_ref()
-    }
-
     /// Sets the width of this column (builder method).
     ///
     /// This is useful for column resizing operations.
@@ -486,78 +391,6 @@ impl Column {
     pub fn set_width(&mut self, width: Constraint) {
         self.width = width;
     }
-}
-
-/// Returns a comparator that sorts cell values as numbers.
-///
-/// Values that cannot be parsed as `f64` sort after valid numbers.
-/// Two unparseable values are compared lexicographically.
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::numeric_comparator;
-/// use std::cmp::Ordering;
-///
-/// let cmp = numeric_comparator();
-/// assert_eq!(cmp("2", "10"), Ordering::Less);
-/// assert_eq!(cmp("10", "2"), Ordering::Greater);
-/// assert_eq!(cmp("abc", "10"), Ordering::Greater);
-/// ```
-pub fn numeric_comparator() -> SortComparator {
-    Arc::new(|a: &str, b: &str| {
-        let pa = a.parse::<f64>();
-        let pb = b.parse::<f64>();
-        match (pa, pb) {
-            (Ok(va), Ok(vb)) => va.partial_cmp(&vb).unwrap_or(Ordering::Equal),
-            (Ok(_), Err(_)) => Ordering::Less,
-            (Err(_), Ok(_)) => Ordering::Greater,
-            (Err(_), Err(_)) => a.cmp(b),
-        }
-    })
-}
-
-/// Returns a comparator that sorts cell values as dates in `YYYY-MM-DD` format.
-///
-/// Values that do not match the `YYYY-MM-DD` pattern sort after valid dates.
-/// Two unparseable values are compared lexicographically.
-///
-/// # Example
-///
-/// ```rust
-/// use envision::component::date_comparator;
-/// use std::cmp::Ordering;
-///
-/// let cmp = date_comparator();
-/// assert_eq!(cmp("2024-01-15", "2024-02-01"), Ordering::Less);
-/// assert_eq!(cmp("2024-02-01", "2024-01-15"), Ordering::Greater);
-/// ```
-pub fn date_comparator() -> SortComparator {
-    Arc::new(|a: &str, b: &str| {
-        let pa = parse_date(a);
-        let pb = parse_date(b);
-        match (pa, pb) {
-            (Some(va), Some(vb)) => va.cmp(&vb),
-            (Some(_), None) => Ordering::Less,
-            (None, Some(_)) => Ordering::Greater,
-            (None, None) => a.cmp(b),
-        }
-    })
-}
-
-/// Parses a `YYYY-MM-DD` date string into a comparable tuple.
-fn parse_date(s: &str) -> Option<(i32, u32, u32)> {
-    let parts: Vec<&str> = s.split('-').collect();
-    if parts.len() != 3 {
-        return None;
-    }
-    let year = parts[0].parse::<i32>().ok()?;
-    let month = parts[1].parse::<u32>().ok()?;
-    let day = parts[2].parse::<u32>().ok()?;
-    if !(1..=12).contains(&month) || !(1..=31).contains(&day) {
-        return None;
-    }
-    Some((year, month, day))
 }
 
 /// Sort direction for table columns.
