@@ -8,7 +8,7 @@ use super::{
     Column, InitialSort, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState,
 };
 use crate::component::Component;
-use crate::component::cell::SortKey;
+use crate::component::cell::{RowStatus, SortKey};
 use crate::scroll::ScrollState;
 
 impl<T: TableRow> TableState<T> {
@@ -541,6 +541,16 @@ impl<T: TableRow> TableState<T> {
     /// ```
     pub fn visible_count(&self) -> usize {
         self.display_order.len()
+    }
+
+    /// Returns `true` if any row in the table has a non-`RowStatus::None`
+    /// status. When `true`, the renderer prepends a 2-cell-wide status
+    /// column to the table; when `false`, no status column is rendered
+    /// and the table layout matches Phase 1 behavior exactly.
+    pub(super) fn has_status_column(&self) -> bool {
+        self.rows
+            .iter()
+            .any(|r| !matches!(r.status(), RowStatus::None))
     }
 
     /// Sets the filter text for case-insensitive substring matching on cell content.
