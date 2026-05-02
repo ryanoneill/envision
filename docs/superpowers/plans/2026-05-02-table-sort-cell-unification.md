@@ -29,6 +29,14 @@
 - **Audit-scorecard target:** 9/9 before merge. Run `./tools/audit/target/release/envision-audit scorecard`.
 - **Cross-ref handshake:** after this PR opens, leadline updates `notes/envision_gaps.md` G1/G3/G7 entries to reference the spec doc and PR number. Their workaround helpers (`apply_table_msg`, `apply_sort_persistent`, `strip_suffix_numeric_comparator`) get deleted on their side once this lands.
 
+### Pre-execution gotchas
+
+Three things subagents will hit at task pickup time. Surface them up-front so each subagent doesn't re-discover the same blocker.
+
+1. **`rand` dev-dep for Task 31 bench.** `cargo bench --bench sort_bench` will fail with an unresolved-import error on `rand::Rng` / `rand::SeedableRng` if `rand` isn't in `[dev-dependencies]`. Verify `Cargo.toml` before Task 31; add if missing.
+2. **`tracing-test` dev-dep for Task 28.1.** The cross-variant warn-dedup test (`cross_variant_warn_emitted_once_per_render_pass`) needs `tracing-test` to capture and assert log lines. Add to `[dev-dependencies]` if not already present.
+3. **`cargo nextest` filter syntax.** Nextest's filter is name-based, not module-path-based. Filters like `cargo nextest run … sort_key_tests` may need to be `cargo nextest run -E 'test(sort_key_tests::)'` or just match by test name. Each subagent will hit this once and adapt.
+
 ---
 
 ## File structure
