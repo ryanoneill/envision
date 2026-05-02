@@ -16,13 +16,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -52,13 +52,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -76,13 +76,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -101,13 +101,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, DataGridState, TableRow};
+    /// use envision::component::{Cell, Column, DataGridState, TableRow};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -125,13 +125,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -149,13 +149,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -173,13 +173,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -200,13 +200,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = DataGridState::new(
@@ -237,13 +237,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, DataGridState, TableRow};
+    /// use envision::component::{Cell, Column, DataGridState, TableRow};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -261,13 +261,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -285,13 +285,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -309,13 +309,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -329,7 +329,10 @@ impl<T: TableRow> DataGridState<T> {
             .and_then(|ri| self.rows.get(ri))
             .map(|row| {
                 let cells = row.cells();
-                cells.get(self.selected_column).cloned().unwrap_or_default()
+                cells
+                    .get(self.selected_column)
+                    .map(|c| c.text().to_string())
+                    .unwrap_or_default()
             })
     }
 
@@ -338,13 +341,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -362,13 +365,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = DataGridState::new(
@@ -389,12 +392,12 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state: DataGridState<Item> = DataGridState::default();
@@ -409,13 +412,13 @@ impl<T: TableRow> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{DataGridState, TableRow, Column};
+    /// use envision::component::{Cell, DataGridState, TableRow, Column};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = DataGridState::new(
@@ -444,13 +447,13 @@ impl<T: TableRow + 'static> DataGridState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, DataGridMessage, DataGridOutput, DataGridState, TableRow};
+    /// use envision::component::{Cell, Column, DataGridMessage, DataGridOutput, DataGridState, TableRow};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone, Debug, PartialEq)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = DataGridState::new(

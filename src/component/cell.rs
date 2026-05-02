@@ -7,8 +7,6 @@
 //! Constructors and full usage examples live on the individual types as
 //! they're built up across Phase 1 tasks.
 
-#![allow(dead_code)] // Placeholder during Phase 1; tasks 2–9 fill this in.
-
 use compact_str::CompactString;
 use ratatui::style::{Color, Style};
 

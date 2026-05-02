@@ -11,7 +11,7 @@
 //!
 //! ```rust
 //! use envision::component::{
-//!     Column, Component, SortDirection, Table, TableMessage, TableOutput,
+//!     Cell, Column, Component, SortDirection, Table, TableMessage, TableOutput,
 //!     TableRow, TableState,
 //! };
 //! use ratatui::layout::Constraint;
@@ -24,8 +24,8 @@
 //! }
 //!
 //! impl TableRow for User {
-//!     fn cells(&self) -> Vec<String> {
-//!         vec![self.name.clone(), self.email.clone()]
+//!     fn cells(&self) -> Vec<Cell> {
+//!         vec![Cell::new(&self.name), Cell::new(&self.email)]
 //!     }
 //! }
 //!
@@ -147,7 +147,7 @@ impl<T: TableRow> Default for TableState<T> {
 ///
 /// ```rust
 /// use envision::component::{
-///     Column, Component, Table, TableMessage, TableRow, TableState,
+///     Cell, Column, Component, Table, TableMessage, TableRow, TableState,
 /// };
 /// use ratatui::layout::Constraint;
 ///
@@ -158,8 +158,8 @@ impl<T: TableRow> Default for TableState<T> {
 /// }
 ///
 /// impl TableRow for Person {
-///     fn cells(&self) -> Vec<String> {
-///         vec![self.name.clone(), self.age.to_string()]
+///     fn cells(&self) -> Vec<Cell> {
+///         vec![Cell::new(&self.name), Cell::uint(self.age as u64)]
 ///     }
 /// }
 ///

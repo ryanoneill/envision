@@ -7,8 +7,9 @@ struct TestRow {
 }
 
 impl TableRow for TestRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.name.clone(), self.category.clone()]
+    fn cells(&self) -> Vec<crate::component::cell::Cell> {
+        use crate::component::cell::Cell;
+        vec![Cell::new(&self.name), Cell::new(&self.category)]
     }
 }
 

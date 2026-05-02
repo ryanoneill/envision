@@ -16,11 +16,11 @@ struct Employee {
 }
 
 impl TableRow for Employee {
-    fn cells(&self) -> Vec<String> {
+    fn cells(&self) -> Vec<Cell> {
         vec![
-            self.name.clone(),
-            self.department.clone(),
-            self.role.clone(),
+            Cell::new(&self.name),
+            Cell::new(&self.department),
+            Cell::new(&self.role),
         ]
     }
 }

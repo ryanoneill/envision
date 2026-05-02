@@ -70,7 +70,7 @@ pub(super) fn render_table<T: TableRow>(
             let cells: Vec<Cell> = state.rows[idx]
                 .cells()
                 .into_iter()
-                .map(Cell::from)
+                .map(|c| Cell::from(c.text().to_string()))
                 .collect();
             Row::new(cells)
         })

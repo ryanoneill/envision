@@ -8,8 +8,8 @@ use envision::component::{
 use envision::{
     Accordion, AccordionPanel, AccordionState, App, AppHarness, Breadcrumb, BreadcrumbMessage,
     BreadcrumbOutput, BreadcrumbSegment, BreadcrumbState, Button, ButtonOutput, ButtonState,
-    CaptureBackend, Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState, Column, Command,
-    Component, Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Dropdown,
+    CaptureBackend, Cell, Checkbox, CheckboxMessage, CheckboxOutput, CheckboxState, Column,
+    Command, Component, Dialog, DialogButton, DialogMessage, DialogOutput, DialogState, Dropdown,
     DropdownState, Event, FocusManager, InputField, InputFieldMessage, InputFieldOutput,
     InputFieldState, KeyHint, KeyHints, KeyHintsState, LineInput, LineInputState, LoadingList,
     LoadingListState, Menu, MenuItem, MenuState, MultiProgress, MultiProgressState, ProgressBar,
@@ -436,8 +436,8 @@ struct SimpleRow {
 }
 
 impl TableRow for SimpleRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.name.clone()]
+    fn cells(&self) -> Vec<Cell> {
+        vec![Cell::new(&self.name)]
     }
 }
 

@@ -14,15 +14,15 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     ///
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> {
-    ///         vec![self.name.clone()]
+    ///     fn cells(&self) -> Vec<Cell> {
+    ///         vec![Cell::new(&self.name)]
     ///     }
     /// }
     ///
@@ -55,13 +55,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::with_selected(
@@ -100,7 +100,7 @@ impl<T: TableRow> TableState<T> {
     /// #[derive(Clone, Debug, PartialEq)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -124,7 +124,7 @@ impl<T: TableRow> TableState<T> {
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -145,12 +145,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -168,13 +168,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -199,7 +199,7 @@ impl<T: TableRow> TableState<T> {
     /// #[derive(Clone, Debug, PartialEq)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -222,12 +222,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone, Debug, PartialEq)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -248,13 +248,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, Table, TableRow, TableState, TableMessage, SortDirection, Component};
+    /// use envision::component::{Cell, Column, Table, TableRow, TableState, TableMessage, SortDirection, Component};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -278,12 +278,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, Table, TableMessage, TableRow, TableState, Component};
+    /// use envision::component::{Cell, Column, Table, TableMessage, TableRow, TableState, Component};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -302,13 +302,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let state = TableState::new(
@@ -326,12 +326,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let empty: TableState<Item> = TableState::default();
@@ -349,12 +349,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -393,7 +393,7 @@ impl<T: TableRow> TableState<T> {
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -416,13 +416,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -442,13 +442,13 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     /// use ratatui::layout::Constraint;
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -471,12 +471,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -496,12 +496,12 @@ impl<T: TableRow> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState};
+    /// use envision::component::{Cell, Column, TableRow, TableState};
     ///
     /// #[derive(Clone)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(
@@ -536,7 +536,7 @@ impl<T: TableRow> TableState<T> {
                 .filter(|(_, row)| {
                     row.cells()
                         .iter()
-                        .any(|cell| cell.to_lowercase().contains(&filter_lower))
+                        .any(|cell| cell.text().to_lowercase().contains(&filter_lower))
                 })
                 .map(|(i, _)| i)
                 .collect();
@@ -550,8 +550,8 @@ impl<T: TableRow> TableState<T> {
                 let cells_a = self.rows[a].cells();
                 let cells_b = self.rows[b].cells();
                 for &(col, direction) in &sort_spec {
-                    let val_a = cells_a.get(col).map(|s| s.as_str());
-                    let val_b = cells_b.get(col).map(|s| s.as_str());
+                    let val_a = cells_a.get(col).map(|c| c.text());
+                    let val_b = cells_b.get(col).map(|c| c.text());
                     let cmp = match (val_a, val_b) {
                         (Some(a_str), Some(b_str)) => {
                             if let Some(comparator) = columns.get(col).and_then(|c| c.comparator())
@@ -602,12 +602,12 @@ impl<T: TableRow + 'static> TableState<T> {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::{Column, TableRow, TableState, TableMessage, TableOutput};
+    /// use envision::component::{Cell, Column, TableRow, TableState, TableMessage, TableOutput};
     ///
     /// #[derive(Clone, Debug, PartialEq)]
     /// struct Item { name: String }
     /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<String> { vec![self.name.clone()] }
+    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
     /// }
     ///
     /// let mut state = TableState::new(

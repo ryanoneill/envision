@@ -81,8 +81,12 @@ struct UserRow {
 }
 
 impl TableRow for UserRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.name.clone(), self.role.clone(), self.status.clone()]
+    fn cells(&self) -> Vec<Cell> {
+        vec![
+            Cell::new(&self.name),
+            Cell::new(&self.role),
+            Cell::new(&self.status),
+        ]
     }
 }
 

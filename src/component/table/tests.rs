@@ -17,8 +17,9 @@ impl TestRow {
 }
 
 impl TableRow for TestRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.name.clone(), self.value.clone()]
+    fn cells(&self) -> Vec<crate::component::cell::Cell> {
+        use crate::component::cell::Cell;
+        vec![Cell::new(&self.name), Cell::new(&self.value)]
     }
 }
 
@@ -42,7 +43,9 @@ fn test_rows() -> Vec<TestRow> {
 #[test]
 fn test_tablerow_impl() {
     let row = TestRow::new("Test", "123");
-    assert_eq!(row.cells(), vec!["Test", "123"]);
+    let cells = row.cells();
+    let texts: Vec<&str> = cells.iter().map(|c| c.text()).collect();
+    assert_eq!(texts, vec!["Test", "123"]);
 }
 
 #[test]
@@ -51,7 +54,7 @@ fn test_tablerow_empty_cells() {
     struct EmptyRow;
 
     impl TableRow for EmptyRow {
-        fn cells(&self) -> Vec<String> {
+        fn cells(&self) -> Vec<crate::component::cell::Cell> {
             vec![]
         }
     }

@@ -282,6 +282,8 @@ pub use text_area::{TextArea, TextAreaMessage, TextAreaOutput, TextAreaState};
 
 // Data components
 #[cfg(feature = "data-components")]
+pub use cell::{Cell, SortKey};
+#[cfg(feature = "data-components")]
 pub use loading_list::{
     ItemState, LoadingList, LoadingListItem, LoadingListMessage, LoadingListOutput,
     LoadingListState,

@@ -7,10 +7,10 @@ use envision::component::diagram::{
 };
 use envision::component::{DataGrid, DataGridMessage, DataGridState};
 use envision::{
-    Accordion, AccordionMessage, AccordionPanel, AccordionState, CaptureBackend, Column, Component,
-    LoadingList, LoadingListMessage, LoadingListState, SelectableList, SelectableListMessage,
-    SelectableListState, Table, TableMessage, TableRow, TableState, Theme, Tree, TreeMessage,
-    TreeNode, TreeState,
+    Accordion, AccordionMessage, AccordionPanel, AccordionState, CaptureBackend, Cell, Column,
+    Component, LoadingList, LoadingListMessage, LoadingListState, SelectableList,
+    SelectableListMessage, SelectableListState, Table, TableMessage, TableRow, TableState, Theme,
+    Tree, TreeMessage, TreeNode, TreeState,
 };
 use ratatui::Terminal;
 use ratatui::prelude::*;
@@ -27,8 +27,12 @@ struct StressRow {
 }
 
 impl TableRow for StressRow {
-    fn cells(&self) -> Vec<String> {
-        vec![self.id.to_string(), self.name.clone(), self.value.clone()]
+    fn cells(&self) -> Vec<Cell> {
+        vec![
+            Cell::uint(self.id as u64),
+            Cell::new(&self.name),
+            Cell::new(&self.value),
+        ]
     }
 }
 

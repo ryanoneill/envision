@@ -5,6 +5,8 @@ use std::sync::Arc;
 
 use ratatui::layout::Constraint;
 
+use crate::component::cell::{Cell, RowStatus};
+
 /// Trait for types that can be displayed as table rows.
 ///
 /// Implement this trait for your data types to use them with `Table`.
@@ -13,6 +15,7 @@ use ratatui::layout::Constraint;
 ///
 /// ```rust
 /// use envision::component::TableRow;
+/// use envision::component::cell::Cell;
 ///
 /// #[derive(Clone)]
 /// struct Product {
@@ -22,21 +25,28 @@ use ratatui::layout::Constraint;
 /// }
 ///
 /// impl TableRow for Product {
-///     fn cells(&self) -> Vec<String> {
+///     fn cells(&self) -> Vec<Cell> {
 ///         vec![
-///             self.name.clone(),
-///             format!("${:.2}", self.price),
-///             self.quantity.to_string(),
+///             Cell::new(&self.name),
+///             Cell::new(format!("${:.2}", self.price)),
+///             Cell::uint(self.quantity as u64),
 ///         ]
 ///     }
 /// }
 /// ```
 pub trait TableRow: Clone {
-    /// Returns the cell values for this row.
+    /// Returns the cells for this row, one per column.
     ///
-    /// The order of values should match the order of columns
+    /// The order of cells should match the order of columns
     /// defined in the table.
-    fn cells(&self) -> Vec<String>;
+    fn cells(&self) -> Vec<Cell>;
+
+    /// Optional row-level status indicator. Default: `RowStatus::None` —
+    /// no status column rendered. If any row in the table returns non-None,
+    /// the status column is rendered for all rows.
+    fn status(&self) -> RowStatus {
+        RowStatus::None
+    }
 }
 
 /// Column definition for a table.

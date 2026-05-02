@@ -16,8 +16,12 @@ struct Language {
 }
 
 impl TableRow for Language {
-    fn cells(&self) -> Vec<String> {
-        vec![self.name.clone(), self.year.clone(), self.paradigm.clone()]
+    fn cells(&self) -> Vec<Cell> {
+        vec![
+            Cell::new(&self.name),
+            Cell::new(&self.year),
+            Cell::new(&self.paradigm),
+        ]
     }
 }
 
