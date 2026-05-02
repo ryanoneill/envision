@@ -10,7 +10,7 @@
 #![allow(dead_code)] // Placeholder during Phase 1; tasks 2–9 fill this in.
 
 use compact_str::CompactString;
-use ratatui::style::Style;
+use ratatui::style::{Color, Style};
 
 /// A typed sort key carried by a `Cell` for typed comparison.
 ///
@@ -128,6 +128,44 @@ pub enum CellStyle {
     Custom(Style),
 }
 
+/// Optional row-level status indicator. Renders as a colored symbol
+/// in a status column prepended to the table.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub enum RowStatus {
+    /// No status column rendered for this row.
+    #[default]
+    None,
+    /// Green dot (●) — healthy / running / passing.
+    Healthy,
+    /// Yellow triangle (▲) — warning / degraded.
+    Warning,
+    /// Red cross (✖) — error / failed.
+    Error,
+    /// Gray question mark (?) — unknown / pending.
+    Unknown,
+    /// Caller-supplied symbol and color.
+    Custom {
+        /// The character (or short string) to display.
+        symbol: &'static str,
+        /// The color applied to the symbol.
+        color: Color,
+    },
+}
+
+impl RowStatus {
+    /// Returns `Some((symbol, color))` for non-None variants.
+    pub fn indicator(&self) -> Option<(&'static str, Color)> {
+        match self {
+            RowStatus::None => None,
+            RowStatus::Healthy => Some(("●", Color::Green)),
+            RowStatus::Warning => Some(("▲", Color::Yellow)),
+            RowStatus::Error => Some(("✖", Color::Red)),
+            RowStatus::Unknown => Some(("?", Color::DarkGray)),
+            RowStatus::Custom { symbol, color } => Some((symbol, *color)),
+        }
+    }
+}
+
 #[cfg(test)]
 mod sort_key_tests {
     use super::*;
@@ -241,5 +279,45 @@ mod cell_style_tests {
     fn custom_carries_style() {
         let style = Style::default().fg(Color::Red);
         assert_eq!(CellStyle::Custom(style), CellStyle::Custom(style));
+    }
+}
+
+#[cfg(test)]
+mod row_status_tests {
+    use super::*;
+    use ratatui::style::Color;
+
+    #[test]
+    fn none_has_no_indicator() {
+        assert_eq!(RowStatus::None.indicator(), None);
+    }
+
+    #[test]
+    fn healthy_indicator_green_dot() {
+        assert_eq!(RowStatus::Healthy.indicator(), Some(("●", Color::Green)));
+    }
+
+    #[test]
+    fn warning_indicator_yellow_triangle() {
+        assert_eq!(RowStatus::Warning.indicator(), Some(("▲", Color::Yellow)));
+    }
+
+    #[test]
+    fn error_indicator_red_cross() {
+        assert_eq!(RowStatus::Error.indicator(), Some(("✖", Color::Red)));
+    }
+
+    #[test]
+    fn unknown_indicator_gray_question() {
+        assert_eq!(RowStatus::Unknown.indicator(), Some(("?", Color::DarkGray)));
+    }
+
+    #[test]
+    fn custom_indicator_passes_through() {
+        let custom = RowStatus::Custom {
+            symbol: "★",
+            color: Color::Magenta,
+        };
+        assert_eq!(custom.indicator(), Some(("★", Color::Magenta)));
     }
 }
