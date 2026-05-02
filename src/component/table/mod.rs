@@ -59,8 +59,8 @@ mod state;
 mod types;
 
 pub use types::{
-    Column, SortComparator, SortDirection, TableMessage, TableOutput, TableRow, date_comparator,
-    numeric_comparator,
+    Column, InitialSort, SortComparator, SortDirection, TableMessage, TableOutput, TableRow,
+    date_comparator, numeric_comparator,
 };
 
 use std::marker::PhantomData;

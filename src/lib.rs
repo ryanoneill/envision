@@ -200,11 +200,11 @@ pub use component::{
 // Data components
 #[cfg(feature = "data-components")]
 pub use component::{
-    Column, ItemState, LoadingList, LoadingListItem, LoadingListMessage, LoadingListOutput,
-    LoadingListState, SelectableList, SelectableListMessage, SelectableListOutput,
-    SelectableListState, SortComparator, SortDirection, Table, TableMessage, TableOutput, TableRow,
-    TableState, Tree, TreeMessage, TreeNode, TreeOutput, TreeState, date_comparator,
-    numeric_comparator,
+    Column, InitialSort, ItemState, LoadingList, LoadingListItem, LoadingListMessage,
+    LoadingListOutput, LoadingListState, SelectableList, SelectableListMessage,
+    SelectableListOutput, SelectableListState, SortComparator, SortDirection, Table, TableMessage,
+    TableOutput, TableRow, TableState, Tree, TreeMessage, TreeNode, TreeOutput, TreeState,
+    date_comparator, numeric_comparator,
 };
 
 // Display components

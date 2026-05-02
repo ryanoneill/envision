@@ -292,8 +292,8 @@ pub use selectable_list::{
 };
 #[cfg(feature = "data-components")]
 pub use table::{
-    Column, SortComparator, SortDirection, Table, TableMessage, TableOutput, TableRow, TableState,
-    date_comparator, numeric_comparator,
+    Column, InitialSort, SortComparator, SortDirection, Table, TableMessage, TableOutput, TableRow,
+    TableState, date_comparator, numeric_comparator,
 };
 #[cfg(feature = "data-components")]
 pub use tree::{Tree, TreeMessage, TreeNode, TreeOutput, TreeState};

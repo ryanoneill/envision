@@ -533,6 +533,30 @@ impl SortDirection {
     }
 }
 
+/// Pair of (column index, direction) for declarative initial sort.
+///
+/// Used with `TableState::with_initial_sorts` to bootstrap the table
+/// into a sorted state on frame 1.
+///
+/// # Example
+///
+/// ```
+/// use envision::component::{InitialSort, SortDirection};
+/// let s = InitialSort { column: 4, direction: SortDirection::Descending };
+/// assert_eq!(s.column, 4);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+pub struct InitialSort {
+    /// Index of the column to sort by.
+    pub column: usize,
+    /// Sort direction to apply.
+    pub direction: SortDirection,
+}
+
 /// Messages that can be sent to a Table component.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TableMessage {
