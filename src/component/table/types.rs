@@ -394,6 +394,25 @@ impl Column {
     }
 
     /// Returns the column's natural sort direction.
+    ///
+    /// Defaults to [`SortDirection::Ascending`] for newly constructed
+    /// columns; override with [`Column::with_default_sort`] when a column
+    /// reads more naturally in descending order (timestamps, percentages,
+    /// load counters, etc.).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use envision::component::{Column, SortDirection};
+    /// use ratatui::layout::Constraint;
+    ///
+    /// let asc = Column::new("name", Constraint::Length(10));
+    /// assert_eq!(asc.default_sort(), SortDirection::Ascending);
+    ///
+    /// let desc = Column::new("age", Constraint::Length(8))
+    ///     .with_default_sort(SortDirection::Descending);
+    /// assert_eq!(desc.default_sort(), SortDirection::Descending);
+    /// ```
     pub fn default_sort(&self) -> SortDirection {
         self.default_sort
     }
