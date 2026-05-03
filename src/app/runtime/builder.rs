@@ -978,4 +978,37 @@ mod tests {
             .unwrap();
         assert_eq!(runtime.state().source, "from args");
     }
+
+    // =========================================================================
+    // Test category #6 — Builder-method preservation across with_args
+    //
+    // Pins the carry-over guarantee: tick_rate / config / etc. set before
+    // with_args are preserved after promotion to ConfiguredRuntimeBuilder.
+    // Catches future implementer sloppiness where a refactor of with_args
+    // accidentally drops a config field.
+    // =========================================================================
+
+    #[test]
+    fn test_tick_rate_preserved_across_with_args() {
+        let custom_tick = Duration::from_millis(123);
+        let runtime = Runtime::<TestApp, _>::virtual_builder(80, 24)
+            .tick_rate(custom_tick) // before with_args
+            .with_args(()) // promotes to ConfiguredRuntimeBuilder
+            .build()
+            .unwrap();
+
+        assert_eq!(runtime.config().tick_rate, custom_tick);
+    }
+
+    #[test]
+    fn test_tick_rate_set_after_with_args_is_preserved() {
+        let custom_tick = Duration::from_millis(456);
+        let runtime = Runtime::<TestApp, _>::virtual_builder(80, 24)
+            .with_args(())
+            .tick_rate(custom_tick) // after with_args — uses ConfiguredRuntimeBuilder method
+            .build()
+            .unwrap();
+
+        assert_eq!(runtime.config().tick_rate, custom_tick);
+    }
 }

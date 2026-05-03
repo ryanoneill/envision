@@ -240,6 +240,16 @@ impl<A: App, B: Backend> Runtime<A, B> {
         Ok(runtime)
     }
 
+    /// Returns a reference to the runtime configuration.
+    ///
+    /// Test-only accessor used by builder tests to verify that config-shaping
+    /// methods (e.g. `tick_rate`, `frame_rate`) survive promotion through
+    /// [`with_args`](crate::app::runtime::RuntimeBuilder::with_args).
+    #[cfg(test)]
+    pub(crate) fn config(&self) -> &RuntimeConfig {
+        &self.config
+    }
+
     /// Returns a reference to the current state.
     ///
     /// # Example
