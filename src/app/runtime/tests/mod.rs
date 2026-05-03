@@ -644,6 +644,77 @@ fn test_run_terminal_blocking_exists() {
 }
 
 // =========================================================================
+// Custom Args shapes — Test category #3 from the spec
+// =========================================================================
+
+#[cfg(test)]
+mod custom_args_shapes {
+    use super::*;
+    use std::path::PathBuf;
+    use std::sync::{Arc, Mutex};
+
+    // Args with PathBuf, Arc<Mutex>, and Vec<u8>.
+    struct CustomArgsApp;
+    #[derive(Clone, Default)]
+    struct CustomState {
+        path: PathBuf,
+        counter: Arc<Mutex<u32>>,
+        buf_len: usize,
+    }
+    #[derive(Clone)]
+    enum CustomMsg {}
+
+    struct CustomArgs {
+        path: PathBuf,
+        counter: Arc<Mutex<u32>>,
+        buf: Vec<u8>,
+    }
+
+    impl App for CustomArgsApp {
+        type State = CustomState;
+        type Message = CustomMsg;
+        type Args = CustomArgs;
+
+        fn init(args: CustomArgs) -> (Self::State, Command<Self::Message>) {
+            (
+                CustomState {
+                    path: args.path,
+                    counter: args.counter,
+                    buf_len: args.buf.len(),
+                },
+                Command::none(),
+            )
+        }
+
+        fn update(_: &mut Self::State, _: Self::Message) -> Command<Self::Message> {
+            Command::none()
+        }
+
+        fn view(_: &Self::State, _: &mut ratatui::Frame) {}
+    }
+
+    #[test]
+    fn test_custom_args_shapes_move_correctly() {
+        let counter = Arc::new(Mutex::new(0_u32));
+        let args = CustomArgs {
+            path: PathBuf::from("/tmp/fixture"),
+            counter: counter.clone(),
+            buf: vec![1, 2, 3, 4, 5],
+        };
+
+        let runtime = Runtime::<CustomArgsApp, _>::virtual_builder(80, 24)
+            .with_args(args)
+            .build()
+            .unwrap();
+
+        assert_eq!(runtime.state().path, PathBuf::from("/tmp/fixture"));
+        assert_eq!(runtime.state().buf_len, 5);
+        // Arc semantics survived the move
+        assert_eq!(Arc::strong_count(&runtime.state().counter), 2);
+    }
+}
+
+// =========================================================================
 // Overlay Tests
 // =========================================================================
 
