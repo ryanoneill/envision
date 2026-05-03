@@ -312,4 +312,41 @@ mod render_context_tests {
             })
             .unwrap();
     }
+
+    #[test]
+    fn test_render_context_chrome_owned_defaults_false() {
+        let (mut terminal, theme) = setup_render(60, 5);
+        terminal
+            .draw(|frame| {
+                let ctx = RenderContext::new(frame, frame.area(), &theme);
+                assert!(!ctx.chrome_owned, "chrome_owned should default to false");
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn test_render_context_chrome_owned_builder_sets_field() {
+        let (mut terminal, theme) = setup_render(60, 5);
+        terminal
+            .draw(|frame| {
+                let ctx = RenderContext::new(frame, frame.area(), &theme).chrome_owned(true);
+                assert!(ctx.chrome_owned);
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn test_render_context_with_area_propagates_chrome_owned() {
+        let (mut terminal, theme) = setup_render(60, 5);
+        terminal
+            .draw(|frame| {
+                let mut ctx = RenderContext::new(frame, frame.area(), &theme).chrome_owned(true);
+                let inner = ctx.with_area(ratatui::prelude::Rect::new(1, 1, 10, 3));
+                assert!(
+                    inner.chrome_owned,
+                    "with_area should propagate chrome_owned"
+                );
+            })
+            .unwrap();
+    }
 }
