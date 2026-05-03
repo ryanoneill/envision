@@ -722,3 +722,196 @@ fn test_annotation_emission() {
     assert!(regions[0].annotation.focused);
     assert!(!regions[0].annotation.disabled);
 }
+
+// ========== view_with Tests ==========
+
+#[test]
+fn test_view_with_invokes_render_child_per_pane_in_order() {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    let (mut terminal, theme) = setup_render(80, 24);
+    let panes = vec![
+        PaneConfig::new("left").with_proportion(0.5),
+        PaneConfig::new("right").with_proportion(0.5),
+    ];
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+    let calls: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
+    let calls_inner = calls.clone();
+
+    terminal
+        .draw(|frame| {
+            let area = frame.area();
+            PaneLayout::view_with(
+                &state,
+                &mut RenderContext::new(frame, area, &theme),
+                |pane_id, _child_ctx| {
+                    calls_inner.borrow_mut().push(pane_id.to_string());
+                },
+            );
+        })
+        .unwrap();
+
+    let calls = calls.borrow();
+    assert_eq!(*calls, vec!["left".to_string(), "right".to_string()]);
+}
+
+#[test]
+fn test_view_with_passes_inner_rect_inset_for_chrome() {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    let (mut terminal, theme) = setup_render(80, 24);
+    let panes = vec![PaneConfig::new("only").with_proportion(1.0)];
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+    let inner_rects: Rc<RefCell<Vec<Rect>>> = Rc::new(RefCell::new(Vec::new()));
+    let inner_inner = inner_rects.clone();
+
+    terminal
+        .draw(|frame| {
+            let area = frame.area();
+            PaneLayout::view_with(
+                &state,
+                &mut RenderContext::new(frame, area, &theme),
+                |_pane_id, child_ctx| {
+                    inner_inner.borrow_mut().push(child_ctx.area);
+                },
+            );
+        })
+        .unwrap();
+
+    let inner_rects = inner_rects.borrow();
+    assert_eq!(inner_rects.len(), 1);
+    let inner = inner_rects[0];
+    // Inner should be inset by the chrome (Borders::ALL = 1 cell margin
+    // on each side).
+    assert_eq!(inner.x, 1);
+    assert_eq!(inner.y, 1);
+    assert_eq!(inner.width, 78);
+    assert_eq!(inner.height, 22);
+}
+
+#[test]
+fn test_view_with_sets_chrome_owned_true_on_child_ctx() {
+    use std::cell::Cell;
+    use std::rc::Rc;
+
+    let (mut terminal, theme) = setup_render(80, 24);
+    let panes = vec![PaneConfig::new("only").with_proportion(1.0)];
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+    let chrome_owned: Rc<Cell<bool>> = Rc::new(Cell::new(false));
+    let chrome_inner = chrome_owned.clone();
+
+    terminal
+        .draw(|frame| {
+            let area = frame.area();
+            PaneLayout::view_with(
+                &state,
+                &mut RenderContext::new(frame, area, &theme),
+                |_pane_id, child_ctx| {
+                    chrome_inner.set(child_ctx.chrome_owned);
+                },
+            );
+        })
+        .unwrap();
+
+    assert!(
+        chrome_owned.get(),
+        "child_ctx should have chrome_owned == true"
+    );
+}
+
+#[test]
+fn test_view_with_focus_propagates_to_focused_pane_only() {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    let (mut terminal, theme) = setup_render(80, 24);
+    let panes = vec![
+        PaneConfig::new("a").with_proportion(0.5),
+        PaneConfig::new("b").with_proportion(0.5),
+    ];
+    let mut state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+    state.focused_pane = 1; // focus the second pane
+    let observed: Rc<RefCell<Vec<(String, bool)>>> = Rc::new(RefCell::new(Vec::new()));
+    let inner = observed.clone();
+
+    terminal
+        .draw(|frame| {
+            let area = frame.area();
+            let mut parent_ctx = RenderContext::new(frame, area, &theme).focused(true);
+            PaneLayout::view_with(&state, &mut parent_ctx, |pane_id, child_ctx| {
+                inner
+                    .borrow_mut()
+                    .push((pane_id.to_string(), child_ctx.focused));
+            });
+        })
+        .unwrap();
+
+    let observed = observed.borrow();
+    assert_eq!(observed.len(), 2);
+    assert_eq!(observed[0], ("a".to_string(), false));
+    assert_eq!(observed[1], ("b".to_string(), true));
+}
+
+#[test]
+fn test_view_with_disabled_propagates_to_all_children() {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    let (mut terminal, theme) = setup_render(80, 24);
+    let panes = vec![
+        PaneConfig::new("a").with_proportion(0.5),
+        PaneConfig::new("b").with_proportion(0.5),
+    ];
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+    let observed: Rc<RefCell<Vec<bool>>> = Rc::new(RefCell::new(Vec::new()));
+    let inner = observed.clone();
+
+    terminal
+        .draw(|frame| {
+            let area = frame.area();
+            let mut parent_ctx = RenderContext::new(frame, area, &theme).disabled(true);
+            PaneLayout::view_with(&state, &mut parent_ctx, |_pane_id, child_ctx| {
+                inner.borrow_mut().push(child_ctx.disabled);
+            });
+        })
+        .unwrap();
+
+    let observed = observed.borrow();
+    assert_eq!(observed.len(), 2);
+    assert!(
+        observed.iter().all(|&d| d),
+        "all children should inherit disabled=true"
+    );
+}
+
+#[test]
+fn test_view_with_degenerate_closure_renders_chrome_only() {
+    let (mut terminal, theme) = setup_render(80, 24);
+    let panes = vec![
+        PaneConfig::new("left")
+            .with_title("Left")
+            .with_proportion(0.5),
+        PaneConfig::new("right")
+            .with_title("Right")
+            .with_proportion(0.5),
+    ];
+    let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+
+    terminal
+        .draw(|frame| {
+            let area = frame.area();
+            PaneLayout::view_with(
+                &state,
+                &mut RenderContext::new(frame, area, &theme),
+                |_pane_id, _child_ctx| {
+                    // degenerate: render no children
+                },
+            );
+        })
+        .unwrap();
+
+    let display = terminal.backend().to_string();
+    insta::assert_snapshot!("view_with_degenerate_closure_chrome_only", display);
+}
