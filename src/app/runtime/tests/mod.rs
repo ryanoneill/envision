@@ -644,6 +644,58 @@ fn test_run_terminal_blocking_exists() {
 }
 
 // =========================================================================
+// Multi-Runtime parallelism — Test category #4 from the spec
+// =========================================================================
+
+#[test]
+fn test_multiple_runtimes_with_distinct_args_in_one_test() {
+    use std::path::PathBuf;
+
+    struct MultiApp;
+    #[derive(Clone, Default)]
+    struct MultiState {
+        dir: PathBuf,
+    }
+    #[derive(Clone)]
+    enum MultiMsg {}
+
+    #[derive(Clone)]
+    struct MultiArgs {
+        dir: PathBuf,
+    }
+
+    impl App for MultiApp {
+        type State = MultiState;
+        type Message = MultiMsg;
+        type Args = MultiArgs;
+        fn init(args: MultiArgs) -> (Self::State, Command<Self::Message>) {
+            (MultiState { dir: args.dir }, Command::none())
+        }
+        fn update(_: &mut Self::State, _: Self::Message) -> Command<Self::Message> {
+            Command::none()
+        }
+        fn view(_: &Self::State, _: &mut ratatui::Frame) {}
+    }
+
+    let runtime_a = Runtime::<MultiApp, _>::virtual_builder(80, 24)
+        .with_args(MultiArgs {
+            dir: PathBuf::from("/fixture/a"),
+        })
+        .build()
+        .unwrap();
+
+    let runtime_b = Runtime::<MultiApp, _>::virtual_builder(80, 24)
+        .with_args(MultiArgs {
+            dir: PathBuf::from("/fixture/b"),
+        })
+        .build()
+        .unwrap();
+
+    assert_eq!(runtime_a.state().dir, PathBuf::from("/fixture/a"));
+    assert_eq!(runtime_b.state().dir, PathBuf::from("/fixture/b"));
+}
+
+// =========================================================================
 // Custom Args shapes — Test category #3 from the spec
 // =========================================================================
 
