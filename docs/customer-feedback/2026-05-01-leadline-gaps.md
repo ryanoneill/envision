@@ -26,13 +26,20 @@ Spec PR #463, plan PR #464, implementation PR #465 (`82a9a41`).
 
 ### High-leverage follow-ups (leadline's stated priorities)
 
-- **D2** `PaneLayout` consumer flow has magic-number coupling — `state.layout` → `PaneLayout::view` → `rect.inner(Margin{1,1})`. Hardcoded `Margin{1,1}` knowledge breaks silently if envision changes border thickness. Want `PaneLayout::view_with(state, ctx, |pane_id, child_ctx| ...)` — envision computes inner rects.
 - **D5** No "render styled Line into Rect" primitive — six types and three method calls to draw a single styled line. Want `envision::render::line(frame, area, line, theme)` or a tiny `StyledLine` component.
 - **D7** View-snapshot testing is undocumented — `AppHarness`/`TestHarness` exist but no docs explaining when to reach for them. Want documented "render at W×H, dispatch event sequence, snapshot cell buffer" pattern.
 
+### Resolved 2026-05-02 — Chrome ownership protocol
+
+Spec PR #467, plan PR #468, implementation PR #469 (`aaaefa1`).
+
+- **G2** ✅ Table inner border inside chrome host — shipped via `RenderContext::chrome_owned` propagation; Table consults the flag and skips its outer Block when embedded.
+- **D2** ✅ `PaneLayout::view_with(state, ctx, |pane_id, child_ctx| ...)` — closure-based renderer; envision owns inner-rect computation; `Margin{1,1}` knowledge deleted from consumer code.
+- **D11** ✅ `StyledText::with_show_border(false)` workaround unnecessary in embedded mode — chrome_owned propagation suppresses the border automatically. The standalone-no-border opt-out via `with_show_border(false)` stays.
+- **Bonus uniform audit**: 35 chrome-drawing components (LogViewer, ScrollView, ScrollableText, MarkdownRenderer, ConversationView, DataGrid, MetricsDashboard absent — only per-cell, KeyHints absent — Paragraph only, etc.) all consult `chrome_owned`. Future consumers embedding any of them get correct behavior without further envision changes.
+
 ### Other follow-ups (pre-existing gaps)
 
-- **G2 / D11** Table inner border style + chrome ownership — `Table` renders square borders inside a rounded outer `Block`, no way to suppress inner chrome. Want `BorderType` hint on `Table`, or a `chrome_owned: true` flag on `RenderContext` so children skip their own chrome.
 - **G4** `PaneLayout` per-pane title style — title inherits border style; no `PaneConfig::with_title_style(Style)` or pre-styled `Vec<Span>` form.
 - **G5** `StatusBarItem::with_style(StatusBarStyle)` enum is closed — no per-item arbitrary `Color` or full `Style` override. Want `with_color(Color)` and `with_style_override(Style)`.
 - **G6** `StyledInline` cannot combine color + modifier — leaf variants only (`Bold`, `Italic`, `Colored{..}`). Want a single composable `Styled { text, style: InlineStyle }` variant with the leaf forms as constructors.
@@ -55,11 +62,11 @@ This is a sketch — treat as draft until reviewed.
 1. ~~**Current brainstorm PR**: G1 + G3 + D4 + G7 (Table/Sort/Cell unification, ResourceTable merger, sort vocabulary redesign).~~ ✅ shipped 2026-05-02 via PR #461
 2. **High-leverage batch — separate PRs each**:
    - ~~D1 (`App::init` args + `Runtime` builder)~~ ✅ shipped 2026-05-02 via PR #465
-   - D2 (`PaneLayout::view_with` closure flow)
+   - ~~D2 (`PaneLayout::view_with` closure flow)~~ ✅ shipped 2026-05-02 via PR #469
    - D5 (styled-line primitive)
    - D7 (snapshot testing docs/example)
 3. **Component polish batch**:
-   - G2 + D11 (Table chrome / border type hint / chrome_owned flag)
+   - ~~G2 + D11 (Table chrome / border type hint / chrome_owned flag)~~ ✅ shipped 2026-05-02 via PR #469 (combined with D2)
    - G4 (PaneLayout per-pane title style)
    - G5 (StatusBarItem per-item color)
    - G6 (StyledInline composable styles)
