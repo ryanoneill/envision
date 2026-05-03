@@ -465,6 +465,20 @@ impl Theme {
     /// - Warning: Yellow (#B58900)
     /// - Error: Red (#DC322F)
     ///
+    /// # Palette mapping
+    ///
+    /// Solarized's accent palette (yellow/orange/red/magenta/blue/cyan/green) maps
+    /// to Catppuccin names as follows. Solarized has no native pink — magenta is
+    /// the closest pinkish hue.
+    ///
+    /// - `Pink` / `Rosewater` / `Flamingo` / `Mauve` / `Lavender` → Magenta
+    /// - `Red` / `Maroon` → Red
+    /// - `Peach` → Orange
+    /// - `Sky` / `Teal` → Cyan
+    /// - `Sapphire` / `Blue` → Blue
+    /// - Text/Overlay → Base1 / Base0 / Base01
+    /// - Surface / Base → Base02 / Base03
+    ///
     /// # Example
     ///
     /// ```rust
@@ -493,8 +507,34 @@ impl Theme {
             progress_filled: SOLARIZED_BLUE,
             progress_empty: SOLARIZED_BASE02,
 
-            // Placeholder palette — replaced with Solarized-specific mappings in Task 8.
-            palette: Theme::catppuccin_mocha().palette,
+            palette: Palette {
+                rosewater: SOLARIZED_MAGENTA,
+                flamingo:  SOLARIZED_MAGENTA,
+                pink:      SOLARIZED_MAGENTA,
+                mauve:     SOLARIZED_MAGENTA,
+                red:       SOLARIZED_RED,
+                maroon:    SOLARIZED_RED,
+                peach:     SOLARIZED_ORANGE,
+                yellow:    SOLARIZED_YELLOW,
+                green:     SOLARIZED_GREEN,
+                teal:      SOLARIZED_CYAN,
+                sky:       SOLARIZED_CYAN,
+                sapphire:  SOLARIZED_BLUE,
+                blue:      SOLARIZED_BLUE,
+                lavender:  SOLARIZED_MAGENTA,
+                text:      SOLARIZED_BASE1,
+                subtext1:  SOLARIZED_BASE0,
+                subtext0:  SOLARIZED_BASE01,
+                overlay2:  SOLARIZED_BASE01,
+                overlay1:  SOLARIZED_BASE01,
+                overlay0:  SOLARIZED_BASE01,
+                surface2:  SOLARIZED_BASE02,
+                surface1:  SOLARIZED_BASE02,
+                surface0:  SOLARIZED_BASE02,
+                base:      SOLARIZED_BASE03,
+                mantle:    SOLARIZED_BASE03,
+                crust:     SOLARIZED_BASE03,
+            },
         }
     }
 

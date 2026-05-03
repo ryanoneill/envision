@@ -579,3 +579,43 @@ fn test_dracula_palette_pinned() {
     assert_eq!(p.mantle, DRACULA_BG);
     assert_eq!(p.crust, DRACULA_BG);
 }
+
+#[test]
+fn test_solarized_dark_palette_pinned() {
+    let theme = Theme::solarized_dark();
+    let p = &theme.palette;
+
+    // Solarized has yellow/orange/red/magenta/violet/blue/cyan/green plus base shades.
+    assert_eq!(p.red, SOLARIZED_RED);
+    assert_eq!(p.maroon, SOLARIZED_RED);
+    assert_eq!(p.peach, SOLARIZED_ORANGE);
+    assert_eq!(p.yellow, SOLARIZED_YELLOW);
+    assert_eq!(p.green, SOLARIZED_GREEN);
+    assert_eq!(p.teal, SOLARIZED_CYAN);
+
+    // Pinks: no native pink; magenta is closest pink-ish hue.
+    assert_eq!(p.pink, SOLARIZED_MAGENTA);
+    assert_eq!(p.rosewater, SOLARIZED_MAGENTA);
+    assert_eq!(p.flamingo, SOLARIZED_MAGENTA);
+    assert_eq!(p.mauve, SOLARIZED_MAGENTA);
+    assert_eq!(p.lavender, SOLARIZED_MAGENTA);  // No violet const exported; magenta closest
+
+    // Cool blues.
+    assert_eq!(p.sky, SOLARIZED_CYAN);
+    assert_eq!(p.sapphire, SOLARIZED_BLUE);
+    assert_eq!(p.blue, SOLARIZED_BLUE);
+
+    // Text/overlay/surface tones.
+    assert_eq!(p.text, SOLARIZED_BASE1);
+    assert_eq!(p.subtext1, SOLARIZED_BASE0);
+    assert_eq!(p.subtext0, SOLARIZED_BASE01);
+    assert_eq!(p.overlay2, SOLARIZED_BASE01);
+    assert_eq!(p.overlay1, SOLARIZED_BASE01);
+    assert_eq!(p.overlay0, SOLARIZED_BASE01);
+    assert_eq!(p.surface2, SOLARIZED_BASE02);
+    assert_eq!(p.surface1, SOLARIZED_BASE02);
+    assert_eq!(p.surface0, SOLARIZED_BASE02);
+    assert_eq!(p.base, SOLARIZED_BASE03);
+    assert_eq!(p.mantle, SOLARIZED_BASE03);
+    assert_eq!(p.crust, SOLARIZED_BASE03);
+}
