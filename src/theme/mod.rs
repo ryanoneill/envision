@@ -246,6 +246,27 @@ impl Default for Theme {
     /// - DarkGray for disabled/placeholder elements
     /// - Cyan for primary/info
     /// - Standard Green/Yellow/Red for success/warning/error
+    ///
+    /// # Palette collapse note
+    ///
+    /// The `Default` theme uses ratatui's basic `Color` enum (Reset, Yellow, Red,
+    /// Cyan, etc.) for maximum terminal compatibility. Many [`NamedColor`] variants
+    /// collapse to the same basic `Color`:
+    ///
+    /// - `Peach` / `Yellow` → `Color::Yellow`
+    /// - `Pink` / `Mauve` / `Lavender` → `Color::Magenta`
+    /// - `Red` / `Maroon` / `Flamingo` / `Rosewater` → `Color::Red`
+    /// - `Green` / `Teal` → `Color::Green`
+    /// - `Sky` / `Sapphire` → `Color::Cyan`; `Blue` → `Color::Blue`
+    /// - Text tones → `Color::White` / `Color::Gray`; overlay/surface → `Color::DarkGray` / `Color::Black`
+    ///
+    /// Notably this affects `Theme::severity_color`: on `Default`, `Mild`
+    /// (`Yellow`) and `Bad` (`Peach`) both render as `Color::Yellow`. The
+    /// four-band gradient effectively becomes three-band on the `Default` theme.
+    /// `Theme::severity_style` still adds `BOLD` for `Critical`, so the
+    /// strongest band stays distinguishable. Consumers wanting full palette
+    /// fidelity should use [`Theme::catppuccin_mocha`] or another full-palette
+    /// theme.
     fn default() -> Self {
         Self {
             background: Color::Reset,
@@ -266,8 +287,34 @@ impl Default for Theme {
             progress_filled: Color::Cyan,
             progress_empty: Color::Black,
 
-            // Placeholder palette — replaced with Default-specific mappings in Task 10.
-            palette: Theme::catppuccin_mocha().palette,
+            palette: Palette {
+                rosewater: Color::Red,
+                flamingo:  Color::Red,
+                pink:      Color::Magenta,
+                mauve:     Color::Magenta,
+                red:       Color::Red,
+                maroon:    Color::Red,
+                peach:     Color::Yellow,
+                yellow:    Color::Yellow,
+                green:     Color::Green,
+                teal:      Color::Green,
+                sky:       Color::Cyan,
+                sapphire:  Color::Cyan,
+                blue:      Color::Blue,
+                lavender:  Color::Magenta,
+                text:      Color::White,
+                subtext1:  Color::Gray,
+                subtext0:  Color::Gray,
+                overlay2:  Color::DarkGray,
+                overlay1:  Color::DarkGray,
+                overlay0:  Color::DarkGray,
+                surface2:  Color::DarkGray,
+                surface1:  Color::Black,
+                surface0:  Color::Black,
+                base:      Color::Reset,
+                mantle:    Color::Reset,
+                crust:     Color::Black,
+            },
         }
     }
 }

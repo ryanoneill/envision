@@ -661,3 +661,46 @@ fn test_gruvbox_dark_palette_pinned() {
     assert_eq!(p.mantle, GRUVBOX_BG);
     assert_eq!(p.crust, GRUVBOX_BG);
 }
+
+#[test]
+fn test_default_palette_pinned() {
+    let theme = Theme::default();
+    let p = &theme.palette;
+
+    // The Default theme uses ratatui's basic Color enum for max terminal compat.
+    // Many NamedColor variants intentionally collapse to the same basic Color.
+    assert_eq!(p.red, Color::Red);
+    assert_eq!(p.maroon, Color::Red);
+    assert_eq!(p.flamingo, Color::Red);
+    assert_eq!(p.rosewater, Color::Red);
+
+    assert_eq!(p.peach, Color::Yellow);
+    assert_eq!(p.yellow, Color::Yellow);
+
+    assert_eq!(p.green, Color::Green);
+    assert_eq!(p.teal, Color::Green);
+
+    assert_eq!(p.sky, Color::Cyan);
+    assert_eq!(p.sapphire, Color::Cyan);
+    assert_eq!(p.blue, Color::Blue);
+
+    assert_eq!(p.pink, Color::Magenta);
+    assert_eq!(p.mauve, Color::Magenta);
+    assert_eq!(p.lavender, Color::Magenta);
+
+    // Text + overlay tones.
+    assert_eq!(p.text, Color::White);
+    assert_eq!(p.subtext1, Color::Gray);
+    assert_eq!(p.subtext0, Color::Gray);
+    assert_eq!(p.overlay2, Color::DarkGray);
+    assert_eq!(p.overlay1, Color::DarkGray);
+    assert_eq!(p.overlay0, Color::DarkGray);
+
+    // Surface/base tones.
+    assert_eq!(p.surface2, Color::DarkGray);
+    assert_eq!(p.surface1, Color::Black);
+    assert_eq!(p.surface0, Color::Black);
+    assert_eq!(p.base, Color::Reset);
+    assert_eq!(p.mantle, Color::Reset);
+    assert_eq!(p.crust, Color::Black);
+}
