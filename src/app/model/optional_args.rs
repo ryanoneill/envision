@@ -20,6 +20,16 @@ mod sealed {
 /// Sealed: consumers cannot extend it. Only `()` implements `OptionalArgs`.
 /// Any consumer who wants the no-`with_args` shortcut on `RuntimeBuilder::build()`
 /// must declare `type Args = ();` on their `App` impl.
+///
+/// # Sealed invariant
+///
+/// Only `()` implements `OptionalArgs`. Custom types cannot opt in:
+///
+/// ```compile_fail
+/// use envision::OptionalArgs;
+/// struct MyArgs;
+/// impl OptionalArgs for MyArgs {}  // Compile error: trait `Sealed` is private
+/// ```
 pub trait OptionalArgs: sealed::Sealed {}
 
 impl OptionalArgs for () {}
@@ -32,10 +42,5 @@ mod tests {
     fn unit_implements_optional_args() {
         fn assert_impl<T: OptionalArgs>() {}
         assert_impl::<()>();
-    }
-
-    #[test]
-    fn unit_default_args_is_unit() {
-        let _: () = sealed::Sealed::default_optional_args();
     }
 }
