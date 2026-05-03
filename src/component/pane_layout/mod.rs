@@ -37,7 +37,6 @@
 //! ```
 
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders};
 
 use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, Key};
@@ -954,39 +953,21 @@ impl Component for PaneLayout {
         }
     }
 
+    /// Renders pane chrome only — borders, titles, focus rings — without
+    /// rendering any children inside the panes.
+    ///
+    /// This is the path framework code (FocusManager, AppHarness, registry)
+    /// uses when it dispatches via the [`Component`] trait. For embedded
+    /// children, consumers should call [`PaneLayout::view_with`] directly,
+    /// not the trait method, since the trait API has no slot for a child
+    /// render closure.
+    ///
+    /// If you write code generic over `Component` or use `dyn Component`
+    /// abstractions, expect this method to render only chrome — children
+    /// will not appear unless you explicitly call `view_with` from the
+    /// concrete type.
     fn view(state: &Self::State, ctx: &mut RenderContext<'_, '_>) {
-        crate::annotation::with_registry(|reg| {
-            reg.register(
-                ctx.area,
-                crate::annotation::Annotation::new(crate::annotation::WidgetType::PaneLayout)
-                    .with_id("pane_layout")
-                    .with_focus(ctx.focused)
-                    .with_disabled(ctx.disabled),
-            );
-        });
-
-        let rects = state.layout(ctx.area);
-
-        for (i, (pane, rect)) in state.panes.iter().zip(rects.iter()).enumerate() {
-            let is_focused_pane = ctx.focused && i == state.focused_pane;
-            let border_style = if ctx.disabled {
-                ctx.theme.disabled_style()
-            } else if is_focused_pane {
-                ctx.theme.focused_border_style()
-            } else {
-                ctx.theme.border_style()
-            };
-
-            let mut block = Block::default()
-                .borders(Borders::ALL)
-                .border_style(border_style);
-
-            if let Some(title) = &pane.title {
-                block = block.title(format!(" {} ", title));
-            }
-
-            ctx.frame.render_widget(block, *rect);
-        }
+        view_with::render_chrome_only(state, ctx);
     }
 }
 
