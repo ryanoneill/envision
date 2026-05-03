@@ -69,6 +69,9 @@ use ratatui::Frame;
 use super::command::Command;
 use crate::input::Event;
 
+mod optional_args;
+pub use optional_args::OptionalArgs;
+
 /// The core trait for TEA-style applications.
 ///
 /// This trait defines the structure of an application following

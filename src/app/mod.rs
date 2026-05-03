@@ -111,7 +111,7 @@ mod update;
 pub mod worker;
 
 pub use command::{BoxedError, Command, CommandHandler};
-pub use model::App;
+pub use model::{App, OptionalArgs};
 #[cfg(feature = "serialization")]
 pub use persistence::load_state;
 pub use runtime::terminal::restore_terminal;
