@@ -663,6 +663,33 @@ fn test_gruvbox_dark_palette_pinned() {
 }
 
 #[test]
+fn test_namedcolor_lookup_returns_palette_entry() {
+    // theme.color(N) must return the same value as theme.palette.<field for N>.
+    let theme = Theme::catppuccin_mocha();
+    assert_eq!(theme.color(NamedColor::Lavender), theme.palette.lavender);
+    assert_eq!(theme.color(NamedColor::Peach),    theme.palette.peach);
+    assert_eq!(theme.color(NamedColor::Crust),    theme.palette.crust);
+    assert_eq!(theme.color(NamedColor::Rosewater), theme.palette.rosewater);
+    assert_eq!(theme.color(NamedColor::Teal),     theme.palette.teal);
+
+    // Same round-trip for a non-Catppuccin theme.
+    let nord = Theme::nord();
+    assert_eq!(nord.color(NamedColor::Lavender), nord.palette.lavender);
+    assert_eq!(nord.color(NamedColor::Peach),    nord.palette.peach);
+}
+
+#[test]
+fn test_namedcolor_distinct_per_theme() {
+    // On Catppuccin Mocha, palette accents must be distinct.
+    let theme = Theme::catppuccin_mocha();
+    assert_ne!(theme.color(NamedColor::Peach), theme.color(NamedColor::Yellow));
+    assert_ne!(theme.color(NamedColor::Red),   theme.color(NamedColor::Maroon));
+    assert_ne!(theme.color(NamedColor::Blue),  theme.color(NamedColor::Sapphire));
+    assert_ne!(theme.color(NamedColor::Pink),  theme.color(NamedColor::Mauve));
+    assert_ne!(theme.color(NamedColor::Green), theme.color(NamedColor::Teal));
+}
+
+#[test]
 fn test_default_palette_pinned() {
     let theme = Theme::default();
     let p = &theme.palette;

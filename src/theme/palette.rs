@@ -285,3 +285,57 @@ pub struct Palette {
     /// Color for [`NamedColor::Crust`].
     pub crust: Color,
 }
+
+// =============================================================================
+// Theme accessors (color, severity_color, severity_style)
+// =============================================================================
+
+impl Theme {
+    /// Returns the theme's color for a [`NamedColor`] palette name.
+    ///
+    /// This is the recommended way to access named palette colors that aren't
+    /// covered by a semantic slot (`focused`, `success`, etc.). Always returns
+    /// a sensible color for every variant; non-Catppuccin themes use
+    /// nearest-equivalent mappings documented per theme.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::theme::{NamedColor, Theme};
+    ///
+    /// let theme = Theme::catppuccin_mocha();
+    /// let lavender = theme.color(NamedColor::Lavender);
+    /// // Use in a Cell, Span, or Style.
+    /// # let _ = lavender;
+    /// ```
+    pub fn color(&self, named: NamedColor) -> Color {
+        match named {
+            NamedColor::Rosewater => self.palette.rosewater,
+            NamedColor::Flamingo  => self.palette.flamingo,
+            NamedColor::Pink      => self.palette.pink,
+            NamedColor::Mauve     => self.palette.mauve,
+            NamedColor::Red       => self.palette.red,
+            NamedColor::Maroon    => self.palette.maroon,
+            NamedColor::Peach     => self.palette.peach,
+            NamedColor::Yellow    => self.palette.yellow,
+            NamedColor::Green     => self.palette.green,
+            NamedColor::Teal      => self.palette.teal,
+            NamedColor::Sky       => self.palette.sky,
+            NamedColor::Sapphire  => self.palette.sapphire,
+            NamedColor::Blue      => self.palette.blue,
+            NamedColor::Lavender  => self.palette.lavender,
+            NamedColor::Text      => self.palette.text,
+            NamedColor::Subtext1  => self.palette.subtext1,
+            NamedColor::Subtext0  => self.palette.subtext0,
+            NamedColor::Overlay2  => self.palette.overlay2,
+            NamedColor::Overlay1  => self.palette.overlay1,
+            NamedColor::Overlay0  => self.palette.overlay0,
+            NamedColor::Surface2  => self.palette.surface2,
+            NamedColor::Surface1  => self.palette.surface1,
+            NamedColor::Surface0  => self.palette.surface0,
+            NamedColor::Base      => self.palette.base,
+            NamedColor::Mantle    => self.palette.mantle,
+            NamedColor::Crust     => self.palette.crust,
+        }
+    }
+}
