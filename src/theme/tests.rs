@@ -619,3 +619,45 @@ fn test_solarized_dark_palette_pinned() {
     assert_eq!(p.mantle, SOLARIZED_BASE03);
     assert_eq!(p.crust, SOLARIZED_BASE03);
 }
+
+#[test]
+fn test_gruvbox_dark_palette_pinned() {
+    let theme = Theme::gruvbox_dark();
+    let p = &theme.palette;
+
+    // Gruvbox accents: red/green/yellow/blue/purple/aqua/orange.
+    assert_eq!(p.red, GRUVBOX_RED);
+    assert_eq!(p.maroon, GRUVBOX_RED);
+    assert_eq!(p.peach, GRUVBOX_ORANGE);
+    assert_eq!(p.yellow, GRUVBOX_YELLOW);
+    assert_eq!(p.green, GRUVBOX_GREEN);
+    assert_eq!(p.teal, GRUVBOX_AQUA);
+
+    // Pinks/mauves/lavender: gruvbox purple is the only purple.
+    assert_eq!(p.pink, GRUVBOX_PURPLE);
+    assert_eq!(p.rosewater, GRUVBOX_PURPLE);
+    assert_eq!(p.flamingo, GRUVBOX_PURPLE);
+    assert_eq!(p.mauve, GRUVBOX_PURPLE);
+    assert_eq!(p.lavender, GRUVBOX_PURPLE);
+
+    // Cool blues: only one blue + aqua.
+    assert_eq!(p.sky, GRUVBOX_AQUA);
+    assert_eq!(p.sapphire, GRUVBOX_BLUE);
+    assert_eq!(p.blue, GRUVBOX_BLUE);
+
+    // Text/overlay tones.
+    assert_eq!(p.text, GRUVBOX_FG);
+    assert_eq!(p.subtext1, GRUVBOX_FG);
+    assert_eq!(p.subtext0, GRUVBOX_GRAY);
+    assert_eq!(p.overlay2, GRUVBOX_GRAY);
+    assert_eq!(p.overlay1, GRUVBOX_GRAY);
+    assert_eq!(p.overlay0, GRUVBOX_GRAY);
+
+    // Surface/base tones.
+    assert_eq!(p.surface2, GRUVBOX_BG1);
+    assert_eq!(p.surface1, GRUVBOX_BG1);
+    assert_eq!(p.surface0, GRUVBOX_BG1);
+    assert_eq!(p.base, GRUVBOX_BG);
+    assert_eq!(p.mantle, GRUVBOX_BG);
+    assert_eq!(p.crust, GRUVBOX_BG);
+}

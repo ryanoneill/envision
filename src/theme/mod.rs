@@ -552,6 +552,19 @@ impl Theme {
     /// - Warning: Orange (#FE8019)
     /// - Error: Red (#FB4934)
     ///
+    /// # Palette mapping
+    ///
+    /// Gruvbox's 7-color accent palette (red/green/yellow/blue/purple/aqua/orange)
+    /// maps as follows:
+    ///
+    /// - `Pink` / `Rosewater` / `Flamingo` / `Mauve` / `Lavender` → Purple
+    /// - `Red` / `Maroon` → Red
+    /// - `Peach` → Orange
+    /// - `Teal` / `Sky` → Aqua
+    /// - `Sapphire` / `Blue` → Blue
+    /// - Text/Overlay → FG / Gray
+    /// - Surface/Base → BG1 / BG
+    ///
     /// # Example
     ///
     /// ```rust
@@ -580,8 +593,34 @@ impl Theme {
             progress_filled: GRUVBOX_YELLOW,
             progress_empty: GRUVBOX_BG1,
 
-            // Placeholder palette — replaced with Gruvbox-specific mappings in Task 9.
-            palette: Theme::catppuccin_mocha().palette,
+            palette: Palette {
+                rosewater: GRUVBOX_PURPLE,
+                flamingo:  GRUVBOX_PURPLE,
+                pink:      GRUVBOX_PURPLE,
+                mauve:     GRUVBOX_PURPLE,
+                red:       GRUVBOX_RED,
+                maroon:    GRUVBOX_RED,
+                peach:     GRUVBOX_ORANGE,
+                yellow:    GRUVBOX_YELLOW,
+                green:     GRUVBOX_GREEN,
+                teal:      GRUVBOX_AQUA,
+                sky:       GRUVBOX_AQUA,
+                sapphire:  GRUVBOX_BLUE,
+                blue:      GRUVBOX_BLUE,
+                lavender:  GRUVBOX_PURPLE,
+                text:      GRUVBOX_FG,
+                subtext1:  GRUVBOX_FG,
+                subtext0:  GRUVBOX_GRAY,
+                overlay2:  GRUVBOX_GRAY,
+                overlay1:  GRUVBOX_GRAY,
+                overlay0:  GRUVBOX_GRAY,
+                surface2:  GRUVBOX_BG1,
+                surface1:  GRUVBOX_BG1,
+                surface0:  GRUVBOX_BG1,
+                base:      GRUVBOX_BG,
+                mantle:    GRUVBOX_BG,
+                crust:     GRUVBOX_BG,
+            },
         }
     }
 
