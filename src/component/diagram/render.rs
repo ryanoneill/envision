@@ -13,6 +13,7 @@ use super::edge_routing;
 use super::layout::{EdgePath, LayoutResult, NodePosition, PathSegment};
 use super::types::{DiagramEdge, DiagramNode, NodeShape, NodeStatus};
 use super::viewport::Viewport2D;
+use crate::component::RenderContext;
 use crate::theme::Theme;
 
 /// Status indicator characters for each node status.
@@ -47,30 +48,24 @@ fn status_label(status: &NodeStatus) -> &'static str {
 
 /// Renders the complete diagram: border, edges, nodes, and info bar.
 ///
-/// `chrome_owned` signals that the parent has already drawn the outer
-/// chrome for `area`. When true, the outer `Block` draw is suppressed
-/// and content is rendered against `area` directly.
-#[allow(clippy::too_many_arguments)]
+/// `ctx.chrome_owned` signals that the parent has already drawn the outer
+/// chrome for `ctx.area`. When true, the outer `Block` draw is suppressed
+/// and content is rendered against `ctx.area` directly.
 pub(super) fn render_diagram(
     state: &super::DiagramState,
     layout: &LayoutResult,
-    frame: &mut ratatui::Frame,
-    area: Rect,
-    theme: &Theme,
-    focused: bool,
-    disabled: bool,
-    chrome_owned: bool,
+    ctx: &mut RenderContext<'_, '_>,
 ) {
-    let inner = if chrome_owned {
-        area
+    let inner = if ctx.chrome_owned {
+        ctx.area
     } else {
         // Outer border
-        let border_style = if disabled {
-            theme.disabled_style()
-        } else if focused {
-            theme.focused_border_style()
+        let border_style = if ctx.disabled {
+            ctx.theme.disabled_style()
+        } else if ctx.focused {
+            ctx.theme.focused_border_style()
         } else {
-            theme.border_style()
+            ctx.theme.border_style()
         };
 
         let block = Block::default()
@@ -84,8 +79,8 @@ pub(super) fn render_diagram(
                     .unwrap_or_default(),
             );
 
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
         inner
     };
 
@@ -94,21 +89,21 @@ pub(super) fn render_diagram(
     }
 
     if state.nodes.is_empty() {
-        let msg = Paragraph::new("(empty diagram)").style(theme.normal_style());
-        frame.render_widget(msg, inner);
+        let msg = Paragraph::new("(empty diagram)").style(ctx.theme.normal_style());
+        ctx.frame.render_widget(msg, inner);
         return;
     }
 
     let params = RenderParams {
         viewport: &state.viewport,
         clip: inner,
-        disabled,
-        theme,
+        disabled: ctx.disabled,
+        theme: ctx.theme,
     };
 
     // Render edges first (behind nodes), then nodes on top
     render_edges(
-        frame.buffer_mut(),
+        ctx.frame.buffer_mut(),
         &state.edges,
         layout.edge_paths(),
         &params,
@@ -116,19 +111,19 @@ pub(super) fn render_diagram(
     );
 
     render_nodes(
-        frame,
+        ctx.frame,
         &state.nodes,
         layout.node_positions(),
         &params,
         state.selected,
-        focused,
+        ctx.focused,
     );
 
     // Minimap in bottom-right corner
     if state.show_minimap && state.viewport.needs_scroll() && inner.width >= 20 && inner.height >= 8
     {
         render_minimap(
-            frame.buffer_mut(),
+            ctx.frame.buffer_mut(),
             layout.node_positions(),
             &state.nodes,
             &state.viewport,
@@ -138,13 +133,13 @@ pub(super) fn render_diagram(
 
     // Search bar at bottom
     if state.search.active {
-        render_search_bar(frame, &state.search, inner, theme);
+        render_search_bar(ctx.frame, &state.search, inner, ctx.theme);
     }
 
     // Info bar at bottom showing selected node details
     if let Some(sel_idx) = state.selected {
         if let Some(node) = state.nodes.get(sel_idx) {
-            render_info_bar(frame, node, inner, disabled, theme);
+            render_info_bar(ctx.frame, node, inner, ctx.disabled, ctx.theme);
         }
     }
 }

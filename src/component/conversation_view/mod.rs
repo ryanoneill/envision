@@ -301,15 +301,7 @@ impl Component for ConversationView {
             );
         });
 
-        render::render(
-            state,
-            ctx.frame,
-            ctx.area,
-            ctx.theme,
-            ctx.focused,
-            ctx.disabled,
-            ctx.chrome_owned,
-        );
+        render::render(state, ctx);
 
         crate::annotation::with_registry(|reg| {
             reg.close();

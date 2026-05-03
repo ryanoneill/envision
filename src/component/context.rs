@@ -136,8 +136,8 @@ impl<'frame, 'buf> RenderContext<'frame, 'buf> {
     /// Builder: marks chrome as parent-owned. Children consult this flag
     /// at render time and suppress their own borders/titles/focus rings.
     ///
-    /// Set automatically by [`PaneLayout::view_with`] when invoking the
-    /// per-pane render closure.
+    /// Set automatically by [`PaneLayout::view_with`][crate::component::pane_layout::PaneLayout::view_with]
+    /// when invoking the per-pane render closure.
     #[must_use]
     pub fn chrome_owned(mut self, owned: bool) -> Self {
         self.chrome_owned = owned;
