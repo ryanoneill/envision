@@ -95,3 +95,90 @@ impl Severity {
         Severity::Critical
     }
 }
+
+// =============================================================================
+// Named Palette Colors
+// =============================================================================
+
+/// A flat enum of 26 palette color names derived from Catppuccin Mocha — the most
+/// complete shipped palette.
+///
+/// Use [`Theme::color`] to look up a named color in the active theme. Every theme
+/// returns a sensible color for every variant via its [`Palette`] mapping; for
+/// non-Catppuccin themes that lack a native equivalent, the mapping uses the
+/// nearest-shade match (documented per theme).
+///
+/// `#[non_exhaustive]` so envision can add palette names later without breaking
+/// downstream `match` arms.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use envision::theme::{NamedColor, Theme};
+///
+/// let theme = Theme::catppuccin_mocha();
+/// let lavender = theme.color(NamedColor::Lavender);
+/// // Use `lavender` in a Style, Cell, or StyledInline span.
+/// # let _ = lavender;
+/// ```
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum NamedColor {
+    // Accent colors (warm)
+    /// Rosewater — pastel pink with rose undertone.
+    Rosewater,
+    /// Flamingo — pastel pink with peach undertone.
+    Flamingo,
+    /// Pink — saturated pink.
+    Pink,
+    /// Mauve — pastel purple.
+    Mauve,
+    /// Red — saturated red.
+    Red,
+    /// Maroon — darker red with brown undertone.
+    Maroon,
+    /// Peach — pastel orange.
+    Peach,
+    /// Yellow — pastel yellow.
+    Yellow,
+    /// Green — pastel green.
+    Green,
+    /// Teal — pastel teal (green-cyan).
+    Teal,
+
+    // Accent colors (cool)
+    /// Sky — light cyan-blue.
+    Sky,
+    /// Sapphire — saturated cyan-blue.
+    Sapphire,
+    /// Blue — pastel blue.
+    Blue,
+    /// Lavender — pastel purple-blue.
+    Lavender,
+
+    // Text + overlay (light → dark)
+    /// Text — primary foreground (lightest text tone).
+    Text,
+    /// Subtext1 — slightly muted foreground.
+    Subtext1,
+    /// Subtext0 — more muted foreground.
+    Subtext0,
+    /// Overlay2 — lightest overlay tone.
+    Overlay2,
+    /// Overlay1 — medium overlay tone.
+    Overlay1,
+    /// Overlay0 — darkest overlay tone.
+    Overlay0,
+    /// Surface2 — lightest surface tone (panels, popovers).
+    Surface2,
+    /// Surface1 — medium surface tone.
+    Surface1,
+    /// Surface0 — darkest surface tone (background-ish).
+    Surface0,
+    /// Base — primary background.
+    Base,
+    /// Mantle — secondary background (slightly darker than Base).
+    Mantle,
+    /// Crust — darkest background tone.
+    Crust,
+}

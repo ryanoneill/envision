@@ -371,3 +371,37 @@ fn test_severity_from_thresholds_unsorted_first_match_wins() {
     // value=15.0: 15.0 < 10.0? no. 15.0 < 1.0? no. 15.0 < 3.0? no. Critical default.
     assert_eq!(Severity::from_thresholds(15.0, &unsorted), Severity::Critical);
 }
+
+#[test]
+fn test_named_color_enum_variants() {
+    // Pin all 26 NamedColor variants — the spec's complete Catppuccin-derived palette.
+    let variants = [
+        NamedColor::Rosewater,
+        NamedColor::Flamingo,
+        NamedColor::Pink,
+        NamedColor::Mauve,
+        NamedColor::Red,
+        NamedColor::Maroon,
+        NamedColor::Peach,
+        NamedColor::Yellow,
+        NamedColor::Green,
+        NamedColor::Teal,
+        NamedColor::Sky,
+        NamedColor::Sapphire,
+        NamedColor::Blue,
+        NamedColor::Lavender,
+        NamedColor::Text,
+        NamedColor::Subtext1,
+        NamedColor::Subtext0,
+        NamedColor::Overlay2,
+        NamedColor::Overlay1,
+        NamedColor::Overlay0,
+        NamedColor::Surface2,
+        NamedColor::Surface1,
+        NamedColor::Surface0,
+        NamedColor::Base,
+        NamedColor::Mantle,
+        NamedColor::Crust,
+    ];
+    assert_eq!(variants.len(), 26);
+}
