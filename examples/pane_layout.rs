@@ -73,28 +73,28 @@ impl App for PaneLayoutApp {
         let area = frame.area();
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
-        // Render pane borders
-        PaneLayout::view(
+        // Single closure-based call: PaneLayout draws pane chrome and
+        // invokes the closure once per pane with a chrome-inset child
+        // context whose chrome_owned flag is set to true.
+        PaneLayout::view_with(
             &state.layout,
-            &mut RenderContext::new(frame, chunks[0], &theme),
+            &mut RenderContext::new(frame, chunks[0], &theme).focused(true),
+            |pane_id, child_ctx| {
+                let content = match pane_id {
+                    "sidebar" => "src/\n  main.rs\n  lib.rs\n  utils.rs\n  config.rs",
+                    "editor" => {
+                        "fn main() {\n    let config = Config::load();\n    println!(\n      \"Hello, {}!\",\n      config.name\n    );\n}"
+                    }
+                    "terminal" => {
+                        "$ cargo build\n  Compiling envision v0.6.0\n  Finished dev [unoptimized + debuginfo]\n$ _"
+                    }
+                    _ => "",
+                };
+                child_ctx
+                    .frame
+                    .render_widget(ratatui::widgets::Paragraph::new(content), child_ctx.area);
+            },
         );
-
-        // Render content in each pane
-        let rects = state.layout.layout(chunks[0]);
-        let pane_contents = [
-            "src/\n  main.rs\n  lib.rs\n  utils.rs\n  config.rs",
-            "fn main() {\n    let config = Config::load();\n    println!(\n      \"Hello, {}!\",\n      config.name\n    );\n}",
-            "$ cargo build\n  Compiling envision v0.6.0\n  Finished dev [unoptimized + debuginfo]\n$ _",
-        ];
-
-        for (i, rect) in rects.iter().enumerate() {
-            let inner = ratatui::widgets::Block::default()
-                .borders(ratatui::widgets::Borders::ALL)
-                .inner(*rect);
-            if let Some(content) = pane_contents.get(i) {
-                frame.render_widget(ratatui::widgets::Paragraph::new(*content), inner);
-            }
-        }
 
         let focused_id = state.layout.focused_pane_id().unwrap_or("none").to_string();
         let status = format!(
