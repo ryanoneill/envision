@@ -462,7 +462,13 @@ impl Component for StyledText {
             ctx.theme.border_style()
         };
 
-        let (inner, render_area) = if state.show_border {
+        // The parent may already own the chrome (border, title, focus
+        // ring) for `ctx.area` — when it does, suppress our own border
+        // even if `state.show_border()` is true. The standalone
+        // `with_show_border(false)` opt-out continues to work for the
+        // `chrome_owned == false` case.
+        let show_border = !ctx.chrome_owned && state.show_border;
+        let (inner, render_area) = if show_border {
             let mut block = Block::default()
                 .borders(Borders::ALL)
                 .border_style(border_style);

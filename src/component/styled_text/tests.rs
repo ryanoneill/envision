@@ -690,3 +690,24 @@ fn test_annotation_emission() {
     assert!(regions[0].annotation.focused);
     assert!(!regions[0].annotation.disabled);
 }
+
+#[test]
+fn test_view_skips_border_when_chrome_owned_even_if_show_border_true() {
+    let (mut terminal, theme) = setup_render(40, 5);
+    let content = StyledContent::new().text("Hello, embedded.");
+    let state = StyledTextState::new()
+        .with_content(content)
+        .with_show_border(true);
+
+    terminal
+        .draw(|frame| {
+            StyledText::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+
+    let display = terminal.backend().to_string();
+    insta::assert_snapshot!("view_chrome_owned_no_border", display);
+}
