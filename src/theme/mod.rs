@@ -379,6 +379,19 @@ impl Theme {
     /// - Warning: Yellow (#F1FA8C)
     /// - Error: Red (#FF5555)
     ///
+    /// # Palette mapping
+    ///
+    /// Dracula's 9-color accent palette (Cyan/Green/Orange/Pink/Purple/Red/Yellow plus
+    /// FG/BG/Comment/CurrentLine) maps as follows:
+    ///
+    /// - `Pink` / `Rosewater` / `Flamingo` → Dracula Pink (the only native pink)
+    /// - `Mauve` / `Lavender` → Dracula Purple
+    /// - `Red` / `Maroon` → Dracula Red
+    /// - `Peach` → Dracula Orange
+    /// - `Sky` / `Sapphire` / `Blue` / `Teal` → Dracula Cyan (the only native cool color)
+    /// - Text/Overlay → FG / Comment
+    /// - Surface / Base → CurrentLine / BG
+    ///
     /// # Example
     ///
     /// ```rust
@@ -407,8 +420,34 @@ impl Theme {
             progress_filled: DRACULA_PURPLE,
             progress_empty: DRACULA_CURRENT,
 
-            // Placeholder palette — replaced with Dracula-specific mappings in Task 7.
-            palette: Theme::catppuccin_mocha().palette,
+            palette: Palette {
+                rosewater: DRACULA_PINK,
+                flamingo:  DRACULA_PINK,
+                pink:      DRACULA_PINK,
+                mauve:     DRACULA_PURPLE,
+                red:       DRACULA_RED,
+                maroon:    DRACULA_RED,
+                peach:     DRACULA_ORANGE,
+                yellow:    DRACULA_YELLOW,
+                green:     DRACULA_GREEN,
+                teal:      DRACULA_CYAN,
+                sky:       DRACULA_CYAN,
+                sapphire:  DRACULA_CYAN,
+                blue:      DRACULA_CYAN,
+                lavender:  DRACULA_PURPLE,
+                text:      DRACULA_FG,
+                subtext1:  DRACULA_FG,
+                subtext0:  DRACULA_COMMENT,
+                overlay2:  DRACULA_COMMENT,
+                overlay1:  DRACULA_COMMENT,
+                overlay0:  DRACULA_COMMENT,
+                surface2:  DRACULA_CURRENT,
+                surface1:  DRACULA_CURRENT,
+                surface0:  DRACULA_CURRENT,
+                base:      DRACULA_BG,
+                mantle:    DRACULA_BG,
+                crust:     DRACULA_BG,
+            },
         }
     }
 

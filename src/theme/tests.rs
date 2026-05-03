@@ -537,3 +537,45 @@ fn test_nord_palette_pinned() {
     assert_eq!(p.mantle, NORD0);
     assert_eq!(p.crust, NORD0);
 }
+
+#[test]
+fn test_dracula_palette_pinned() {
+    let theme = Theme::dracula();
+    let p = &theme.palette;
+
+    // Dracula has named accents: Cyan, Green, Orange, Pink, Purple, Red, Yellow.
+    assert_eq!(p.red, DRACULA_RED);
+    assert_eq!(p.maroon, DRACULA_RED);          // No maroon; reuse red
+    assert_eq!(p.peach, DRACULA_ORANGE);
+    assert_eq!(p.yellow, DRACULA_YELLOW);
+    assert_eq!(p.green, DRACULA_GREEN);
+    assert_eq!(p.teal, DRACULA_CYAN);           // Closest cool teal-ish
+
+    // Pinks/mauves/lavender: native pink and purple available.
+    assert_eq!(p.pink, DRACULA_PINK);
+    assert_eq!(p.mauve, DRACULA_PURPLE);
+    assert_eq!(p.lavender, DRACULA_PURPLE);
+    assert_eq!(p.rosewater, DRACULA_PINK);      // Closest pastel pink
+    assert_eq!(p.flamingo, DRACULA_PINK);
+
+    // Cool blues: Dracula has only Cyan; map all blues to Cyan.
+    assert_eq!(p.sky, DRACULA_CYAN);
+    assert_eq!(p.sapphire, DRACULA_CYAN);
+    assert_eq!(p.blue, DRACULA_CYAN);
+
+    // Text + overlay tones.
+    assert_eq!(p.text, DRACULA_FG);
+    assert_eq!(p.subtext1, DRACULA_FG);
+    assert_eq!(p.subtext0, DRACULA_COMMENT);
+    assert_eq!(p.overlay2, DRACULA_COMMENT);
+    assert_eq!(p.overlay1, DRACULA_COMMENT);
+    assert_eq!(p.overlay0, DRACULA_COMMENT);
+
+    // Surface / base tones.
+    assert_eq!(p.surface2, DRACULA_CURRENT);
+    assert_eq!(p.surface1, DRACULA_CURRENT);
+    assert_eq!(p.surface0, DRACULA_CURRENT);
+    assert_eq!(p.base, DRACULA_BG);
+    assert_eq!(p.mantle, DRACULA_BG);
+    assert_eq!(p.crust, DRACULA_BG);
+}
