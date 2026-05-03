@@ -1,15 +1,16 @@
 #![cfg(feature = "full")]
-//! Integration tests for Runtime and AppHarness `with_state` constructors.
+//! Integration tests for `RuntimeBuilder::with_args` and the
+//! `ConfiguredRuntimeBuilder` build path.
 //!
-//! These tests verify that applications can be initialized from pre-built
-//! state, bypassing `App::init()`.
+//! These tests verify that applications can be initialized from
+//! caller-supplied args, with the args flowing through `App::init`.
 
 use envision::harness::AppHarness;
 use envision::{App, Command, Runtime};
 use ratatui::prelude::*;
 
 // ===========================================================================
-// Shared App: CounterApp
+// Shared App: CounterApp — Args carry the initial state shape
 // ===========================================================================
 
 struct CounterApp;
@@ -26,15 +27,22 @@ enum CounterMsg {
     Decrement,
 }
 
+#[derive(Clone, Default)]
+struct CounterArgs {
+    initial_count: i32,
+    initial_label: String,
+}
+
 impl App for CounterApp {
     type State = CounterState;
     type Message = CounterMsg;
+    type Args = CounterArgs;
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(args: CounterArgs) -> (Self::State, Command<Self::Message>) {
         (
             CounterState {
-                count: 0,
-                label: "default".into(),
+                count: args.initial_count,
+                label: args.initial_label,
             },
             Command::none(),
         )
@@ -55,7 +63,7 @@ impl App for CounterApp {
 }
 
 // ===========================================================================
-// Shared App: InitCmdApp (tests that init_cmd is executed)
+// Shared App: InitCmdApp — args carry an init message to be dispatched
 // ===========================================================================
 
 struct InitCmdApp;
@@ -71,11 +79,21 @@ enum InitCmdMsg {
     SetInitialized(String),
 }
 
+struct InitCmdArgs {
+    initial_message: String,
+}
+
 impl App for InitCmdApp {
     type State = InitCmdState;
     type Message = InitCmdMsg;
+    type Args = InitCmdArgs;
 
-    // init() omitted — this app only uses with_state constructors
+    fn init(args: InitCmdArgs) -> (Self::State, Command<Self::Message>) {
+        (
+            InitCmdState::default(),
+            Command::message(InitCmdMsg::SetInitialized(args.initial_message)),
+        )
+    }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
         match msg {
@@ -98,17 +116,16 @@ impl App for InitCmdApp {
 }
 
 // ===========================================================================
-// Tests: Runtime::virtual_builder().state().build()
+// Tests: Runtime::virtual_builder().with_args().build()
 // ===========================================================================
 
 #[test]
-fn test_virtual_terminal_with_state_bypasses_init() {
-    let state = CounterState {
-        count: 42,
-        label: "custom".into(),
-    };
+fn test_virtual_terminal_with_args_initializes_state() {
     let vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
-        .state(state, Command::none())
+        .with_args(CounterArgs {
+            initial_count: 42,
+            initial_label: "custom".into(),
+        })
         .build()
         .unwrap();
 
@@ -117,13 +134,12 @@ fn test_virtual_terminal_with_state_bypasses_init() {
 }
 
 #[test]
-fn test_virtual_terminal_with_state_renders_correctly() {
-    let state = CounterState {
-        count: 99,
-        label: "score".into(),
-    };
+fn test_virtual_terminal_with_args_renders_correctly() {
     let mut vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
-        .state(state, Command::none())
+        .with_args(CounterArgs {
+            initial_count: 99,
+            initial_label: "score".into(),
+        })
         .build()
         .unwrap();
 
@@ -132,13 +148,12 @@ fn test_virtual_terminal_with_state_renders_correctly() {
 }
 
 #[test]
-fn test_virtual_terminal_with_state_dispatch_works() {
-    let state = CounterState {
-        count: 10,
-        label: "test".into(),
-    };
+fn test_virtual_terminal_with_args_dispatch_works() {
     let mut vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
-        .state(state, Command::none())
+        .with_args(CounterArgs {
+            initial_count: 10,
+            initial_label: "test".into(),
+        })
         .build()
         .unwrap();
 
@@ -151,12 +166,11 @@ fn test_virtual_terminal_with_state_dispatch_works() {
 }
 
 #[test]
-fn test_virtual_terminal_with_state_init_cmd_executes() {
-    let state = InitCmdState::default();
-    let init_cmd = Command::message(InitCmdMsg::SetInitialized("from cmd".into()));
-
+fn test_virtual_terminal_with_args_init_cmd_executes() {
     let mut vt = Runtime::<InitCmdApp, _>::virtual_builder(80, 24)
-        .state(state, init_cmd)
+        .with_args(InitCmdArgs {
+            initial_message: "from cmd".into(),
+        })
         .build()
         .unwrap();
 
@@ -168,13 +182,12 @@ fn test_virtual_terminal_with_state_init_cmd_executes() {
 }
 
 #[test]
-fn test_virtual_terminal_with_state_negative_count() {
-    let state = CounterState {
-        count: -100,
-        label: "negative".into(),
-    };
+fn test_virtual_terminal_with_args_negative_count() {
     let mut vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
-        .state(state, Command::none())
+        .with_args(CounterArgs {
+            initial_count: -100,
+            initial_label: "negative".into(),
+        })
         .build()
         .unwrap();
 
@@ -183,24 +196,23 @@ fn test_virtual_terminal_with_state_negative_count() {
 }
 
 // ===========================================================================
-// Tests: Runtime::virtual_builder().state().config().build()
+// Tests: Runtime::virtual_builder().with_args().config().build()
 // ===========================================================================
 
 #[test]
-fn test_virtual_terminal_with_state_and_config() {
+fn test_virtual_terminal_with_args_and_config() {
     use envision::RuntimeConfig;
 
-    let state = CounterState {
-        count: 7,
-        label: "config".into(),
-    };
     let config = RuntimeConfig {
         capture_history: true,
         history_capacity: 5,
         ..RuntimeConfig::default()
     };
     let mut vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
-        .state(state, Command::none())
+        .with_args(CounterArgs {
+            initial_count: 7,
+            initial_label: "config".into(),
+        })
         .config(config)
         .build()
         .unwrap();
@@ -214,16 +226,15 @@ fn test_virtual_terminal_with_state_and_config() {
 // ===========================================================================
 
 #[test]
-fn test_builder_with_backend_and_state() {
+fn test_builder_with_backend_and_args() {
     use envision::backend::CaptureBackend;
 
     let backend = CaptureBackend::new(60, 20);
-    let state = CounterState {
-        count: 55,
-        label: "backend".into(),
-    };
     let vt = Runtime::<CounterApp, _>::builder(backend)
-        .state(state, Command::none())
+        .with_args(CounterArgs {
+            initial_count: 55,
+            initial_label: "backend".into(),
+        })
         .build()
         .unwrap();
 
@@ -232,90 +243,62 @@ fn test_builder_with_backend_and_state() {
 }
 
 // ===========================================================================
-// Tests: AppHarness::with_state
+// Tests: AppHarness with args via the runtime helper
 // ===========================================================================
+//
+// AppHarness provides a no-args constructor for App impls whose `Args = ()`.
+// For apps with non-`()` args, callers can construct the underlying runtime
+// directly and wrap it in their own harness adapter — but the most common
+// path is to use the new() constructor with a `()`-args `App`. The CounterApp
+// here uses non-`()` args, so we exercise that path directly via the runtime.
 
 #[test]
-fn test_harness_with_state_bypasses_init() {
-    let state = CounterState {
-        count: 100,
-        label: "harness".into(),
-    };
-    let harness = AppHarness::<CounterApp>::with_state(80, 24, state, Command::none()).unwrap();
+fn test_harness_default_init_with_unit_args_app() {
+    // A separate, no-args app verifies AppHarness::new still works.
+    struct DefaultApp;
+    #[derive(Clone, Default)]
+    struct DefaultState {
+        label: String,
+    }
+    #[derive(Clone, Debug)]
+    enum DefaultMsg {}
 
-    assert_eq!(harness.state().count, 100);
-    assert_eq!(harness.state().label, "harness");
-}
+    impl App for DefaultApp {
+        type State = DefaultState;
+        type Message = DefaultMsg;
+        type Args = ();
 
-#[test]
-fn test_harness_with_state_dispatch_and_render() {
-    let state = CounterState {
-        count: 0,
-        label: "interactive".into(),
-    };
-    let mut harness = AppHarness::<CounterApp>::with_state(80, 24, state, Command::none()).unwrap();
+        fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
+            (
+                DefaultState {
+                    label: "default".into(),
+                },
+                Command::none(),
+            )
+        }
 
-    harness.dispatch(CounterMsg::Increment);
-    harness.dispatch(CounterMsg::Increment);
-    harness.dispatch(CounterMsg::Increment);
+        fn update(_: &mut Self::State, _: Self::Message) -> Command<Self::Message> {
+            Command::none()
+        }
 
-    assert_eq!(harness.state().count, 3);
+        fn view(_: &Self::State, _: &mut Frame) {}
+    }
 
-    harness.render().unwrap();
-    assert!(harness.contains_text("interactive: 3"));
-}
-
-#[test]
-fn test_harness_with_state_init_cmd_executes() {
-    let state = InitCmdState::default();
-    let init_cmd = Command::message(InitCmdMsg::SetInitialized("harness cmd".into()));
-
-    let mut harness = AppHarness::<InitCmdApp>::with_state(80, 24, state, init_cmd).unwrap();
-
-    // Synchronous init commands are queued and dispatched on tick()
-    harness.tick().unwrap();
-
-    assert!(harness.state().initialized);
-    assert_eq!(harness.state().value, "harness cmd");
-}
-
-#[test]
-fn test_harness_with_state_and_config() {
-    use envision::RuntimeConfig;
-
-    let state = CounterState {
-        count: 77,
-        label: "configured".into(),
-    };
-    let config = RuntimeConfig {
-        capture_history: true,
-        ..RuntimeConfig::default()
-    };
-    let harness =
-        AppHarness::<CounterApp>::with_state_and_config(80, 24, state, Command::none(), config)
-            .unwrap();
-
-    assert_eq!(harness.state().count, 77);
+    let harness = AppHarness::<DefaultApp>::new(80, 24).unwrap();
+    assert_eq!(harness.state().label, "default");
 }
 
 // ===========================================================================
-// Tests: Default init() still works (regression)
+// Tests: Default args path still works (regression)
 // ===========================================================================
 
 #[test]
-fn test_default_init_unchanged() {
+fn test_default_args_path_unchanged() {
     let vt = Runtime::<CounterApp, _>::virtual_builder(80, 24)
+        .with_args(CounterArgs::default())
         .build()
         .unwrap();
 
     assert_eq!(vt.state().count, 0);
-    assert_eq!(vt.state().label, "default");
-}
-
-#[test]
-fn test_harness_default_init_unchanged() {
-    let harness = AppHarness::<CounterApp>::new(80, 24).unwrap();
-
-    assert_eq!(harness.state().count, 0);
-    assert_eq!(harness.state().label, "default");
+    assert_eq!(vt.state().label, "");
 }

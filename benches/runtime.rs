@@ -31,8 +31,9 @@ enum BenchMsg {
 impl App for BenchApp {
     type State = BenchState;
     type Message = BenchMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (BenchState::default(), Command::none())
     }
 

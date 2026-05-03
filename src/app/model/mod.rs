@@ -2,14 +2,14 @@
 //!
 //! # Two Construction Patterns
 //!
-//! Applications can be started in two ways, which affects whether
-//! [`App::init()`] is called:
+//! Applications can be started in two ways, depending on whether
+//! [`App::init()`] needs injected dependencies:
 //!
 //! ## Standard pattern — `init()` creates the state
 //!
-//! Use [`Runtime::terminal_builder()`] or [`Runtime::virtual_builder()`].
-//! These call [`App::init()`] internally to create the initial state and
-//! any startup commands.
+//! Apps with `type Args = ();` can call `.build()` directly. The builder
+//! invokes [`App::init()`] internally to create the initial state and any
+//! startup commands.
 //!
 //! ```rust
 //! # use envision::prelude::*;
@@ -21,7 +21,8 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = ();
+//! #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
@@ -29,45 +30,49 @@
 //! # Ok::<(), envision::EnvisionError>(())
 //! ```
 //!
-//! ## External state pattern — `init()` is bypassed
+//! ## Args pattern — passing dependencies into `init`
 //!
-//! Use the builder's `.state()` method to provide a pre-built state directly.
-//! [`App::init()`] is **never called**. This is useful when initial state
-//! comes from external sources such as CLI arguments, config files, or
-//! databases.
+//! Apps that need injected config declare a non-`()` `Args` type and pass
+//! values via [`RuntimeBuilder::with_args`]. Common uses include CLI-parsed
+//! paths, env-derived URLs, opened DB handles, or preloaded fixture data.
 //!
 //! ```rust
 //! # use envision::prelude::*;
+//! # use std::path::PathBuf;
 //! # struct MyApp;
+//! # struct MyArgs { dir: PathBuf }
 //! # #[derive(Default, Clone)]
-//! # struct MyState;
+//! # struct MyState { dir: PathBuf }
 //! # #[derive(Clone)]
 //! # enum MyMsg {}
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = MyArgs;
+//! #     fn init(args: MyArgs) -> (MyState, Command<MyMsg>) {
+//! #         (MyState { dir: args.dir }, Command::none())
+//! #     }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
-//! let state = MyState::default();
+//! let args = MyArgs { dir: PathBuf::from("/tmp/example") };
 //! let mut vt = Runtime::<MyApp, _>::virtual_builder(80, 24)
-//!     .state(state, Command::none())
+//!     .with_args(args)
 //!     .build()?;
 //! # Ok::<(), envision::EnvisionError>(())
 //! ```
 //!
-//! When using `.state()`, `App::init()` does **not** need to be
-//! implemented — the default implementation will panic if called, which
-//! is safe because `.state()` prevents it from being called.
-//!
 //! [`Runtime::terminal_builder()`]: crate::app::Runtime::terminal_builder
 //! [`Runtime::virtual_builder()`]: crate::app::Runtime::virtual_builder
+//! [`RuntimeBuilder::with_args`]: crate::app::RuntimeBuilder::with_args
 
 use ratatui::Frame;
 
 use super::command::Command;
 use crate::input::Event;
+
+pub(crate) mod optional_args;
+pub use optional_args::OptionalArgs;
 
 /// The core trait for TEA-style applications.
 ///
@@ -76,7 +81,8 @@ use crate::input::Event;
 ///
 /// - `State`: The complete application state
 /// - `Message`: Events that can modify state
-/// - `init`: Initialize state and any startup commands
+/// - `Args`: Configuration / dependencies handed in at construction time
+/// - `init`: Initialize state from args, plus any startup commands
 /// - `update`: Handle messages and produce new state
 /// - `view`: Render the current state
 ///
@@ -84,22 +90,21 @@ use crate::input::Event;
 ///
 /// - `State`: Your application's state type. Derive `Clone` if you need snapshots.
 /// - `Message`: The type representing all possible events/actions.
+/// - `Args`: Construction-time dependencies. Use `()` if none.
 ///
 /// # Construction
 ///
-/// There are two ways to start an application, which determine whether
-/// [`init()`](App::init) is called:
-///
-/// - **Standard**: [`Runtime::terminal_builder()`](crate::app::Runtime::terminal_builder) and
-///   [`Runtime::virtual_builder()`](crate::app::Runtime::virtual_builder) call `init()`
-///   to create the initial state (when `.state()` is not called on the builder).
-/// - **External state**: Use `.state(s, cmd)` on the builder to provide a
-///   pre-built state and **skip** `init()` entirely. In this case, `init()`
-///   does not need to be implemented.
+/// All apps must implement [`init`](App::init). For apps that need
+/// construction-time dependencies (CLI args, opened DB handles, fixture
+/// data, etc.), declare a custom [`Args`](App::Args) type and pass it via
+/// [`RuntimeBuilder::with_args`](crate::app::RuntimeBuilder::with_args).
+/// For apps with no dependencies, declare `type Args = ();` and call
+/// `.build()` directly — the unit shortcut is permitted only because `()`
+/// implements the sealed [`OptionalArgs`] marker.
 ///
 /// # Examples
 ///
-/// ## Standard pattern — implementing `init()`
+/// ## Standard pattern — `Args = ()`
 ///
 /// ```rust
 /// use envision::app::{App, Command};
@@ -121,8 +126,9 @@ use crate::input::Event;
 /// impl App for MyApp {
 ///     type State = MyState;
 ///     type Message = MyMessage;
+///     type Args = ();
 ///
-///     fn init() -> (Self::State, Command<Self::Message>) {
+///     fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
 ///         (MyState::default(), Command::none())
 ///     }
 ///
@@ -140,9 +146,7 @@ use crate::input::Event;
 /// }
 /// ```
 ///
-/// ## External state pattern — omitting `init()`
-///
-/// When using `with_state` constructors, `init()` can be omitted:
+/// ## Args pattern — injecting dependencies
 ///
 /// ```rust
 /// use envision::app::{App, Command};
@@ -154,6 +158,10 @@ use crate::input::Event;
 ///     config_value: String,
 /// }
 ///
+/// struct ExternalArgs {
+///     initial_value: String,
+/// }
+///
 /// #[derive(Clone)]
 /// enum ExternalMsg {
 ///     Update(String),
@@ -162,8 +170,11 @@ use crate::input::Event;
 /// impl App for ExternalApp {
 ///     type State = ExternalState;
 ///     type Message = ExternalMsg;
+///     type Args = ExternalArgs;
 ///
-///     // init() is not implemented — this app uses with_state constructors
+///     fn init(args: ExternalArgs) -> (Self::State, Command<Self::Message>) {
+///         (ExternalState { config_value: args.initial_value }, Command::none())
+///     }
 ///
 ///     fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
 ///         match msg {
@@ -189,27 +200,26 @@ pub trait App: Sized {
     /// This should be an enum covering all ways the state can change.
     type Message: Send + 'static;
 
-    /// Initializes the application state and optional startup commands.
+    /// Configuration / dependencies handed in at construction time.
     ///
-    /// This is called automatically when using the builder without `.state()`.
-    /// When using `.state(s, cmd)` on the builder, this method is **not
-    /// called** — the provided state is used directly instead.
+    /// Apps that need no injected config declare `type Args = ();`. When
+    /// `Args = ()`, [`RuntimeBuilder::build`] is callable directly without
+    /// [`RuntimeBuilder::with_args`]. For any other `Args` type, callers
+    /// must invoke `.with_args(...)` first.
     ///
-    /// # Panics
+    /// `Args` is consumed (move semantics) by [`init`](App::init). Apps
+    /// that need to keep args around store the relevant fields in `State`
+    /// during `init`.
     ///
-    /// The default implementation panics if called without being overridden.
-    /// This allows applications that exclusively use `.state()` on the builder
-    /// to omit `init()` entirely, since it will never be called. If you
-    /// build a runtime without calling `.state()`, you **must** override this
-    /// method to provide valid initial state.
-    fn init() -> (Self::State, Command<Self::Message>) {
-        panic!(
-            "App::init() is not implemented. \
-             Override this method when building a Runtime without .state(). \
-             When using .state() on the builder, this method is never called \
-             and can be left unimplemented."
-        );
-    }
+    /// [`RuntimeBuilder::build`]: crate::app::RuntimeBuilder::build
+    /// [`RuntimeBuilder::with_args`]: crate::app::RuntimeBuilder::with_args
+    type Args;
+
+    /// Initializes the application state from the provided args.
+    ///
+    /// Called exactly once per [`Runtime`](crate::app::Runtime) construction
+    /// by the builder. `args` is consumed (move semantics).
+    fn init(args: Self::Args) -> (Self::State, Command<Self::Message>);
 
     /// Handle a message and update the state.
     ///

@@ -105,8 +105,9 @@ struct FileManager;
 impl App for FileManager {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let palette_items = vec![
             PaletteItem::new("toggle-hidden", "Toggle Hidden Files").with_shortcut("Ctrl+H"),
             PaletteItem::new("toggle-diff", "Toggle Diff View").with_shortcut("Ctrl+D"),

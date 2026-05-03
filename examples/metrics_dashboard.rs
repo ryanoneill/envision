@@ -26,8 +26,9 @@ enum Msg {
 impl App for MetricsDashboardApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let dashboard = MetricsDashboardState::new(
             vec![
                 MetricWidget::counter("Requests", 1284),

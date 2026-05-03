@@ -183,8 +183,9 @@ struct DashboardApp;
 impl App for DashboardApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         (State::default(), Command::none())
     }
 
@@ -498,17 +499,10 @@ async fn main() -> envision::Result<()> {
     // We override the StartBuild handling to use the channel-based approach
     // by creating a custom wrapper that intercepts the StartBuild command.
 
-    let (state, _) = <DashboardApp as App>::init();
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<Msg>();
 
     let mut runtime = Runtime::<DashboardChannelApp, _>::terminal_builder()?
-        .state(
-            ChannelState {
-                inner: state,
-                build_tx: tx,
-            },
-            Command::none(),
-        )
+        .with_args(tx)
         .build()?;
 
     runtime.subscribe(UnboundedChannelSubscription::new(rx));
@@ -533,17 +527,19 @@ struct DashboardChannelApp;
 impl App for DashboardChannelApp {
     type State = ChannelState;
     type Message = Msg;
+    type Args = tokio::sync::mpsc::UnboundedSender<Msg>;
 
-    fn init() -> (ChannelState, Command<Msg>) {
-        // Not used — we use with_state constructor
-        let (tx, _rx) = tokio::sync::mpsc::unbounded_channel();
-        (
-            ChannelState {
-                inner: State::default(),
-                build_tx: tx,
-            },
-            Command::none(),
-        )
+    fn init(build_tx: Self::Args) -> (ChannelState, Command<Msg>) {
+        // DashboardApp::init returns Command::none() by construction — see
+        // its impl above. If that ever changes, the dropped command would
+        // be a silent regression here. The debug_assert pins the
+        // expectation so future divergence surfaces as a test failure.
+        let (inner, inner_cmd) = <DashboardApp as App>::init(());
+        debug_assert!(
+            inner_cmd.is_none(),
+            "DashboardChannelApp wrapper assumes inner DashboardApp::init returns Command::none()",
+        );
+        (ChannelState { inner, build_tx }, Command::none())
     }
 
     fn update(state: &mut ChannelState, msg: Msg) -> Command<Msg> {

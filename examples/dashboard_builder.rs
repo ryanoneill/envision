@@ -88,8 +88,9 @@ struct Dashboard;
 impl App for Dashboard {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         // Metrics dashboard widgets
         let widgets = vec![
             MetricWidget::counter("Requests/s", 1250),

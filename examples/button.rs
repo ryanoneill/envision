@@ -42,8 +42,9 @@ impl State {
 impl App for ButtonApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let save = ButtonState::new("Save");
 
         let cancel = ButtonState::new("Cancel");

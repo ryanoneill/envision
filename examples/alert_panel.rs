@@ -26,8 +26,9 @@ enum Msg {
 impl App for AlertPanelApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let panel = AlertPanelState::new()
             .with_metrics(vec![
                 AlertMetric::new("cpu", "CPU Usage", AlertThreshold::new(70.0, 90.0))

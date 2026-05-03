@@ -39,8 +39,9 @@ enum Msg {
 impl envision::app::App for App {
     type State = AppState;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (AppState, Command<Msg>) {
+    fn init(_args: ()) -> (AppState, Command<Msg>) {
         let diagram = DiagramState::new()
             .with_cluster(DiagramCluster::new("us-east", "US East"))
             .with_cluster(DiagramCluster::new("eu-west", "EU West"))

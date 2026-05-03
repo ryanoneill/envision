@@ -26,8 +26,9 @@ enum Msg {
 impl App for SplitPanelApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let split = SplitPanelState::new(SplitOrientation::Vertical)
             .with_ratio(0.4)
             .with_resize_step(0.1)

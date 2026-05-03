@@ -27,8 +27,9 @@ enum CounterMsg {
 impl App for CounterApp {
     type State = CounterState;
     type Message = CounterMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, super::super::Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, super::super::Command<Self::Message>) {
         (CounterState::default(), super::super::Command::none())
     }
 
@@ -218,7 +219,8 @@ fn test_command_request_cancel_token() {
     impl crate::app::App for TokenApp {
         type State = TokenState;
         type Message = TokenMsg;
-        fn init() -> (TokenState, Command<TokenMsg>) {
+        type Args = ();
+        fn init(_args: ()) -> (TokenState, Command<TokenMsg>) {
             (
                 TokenState::default(),
                 Command::request_cancel_token(TokenMsg::GotToken),
@@ -352,8 +354,9 @@ enum EventMsg {
 impl App for EventApp {
     type State = EventState;
     type Message = EventMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, super::super::Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, super::super::Command<Self::Message>) {
         (EventState::default(), super::super::Command::none())
     }
 
@@ -465,8 +468,9 @@ fn test_runtime_process_commands() {
     impl App for CmdApp {
         type State = CmdState;
         type Message = CmdMsg;
+        type Args = ();
 
-        fn init() -> (Self::State, super::super::Command<Self::Message>) {
+        fn init(_args: ()) -> (Self::State, super::super::Command<Self::Message>) {
             // Issue a command on init
             (
                 CmdState::default(),
@@ -640,6 +644,13 @@ fn test_run_terminal_blocking_exists() {
 }
 
 // =========================================================================
+// Args-flow tests — extracted to args_tests.rs to keep this file under the
+// project's 1000-line ceiling.
+// =========================================================================
+
+mod args_tests;
+
+// =========================================================================
 // Overlay Tests
 // =========================================================================
 
@@ -805,8 +816,9 @@ mod overlay_tests {
         impl App for CmdOverlayApp {
             type State = CmdOverlayState;
             type Message = CmdOverlayMsg;
+            type Args = ();
 
-            fn init() -> (Self::State, Command<Self::Message>) {
+            fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
                 (CmdOverlayState::default(), Command::none())
             }
 
@@ -910,8 +922,9 @@ mod overlay_tests {
         impl App for CmdApp {
             type State = CmdState;
             type Message = CmdMsg;
+            type Args = ();
 
-            fn init() -> (Self::State, Command<Self::Message>) {
+            fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
                 (CmdState, Command::none())
             }
 

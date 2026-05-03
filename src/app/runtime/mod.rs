@@ -22,7 +22,8 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = ();
+//! #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
@@ -54,7 +55,8 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = ();
+//! #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
@@ -68,10 +70,12 @@
 //! Events are injected programmatically and the display can be inspected.
 
 mod builder;
+mod builder_configured;
 mod config;
 pub(crate) mod terminal;
 mod virtual_terminal;
 pub use builder::RuntimeBuilder;
+pub use builder_configured::ConfiguredRuntimeBuilder;
 pub use config::{RuntimeConfig, TerminalHook};
 
 use std::io::Stdout;
@@ -143,7 +147,8 @@ pub struct Runtime<A: App, B: Backend> {
 /// # impl App for MyApp {
 /// #     type State = MyState;
 /// #     type Message = MyMsg;
-/// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+/// #     type Args = ();
+/// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 /// #     fn view(state: &MyState, frame: &mut Frame) {}
 /// # }
@@ -171,7 +176,8 @@ pub type TerminalRuntime<A> = Runtime<A, CrosstermBackend<Stdout>>;
 /// # impl App for MyApp {
 /// #     type State = MyState;
 /// #     type Message = MyMsg;
-/// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+/// #     type Args = ();
+/// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 /// #     fn view(state: &MyState, frame: &mut Frame) {}
 /// # }
@@ -236,6 +242,16 @@ impl<A: App, B: Backend> Runtime<A, B> {
         Ok(runtime)
     }
 
+    /// Returns a reference to the runtime configuration.
+    ///
+    /// Test-only accessor used by builder tests to verify that config-shaping
+    /// methods (e.g. `tick_rate`, `frame_rate`) survive promotion through
+    /// [`with_args`](crate::app::runtime::RuntimeBuilder::with_args).
+    #[cfg(test)]
+    pub(crate) fn config(&self) -> &RuntimeConfig {
+        &self.config
+    }
+
     /// Returns a reference to the current state.
     ///
     /// # Example
@@ -250,7 +266,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -276,7 +293,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -344,7 +362,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -374,7 +393,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -468,7 +488,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> {
     /// #         match msg { MyMsg::Increment => state.count += 1 }
     /// #         Command::none()
@@ -622,7 +643,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -779,7 +801,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }

@@ -27,8 +27,9 @@ enum Msg {
 impl App for ConversationApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let mut conversation = ConversationViewState::new()
             .with_title("AI Conversation")
             .with_show_timestamps(true);

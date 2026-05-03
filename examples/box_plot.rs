@@ -25,8 +25,9 @@ enum Msg {
 impl App for BoxPlotApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         // Simulated P50/P95/P99 latency data across services
         let datasets = vec![
             BoxPlotData::new("Auth API", 5.0, 12.0, 18.0, 28.0, 45.0)

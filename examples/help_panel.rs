@@ -28,8 +28,9 @@ enum Msg {
 impl App for HelpPanelApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let help = HelpPanelState::new()
             .with_title("Keybindings")
             .with_groups(vec![

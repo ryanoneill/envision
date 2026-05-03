@@ -26,8 +26,9 @@ enum Msg {
 impl App for CollapsibleApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let collapsible = CollapsibleState::new("Advanced Settings").with_content_height(4);
 
         (State { collapsible }, Command::none())

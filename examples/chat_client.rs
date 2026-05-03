@@ -125,8 +125,9 @@ struct ChatClient;
 impl App for ChatClient {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let palette_items = vec![
             PaletteItem::new("help", "Show Help")
                 .with_shortcut("F1")

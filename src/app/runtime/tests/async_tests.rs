@@ -151,8 +151,9 @@ enum FallibleMsg {
 impl App for FallibleApp {
     type State = FallibleState;
     type Message = FallibleMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (FallibleState::default(), Command::none())
     }
 
@@ -341,8 +342,9 @@ enum InitCommandMsg {
 impl App for InitCommandApp {
     type State = InitCommandState;
     type Message = InitCommandMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         // Return a command that sends Initialized message
         (
             InitCommandState::default(),
@@ -390,8 +392,9 @@ enum TickingMsg {
 impl App for TickingApp {
     type State = TickingState;
     type Message = TickingMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (TickingState::default(), Command::none())
     }
 

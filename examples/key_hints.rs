@@ -52,8 +52,9 @@ fn edit_hints() -> KeyHintsState {
 impl App for KeyHintsApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let state = State {
             hints: normal_hints(),
             mode: AppMode::Normal,

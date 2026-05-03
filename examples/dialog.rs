@@ -28,8 +28,9 @@ enum Msg {
 impl App for DialogApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let dialog = DialogState::new(
             "Unsaved Changes",
             "You have unsaved changes.\nWhat would you like to do?",

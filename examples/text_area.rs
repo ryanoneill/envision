@@ -26,8 +26,9 @@ enum Msg {
 impl App for TextAreaApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let initial_text = "Hello, TextArea!\nEdit this content.\nLine three.";
         let editor = TextAreaState::new().with_value(initial_text);
 

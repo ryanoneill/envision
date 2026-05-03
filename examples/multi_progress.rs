@@ -26,8 +26,9 @@ enum Msg {
 impl App for MultiProgressApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let mut progress = MultiProgressState::new().with_title("Downloads");
 
         progress.add("file1", "linux-kernel.tar.gz");

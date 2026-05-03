@@ -44,8 +44,9 @@ const SIDEBAR_ITEMS: &[&str] = &["Dashboard", "Reports", "Settings", "Help"];
 impl App for FocusManagerApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let focus = FocusManager::with_initial_focus(vec![
             Panel::Sidebar,
             Panel::Content,

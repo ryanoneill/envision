@@ -1,0 +1,20 @@
+error[E0599]: the method `build` exists for struct `RuntimeBuilder<ArgsApp, CaptureBackend>`, but its trait bounds were not satisfied
+  --> tests/trybuild_app_args/missing_with_args.rs:41:10
+   |
+19 |   struct MyArgs {
+   |   ------------- doesn't satisfy `MyArgs: OptionalArgs`
+...
+40 |       let _ = Runtime::<ArgsApp, _>::virtual_builder(80, 24)
+   |  _____________-
+41 | |         .build()
+   | |         -^^^^^ method cannot be called on `RuntimeBuilder<ArgsApp, CaptureBackend>` due to unsatisfied trait bounds
+   | |_________|
+   |
+   |
+   = note: the following trait bounds were not satisfied:
+           `MyArgs: OptionalArgs`
+note: the trait `OptionalArgs` must be implemented
+  --> src/app/model/optional_args.rs
+   |
+   | pub trait OptionalArgs: sealed::Sealed {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

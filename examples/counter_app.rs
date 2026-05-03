@@ -37,9 +37,10 @@ enum Msg {
 impl App for CounterApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
     /// Initialize the application state
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let mut state = State::default();
         state.history.push("App initialized".to_string());
         (state, Command::none())

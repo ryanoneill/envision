@@ -93,8 +93,9 @@ struct LogExplorer;
 impl App for LogExplorer {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         // Build command palette actions
         let palette_items = vec![
             PaletteItem::new("clear", "Clear All Logs")

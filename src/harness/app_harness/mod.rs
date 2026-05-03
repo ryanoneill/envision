@@ -21,7 +21,8 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = ();
+//! #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
@@ -37,7 +38,7 @@ use ratatui::layout::Position;
 use crate::error;
 use tokio_util::sync::CancellationToken;
 
-use crate::app::{App, BoxedSubscription, Command, Runtime, RuntimeConfig, Subscription};
+use crate::app::{App, BoxedSubscription, OptionalArgs, Runtime, RuntimeConfig, Subscription};
 use crate::backend::CaptureBackend;
 use crate::input::{Event, EventQueue};
 
@@ -51,8 +52,14 @@ pub struct AppHarness<A: App> {
     runtime: Runtime<A, CaptureBackend>,
 }
 
-impl<A: App> AppHarness<A> {
+impl<A: App> AppHarness<A>
+where
+    A::Args: OptionalArgs,
+{
     /// Creates a new async test harness with the given dimensions.
+    ///
+    /// Available only when `A::Args = ()`. For apps with non-`()` args,
+    /// use [`AppHarness::with_args`] instead.
     ///
     /// Note: For time control, use `#[tokio::test(start_paused = true)]`.
     ///
@@ -72,7 +79,8 @@ impl<A: App> AppHarness<A> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -88,6 +96,9 @@ impl<A: App> AppHarness<A> {
 
     /// Creates a new async test harness with custom configuration.
     ///
+    /// Available only when `A::Args = ()`. For apps with non-`()` args,
+    /// use [`AppHarness::with_args_and_config`] instead.
+    ///
     /// # Errors
     ///
     /// Returns an error if creating the virtual terminal fails.
@@ -97,64 +108,34 @@ impl<A: App> AppHarness<A> {
             .build()?;
         Ok(Self { runtime })
     }
+}
 
-    /// Creates a test harness with a pre-built state, bypassing [`App::init()`].
-    ///
-    /// This is useful for testing specific application states without
-    /// constructing them through the normal initialization path.
+impl<A: App> AppHarness<A> {
+    /// Creates a test harness, passing args into [`App::init`].
     ///
     /// # Errors
     ///
     /// Returns an error if creating the virtual terminal fails.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// # use envision::prelude::*;
-    /// # use envision::harness::AppHarness;
-    /// # struct MyApp;
-    /// # #[derive(Default, Clone)]
-    /// # struct MyState { count: i32 }
-    /// # #[derive(Clone)]
-    /// # enum MyMsg {}
-    /// # impl App for MyApp {
-    /// #     type State = MyState;
-    /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
-    /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
-    /// #     fn view(state: &MyState, frame: &mut Frame) {}
-    /// # }
-    /// let state = MyState { count: 42 };
-    /// let harness = AppHarness::<MyApp>::with_state(80, 24, state, Command::none())?;
-    /// assert_eq!(harness.state().count, 42);
-    /// # Ok::<(), envision::EnvisionError>(())
-    /// ```
-    pub fn with_state(
-        width: u16,
-        height: u16,
-        state: A::State,
-        init_cmd: Command<A::Message>,
-    ) -> error::Result<Self> {
+    pub fn with_args(width: u16, height: u16, args: A::Args) -> error::Result<Self> {
         let runtime = Runtime::virtual_builder(width, height)
-            .state(state, init_cmd)
+            .with_args(args)
             .build()?;
         Ok(Self { runtime })
     }
 
-    /// Creates a test harness with a pre-built state and custom configuration.
+    /// Creates a test harness with args and custom configuration.
     ///
     /// # Errors
     ///
     /// Returns an error if creating the virtual terminal fails.
-    pub fn with_state_and_config(
+    pub fn with_args_and_config(
         width: u16,
         height: u16,
-        state: A::State,
-        init_cmd: Command<A::Message>,
+        args: A::Args,
         config: RuntimeConfig,
     ) -> error::Result<Self> {
         let runtime = Runtime::virtual_builder(width, height)
-            .state(state, init_cmd)
+            .with_args(args)
             .config(config)
             .build()?;
         Ok(Self { runtime })
@@ -197,7 +178,8 @@ impl<A: App> AppHarness<A> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -251,7 +233,8 @@ impl<A: App> AppHarness<A> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> {
     /// #         match msg { MyMsg::Increment => state.count += 1 }
     /// #         Command::none()
@@ -367,7 +350,8 @@ impl<A: App> AppHarness<A> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }

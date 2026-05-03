@@ -33,24 +33,28 @@
 //!
 //! # State Initialization
 //!
-//! There are two ways to provide the initial state:
+//! [`App::init`] takes [`App::Args`] — an associated type per impl — and returns
+//! the initial state plus any startup command. Apps that need no injected
+//! config declare `type Args = ();`; apps that need CLI arguments, config
+//! files, opened resources, or test fixtures declare a custom `Args` type
+//! and pass values via [`RuntimeBuilder::with_args`].
 //!
-//! - **Standard pattern**: Use [`Runtime::terminal_builder()`] or
-//!   [`Runtime::virtual_builder()`]. These call [`App::init()`] to create
-//!   the initial state and any startup commands.
+//! - **No-args apps** (`type Args = ()`): chain `.build()` directly on the
+//!   builder; the no-args path is gated by the sealed [`OptionalArgs`]
+//!   marker, which is implemented only for `()`.
 //!
-//! - **External state pattern**: Use the builder's `.state()` method
-//!   (e.g., `Runtime::virtual_builder(80, 24).state(s, cmd).build()?`).
-//!   This accepts a pre-built state directly and **does not call**
-//!   [`App::init()`]. Useful when initial state comes from CLI arguments,
-//!   config files, databases, or test fixtures.
+//! - **Args apps**: call `.with_args(args)` before `.build()`. This consumes
+//!   the [`RuntimeBuilder`] and returns a [`ConfiguredRuntimeBuilder`] whose
+//!   `build()` is unconditionally available. Any prior config-shaping calls
+//!   (`tick_rate`, `frame_rate`, etc.) are preserved across the promotion.
 //!
-//! Even when using `.state()`, [`App::init()`] must still be implemented
-//! because it is a required trait method. A simple stub returning default
-//! values is sufficient.
+//! Forgetting `.with_args(...)` for a non-`()` Args type is a compile error,
+//! not a runtime panic — `RuntimeBuilder::build()` is only in scope when
+//! `A::Args: OptionalArgs`.
 //!
 //! [`Runtime::terminal_builder()`]: Runtime::terminal_builder
 //! [`Runtime::virtual_builder()`]: Runtime::virtual_builder
+//! [`RuntimeBuilder::with_args`]: RuntimeBuilder::with_args
 //!
 //! # Example
 //!
@@ -79,8 +83,9 @@
 //! impl App for CounterApp {
 //!     type State = CounterState;
 //!     type Message = CounterMsg;
+//!     type Args = ();
 //!
-//!     fn init() -> (Self::State, Command<Self::Message>) {
+//!     fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
 //!         (CounterState::default(), Command::none())
 //!     }
 //!
@@ -111,12 +116,13 @@ mod update;
 pub mod worker;
 
 pub use command::{BoxedError, Command, CommandHandler};
-pub use model::App;
+pub use model::{App, OptionalArgs};
 #[cfg(feature = "serialization")]
 pub use persistence::load_state;
 pub use runtime::terminal::restore_terminal;
 pub use runtime::{
-    Runtime, RuntimeBuilder, RuntimeConfig, TerminalHook, TerminalRuntime, VirtualRuntime,
+    ConfiguredRuntimeBuilder, Runtime, RuntimeBuilder, RuntimeConfig, TerminalHook,
+    TerminalRuntime, VirtualRuntime,
 };
 pub use subscription::{
     BatchSubscription, BoxedSubscription, ChannelSubscription, DebounceSubscription,

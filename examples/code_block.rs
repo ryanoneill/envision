@@ -28,8 +28,9 @@ enum Msg {
 impl App for CodeBlockApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let code = r#"use std::collections::HashMap;
 
 /// A simple key-value store.

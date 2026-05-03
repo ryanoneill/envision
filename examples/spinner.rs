@@ -29,8 +29,9 @@ enum Msg {
 impl App for SpinnerApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let state = State {
             dots: SpinnerState::with_label("Loading data..."),
             line: SpinnerState::with_style(SpinnerStyle::Line),

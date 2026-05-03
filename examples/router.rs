@@ -37,8 +37,9 @@ enum Msg {
 impl App for RouterApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let router = RouterState::new(Screen::Home).with_max_history(10);
         (State { router }, Command::none())
     }

@@ -21,7 +21,8 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = ();
+//! #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
@@ -47,7 +48,8 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = ();
+//! #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
@@ -71,7 +73,8 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = ();
+//! #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
@@ -113,8 +116,9 @@
 //! impl App for MyApp {
 //!     type State = MyState;
 //!     type Message = MyMsg;
+//!     type Args = ();
 //!
-//!     fn init() -> (Self::State, Command<Self::Message>) {
+//!     fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
 //!         (MyState, Command::none())
 //!     }
 //!     fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
@@ -173,12 +177,13 @@ pub use annotation::{
 pub use app::load_state;
 pub use app::{
     App, BatchSubscription, BoxedSubscription, ChannelSubscription, Command, CommandHandler,
-    DebounceSubscription, FilterSubscription, FnUpdate, IntervalImmediateBuilder,
-    IntervalImmediateSubscription, MappedSubscription, Runtime, RuntimeBuilder, RuntimeConfig,
-    StateExt, StreamSubscription, Subscription, SubscriptionExt, TakeSubscription,
-    TerminalEventSubscription, TerminalHook, TerminalRuntime, ThrottleSubscription,
-    TickSubscription, TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription,
-    Update, UpdateResult, VirtualRuntime, batch, interval_immediate, terminal_events, tick,
+    ConfiguredRuntimeBuilder, DebounceSubscription, FilterSubscription, FnUpdate,
+    IntervalImmediateBuilder, IntervalImmediateSubscription, MappedSubscription, OptionalArgs,
+    Runtime, RuntimeBuilder, RuntimeConfig, StateExt, StreamSubscription, Subscription,
+    SubscriptionExt, TakeSubscription, TerminalEventSubscription, TerminalHook, TerminalRuntime,
+    ThrottleSubscription, TickSubscription, TickSubscriptionBuilder, TimerSubscription,
+    UnboundedChannelSubscription, Update, UpdateResult, VirtualRuntime, batch, interval_immediate,
+    terminal_events, tick,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
 // Core component traits and utilities (always available)
@@ -421,7 +426,8 @@ pub use theme::Theme;
 pub mod prelude {
     // Core framework
     pub use crate::app::{
-        App, Command, Runtime, RuntimeBuilder, RuntimeConfig, TerminalRuntime, VirtualRuntime,
+        App, Command, ConfiguredRuntimeBuilder, OptionalArgs, Runtime, RuntimeBuilder,
+        RuntimeConfig, TerminalRuntime, VirtualRuntime,
     };
 
     // Subscriptions

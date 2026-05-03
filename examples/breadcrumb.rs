@@ -27,8 +27,9 @@ enum Msg {
 impl App for BreadcrumbApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let segments = vec![
             BreadcrumbSegment::new("Home").with_data("/"),
             BreadcrumbSegment::new("Documents").with_data("/documents"),

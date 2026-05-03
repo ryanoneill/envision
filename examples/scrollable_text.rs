@@ -28,8 +28,9 @@ enum Msg {
 impl App for ScrollableTextApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let content = (1..=50)
             .map(|i| {
                 format!(

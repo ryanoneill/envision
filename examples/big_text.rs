@@ -30,8 +30,9 @@ enum Msg {
 impl App for BigTextApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let clock = BigTextState::new("12:30")
             .with_color(Color::Cyan)
             .with_alignment(Alignment::Center);

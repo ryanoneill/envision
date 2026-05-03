@@ -56,8 +56,9 @@ fn build_profile() -> FlameNode {
 impl App for FlameGraphApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let graph = FlameGraphState::with_root(build_profile()).with_title("CPU Profile");
 
         (State { graph }, Command::none())

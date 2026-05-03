@@ -25,8 +25,9 @@ enum Msg {
 impl App for TimelineApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         // Simulate an HTTP request trace
         let events = vec![
             TimelineEvent::new("req-start", 0.0, "Request Start").with_color(Color::Green),

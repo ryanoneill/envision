@@ -26,8 +26,9 @@ enum Msg {
 impl App for StatusLogApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let mut log = StatusLogState::new()
             .with_title("Status Log")
             .with_max_entries(20);

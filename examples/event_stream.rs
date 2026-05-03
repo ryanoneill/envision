@@ -26,8 +26,9 @@ enum Msg {
 impl App for EventStreamApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let mut stream = EventStreamState::new()
             .with_title("System Events")
             .with_visible_columns(vec![]);

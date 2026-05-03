@@ -85,7 +85,8 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState { count: 0 }, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState { count: 0 }, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -237,7 +238,8 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState { count: 0 }, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_args: ()) -> (MyState, Command<MyMsg>) { (MyState { count: 0 }, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }

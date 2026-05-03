@@ -18,8 +18,9 @@ enum TestMsg {
 impl App for TestApp {
     type State = TestState;
     type Message = TestMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (TestState::default(), Command::none())
     }
 
@@ -39,14 +40,14 @@ impl App for TestApp {
 
 #[test]
 fn test_app_init() {
-    let (state, cmd) = TestApp::init();
+    let (state, cmd) = TestApp::init(());
     assert_eq!(state.counter, 0);
     assert!(cmd.is_none());
 }
 
 #[test]
 fn test_app_update() {
-    let (mut state, _) = TestApp::init();
+    let (mut state, _) = TestApp::init(());
 
     TestApp::update(&mut state, TestMsg::Increment);
     assert_eq!(state.counter, 1);
@@ -69,7 +70,7 @@ fn test_default_handle_event() {
 
 #[test]
 fn test_default_should_quit() {
-    let (state, _) = TestApp::init();
+    let (state, _) = TestApp::init(());
 
     // Default implementation returns false
     assert!(!TestApp::should_quit(&state));
@@ -77,7 +78,7 @@ fn test_default_should_quit() {
 
 #[test]
 fn test_default_on_tick() {
-    let (state, _) = TestApp::init();
+    let (state, _) = TestApp::init(());
 
     // Default implementation returns None
     let result = TestApp::on_tick(&state);
@@ -86,7 +87,7 @@ fn test_default_on_tick() {
 
 #[test]
 fn test_default_on_exit() {
-    let (state, _) = TestApp::init();
+    let (state, _) = TestApp::init(());
 
     // Default implementation does nothing (no panic)
     TestApp::on_exit(&state);
@@ -97,7 +98,7 @@ fn test_app_view() {
     use crate::backend::CaptureBackend;
     use ratatui::Terminal;
 
-    let (state, _) = TestApp::init();
+    let (state, _) = TestApp::init(());
     let backend = CaptureBackend::new(80, 24);
     let mut terminal = Terminal::new(backend).unwrap();
 
@@ -130,8 +131,9 @@ enum CustomMsg {
 impl App for CustomApp {
     type State = CustomState;
     type Message = CustomMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (CustomState::default(), Command::none())
     }
 
@@ -186,7 +188,7 @@ fn test_custom_handle_event() {
 
 #[test]
 fn test_custom_should_quit() {
-    let (mut state, _) = CustomApp::init();
+    let (mut state, _) = CustomApp::init(());
 
     assert!(!CustomApp::should_quit(&state));
 
@@ -196,7 +198,7 @@ fn test_custom_should_quit() {
 
 #[test]
 fn test_custom_on_tick() {
-    let (state, _) = CustomApp::init();
+    let (state, _) = CustomApp::init(());
 
     let result = CustomApp::on_tick(&state);
     assert!(matches!(result, Some(CustomMsg::Tick)));
@@ -204,7 +206,7 @@ fn test_custom_on_tick() {
 
 #[test]
 fn test_custom_on_exit() {
-    let (state, _) = CustomApp::init();
+    let (state, _) = CustomApp::init(());
 
     // Should not panic
     CustomApp::on_exit(&state);
@@ -228,8 +230,9 @@ fn test_app_non_clone_state() {
     impl App for NonCloneApp {
         type State = NonCloneState;
         type Message = NonCloneMsg;
+        type Args = ();
 
-        fn init() -> (Self::State, Command<Self::Message>) {
+        fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
             (NonCloneState { value: 0 }, Command::none())
         }
 
@@ -246,7 +249,7 @@ fn test_app_non_clone_state() {
         }
     }
 
-    let (mut state, cmd) = NonCloneApp::init();
+    let (mut state, cmd) = NonCloneApp::init(());
     assert!(cmd.is_none());
     assert_eq!(state.value, 0);
 
@@ -259,7 +262,7 @@ fn test_message_clone() {
     let msg = TestMsg::Increment;
     let cloned = msg.clone();
 
-    let (mut state, _) = TestApp::init();
+    let (mut state, _) = TestApp::init(());
     TestApp::update(&mut state, msg);
     TestApp::update(&mut state, cloned);
 
@@ -272,7 +275,7 @@ fn test_handle_event_with_state_default_delegation() {
     // Calling handle_event_with_state should delegate to handle_event.
     use crate::input::Key;
 
-    let (state, _) = CustomApp::init();
+    let (state, _) = CustomApp::init(());
 
     let event = Event::key(Key::Char('q'));
     let msg = CustomApp::handle_event_with_state(&state, &event);
@@ -283,51 +286,45 @@ fn test_handle_event_with_state_default_delegation() {
     assert!(matches!(msg, Some(CustomMsg::KeyPressed('a'))));
 }
 
-// Test that App::init() can be omitted when using with_state constructors
-struct WithStateApp;
+// `App::init` is now required (no default impl), and is invoked via the
+// builder with explicit args. The previous "with_state" app pattern (which
+// relied on omitting `init` because `.state()` bypassed it) is no longer
+// applicable: callers either declare `type Args = ();` and let `init`
+// produce the state, or declare a custom `Args` type and pass external
+// dependencies via [`RuntimeBuilder::with_args`].
+//
+// The compile-time enforcement is verified by the `OptionalArgs`
+// trait-bound on `RuntimeBuilder::build`. The trybuild compile-fail fixture
+// in `tests/trybuild_app_args/` (Phase 3) covers the bad-shape case.
 
-struct WithStateState {
-    config_value: String,
-}
+#[test]
+fn test_args_unit_default_works_with_build() {
+    use crate::app::Runtime;
 
-#[derive(Clone)]
-enum WithStateMsg {
-    Update(String),
-}
+    struct UnitArgsApp;
+    #[derive(Clone, Default)]
+    struct UnitState;
+    #[derive(Clone)]
+    enum UnitMsg {}
 
-impl App for WithStateApp {
-    type State = WithStateState;
-    type Message = WithStateMsg;
+    impl App for UnitArgsApp {
+        type State = UnitState;
+        type Message = UnitMsg;
+        type Args = ();
 
-    // init() deliberately omitted — uses the default panic implementation
-
-    fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
-        match msg {
-            WithStateMsg::Update(v) => state.config_value = v,
+        fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
+            (UnitState, Command::none())
         }
-        Command::none()
+
+        fn update(_: &mut Self::State, _: Self::Message) -> Command<Self::Message> {
+            Command::none()
+        }
+
+        fn view(_: &Self::State, _: &mut ratatui::Frame) {}
     }
 
-    fn view(_state: &Self::State, _frame: &mut Frame) {}
-}
-
-#[test]
-fn test_with_state_app_compiles_without_init() {
-    // Verify that an App impl without init() compiles and works correctly
-    // when state is constructed externally (as with_state constructors do).
-    let mut state = WithStateState {
-        config_value: "from_config".into(),
-    };
-    assert_eq!(state.config_value, "from_config");
-
-    WithStateApp::update(&mut state, WithStateMsg::Update("updated".into()));
-    assert_eq!(state.config_value, "updated");
-}
-
-#[test]
-#[should_panic(expected = "App::init() is not implemented")]
-fn test_default_init_panics_with_helpful_message() {
-    // The default init() should panic with a descriptive message
-    // when called on an App that hasn't overridden it.
-    let _ = WithStateApp::init();
+    let _ = Runtime::<UnitArgsApp, _>::virtual_builder(80, 24)
+        .build()
+        .unwrap();
+    // No with_args needed — () is OptionalArgs.
 }
