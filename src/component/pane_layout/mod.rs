@@ -42,6 +42,8 @@ use ratatui::widgets::{Block, Borders};
 use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, Key};
 
+mod view_with;
+
 /// The direction in which panes are arranged.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(
