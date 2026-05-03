@@ -287,6 +287,23 @@ impl Theme {
     /// - Warning: Nord13 (yellow #EBCB8B)
     /// - Error: Nord11 (red #BF616A)
     ///
+    /// # Palette mapping
+    ///
+    /// Nord's 16-color palette doesn't include every Catppuccin name. The palette is
+    /// populated with nearest-equivalent mappings:
+    ///
+    /// - `Rosewater` / `Flamingo` → Nord4 (Snow Storm light)
+    /// - `Pink` / `Mauve` / `Lavender` → Nord15 (Aurora purple — closest hue)
+    /// - `Red` / `Maroon` → Nord11 (Aurora red)
+    /// - `Peach` → Nord12 (Aurora orange)
+    /// - `Yellow` → Nord13 (Aurora yellow)
+    /// - `Green` → Nord14 (Aurora green)
+    /// - `Teal` → Nord7 (Frost teal)
+    /// - `Sky` / `Sapphire` / `Blue` → Nord8 / Nord9 / Nord10 (Frost blues, light → deep)
+    /// - Text tones → Nord4–Nord6 (Snow Storm)
+    /// - Overlay tones → Nord3 (Polar Night borders)
+    /// - Surface / base tones → Nord0–Nord2 (Polar Night)
+    ///
     /// # Example
     ///
     /// ```rust
@@ -317,8 +334,34 @@ impl Theme {
             progress_filled: NORD8,
             progress_empty: NORD1,
 
-            // Placeholder palette — replaced with Nord-specific mappings in Task 6.
-            palette: Theme::catppuccin_mocha().palette,
+            palette: Palette {
+                rosewater: NORD4,
+                flamingo:  NORD4,
+                pink:      NORD15,
+                mauve:     NORD15,
+                red:       NORD11,
+                maroon:    NORD11,
+                peach:     NORD12,
+                yellow:    NORD13,
+                green:     NORD14,
+                teal:      NORD7,
+                sky:       NORD8,
+                sapphire:  NORD9,
+                blue:      NORD10,
+                lavender:  NORD15,
+                text:      NORD6,
+                subtext1:  NORD5,
+                subtext0:  NORD4,
+                overlay2:  NORD3,
+                overlay1:  NORD3,
+                overlay0:  NORD3,
+                surface2:  NORD2,
+                surface1:  NORD1,
+                surface0:  NORD1,
+                base:      NORD0,
+                mantle:    NORD0,
+                crust:     NORD0,
+            },
         }
     }
 

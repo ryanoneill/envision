@@ -492,3 +492,48 @@ fn test_catppuccin_palette_pinned() {
     assert_eq!(p.mantle, CATPPUCCIN_MANTLE);
     assert_eq!(p.crust, CATPPUCCIN_CRUST);
 }
+
+#[test]
+fn test_nord_palette_pinned() {
+    // Pin Nord's nearest-equivalent palette mapping. Documented in Theme::nord().
+    let theme = Theme::nord();
+    let p = &theme.palette;
+
+    // Nord Aurora warm accents map to closest hue.
+    assert_eq!(p.red, NORD11);              // Nord red
+    assert_eq!(p.maroon, NORD11);           // No native maroon; reuse red
+    assert_eq!(p.peach, NORD12);            // Nord orange
+    assert_eq!(p.yellow, NORD13);           // Nord yellow
+    assert_eq!(p.green, NORD14);            // Nord green
+    assert_eq!(p.teal, NORD7);              // Nord frost teal
+
+    // Nord pinks/rosewaters: no native; map to Snow Storm light tones.
+    assert_eq!(p.rosewater, NORD4);
+    assert_eq!(p.flamingo, NORD4);
+
+    // Nord purples (only Nord15 exists): pink/mauve/lavender all to Nord15.
+    assert_eq!(p.pink, NORD15);
+    assert_eq!(p.mauve, NORD15);
+    assert_eq!(p.lavender, NORD15);
+
+    // Nord Frost cool blues.
+    assert_eq!(p.sky, NORD8);               // light blue
+    assert_eq!(p.sapphire, NORD9);          // mid blue
+    assert_eq!(p.blue, NORD10);             // deep blue
+
+    // Text/overlay tones from Snow Storm (light → less light).
+    assert_eq!(p.text, NORD6);
+    assert_eq!(p.subtext1, NORD5);
+    assert_eq!(p.subtext0, NORD4);
+    assert_eq!(p.overlay2, NORD3);
+    assert_eq!(p.overlay1, NORD3);
+    assert_eq!(p.overlay0, NORD3);
+
+    // Surface/background tones from Polar Night (light → dark).
+    assert_eq!(p.surface2, NORD2);
+    assert_eq!(p.surface1, NORD1);
+    assert_eq!(p.surface0, NORD1);
+    assert_eq!(p.base, NORD0);
+    assert_eq!(p.mantle, NORD0);
+    assert_eq!(p.crust, NORD0);
+}
