@@ -18,9 +18,14 @@ Spec PR #459, plan PR #460, implementation PR #461 (`235bcae`). Leadline migrati
 - **G3 / D4** ✅ Per-cell styling — shipped as unified `Cell { text, style, sort_key }` type with style-flavored constructors and theme-mapped render
 - **G7** ✅ `SortBy` 3-cycle redesign — shipped as `SortAsc/Desc/Toggle/Clear/RemoveSort` vocabulary + `Column::with_default_sort` + `TableState::with_initial_sort(s)`. Leadline confirmed: net -33 lines after migration; three workaround helpers (`apply_table_msg`, `apply_sort_persistent`, `strip_suffix_numeric_comparator`) deleted.
 
+### Resolved 2026-05-02 — App::init args redesign
+
+Spec PR #463, plan PR #464, implementation PR #465 (`82a9a41`).
+
+- **D1** ✅ `App::init` takes args — shipped as `App::Args` associated type (no default; explicit `type Args = ();` per stable-Rust constraint), `App::init(args: Self::Args)`, sealed `OptionalArgs` marker gating the `()` shortcut, and a `RuntimeBuilder` → `ConfiguredRuntimeBuilder` typestate-lite split via `with_args` promotion. `RuntimeBuilder::state(...)` deleted (subsumed). `panic!` default on `init` removed. Test-ergonomics unlock pinned: multi-Runtime parallelism + trybuild compile-fail. Migrated 157 sites across 113 files.
+
 ### High-leverage follow-ups (leadline's stated priorities)
 
-- **D1** `App::init` takes no args — every consumer reinvents the static-injection pattern. Want `App::init(args: Self::Args)` with `type Args` defaulting to `()`, plus `Runtime::*_builder().with_args(args)`. Static `OnceLock` workarounds also break multi-Runtime tests.
 - **D2** `PaneLayout` consumer flow has magic-number coupling — `state.layout` → `PaneLayout::view` → `rect.inner(Margin{1,1})`. Hardcoded `Margin{1,1}` knowledge breaks silently if envision changes border thickness. Want `PaneLayout::view_with(state, ctx, |pane_id, child_ctx| ...)` — envision computes inner rects.
 - **D5** No "render styled Line into Rect" primitive — six types and three method calls to draw a single styled line. Want `envision::render::line(frame, area, line, theme)` or a tiny `StyledLine` component.
 - **D7** View-snapshot testing is undocumented — `AppHarness`/`TestHarness` exist but no docs explaining when to reach for them. Want documented "render at W×H, dispatch event sequence, snapshot cell buffer" pattern.
@@ -49,7 +54,7 @@ This is a sketch — treat as draft until reviewed.
 
 1. ~~**Current brainstorm PR**: G1 + G3 + D4 + G7 (Table/Sort/Cell unification, ResourceTable merger, sort vocabulary redesign).~~ ✅ shipped 2026-05-02 via PR #461
 2. **High-leverage batch — separate PRs each**:
-   - D1 (`App::init` args + `Runtime` builder)
+   - ~~D1 (`App::init` args + `Runtime` builder)~~ ✅ shipped 2026-05-02 via PR #465
    - D2 (`PaneLayout::view_with` closure flow)
    - D5 (styled-line primitive)
    - D7 (snapshot testing docs/example)
