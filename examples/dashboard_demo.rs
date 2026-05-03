@@ -530,7 +530,15 @@ impl App for DashboardChannelApp {
     type Args = tokio::sync::mpsc::UnboundedSender<Msg>;
 
     fn init(build_tx: Self::Args) -> (ChannelState, Command<Msg>) {
-        let (inner, _cmd) = <DashboardApp as App>::init(());
+        // DashboardApp::init returns Command::none() by construction — see
+        // its impl above. If that ever changes, the dropped command would
+        // be a silent regression here. The debug_assert pins the
+        // expectation so future divergence surfaces as a test failure.
+        let (inner, inner_cmd) = <DashboardApp as App>::init(());
+        debug_assert!(
+            inner_cmd.is_none(),
+            "DashboardChannelApp wrapper assumes inner DashboardApp::init returns Command::none()",
+        );
         (ChannelState { inner, build_tx }, Command::none())
     }
 

@@ -194,24 +194,34 @@ impl<A: App, B: Backend> RuntimeBuilder<A, B> {
     ///
     /// ```rust
     /// # use envision::prelude::*;
+    /// # use std::path::PathBuf;
     /// # struct MyApp;
+    /// # #[derive(Clone)]
+    /// # struct MyArgs { dir: PathBuf }
     /// # #[derive(Default, Clone)]
-    /// # struct MyState;
+    /// # struct MyState { dir: PathBuf }
     /// # #[derive(Clone)]
     /// # enum MyMsg {}
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     type Args = ();
-    /// #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = MyArgs;
+    /// #     fn init(args: MyArgs) -> (MyState, Command<MyMsg>) {
+    /// #         (MyState { dir: args.dir }, Command::none())
+    /// #     }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
+    /// let args = MyArgs { dir: PathBuf::from("/tmp/example") };
     /// let runtime = Runtime::<MyApp, _>::virtual_builder(80, 24)
-    ///     .with_args(())
+    ///     .with_args(args)
     ///     .build()?;
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```
+    ///
+    /// For apps whose `Args = ()` you typically don't need this method — the
+    /// `OptionalArgs` shortcut on [`build`](Self::build) handles the unit
+    /// case implicitly.
     pub fn with_args(self, args: A::Args) -> ConfiguredRuntimeBuilder<A, B> {
         ConfiguredRuntimeBuilder {
             backend: self.backend,
