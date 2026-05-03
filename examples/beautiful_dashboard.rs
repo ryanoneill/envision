@@ -22,19 +22,11 @@ use envision::component::{
     ToastMessage, ToastState,
 };
 use envision::prelude::*;
+use envision::theme::NamedColor;
 use ratatui::layout::{Alignment, Constraint, Layout};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Padding};
-
-// =============================================================================
-// Theme colors - Catppuccin Mocha palette for direct styling
-// =============================================================================
-
-use envision::theme::{
-    CATPPUCCIN_BASE, CATPPUCCIN_GREEN, CATPPUCCIN_LAVENDER, CATPPUCCIN_MAUVE, CATPPUCCIN_OVERLAY0,
-    CATPPUCCIN_SAPPHIRE, CATPPUCCIN_SURFACE2,
-};
 
 // =============================================================================
 // Focus management
@@ -94,9 +86,12 @@ impl Default for State {
             59.0, 60.0, 61.0, 62.0, 63.0, 64.0,
         ];
 
+        let theme = Theme::catppuccin_mocha();
         let chart = ChartState::line(vec![
-            DataSeries::new("CPU %", cpu_data.clone()).with_color(CATPPUCCIN_SAPPHIRE),
-            DataSeries::new("Memory %", mem_data.clone()).with_color(CATPPUCCIN_MAUVE),
+            DataSeries::new("CPU %", cpu_data.clone())
+                .with_color(theme.color(NamedColor::Sapphire)),
+            DataSeries::new("Memory %", mem_data.clone())
+                .with_color(theme.color(NamedColor::Mauve)),
         ])
         .with_title("System Performance")
         .with_y_label("%")
@@ -212,13 +207,14 @@ impl App for DashboardApp {
                 }
 
                 // Update chart series
+                let theme = Theme::catppuccin_mocha();
                 if let Some(series) = state.chart.get_series_mut(0) {
                     *series = DataSeries::new("CPU %", state.cpu_history.clone())
-                        .with_color(CATPPUCCIN_SAPPHIRE);
+                        .with_color(theme.color(NamedColor::Sapphire));
                 }
                 if let Some(series) = state.chart.get_series_mut(1) {
                     *series = DataSeries::new("Memory %", state.mem_history.clone())
-                        .with_color(CATPPUCCIN_MAUVE);
+                        .with_color(theme.color(NamedColor::Mauve));
                 }
 
                 // Update progress bars
@@ -304,7 +300,7 @@ impl App for DashboardApp {
         let area = frame.area();
 
         // Clear background
-        let bg_block = Block::default().style(Style::default().bg(CATPPUCCIN_BASE));
+        let bg_block = Block::default().style(Style::default().bg(theme.color(NamedColor::Base)));
         frame.render_widget(bg_block, area);
 
         // Main layout
@@ -368,7 +364,7 @@ fn sync_focus(_state: &mut State) {
     // No-op: focused/disabled state is passed via EventContext, not stored in component state.
 }
 
-fn render_title_bar(state: &State, frame: &mut Frame, area: Rect, _theme: &Theme) {
+fn render_title_bar(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
     let tick_indicator = if state.tick_count % 4 == 0 {
         "\u{25cf}"
     } else if state.tick_count % 4 == 1 {
@@ -383,24 +379,24 @@ fn render_title_bar(state: &State, frame: &mut Frame, area: Rect, _theme: &Theme
         Span::styled(
             " \u{2728} Envision System Monitor ",
             Style::default()
-                .fg(CATPPUCCIN_LAVENDER)
+                .fg(theme.color(NamedColor::Lavender))
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(tick_indicator, Style::default().fg(CATPPUCCIN_GREEN)),
+        Span::styled(tick_indicator, Style::default().fg(theme.color(NamedColor::Green))),
     ]);
 
     let status = format!(" tick: {} ", state.tick_count);
     let title_block = Block::default()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::default().fg(CATPPUCCIN_SURFACE2))
+        .border_style(Style::default().fg(theme.color(NamedColor::Surface2)))
         .padding(Padding::horizontal(1))
         .title(title)
         .title_alignment(Alignment::Left)
         .title_bottom(
             Line::from(vec![Span::styled(
                 status,
-                Style::default().fg(CATPPUCCIN_OVERLAY0),
+                Style::default().fg(theme.color(NamedColor::Overlay0)),
             )])
             .alignment(Alignment::Right),
         );
@@ -412,22 +408,22 @@ fn render_navigation(state: &State, frame: &mut Frame, area: Rect, theme: &Theme
     let is_focused = state.focus.is_focused(&Panel::Navigation);
 
     let border_color = if is_focused {
-        CATPPUCCIN_LAVENDER
+        theme.color(NamedColor::Lavender)
     } else {
-        CATPPUCCIN_SURFACE2
+        theme.color(NamedColor::Surface2)
     };
 
     let block = Block::default()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::default().fg(border_color).bg(CATPPUCCIN_BASE))
+        .border_style(Style::default().fg(border_color).bg(theme.color(NamedColor::Base)))
         .title(Span::styled(
             " Navigation ",
             Style::default()
                 .fg(if is_focused {
-                    CATPPUCCIN_LAVENDER
+                    theme.color(NamedColor::Lavender)
                 } else {
-                    CATPPUCCIN_OVERLAY0
+                    theme.color(NamedColor::Overlay0)
                 })
                 .add_modifier(Modifier::BOLD),
         ))
@@ -450,22 +446,22 @@ fn render_content(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
     // ── Chart Panel ──
     let chart_focused = state.focus.is_focused(&Panel::Chart);
     let chart_border = if chart_focused {
-        CATPPUCCIN_LAVENDER
+        theme.color(NamedColor::Lavender)
     } else {
-        CATPPUCCIN_SURFACE2
+        theme.color(NamedColor::Surface2)
     };
 
     let chart_block = Block::default()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::default().fg(chart_border).bg(CATPPUCCIN_BASE))
+        .border_style(Style::default().fg(chart_border).bg(theme.color(NamedColor::Base)))
         .title(Span::styled(
             " CPU & Memory ",
             Style::default()
                 .fg(if chart_focused {
-                    CATPPUCCIN_LAVENDER
+                    theme.color(NamedColor::Lavender)
                 } else {
-                    CATPPUCCIN_OVERLAY0
+                    theme.color(NamedColor::Overlay0)
                 })
                 .add_modifier(Modifier::BOLD),
         ))
@@ -481,22 +477,22 @@ fn render_content(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
     // ── Metrics Panel ──
     let metrics_focused = state.focus.is_focused(&Panel::Metrics);
     let metrics_border = if metrics_focused {
-        CATPPUCCIN_LAVENDER
+        theme.color(NamedColor::Lavender)
     } else {
-        CATPPUCCIN_SURFACE2
+        theme.color(NamedColor::Surface2)
     };
 
     let metrics_block = Block::default()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::default().fg(metrics_border).bg(CATPPUCCIN_BASE))
+        .border_style(Style::default().fg(metrics_border).bg(theme.color(NamedColor::Base)))
         .title(Span::styled(
             " Key Metrics ",
             Style::default()
                 .fg(if metrics_focused {
-                    CATPPUCCIN_LAVENDER
+                    theme.color(NamedColor::Lavender)
                 } else {
-                    CATPPUCCIN_OVERLAY0
+                    theme.color(NamedColor::Overlay0)
                 })
                 .add_modifier(Modifier::BOLD),
         ))
@@ -514,11 +510,15 @@ fn render_progress(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) 
     let block = Block::default()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::default().fg(CATPPUCCIN_SURFACE2).bg(CATPPUCCIN_BASE))
+        .border_style(
+            Style::default()
+                .fg(theme.color(NamedColor::Surface2))
+                .bg(theme.color(NamedColor::Base)),
+        )
         .title(Span::styled(
             " Resources ",
             Style::default()
-                .fg(CATPPUCCIN_OVERLAY0)
+                .fg(theme.color(NamedColor::Overlay0))
                 .add_modifier(Modifier::BOLD),
         ))
         .padding(Padding::horizontal(1));

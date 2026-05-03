@@ -267,6 +267,7 @@ fn test_gruvbox_dark_colors() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_catppuccin_mocha_theme() {
     let theme = Theme::catppuccin_mocha();
     assert_eq!(theme.background, CATPPUCCIN_BASE);
@@ -286,6 +287,7 @@ fn test_catppuccin_mocha_theme() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_catppuccin_mocha_colors() {
     assert_eq!(CATPPUCCIN_BASE, Color::Rgb(30, 30, 46));
     assert_eq!(CATPPUCCIN_LAVENDER, Color::Rgb(180, 190, 254));
@@ -460,6 +462,7 @@ fn test_palette_struct_construction() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_catppuccin_palette_pinned() {
     // Pin every Catppuccin palette entry to its source constant.
     // Future palette tweaks show up as test diffs.
@@ -733,6 +736,7 @@ fn test_default_palette_pinned() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_severity_color_per_theme() {
     // Catppuccin: Good → Green, Mild → Yellow, Bad → Peach, Critical → Red.
     let cat = Theme::catppuccin_mocha();

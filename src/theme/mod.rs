@@ -40,6 +40,7 @@
 //! ```
 
 pub mod catppuccin;
+#[allow(deprecated)]
 pub use catppuccin::*;
 
 pub mod palette;
@@ -691,8 +692,10 @@ impl Theme {
     /// use envision::theme::Theme;
     ///
     /// let theme = Theme::catppuccin_mocha();
-    /// assert_eq!(theme.focused, envision::theme::CATPPUCCIN_LAVENDER);
+    /// // Use with components via RenderContext.
+    /// # let _ = theme;
     /// ```
+    #[allow(deprecated)]
     pub fn catppuccin_mocha() -> Self {
         Self {
             background: CATPPUCCIN_BASE,
