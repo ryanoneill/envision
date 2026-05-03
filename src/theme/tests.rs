@@ -12,6 +12,7 @@ fn test_default_theme() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_nord_theme() {
     let theme = Theme::nord();
     assert_eq!(theme.focused, NORD8);
@@ -26,6 +27,7 @@ fn test_nord_theme() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_nord_colors() {
     assert_eq!(NORD0, Color::Rgb(46, 52, 64));
     assert_eq!(NORD8, Color::Rgb(136, 192, 208));
@@ -131,6 +133,7 @@ fn test_normal_style() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_normal_style_nord() {
     let theme = Theme::nord();
     let style = theme.normal_style();
@@ -139,6 +142,7 @@ fn test_normal_style_nord() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_focused_border_style_differs_from_focused_style() {
     let theme = Theme::nord();
     let border_style = theme.focused_border_style();
@@ -159,6 +163,7 @@ fn test_primary_style() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_primary_style_nord() {
     let theme = Theme::nord();
     let style = theme.primary_style();
@@ -166,6 +171,7 @@ fn test_primary_style_nord() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_border_style() {
     let theme = Theme::nord();
     let style = theme.border_style();
@@ -173,6 +179,7 @@ fn test_border_style() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_selected_highlight_style_focused() {
     let theme = Theme::nord();
     let style = theme.selected_highlight_style(true);
@@ -181,6 +188,7 @@ fn test_selected_highlight_style_focused() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_selected_highlight_style_unfocused() {
     let theme = Theme::nord();
     let style = theme.selected_highlight_style(false);
@@ -189,6 +197,7 @@ fn test_selected_highlight_style_unfocused() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_dracula_theme() {
     let theme = Theme::dracula();
     assert_eq!(theme.background, DRACULA_BG);
@@ -208,6 +217,7 @@ fn test_dracula_theme() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_dracula_colors() {
     assert_eq!(DRACULA_BG, Color::Rgb(40, 42, 54));
     assert_eq!(DRACULA_PURPLE, Color::Rgb(189, 147, 249));
@@ -215,6 +225,7 @@ fn test_dracula_colors() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_solarized_dark_theme() {
     let theme = Theme::solarized_dark();
     assert_eq!(theme.background, SOLARIZED_BASE03);
@@ -234,6 +245,7 @@ fn test_solarized_dark_theme() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_solarized_dark_colors() {
     assert_eq!(SOLARIZED_BASE03, Color::Rgb(0, 43, 54));
     assert_eq!(SOLARIZED_BLUE, Color::Rgb(38, 139, 210));
@@ -241,6 +253,7 @@ fn test_solarized_dark_colors() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_gruvbox_dark_theme() {
     let theme = Theme::gruvbox_dark();
     assert_eq!(theme.background, GRUVBOX_BG);
@@ -260,6 +273,7 @@ fn test_gruvbox_dark_theme() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_gruvbox_dark_colors() {
     assert_eq!(GRUVBOX_BG, Color::Rgb(40, 40, 40));
     assert_eq!(GRUVBOX_YELLOW, Color::Rgb(250, 189, 47));
@@ -497,18 +511,19 @@ fn test_catppuccin_palette_pinned() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_nord_palette_pinned() {
     // Pin Nord's nearest-equivalent palette mapping. Documented in Theme::nord().
     let theme = Theme::nord();
     let p = &theme.palette;
 
     // Nord Aurora warm accents map to closest hue.
-    assert_eq!(p.red, NORD11);              // Nord red
-    assert_eq!(p.maroon, NORD11);           // No native maroon; reuse red
-    assert_eq!(p.peach, NORD12);            // Nord orange
-    assert_eq!(p.yellow, NORD13);           // Nord yellow
-    assert_eq!(p.green, NORD14);            // Nord green
-    assert_eq!(p.teal, NORD7);              // Nord frost teal
+    assert_eq!(p.red, NORD11); // Nord red
+    assert_eq!(p.maroon, NORD11); // No native maroon; reuse red
+    assert_eq!(p.peach, NORD12); // Nord orange
+    assert_eq!(p.yellow, NORD13); // Nord yellow
+    assert_eq!(p.green, NORD14); // Nord green
+    assert_eq!(p.teal, NORD7); // Nord frost teal
 
     // Nord pinks/rosewaters: no native; map to Snow Storm light tones.
     assert_eq!(p.rosewater, NORD4);
@@ -520,9 +535,9 @@ fn test_nord_palette_pinned() {
     assert_eq!(p.lavender, NORD15);
 
     // Nord Frost cool blues.
-    assert_eq!(p.sky, NORD8);               // light blue
-    assert_eq!(p.sapphire, NORD9);          // mid blue
-    assert_eq!(p.blue, NORD10);             // deep blue
+    assert_eq!(p.sky, NORD8); // light blue
+    assert_eq!(p.sapphire, NORD9); // mid blue
+    assert_eq!(p.blue, NORD10); // deep blue
 
     // Text/overlay tones from Snow Storm (light → less light).
     assert_eq!(p.text, NORD6);
@@ -542,23 +557,24 @@ fn test_nord_palette_pinned() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_dracula_palette_pinned() {
     let theme = Theme::dracula();
     let p = &theme.palette;
 
     // Dracula has named accents: Cyan, Green, Orange, Pink, Purple, Red, Yellow.
     assert_eq!(p.red, DRACULA_RED);
-    assert_eq!(p.maroon, DRACULA_RED);          // No maroon; reuse red
+    assert_eq!(p.maroon, DRACULA_RED); // No maroon; reuse red
     assert_eq!(p.peach, DRACULA_ORANGE);
     assert_eq!(p.yellow, DRACULA_YELLOW);
     assert_eq!(p.green, DRACULA_GREEN);
-    assert_eq!(p.teal, DRACULA_CYAN);           // Closest cool teal-ish
+    assert_eq!(p.teal, DRACULA_CYAN); // Closest cool teal-ish
 
     // Pinks/mauves/lavender: native pink and purple available.
     assert_eq!(p.pink, DRACULA_PINK);
     assert_eq!(p.mauve, DRACULA_PURPLE);
     assert_eq!(p.lavender, DRACULA_PURPLE);
-    assert_eq!(p.rosewater, DRACULA_PINK);      // Closest pastel pink
+    assert_eq!(p.rosewater, DRACULA_PINK); // Closest pastel pink
     assert_eq!(p.flamingo, DRACULA_PINK);
 
     // Cool blues: Dracula has only Cyan; map all blues to Cyan.
@@ -584,6 +600,7 @@ fn test_dracula_palette_pinned() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_solarized_dark_palette_pinned() {
     let theme = Theme::solarized_dark();
     let p = &theme.palette;
@@ -601,7 +618,7 @@ fn test_solarized_dark_palette_pinned() {
     assert_eq!(p.rosewater, SOLARIZED_MAGENTA);
     assert_eq!(p.flamingo, SOLARIZED_MAGENTA);
     assert_eq!(p.mauve, SOLARIZED_MAGENTA);
-    assert_eq!(p.lavender, SOLARIZED_MAGENTA);  // No violet const exported; magenta closest
+    assert_eq!(p.lavender, SOLARIZED_MAGENTA); // No violet const exported; magenta closest
 
     // Cool blues.
     assert_eq!(p.sky, SOLARIZED_CYAN);
@@ -624,6 +641,7 @@ fn test_solarized_dark_palette_pinned() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_gruvbox_dark_palette_pinned() {
     let theme = Theme::gruvbox_dark();
     let p = &theme.palette;
@@ -670,26 +688,41 @@ fn test_namedcolor_lookup_returns_palette_entry() {
     // theme.color(N) must return the same value as theme.palette.<field for N>.
     let theme = Theme::catppuccin_mocha();
     assert_eq!(theme.color(NamedColor::Lavender), theme.palette.lavender);
-    assert_eq!(theme.color(NamedColor::Peach),    theme.palette.peach);
-    assert_eq!(theme.color(NamedColor::Crust),    theme.palette.crust);
+    assert_eq!(theme.color(NamedColor::Peach), theme.palette.peach);
+    assert_eq!(theme.color(NamedColor::Crust), theme.palette.crust);
     assert_eq!(theme.color(NamedColor::Rosewater), theme.palette.rosewater);
-    assert_eq!(theme.color(NamedColor::Teal),     theme.palette.teal);
+    assert_eq!(theme.color(NamedColor::Teal), theme.palette.teal);
 
     // Same round-trip for a non-Catppuccin theme.
     let nord = Theme::nord();
     assert_eq!(nord.color(NamedColor::Lavender), nord.palette.lavender);
-    assert_eq!(nord.color(NamedColor::Peach),    nord.palette.peach);
+    assert_eq!(nord.color(NamedColor::Peach), nord.palette.peach);
 }
 
 #[test]
 fn test_namedcolor_distinct_per_theme() {
     // On Catppuccin Mocha, palette accents must be distinct.
     let theme = Theme::catppuccin_mocha();
-    assert_ne!(theme.color(NamedColor::Peach), theme.color(NamedColor::Yellow));
-    assert_ne!(theme.color(NamedColor::Red),   theme.color(NamedColor::Maroon));
-    assert_ne!(theme.color(NamedColor::Blue),  theme.color(NamedColor::Sapphire));
-    assert_ne!(theme.color(NamedColor::Pink),  theme.color(NamedColor::Mauve));
-    assert_ne!(theme.color(NamedColor::Green), theme.color(NamedColor::Teal));
+    assert_ne!(
+        theme.color(NamedColor::Peach),
+        theme.color(NamedColor::Yellow)
+    );
+    assert_ne!(
+        theme.color(NamedColor::Red),
+        theme.color(NamedColor::Maroon)
+    );
+    assert_ne!(
+        theme.color(NamedColor::Blue),
+        theme.color(NamedColor::Sapphire)
+    );
+    assert_ne!(
+        theme.color(NamedColor::Pink),
+        theme.color(NamedColor::Mauve)
+    );
+    assert_ne!(
+        theme.color(NamedColor::Green),
+        theme.color(NamedColor::Teal)
+    );
 }
 
 #[test]
@@ -740,23 +773,23 @@ fn test_default_palette_pinned() {
 fn test_severity_color_per_theme() {
     // Catppuccin: Good → Green, Mild → Yellow, Bad → Peach, Critical → Red.
     let cat = Theme::catppuccin_mocha();
-    assert_eq!(cat.severity_color(Severity::Good),     CATPPUCCIN_GREEN);
-    assert_eq!(cat.severity_color(Severity::Mild),     CATPPUCCIN_YELLOW);
-    assert_eq!(cat.severity_color(Severity::Bad),      CATPPUCCIN_PEACH);
+    assert_eq!(cat.severity_color(Severity::Good), CATPPUCCIN_GREEN);
+    assert_eq!(cat.severity_color(Severity::Mild), CATPPUCCIN_YELLOW);
+    assert_eq!(cat.severity_color(Severity::Bad), CATPPUCCIN_PEACH);
     assert_eq!(cat.severity_color(Severity::Critical), CATPPUCCIN_RED);
 
     // Nord: routes through palette.
     let nord = Theme::nord();
-    assert_eq!(nord.severity_color(Severity::Good),     NORD14);
-    assert_eq!(nord.severity_color(Severity::Mild),     NORD13);
-    assert_eq!(nord.severity_color(Severity::Bad),      NORD12);
+    assert_eq!(nord.severity_color(Severity::Good), NORD14);
+    assert_eq!(nord.severity_color(Severity::Mild), NORD13);
+    assert_eq!(nord.severity_color(Severity::Bad), NORD12);
     assert_eq!(nord.severity_color(Severity::Critical), NORD11);
 
     // Default theme: Mild and Bad collapse to Color::Yellow per documented behavior.
     let def = Theme::default();
-    assert_eq!(def.severity_color(Severity::Good),     Color::Green);
-    assert_eq!(def.severity_color(Severity::Mild),     Color::Yellow);
-    assert_eq!(def.severity_color(Severity::Bad),      Color::Yellow); // collapse
+    assert_eq!(def.severity_color(Severity::Good), Color::Green);
+    assert_eq!(def.severity_color(Severity::Mild), Color::Yellow);
+    assert_eq!(def.severity_color(Severity::Bad), Color::Yellow); // collapse
     assert_eq!(def.severity_color(Severity::Critical), Color::Red);
 }
 
@@ -777,7 +810,12 @@ fn test_severity_style_critical_is_bold() {
 #[test]
 fn test_severity_style_fg_matches_severity_color() {
     let theme = Theme::catppuccin_mocha();
-    for sev in [Severity::Good, Severity::Mild, Severity::Bad, Severity::Critical] {
+    for sev in [
+        Severity::Good,
+        Severity::Mild,
+        Severity::Bad,
+        Severity::Critical,
+    ] {
         let style = theme.severity_style(sev);
         assert_eq!(
             style.fg,
@@ -804,23 +842,40 @@ fn test_palette_completeness_per_theme() {
     // is added, the exhaustive match in Theme::color forces an arm; this test
     // ensures the per-theme constructors got updated.
     let themes = [
-        ("default",          Theme::default()),
-        ("nord",             Theme::nord()),
-        ("dracula",          Theme::dracula()),
-        ("solarized_dark",   Theme::solarized_dark()),
-        ("gruvbox_dark",     Theme::gruvbox_dark()),
+        ("default", Theme::default()),
+        ("nord", Theme::nord()),
+        ("dracula", Theme::dracula()),
+        ("solarized_dark", Theme::solarized_dark()),
+        ("gruvbox_dark", Theme::gruvbox_dark()),
         ("catppuccin_mocha", Theme::catppuccin_mocha()),
     ];
     let all_named = [
-        NamedColor::Rosewater, NamedColor::Flamingo, NamedColor::Pink,
-        NamedColor::Mauve, NamedColor::Red, NamedColor::Maroon,
-        NamedColor::Peach, NamedColor::Yellow, NamedColor::Green,
-        NamedColor::Teal, NamedColor::Sky, NamedColor::Sapphire,
-        NamedColor::Blue, NamedColor::Lavender, NamedColor::Text,
-        NamedColor::Subtext1, NamedColor::Subtext0, NamedColor::Overlay2,
-        NamedColor::Overlay1, NamedColor::Overlay0, NamedColor::Surface2,
-        NamedColor::Surface1, NamedColor::Surface0, NamedColor::Base,
-        NamedColor::Mantle, NamedColor::Crust,
+        NamedColor::Rosewater,
+        NamedColor::Flamingo,
+        NamedColor::Pink,
+        NamedColor::Mauve,
+        NamedColor::Red,
+        NamedColor::Maroon,
+        NamedColor::Peach,
+        NamedColor::Yellow,
+        NamedColor::Green,
+        NamedColor::Teal,
+        NamedColor::Sky,
+        NamedColor::Sapphire,
+        NamedColor::Blue,
+        NamedColor::Lavender,
+        NamedColor::Text,
+        NamedColor::Subtext1,
+        NamedColor::Subtext0,
+        NamedColor::Overlay2,
+        NamedColor::Overlay1,
+        NamedColor::Overlay0,
+        NamedColor::Surface2,
+        NamedColor::Surface1,
+        NamedColor::Surface0,
+        NamedColor::Base,
+        NamedColor::Mantle,
+        NamedColor::Crust,
     ];
     for (name, theme) in &themes {
         for n in &all_named {

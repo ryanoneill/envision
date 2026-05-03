@@ -43,133 +43,26 @@ pub mod catppuccin;
 #[allow(deprecated)]
 pub use catppuccin::*;
 
+pub mod dracula;
+#[allow(deprecated)]
+pub use dracula::*;
+
+pub mod gruvbox;
+#[allow(deprecated)]
+pub use gruvbox::*;
+
+pub mod nord;
+#[allow(deprecated)]
+pub use nord::*;
+
 pub mod palette;
 pub use palette::{NamedColor, Palette, Severity};
 
+pub mod solarized;
+#[allow(deprecated)]
+pub use solarized::*;
+
 use ratatui::style::{Color, Modifier, Style};
-
-// =============================================================================
-// Nord Color Palette Constants
-// =============================================================================
-
-/// Nord Polar Night - darkest background
-pub const NORD0: Color = Color::Rgb(46, 52, 64);
-/// Nord Polar Night - dark background
-pub const NORD1: Color = Color::Rgb(59, 66, 82);
-/// Nord Polar Night - medium dark
-pub const NORD2: Color = Color::Rgb(67, 76, 94);
-/// Nord Polar Night - lighter dark (borders)
-pub const NORD3: Color = Color::Rgb(76, 86, 106);
-
-/// Nord Snow Storm - light text (dim)
-pub const NORD4: Color = Color::Rgb(216, 222, 233);
-/// Nord Snow Storm - light text (medium)
-pub const NORD5: Color = Color::Rgb(229, 233, 240);
-/// Nord Snow Storm - light text (bright)
-pub const NORD6: Color = Color::Rgb(236, 239, 244);
-
-/// Nord Frost - teal
-pub const NORD7: Color = Color::Rgb(143, 188, 187);
-/// Nord Frost - light blue (primary focus color)
-pub const NORD8: Color = Color::Rgb(136, 192, 208);
-/// Nord Frost - blue
-pub const NORD9: Color = Color::Rgb(129, 161, 193);
-/// Nord Frost - dark blue
-pub const NORD10: Color = Color::Rgb(94, 129, 172);
-
-/// Nord Aurora - red (error)
-pub const NORD11: Color = Color::Rgb(191, 97, 106);
-/// Nord Aurora - orange
-pub const NORD12: Color = Color::Rgb(208, 135, 112);
-/// Nord Aurora - yellow (warning)
-pub const NORD13: Color = Color::Rgb(235, 203, 139);
-/// Nord Aurora - green (success)
-pub const NORD14: Color = Color::Rgb(163, 190, 140);
-/// Nord Aurora - purple
-pub const NORD15: Color = Color::Rgb(180, 142, 173);
-
-// =============================================================================
-// Dracula Color Palette Constants
-// =============================================================================
-
-/// Dracula - background (#282A36)
-pub const DRACULA_BG: Color = Color::Rgb(40, 42, 54);
-/// Dracula - current line (#44475A)
-pub const DRACULA_CURRENT: Color = Color::Rgb(68, 71, 90);
-/// Dracula - foreground (#F8F8F2)
-pub const DRACULA_FG: Color = Color::Rgb(248, 248, 242);
-/// Dracula - comment (#6272A4)
-pub const DRACULA_COMMENT: Color = Color::Rgb(98, 114, 164);
-/// Dracula - cyan (#8BE9FD)
-pub const DRACULA_CYAN: Color = Color::Rgb(139, 233, 253);
-/// Dracula - green (#50FA7B)
-pub const DRACULA_GREEN: Color = Color::Rgb(80, 250, 123);
-/// Dracula - orange (#FFB86C)
-pub const DRACULA_ORANGE: Color = Color::Rgb(255, 184, 108);
-/// Dracula - pink (#FF79C6)
-pub const DRACULA_PINK: Color = Color::Rgb(255, 121, 198);
-/// Dracula - purple (#BD93F9)
-pub const DRACULA_PURPLE: Color = Color::Rgb(189, 147, 249);
-/// Dracula - red (#FF5555)
-pub const DRACULA_RED: Color = Color::Rgb(255, 85, 85);
-/// Dracula - yellow (#F1FA8C)
-pub const DRACULA_YELLOW: Color = Color::Rgb(241, 250, 140);
-
-// =============================================================================
-// Solarized Dark Color Palette Constants
-// =============================================================================
-
-/// Solarized Dark - base03 (darkest background, #002B36)
-pub const SOLARIZED_BASE03: Color = Color::Rgb(0, 43, 54);
-/// Solarized Dark - base02 (background highlights, #073642)
-pub const SOLARIZED_BASE02: Color = Color::Rgb(7, 54, 66);
-/// Solarized Dark - base01 (comments, #586E75)
-pub const SOLARIZED_BASE01: Color = Color::Rgb(88, 110, 117);
-/// Solarized Dark - base0 (primary text, #839496)
-pub const SOLARIZED_BASE0: Color = Color::Rgb(131, 148, 150);
-/// Solarized Dark - base1 (emphasized text, #93A1A1)
-pub const SOLARIZED_BASE1: Color = Color::Rgb(147, 161, 161);
-/// Solarized Dark - blue (#268BD2)
-pub const SOLARIZED_BLUE: Color = Color::Rgb(38, 139, 210);
-/// Solarized Dark - cyan (#2AA198)
-pub const SOLARIZED_CYAN: Color = Color::Rgb(42, 161, 152);
-/// Solarized Dark - green (#859900)
-pub const SOLARIZED_GREEN: Color = Color::Rgb(133, 153, 0);
-/// Solarized Dark - yellow (#B58900)
-pub const SOLARIZED_YELLOW: Color = Color::Rgb(181, 137, 0);
-/// Solarized Dark - orange (#CB4B16)
-pub const SOLARIZED_ORANGE: Color = Color::Rgb(203, 75, 22);
-/// Solarized Dark - red (#DC322F)
-pub const SOLARIZED_RED: Color = Color::Rgb(220, 50, 47);
-/// Solarized Dark - magenta (#D33682)
-pub const SOLARIZED_MAGENTA: Color = Color::Rgb(211, 54, 130);
-
-// =============================================================================
-// Gruvbox Dark Color Palette Constants
-// =============================================================================
-
-/// Gruvbox Dark - bg (dark background, #282828)
-pub const GRUVBOX_BG: Color = Color::Rgb(40, 40, 40);
-/// Gruvbox Dark - bg1 (lighter background, #3C3836)
-pub const GRUVBOX_BG1: Color = Color::Rgb(60, 56, 54);
-/// Gruvbox Dark - fg (light foreground, #EBDBB2)
-pub const GRUVBOX_FG: Color = Color::Rgb(235, 219, 178);
-/// Gruvbox Dark - gray (#928374)
-pub const GRUVBOX_GRAY: Color = Color::Rgb(146, 131, 116);
-/// Gruvbox Dark - red (#FB4934)
-pub const GRUVBOX_RED: Color = Color::Rgb(251, 73, 52);
-/// Gruvbox Dark - green (#B8BB26)
-pub const GRUVBOX_GREEN: Color = Color::Rgb(184, 187, 38);
-/// Gruvbox Dark - yellow (#FABD2F)
-pub const GRUVBOX_YELLOW: Color = Color::Rgb(250, 189, 47);
-/// Gruvbox Dark - blue (#83A598)
-pub const GRUVBOX_BLUE: Color = Color::Rgb(131, 165, 152);
-/// Gruvbox Dark - purple (#D3869B)
-pub const GRUVBOX_PURPLE: Color = Color::Rgb(211, 134, 155);
-/// Gruvbox Dark - aqua (#8EC07C)
-pub const GRUVBOX_AQUA: Color = Color::Rgb(142, 192, 124);
-/// Gruvbox Dark - orange (#FE8019)
-pub const GRUVBOX_ORANGE: Color = Color::Rgb(254, 128, 25);
 
 // =============================================================================
 // Theme Struct
@@ -193,7 +86,8 @@ pub const GRUVBOX_ORANGE: Color = Color::Rgb(254, 128, 25);
 /// use envision::theme::Theme;
 ///
 /// let theme = Theme::nord();
-/// assert_eq!(theme.focused, envision::theme::NORD8);
+/// // Use with components via RenderContext.
+/// # let _ = theme;
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Theme {
@@ -290,31 +184,31 @@ impl Default for Theme {
 
             palette: Palette {
                 rosewater: Color::Red,
-                flamingo:  Color::Red,
-                pink:      Color::Magenta,
-                mauve:     Color::Magenta,
-                red:       Color::Red,
-                maroon:    Color::Red,
-                peach:     Color::Yellow,
-                yellow:    Color::Yellow,
-                green:     Color::Green,
-                teal:      Color::Green,
-                sky:       Color::Cyan,
-                sapphire:  Color::Cyan,
-                blue:      Color::Blue,
-                lavender:  Color::Magenta,
-                text:      Color::White,
-                subtext1:  Color::Gray,
-                subtext0:  Color::Gray,
-                overlay2:  Color::DarkGray,
-                overlay1:  Color::DarkGray,
-                overlay0:  Color::DarkGray,
-                surface2:  Color::DarkGray,
-                surface1:  Color::Black,
-                surface0:  Color::Black,
-                base:      Color::Reset,
-                mantle:    Color::Reset,
-                crust:     Color::Black,
+                flamingo: Color::Red,
+                pink: Color::Magenta,
+                mauve: Color::Magenta,
+                red: Color::Red,
+                maroon: Color::Red,
+                peach: Color::Yellow,
+                yellow: Color::Yellow,
+                green: Color::Green,
+                teal: Color::Green,
+                sky: Color::Cyan,
+                sapphire: Color::Cyan,
+                blue: Color::Blue,
+                lavender: Color::Magenta,
+                text: Color::White,
+                subtext1: Color::Gray,
+                subtext0: Color::Gray,
+                overlay2: Color::DarkGray,
+                overlay1: Color::DarkGray,
+                overlay0: Color::DarkGray,
+                surface2: Color::DarkGray,
+                surface1: Color::Black,
+                surface0: Color::Black,
+                base: Color::Reset,
+                mantle: Color::Reset,
+                crust: Color::Black,
             },
         }
     }
@@ -358,10 +252,10 @@ impl Theme {
     /// use envision::theme::Theme;
     ///
     /// let theme = Theme::nord();
-    /// // Use with components:
-    /// // let mut ctx = RenderContext::new(frame, area, &theme);
-    /// // Button::view(&state, &mut ctx);
+    /// // Use with components via RenderContext.
+    /// # let _ = theme;
     /// ```
+    #[allow(deprecated)]
     pub fn nord() -> Self {
         Self {
             background: NORD0,
@@ -384,31 +278,31 @@ impl Theme {
 
             palette: Palette {
                 rosewater: NORD4,
-                flamingo:  NORD4,
-                pink:      NORD15,
-                mauve:     NORD15,
-                red:       NORD11,
-                maroon:    NORD11,
-                peach:     NORD12,
-                yellow:    NORD13,
-                green:     NORD14,
-                teal:      NORD7,
-                sky:       NORD8,
-                sapphire:  NORD9,
-                blue:      NORD10,
-                lavender:  NORD15,
-                text:      NORD6,
-                subtext1:  NORD5,
-                subtext0:  NORD4,
-                overlay2:  NORD3,
-                overlay1:  NORD3,
-                overlay0:  NORD3,
-                surface2:  NORD2,
-                surface1:  NORD1,
-                surface0:  NORD1,
-                base:      NORD0,
-                mantle:    NORD0,
-                crust:     NORD0,
+                flamingo: NORD4,
+                pink: NORD15,
+                mauve: NORD15,
+                red: NORD11,
+                maroon: NORD11,
+                peach: NORD12,
+                yellow: NORD13,
+                green: NORD14,
+                teal: NORD7,
+                sky: NORD8,
+                sapphire: NORD9,
+                blue: NORD10,
+                lavender: NORD15,
+                text: NORD6,
+                subtext1: NORD5,
+                subtext0: NORD4,
+                overlay2: NORD3,
+                overlay1: NORD3,
+                overlay0: NORD3,
+                surface2: NORD2,
+                surface1: NORD1,
+                surface0: NORD1,
+                base: NORD0,
+                mantle: NORD0,
+                crust: NORD0,
             },
         }
     }
@@ -446,8 +340,10 @@ impl Theme {
     /// use envision::theme::Theme;
     ///
     /// let theme = Theme::dracula();
-    /// assert_eq!(theme.focused, envision::theme::DRACULA_PURPLE);
+    /// // Use with components via RenderContext.
+    /// # let _ = theme;
     /// ```
+    #[allow(deprecated)]
     pub fn dracula() -> Self {
         Self {
             background: DRACULA_BG,
@@ -470,31 +366,31 @@ impl Theme {
 
             palette: Palette {
                 rosewater: DRACULA_PINK,
-                flamingo:  DRACULA_PINK,
-                pink:      DRACULA_PINK,
-                mauve:     DRACULA_PURPLE,
-                red:       DRACULA_RED,
-                maroon:    DRACULA_RED,
-                peach:     DRACULA_ORANGE,
-                yellow:    DRACULA_YELLOW,
-                green:     DRACULA_GREEN,
-                teal:      DRACULA_CYAN,
-                sky:       DRACULA_CYAN,
-                sapphire:  DRACULA_CYAN,
-                blue:      DRACULA_CYAN,
-                lavender:  DRACULA_PURPLE,
-                text:      DRACULA_FG,
-                subtext1:  DRACULA_FG,
-                subtext0:  DRACULA_COMMENT,
-                overlay2:  DRACULA_COMMENT,
-                overlay1:  DRACULA_COMMENT,
-                overlay0:  DRACULA_COMMENT,
-                surface2:  DRACULA_CURRENT,
-                surface1:  DRACULA_CURRENT,
-                surface0:  DRACULA_CURRENT,
-                base:      DRACULA_BG,
-                mantle:    DRACULA_BG,
-                crust:     DRACULA_BG,
+                flamingo: DRACULA_PINK,
+                pink: DRACULA_PINK,
+                mauve: DRACULA_PURPLE,
+                red: DRACULA_RED,
+                maroon: DRACULA_RED,
+                peach: DRACULA_ORANGE,
+                yellow: DRACULA_YELLOW,
+                green: DRACULA_GREEN,
+                teal: DRACULA_CYAN,
+                sky: DRACULA_CYAN,
+                sapphire: DRACULA_CYAN,
+                blue: DRACULA_CYAN,
+                lavender: DRACULA_PURPLE,
+                text: DRACULA_FG,
+                subtext1: DRACULA_FG,
+                subtext0: DRACULA_COMMENT,
+                overlay2: DRACULA_COMMENT,
+                overlay1: DRACULA_COMMENT,
+                overlay0: DRACULA_COMMENT,
+                surface2: DRACULA_CURRENT,
+                surface1: DRACULA_CURRENT,
+                surface0: DRACULA_CURRENT,
+                base: DRACULA_BG,
+                mantle: DRACULA_BG,
+                crust: DRACULA_BG,
             },
         }
     }
@@ -533,8 +429,10 @@ impl Theme {
     /// use envision::theme::Theme;
     ///
     /// let theme = Theme::solarized_dark();
-    /// assert_eq!(theme.focused, envision::theme::SOLARIZED_BLUE);
+    /// // Use with components via RenderContext.
+    /// # let _ = theme;
     /// ```
+    #[allow(deprecated)]
     pub fn solarized_dark() -> Self {
         Self {
             background: SOLARIZED_BASE03,
@@ -557,31 +455,31 @@ impl Theme {
 
             palette: Palette {
                 rosewater: SOLARIZED_MAGENTA,
-                flamingo:  SOLARIZED_MAGENTA,
-                pink:      SOLARIZED_MAGENTA,
-                mauve:     SOLARIZED_MAGENTA,
-                red:       SOLARIZED_RED,
-                maroon:    SOLARIZED_RED,
-                peach:     SOLARIZED_ORANGE,
-                yellow:    SOLARIZED_YELLOW,
-                green:     SOLARIZED_GREEN,
-                teal:      SOLARIZED_CYAN,
-                sky:       SOLARIZED_CYAN,
-                sapphire:  SOLARIZED_BLUE,
-                blue:      SOLARIZED_BLUE,
-                lavender:  SOLARIZED_MAGENTA,
-                text:      SOLARIZED_BASE1,
-                subtext1:  SOLARIZED_BASE0,
-                subtext0:  SOLARIZED_BASE01,
-                overlay2:  SOLARIZED_BASE01,
-                overlay1:  SOLARIZED_BASE01,
-                overlay0:  SOLARIZED_BASE01,
-                surface2:  SOLARIZED_BASE02,
-                surface1:  SOLARIZED_BASE02,
-                surface0:  SOLARIZED_BASE02,
-                base:      SOLARIZED_BASE03,
-                mantle:    SOLARIZED_BASE03,
-                crust:     SOLARIZED_BASE03,
+                flamingo: SOLARIZED_MAGENTA,
+                pink: SOLARIZED_MAGENTA,
+                mauve: SOLARIZED_MAGENTA,
+                red: SOLARIZED_RED,
+                maroon: SOLARIZED_RED,
+                peach: SOLARIZED_ORANGE,
+                yellow: SOLARIZED_YELLOW,
+                green: SOLARIZED_GREEN,
+                teal: SOLARIZED_CYAN,
+                sky: SOLARIZED_CYAN,
+                sapphire: SOLARIZED_BLUE,
+                blue: SOLARIZED_BLUE,
+                lavender: SOLARIZED_MAGENTA,
+                text: SOLARIZED_BASE1,
+                subtext1: SOLARIZED_BASE0,
+                subtext0: SOLARIZED_BASE01,
+                overlay2: SOLARIZED_BASE01,
+                overlay1: SOLARIZED_BASE01,
+                overlay0: SOLARIZED_BASE01,
+                surface2: SOLARIZED_BASE02,
+                surface1: SOLARIZED_BASE02,
+                surface0: SOLARIZED_BASE02,
+                base: SOLARIZED_BASE03,
+                mantle: SOLARIZED_BASE03,
+                crust: SOLARIZED_BASE03,
             },
         }
     }
@@ -619,8 +517,10 @@ impl Theme {
     /// use envision::theme::Theme;
     ///
     /// let theme = Theme::gruvbox_dark();
-    /// assert_eq!(theme.focused, envision::theme::GRUVBOX_YELLOW);
+    /// // Use with components via RenderContext.
+    /// # let _ = theme;
     /// ```
+    #[allow(deprecated)]
     pub fn gruvbox_dark() -> Self {
         Self {
             background: GRUVBOX_BG,
@@ -643,31 +543,31 @@ impl Theme {
 
             palette: Palette {
                 rosewater: GRUVBOX_PURPLE,
-                flamingo:  GRUVBOX_PURPLE,
-                pink:      GRUVBOX_PURPLE,
-                mauve:     GRUVBOX_PURPLE,
-                red:       GRUVBOX_RED,
-                maroon:    GRUVBOX_RED,
-                peach:     GRUVBOX_ORANGE,
-                yellow:    GRUVBOX_YELLOW,
-                green:     GRUVBOX_GREEN,
-                teal:      GRUVBOX_AQUA,
-                sky:       GRUVBOX_AQUA,
-                sapphire:  GRUVBOX_BLUE,
-                blue:      GRUVBOX_BLUE,
-                lavender:  GRUVBOX_PURPLE,
-                text:      GRUVBOX_FG,
-                subtext1:  GRUVBOX_FG,
-                subtext0:  GRUVBOX_GRAY,
-                overlay2:  GRUVBOX_GRAY,
-                overlay1:  GRUVBOX_GRAY,
-                overlay0:  GRUVBOX_GRAY,
-                surface2:  GRUVBOX_BG1,
-                surface1:  GRUVBOX_BG1,
-                surface0:  GRUVBOX_BG1,
-                base:      GRUVBOX_BG,
-                mantle:    GRUVBOX_BG,
-                crust:     GRUVBOX_BG,
+                flamingo: GRUVBOX_PURPLE,
+                pink: GRUVBOX_PURPLE,
+                mauve: GRUVBOX_PURPLE,
+                red: GRUVBOX_RED,
+                maroon: GRUVBOX_RED,
+                peach: GRUVBOX_ORANGE,
+                yellow: GRUVBOX_YELLOW,
+                green: GRUVBOX_GREEN,
+                teal: GRUVBOX_AQUA,
+                sky: GRUVBOX_AQUA,
+                sapphire: GRUVBOX_BLUE,
+                blue: GRUVBOX_BLUE,
+                lavender: GRUVBOX_PURPLE,
+                text: GRUVBOX_FG,
+                subtext1: GRUVBOX_FG,
+                subtext0: GRUVBOX_GRAY,
+                overlay2: GRUVBOX_GRAY,
+                overlay1: GRUVBOX_GRAY,
+                overlay0: GRUVBOX_GRAY,
+                surface2: GRUVBOX_BG1,
+                surface1: GRUVBOX_BG1,
+                surface0: GRUVBOX_BG1,
+                base: GRUVBOX_BG,
+                mantle: GRUVBOX_BG,
+                crust: GRUVBOX_BG,
             },
         }
     }
