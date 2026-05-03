@@ -31,6 +31,11 @@ fn cell_style_to_ratatui(style: &CellStyle, theme: &Theme, disabled: bool) -> St
 }
 
 /// Renders the table into the given frame area.
+///
+/// `chrome_owned` signals that the parent has already drawn the outer
+/// chrome (border, title, focus ring) for `area`. When true, the outer
+/// `Block` draw is suppressed and data rendering proceeds against `area`
+/// directly. The internal layout (header, rows, scrollbar) is unchanged.
 pub(super) fn render_table<T: TableRow>(
     state: &TableState<T>,
     frame: &mut Frame,
@@ -38,6 +43,7 @@ pub(super) fn render_table<T: TableRow>(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
     crate::annotation::with_registry(|reg| {
         let mut ann = crate::annotation::Annotation::table("table")
@@ -140,29 +146,43 @@ pub(super) fn render_table<T: TableRow>(
         theme.selected_highlight_style(focused)
     };
 
-    let table = ratatui::widgets::Table::new(rows, widths)
+    let table_widget = ratatui::widgets::Table::new(rows, widths)
         .header(header)
-        .block(
+        .row_highlight_style(row_highlight_style)
+        .highlight_symbol("> ");
+
+    let table_widget = if chrome_owned {
+        table_widget
+    } else {
+        table_widget.block(
             Block::default()
                 .borders(Borders::ALL)
                 .border_style(border_style),
         )
-        .row_highlight_style(row_highlight_style)
-        .highlight_symbol("> ");
+    };
 
     // Use TableState for stateful rendering
     let mut table_state = ratatui::widgets::TableState::default();
     table_state.select(state.selected);
-    frame.render_stateful_widget(table, area, &mut table_state);
+    frame.render_stateful_widget(table_widget, area, &mut table_state);
 
-    // Render scrollbar by mirroring the offset from ratatui's TableState
-    let inner = area.inner(Margin::new(1, 1));
-    // Viewport for data rows: inner height minus header row (1) and bottom margin (1)
-    let data_viewport = (inner.height as usize).saturating_sub(2);
+    // Render scrollbar. In chrome-owned mode the data already occupies the
+    // full `area` (no border inset), so the scrollbar tracks `area` directly.
+    // Otherwise it tracks the inset interior the outer Block carved out.
+    let (inner, viewport_offset) = if chrome_owned {
+        (area, 1) // header row only; no bottom border margin
+    } else {
+        (area.inner(Margin::new(1, 1)), 2) // header row + bottom margin
+    };
+    let data_viewport = (inner.height as usize).saturating_sub(viewport_offset);
     if data_viewport > 0 && state.display_order.len() > data_viewport {
         let mut bar_scroll = ScrollState::new(state.display_order.len());
         bar_scroll.set_viewport_height(data_viewport);
         bar_scroll.set_offset(table_state.offset());
-        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        if chrome_owned {
+            crate::scroll::render_scrollbar(&bar_scroll, frame, area, theme);
+        } else {
+            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        }
     }
 }

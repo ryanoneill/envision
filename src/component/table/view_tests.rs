@@ -542,3 +542,22 @@ fn sort_toggle_arrow_persists_on_repeated_press() {
         );
     }
 }
+
+#[test]
+fn test_view_no_outer_border_when_chrome_owned() {
+    let state = TableState::new(test_rows(), test_columns());
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 8);
+
+    terminal
+        .draw(|frame| {
+            Table::<TestRow>::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+
+    let display = terminal.backend().to_string();
+    insta::assert_snapshot!("view_chrome_owned_no_outer_border", display);
+}

@@ -497,6 +497,7 @@ impl<T: TableRow + 'static> Component for Table<T> {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
+            ctx.chrome_owned,
         );
     }
 }
