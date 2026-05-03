@@ -4,7 +4,7 @@
 //! can call `.build()` without `.with_args(...)`. For any other Args type, the
 //! compiler requires `.with_args` to be called.
 
-mod sealed {
+pub(crate) mod sealed {
     /// Internal supertrait — not part of envision's public surface.
     pub trait Sealed {
         fn default_optional_args() -> Self;

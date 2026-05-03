@@ -29,8 +29,9 @@ enum Msg {
 impl App for ToastApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let toasts = ToastState::with_duration(5000);
         (State { toasts }, Command::none())
     }

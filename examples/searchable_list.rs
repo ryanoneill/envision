@@ -27,8 +27,9 @@ enum Msg {
 impl App for SearchableListApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let items = vec![
             "Rust".to_string(),
             "Python".to_string(),

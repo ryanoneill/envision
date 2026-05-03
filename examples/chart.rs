@@ -26,8 +26,9 @@ enum Msg {
 impl App for ChartApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         // Line chart: CPU and memory usage over time
         let cpu_series =
             DataSeries::new("CPU", vec![45.0, 52.0, 48.0, 65.0, 72.0, 58.0, 61.0, 55.0])

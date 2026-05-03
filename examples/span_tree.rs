@@ -57,8 +57,9 @@ fn build_trace() -> Vec<SpanNode> {
 impl App for SpanTreeApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let tree = SpanTreeState::new(build_trace())
             .with_title("HTTP Request Trace")
             .with_label_width(28);

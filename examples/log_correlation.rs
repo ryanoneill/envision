@@ -27,8 +27,9 @@ enum Msg {
 impl App for LogCorrelationApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let api = LogStream::new("API Server")
             .with_color(Color::Cyan)
             .with_entry(CorrelationEntry::new(

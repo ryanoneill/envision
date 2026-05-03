@@ -25,8 +25,9 @@ enum Msg {
 impl App for HistogramApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         // Simulated latency data (ms) with a roughly normal distribution
         let latency_data = vec![
             12.0, 15.0, 18.0, 20.0, 22.0, 23.0, 24.0, 25.0, 25.0, 26.0, 27.0, 28.0, 28.0, 29.0,

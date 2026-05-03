@@ -28,8 +28,9 @@ enum Msg {
 impl App for FormApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let fields = vec![
             FormField::text_with_placeholder("name", "Full Name", "Enter your name..."),
             FormField::text_with_placeholder("email", "Email", "user@example.com"),

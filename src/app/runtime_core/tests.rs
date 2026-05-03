@@ -25,8 +25,9 @@ enum TestMsg {
 impl App for TestApp {
     type State = TestState;
     type Message = TestMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, super::super::command::Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, super::super::command::Command<Self::Message>) {
         (TestState::default(), super::super::command::Command::none())
     }
 
@@ -119,7 +120,7 @@ impl Overlay<TestMsg> for PropagateOverlay {
 // ========== Helper ==========
 
 fn new_core() -> RuntimeCore<TestApp, CaptureBackend> {
-    let (state, _cmd) = TestApp::init();
+    let (state, _cmd) = TestApp::init(());
     let backend = CaptureBackend::new(40, 10);
     let terminal = ratatui::Terminal::new(backend).unwrap();
 

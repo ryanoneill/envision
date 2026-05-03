@@ -57,8 +57,9 @@ fn build_pipeline() -> StepIndicatorState {
 impl App for StepIndicatorApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let pipeline = build_pipeline();
         (State { pipeline }, Command::none())
     }

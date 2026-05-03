@@ -26,8 +26,9 @@ enum Msg {
 impl App for CalendarApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let calendar = CalendarState::new(2026, 3)
             .with_selected_day(1)
             .with_title("My Calendar")

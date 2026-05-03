@@ -26,8 +26,9 @@ enum Msg {
 impl App for RadioGroupApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let options = vec![
             "Small (8 oz)".to_string(),
             "Medium (12 oz)".to_string(),

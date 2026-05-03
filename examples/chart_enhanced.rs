@@ -26,8 +26,9 @@ enum Msg {
 impl App for ChartEnhancedApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         // Area chart: CPU usage with SLO threshold lines
         let cpu_series = DataSeries::new(
             "CPU",

@@ -43,8 +43,9 @@ impl State {
 impl App for SwitchApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let wifi = SwitchState::new().with_label("Wi-Fi").with_on(true);
 
         let bluetooth = SwitchState::new().with_label("Bluetooth");

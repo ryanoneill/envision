@@ -638,8 +638,9 @@ enum CounterMsg {
 impl App for CounterApp {
     type State = CounterState;
     type Message = CounterMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (CounterState::default(), Command::none())
     }
 

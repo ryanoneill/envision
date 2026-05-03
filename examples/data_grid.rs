@@ -44,8 +44,9 @@ enum Msg {
 impl App for DataGridApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let employees = vec![
             Employee {
                 name: "Alice Chen".into(),

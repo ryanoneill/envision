@@ -61,8 +61,9 @@ fn build_disk_usage() -> TreemapNode {
 impl App for TreemapApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let treemap = TreemapState::new()
             .with_root(build_disk_usage())
             .with_title("Disk Usage (KB)")

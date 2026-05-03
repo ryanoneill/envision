@@ -28,8 +28,9 @@ enum AsyncLoaderMsg {
 impl App for AsyncLoaderApp {
     type State = AsyncLoaderState;
     type Message = AsyncLoaderMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (AsyncLoaderState::default(), Command::none())
     }
 
@@ -83,8 +84,9 @@ enum FallibleMsg {
 impl App for FallibleApp {
     type State = FallibleState;
     type Message = FallibleMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (FallibleState::default(), Command::none())
     }
 
@@ -135,8 +137,9 @@ enum TickCounterMsg {
 impl App for TickCounterApp {
     type State = TickCounterState;
     type Message = TickCounterMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (TickCounterState::default(), Command::none())
     }
 
@@ -176,8 +179,9 @@ enum ChainedMsg {
 impl App for ChainedApp {
     type State = ChainedState;
     type Message = ChainedMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (ChainedState::default(), Command::none())
     }
 
@@ -452,8 +456,9 @@ mod app_harness_tests {
     impl App for TimedApp {
         type State = TimedState;
         type Message = TimedMsg;
+        type Args = ();
 
-        fn init() -> (Self::State, Command<Self::Message>) {
+        fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
             (TimedState::default(), Command::none())
         }
 

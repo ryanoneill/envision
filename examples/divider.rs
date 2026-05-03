@@ -28,8 +28,9 @@ enum Msg {
 impl App for DividerApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let state = State {
             horizontal: DividerState::new(),
             horizontal_labeled: DividerState::new().with_label("Settings"),

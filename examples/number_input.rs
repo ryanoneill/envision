@@ -35,8 +35,9 @@ const INPUT_COUNT: usize = 3;
 impl App for NumberInputApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let quantity = NumberInputState::integer(1)
             .with_min(0.0)
             .with_max(100.0)

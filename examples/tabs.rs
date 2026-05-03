@@ -26,8 +26,9 @@ enum Msg {
 impl App for TabsApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let tabs = TabsState::new(vec![
             "Overview".to_string(),
             "Details".to_string(),

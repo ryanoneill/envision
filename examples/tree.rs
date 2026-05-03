@@ -26,8 +26,9 @@ enum Msg {
 impl App for TreeApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let mut src = TreeNode::new_expanded("src", "src".into());
 
         let mut components = TreeNode::new_expanded("components", "components".into());

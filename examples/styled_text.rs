@@ -36,8 +36,9 @@ enum Msg {
 impl App for StyledTextApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let content = styled_text::StyledContent::new()
             .heading(1, "Welcome to Envision")
             .text("A modern TUI framework built with Rust, using The Elm Architecture.")

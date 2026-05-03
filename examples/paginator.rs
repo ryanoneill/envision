@@ -30,8 +30,9 @@ enum Msg {
 impl App for PaginatorApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let state = State {
             page_of_total: PaginatorState::new(12)
                 .with_style(PaginatorStyle::PageOfTotal)

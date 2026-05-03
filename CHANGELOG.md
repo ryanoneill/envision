@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — Breaking: `App::init` takes args; `RuntimeBuilder` split
+
+### Breaking changes — `App::init` takes args
+
+`App::init() -> (State, Command<Msg>)` is replaced with
+`App::init(args: Self::Args) -> (State, Command<Msg>)`.
+
+- `App` trait gains `type Args` (no default; explicit `type Args = ();` required for no-args apps on stable Rust).
+- The panicking default impl of `init` is deleted; `init` is now required.
+- `RuntimeBuilder::state(state, cmd)` is **deleted**. Its role is subsumed by `with_args` plus a real `init` impl.
+- `AppHarness::with_state` and `AppHarness::with_state_and_config` are **deleted**; replaced by `AppHarness::with_args` and `AppHarness::with_args_and_config`.
+- New: `RuntimeBuilder::with_args(args) -> ConfiguredRuntimeBuilder<A, B>` carries the args into a typestate-lite builder whose `build()` is unconditionally available.
+- `RuntimeBuilder::build()` is now only available when `A::Args: OptionalArgs` (sealed marker, implemented only for `()`). Forgetting `with_args` for non-`()` Args is a compile error, not a runtime panic.
+- `AppHarness::new` and `AppHarness::with_config` similarly require `A::Args: OptionalArgs`.
+
+#### Migration
+
+| Old | New |
+|---|---|
+| `fn init() -> (State, Command<Msg>)` | `type Args = (); fn init(_args: ()) -> (State, Command<Msg>)` |
+| `static GLOBAL: OnceLock<T>; fn init() { GLOBAL.get()... }` | `type Args = MyArgs; fn init(args: MyArgs) { args.field... }` |
+| `RuntimeBuilder::state(state, cmd)` | `RuntimeBuilder::with_args(args)`; move state-building into `init` |
+| `AppHarness::with_state(w, h, state, cmd)` | `AppHarness::with_args(w, h, args)`; build state from args inside `init` |
+| `AppHarness::with_state_and_config(w, h, state, cmd, cfg)` | `AppHarness::with_args_and_config(w, h, args, cfg)` |
+
+Tracks leadline gap D1. See `docs/superpowers/specs/2026-05-02-app-init-args-design.md`.
+
 ## [Unreleased] — Breaking: Table sort & cell API redesign
 
 ### Removed

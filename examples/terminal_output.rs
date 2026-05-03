@@ -27,8 +27,9 @@ enum Msg {
 impl App for TerminalOutputApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let mut output = TerminalOutputState::new()
             .with_title("Build Output")
             .with_auto_scroll(true)

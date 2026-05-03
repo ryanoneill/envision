@@ -26,7 +26,8 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = ();
+//! #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
@@ -47,7 +48,8 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = ();
+//! #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
@@ -57,11 +59,12 @@
 //! # Ok::<(), envision::EnvisionError>(())
 //! ```
 //!
-//! ## With pre-built state
+//! ## With injected args
 //!
 //! ```rust
 //! # use envision::prelude::*;
 //! # struct MyApp;
+//! # struct MyArgs { count: i32 }
 //! # #[derive(Default, Clone)]
 //! # struct MyState { count: i32 }
 //! # #[derive(Clone)]
@@ -69,13 +72,15 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+//! #     type Args = MyArgs;
+//! #     fn init(args: MyArgs) -> (MyState, Command<MyMsg>) {
+//! #         (MyState { count: args.count }, Command::none())
+//! #     }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
-//! let state = MyState { count: 42 };
 //! let vt = Runtime::<MyApp, _>::virtual_builder(80, 24)
-//!     .state(state, Command::none())
+//!     .with_args(MyArgs { count: 42 })
 //!     .build()?;
 //! assert_eq!(vt.state().count, 42);
 //! # Ok::<(), envision::EnvisionError>(())
@@ -93,7 +98,8 @@
 //! # impl App for MyApp {
 //! #     type State = MyState;
 //! #     type Message = MyMsg;
-//! #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+//! #     type Args = ();
+//! #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 //! #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 //! #     fn view(state: &MyState, frame: &mut Frame) {}
 //! # }
@@ -108,13 +114,13 @@
 //! ```
 
 use std::io::Stdout;
+use std::marker::PhantomData;
 use std::time::Duration;
 
 use ratatui::backend::{Backend, CrosstermBackend};
 
 use super::Runtime;
 use super::config::RuntimeConfig;
-use crate::app::command::Command;
 use crate::app::model::App;
 use crate::backend::CaptureBackend;
 use crate::error;
@@ -125,11 +131,14 @@ use crate::error;
 /// or [`Runtime::virtual_builder()`].
 ///
 /// The builder provides fluent methods to configure:
-/// - **State**: `.state(state, init_cmd)` to bypass `App::init()`
+/// - **Args**: `.with_args(args)` to provide the args passed to `App::init`
 /// - **Config**: `.config(config)` to supply a full [`RuntimeConfig`]
 /// - **Individual settings**: `.tick_rate()`, `.frame_rate()`, etc.
 ///
-/// Call `.build()` to create the [`Runtime`].
+/// `with_args(args)` returns a [`ConfiguredRuntimeBuilder`] — see that type
+/// for the post-args build path. Calling `.build()` directly on
+/// `RuntimeBuilder` is only available when `A::Args: OptionalArgs`
+/// (i.e. `A::Args = ()`).
 ///
 /// # Example
 ///
@@ -144,7 +153,8 @@ use crate::error;
 /// # impl App for MyApp {
 /// #     type State = MyState;
 /// #     type Message = MyMsg;
-/// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+/// #     type Args = ();
+/// #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
 /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
 /// #     fn view(state: &MyState, frame: &mut Frame) {}
 /// # }
@@ -156,8 +166,8 @@ use crate::error;
 /// ```
 pub struct RuntimeBuilder<A: App, B: Backend> {
     backend: B,
-    state: Option<(A::State, Command<A::Message>)>,
     config: Option<RuntimeConfig>,
+    _phantom: PhantomData<A>,
 }
 
 impl<A: App, B: Backend> RuntimeBuilder<A, B> {
@@ -169,19 +179,16 @@ impl<A: App, B: Backend> RuntimeBuilder<A, B> {
     pub(crate) fn new(backend: B) -> Self {
         Self {
             backend,
-            state: None,
             config: None,
+            _phantom: PhantomData,
         }
     }
 
-    /// Provides a pre-built initial state, bypassing [`App::init()`].
+    /// Provides the args for [`App::init`].
     ///
-    /// When this is set, `App::init()` is **not called** — the provided
-    /// `state` and `init_cmd` are used instead. This is useful for
-    /// constructing the initial state from external sources (CLI arguments,
-    /// config files, databases, etc.).
-    ///
-    /// Pass [`Command::none()`] for `init_cmd` if no startup command is needed.
+    /// Consumes the `RuntimeBuilder` and produces a [`ConfiguredRuntimeBuilder`]
+    /// whose `build()` is unconditionally available. Any prior config-shaping
+    /// calls (`tick_rate`, `frame_rate`, etc.) are preserved.
     ///
     /// # Example
     ///
@@ -189,26 +196,28 @@ impl<A: App, B: Backend> RuntimeBuilder<A, B> {
     /// # use envision::prelude::*;
     /// # struct MyApp;
     /// # #[derive(Default, Clone)]
-    /// # struct MyState { count: i32 }
+    /// # struct MyState;
     /// # #[derive(Clone)]
     /// # enum MyMsg {}
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState::default(), Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
-    /// let state = MyState { count: 42 };
-    /// let vt = Runtime::<MyApp, _>::virtual_builder(80, 24)
-    ///     .state(state, Command::none())
+    /// let runtime = Runtime::<MyApp, _>::virtual_builder(80, 24)
+    ///     .with_args(())
     ///     .build()?;
-    /// assert_eq!(vt.state().count, 42);
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```
-    pub fn state(mut self, state: A::State, init_cmd: Command<A::Message>) -> Self {
-        self.state = Some((state, init_cmd));
-        self
+    pub fn with_args(self, args: A::Args) -> ConfiguredRuntimeBuilder<A, B> {
+        ConfiguredRuntimeBuilder {
+            backend: self.backend,
+            config: self.config,
+            args,
+        }
     }
 
     /// Sets the full runtime configuration.
@@ -230,7 +239,8 @@ impl<A: App, B: Backend> RuntimeBuilder<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -264,7 +274,8 @@ impl<A: App, B: Backend> RuntimeBuilder<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -295,7 +306,8 @@ impl<A: App, B: Backend> RuntimeBuilder<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -326,11 +338,26 @@ impl<A: App, B: Backend> RuntimeBuilder<A, B> {
         self
     }
 
+    /// Returns a mutable reference to the config, creating a default if needed.
+    fn config_mut(&mut self) -> &mut RuntimeConfig {
+        self.config.get_or_insert_with(RuntimeConfig::default)
+    }
+}
+
+// `build()` for the no-args path — only available when A::Args: OptionalArgs.
+//
+// On stable Rust this means A::Args == (). Calling `.build()` for an App
+// whose Args is anything other than () fails to compile here, which is the
+// compile-time enforcement the redesign promises.
+impl<A: App, B: Backend> RuntimeBuilder<A, B>
+where
+    A::Args: crate::app::OptionalArgs,
+{
     /// Builds the [`Runtime`].
     ///
-    /// If no state was provided via [`state()`](Self::state), this calls
-    /// `App::init()` to obtain the initial state and startup command.
-    /// If no config was provided, uses [`RuntimeConfig::default()`].
+    /// Available only when `A::Args = ()`. For apps with non-`()` args,
+    /// call [`with_args`](Self::with_args) first and then `.build()` on
+    /// the resulting [`ConfiguredRuntimeBuilder`].
     ///
     /// # Errors
     ///
@@ -349,7 +376,8 @@ impl<A: App, B: Backend> RuntimeBuilder<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -357,14 +385,80 @@ impl<A: App, B: Backend> RuntimeBuilder<A, B> {
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```
     pub fn build(self) -> error::Result<Runtime<A, B>> {
-        let config = self.config.unwrap_or_default();
-        let (state, init_cmd) = self.state.unwrap_or_else(A::init);
-        Runtime::with_backend_state_and_config(self.backend, state, init_cmd, config)
+        use crate::app::model::optional_args::sealed::Sealed;
+        let args = <A::Args as Sealed>::default_optional_args();
+        self.with_args(args).build()
+    }
+}
+
+// =============================================================================
+// ConfiguredRuntimeBuilder — RuntimeBuilder after with_args has been called
+// =============================================================================
+
+/// A `RuntimeBuilder` after [`with_args`](RuntimeBuilder::with_args) has been called.
+///
+/// Carries the args that will be passed to [`App::init`] plus all
+/// configuration set so far. Has its own fluent config-shaping methods
+/// (`config`, `tick_rate`, `frame_rate`, `max_messages`, `channel_capacity`)
+/// and an unconditionally-available `build()`.
+///
+/// Most users never name this type — the typestate transition happens
+/// implicitly when chaining `.with_args(...).build()`.
+pub struct ConfiguredRuntimeBuilder<A: App, B: Backend> {
+    backend: B,
+    config: Option<RuntimeConfig>,
+    args: A::Args,
+}
+
+impl<A: App, B: Backend> ConfiguredRuntimeBuilder<A, B> {
+    /// Sets the full runtime configuration. Replaces any previously set config.
+    pub fn config(mut self, config: RuntimeConfig) -> Self {
+        self.config = Some(config);
+        self
     }
 
-    /// Returns a mutable reference to the config, creating a default if needed.
+    /// Sets the tick rate (how often to poll for events). Default: 50ms.
+    pub fn tick_rate(mut self, rate: Duration) -> Self {
+        self.config_mut().tick_rate = rate;
+        self
+    }
+
+    /// Sets the frame rate (how often to render). Default: 16ms (~60fps).
+    pub fn frame_rate(mut self, rate: Duration) -> Self {
+        self.config_mut().frame_rate = rate;
+        self
+    }
+
+    /// Sets the max messages per tick. Default: 100.
+    pub fn max_messages(mut self, max: usize) -> Self {
+        self.config_mut().max_messages_per_tick = max;
+        self
+    }
+
+    /// Sets the async message channel capacity. Default: 256.
+    pub fn channel_capacity(mut self, capacity: usize) -> Self {
+        self.config_mut().message_channel_capacity = capacity;
+        self
+    }
+
     fn config_mut(&mut self) -> &mut RuntimeConfig {
         self.config.get_or_insert_with(RuntimeConfig::default)
+    }
+
+    /// Builds the [`Runtime`].
+    ///
+    /// Calls [`App::init`] with the previously-supplied args to obtain the
+    /// initial state and startup command, then constructs the `Runtime`
+    /// with the configured backend and runtime config.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating the ratatui `Terminal` with the
+    /// provided backend fails.
+    pub fn build(self) -> error::Result<Runtime<A, B>> {
+        let (state, init_cmd) = A::init(self.args);
+        let config = self.config.unwrap_or_default();
+        Runtime::with_backend_state_and_config(self.backend, state, init_cmd, config)
     }
 }
 
@@ -393,7 +487,8 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -435,7 +530,8 @@ impl<A: App> Runtime<A, CrosstermBackend<Stdout>> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -478,7 +574,8 @@ impl<A: App> Runtime<A, CaptureBackend> {
     /// # impl App for MyApp {
     /// #     type State = MyState;
     /// #     type Message = MyMsg;
-    /// #     fn init() -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
+    /// #     type Args = ();
+    /// #     fn init(_: ()) -> (MyState, Command<MyMsg>) { (MyState, Command::none()) }
     /// #     fn update(state: &mut MyState, msg: MyMsg) -> Command<MyMsg> { Command::none() }
     /// #     fn view(state: &MyState, frame: &mut Frame) {}
     /// # }
@@ -501,7 +598,7 @@ mod tests {
     use ratatui::widgets::Paragraph;
 
     // =========================================================================
-    // Test App
+    // Test App — Args = ()
     // =========================================================================
 
     struct TestApp;
@@ -521,9 +618,43 @@ mod tests {
     impl App for TestApp {
         type State = TestState;
         type Message = TestMsg;
+        type Args = ();
 
-        fn init() -> (Self::State, Command<Self::Message>) {
+        fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
             (TestState::default(), Command::none())
+        }
+
+        fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
+            match msg {
+                TestMsg::Increment => state.count += 1,
+                TestMsg::Quit => state.quit = true,
+            }
+            Command::none()
+        }
+
+        fn view(state: &Self::State, frame: &mut ratatui::Frame) {
+            let text = format!("Count: {}", state.count);
+            frame.render_widget(Paragraph::new(text), frame.area());
+        }
+
+        fn should_quit(state: &Self::State) -> bool {
+            state.quit
+        }
+    }
+
+    // =========================================================================
+    // ArgsApp — Args = TestState (used to exercise the with_args path)
+    // =========================================================================
+
+    struct ArgsApp;
+
+    impl App for ArgsApp {
+        type State = TestState;
+        type Message = TestMsg;
+        type Args = TestState;
+
+        fn init(args: TestState) -> (Self::State, Command<Self::Message>) {
+            (args, Command::none())
         }
 
         fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
@@ -556,14 +687,14 @@ mod tests {
     }
 
     #[test]
-    fn test_builder_with_state() {
+    fn test_builder_with_args() {
         let backend = CaptureBackend::new(80, 24);
         let state = TestState {
             count: 42,
             quit: false,
         };
-        let runtime = Runtime::<TestApp, _>::builder(backend)
-            .state(state, Command::none())
+        let runtime = Runtime::<ArgsApp, _>::builder(backend)
+            .with_args(state)
             .build()
             .unwrap();
         assert_eq!(runtime.state().count, 42);
@@ -583,15 +714,15 @@ mod tests {
     }
 
     #[test]
-    fn test_builder_with_state_and_config() {
+    fn test_builder_with_args_and_config() {
         let backend = CaptureBackend::new(80, 24);
         let state = TestState {
             count: 7,
             quit: false,
         };
         let config = RuntimeConfig::new().tick_rate(Duration::from_millis(200));
-        let runtime = Runtime::<TestApp, _>::builder(backend)
-            .state(state, Command::none())
+        let runtime = Runtime::<ArgsApp, _>::builder(backend)
+            .with_args(state)
             .config(config)
             .build()
             .unwrap();
@@ -611,13 +742,13 @@ mod tests {
     }
 
     #[test]
-    fn test_virtual_builder_with_state() {
+    fn test_virtual_builder_with_args() {
         let state = TestState {
             count: 99,
             quit: false,
         };
-        let runtime = Runtime::<TestApp, _>::virtual_builder(80, 24)
-            .state(state, Command::none())
+        let runtime = Runtime::<ArgsApp, _>::virtual_builder(80, 24)
+            .with_args(state)
             .build()
             .unwrap();
         assert_eq!(runtime.state().count, 99);
@@ -681,13 +812,13 @@ mod tests {
     }
 
     #[test]
-    fn test_virtual_builder_state_and_config() {
+    fn test_virtual_builder_args_and_config() {
         let state = TestState {
             count: 10,
             quit: false,
         };
-        let mut runtime = Runtime::<TestApp, _>::virtual_builder(80, 24)
-            .state(state, Command::none())
+        let mut runtime = Runtime::<ArgsApp, _>::virtual_builder(80, 24)
+            .with_args(state)
             .tick_rate(Duration::from_millis(100))
             .build()
             .unwrap();
@@ -769,7 +900,9 @@ mod tests {
         impl App for EventApp {
             type State = EventState;
             type Message = EventMsg;
-            fn init() -> (Self::State, Command<Self::Message>) {
+            type Args = ();
+
+            fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
                 (EventState::default(), Command::none())
             }
             fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
@@ -803,7 +936,7 @@ mod tests {
     }
 
     #[test]
-    fn test_built_runtime_with_init_state_skips_app_init() {
+    fn test_built_runtime_with_args_uses_provided_state() {
         struct InitApp;
 
         #[derive(Clone, Default)]
@@ -817,13 +950,10 @@ mod tests {
         impl App for InitApp {
             type State = InitState;
             type Message = InitMsg;
-            fn init() -> (Self::State, Command<Self::Message>) {
-                (
-                    InitState {
-                        source: "App::init".into(),
-                    },
-                    Command::none(),
-                )
+            type Args = String;
+
+            fn init(args: String) -> (Self::State, Command<Self::Message>) {
+                (InitState { source: args }, Command::none())
             }
             fn update(_state: &mut Self::State, _msg: Self::Message) -> Command<Self::Message> {
                 Command::none()
@@ -831,20 +961,11 @@ mod tests {
             fn view(_state: &Self::State, _frame: &mut ratatui::Frame) {}
         }
 
-        // Without state — should use App::init()
+        // Args carry the source string
         let runtime = Runtime::<InitApp, _>::virtual_builder(80, 24)
+            .with_args("from args".into())
             .build()
             .unwrap();
-        assert_eq!(runtime.state().source, "App::init");
-
-        // With state — should bypass App::init()
-        let state = InitState {
-            source: "external".into(),
-        };
-        let runtime = Runtime::<InitApp, _>::virtual_builder(80, 24)
-            .state(state, Command::none())
-            .build()
-            .unwrap();
-        assert_eq!(runtime.state().source, "external");
+        assert_eq!(runtime.state().source, "from args");
     }
 }

@@ -31,8 +31,9 @@ enum Msg {
 impl App for TitleCardApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let plain = TitleCardState::new("Envision");
 
         let decorated = TitleCardState::new("Dashboard")

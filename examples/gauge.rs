@@ -30,8 +30,9 @@ enum Msg {
 impl App for GaugeApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let state = State {
             cpu: GaugeState::new(45.0, 100.0)
                 .with_units("%")

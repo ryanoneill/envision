@@ -35,8 +35,9 @@ enum Msg {
 impl App for PaneLayoutApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let panes = vec![
             pane_layout::PaneConfig::new("sidebar")
                 .with_title("Files")

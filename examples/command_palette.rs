@@ -28,8 +28,9 @@ enum Msg {
 impl App for CommandPaletteApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let items = vec![
             PaletteItem::new("open", "Open File")
                 .with_shortcut("Ctrl+O")

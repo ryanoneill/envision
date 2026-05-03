@@ -29,8 +29,9 @@ enum Msg {
 impl App for TooltipApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let tooltip = TooltipState::new("Press 'h' for help, 'w' for a warning tooltip")
             .with_title("Tip")
             .with_position(TooltipPosition::Below);

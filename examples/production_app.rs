@@ -4,7 +4,7 @@
 //! Envision application needs, going beyond self-contained demos to show:
 //!
 //! 1. **CLI-style configuration** — Build initial state from external config
-//! 2. **`with_state` construction** — Bypass `App::init()` with pre-built state
+//! 2. **`with_args` construction** — Inject the config into `App::init()`
 //! 3. **External channel subscription** — Receive progress from a background worker
 //! 4. **Lifecycle hooks** — `on_setup_once` / `on_teardown_once` for logging configuration
 //! 5. **Background work** — Tokio task simulating file processing with progress
@@ -129,8 +129,11 @@ struct ProcessorApp;
 impl App for ProcessorApp {
     type State = ProcessorState;
     type Message = ProcessorMsg;
+    type Args = AppConfig;
 
-    // init() is not implemented — this app uses with_state constructors
+    fn init(config: AppConfig) -> (Self::State, Command<Self::Message>) {
+        (ProcessorState::from_config(&config), Command::none())
+    }
 
     fn update(state: &mut Self::State, msg: Self::Message) -> Command<Self::Message> {
         match msg {
@@ -274,8 +277,8 @@ async fn main() -> envision::Result<()> {
     // ── 1. Parse configuration ──────────────────────────────────────────
     let config = AppConfig::from_simulated_args();
 
-    // ── 2. Build initial state from config ──────────────────────────────
-    let state = ProcessorState::from_config(&config);
+    // ── 2. Snapshot the file list before the config is consumed by init ──
+    let files = config.files.clone();
 
     // ── 3. Create the unbounded channel for background worker updates ───
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<ProcessorMsg>();
@@ -300,9 +303,9 @@ async fn main() -> envision::Result<()> {
             Ok(())
         });
 
-    // ── 5. Create the runtime with pre-built state (bypass App::init) ──
+    // ── 5. Create the runtime, passing the config into App::init via with_args.
     let mut runtime = Runtime::<ProcessorApp, _>::terminal_builder()?
-        .state(state, Command::none())
+        .with_args(config)
         .config(runtime_config)
         .build()?;
 
@@ -317,7 +320,6 @@ async fn main() -> envision::Result<()> {
     //
     // This simulates a CPU-bound or I/O-bound task running off the main
     // thread, sending progress updates through the channel.
-    let files = config.files.clone();
     tokio::spawn(async move {
         for file in &files {
             // Notify the UI that we are starting this file.

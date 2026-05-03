@@ -350,8 +350,9 @@ enum Msg {
 impl App for ShowcaseApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         (State::default(), Command::none())
     }
 

@@ -27,8 +27,9 @@ enum Msg {
 impl App for LogViewerApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let mut viewer = LogViewerState::new();
 
         // Populate with realistic log entries

@@ -36,8 +36,9 @@ fn system_metrics() -> Vec<UsageMetric> {
 impl App for UsageDisplayApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let metrics = system_metrics();
         let state = State {
             horizontal: UsageDisplayState::with_metrics(metrics.clone())

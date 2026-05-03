@@ -79,8 +79,9 @@ Visit [Envision on GitHub](https://github.com/ryanoneill/envision) for more info
 impl App for MarkdownRendererApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let renderer = MarkdownRendererState::new()
             .with_source(SAMPLE_MARKDOWN)
             .with_title("Markdown Preview");

@@ -25,8 +25,9 @@ enum Msg {
 impl App for HeatmapApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         // Simulated error rates: rows = hours (00h, 06h, 12h, 18h), cols = days
         let data = vec![
             vec![0.02, 0.01, 0.03, 0.01, 0.02, 0.08, 0.05],

@@ -29,8 +29,9 @@ enum Msg {
 impl App for LineInputApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let input = LineInputState::new().with_placeholder("Type something and press Enter...");
 
         let state = State {

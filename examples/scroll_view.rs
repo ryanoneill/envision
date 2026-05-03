@@ -30,8 +30,9 @@ enum Msg {
 impl App for ScrollViewApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let lines: Vec<String> = (1..=80)
             .map(|i| format!("Item {:>3}: Configuration setting for module {}", i, i))
             .collect();

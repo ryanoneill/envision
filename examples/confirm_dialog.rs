@@ -39,8 +39,9 @@ enum Msg {
 impl App for ConfirmDialogApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let dialog = ConfirmDialogState::yes_no(
             "Delete File?",
             "Are you sure you want to delete 'important.txt'?\nThis action cannot be undone.",

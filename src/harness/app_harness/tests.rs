@@ -22,8 +22,9 @@ enum TestMsg {
 impl App for TestApp {
     type State = TestState;
     type Message = TestMsg;
+    type Args = ();
 
-    fn init() -> (Self::State, Command<Self::Message>) {
+    fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
         (TestState::default(), Command::none())
     }
 

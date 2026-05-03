@@ -40,8 +40,9 @@ enum TodoMsg {
 impl App for TodoApp {
     type State = TodoState;
     type Message = TodoMsg;
+    type Args = ();
 
-    fn init() -> (TodoState, Command<TodoMsg>) {
+    fn init(_args: ()) -> (TodoState, Command<TodoMsg>) {
         let state = TodoState {
             items: vec!["Buy groceries".to_string(), "Walk the dog".to_string()],
             selected: None,

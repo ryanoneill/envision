@@ -25,8 +25,9 @@ enum Msg {
 impl App for CanvasApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let canvas = CanvasState::new()
             .with_title("Canvas Drawing")
             .with_bounds(0.0, 100.0, 0.0, 100.0)

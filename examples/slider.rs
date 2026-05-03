@@ -37,8 +37,9 @@ const SLIDER_COUNT: usize = 4;
 impl App for SliderApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let volume = SliderState::new(0.0, 100.0)
             .with_value(75.0)
             .with_label("Volume");

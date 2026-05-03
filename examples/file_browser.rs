@@ -37,8 +37,9 @@ enum Msg {
 impl App for FileBrowserApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let entries = vec![
             file_browser::FileEntry::directory("src", "/project/src"),
             file_browser::FileEntry::directory("tests", "/project/tests"),

@@ -28,8 +28,9 @@ enum Msg {
 impl App for TabBarApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         let tabs = vec![
             Tab::new("1", "main.rs").with_icon("R").with_closable(true),
             Tab::new("2", "lib.rs")
