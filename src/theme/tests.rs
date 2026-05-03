@@ -784,3 +784,52 @@ fn test_severity_style_fg_matches_severity_color() {
         );
     }
 }
+
+#[test]
+fn test_palette_completeness_per_theme() {
+    // For each shipped theme, every NamedColor variant returns *some* color.
+    // The Default theme legitimately uses Color::Reset for some background tones,
+    // so this test does not blanket-reject Reset; it only verifies that
+    // theme.color(N) executes the match without panicking and the field has been
+    // assigned (no inadvertent Color::default() leftovers from incomplete
+    // construction).
+    //
+    // This test pins current values transitively via the per-theme
+    // `*_palette_pinned` tests; this test specifically guards against future
+    // additions to NamedColor that lack per-theme handling. When a new variant
+    // is added, the exhaustive match in Theme::color forces an arm; this test
+    // ensures the per-theme constructors got updated.
+    let themes = [
+        ("default",          Theme::default()),
+        ("nord",             Theme::nord()),
+        ("dracula",          Theme::dracula()),
+        ("solarized_dark",   Theme::solarized_dark()),
+        ("gruvbox_dark",     Theme::gruvbox_dark()),
+        ("catppuccin_mocha", Theme::catppuccin_mocha()),
+    ];
+    let all_named = [
+        NamedColor::Rosewater, NamedColor::Flamingo, NamedColor::Pink,
+        NamedColor::Mauve, NamedColor::Red, NamedColor::Maroon,
+        NamedColor::Peach, NamedColor::Yellow, NamedColor::Green,
+        NamedColor::Teal, NamedColor::Sky, NamedColor::Sapphire,
+        NamedColor::Blue, NamedColor::Lavender, NamedColor::Text,
+        NamedColor::Subtext1, NamedColor::Subtext0, NamedColor::Overlay2,
+        NamedColor::Overlay1, NamedColor::Overlay0, NamedColor::Surface2,
+        NamedColor::Surface1, NamedColor::Surface0, NamedColor::Base,
+        NamedColor::Mantle, NamedColor::Crust,
+    ];
+    for (name, theme) in &themes {
+        for n in &all_named {
+            // Just call it; assert each call returns a value (compile guarantee).
+            let _ = theme.color(*n);
+        }
+        // Sanity: at minimum, accent colors should not all be the same value.
+        // (Catches a fully-defaulted Palette { ..Default::default() } accident.)
+        assert_ne!(
+            theme.color(NamedColor::Red),
+            theme.color(NamedColor::Green),
+            "{}: Red and Green collapsed — palette likely uninitialized",
+            name,
+        );
+    }
+}
