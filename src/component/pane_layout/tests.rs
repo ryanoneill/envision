@@ -915,3 +915,66 @@ fn test_view_with_degenerate_closure_renders_chrome_only() {
     let display = terminal.backend().to_string();
     insta::assert_snapshot!("view_with_degenerate_closure_chrome_only", display);
 }
+
+// ========== Top-level integration: PaneLayout + Table = single border ==========
+
+#[test]
+fn snapshot_pane_layout_with_embedded_table_no_double_border() {
+    use crate::component::cell::Cell;
+    use crate::component::table::{Column, Table, TableRow, TableState};
+    use ratatui::layout::Constraint;
+
+    #[derive(Clone)]
+    struct Row {
+        name: &'static str,
+        value: &'static str,
+    }
+
+    impl TableRow for Row {
+        fn cells(&self) -> Vec<Cell> {
+            vec![Cell::new(self.name), Cell::new(self.value)]
+        }
+    }
+
+    let columns = vec![
+        Column::new("Name", Constraint::Length(10)),
+        Column::new("Value", Constraint::Length(8)),
+    ];
+    let rows = vec![
+        Row {
+            name: "alpha",
+            value: "1",
+        },
+        Row {
+            name: "beta",
+            value: "2",
+        },
+    ];
+    let table_state = TableState::new(rows, columns);
+
+    let panes = vec![
+        PaneConfig::new("data")
+            .with_title("Data")
+            .with_proportion(1.0),
+    ];
+    let pane_state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
+
+    let (mut terminal, theme) = setup_render(30, 7);
+    terminal
+        .draw(|frame| {
+            let area = frame.area();
+            PaneLayout::view_with(
+                &pane_state,
+                &mut RenderContext::new(frame, area, &theme),
+                |pane_id, child_ctx| {
+                    if pane_id == "data" {
+                        Table::<Row>::view(&table_state, child_ctx);
+                    }
+                },
+            );
+        })
+        .unwrap();
+
+    let display = terminal.backend().to_string();
+    insta::assert_snapshot!("pane_layout_with_embedded_table_no_double_border", display);
+}

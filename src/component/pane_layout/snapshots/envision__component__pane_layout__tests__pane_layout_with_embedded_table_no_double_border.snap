@@ -1,0 +1,12 @@
+---
+source: src/component/pane_layout/tests.rs
+assertion_line: 979
+expression: display
+---
+┌ Data ──────────────────────┐
+│  Name       Value          │
+│                            │
+│> alpha      1              │
+│  beta       2              │
+│                            │
+└────────────────────────────┘
