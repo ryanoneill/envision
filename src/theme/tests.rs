@@ -833,3 +833,15 @@ fn test_palette_completeness_per_theme() {
         );
     }
 }
+
+#[test]
+fn test_crate_root_reexports() {
+    // Verify the new types are reachable from `envision::*` (compiled-out check).
+    // The actual import path is exercised by usage; this test just pins the
+    // smoke check.
+    use crate::{NamedColor, Palette, Severity};
+    let _ = NamedColor::Lavender;
+    let _ = Severity::Good;
+    // Palette construction is verified in test_palette_struct_construction.
+    let _ = std::mem::size_of::<Palette>();
+}

@@ -410,7 +410,7 @@ pub use input::{
 };
 pub use overlay::{Overlay, OverlayAction, OverlayStack};
 pub use scroll::{ScrollState, render_scrollbar, render_scrollbar_inside_border};
-pub use theme::Theme;
+pub use theme::{NamedColor, Palette, Severity, Theme};
 
 /// Prelude module for convenient imports.
 ///
@@ -446,7 +446,7 @@ pub mod prelude {
     pub use crate::overlay::{Overlay, OverlayAction, OverlayStack};
 
     // Theme
-    pub use crate::theme::Theme;
+    pub use crate::theme::{NamedColor, Severity, Theme};
 
     // Scroll infrastructure
     pub use crate::scroll::ScrollState;
