@@ -846,6 +846,7 @@ impl Component for TerminalOutput {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
+            ctx.chrome_owned,
         );
     }
 }

@@ -125,3 +125,19 @@ fn test_snapshot_disabled() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let tasks = make_tasks();
+    let state = LoadingListState::with_items(tasks, |t| t.name.clone());
+    let (mut terminal, theme) = test_utils::setup_render(40, 8);
+    terminal
+        .draw(|frame| {
+            LoadingList::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

@@ -46,6 +46,11 @@ fn status_label(status: &NodeStatus) -> &'static str {
 }
 
 /// Renders the complete diagram: border, edges, nodes, and info bar.
+///
+/// `chrome_owned` signals that the parent has already drawn the outer
+/// chrome for `area`. When true, the outer `Block` draw is suppressed
+/// and content is rendered against `area` directly.
+#[allow(clippy::too_many_arguments)]
 pub(super) fn render_diagram(
     state: &super::DiagramState,
     layout: &LayoutResult,
@@ -54,29 +59,35 @@ pub(super) fn render_diagram(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
-    // Outer border
-    let border_style = if disabled {
-        theme.disabled_style()
-    } else if focused {
-        theme.focused_border_style()
+    let inner = if chrome_owned {
+        area
     } else {
-        theme.border_style()
+        // Outer border
+        let border_style = if disabled {
+            theme.disabled_style()
+        } else if focused {
+            theme.focused_border_style()
+        } else {
+            theme.border_style()
+        };
+
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(border_style)
+            .title(
+                state
+                    .title
+                    .as_deref()
+                    .map(|t| format!(" {} ", t))
+                    .unwrap_or_default(),
+            );
+
+        let inner = block.inner(area);
+        frame.render_widget(block, area);
+        inner
     };
-
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(border_style)
-        .title(
-            state
-                .title
-                .as_deref()
-                .map(|t| format!(" {} ", t))
-                .unwrap_or_default(),
-        );
-
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
 
     if inner.width < 3 || inner.height < 2 {
         return;

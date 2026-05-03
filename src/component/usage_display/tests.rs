@@ -738,3 +738,22 @@ fn test_annotation_emitted_grid() {
     });
     assert_eq!(registry.len(), 1);
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = UsageDisplayState::new()
+        .metric(UsageMetric::new("CPU", "45%"))
+        .metric(UsageMetric::new("Mem", "60%"))
+        .with_layout(UsageLayout::Vertical)
+        .with_title("Resources");
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
+    terminal
+        .draw(|frame| {
+            UsageDisplay::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            )
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

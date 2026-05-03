@@ -663,6 +663,7 @@ impl Component for Diagram {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
+            ctx.chrome_owned,
         );
     }
 }

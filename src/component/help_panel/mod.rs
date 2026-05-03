@@ -726,24 +726,29 @@ impl Component for HelpPanel {
             );
         });
 
-        let border_style = if ctx.disabled {
-            ctx.theme.disabled_style()
-        } else if ctx.focused {
-            ctx.theme.focused_border_style()
+        let inner = if ctx.chrome_owned {
+            ctx.area
         } else {
-            ctx.theme.border_style()
+            let border_style = if ctx.disabled {
+                ctx.theme.disabled_style()
+            } else if ctx.focused {
+                ctx.theme.focused_border_style()
+            } else {
+                ctx.theme.border_style()
+            };
+
+            let mut block = Block::default()
+                .borders(Borders::ALL)
+                .border_style(border_style);
+
+            if let Some(title) = &state.title {
+                block = block.title(format!(" {} ", title));
+            }
+
+            let inner = block.inner(ctx.area);
+            ctx.frame.render_widget(block, ctx.area);
+            inner
         };
-
-        let mut block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(border_style);
-
-        if let Some(title) = &state.title {
-            block = block.title(format!(" {} ", title));
-        }
-
-        let inner = block.inner(ctx.area);
-        ctx.frame.render_widget(block, ctx.area);
 
         if inner.height == 0 || inner.width == 0 {
             return;
@@ -774,17 +779,23 @@ impl Component for HelpPanel {
                 .render_widget(ratatui::widgets::Paragraph::new(line), line_area);
         }
 
-        // Render scrollbar when content exceeds viewport
+        // Render scrollbar when content exceeds viewport. In chrome-owned mode
+        // the data already occupies the full `area` (no border inset), so the
+        // scrollbar tracks `area` directly.
         if total_lines > visible_height {
             let mut bar_scroll = ScrollState::new(total_lines);
             bar_scroll.set_viewport_height(visible_height);
             bar_scroll.set_offset(effective_scroll);
-            crate::scroll::render_scrollbar_inside_border(
-                &bar_scroll,
-                ctx.frame,
-                ctx.area,
-                ctx.theme,
-            );
+            if ctx.chrome_owned {
+                crate::scroll::render_scrollbar(&bar_scroll, ctx.frame, ctx.area, ctx.theme);
+            } else {
+                crate::scroll::render_scrollbar_inside_border(
+                    &bar_scroll,
+                    ctx.frame,
+                    ctx.area,
+                    ctx.theme,
+                );
+            }
         }
     }
 }

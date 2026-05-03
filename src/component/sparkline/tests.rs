@@ -406,3 +406,18 @@ fn test_annotation_emitted_no_title() {
     assert_eq!(regions.len(), 1);
     assert_eq!(regions[0].annotation.label, Some("".to_string()));
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = SparklineState::with_data(vec![1.0, 5.0, 3.0, 8.0, 2.0]).with_title("CPU");
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(20, 5);
+    terminal
+        .draw(|frame| {
+            Sparkline::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

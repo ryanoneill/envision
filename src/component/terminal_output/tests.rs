@@ -782,3 +782,18 @@ fn test_set_max_lines_no_eviction_when_under_limit() {
     state.set_max_lines(10);
     assert_eq!(state.line_count(), 2);
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = content_state();
+    let (mut terminal, theme) = test_utils::setup_render(40, 8);
+    terminal
+        .draw(|frame| {
+            TerminalOutput::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

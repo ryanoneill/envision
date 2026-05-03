@@ -107,33 +107,42 @@ pub(super) fn render_filter_bar(state: &LogViewerState, ctx: &mut RenderContext<
 }
 
 /// Renders the log entries area.
+///
+/// When `ctx.chrome_owned` is true, the outer log `Block` draw is
+/// suppressed and content renders against `ctx.area` directly. The
+/// internal layout (search bar, filter bar) is unchanged.
 pub(super) fn render_log(state: &LogViewerState, ctx: &mut RenderContext<'_, '_>) {
     let visible = state.visible_entries();
 
-    let border_style = if ctx.disabled {
-        ctx.theme.disabled_style()
-    } else if ctx.focused && !state.is_search_focused() {
-        ctx.theme.focused_border_style()
+    let inner = if ctx.chrome_owned {
+        ctx.area
     } else {
-        ctx.theme.border_style()
-    };
-
-    let mut block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(border_style);
-
-    if let Some(title) = state.title() {
-        let match_count = visible.len();
-        let total_count = state.len();
-        if match_count < total_count {
-            block = block.title(format!("{} ({}/{})", title, match_count, total_count));
+        let border_style = if ctx.disabled {
+            ctx.theme.disabled_style()
+        } else if ctx.focused && !state.is_search_focused() {
+            ctx.theme.focused_border_style()
         } else {
-            block = block.title(format!("{} ({})", title, total_count));
-        }
-    }
+            ctx.theme.border_style()
+        };
 
-    let inner = block.inner(ctx.area);
-    ctx.frame.render_widget(block, ctx.area);
+        let mut block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(border_style);
+
+        if let Some(title) = state.title() {
+            let match_count = visible.len();
+            let total_count = state.len();
+            if match_count < total_count {
+                block = block.title(format!("{} ({}/{})", title, match_count, total_count));
+            } else {
+                block = block.title(format!("{} ({})", title, total_count));
+            }
+        }
+
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
+        inner
+    };
 
     if inner.height == 0 || inner.width == 0 {
         return;
@@ -202,7 +211,9 @@ pub(super) fn render_log(state: &LogViewerState, ctx: &mut RenderContext<'_, '_>
     let list = List::new(items);
     ctx.frame.render_widget(list, inner);
 
-    // Render scrollbar if content exceeds viewport
+    // Render scrollbar if content exceeds viewport. In chrome-owned mode
+    // the data already occupies the full `area` (no border inset), so the
+    // scrollbar tracks `area` directly.
     if visible.len() > inner.height as usize {
         let mut bar_scroll = crate::scroll::ScrollState::new(visible.len());
         bar_scroll.set_viewport_height(inner.height as usize);
@@ -211,6 +222,15 @@ pub(super) fn render_log(state: &LogViewerState, ctx: &mut RenderContext<'_, '_>
                 .scroll_offset()
                 .min(visible.len().saturating_sub(inner.height as usize)),
         );
-        crate::scroll::render_scrollbar_inside_border(&bar_scroll, ctx.frame, ctx.area, ctx.theme);
+        if ctx.chrome_owned {
+            crate::scroll::render_scrollbar(&bar_scroll, ctx.frame, ctx.area, ctx.theme);
+        } else {
+            crate::scroll::render_scrollbar_inside_border(
+                &bar_scroll,
+                ctx.frame,
+                ctx.area,
+                ctx.theme,
+            );
+        }
     }
 }

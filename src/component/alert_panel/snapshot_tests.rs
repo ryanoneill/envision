@@ -192,3 +192,21 @@ fn test_snapshot_with_thresholds() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = AlertPanelState::new()
+        .with_metrics(sample_metrics())
+        .with_columns(2)
+        .with_title("Alerts");
+    let (mut terminal, theme) = test_utils::setup_render(60, 12);
+    terminal
+        .draw(|frame| {
+            AlertPanel::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

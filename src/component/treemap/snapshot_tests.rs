@@ -143,3 +143,22 @@ fn test_snapshot_single_child() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let root = TreemapNode::new("root", 0.0)
+        .with_child(TreemapNode::new("src", 60.0).with_color(Color::Blue))
+        .with_child(TreemapNode::new("docs", 30.0).with_color(Color::Green))
+        .with_child(TreemapNode::new("tests", 10.0).with_color(Color::Yellow));
+    let state = TreemapState::new().with_root(root);
+    let (mut terminal, theme) = test_utils::setup_render(40, 8);
+    terminal
+        .draw(|frame| {
+            Treemap::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

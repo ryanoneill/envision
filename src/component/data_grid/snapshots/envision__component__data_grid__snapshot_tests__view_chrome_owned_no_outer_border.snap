@@ -1,0 +1,9 @@
+---
+source: src/component/data_grid/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+  Name                Age               
+                                        
+> Alice               30                
+  Bob                 25                
+  Charlie             35

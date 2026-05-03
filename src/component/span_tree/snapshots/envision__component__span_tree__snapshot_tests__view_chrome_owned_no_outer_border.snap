@@ -1,0 +1,8 @@
+---
+source: src/component/span_tree/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+Label                         │ 0ms          100ms
+──────────────────────────────┼───────────────────
+▾ request                     │███████████████████
+    api                       │ █████████████

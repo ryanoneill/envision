@@ -1,0 +1,16 @@
+---
+source: src/component/box_plot/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+                   ---                  
+                    |                   
+                   ---                  
+                   | |                  
+                   ===                  
+                   | |                  
+                   | |                  
+                   | |                  
+                   ---                  
+                    |                   
+                   ---                  
+                  API

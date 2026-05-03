@@ -528,3 +528,18 @@ fn test_annotation_emitted() {
     assert!(!regions[0].annotation.focused);
     assert!(!regions[0].annotation.disabled);
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = MarkdownRendererState::new().with_source("# Hello\n\nSome body text.");
+    let (mut terminal, theme) = test_utils::setup_render(40, 8);
+    terminal
+        .draw(|frame| {
+            MarkdownRenderer::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

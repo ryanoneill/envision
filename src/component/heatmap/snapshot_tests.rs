@@ -130,3 +130,18 @@ fn test_snapshot_1x1_grid() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = HeatmapState::with_data(vec![vec![0.0, 0.5, 1.0], vec![0.3, 0.7, 0.9]]);
+    let (mut terminal, theme) = test_utils::setup_render(30, 6);
+    terminal
+        .draw(|frame| {
+            Heatmap::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

@@ -308,6 +308,7 @@ impl Component for ConversationView {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
+            ctx.chrome_owned,
         );
 
         crate::annotation::with_registry(|reg| {

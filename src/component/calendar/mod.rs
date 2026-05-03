@@ -739,29 +739,10 @@ impl Component for Calendar {
             );
         });
 
-        // Determine styles
-        let border_style = if ctx.disabled {
-            ctx.theme.disabled_style()
-        } else if ctx.focused {
-            ctx.theme.focused_border_style()
-        } else {
-            ctx.theme.border_style()
-        };
-
         let normal_style = if ctx.disabled {
             ctx.theme.disabled_style()
         } else {
             ctx.theme.normal_style()
-        };
-
-        let header_style = if ctx.disabled {
-            ctx.theme.disabled_style()
-        } else if ctx.focused {
-            ctx.theme.focused_bold_style()
-        } else {
-            Style::default()
-                .fg(ctx.theme.foreground)
-                .add_modifier(Modifier::BOLD)
         };
 
         let day_header_style = if ctx.disabled {
@@ -772,20 +753,43 @@ impl Component for Calendar {
                 .add_modifier(Modifier::BOLD)
         };
 
-        // Build the title
-        let title_text = if let Some(ref title) = state.title {
-            format!("{} - {} {}", title, state.month_name(), state.year)
+        let inner = if ctx.chrome_owned {
+            ctx.area
         } else {
-            format!("{} {}", state.month_name(), state.year)
+            let border_style = if ctx.disabled {
+                ctx.theme.disabled_style()
+            } else if ctx.focused {
+                ctx.theme.focused_border_style()
+            } else {
+                ctx.theme.border_style()
+            };
+
+            let header_style = if ctx.disabled {
+                ctx.theme.disabled_style()
+            } else if ctx.focused {
+                ctx.theme.focused_bold_style()
+            } else {
+                Style::default()
+                    .fg(ctx.theme.foreground)
+                    .add_modifier(Modifier::BOLD)
+            };
+
+            // Build the title
+            let title_text = if let Some(ref title) = state.title {
+                format!("{} - {} {}", title, state.month_name(), state.year)
+            } else {
+                format!("{} {}", state.month_name(), state.year)
+            };
+
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .border_style(border_style)
+                .title(Span::styled(format!(" {title_text} "), header_style));
+
+            let inner = block.inner(ctx.area);
+            ctx.frame.render_widget(block, ctx.area);
+            inner
         };
-
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(border_style)
-            .title(Span::styled(format!(" {title_text} "), header_style));
-
-        let inner = block.inner(ctx.area);
-        ctx.frame.render_widget(block, ctx.area);
 
         if inner.height == 0 || inner.width == 0 {
             return;

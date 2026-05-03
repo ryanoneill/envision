@@ -915,3 +915,18 @@ fn test_horizontal_scroll_renders_shifted_content() {
         output
     );
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = code_state();
+    let (mut terminal, theme) = test_utils::setup_render(40, 12);
+    terminal
+        .draw(|frame| {
+            CodeBlock::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

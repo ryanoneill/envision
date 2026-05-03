@@ -193,3 +193,18 @@ fn test_snapshot_multi_series_scatter() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = ChartState::line(sample_series()).with_title("Temperature");
+    let (mut terminal, theme) = test_utils::setup_render(60, 16);
+    terminal
+        .draw(|frame| {
+            Chart::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

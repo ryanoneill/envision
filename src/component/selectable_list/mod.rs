@@ -699,30 +699,41 @@ impl<T: Clone + std::fmt::Display + 'static> Component for SelectableList<T> {
             ctx.theme.selected_highlight_style(ctx.focused)
         };
 
-        let block = Block::default().borders(Borders::ALL);
-        let inner = block.inner(ctx.area);
-
-        let list = List::new(items)
-            .block(block)
+        let mut list = List::new(items)
             .highlight_style(highlight_style)
             .highlight_symbol("> ");
+
+        let inner = if ctx.chrome_owned {
+            ctx.area
+        } else {
+            let block = Block::default().borders(Borders::ALL);
+            let inner = block.inner(ctx.area);
+            list = list.block(block);
+            inner
+        };
 
         // We need to clone the state for rendering since StatefulWidget needs &mut
         let mut list_state = state.list_state.clone();
         ctx.frame
             .render_stateful_widget(list, ctx.area, &mut list_state);
 
-        // Render scrollbar when content exceeds viewport
+        // Render scrollbar when content exceeds viewport. In chrome-owned
+        // mode the data already occupies the full `area` (no border inset),
+        // so the scrollbar tracks `area` directly.
         if state.filtered_indices.len() > inner.height as usize {
             let mut bar_scroll = ScrollState::new(state.filtered_indices.len());
             bar_scroll.set_viewport_height(inner.height as usize);
             bar_scroll.set_offset(list_state.offset());
-            crate::scroll::render_scrollbar_inside_border(
-                &bar_scroll,
-                ctx.frame,
-                ctx.area,
-                ctx.theme,
-            );
+            if ctx.chrome_owned {
+                crate::scroll::render_scrollbar(&bar_scroll, ctx.frame, ctx.area, ctx.theme);
+            } else {
+                crate::scroll::render_scrollbar_inside_border(
+                    &bar_scroll,
+                    ctx.frame,
+                    ctx.area,
+                    ctx.theme,
+                );
+            }
         }
     }
 }

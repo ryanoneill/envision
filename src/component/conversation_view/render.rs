@@ -15,6 +15,9 @@ use unicode_width::UnicodeWidthStr;
 use crate::theme::Theme;
 
 /// Renders the full conversation view using the messages stored in state.
+///
+/// `chrome_owned` signals that the parent has already drawn the outer
+/// chrome for `area`. When true, the outer `Block` draw is suppressed.
 pub(super) fn render(
     state: &ConversationViewState,
     frame: &mut Frame,
@@ -22,11 +25,22 @@ pub(super) fn render(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
-    render_from(state, state, frame, area, theme, focused, disabled);
+    render_from(
+        state,
+        state,
+        frame,
+        area,
+        theme,
+        focused,
+        disabled,
+        chrome_owned,
+    );
 }
 
 /// Renders the conversation view using messages from an external [`MessageSource`].
+#[allow(clippy::too_many_arguments)]
 pub(super) fn render_from(
     source: &dyn MessageSource,
     state: &ConversationViewState,
@@ -35,23 +49,29 @@ pub(super) fn render_from(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
-    let border_style = if disabled {
-        theme.disabled_style()
-    } else if focused {
-        theme.focused_border_style()
+    let inner = if chrome_owned {
+        area
     } else {
-        theme.border_style()
+        let border_style = if disabled {
+            theme.disabled_style()
+        } else if focused {
+            theme.focused_border_style()
+        } else {
+            theme.border_style()
+        };
+
+        let title = state.title.as_deref().unwrap_or("Conversation");
+        let block = Block::default()
+            .title(title)
+            .borders(Borders::ALL)
+            .border_style(border_style);
+
+        let inner = block.inner(area);
+        frame.render_widget(block, area);
+        inner
     };
-
-    let title = state.title.as_deref().unwrap_or("Conversation");
-    let block = Block::default()
-        .title(title)
-        .borders(Borders::ALL)
-        .border_style(border_style);
-
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
 
     if inner.height == 0 || inner.width == 0 {
         return;

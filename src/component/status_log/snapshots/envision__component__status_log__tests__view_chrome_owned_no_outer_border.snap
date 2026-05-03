@@ -1,0 +1,7 @@
+---
+source: src/component/status_log/tests.rs
+expression: terminal.backend().to_string()
+---
+⚠ Slow query                            
+✓ Connected                             
+ℹ Server started

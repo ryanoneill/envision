@@ -180,3 +180,18 @@ fn test_annotation_reflects_state() {
     assert!(annotation.focused);
     assert!(annotation.disabled);
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = CalendarState::new(2026, 3);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(34, 12);
+    terminal
+        .draw(|frame| {
+            Calendar::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

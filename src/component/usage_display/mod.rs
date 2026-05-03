@@ -448,13 +448,24 @@ impl UsageDisplay {
     }
 
     /// Renders vertical layout.
-    fn view_vertical(state: &UsageDisplayState, frame: &mut Frame, area: Rect, theme: &Theme) {
-        let mut block = Block::default().borders(Borders::ALL);
-        if let Some(title) = &state.title {
-            block = block.title(format!(" {} ", title));
-        }
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+    fn view_vertical(
+        state: &UsageDisplayState,
+        frame: &mut Frame,
+        area: Rect,
+        theme: &Theme,
+        chrome_owned: bool,
+    ) {
+        let inner = if chrome_owned {
+            area
+        } else {
+            let mut block = Block::default().borders(Borders::ALL);
+            if let Some(title) = &state.title {
+                block = block.title(format!(" {} ", title));
+            }
+            let inner = block.inner(area);
+            frame.render_widget(block, area);
+            inner
+        };
 
         let lines: Vec<Line<'static>> = state
             .metrics
@@ -481,15 +492,21 @@ impl UsageDisplay {
         area: Rect,
         theme: &Theme,
         columns: usize,
+        chrome_owned: bool,
     ) {
         let columns = columns.max(1);
 
-        let mut block = Block::default().borders(Borders::ALL);
-        if let Some(title) = &state.title {
-            block = block.title(format!(" {} ", title));
-        }
-        let inner = block.inner(area);
-        frame.render_widget(block, area);
+        let inner = if chrome_owned {
+            area
+        } else {
+            let mut block = Block::default().borders(Borders::ALL);
+            if let Some(title) = &state.title {
+                block = block.title(format!(" {} ", title));
+            }
+            let inner = block.inner(area);
+            frame.render_widget(block, area);
+            inner
+        };
 
         if state.metrics.is_empty() || inner.width == 0 || inner.height == 0 {
             return;
@@ -587,8 +604,17 @@ impl Component for UsageDisplay {
 
         match state.layout {
             UsageLayout::Horizontal => Self::view_horizontal(state, ctx.frame, ctx.area, ctx.theme),
-            UsageLayout::Vertical => Self::view_vertical(state, ctx.frame, ctx.area, ctx.theme),
-            UsageLayout::Grid(cols) => Self::view_grid(state, ctx.frame, ctx.area, ctx.theme, cols),
+            UsageLayout::Vertical => {
+                Self::view_vertical(state, ctx.frame, ctx.area, ctx.theme, ctx.chrome_owned)
+            }
+            UsageLayout::Grid(cols) => Self::view_grid(
+                state,
+                ctx.frame,
+                ctx.area,
+                ctx.theme,
+                cols,
+                ctx.chrome_owned,
+            ),
         }
     }
 }

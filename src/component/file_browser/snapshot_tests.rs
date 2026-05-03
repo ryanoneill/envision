@@ -123,3 +123,18 @@ fn test_annotation_emitted() {
     assert_eq!(regions.len(), 1);
     assert!(regions[0].annotation.has_id("file_browser"));
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = focused_state();
+    let (mut terminal, theme) = test_utils::setup_render(40, 8);
+    terminal
+        .draw(|frame| {
+            FileBrowser::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

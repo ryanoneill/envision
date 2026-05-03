@@ -1,0 +1,12 @@
+---
+source: src/component/terminal_output/tests.rs
+expression: terminal.backend().to_string()
+---
+                                       ▲
+                                       ║
+                                       ║
+                                       ║
+                                       ║
+                                       █
+                                       █
+ 20 lines | Auto-scroll | Ln 21        ▼

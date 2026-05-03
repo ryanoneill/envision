@@ -518,7 +518,8 @@ impl Component for TitleCard {
             );
         });
 
-        let render_area = if state.bordered {
+        let bordered = !ctx.chrome_owned && state.bordered;
+        let render_area = if bordered {
             let border_style = if ctx.disabled {
                 ctx.theme.disabled_style()
             } else {

@@ -16,6 +16,10 @@ const CRIT_INDICATOR: &str = "\u{2716}"; // ✖
 const UNKNOWN_INDICATOR: &str = "?";
 
 /// Renders the full alert panel.
+///
+/// `chrome_owned` signals that the parent has already drawn the outer
+/// chrome for `area`. When true, the outer `Block` draw is suppressed;
+/// the per-metric card borders inside the grid are unchanged.
 pub(super) fn render_alert_panel(
     state: &AlertPanelState,
     frame: &mut Frame,
@@ -23,6 +27,7 @@ pub(super) fn render_alert_panel(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
     if area.height < 3 || area.width < 3 {
         return;
@@ -37,23 +42,28 @@ pub(super) fn render_alert_panel(
         );
     });
 
-    // Outer border with title showing aggregate counts
-    let outer_border_style = if disabled {
-        theme.disabled_style()
-    } else if focused {
-        theme.focused_border_style()
+    let inner = if chrome_owned {
+        area
     } else {
-        theme.border_style()
+        // Outer border with title showing aggregate counts
+        let outer_border_style = if disabled {
+            theme.disabled_style()
+        } else if focused {
+            theme.focused_border_style()
+        } else {
+            theme.border_style()
+        };
+
+        let title = state.title_with_counts();
+        let outer_block = Block::default()
+            .title(format!(" {} ", title))
+            .borders(Borders::ALL)
+            .border_style(outer_border_style);
+
+        let inner = outer_block.inner(area);
+        frame.render_widget(outer_block, area);
+        inner
     };
-
-    let title = state.title_with_counts();
-    let outer_block = Block::default()
-        .title(format!(" {} ", title))
-        .borders(Borders::ALL)
-        .border_style(outer_border_style);
-
-    let inner = outer_block.inner(area);
-    frame.render_widget(outer_block, area);
 
     if state.metrics().is_empty() || inner.height == 0 || inner.width == 0 {
         return;

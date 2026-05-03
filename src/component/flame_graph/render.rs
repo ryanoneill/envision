@@ -8,6 +8,10 @@ use super::node::FlameNode;
 use crate::theme::Theme;
 
 /// Renders the full flame graph including border, depth rows, and detail bar.
+///
+/// `chrome_owned` signals that the parent has already drawn the outer
+/// chrome for `area`. When true, the outer `Block` draw is suppressed
+/// and content is rendered against `area` directly.
 pub(super) fn render_flame_graph(
     state: &FlameGraphState,
     frame: &mut Frame,
@@ -15,22 +19,28 @@ pub(super) fn render_flame_graph(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
-    let border_style = if disabled {
-        theme.disabled_style()
-    } else if focused {
-        theme.focused_border_style()
+    let inner = if chrome_owned {
+        area
     } else {
-        theme.normal_style()
+        let border_style = if disabled {
+            theme.disabled_style()
+        } else if focused {
+            theme.focused_border_style()
+        } else {
+            theme.normal_style()
+        };
+
+        let mut block = Block::default().borders(Borders::ALL).style(border_style);
+        if let Some(title) = &state.title {
+            block = block.title(format!(" {} ", title));
+        }
+
+        let inner = block.inner(area);
+        frame.render_widget(block, area);
+        inner
     };
-
-    let mut block = Block::default().borders(Borders::ALL).style(border_style);
-    if let Some(title) = &state.title {
-        block = block.title(format!(" {} ", title));
-    }
-
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
 
     if inner.width == 0 || inner.height == 0 {
         return;

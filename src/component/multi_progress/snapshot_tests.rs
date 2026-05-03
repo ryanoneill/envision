@@ -119,3 +119,20 @@ fn test_snapshot_disabled() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let mut state = MultiProgressState::new().with_title("Downloads");
+    state.add("file1", "Document.pdf");
+    state.add("file2", "Image.png");
+    let (mut terminal, theme) = test_utils::setup_render(40, 6);
+    terminal
+        .draw(|frame| {
+            MultiProgress::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

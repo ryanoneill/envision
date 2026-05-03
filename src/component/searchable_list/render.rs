@@ -10,6 +10,11 @@ use crate::scroll::ScrollState;
 use crate::theme::Theme;
 
 /// Renders the searchable list component.
+///
+/// `chrome_owned` signals that the parent has already drawn the outer
+/// chrome for `area`. When true, the list panel's outer `Block` draw is
+/// suppressed; the filter input retains its decorative border (the
+/// filter is a functional input widget, not chrome around content).
 pub(super) fn render_searchable_list<T: Clone + Display>(
     state: &SearchableListState<T>,
     frame: &mut Frame,
@@ -17,6 +22,7 @@ pub(super) fn render_searchable_list<T: Clone + Display>(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
     crate::annotation::with_registry(|reg| {
         reg.open(
@@ -90,26 +96,36 @@ pub(super) fn render_searchable_list<T: Clone + Display>(
         theme.selected_highlight_style(list_focused)
     };
 
-    let list_block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(list_border_style);
-
-    let list_inner = list_block.inner(chunks[1]);
-
-    let list_widget = List::new(items)
-        .block(list_block)
+    let mut list_widget = List::new(items)
         .highlight_style(highlight_style)
         .highlight_symbol("> ");
+
+    let list_inner = if chrome_owned {
+        chunks[1]
+    } else {
+        let list_block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(list_border_style);
+
+        let inner = list_block.inner(chunks[1]);
+        list_widget = list_widget.block(list_block);
+        inner
+    };
 
     let mut list_state = state.list_state.clone();
     frame.render_stateful_widget(list_widget, chunks[1], &mut list_state);
 
-    // Render scrollbar when content exceeds viewport
+    // Render scrollbar when content exceeds viewport. In chrome-owned mode
+    // the data already occupies the full list area (no border inset).
     if state.filtered_indices.len() > list_inner.height as usize {
         let mut bar_scroll = ScrollState::new(state.filtered_indices.len());
         bar_scroll.set_viewport_height(list_inner.height as usize);
         bar_scroll.set_offset(list_state.offset());
-        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, chunks[1], theme);
+        if chrome_owned {
+            crate::scroll::render_scrollbar(&bar_scroll, frame, chunks[1], theme);
+        } else {
+            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, chunks[1], theme);
+        }
     }
 
     crate::annotation::with_registry(|reg| {

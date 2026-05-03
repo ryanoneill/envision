@@ -539,24 +539,29 @@ impl Component for ScrollView {
             );
         });
 
-        let border_style = if ctx.disabled {
-            ctx.theme.disabled_style()
-        } else if ctx.focused {
-            ctx.theme.focused_border_style()
+        let inner = if ctx.chrome_owned {
+            ctx.area
         } else {
-            ctx.theme.border_style()
+            let border_style = if ctx.disabled {
+                ctx.theme.disabled_style()
+            } else if ctx.focused {
+                ctx.theme.focused_border_style()
+            } else {
+                ctx.theme.border_style()
+            };
+
+            let mut block = Block::default()
+                .borders(Borders::ALL)
+                .border_style(border_style);
+
+            if let Some(title) = &state.title {
+                block = block.title(title.as_str());
+            }
+
+            let inner = block.inner(ctx.area);
+            ctx.frame.render_widget(block, ctx.area);
+            inner
         };
-
-        let mut block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(border_style);
-
-        if let Some(title) = &state.title {
-            block = block.title(title.as_str());
-        }
-
-        let inner = block.inner(ctx.area);
-        ctx.frame.render_widget(block, ctx.area);
 
         if inner.height == 0 || inner.width == 0 {
             return;
@@ -566,7 +571,9 @@ impl Component for ScrollView {
         let viewport_height = inner.height as usize;
         let total = state.content_height as usize;
 
-        // Render scrollbar when content exceeds viewport
+        // Render scrollbar when content exceeds viewport. In chrome-owned mode
+        // the data already occupies the full `area` (no border inset), so the
+        // scrollbar tracks `area` directly.
         if state.show_scrollbar && total > viewport_height {
             let mut bar_scroll = ScrollState::new(total);
             bar_scroll.set_viewport_height(viewport_height);
@@ -576,12 +583,16 @@ impl Component for ScrollView {
                     .offset()
                     .min(total.saturating_sub(viewport_height)),
             );
-            crate::scroll::render_scrollbar_inside_border(
-                &bar_scroll,
-                ctx.frame,
-                ctx.area,
-                ctx.theme,
-            );
+            if ctx.chrome_owned {
+                crate::scroll::render_scrollbar(&bar_scroll, ctx.frame, ctx.area, ctx.theme);
+            } else {
+                crate::scroll::render_scrollbar_inside_border(
+                    &bar_scroll,
+                    ctx.frame,
+                    ctx.area,
+                    ctx.theme,
+                );
+            }
         }
     }
 }
