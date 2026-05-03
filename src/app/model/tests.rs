@@ -296,6 +296,35 @@ fn test_handle_event_with_state_default_delegation() {
 // The compile-time enforcement is verified by the `OptionalArgs`
 // trait-bound on `RuntimeBuilder::build`. The trybuild compile-fail fixture
 // in `tests/trybuild_app_args/` (Phase 3) covers the bad-shape case.
-//
-// Test #1 from the spec — `type Args = ()` works without `with_args` —
-// is covered by the existing `TestApp` impls above.
+
+#[test]
+fn test_args_unit_default_works_with_build() {
+    use crate::app::Runtime;
+
+    struct UnitArgsApp;
+    #[derive(Clone, Default)]
+    struct UnitState;
+    #[derive(Clone)]
+    enum UnitMsg {}
+
+    impl App for UnitArgsApp {
+        type State = UnitState;
+        type Message = UnitMsg;
+        type Args = ();
+
+        fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
+            (UnitState, Command::none())
+        }
+
+        fn update(_: &mut Self::State, _: Self::Message) -> Command<Self::Message> {
+            Command::none()
+        }
+
+        fn view(_: &Self::State, _: &mut ratatui::Frame) {}
+    }
+
+    let _ = Runtime::<UnitArgsApp, _>::virtual_builder(80, 24)
+        .build()
+        .unwrap();
+    // No with_args needed — () is OptionalArgs.
+}
