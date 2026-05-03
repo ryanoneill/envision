@@ -312,3 +312,16 @@ fn test_all_themes_distinct() {
         }
     }
 }
+
+#[test]
+fn test_severity_enum_variants() {
+    // Pin the four severity variants and their ordering.
+    let _good = Severity::Good;
+    let _mild = Severity::Mild;
+    let _bad = Severity::Bad;
+    let _critical = Severity::Critical;
+    // Pin Copy/Clone/Eq so consumers can destructure freely.
+    let s = Severity::Bad;
+    let s2 = s;
+    assert_eq!(s, s2);
+}

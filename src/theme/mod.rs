@@ -43,8 +43,8 @@ pub mod catppuccin;
 pub use catppuccin::*;
 
 pub mod palette;
+pub use palette::Severity;
 // Re-exports added progressively as the types land:
-//   Task 1 → adds Severity
 //   Task 3 → adds NamedColor
 //   Task 4 → adds Palette
 
