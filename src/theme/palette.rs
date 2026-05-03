@@ -58,3 +58,40 @@ pub enum Severity {
     /// Critical band — typically rendered red and bold.
     Critical,
 }
+
+impl Severity {
+    /// Pick a `Severity` by linear thresholds.
+    ///
+    /// Thresholds are evaluated in slice order: the first `(cutoff, severity)` entry where
+    /// `value < cutoff` wins. Values at or above all cutoffs return `Severity::Critical`.
+    ///
+    /// # Sorting
+    ///
+    /// Pass thresholds sorted ascending by cutoff for predictable bucketing. Unsorted
+    /// input is well-defined (first-match-wins) but typically counter-intuitive.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use envision::theme::Severity;
+    ///
+    /// let thresholds = [
+    ///     (1.0,  Severity::Good),
+    ///     (3.0,  Severity::Mild),
+    ///     (10.0, Severity::Bad),
+    /// ];
+    ///
+    /// assert_eq!(Severity::from_thresholds(0.5,  &thresholds), Severity::Good);
+    /// assert_eq!(Severity::from_thresholds(2.0,  &thresholds), Severity::Mild);
+    /// assert_eq!(Severity::from_thresholds(5.0,  &thresholds), Severity::Bad);
+    /// assert_eq!(Severity::from_thresholds(20.0, &thresholds), Severity::Critical);
+    /// ```
+    pub fn from_thresholds(value: f64, thresholds: &[(f64, Severity)]) -> Severity {
+        for (cutoff, sev) in thresholds {
+            if value < *cutoff {
+                return *sev;
+            }
+        }
+        Severity::Critical
+    }
+}

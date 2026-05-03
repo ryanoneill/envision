@@ -325,3 +325,49 @@ fn test_severity_enum_variants() {
     let s2 = s;
     assert_eq!(s, s2);
 }
+
+#[test]
+fn test_severity_from_thresholds_band_boundaries() {
+    let thresholds = [
+        (1.0, Severity::Good),
+        (3.0, Severity::Mild),
+        (10.0, Severity::Bad),
+    ];
+    // Below first cutoff: Good.
+    assert_eq!(Severity::from_thresholds(0.5, &thresholds), Severity::Good);
+    assert_eq!(Severity::from_thresholds(0.999, &thresholds), Severity::Good);
+    // At cutoff falls through to next band (Mild).
+    assert_eq!(Severity::from_thresholds(1.0, &thresholds), Severity::Mild);
+    // Inside Mild range.
+    assert_eq!(Severity::from_thresholds(2.0, &thresholds), Severity::Mild);
+    assert_eq!(Severity::from_thresholds(2.999, &thresholds), Severity::Mild);
+    // At Mild cutoff falls through to Bad.
+    assert_eq!(Severity::from_thresholds(3.0, &thresholds), Severity::Bad);
+    assert_eq!(Severity::from_thresholds(5.0, &thresholds), Severity::Bad);
+    // At Bad cutoff falls through to Critical (default).
+    assert_eq!(Severity::from_thresholds(10.0, &thresholds), Severity::Critical);
+    assert_eq!(Severity::from_thresholds(20.0, &thresholds), Severity::Critical);
+}
+
+#[test]
+fn test_severity_from_thresholds_empty() {
+    // Empty threshold slice: every value is Critical.
+    assert_eq!(Severity::from_thresholds(0.0, &[]), Severity::Critical);
+    assert_eq!(Severity::from_thresholds(-1.0, &[]), Severity::Critical);
+    assert_eq!(Severity::from_thresholds(1e9, &[]), Severity::Critical);
+}
+
+#[test]
+fn test_severity_from_thresholds_unsorted_first_match_wins() {
+    // Documented first-match-wins: iteration is in slice order, not by sorted cutoff.
+    // Unsorted thresholds give well-defined but possibly counter-intuitive results.
+    let unsorted = [
+        (10.0, Severity::Bad),
+        (1.0,  Severity::Good),
+        (3.0,  Severity::Mild),
+    ];
+    // value=2.0: first cutoff is 10.0; 2.0 < 10.0, so returns Bad immediately.
+    assert_eq!(Severity::from_thresholds(2.0, &unsorted), Severity::Bad);
+    // value=15.0: 15.0 < 10.0? no. 15.0 < 1.0? no. 15.0 < 3.0? no. Critical default.
+    assert_eq!(Severity::from_thresholds(15.0, &unsorted), Severity::Critical);
+}
