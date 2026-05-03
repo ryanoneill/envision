@@ -583,9 +583,11 @@ impl Component for Sparkline {
             .direction(direction)
             .style(style);
 
-        if let Some(title) = &state.title {
-            sparkline =
-                sparkline.block(Block::default().title(title.as_str()).borders(Borders::ALL));
+        if !ctx.chrome_owned {
+            if let Some(title) = &state.title {
+                sparkline =
+                    sparkline.block(Block::default().title(title.as_str()).borders(Borders::ALL));
+            }
         }
 
         let annotation =

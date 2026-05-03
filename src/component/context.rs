@@ -100,6 +100,10 @@ pub struct RenderContext<'frame, 'buf> {
     pub focused: bool,
     /// Whether the component is currently disabled.
     pub disabled: bool,
+    /// True when this context's parent has already drawn the chrome
+    /// (border, title, focus ring) for `area`. Children consult this at
+    /// render time and suppress their own chrome.
+    pub chrome_owned: bool,
 }
 
 impl<'frame, 'buf> RenderContext<'frame, 'buf> {
@@ -111,6 +115,7 @@ impl<'frame, 'buf> RenderContext<'frame, 'buf> {
             theme,
             focused: false,
             disabled: false,
+            chrome_owned: false,
         }
     }
 
@@ -128,6 +133,17 @@ impl<'frame, 'buf> RenderContext<'frame, 'buf> {
         self
     }
 
+    /// Builder: marks chrome as parent-owned. Children consult this flag
+    /// at render time and suppress their own borders/titles/focus rings.
+    ///
+    /// Set automatically by [`PaneLayout::view_with`][crate::component::pane_layout::PaneLayout::view_with]
+    /// when invoking the per-pane render closure.
+    #[must_use]
+    pub fn chrome_owned(mut self, owned: bool) -> Self {
+        self.chrome_owned = owned;
+        self
+    }
+
     /// Returns a context with the same frame, theme, and focus state but
     /// a different area.
     ///
@@ -141,6 +157,7 @@ impl<'frame, 'buf> RenderContext<'frame, 'buf> {
             theme: self.theme,
             focused: self.focused,
             disabled: self.disabled,
+            chrome_owned: self.chrome_owned,
         }
     }
 
@@ -292,6 +309,43 @@ mod render_context_tests {
                 let event_ctx = ctx.event_context();
                 assert!(event_ctx.focused);
                 assert!(event_ctx.disabled);
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn test_render_context_chrome_owned_defaults_false() {
+        let (mut terminal, theme) = setup_render(60, 5);
+        terminal
+            .draw(|frame| {
+                let ctx = RenderContext::new(frame, frame.area(), &theme);
+                assert!(!ctx.chrome_owned, "chrome_owned should default to false");
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn test_render_context_chrome_owned_builder_sets_field() {
+        let (mut terminal, theme) = setup_render(60, 5);
+        terminal
+            .draw(|frame| {
+                let ctx = RenderContext::new(frame, frame.area(), &theme).chrome_owned(true);
+                assert!(ctx.chrome_owned);
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn test_render_context_with_area_propagates_chrome_owned() {
+        let (mut terminal, theme) = setup_render(60, 5);
+        terminal
+            .draw(|frame| {
+                let mut ctx = RenderContext::new(frame, frame.area(), &theme).chrome_owned(true);
+                let inner = ctx.with_area(ratatui::prelude::Rect::new(1, 1, 10, 3));
+                assert!(
+                    inner.chrome_owned,
+                    "with_area should propagate chrome_owned"
+                );
             })
             .unwrap();
     }

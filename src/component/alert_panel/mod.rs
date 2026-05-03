@@ -845,6 +845,7 @@ impl Component for AlertPanel {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
+            ctx.chrome_owned,
         );
     }
 }

@@ -154,3 +154,19 @@ fn test_annotation_with_disabled() {
     let region = registry.get_by_id("box_plot").unwrap();
     assert!(region.annotation.disabled);
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = BoxPlotState::new(vec![BoxPlotData::new("API", 10.0, 20.0, 35.0, 45.0, 55.0)])
+        .with_title("Latency");
+    let (mut terminal, theme) = test_utils::setup_render(40, 12);
+    terminal
+        .draw(|frame| {
+            BoxPlot::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

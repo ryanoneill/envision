@@ -1,0 +1,12 @@
+---
+source: src/component/flame_graph/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+ main()█████████████████████████████████
+                                        
+                                        
+                                        
+                                        
+                                        
+────────────────────────────────────────
+ Selected: main()  500 samples (100.0%)

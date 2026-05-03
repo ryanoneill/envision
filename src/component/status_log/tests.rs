@@ -816,3 +816,21 @@ fn test_annotation_emitted() {
     assert_eq!(regions.len(), 1);
     assert!(regions[0].annotation.has_id("status_log"));
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let mut state = StatusLogState::new().with_title("Log");
+    state.info("Server started");
+    state.success("Connected");
+    state.warning("Slow query");
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 6);
+    terminal
+        .draw(|frame| {
+            StatusLog::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

@@ -939,3 +939,18 @@ fn test_annotation_emitted() {
     });
     assert!(registry.get_by_id("histogram").is_some());
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = HistogramState::with_data(vec![1.0, 2.0, 3.0, 4.0, 5.0]).with_title("Distribution");
+    let (mut terminal, theme) = test_utils::setup_render(40, 12);
+    terminal
+        .draw(|frame| {
+            Histogram::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

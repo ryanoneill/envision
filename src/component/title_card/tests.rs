@@ -331,3 +331,18 @@ fn test_annotation_emitted() {
     assert_eq!(regions[0].annotation.label, Some("Hello".to_string()));
     assert!(!regions[0].annotation.disabled);
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = TitleCardState::new("My App").with_subtitle("v1.0");
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(30, 5);
+    terminal
+        .draw(|frame| {
+            TitleCard::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

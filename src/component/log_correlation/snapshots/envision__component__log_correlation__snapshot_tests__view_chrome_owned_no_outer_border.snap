@@ -1,0 +1,16 @@
+---
+source: src/component/log_correlation/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+┌ API Server ────────────────┐┌ Database ──────────────────┐
+│00:00:01 INF Request receive││00:00:01 INF Connected      │
+│00:00:01 DBG Parsing body   ││                            │
+│00:00:02 INF Query sent     ││00:00:02 INF Query start    │
+│                            ││00:00:02 DBG Query plan     │
+│00:00:03 INF Response sent  ││00:00:03 INF Query done     │
+│00:00:03 WRN Slow response  ││00:00:03 WRN Slow query     │
+│                            ││                            │
+│                            ││                            │
+│                            ││                            │
+└────────────────────────────┘└────────────────────────────┘
+ Active: API Server  Sync: ON

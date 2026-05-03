@@ -1,0 +1,5 @@
+---
+source: src/component/step_indicator/tests.rs
+expression: display
+---
+✓ Build ─── ● Test ─── ○ Deploy

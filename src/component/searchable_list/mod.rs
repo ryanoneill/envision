@@ -915,6 +915,7 @@ impl<T: Clone + Display + 'static> Component for SearchableList<T> {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
+            ctx.chrome_owned,
         );
     }
 }

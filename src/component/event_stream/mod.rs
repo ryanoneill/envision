@@ -383,6 +383,7 @@ impl Component for EventStream {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
+            ctx.chrome_owned,
         );
     }
 }

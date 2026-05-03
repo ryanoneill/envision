@@ -481,26 +481,28 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
             })
             .collect();
 
-        let border_style = if ctx.focused && !ctx.disabled {
-            ctx.theme.focused_border_style()
-        } else {
-            ctx.theme.border_style()
-        };
-
         let highlight_style = if ctx.disabled {
             ctx.theme.disabled_style()
         } else {
             ctx.theme.selected_style(ctx.focused)
         };
 
-        let tabs_widget = ratatui::widgets::Tabs::new(titles)
-            .block(
+        let mut tabs_widget = ratatui::widgets::Tabs::new(titles)
+            .select(selected_idx)
+            .highlight_style(highlight_style);
+
+        if !ctx.chrome_owned {
+            let border_style = if ctx.focused && !ctx.disabled {
+                ctx.theme.focused_border_style()
+            } else {
+                ctx.theme.border_style()
+            };
+            tabs_widget = tabs_widget.block(
                 Block::default()
                     .borders(Borders::ALL)
                     .border_style(border_style),
-            )
-            .select(selected_idx)
-            .highlight_style(highlight_style);
+            );
+        }
 
         let annotation = crate::annotation::Annotation::new(crate::annotation::WidgetType::TabBar)
             .with_id("tabs")

@@ -12,46 +12,44 @@ use ratatui::widgets::{Block, Borders, List, ListItem};
 use unicode_width::UnicodeWidthChar;
 use unicode_width::UnicodeWidthStr;
 
+use crate::component::RenderContext;
 use crate::theme::Theme;
 
 /// Renders the full conversation view using the messages stored in state.
-pub(super) fn render(
-    state: &ConversationViewState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    focused: bool,
-    disabled: bool,
-) {
-    render_from(state, state, frame, area, theme, focused, disabled);
+///
+/// `ctx.chrome_owned` signals that the parent has already drawn the outer
+/// chrome for `ctx.area`. When true, the outer `Block` draw is suppressed.
+pub(super) fn render(state: &ConversationViewState, ctx: &mut RenderContext<'_, '_>) {
+    render_from(state, state, ctx);
 }
 
 /// Renders the conversation view using messages from an external [`MessageSource`].
 pub(super) fn render_from(
     source: &dyn MessageSource,
     state: &ConversationViewState,
-    frame: &mut Frame,
-    area: Rect,
-    theme: &Theme,
-    focused: bool,
-    disabled: bool,
+    ctx: &mut RenderContext<'_, '_>,
 ) {
-    let border_style = if disabled {
-        theme.disabled_style()
-    } else if focused {
-        theme.focused_border_style()
+    let inner = if ctx.chrome_owned {
+        ctx.area
     } else {
-        theme.border_style()
+        let border_style = if ctx.disabled {
+            ctx.theme.disabled_style()
+        } else if ctx.focused {
+            ctx.theme.focused_border_style()
+        } else {
+            ctx.theme.border_style()
+        };
+
+        let title = state.title.as_deref().unwrap_or("Conversation");
+        let block = Block::default()
+            .title(title)
+            .borders(Borders::ALL)
+            .border_style(border_style);
+
+        let inner = block.inner(ctx.area);
+        ctx.frame.render_widget(block, ctx.area);
+        inner
     };
-
-    let title = state.title.as_deref().unwrap_or("Conversation");
-    let block = Block::default()
-        .title(title)
-        .borders(Borders::ALL)
-        .border_style(border_style);
-
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
 
     if inner.height == 0 || inner.width == 0 {
         return;
@@ -72,7 +70,7 @@ pub(super) fn render_from(
         (inner, None)
     };
 
-    render_messages_from(source, state, frame, message_area, theme);
+    render_messages_from(source, state, ctx.frame, message_area, ctx.theme);
 
     if let Some((status_rect, text)) = status_area.zip(state.status.as_deref()) {
         let style = Style::default()
@@ -80,7 +78,7 @@ pub(super) fn render_from(
             .add_modifier(Modifier::ITALIC);
         let line = Line::from(Span::styled(text, style));
         let paragraph = ratatui::widgets::Paragraph::new(line);
-        frame.render_widget(paragraph, status_rect);
+        ctx.frame.render_widget(paragraph, status_rect);
     }
 }
 

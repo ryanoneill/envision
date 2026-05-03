@@ -911,3 +911,24 @@ fn test_init() {
     let state = StepIndicator::init();
     assert!(state.steps().is_empty());
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let (mut terminal, theme) = setup_render(40, 5);
+    let steps = vec![
+        Step::new("Build").with_status(StepStatus::Completed),
+        Step::new("Test").with_status(StepStatus::Active),
+        Step::new("Deploy"),
+    ];
+    let state = StepIndicatorState::new(steps).with_title("Pipeline");
+    terminal
+        .draw(|frame| {
+            StepIndicator::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    let display = terminal.backend().to_string();
+    insta::assert_snapshot!("view_chrome_owned_no_outer_border", display);
+}

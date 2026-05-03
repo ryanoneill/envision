@@ -646,15 +646,7 @@ impl Component for Canvas {
             );
         });
 
-        let needs_border = state.title.is_some() || ctx.focused;
-
-        let border_style = if ctx.disabled {
-            ctx.theme.disabled_style()
-        } else if ctx.focused {
-            ctx.theme.focused_border_style()
-        } else {
-            ctx.theme.border_style()
-        };
+        let needs_border = !ctx.chrome_owned && (state.title.is_some() || ctx.focused);
 
         let content_style = if ctx.disabled {
             ctx.theme.disabled_style()
@@ -663,6 +655,14 @@ impl Component for Canvas {
         };
 
         let canvas_area = if needs_border {
+            let border_style = if ctx.disabled {
+                ctx.theme.disabled_style()
+            } else if ctx.focused {
+                ctx.theme.focused_border_style()
+            } else {
+                ctx.theme.border_style()
+            };
+
             let mut block = Block::default()
                 .borders(Borders::ALL)
                 .border_style(border_style);

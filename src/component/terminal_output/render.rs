@@ -10,7 +10,7 @@ use crate::theme::Theme;
 /// Renders the terminal output component.
 ///
 /// Layout (top to bottom):
-/// - Border with optional title
+/// - Border with optional title (suppressed when `chrome_owned`)
 /// - ANSI-colored content lines with optional line numbers
 /// - Status bar at the bottom (inside the border)
 /// - Scrollbar on the right edge (inside the border)
@@ -21,6 +21,7 @@ pub(super) fn render(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
     crate::annotation::with_registry(|reg| {
         reg.register(
@@ -31,24 +32,29 @@ pub(super) fn render(
         );
     });
 
-    let border_style = if disabled {
-        theme.disabled_style()
-    } else if focused {
-        theme.focused_border_style()
+    let inner = if chrome_owned {
+        area
     } else {
-        theme.border_style()
+        let border_style = if disabled {
+            theme.disabled_style()
+        } else if focused {
+            theme.focused_border_style()
+        } else {
+            theme.border_style()
+        };
+
+        let mut block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(border_style);
+
+        if let Some(title) = &state.title {
+            block = block.title(title.as_str());
+        }
+
+        let inner = block.inner(area);
+        frame.render_widget(block, area);
+        inner
     };
-
-    let mut block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(border_style);
-
-    if let Some(title) = &state.title {
-        block = block.title(title.as_str());
-    }
-
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
 
     if inner.height == 0 || inner.width == 0 {
         return;
@@ -76,14 +82,20 @@ pub(super) fn render(
     render_content(state, frame, content_area, theme, disabled);
     render_status_bar(state, frame, status_area, theme, disabled);
 
-    // Render scrollbar when content exceeds viewport
+    // Render scrollbar when content exceeds viewport. In chrome-owned mode
+    // the data already occupies the full `area` (no border inset), so the
+    // scrollbar tracks `area` directly.
     let total_lines = state.lines.len();
     let visible_lines = content_height as usize;
     if total_lines > visible_lines {
         let mut bar_scroll = crate::scroll::ScrollState::new(total_lines);
         bar_scroll.set_viewport_height(visible_lines);
         bar_scroll.set_offset(state.scroll.offset());
-        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        if chrome_owned {
+            crate::scroll::render_scrollbar(&bar_scroll, frame, area, theme);
+        } else {
+            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        }
     }
 }
 

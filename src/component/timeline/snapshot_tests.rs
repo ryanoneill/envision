@@ -138,3 +138,20 @@ fn test_snapshot_span_selected() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = TimelineState::new()
+        .with_events(sample_events())
+        .with_view_range(0.0, 1000.0);
+    let (mut terminal, theme) = test_utils::setup_render(50, 8);
+    terminal
+        .draw(|frame| {
+            Timeline::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

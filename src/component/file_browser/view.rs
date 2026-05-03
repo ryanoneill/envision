@@ -8,6 +8,10 @@ use super::{FileBrowserState, format_size};
 use crate::theme::Theme;
 
 /// Renders the file browser component into the given frame area.
+///
+/// `chrome_owned` signals that the parent has already drawn the outer
+/// chrome for `area`. When true, the outer `Block` draw is suppressed
+/// and content is rendered against `area` directly.
 pub(super) fn render(
     state: &FileBrowserState,
     frame: &mut Frame,
@@ -15,6 +19,7 @@ pub(super) fn render(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
     crate::annotation::with_registry(|reg| {
         reg.register(
@@ -26,19 +31,24 @@ pub(super) fn render(
         );
     });
 
-    let border_style = if disabled {
-        theme.disabled_style()
-    } else if focused {
-        theme.focused_border_style()
+    let inner = if chrome_owned {
+        area
     } else {
-        theme.border_style()
-    };
+        let border_style = if disabled {
+            theme.disabled_style()
+        } else if focused {
+            theme.focused_border_style()
+        } else {
+            theme.border_style()
+        };
 
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(border_style);
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(border_style);
+        let inner = block.inner(area);
+        frame.render_widget(block, area);
+        inner
+    };
 
     if inner.height == 0 || inner.width == 0 {
         return;

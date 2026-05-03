@@ -661,3 +661,18 @@ fn test_annotation_focused() {
     assert_eq!(regions.len(), 1);
     assert!(regions[0].annotation.focused);
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = HelpPanelState::new().with_groups(sample_groups());
+    let (mut terminal, theme) = test_utils::setup_render(40, 10);
+    terminal
+        .draw(|frame| {
+            HelpPanel::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

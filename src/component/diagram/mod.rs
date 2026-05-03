@@ -655,15 +655,7 @@ impl Component for Diagram {
         let mut state_clone = state.clone();
         let layout = state_clone.ensure_layout().clone();
 
-        render::render_diagram(
-            state,
-            &layout,
-            ctx.frame,
-            ctx.area,
-            ctx.theme,
-            ctx.focused,
-            ctx.disabled,
-        );
+        render::render_diagram(state, &layout, ctx);
     }
 }
 

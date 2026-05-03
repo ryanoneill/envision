@@ -1,0 +1,14 @@
+---
+source: src/component/event_stream/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+Time         Lvl   Source     Message                       
+1000.0       INF   api        Request received path=/users  
+1001.0       DBG   db         Query executed ms=12          
+1002.0       WRN   cache      Cache miss key=usr            
+1003.0       ERR   api        Timeout ms=5000               
+                                                            
+                                                            
+                                                            
+                                                            
+Filter: [/]  Level: ALL  Auto: ON

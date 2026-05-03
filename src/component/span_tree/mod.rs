@@ -848,6 +848,7 @@ impl Component for SpanTree {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
+            ctx.chrome_owned,
         );
     }
 }

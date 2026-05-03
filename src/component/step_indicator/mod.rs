@@ -477,7 +477,8 @@ impl Component for StepIndicator {
             );
         });
 
-        let inner = if state.show_border {
+        let show_border = !ctx.chrome_owned && state.show_border;
+        let inner = if show_border {
             let mut block = Block::default()
                 .borders(Borders::ALL)
                 .border_style(if ctx.focused {

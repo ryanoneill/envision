@@ -654,3 +654,18 @@ fn test_annotation_emitted() {
     let regions = registry.find_by_type(&WidgetType::TabBar);
     assert_eq!(regions.len(), 1);
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = TabsState::new(vec!["Home", "Settings", "Help"]);
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 3);
+    terminal
+        .draw(|frame| {
+            Tabs::<&str>::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

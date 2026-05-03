@@ -982,6 +982,7 @@ impl<T: Clone> Component for LoadingList<T> {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
+            ctx.chrome_owned,
         );
     }
 }

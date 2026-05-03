@@ -18,6 +18,11 @@ use crate::theme::Theme;
 const GUTTER_WIDTH: u16 = 7;
 
 /// Renders the CodeBlock in the given area.
+///
+/// `chrome_owned` signals that the parent has already drawn the outer
+/// chrome (border, title, focus ring) for `area`. When true, the outer
+/// `Block` draw is suppressed and content is rendered against `area`
+/// directly (the gutter / scrollbar layout is unchanged otherwise).
 pub(super) fn render(
     state: &CodeBlockState,
     frame: &mut Frame,
@@ -25,6 +30,7 @@ pub(super) fn render(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
     crate::annotation::with_registry(|reg| {
         reg.register(
@@ -35,22 +41,27 @@ pub(super) fn render(
         );
     });
 
-    let border_style = if disabled {
-        theme.disabled_style()
-    } else if focused {
-        theme.focused_border_style()
+    let inner = if chrome_owned {
+        area
     } else {
-        theme.border_style()
+        let border_style = if disabled {
+            theme.disabled_style()
+        } else if focused {
+            theme.focused_border_style()
+        } else {
+            theme.border_style()
+        };
+
+        let title = build_title(state);
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(border_style)
+            .title(title);
+
+        let inner = block.inner(area);
+        frame.render_widget(block, area);
+        inner
     };
-
-    let title = build_title(state);
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(border_style)
-        .title(title);
-
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
 
     if inner.height == 0 || inner.width == 0 {
         return;
@@ -118,12 +129,19 @@ pub(super) fn render(
         );
     }
 
-    // Render scrollbar when content exceeds viewport
+    // Render scrollbar when content exceeds viewport. In chrome-owned mode
+    // the data already occupies the full `area` (no border inset), so the
+    // scrollbar tracks `area` directly. Otherwise it tracks the inset
+    // interior the outer Block carved out.
     if total_lines > visible {
         let mut bar_scroll = ScrollState::new(total_lines);
         bar_scroll.set_viewport_height(visible);
         bar_scroll.set_offset(scroll_offset);
-        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        if chrome_owned {
+            crate::scroll::render_scrollbar(&bar_scroll, frame, area, theme);
+        } else {
+            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        }
     }
 }
 

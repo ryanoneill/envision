@@ -977,6 +977,7 @@ impl Component for FileBrowser {
             ctx.theme,
             ctx.focused,
             ctx.disabled,
+            ctx.chrome_owned,
         );
     }
 }

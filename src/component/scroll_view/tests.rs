@@ -692,3 +692,18 @@ fn test_page_with_zero_viewport_uses_one() {
     ScrollView::update(&mut state, ScrollViewMessage::PageDown);
     assert_eq!(state.scroll_offset(), 1);
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = scrollable_state();
+    let (mut terminal, theme) = test_utils::setup_render(40, 8);
+    terminal
+        .draw(|frame| {
+            ScrollView::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

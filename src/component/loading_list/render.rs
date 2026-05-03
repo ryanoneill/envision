@@ -9,6 +9,10 @@ use super::*;
 use crate::theme::Theme;
 
 /// Renders the loading list into the given frame area.
+///
+/// `chrome_owned` signals that the parent has already drawn the outer
+/// chrome for `area`. When true, the outer `Block` draw is suppressed
+/// and content is rendered against `area` directly.
 pub(super) fn render_loading_list<T: Clone>(
     state: &LoadingListState<T>,
     frame: &mut Frame,
@@ -16,6 +20,7 @@ pub(super) fn render_loading_list<T: Clone>(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
     if area.width == 0 || area.height == 0 {
         return;
@@ -31,14 +36,19 @@ pub(super) fn render_loading_list<T: Clone>(
         reg.register(area, ann);
     });
 
-    let block = if let Some(title) = &state.title {
-        Block::default().borders(Borders::ALL).title(title.as_str())
+    let inner = if chrome_owned {
+        area
     } else {
-        Block::default().borders(Borders::ALL)
-    };
+        let block = if let Some(title) = &state.title {
+            Block::default().borders(Borders::ALL).title(title.as_str())
+        } else {
+            Block::default().borders(Borders::ALL)
+        };
 
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
+        let inner = block.inner(area);
+        frame.render_widget(block, area);
+        inner
+    };
 
     if state.items.is_empty() || inner.height == 0 {
         return;
@@ -90,6 +100,12 @@ pub(super) fn render_loading_list<T: Clone>(
     let list = List::new(items);
     frame.render_widget(list, inner);
 
-    // Render scrollbar when content exceeds viewport
-    crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+    // Render scrollbar when content exceeds viewport. In chrome-owned mode
+    // the data already occupies the full `area` (no border inset), so the
+    // scrollbar tracks `area` directly.
+    if chrome_owned {
+        crate::scroll::render_scrollbar(&bar_scroll, frame, area, theme);
+    } else {
+        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+    }
 }

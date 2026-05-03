@@ -497,35 +497,47 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
             ctx.theme.selected_highlight_style(ctx.focused)
         };
 
-        let table = RatatuiTable::new(rows, widths)
+        let mut table = RatatuiTable::new(rows, widths)
             .header(header)
-            .block(
+            .row_highlight_style(highlight_style)
+            .highlight_symbol("> ");
+
+        if !ctx.chrome_owned {
+            table = table.block(
                 Block::default()
                     .borders(Borders::ALL)
                     .border_style(border_style),
-            )
-            .row_highlight_style(highlight_style)
-            .highlight_symbol("> ");
+            );
+        }
 
         let mut table_state = ratatui::widgets::TableState::default();
         table_state.select(state.selected_row);
         ctx.frame
             .render_stateful_widget(table, ctx.area, &mut table_state);
 
-        // Render scrollbar by mirroring the offset from ratatui's TableState
-        let inner = ctx.area.inner(Margin::new(1, 1));
-        // Viewport for data rows: inner height minus header row (1) and bottom margin (1)
-        let data_viewport = (inner.height as usize).saturating_sub(2);
+        // Render scrollbar by mirroring the offset from ratatui's TableState.
+        // In chrome-owned mode the data already occupies the full `area`
+        // (no border inset), so the scrollbar tracks `area` directly.
+        let (inner, viewport_offset) = if ctx.chrome_owned {
+            (ctx.area, 1) // header row only; no bottom border margin
+        } else {
+            (ctx.area.inner(Margin::new(1, 1)), 2) // header + bottom margin
+        };
+        let data_viewport = (inner.height as usize).saturating_sub(viewport_offset);
         if data_viewport > 0 && state.rows.len() > data_viewport {
             let mut bar_scroll = ScrollState::new(state.rows.len());
             bar_scroll.set_viewport_height(data_viewport);
             bar_scroll.set_offset(table_state.offset());
-            crate::scroll::render_scrollbar_inside_border(
-                &bar_scroll,
-                ctx.frame,
-                ctx.area,
-                ctx.theme,
-            );
+            if ctx.chrome_owned {
+                crate::scroll::render_scrollbar(&bar_scroll, ctx.frame, ctx.area, ctx.theme);
+            } else {
+                crate::scroll::render_scrollbar_inside_border(
+                    &bar_scroll,
+                    ctx.frame,
+                    ctx.area,
+                    ctx.theme,
+                );
+            }
         }
 
         // Show cursor when editing

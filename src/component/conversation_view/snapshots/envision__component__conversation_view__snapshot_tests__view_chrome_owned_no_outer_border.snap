@@ -1,0 +1,9 @@
+---
+source: src/component/conversation_view/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+● User                                  
+  Hello?                                
+                                        
+◆ Assistant                             
+  Hi!

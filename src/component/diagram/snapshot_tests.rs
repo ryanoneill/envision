@@ -160,3 +160,20 @@ fn test_snapshot_rounded_nodes() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn view_chrome_owned_no_outer_border() {
+    let state = DiagramState::new()
+        .with_node(DiagramNode::new("api", "API").with_status(NodeStatus::Healthy))
+        .with_title("Service Graph");
+    let (mut terminal, theme) = test_utils::setup_render(40, 10);
+    terminal
+        .draw(|frame| {
+            Diagram::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).chrome_owned(true),
+            );
+        })
+        .unwrap();
+    insta::assert_snapshot!(terminal.backend().to_string());
+}

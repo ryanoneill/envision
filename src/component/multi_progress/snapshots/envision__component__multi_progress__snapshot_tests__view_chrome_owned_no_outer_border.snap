@@ -1,0 +1,6 @@
+---
+source: src/component/multi_progress/snapshot_tests.rs
+expression: terminal.backend().to_string()
+---
+○ Document.pdf   0% ░░░░░░░░░░░░░░░░    
+○ Image.png   0% ░░░░░░░░░░░░░░░░░░░

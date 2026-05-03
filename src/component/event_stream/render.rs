@@ -5,6 +5,10 @@ use super::EventStreamState;
 use crate::theme::Theme;
 
 /// Renders the complete event stream component.
+///
+/// `chrome_owned` signals that the parent has already drawn the outer
+/// chrome for `area`. When true, the event-list's outer `Block` draw is
+/// suppressed; the internal layout (header, status bar) is unchanged.
 pub(super) fn render_event_stream(
     state: &EventStreamState,
     frame: &mut Frame,
@@ -12,6 +16,7 @@ pub(super) fn render_event_stream(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
     if area.height < 3 {
         return;
@@ -36,13 +41,24 @@ pub(super) fn render_event_stream(
     let status_area = chunks[1];
 
     // Render event list
-    render_event_list(state, frame, list_area, theme, focused, disabled);
+    render_event_list(
+        state,
+        frame,
+        list_area,
+        theme,
+        focused,
+        disabled,
+        chrome_owned,
+    );
 
     // Render status bar (filter + level + auto-scroll indicator)
     render_status_bar(state, frame, status_area, theme, focused, disabled);
 }
 
 /// Renders the event list area with a bordered block.
+///
+/// When `chrome_owned` is true, the bordered block is suppressed and
+/// content renders against `area` directly.
 fn render_event_list(
     state: &EventStreamState,
     frame: &mut Frame,
@@ -50,44 +66,50 @@ fn render_event_list(
     theme: &Theme,
     focused: bool,
     disabled: bool,
+    chrome_owned: bool,
 ) {
     let visible = state.visible_events();
 
-    let border_style = if disabled {
-        theme.disabled_style()
-    } else if focused && !state.is_search_focused() {
-        theme.focused_border_style()
+    let inner = if chrome_owned {
+        area
     } else {
-        theme.border_style()
-    };
+        let border_style = if disabled {
+            theme.disabled_style()
+        } else if focused && !state.is_search_focused() {
+            theme.focused_border_style()
+        } else {
+            theme.border_style()
+        };
 
-    let mut block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(border_style);
+        let mut block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(border_style);
 
-    // Build title with event counts
-    let total = state.event_count();
-    let showing = visible.len();
-    if let Some(title) = state.title() {
-        if showing < total {
+        // Build title with event counts
+        let total = state.event_count();
+        let showing = visible.len();
+        if let Some(title) = state.title() {
+            if showing < total {
+                block = block.title(format!(
+                    " {} ({} events, showing {}) ",
+                    title, total, showing
+                ));
+            } else {
+                block = block.title(format!(" {} ({} events) ", title, total));
+            }
+        } else if showing < total {
             block = block.title(format!(
-                " {} ({} events, showing {}) ",
-                title, total, showing
+                " Event Stream ({} events, showing {}) ",
+                total, showing
             ));
         } else {
-            block = block.title(format!(" {} ({} events) ", title, total));
+            block = block.title(format!(" Event Stream ({} events) ", total));
         }
-    } else if showing < total {
-        block = block.title(format!(
-            " Event Stream ({} events, showing {}) ",
-            total, showing
-        ));
-    } else {
-        block = block.title(format!(" Event Stream ({} events) ", total));
-    }
 
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
+        let inner = block.inner(area);
+        frame.render_widget(block, area);
+        inner
+    };
 
     if inner.height == 0 || inner.width == 0 {
         return;
@@ -129,12 +151,18 @@ fn render_event_list(
     let list = List::new(items);
     frame.render_widget(list, data_area);
 
-    // Render scrollbar if content exceeds viewport
+    // Render scrollbar if content exceeds viewport. In chrome-owned mode
+    // the data already occupies the full `area` (no border inset), so the
+    // scrollbar tracks `area` directly.
     if visible.len() > data_height as usize {
         let mut bar_scroll = crate::scroll::ScrollState::new(visible.len());
         bar_scroll.set_viewport_height(data_height as usize);
         bar_scroll.set_offset(effective_offset);
-        crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        if chrome_owned {
+            crate::scroll::render_scrollbar(&bar_scroll, frame, area, theme);
+        } else {
+            crate::scroll::render_scrollbar_inside_border(&bar_scroll, frame, area, theme);
+        }
     }
 }
 

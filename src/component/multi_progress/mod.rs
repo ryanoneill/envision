@@ -786,14 +786,19 @@ impl Component for MultiProgress {
             );
         });
 
-        let block = if let Some(title) = &state.title {
-            Block::default().borders(Borders::ALL).title(title.as_str())
+        let inner = if ctx.chrome_owned {
+            ctx.area
         } else {
-            Block::default().borders(Borders::ALL)
-        };
+            let block = if let Some(title) = &state.title {
+                Block::default().borders(Borders::ALL).title(title.as_str())
+            } else {
+                Block::default().borders(Borders::ALL)
+            };
 
-        let inner = block.inner(ctx.area);
-        ctx.frame.render_widget(block, ctx.area);
+            let inner = block.inner(ctx.area);
+            ctx.frame.render_widget(block, ctx.area);
+            inner
+        };
 
         if state.items.is_empty() || inner.height == 0 {
             return;

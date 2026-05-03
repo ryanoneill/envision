@@ -740,13 +740,19 @@ impl Component for StatusLog {
             );
         });
 
-        let block = if let Some(title) = &state.title {
-            Block::default().borders(Borders::ALL).title(title.as_str())
+        let inner = if ctx.chrome_owned {
+            ctx.area
         } else {
-            Block::default().borders(Borders::ALL)
-        };
+            let block = if let Some(title) = &state.title {
+                Block::default().borders(Borders::ALL).title(title.as_str())
+            } else {
+                Block::default().borders(Borders::ALL)
+            };
 
-        let inner = block.inner(ctx.area);
+            let inner = block.inner(ctx.area);
+            ctx.frame.render_widget(block, ctx.area);
+            inner
+        };
 
         // Build list items (newest first, with scroll offset)
         let items: Vec<ListItem> = state
@@ -779,8 +785,6 @@ impl Component for StatusLog {
                 ListItem::new(content).style(style)
             })
             .collect();
-
-        ctx.frame.render_widget(block, ctx.area);
 
         if !items.is_empty() {
             let list = List::new(items);
