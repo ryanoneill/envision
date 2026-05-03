@@ -644,6 +644,48 @@ fn test_run_terminal_blocking_exists() {
 }
 
 // =========================================================================
+// init lifecycle — Test category #5 from the spec
+// =========================================================================
+
+#[test]
+fn test_init_called_exactly_once_per_runtime() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    static INIT_COUNTER: AtomicUsize = AtomicUsize::new(0);
+
+    struct CountInitApp;
+    #[derive(Clone, Default)]
+    struct CountInitState;
+    #[derive(Clone)]
+    enum CountInitMsg {}
+
+    impl App for CountInitApp {
+        type State = CountInitState;
+        type Message = CountInitMsg;
+        type Args = ();
+
+        fn init(_args: ()) -> (Self::State, Command<Self::Message>) {
+            INIT_COUNTER.fetch_add(1, Ordering::SeqCst);
+            (CountInitState, Command::none())
+        }
+
+        fn update(_: &mut Self::State, _: Self::Message) -> Command<Self::Message> {
+            Command::none()
+        }
+
+        fn view(_: &Self::State, _: &mut ratatui::Frame) {}
+    }
+
+    INIT_COUNTER.store(0, Ordering::SeqCst);
+
+    let _runtime = Runtime::<CountInitApp, _>::virtual_builder(80, 24)
+        .build()
+        .unwrap();
+
+    assert_eq!(INIT_COUNTER.load(Ordering::SeqCst), 1);
+}
+
+// =========================================================================
 // Multi-Runtime parallelism — Test category #4 from the spec
 // =========================================================================
 
