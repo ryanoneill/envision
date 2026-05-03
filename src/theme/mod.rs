@@ -231,6 +231,11 @@ pub struct Theme {
     pub progress_filled: Color,
     /// Empty portion of progress bars.
     pub progress_empty: Color,
+
+    // Named-color palette (26 entries; populated per-theme)
+    /// Theme-specific palette of named colors. Use [`Theme::color`] for theme-aware
+    /// lookup; this field is exposed primarily for users constructing custom themes.
+    pub palette: Palette,
 }
 
 impl Default for Theme {
@@ -260,6 +265,9 @@ impl Default for Theme {
 
             progress_filled: Color::Cyan,
             progress_empty: Color::Black,
+
+            // Placeholder palette — replaced with Default-specific mappings in Task 10.
+            palette: Theme::catppuccin_mocha().palette,
         }
     }
 }
@@ -308,6 +316,9 @@ impl Theme {
 
             progress_filled: NORD8,
             progress_empty: NORD1,
+
+            // Placeholder palette — replaced with Nord-specific mappings in Task 6.
+            palette: Theme::catppuccin_mocha().palette,
         }
     }
 
@@ -352,6 +363,9 @@ impl Theme {
 
             progress_filled: DRACULA_PURPLE,
             progress_empty: DRACULA_CURRENT,
+
+            // Placeholder palette — replaced with Dracula-specific mappings in Task 7.
+            palette: Theme::catppuccin_mocha().palette,
         }
     }
 
@@ -396,6 +410,9 @@ impl Theme {
 
             progress_filled: SOLARIZED_BLUE,
             progress_empty: SOLARIZED_BASE02,
+
+            // Placeholder palette — replaced with Solarized-specific mappings in Task 8.
+            palette: Theme::catppuccin_mocha().palette,
         }
     }
 
@@ -440,6 +457,9 @@ impl Theme {
 
             progress_filled: GRUVBOX_YELLOW,
             progress_empty: GRUVBOX_BG1,
+
+            // Placeholder palette — replaced with Gruvbox-specific mappings in Task 9.
+            palette: Theme::catppuccin_mocha().palette,
         }
     }
 
@@ -484,6 +504,35 @@ impl Theme {
 
             progress_filled: CATPPUCCIN_LAVENDER,
             progress_empty: CATPPUCCIN_SURFACE0,
+
+            palette: Palette {
+                rosewater: CATPPUCCIN_ROSEWATER,
+                flamingo: CATPPUCCIN_FLAMINGO,
+                pink: CATPPUCCIN_PINK,
+                mauve: CATPPUCCIN_MAUVE,
+                red: CATPPUCCIN_RED,
+                maroon: CATPPUCCIN_MAROON,
+                peach: CATPPUCCIN_PEACH,
+                yellow: CATPPUCCIN_YELLOW,
+                green: CATPPUCCIN_GREEN,
+                teal: CATPPUCCIN_TEAL,
+                sky: CATPPUCCIN_SKY,
+                sapphire: CATPPUCCIN_SAPPHIRE,
+                blue: CATPPUCCIN_BLUE,
+                lavender: CATPPUCCIN_LAVENDER,
+                text: CATPPUCCIN_TEXT,
+                subtext1: CATPPUCCIN_SUBTEXT1,
+                subtext0: CATPPUCCIN_SUBTEXT0,
+                overlay2: CATPPUCCIN_OVERLAY2,
+                overlay1: CATPPUCCIN_OVERLAY1,
+                overlay0: CATPPUCCIN_OVERLAY0,
+                surface2: CATPPUCCIN_SURFACE2,
+                surface1: CATPPUCCIN_SURFACE1,
+                surface0: CATPPUCCIN_SURFACE0,
+                base: CATPPUCCIN_BASE,
+                mantle: CATPPUCCIN_MANTLE,
+                crust: CATPPUCCIN_CRUST,
+            },
         }
     }
 

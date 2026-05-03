@@ -335,18 +335,30 @@ fn test_severity_from_thresholds_band_boundaries() {
     ];
     // Below first cutoff: Good.
     assert_eq!(Severity::from_thresholds(0.5, &thresholds), Severity::Good);
-    assert_eq!(Severity::from_thresholds(0.999, &thresholds), Severity::Good);
+    assert_eq!(
+        Severity::from_thresholds(0.999, &thresholds),
+        Severity::Good
+    );
     // At cutoff falls through to next band (Mild).
     assert_eq!(Severity::from_thresholds(1.0, &thresholds), Severity::Mild);
     // Inside Mild range.
     assert_eq!(Severity::from_thresholds(2.0, &thresholds), Severity::Mild);
-    assert_eq!(Severity::from_thresholds(2.999, &thresholds), Severity::Mild);
+    assert_eq!(
+        Severity::from_thresholds(2.999, &thresholds),
+        Severity::Mild
+    );
     // At Mild cutoff falls through to Bad.
     assert_eq!(Severity::from_thresholds(3.0, &thresholds), Severity::Bad);
     assert_eq!(Severity::from_thresholds(5.0, &thresholds), Severity::Bad);
     // At Bad cutoff falls through to Critical (default).
-    assert_eq!(Severity::from_thresholds(10.0, &thresholds), Severity::Critical);
-    assert_eq!(Severity::from_thresholds(20.0, &thresholds), Severity::Critical);
+    assert_eq!(
+        Severity::from_thresholds(10.0, &thresholds),
+        Severity::Critical
+    );
+    assert_eq!(
+        Severity::from_thresholds(20.0, &thresholds),
+        Severity::Critical
+    );
 }
 
 #[test]
@@ -363,13 +375,16 @@ fn test_severity_from_thresholds_unsorted_first_match_wins() {
     // Unsorted thresholds give well-defined but possibly counter-intuitive results.
     let unsorted = [
         (10.0, Severity::Bad),
-        (1.0,  Severity::Good),
-        (3.0,  Severity::Mild),
+        (1.0, Severity::Good),
+        (3.0, Severity::Mild),
     ];
     // value=2.0: first cutoff is 10.0; 2.0 < 10.0, so returns Bad immediately.
     assert_eq!(Severity::from_thresholds(2.0, &unsorted), Severity::Bad);
     // value=15.0: 15.0 < 10.0? no. 15.0 < 1.0? no. 15.0 < 3.0? no. Critical default.
-    assert_eq!(Severity::from_thresholds(15.0, &unsorted), Severity::Critical);
+    assert_eq!(
+        Severity::from_thresholds(15.0, &unsorted),
+        Severity::Critical
+    );
 }
 
 #[test]
@@ -411,35 +426,69 @@ fn test_palette_struct_construction() {
     // Direct construction: a custom user theme can build a Palette with no envision changes.
     let custom = Palette {
         rosewater: Color::Rgb(255, 0, 0),
-        flamingo:  Color::Rgb(255, 0, 0),
-        pink:      Color::Rgb(255, 0, 0),
-        mauve:     Color::Rgb(255, 0, 0),
-        red:       Color::Rgb(255, 0, 0),
-        maroon:    Color::Rgb(255, 0, 0),
-        peach:     Color::Rgb(255, 0, 0),
-        yellow:    Color::Rgb(255, 0, 0),
-        green:     Color::Rgb(255, 0, 0),
-        teal:      Color::Rgb(255, 0, 0),
-        sky:       Color::Rgb(255, 0, 0),
-        sapphire:  Color::Rgb(255, 0, 0),
-        blue:      Color::Rgb(255, 0, 0),
-        lavender:  Color::Rgb(255, 0, 0),
-        text:      Color::Rgb(255, 0, 0),
-        subtext1:  Color::Rgb(255, 0, 0),
-        subtext0:  Color::Rgb(255, 0, 0),
-        overlay2:  Color::Rgb(255, 0, 0),
-        overlay1:  Color::Rgb(255, 0, 0),
-        overlay0:  Color::Rgb(255, 0, 0),
-        surface2:  Color::Rgb(255, 0, 0),
-        surface1:  Color::Rgb(255, 0, 0),
-        surface0:  Color::Rgb(255, 0, 0),
-        base:      Color::Rgb(255, 0, 0),
-        mantle:    Color::Rgb(255, 0, 0),
-        crust:     Color::Rgb(255, 0, 0),
+        flamingo: Color::Rgb(255, 0, 0),
+        pink: Color::Rgb(255, 0, 0),
+        mauve: Color::Rgb(255, 0, 0),
+        red: Color::Rgb(255, 0, 0),
+        maroon: Color::Rgb(255, 0, 0),
+        peach: Color::Rgb(255, 0, 0),
+        yellow: Color::Rgb(255, 0, 0),
+        green: Color::Rgb(255, 0, 0),
+        teal: Color::Rgb(255, 0, 0),
+        sky: Color::Rgb(255, 0, 0),
+        sapphire: Color::Rgb(255, 0, 0),
+        blue: Color::Rgb(255, 0, 0),
+        lavender: Color::Rgb(255, 0, 0),
+        text: Color::Rgb(255, 0, 0),
+        subtext1: Color::Rgb(255, 0, 0),
+        subtext0: Color::Rgb(255, 0, 0),
+        overlay2: Color::Rgb(255, 0, 0),
+        overlay1: Color::Rgb(255, 0, 0),
+        overlay0: Color::Rgb(255, 0, 0),
+        surface2: Color::Rgb(255, 0, 0),
+        surface1: Color::Rgb(255, 0, 0),
+        surface0: Color::Rgb(255, 0, 0),
+        base: Color::Rgb(255, 0, 0),
+        mantle: Color::Rgb(255, 0, 0),
+        crust: Color::Rgb(255, 0, 0),
     };
     assert_eq!(custom.rosewater, Color::Rgb(255, 0, 0));
     assert_eq!(custom.crust, Color::Rgb(255, 0, 0));
     // Pin Clone + Copy + Debug + PartialEq.
     let cloned = custom;
     assert_eq!(custom, cloned);
+}
+
+#[test]
+fn test_catppuccin_palette_pinned() {
+    // Pin every Catppuccin palette entry to its source constant.
+    // Future palette tweaks show up as test diffs.
+    let theme = Theme::catppuccin_mocha();
+    let p = &theme.palette;
+    assert_eq!(p.rosewater, CATPPUCCIN_ROSEWATER);
+    assert_eq!(p.flamingo, CATPPUCCIN_FLAMINGO);
+    assert_eq!(p.pink, CATPPUCCIN_PINK);
+    assert_eq!(p.mauve, CATPPUCCIN_MAUVE);
+    assert_eq!(p.red, CATPPUCCIN_RED);
+    assert_eq!(p.maroon, CATPPUCCIN_MAROON);
+    assert_eq!(p.peach, CATPPUCCIN_PEACH);
+    assert_eq!(p.yellow, CATPPUCCIN_YELLOW);
+    assert_eq!(p.green, CATPPUCCIN_GREEN);
+    assert_eq!(p.teal, CATPPUCCIN_TEAL);
+    assert_eq!(p.sky, CATPPUCCIN_SKY);
+    assert_eq!(p.sapphire, CATPPUCCIN_SAPPHIRE);
+    assert_eq!(p.blue, CATPPUCCIN_BLUE);
+    assert_eq!(p.lavender, CATPPUCCIN_LAVENDER);
+    assert_eq!(p.text, CATPPUCCIN_TEXT);
+    assert_eq!(p.subtext1, CATPPUCCIN_SUBTEXT1);
+    assert_eq!(p.subtext0, CATPPUCCIN_SUBTEXT0);
+    assert_eq!(p.overlay2, CATPPUCCIN_OVERLAY2);
+    assert_eq!(p.overlay1, CATPPUCCIN_OVERLAY1);
+    assert_eq!(p.overlay0, CATPPUCCIN_OVERLAY0);
+    assert_eq!(p.surface2, CATPPUCCIN_SURFACE2);
+    assert_eq!(p.surface1, CATPPUCCIN_SURFACE1);
+    assert_eq!(p.surface0, CATPPUCCIN_SURFACE0);
+    assert_eq!(p.base, CATPPUCCIN_BASE);
+    assert_eq!(p.mantle, CATPPUCCIN_MANTLE);
+    assert_eq!(p.crust, CATPPUCCIN_CRUST);
 }
