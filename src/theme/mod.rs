@@ -43,9 +43,7 @@ pub mod catppuccin;
 pub use catppuccin::*;
 
 pub mod palette;
-pub use palette::{NamedColor, Severity};
-// Re-exports added progressively as the types land:
-//   Task 4 → adds Palette
+pub use palette::{NamedColor, Palette, Severity};
 
 use ratatui::style::{Color, Modifier, Style};
 

@@ -405,3 +405,41 @@ fn test_named_color_enum_variants() {
     ];
     assert_eq!(variants.len(), 26);
 }
+
+#[test]
+fn test_palette_struct_construction() {
+    // Direct construction: a custom user theme can build a Palette with no envision changes.
+    let custom = Palette {
+        rosewater: Color::Rgb(255, 0, 0),
+        flamingo:  Color::Rgb(255, 0, 0),
+        pink:      Color::Rgb(255, 0, 0),
+        mauve:     Color::Rgb(255, 0, 0),
+        red:       Color::Rgb(255, 0, 0),
+        maroon:    Color::Rgb(255, 0, 0),
+        peach:     Color::Rgb(255, 0, 0),
+        yellow:    Color::Rgb(255, 0, 0),
+        green:     Color::Rgb(255, 0, 0),
+        teal:      Color::Rgb(255, 0, 0),
+        sky:       Color::Rgb(255, 0, 0),
+        sapphire:  Color::Rgb(255, 0, 0),
+        blue:      Color::Rgb(255, 0, 0),
+        lavender:  Color::Rgb(255, 0, 0),
+        text:      Color::Rgb(255, 0, 0),
+        subtext1:  Color::Rgb(255, 0, 0),
+        subtext0:  Color::Rgb(255, 0, 0),
+        overlay2:  Color::Rgb(255, 0, 0),
+        overlay1:  Color::Rgb(255, 0, 0),
+        overlay0:  Color::Rgb(255, 0, 0),
+        surface2:  Color::Rgb(255, 0, 0),
+        surface1:  Color::Rgb(255, 0, 0),
+        surface0:  Color::Rgb(255, 0, 0),
+        base:      Color::Rgb(255, 0, 0),
+        mantle:    Color::Rgb(255, 0, 0),
+        crust:     Color::Rgb(255, 0, 0),
+    };
+    assert_eq!(custom.rosewater, Color::Rgb(255, 0, 0));
+    assert_eq!(custom.crust, Color::Rgb(255, 0, 0));
+    // Pin Clone + Copy + Debug + PartialEq.
+    let cloned = custom;
+    assert_eq!(custom, cloned);
+}
