@@ -174,8 +174,8 @@ pub use app::load_state;
 pub use app::{
     App, BatchSubscription, BoxedSubscription, ChannelSubscription, Command, CommandHandler,
     DebounceSubscription, FilterSubscription, FnUpdate, IntervalImmediateBuilder,
-    IntervalImmediateSubscription, MappedSubscription, Runtime, RuntimeBuilder, RuntimeConfig,
-    StateExt, StreamSubscription, Subscription, SubscriptionExt, TakeSubscription,
+    IntervalImmediateSubscription, MappedSubscription, OptionalArgs, Runtime, RuntimeBuilder,
+    RuntimeConfig, StateExt, StreamSubscription, Subscription, SubscriptionExt, TakeSubscription,
     TerminalEventSubscription, TerminalHook, TerminalRuntime, ThrottleSubscription,
     TickSubscription, TickSubscriptionBuilder, TimerSubscription, UnboundedChannelSubscription,
     Update, UpdateResult, VirtualRuntime, batch, interval_immediate, terminal_events, tick,
@@ -421,7 +421,8 @@ pub use theme::Theme;
 pub mod prelude {
     // Core framework
     pub use crate::app::{
-        App, Command, Runtime, RuntimeBuilder, RuntimeConfig, TerminalRuntime, VirtualRuntime,
+        App, Command, OptionalArgs, Runtime, RuntimeBuilder, RuntimeConfig, TerminalRuntime,
+        VirtualRuntime,
     };
 
     // Subscriptions
