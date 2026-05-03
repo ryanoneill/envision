@@ -70,10 +70,12 @@
 //! Events are injected programmatically and the display can be inspected.
 
 mod builder;
+mod builder_configured;
 mod config;
 pub(crate) mod terminal;
 mod virtual_terminal;
-pub use builder::{ConfiguredRuntimeBuilder, RuntimeBuilder};
+pub use builder::RuntimeBuilder;
+pub use builder_configured::ConfiguredRuntimeBuilder;
 pub use config::{RuntimeConfig, TerminalHook};
 
 use std::io::Stdout;
