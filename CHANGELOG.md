@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — Chrome ownership protocol (G2 + D2 + D11)
+
+### Chrome ownership protocol (G2 + D2 + D11)
+
+`RenderContext::chrome_owned: bool` — new public field. `true` signals to
+child components that the parent has already drawn the chrome (border,
+title, focus ring); children consult this flag and suppress their own
+chrome. Defaults to `false`. Propagates through `with_area`. Set
+automatically by `PaneLayout::view_with`.
+
+`PaneLayout::view_with(state, ctx, render_child)` — new closure-based
+inherent method. Draws pane chrome and invokes `render_child(pane_id,
+&mut child_ctx)` per pane with `child_ctx.chrome_owned = true` and
+`child_ctx.area` already inset for the chrome. Replaces the consumer-side
+three-step dance (`state.layout()` + `view()` + manual `Margin{1,1}` +
+manual child render).
+
+`PaneLayout::view` (the `Component` trait method) keeps its chrome-only
+semantics — generic-`Component` code (FocusManager, harness, registry)
+gets chrome only without children, as before. Embedded children require
+calling `view_with` directly on the concrete type.
+
+Components patched to consult `ctx.chrome_owned` and skip their outer
+Block when true: `Table`, `StyledText`, plus the broader audit set
+(LogViewer, ScrollableText, ScrollView, MarkdownRenderer, ConversationView,
+DataGrid, MetricsDashboard, KeyHints, StatusLog, EventStream,
+LogCorrelation, TerminalOutput, FileBrowser, FlameGraph, SearchableList,
+SelectableList, AlertPanel, HelpPanel, TitleCard, BoxPlot, Histogram,
+Heatmap, Treemap, Diagram, Sparkline, Chart, Timeline, Calendar,
+UsageDisplay, MultiProgress, StepIndicator, Tabs, TabBar, CodeBlock,
+DiffViewer, StatusBar, etc. — see implementation commit for the full list).
+
+#### Migration
+
+| Old | New |
+|---|---|
+| `let rects = layout_state.layout(area); PaneLayout::view(&layout_state, ctx); let inner = rects[i].inner(Margin{1,1}); Child::view(&state, &mut RenderContext::new(frame, inner, theme));` | `PaneLayout::view_with(&layout_state, ctx, \|id, child_ctx\| match id { "child" => Child::view(&state, child_ctx), _ => {} });` |
+| `Table::view(&state, &mut RenderContext::new(frame, inner, theme))` (always inner border) | `Table::view(&state, child_ctx)` — `chrome_owned = true` propagated; inner border skipped |
+| `StyledText::view(&state.with_show_border(false), ctx)` (consumer-side suppression) | `StyledText::view(&state, child_ctx)` — `chrome_owned = true` propagated. `with_show_border(false)` stays for standalone-no-border case |
+
+Tracks leadline gaps G2 + D2 + D11. See `docs/superpowers/specs/2026-05-02-chrome-ownership-design.md` for the design rationale.
+
 ## [Unreleased] — Breaking: `App::init` takes args; `RuntimeBuilder` split
 
 ### Breaking changes — `App::init` takes args
