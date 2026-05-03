@@ -382,7 +382,10 @@ fn render_title_bar(state: &State, frame: &mut Frame, area: Rect, theme: &Theme)
                 .fg(theme.color(NamedColor::Lavender))
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(tick_indicator, Style::default().fg(theme.color(NamedColor::Green))),
+        Span::styled(
+            tick_indicator,
+            Style::default().fg(theme.color(NamedColor::Green)),
+        ),
     ]);
 
     let status = format!(" tick: {} ", state.tick_count);
@@ -416,7 +419,11 @@ fn render_navigation(state: &State, frame: &mut Frame, area: Rect, theme: &Theme
     let block = Block::default()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::default().fg(border_color).bg(theme.color(NamedColor::Base)))
+        .border_style(
+            Style::default()
+                .fg(border_color)
+                .bg(theme.color(NamedColor::Base)),
+        )
         .title(Span::styled(
             " Navigation ",
             Style::default()
@@ -454,7 +461,11 @@ fn render_content(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
     let chart_block = Block::default()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::default().fg(chart_border).bg(theme.color(NamedColor::Base)))
+        .border_style(
+            Style::default()
+                .fg(chart_border)
+                .bg(theme.color(NamedColor::Base)),
+        )
         .title(Span::styled(
             " CPU & Memory ",
             Style::default()
@@ -485,7 +496,11 @@ fn render_content(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
     let metrics_block = Block::default()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::default().fg(metrics_border).bg(theme.color(NamedColor::Base)))
+        .border_style(
+            Style::default()
+                .fg(metrics_border)
+                .bg(theme.color(NamedColor::Base)),
+        )
         .title(Span::styled(
             " Key Metrics ",
             Style::default()
