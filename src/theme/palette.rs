@@ -8,12 +8,8 @@
 //!
 //! See the [theme module documentation](super) for an overview.
 
-#[allow(unused_imports)]
-// These imports are needed by subsequent tasks; removed when all types land.
 use ratatui::style::{Color, Modifier, Style};
 
-#[allow(unused_imports)]
-// Needed by subsequent tasks when impl Theme methods are added.
 use super::Theme;
 
 // =============================================================================
@@ -32,7 +28,7 @@ use super::Theme;
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```rust
 /// use envision::theme::{Severity, Theme};
 ///
 /// let theme = Theme::catppuccin_mocha();
@@ -113,7 +109,7 @@ impl Severity {
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```rust
 /// use envision::theme::{NamedColor, Theme};
 ///
 /// let theme = Theme::catppuccin_mocha();
@@ -336,6 +332,65 @@ impl Theme {
             NamedColor::Base      => self.palette.base,
             NamedColor::Mantle    => self.palette.mantle,
             NamedColor::Crust     => self.palette.crust,
+        }
+    }
+
+    /// Returns the theme's color for a [`Severity`] band.
+    ///
+    /// Maps `Good` → green, `Mild` → yellow, `Bad` → peach, `Critical` → red,
+    /// routed through the theme's palette. Non-Catppuccin themes use their
+    /// nearest-equivalent palette mappings.
+    ///
+    /// On the [`Default`](Theme::default) theme, `Mild` and `Bad` both collapse
+    /// to `Color::Yellow` (basic-Color palette has no peach). Use
+    /// [`severity_style`](Theme::severity_style) for distinguishability via the
+    /// `BOLD` modifier on `Critical`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::theme::{Severity, Theme};
+    ///
+    /// let theme = Theme::catppuccin_mocha();
+    /// let color = theme.severity_color(Severity::Bad);
+    /// // Use in a Cell, Span, or Style.
+    /// # let _ = color;
+    /// ```
+    pub fn severity_color(&self, sev: Severity) -> Color {
+        match sev {
+            Severity::Good     => self.color(NamedColor::Green),
+            Severity::Mild     => self.color(NamedColor::Yellow),
+            Severity::Bad      => self.color(NamedColor::Peach),
+            Severity::Critical => self.color(NamedColor::Red),
+        }
+    }
+
+    /// Returns a `Style` for a [`Severity`] band — color plus reasonable defaults.
+    ///
+    /// Equivalent to `Style::default().fg(theme.severity_color(sev))` plus a
+    /// `BOLD` modifier when `sev == Severity::Critical`. The `BOLD` on Critical
+    /// is intentional: critical events should stand out beyond color alone (for
+    /// color-blind users, low-contrast terminals, partial color rendering).
+    ///
+    /// Drop-in for `Cell::with_style(CellStyle::Custom(...))` and
+    /// `StyledInline::Styled { style, ... }` sites.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::theme::{Severity, Theme};
+    ///
+    /// let theme = Theme::catppuccin_mocha();
+    /// let style = theme.severity_style(Severity::Critical);
+    /// // style.fg is Catppuccin red and style includes BOLD.
+    /// # let _ = style;
+    /// ```
+    pub fn severity_style(&self, sev: Severity) -> Style {
+        let style = Style::default().fg(self.severity_color(sev));
+        if sev == Severity::Critical {
+            style.add_modifier(Modifier::BOLD)
+        } else {
+            style
         }
     }
 }

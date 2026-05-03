@@ -731,3 +731,56 @@ fn test_default_palette_pinned() {
     assert_eq!(p.mantle, Color::Reset);
     assert_eq!(p.crust, Color::Black);
 }
+
+#[test]
+fn test_severity_color_per_theme() {
+    // Catppuccin: Good → Green, Mild → Yellow, Bad → Peach, Critical → Red.
+    let cat = Theme::catppuccin_mocha();
+    assert_eq!(cat.severity_color(Severity::Good),     CATPPUCCIN_GREEN);
+    assert_eq!(cat.severity_color(Severity::Mild),     CATPPUCCIN_YELLOW);
+    assert_eq!(cat.severity_color(Severity::Bad),      CATPPUCCIN_PEACH);
+    assert_eq!(cat.severity_color(Severity::Critical), CATPPUCCIN_RED);
+
+    // Nord: routes through palette.
+    let nord = Theme::nord();
+    assert_eq!(nord.severity_color(Severity::Good),     NORD14);
+    assert_eq!(nord.severity_color(Severity::Mild),     NORD13);
+    assert_eq!(nord.severity_color(Severity::Bad),      NORD12);
+    assert_eq!(nord.severity_color(Severity::Critical), NORD11);
+
+    // Default theme: Mild and Bad collapse to Color::Yellow per documented behavior.
+    let def = Theme::default();
+    assert_eq!(def.severity_color(Severity::Good),     Color::Green);
+    assert_eq!(def.severity_color(Severity::Mild),     Color::Yellow);
+    assert_eq!(def.severity_color(Severity::Bad),      Color::Yellow); // collapse
+    assert_eq!(def.severity_color(Severity::Critical), Color::Red);
+}
+
+#[test]
+fn test_severity_style_critical_is_bold() {
+    let theme = Theme::catppuccin_mocha();
+    let critical = theme.severity_style(Severity::Critical);
+    let good = theme.severity_style(Severity::Good);
+    let mild = theme.severity_style(Severity::Mild);
+    let bad = theme.severity_style(Severity::Bad);
+
+    assert!(critical.add_modifier.contains(Modifier::BOLD));
+    assert!(!good.add_modifier.contains(Modifier::BOLD));
+    assert!(!mild.add_modifier.contains(Modifier::BOLD));
+    assert!(!bad.add_modifier.contains(Modifier::BOLD));
+}
+
+#[test]
+fn test_severity_style_fg_matches_severity_color() {
+    let theme = Theme::catppuccin_mocha();
+    for sev in [Severity::Good, Severity::Mild, Severity::Bad, Severity::Critical] {
+        let style = theme.severity_style(sev);
+        assert_eq!(
+            style.fg,
+            Some(theme.severity_color(sev)),
+            "severity_style({:?}).fg must equal severity_color({:?})",
+            sev,
+            sev
+        );
+    }
+}
