@@ -38,6 +38,14 @@ Spec PR #467, plan PR #468, implementation PR #469 (`aaaefa1`).
 - **D11** ✅ `StyledText::with_show_border(false)` workaround unnecessary in embedded mode — chrome_owned propagation suppresses the border automatically. The standalone-no-border opt-out via `with_show_border(false)` stays.
 - **Bonus uniform audit**: 35 chrome-drawing components (LogViewer, ScrollView, ScrollableText, MarkdownRenderer, ConversationView, DataGrid, MetricsDashboard absent — only per-cell, KeyHints absent — Paragraph only, etc.) all consult `chrome_owned`. Future consumers embedding any of them get correct behavior without further envision changes.
 
+### Resolved 2026-05-08 — Theme palette + severity helper
+
+Spec PR #471, plan PR #472, implementation PR #473 (`4d5b05e`).
+
+- **D6** ✅ Severity helper in `Theme` — shipped as `Severity` enum (`Good | Mild | Bad | Critical`, `#[non_exhaustive]`) + `Severity::from_thresholds(value: f64, &[(f64, Severity)]) -> Severity` first-match-wins bucketer + `Theme::severity_color(Severity) -> Color` and `Theme::severity_style(Severity) -> Style` accessors. `severity_style` adds `BOLD` modifier on `Critical` only. Default theme collapse caveat documented (Mild/Bad both render as `Color::Yellow`; `BOLD`-on-Critical mitigates).
+- **D9** ✅ Theme color access — shipped as `NamedColor` enum (26 variants, `#[non_exhaustive]`, derived from Catppuccin Mocha) + `Palette` struct (one public `Color` field per variant) + `Theme::color(NamedColor) -> Color` accessor. Each shipped theme constructor populates its `palette: Palette` field with documented nearest-equivalent mappings (Catppuccin 1:1; Nord/Dracula/Solarized/Gruvbox per-theme; Default basic-`Color` collapse). 75 raw `pub const` color constants (`CATPPUCCIN_*`, `NORD0`–`NORD15`, `DRACULA_*`, `SOLARIZED_*`, `GRUVBOX_*`) marked `#[deprecated(since = "0.17.0")]`; constants stay accessible during transition window.
+- **Module structure**: per-palette extraction (`nord.rs`, `dracula.rs`, `solarized.rs`, `gruvbox.rs`) mirroring the existing `catppuccin.rs` pattern, after `cargo fmt` expanded multi-line `#[deprecated]` attributes pushed `mod.rs` toward the 1000-line cap.
+
 ### Other follow-ups (pre-existing gaps)
 
 - **G4** `PaneLayout` per-pane title style — title inherits border style; no `PaneConfig::with_title_style(Style)` or pre-styled `Vec<Span>` form.
@@ -47,9 +55,7 @@ Spec PR #467, plan PR #468, implementation PR #469 (`aaaefa1`).
 ### Other follow-ups (new from 2026-05-01 conversation)
 
 - **D3** `Column` width tuning is trial-and-error — no doc on "Length for known-width + Min for flex" pattern, no debug output when columns get clipped. Want canonical doctring + render-time clip warning.
-- **D6** No severity helper in `Theme` — every dashboard rewrites `severity_color_for_ratio` / `severity_status_style`. Want `theme.severity_style(value, &[(threshold, Severity)])` and a `Severity::Good|Mild|Bad|Critical` enum that maps through the theme. Bonus: makes severity coloring consistent across status bar, cells, gauges.
 - **D8** No multi-view drill-down example — Roster → Enter → Per-op → Esc → Roster pattern of every dashboard. Want a 100-line example showing two views, modal navigation, per-view key hints, state preservation. (`Router` exists but its scope is unclear.)
-- **D9** `Theme` color access is uneven — for colors outside named slots, consumers reach past the `Theme` abstraction to raw `CATPPUCCIN_*` constants, breaking theme-swap. Want `theme.color(NamedColor::Lavender)` enum-keyed or `theme.palette().lavender()` accessor.
 - **D10** `App::handle_event` vs `handle_event_with_state` — both exist on the trait, unclear which is canonical and when to override which. Want consolidation to one method or much clearer doc.
 - **D12** `StatusBarState::with_separator` is global per-bar — no per-section override. Want per-section separator config or per-item-trailing-separator property.
 - **D13** No quit hook — `Command::quit()` exists but no `App::on_quit(state) -> Result<()>` for autosave. Relationship between `load_state` re-export and quit is undocumented. Want documented `on_quit` lifecycle hook.
@@ -73,8 +79,8 @@ This is a sketch — treat as draft until reviewed.
    - D14 (`paragraph` → `line` rename)
    - D12 (StatusBar per-section separator)
 4. **Theme system batch**:
-   - D6 (severity helper)
-   - D9 (theme palette accessor)
+   - ~~D6 (severity helper)~~ ✅ shipped 2026-05-08 via PR #473
+   - ~~D9 (theme palette accessor)~~ ✅ shipped 2026-05-08 via PR #473
 5. **App lifecycle batch**:
    - D10 (handle_event consolidation)
    - D13 (on_quit hook + save_state docs)
