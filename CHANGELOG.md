@@ -47,6 +47,55 @@ DiffViewer, StatusBar, etc. — see implementation commit for the full list).
 
 Tracks leadline gaps G2 + D2 + D11. See `docs/superpowers/specs/2026-05-02-chrome-ownership-design.md` for the design rationale.
 
+### Theme palette + severity helper (D6 + D9)
+
+Three new types extend `Theme` with theme-aware named-color access and a unified
+severity vocabulary, eliminating the need to import raw `CATPPUCCIN_*` /
+`NORD_*` / `DRACULA_*` / `SOLARIZED_*` / `GRUVBOX_*` constants.
+
+**New public types:**
+
+- `NamedColor` enum (`#[non_exhaustive]`) — 26 variants derived from Catppuccin
+  Mocha (Rosewater, Flamingo, Pink, Mauve, Red, Maroon, Peach, Yellow, Green,
+  Teal, Sky, Sapphire, Blue, Lavender, Text, Subtext1, Subtext0, Overlay2,
+  Overlay1, Overlay0, Surface2, Surface1, Surface0, Base, Mantle, Crust).
+- `Palette` struct — one public `Color` field per `NamedColor` variant. Custom
+  themes can construct a `Palette` directly without modifying envision.
+- `Severity` enum (`#[non_exhaustive]`) — `Good | Mild | Bad | Critical`. Use
+  `Severity::from_thresholds(value, &[(cutoff, severity), ...])` to bucket a
+  numeric value via first-match-wins.
+
+**New `Theme` methods:**
+
+- `theme.color(NamedColor) -> Color` — theme-aware named-color lookup. Always
+  succeeds; non-Catppuccin themes use documented nearest-equivalent palette
+  mappings.
+- `theme.severity_color(Severity) -> Color` — palette-routed severity color
+  (Good→Green, Mild→Yellow, Bad→Peach, Critical→Red).
+- `theme.severity_style(Severity) -> Style` — color + `BOLD` modifier on
+  `Critical` only.
+
+**New `Theme` field:**
+
+- `theme.palette: Palette` — the theme's full 26-color palette. Already
+  populated by every shipped theme constructor.
+
+**Deprecations (no removals):**
+
+- `CATPPUCCIN_*`, `NORD0`–`NORD15`, `DRACULA_*`, `SOLARIZED_*`, `GRUVBOX_*`
+  `pub const` items are now `#[deprecated(since = "0.17.0")]` in favor of
+  `theme.color(NamedColor::X)`. Constants stay accessible during the
+  transition window; a follow-up PR will remove them.
+
+**Default theme palette collapse:** the `Default` theme uses ratatui's basic
+`Color` enum, so multiple `NamedColor` variants collapse to the same basic
+color (e.g., `Peach` and `Yellow` both map to `Color::Yellow`). This affects
+`severity_color`: on `Default`, `Mild` and `Bad` render identically. The
+`severity_style(Critical)` `BOLD` modifier keeps the strongest band visually
+distinguishable. Consumers wanting full palette fidelity should use
+`Theme::catppuccin_mocha()` or another full-palette theme. Documented on
+`Theme::default()`.
+
 ## [Unreleased] — Breaking: `App::init` takes args; `RuntimeBuilder` split
 
 ### Breaking changes — `App::init` takes args
