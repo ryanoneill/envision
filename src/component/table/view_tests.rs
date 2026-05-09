@@ -561,3 +561,60 @@ fn test_view_no_outer_border_when_chrome_owned() {
     let display = terminal.backend().to_string();
     insta::assert_snapshot!("view_chrome_owned_no_outer_border", display);
 }
+
+#[test]
+fn snapshot_table_cells_with_severity_style() {
+    use crate::component::cell::{Cell, CellStyle};
+    use crate::theme::Severity;
+
+    // Render four severity bands in one row. Default theme: Good=Green,
+    // Mild=Yellow, Bad=Yellow (collapses with Mild on Default — documented
+    // behavior from D6+D9), Critical=Red+BOLD.
+    let columns = vec![
+        Column::new("G", Constraint::Length(8)),
+        Column::new("M", Constraint::Length(8)),
+        Column::new("B", Constraint::Length(8)),
+        Column::new("C", Constraint::Length(8)),
+    ];
+    let cells = vec![
+        Cell::new("good").with_style(CellStyle::Severity(Severity::Good)),
+        Cell::new("mild").with_style(CellStyle::Severity(Severity::Mild)),
+        Cell::new("bad").with_style(CellStyle::Severity(Severity::Bad)),
+        Cell::new("crit").with_style(CellStyle::Severity(Severity::Critical)),
+    ];
+    let mut state = TableState::new(vec![StyledRow { cells }], columns);
+    state.set_selected(None);
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+    terminal
+        .draw(|frame| {
+            Table::<StyledRow>::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
+        })
+        .unwrap();
+
+    let plain = terminal.backend().to_string();
+    let ansi = terminal.backend().to_ansi();
+
+    // ANSI assertions pin per-band coloring. Default theme: Mild and Bad
+    // both render as Color::Yellow (\x1b[33m) — the documented collapse
+    // from D6+D9 means severity bands degrade from four to three on
+    // Default. Critical stays distinguishable via BOLD.
+    assert!(
+        ansi.contains("\x1b[32m"),
+        "expected green (32m) for Severity::Good, got:\n{ansi}",
+    );
+    assert!(
+        ansi.contains("\x1b[33m"),
+        "expected yellow (33m) for Severity::Mild and Severity::Bad, got:\n{ansi}",
+    );
+    assert!(
+        ansi.contains("\x1b[31m"),
+        "expected red (31m) for Severity::Critical, got:\n{ansi}",
+    );
+    assert!(
+        ansi.contains("\x1b[1m"),
+        "expected BOLD (1m) for Severity::Critical, got:\n{ansi}",
+    );
+
+    insta::assert_snapshot!(plain);
+}

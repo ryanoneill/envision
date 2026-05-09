@@ -10,6 +10,8 @@
 use compact_str::CompactString;
 use ratatui::style::{Color, Style};
 
+use crate::theme::Severity;
+
 /// A typed sort key carried by a `Cell` for typed comparison.
 ///
 /// **DO NOT REORDER VARIANTS** — discriminant order is part of the
@@ -130,6 +132,10 @@ pub enum CellStyle {
     Muted,
     /// Applies a raw `ratatui::style::Style` directly, bypassing theme mapping.
     Custom(Style),
+    /// Resolves to the theme's severity color + style at render time.
+    /// `Critical` adds a `BOLD` modifier; other variants are color-only.
+    /// See [`crate::theme::Theme::severity_style`].
+    Severity(Severity),
 }
 
 /// Optional row-level status indicator. Renders as a colored symbol

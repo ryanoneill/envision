@@ -27,6 +27,7 @@ fn cell_style_to_ratatui(style: &CellStyle, theme: &Theme, disabled: bool) -> St
         CellStyle::Error => theme.error_style(),
         CellStyle::Muted => Style::default().fg(Color::DarkGray),
         CellStyle::Custom(s) => *s,
+        CellStyle::Severity(sev) => theme.severity_style(*sev),
     }
 }
 
