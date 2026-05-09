@@ -10,6 +10,8 @@
 use compact_str::CompactString;
 use ratatui::style::{Color, Style};
 
+use crate::theme::Severity;
+
 /// A typed sort key carried by a `Cell` for typed comparison.
 ///
 /// **DO NOT REORDER VARIANTS** — discriminant order is part of the
@@ -109,6 +111,12 @@ impl SortKey {
 /// `Default` renders with no override (theme-driven). `Success`,
 /// `Warning`, `Error`, `Muted` map to the theme's semantic colors.
 /// `Custom(Style)` applies a raw `ratatui::style::Style` directly.
+/// `Severity(Severity)` (added in PR γ) resolves the four-band severity
+/// gradient through the active theme at render time.
+///
+/// `#[non_exhaustive]` so envision can add cell-style variants later without
+/// breaking downstream `match` arms in consumer crates.
+#[non_exhaustive]
 #[derive(Clone, Debug, Default, PartialEq)]
 pub enum CellStyle {
     /// No override — render with the theme's default cell style.
@@ -124,6 +132,10 @@ pub enum CellStyle {
     Muted,
     /// Applies a raw `ratatui::style::Style` directly, bypassing theme mapping.
     Custom(Style),
+    /// Resolves to the theme's severity color + style at render time.
+    /// `Critical` adds a `BOLD` modifier; other variants are color-only.
+    /// See [`crate::theme::Theme::severity_style`].
+    Severity(Severity),
 }
 
 /// Optional row-level status indicator. Renders as a colored symbol
@@ -189,6 +201,33 @@ impl Cell {
     /// Builder: set the cell style.
     pub fn with_style(mut self, style: CellStyle) -> Self {
         self.style = style;
+        self
+    }
+
+    /// Builder: set the cell style to severity-styled.
+    ///
+    /// Composes with the typed-cell pattern from G7 (preserves a typed
+    /// [`SortKey`]):
+    ///
+    /// ```rust
+    /// use envision::component::cell::Cell;
+    /// use envision::theme::Severity;
+    ///
+    /// let ratio = 5.2;
+    /// let cell = Cell::number(ratio)
+    ///     .with_text(format!("{:.2}x", ratio))
+    ///     .with_severity(Severity::Bad);
+    /// // Numeric SortKey preserved; severity color layered on top.
+    /// ```
+    ///
+    /// # Precedence
+    ///
+    /// Last-call-wins with [`with_style`](Self::with_style). Calling
+    /// `.with_style(CellStyle::Custom(...)).with_severity(Bad)` ends with
+    /// `CellStyle::Severity(Bad)`; the prior `Custom` is dropped. Natural
+    /// builder-pattern semantics — each setter overwrites.
+    pub fn with_severity(mut self, sev: Severity) -> Self {
+        self.style = CellStyle::Severity(sev);
         self
     }
 
@@ -295,6 +334,22 @@ impl Cell {
     /// Muted-styled cell (theme dark gray).
     pub fn muted(text: impl Into<CompactString>) -> Self {
         Self::new(text).with_style(CellStyle::Muted)
+    }
+
+    /// Severity-styled cell. Resolves color through the active theme at
+    /// render time via [`crate::theme::Theme::severity_style`].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::cell::Cell;
+    /// use envision::theme::Severity;
+    ///
+    /// let cell = Cell::severity("CrashLoopBackOff", Severity::Critical);
+    /// // Renders as the theme's red + BOLD on Catppuccin Mocha.
+    /// ```
+    pub fn severity(text: impl Into<CompactString>, sev: Severity) -> Self {
+        Self::new(text).with_style(CellStyle::Severity(sev))
     }
 }
 
@@ -535,6 +590,30 @@ mod cell_struct_tests {
         assert_eq!(*c.style(), CellStyle::Default);
         assert_eq!(c.sort_key(), None);
     }
+
+    #[test]
+    fn with_severity_preserves_text_and_sort_key() {
+        use crate::theme::Severity;
+
+        let c = Cell::number(5.2)
+            .with_text(format!("{:.2}x", 5.2))
+            .with_severity(Severity::Bad);
+        assert_eq!(c.text(), "5.20x");
+        assert_eq!(c.sort_key(), Some(&SortKey::F64(5.2)));
+        assert_eq!(*c.style(), CellStyle::Severity(Severity::Bad));
+    }
+
+    #[test]
+    fn with_severity_overwrites_with_style() {
+        use crate::theme::Severity;
+        use ratatui::style::{Color, Style};
+
+        // Last-call-wins: with_severity drops the prior with_style(Custom(...)).
+        let c = Cell::new("x")
+            .with_style(CellStyle::Custom(Style::default().fg(Color::Magenta)))
+            .with_severity(Severity::Critical);
+        assert_eq!(*c.style(), CellStyle::Severity(Severity::Critical));
+    }
 }
 
 #[cfg(test)]
@@ -621,6 +700,15 @@ mod cell_style_constructor_tests {
     #[test]
     fn muted_sets_style() {
         assert_eq!(*Cell::muted("idle").style(), CellStyle::Muted);
+    }
+
+    #[test]
+    fn severity_sets_style() {
+        use crate::theme::Severity;
+        let c = Cell::severity("crash", Severity::Critical);
+        assert_eq!(c.text(), "crash");
+        assert_eq!(*c.style(), CellStyle::Severity(Severity::Critical));
+        assert_eq!(c.sort_key(), None);
     }
 }
 

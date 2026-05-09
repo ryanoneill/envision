@@ -96,6 +96,42 @@ distinguishable. Consumers wanting full palette fidelity should use
 `Theme::catppuccin_mocha()` or another full-palette theme. Documented on
 `Theme::default()`.
 
+### CellStyle::Severity(Severity) (D15)
+
+`Cell` gains a new severity-styled variant resolved at render time, closing
+the loop on the D6+D9 theme palette + severity helper. Eliminates the need
+for consumers to construct `Theme::catppuccin_mocha()` inline at row-build
+time to access `theme.severity_style(sev)`.
+
+**New variants:**
+
+- `CellStyle::Severity(Severity)` — resolves to `theme.severity_style(*sev)`
+  at render time. Color routes through the theme's palette (Good→Green,
+  Mild→Yellow, Bad→Peach, Critical→Red); `Critical` adds `BOLD`.
+
+**New `Cell` constructors:**
+
+- `Cell::severity(text, sev)` — semantic shorthand mirroring
+  `Cell::success/warning/error/muted`.
+- `Cell::with_severity(sev)` — typed-cell builder for the G7 chain
+  `Cell::number(x).with_text(formatted).with_severity(sev)`. Preserves the
+  typed `SortKey` while layering severity color. Last-call-wins precedence
+  with `with_style(...)`.
+
+**Breaking change:**
+
+- `CellStyle` is now `#[non_exhaustive]`. External code that pattern-matches
+  `CellStyle` exhaustively must add a `_` arm. Matches the convention set
+  by `Severity` and `NamedColor` in the prior release. Internal `match` arms
+  inside the crate are still exhaustive — the attribute applies only to
+  external consumers.
+
+**Migration for severity-aware cells:** drop any `severity_cell_style`-style
+helper that constructs a hardcoded theme. Replace with
+`Severity::from_thresholds(...)` + `CellStyle::Severity(sev)` (or
+`Cell::severity(text, sev)` / `.with_severity(sev)` shortcuts). Theme-swap
+now works correctly.
+
 ## [Unreleased] — Breaking: `App::init` takes args; `RuntimeBuilder` split
 
 ### Breaking changes — `App::init` takes args
