@@ -109,6 +109,12 @@ impl SortKey {
 /// `Default` renders with no override (theme-driven). `Success`,
 /// `Warning`, `Error`, `Muted` map to the theme's semantic colors.
 /// `Custom(Style)` applies a raw `ratatui::style::Style` directly.
+/// `Severity(Severity)` (added in PR γ) resolves the four-band severity
+/// gradient through the active theme at render time.
+///
+/// `#[non_exhaustive]` so envision can add cell-style variants later without
+/// breaking downstream `match` arms in consumer crates.
+#[non_exhaustive]
 #[derive(Clone, Debug, Default, PartialEq)]
 pub enum CellStyle {
     /// No override — render with the theme's default cell style.
