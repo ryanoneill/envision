@@ -61,6 +61,10 @@ Spec PR #471, plan PR #472, implementation PR #473 (`4d5b05e`).
 - **D13** No quit hook — `Command::quit()` exists but no `App::on_quit(state) -> Result<()>` for autosave. Relationship between `load_state` re-export and quit is undocumented. Want documented `on_quit` lifecycle hook.
 - **D14** `StyledContent::paragraph(...)` produces a single line, not a wrapped paragraph — name conflicts with intuition. Want rename to `line(...)`; reserve `paragraph` for wrapped block-level text.
 
+### Surfaced 2026-05-08 during D6 + D9 leadline-side migration
+
+- **D15** `TableRow::cells(&self)` takes no `&Theme` — severity-aware cell construction can't reach the active theme at row-build time. leadline's two severity-cell helpers in `baseline.rs` and `per_op.rs` work around this by constructing `Theme::catppuccin_mocha()` inline (defeats theme-swap). Two remediation candidates: (a) extend the trait to `cells(&self, theme: &Theme) -> Vec<Cell>` — invasive, breaks every existing `TableRow` impl; (b) `CellStyle::Severity(Severity)` resolved at render time — additive, generalizes beyond severity (any palette-routed cell styling becomes a value-typed style variant). leadline preference: (b). Could be a small focused brief on its own or folded into a future API ergonomics round.
+
 ## Plan of attack (proposed sequencing)
 
 This is a sketch — treat as draft until reviewed.
