@@ -618,3 +618,61 @@ fn snapshot_table_cells_with_severity_style() {
 
     insta::assert_snapshot!(plain);
 }
+
+#[test]
+fn snapshot_table_cells_severity_disabled_renders_dark_gray_no_bold() {
+    use crate::component::cell::{Cell, CellStyle};
+    use crate::theme::Severity;
+
+    // Same row as snapshot_table_cells_with_severity_style, but the
+    // RenderContext is marked disabled. Disabled override wins: every
+    // cell renders dark-gray (\x1b[90m), no BOLD.
+    let columns = vec![
+        Column::new("G", Constraint::Length(8)),
+        Column::new("M", Constraint::Length(8)),
+        Column::new("B", Constraint::Length(8)),
+        Column::new("C", Constraint::Length(8)),
+    ];
+    let cells = vec![
+        Cell::new("good").with_style(CellStyle::Severity(Severity::Good)),
+        Cell::new("mild").with_style(CellStyle::Severity(Severity::Mild)),
+        Cell::new("bad").with_style(CellStyle::Severity(Severity::Bad)),
+        Cell::new("crit").with_style(CellStyle::Severity(Severity::Critical)),
+    ];
+    let mut state = TableState::new(vec![StyledRow { cells }], columns);
+    state.set_selected(None);
+
+    let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
+    terminal
+        .draw(|frame| {
+            Table::<StyledRow>::view(
+                &state,
+                &mut RenderContext::new(frame, frame.area(), &theme).disabled(true),
+            );
+        })
+        .unwrap();
+
+    let plain = terminal.backend().to_string();
+    let ansi = terminal.backend().to_ansi();
+
+    // Disabled override: all cells render as dark-gray. No severity-band
+    // colors should appear.
+    assert!(
+        ansi.contains("\x1b[90m"),
+        "expected dark-gray (90m) for all cells under disabled, got:\n{ansi}",
+    );
+    assert!(
+        !ansi.contains("\x1b[32m"),
+        "did not expect green (32m) under disabled — Severity::Good should collapse to dark-gray, got:\n{ansi}",
+    );
+    assert!(
+        !ansi.contains("\x1b[31m"),
+        "did not expect red (31m) under disabled — Severity::Critical should collapse to dark-gray, got:\n{ansi}",
+    );
+    assert!(
+        !ansi.contains("\x1b[1m"),
+        "did not expect BOLD (1m) under disabled — Severity::Critical's BOLD must drop, got:\n{ansi}",
+    );
+
+    insta::assert_snapshot!(plain);
+}

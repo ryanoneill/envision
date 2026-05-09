@@ -1,0 +1,14 @@
+---
+source: src/component/table/view_tests.rs
+expression: plain
+---
+┌──────────────────────────────────────┐
+│G        M        B        C          │
+│                                      │
+│good     mild     bad      crit       │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘
