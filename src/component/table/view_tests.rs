@@ -564,7 +564,7 @@ fn test_view_no_outer_border_when_chrome_owned() {
 
 #[test]
 fn snapshot_table_cells_with_severity_style() {
-    use crate::component::cell::{Cell, CellStyle};
+    use crate::component::cell::Cell;
     use crate::theme::Severity;
 
     // Render four severity bands in one row. Default theme: Good=Green,
@@ -577,10 +577,10 @@ fn snapshot_table_cells_with_severity_style() {
         Column::new("C", Constraint::Length(8)),
     ];
     let cells = vec![
-        Cell::new("good").with_style(CellStyle::Severity(Severity::Good)),
-        Cell::new("mild").with_style(CellStyle::Severity(Severity::Mild)),
-        Cell::new("bad").with_style(CellStyle::Severity(Severity::Bad)),
-        Cell::new("crit").with_style(CellStyle::Severity(Severity::Critical)),
+        Cell::severity("good", Severity::Good),
+        Cell::severity("mild", Severity::Mild),
+        Cell::severity("bad", Severity::Bad),
+        Cell::severity("crit", Severity::Critical),
     ];
     let mut state = TableState::new(vec![StyledRow { cells }], columns);
     state.set_selected(None);

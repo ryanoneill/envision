@@ -308,6 +308,22 @@ impl Cell {
     pub fn muted(text: impl Into<CompactString>) -> Self {
         Self::new(text).with_style(CellStyle::Muted)
     }
+
+    /// Severity-styled cell. Resolves color through the active theme at
+    /// render time via [`crate::theme::Theme::severity_style`].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::cell::Cell;
+    /// use envision::theme::Severity;
+    ///
+    /// let cell = Cell::severity("CrashLoopBackOff", Severity::Critical);
+    /// // Renders as the theme's red + BOLD on Catppuccin Mocha.
+    /// ```
+    pub fn severity(text: impl Into<CompactString>, sev: Severity) -> Self {
+        Self::new(text).with_style(CellStyle::Severity(sev))
+    }
 }
 
 impl From<&str> for Cell {
@@ -633,6 +649,15 @@ mod cell_style_constructor_tests {
     #[test]
     fn muted_sets_style() {
         assert_eq!(*Cell::muted("idle").style(), CellStyle::Muted);
+    }
+
+    #[test]
+    fn severity_sets_style() {
+        use crate::theme::Severity;
+        let c = Cell::severity("crash", Severity::Critical);
+        assert_eq!(c.text(), "crash");
+        assert_eq!(*c.style(), CellStyle::Severity(Severity::Critical));
+        assert_eq!(c.sort_key(), None);
     }
 }
 
