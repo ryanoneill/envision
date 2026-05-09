@@ -204,6 +204,33 @@ impl Cell {
         self
     }
 
+    /// Builder: set the cell style to severity-styled.
+    ///
+    /// Composes with the typed-cell pattern from G7 (preserves a typed
+    /// [`SortKey`]):
+    ///
+    /// ```rust
+    /// use envision::component::cell::Cell;
+    /// use envision::theme::Severity;
+    ///
+    /// let ratio = 5.2;
+    /// let cell = Cell::number(ratio)
+    ///     .with_text(format!("{:.2}x", ratio))
+    ///     .with_severity(Severity::Bad);
+    /// // Numeric SortKey preserved; severity color layered on top.
+    /// ```
+    ///
+    /// # Precedence
+    ///
+    /// Last-call-wins with [`with_style`](Self::with_style). Calling
+    /// `.with_style(CellStyle::Custom(...)).with_severity(Bad)` ends with
+    /// `CellStyle::Severity(Bad)`; the prior `Custom` is dropped. Natural
+    /// builder-pattern semantics — each setter overwrites.
+    pub fn with_severity(mut self, sev: Severity) -> Self {
+        self.style = CellStyle::Severity(sev);
+        self
+    }
+
     /// Builder: set the typed sort key.
     pub fn with_sort_key(mut self, key: SortKey) -> Self {
         self.sort_key = Some(key);
@@ -562,6 +589,30 @@ mod cell_struct_tests {
         assert_eq!(c.text(), "");
         assert_eq!(*c.style(), CellStyle::Default);
         assert_eq!(c.sort_key(), None);
+    }
+
+    #[test]
+    fn with_severity_preserves_text_and_sort_key() {
+        use crate::theme::Severity;
+
+        let c = Cell::number(5.2)
+            .with_text(format!("{:.2}x", 5.2))
+            .with_severity(Severity::Bad);
+        assert_eq!(c.text(), "5.20x");
+        assert_eq!(c.sort_key(), Some(&SortKey::F64(5.2)));
+        assert_eq!(*c.style(), CellStyle::Severity(Severity::Bad));
+    }
+
+    #[test]
+    fn with_severity_overwrites_with_style() {
+        use crate::theme::Severity;
+        use ratatui::style::{Color, Style};
+
+        // Last-call-wins: with_severity drops the prior with_style(Custom(...)).
+        let c = Cell::new("x")
+            .with_style(CellStyle::Custom(Style::default().fg(Color::Magenta)))
+            .with_severity(Severity::Critical);
+        assert_eq!(*c.style(), CellStyle::Severity(Severity::Critical));
     }
 }
 
