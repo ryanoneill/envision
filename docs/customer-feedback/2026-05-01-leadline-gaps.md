@@ -46,6 +46,12 @@ Spec PR #471, plan PR #472, implementation PR #473 (`4d5b05e`).
 - **D9** ✅ Theme color access — shipped as `NamedColor` enum (26 variants, `#[non_exhaustive]`, derived from Catppuccin Mocha) + `Palette` struct (one public `Color` field per variant) + `Theme::color(NamedColor) -> Color` accessor. Each shipped theme constructor populates its `palette: Palette` field with documented nearest-equivalent mappings (Catppuccin 1:1; Nord/Dracula/Solarized/Gruvbox per-theme; Default basic-`Color` collapse). 75 raw `pub const` color constants (`CATPPUCCIN_*`, `NORD0`–`NORD15`, `DRACULA_*`, `SOLARIZED_*`, `GRUVBOX_*`) marked `#[deprecated(since = "0.17.0")]`; constants stay accessible during transition window.
 - **Module structure**: per-palette extraction (`nord.rs`, `dracula.rs`, `solarized.rs`, `gruvbox.rs`) mirroring the existing `catppuccin.rs` pattern, after `cargo fmt` expanded multi-line `#[deprecated]` attributes pushed `mod.rs` toward the 1000-line cap.
 
+### Resolved 2026-05-08 — `CellStyle::Severity(Severity)`
+
+Spec PR #476, plan PR #477, implementation PR #478 (`932b205`). Closes the loop on D6 + D9 — surfaced during the leadline-side migration as D15.
+
+- **D15** ✅ Severity-aware cells reach the active theme at render time — shipped as `CellStyle::Severity(Severity)` variant resolved via `theme.severity_style(*sev)` in `cell_style_to_ratatui` (the renderer's already-in-scope `&Theme`). No `TableRow` trait churn; severity awareness lives in the `Cell` value, not the trait. New `Cell::severity(text, sev)` constructor (semantic shorthand) and `Cell::with_severity(sev)` builder (typed-cell chain, preserves G7 `SortKey`, last-call-wins precedence with `with_style` documented). Bundled `#[non_exhaustive]` on `CellStyle` — matches `Severity` / `NamedColor` precedent from PR #473 (one breaking change beats two).
+
 ### Other follow-ups (pre-existing gaps)
 
 - **G4** `PaneLayout` per-pane title style — title inherits border style; no `PaneConfig::with_title_style(Style)` or pre-styled `Vec<Span>` form.
@@ -60,10 +66,6 @@ Spec PR #471, plan PR #472, implementation PR #473 (`4d5b05e`).
 - **D12** `StatusBarState::with_separator` is global per-bar — no per-section override. Want per-section separator config or per-item-trailing-separator property.
 - **D13** No quit hook — `Command::quit()` exists but no `App::on_quit(state) -> Result<()>` for autosave. Relationship between `load_state` re-export and quit is undocumented. Want documented `on_quit` lifecycle hook.
 - **D14** `StyledContent::paragraph(...)` produces a single line, not a wrapped paragraph — name conflicts with intuition. Want rename to `line(...)`; reserve `paragraph` for wrapped block-level text.
-
-### Surfaced 2026-05-08 during D6 + D9 leadline-side migration
-
-- **D15** `TableRow::cells(&self)` takes no `&Theme` — severity-aware cell construction can't reach the active theme at row-build time. leadline's two severity-cell helpers in `baseline.rs` and `per_op.rs` work around this by constructing `Theme::catppuccin_mocha()` inline (defeats theme-swap). Two remediation candidates: (a) extend the trait to `cells(&self, theme: &Theme) -> Vec<Cell>` — invasive, breaks every existing `TableRow` impl; (b) `CellStyle::Severity(Severity)` resolved at render time — additive, generalizes beyond severity (any palette-routed cell styling becomes a value-typed style variant). leadline preference: (b). Could be a small focused brief on its own or folded into a future API ergonomics round.
 
 ## Plan of attack (proposed sequencing)
 
