@@ -118,27 +118,27 @@ impl Default for State {
 fn build_rich_text_content() -> styled_text::StyledContent {
     styled_text::StyledContent::new()
         .heading(1, "StyledInline Variants")
-        .paragraph(vec![styled_text::StyledInline::Plain(
+        .line(vec![styled_text::StyledInline::Plain(
             "This is Plain text — the default inline style.".to_string(),
         )])
-        .paragraph(vec![styled_text::StyledInline::Bold(
+        .line(vec![styled_text::StyledInline::Bold(
             "This is Bold text — for emphasis and headings.".to_string(),
         )])
-        .paragraph(vec![styled_text::StyledInline::Italic(
+        .line(vec![styled_text::StyledInline::Italic(
             "This is Italic text — for subtle emphasis or titles.".to_string(),
         )])
-        .paragraph(vec![styled_text::StyledInline::Underline(
+        .line(vec![styled_text::StyledInline::Underline(
             "This is Underline text — for links or key terms.".to_string(),
         )])
-        .paragraph(vec![styled_text::StyledInline::Strikethrough(
+        .line(vec![styled_text::StyledInline::Strikethrough(
             "This is Strikethrough text — for deprecated or removed items.".to_string(),
         )])
-        .paragraph(vec![styled_text::StyledInline::Code(
+        .line(vec![styled_text::StyledInline::Code(
             "This is Code text — for inline code snippets.".to_string(),
         )])
         .blank_line()
         .heading(2, "Colored Inline Text")
-        .paragraph(vec![
+        .line(vec![
             styled_text::StyledInline::Colored {
                 text: "Red foreground".to_string(),
                 fg: Some(Color::Red),
@@ -157,7 +157,7 @@ fn build_rich_text_content() -> styled_text::StyledContent {
                 bg: None,
             },
         ])
-        .paragraph(vec![
+        .line(vec![
             styled_text::StyledInline::Colored {
                 text: "Cyan foreground".to_string(),
                 fg: Some(Color::Cyan),
@@ -176,14 +176,14 @@ fn build_rich_text_content() -> styled_text::StyledContent {
                 bg: None,
             },
         ])
-        .paragraph(vec![styled_text::StyledInline::Colored {
+        .line(vec![styled_text::StyledInline::Colored {
             text: " Highlighted text with background ".to_string(),
             fg: Some(Color::White),
             bg: Some(Color::Blue),
         }])
         .blank_line()
         .heading(2, "Mixed Inline Styles")
-        .paragraph(vec![
+        .line(vec![
             styled_text::StyledInline::Plain("You can ".to_string()),
             styled_text::StyledInline::Bold("mix".to_string()),
             styled_text::StyledInline::Plain(" and ".to_string()),

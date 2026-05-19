@@ -39,17 +39,17 @@ fn test_content_text() {
     assert_eq!(content.len(), 1);
     assert!(matches!(
         &content.blocks()[0],
-        StyledBlock::Paragraph(inlines) if inlines.len() == 1
+        StyledBlock::Line(inlines) if inlines.len() == 1
     ));
 }
 
 #[test]
-fn test_content_paragraph_with_inlines() {
+fn test_content_line_with_inlines() {
     let inlines = vec![
         StyledInline::Bold("bold".to_string()),
         StyledInline::Plain(" text".to_string()),
     ];
-    let content = StyledContent::new().paragraph(inlines);
+    let content = StyledContent::new().line(inlines);
     assert_eq!(content.len(), 1);
 }
 

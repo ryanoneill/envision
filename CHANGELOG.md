@@ -132,6 +132,45 @@ helper that constructs a hardcoded theme. Replace with
 `Cell::severity(text, sev)` / `.with_severity(sev)` shortcuts). Theme-swap
 now works correctly.
 
+### StyledText DX: line primitive + `paragraph` rename (D5 + D14)
+
+Two coupled changes in one PR, both targeting `StyledText` / `StyledContent`
+ergonomics:
+
+**New `envision::render` module + primitive:**
+
+- `envision::render::styled_line(frame, area, &[StyledInline], theme)` —
+  free-function primitive that renders one styled line into the given area.
+  Replaces the six-types-three-methods construction pattern (`StyledTextState::new()
+  .with_content(StyledContent::new().line(...)).with_show_border(false)` +
+  `StyledText::view(...)`) with one call. Also re-exported at the crate root
+  as `envision::styled_line`.
+
+**Method + variant rename:**
+
+- `StyledContent::paragraph(inlines)` → `StyledContent::line(inlines)`. The
+  method always produced one line, not a wrapped block-level paragraph; the
+  old name was a misnomer.
+- `StyledBlock::Paragraph(Vec<StyledInline>)` → `StyledBlock::Line(Vec<StyledInline>)`.
+  Internal coherence with the method rename; source-spelunkers no longer hit
+  the misnomer from the variant side.
+- Private helper `render_paragraph` → `render_line` (no API impact;
+  source-level coherence).
+
+Both renames delete the old names outright — no `#[deprecated]` shim. envision
+is pre-1.0; one mechanical migration in the same PR.
+
+**Breaking change:** any external code that matches `StyledBlock::Paragraph` or
+calls `.paragraph(...)` on `StyledContent` must rename to `StyledBlock::Line`
+and `.line(...)` respectively. Renamed APIs are functionally identical; no
+behavior changes.
+
+**Reserved for future:** the `paragraph` name is now free for real block-level
+wrapped-text semantics. Lands as a separate PR when a consumer needs it.
+
+**Migration count:** 17 call sites updated in this PR (10 in
+`examples/styling_showcase.rs`, 7 internal across `src/component/styled_text/`).
+
 ## [Unreleased] — Breaking: `App::init` takes args; `RuntimeBuilder` split
 
 ### Breaking changes — `App::init` takes args

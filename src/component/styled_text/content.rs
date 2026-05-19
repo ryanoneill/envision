@@ -18,8 +18,9 @@ pub enum StyledBlock {
         /// The heading text.
         text: String,
     },
-    /// A paragraph composed of inline elements.
-    Paragraph(Vec<StyledInline>),
+    /// One line of styled inline elements (renamed from `Paragraph` —
+    /// the variant produces a single line, not a wrapped block).
+    Line(Vec<StyledInline>),
     /// A bulleted list where each item is a list of inline elements.
     BulletList(Vec<Vec<StyledInline>>),
     /// A numbered list where each item is a list of inline elements.
@@ -114,7 +115,7 @@ impl StyledContent {
     ///
     /// let blocks = vec![
     ///     StyledBlock::Heading { level: 1, text: "Title".to_string() },
-    ///     StyledBlock::Paragraph(vec![StyledInline::Plain("Hello".to_string())]),
+    ///     StyledBlock::Line(vec![StyledInline::Plain("Hello".to_string())]),
     /// ];
     /// let content = StyledContent::from_blocks(blocks);
     /// assert_eq!(content.len(), 2);
@@ -143,7 +144,11 @@ impl StyledContent {
         self
     }
 
-    /// Adds a paragraph composed of inline elements.
+    /// Append a single styled line composed of inline elements.
+    ///
+    /// (Renamed from `paragraph(...)` — but the method produces one line,
+    /// not a block-level paragraph. The `paragraph` name is reserved for
+    /// future real block-level wrapped text.)
     ///
     /// # Example
     ///
@@ -151,14 +156,14 @@ impl StyledContent {
     /// use envision::component::styled_text::{StyledContent, StyledInline};
     ///
     /// let content = StyledContent::new()
-    ///     .paragraph(vec![
+    ///     .line(vec![
     ///         StyledInline::Plain("Hello, ".to_string()),
     ///         StyledInline::Bold("world".to_string()),
     ///     ]);
     /// assert_eq!(content.len(), 1);
     /// ```
-    pub fn paragraph(mut self, inlines: Vec<StyledInline>) -> Self {
-        self.blocks.push(StyledBlock::Paragraph(inlines));
+    pub fn line(mut self, inlines: Vec<StyledInline>) -> Self {
+        self.blocks.push(StyledBlock::Line(inlines));
         self
     }
 
@@ -174,7 +179,7 @@ impl StyledContent {
     /// assert_eq!(content.len(), 1);
     /// ```
     pub fn text(self, text: impl Into<String>) -> Self {
-        self.paragraph(vec![StyledInline::Plain(text.into())])
+        self.line(vec![StyledInline::Plain(text.into())])
     }
 
     /// Adds a bulleted list.
@@ -398,8 +403,8 @@ fn render_block(
             };
             lines.push(RatLine::from(RatSpan::styled(text.clone(), style)));
         }
-        StyledBlock::Paragraph(inlines) => {
-            render_paragraph(inlines, theme, base_style, lines);
+        StyledBlock::Line(inlines) => {
+            render_line(inlines, theme, base_style, lines);
         }
         StyledBlock::BulletList(items) => {
             for item in items {
@@ -454,7 +459,7 @@ fn render_block(
     }
 }
 
-fn render_paragraph(
+fn render_line(
     inlines: &[StyledInline],
     theme: &Theme,
     base_style: Style,
