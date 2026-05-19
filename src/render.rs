@@ -59,12 +59,7 @@ use crate::theme::Theme;
 ///     styled_line(frame, area, &inlines, theme);
 /// }
 /// ```
-pub fn styled_line(
-    frame: &mut Frame,
-    area: Rect,
-    inlines: &[StyledInline],
-    theme: &Theme,
-) {
+pub fn styled_line(frame: &mut Frame, area: Rect, inlines: &[StyledInline], theme: &Theme) {
     if area.width == 0 || area.height == 0 {
         return;
     }
@@ -185,10 +180,22 @@ mod tests {
 
         // Also assert rows 1 and 2 are entirely spaces (no chrome glyphs).
         let rows: Vec<&str> = plain.lines().collect();
-        assert!(rows.len() >= 3, "expected 3 rows, got {}: {plain}", rows.len());
+        assert!(
+            rows.len() >= 3,
+            "expected 3 rows, got {}: {plain}",
+            rows.len()
+        );
         let row1_blank = rows[1].chars().all(|c| c == ' ');
         let row2_blank = rows[2].chars().all(|c| c == ' ');
-        assert!(row1_blank, "row 1 should be blank (no chrome), got: {:?}", rows[1]);
-        assert!(row2_blank, "row 2 should be blank (no chrome), got: {:?}", rows[2]);
+        assert!(
+            row1_blank,
+            "row 1 should be blank (no chrome), got: {:?}",
+            rows[1]
+        );
+        assert!(
+            row2_blank,
+            "row 2 should be blank (no chrome), got: {:?}",
+            rows[2]
+        );
     }
 }
