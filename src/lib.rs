@@ -152,6 +152,7 @@ pub mod harness;
 pub mod input;
 pub mod layout;
 pub mod overlay;
+pub mod render;
 pub mod scroll;
 pub mod style;
 pub mod theme;
@@ -409,6 +410,7 @@ pub use input::{
     MouseEventKind,
 };
 pub use overlay::{Overlay, OverlayAction, OverlayStack};
+pub use render::styled_line;
 pub use scroll::{ScrollState, render_scrollbar, render_scrollbar_inside_border};
 pub use theme::{NamedColor, Palette, Severity, Theme};
 
