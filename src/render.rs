@@ -174,11 +174,18 @@ mod tests {
             .unwrap();
 
         let plain = terminal.backend().to_string();
-        // Snapshot captures the three-row layout; visual confirmation that
-        // rows 1 and 2 are blank.
+        // Snapshot is INFORMATIONAL: insta trims trailing whitespace and
+        // newlines when serializing terminal.to_string() output, so the
+        // snapshot won't visibly distinguish "blank rows" from "no rows at
+        // all." The row-content `assert!` calls below are the load-bearing
+        // chrome-no-draw assertions — they walk the raw lines() output and
+        // verify every char in rows 1 and 2 is a space, which catches any
+        // chrome / border / fill regression that the trimmed snapshot would
+        // silently mask.
         insta::assert_snapshot!(plain);
 
-        // Also assert rows 1 and 2 are entirely spaces (no chrome glyphs).
+        // Load-bearing chrome assertions: verify rows 1 and 2 are entirely
+        // spaces (no chrome glyphs).
         let rows: Vec<&str> = plain.lines().collect();
         assert!(
             rows.len() >= 3,
