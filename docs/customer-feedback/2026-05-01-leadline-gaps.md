@@ -26,7 +26,6 @@ Spec PR #463, plan PR #464, implementation PR #465 (`82a9a41`).
 
 ### High-leverage follow-ups (leadline's stated priorities)
 
-- **D5** No "render styled Line into Rect" primitive — six types and three method calls to draw a single styled line. Want `envision::render::line(frame, area, line, theme)` or a tiny `StyledLine` component.
 - **D7** View-snapshot testing is undocumented — `AppHarness`/`TestHarness` exist but no docs explaining when to reach for them. Want documented "render at W×H, dispatch event sequence, snapshot cell buffer" pattern.
 
 ### Resolved 2026-05-02 — Chrome ownership protocol
@@ -52,6 +51,14 @@ Spec PR #476, plan PR #477, implementation PR #478 (`932b205`). Closes the loop 
 
 - **D15** ✅ Severity-aware cells reach the active theme at render time — shipped as `CellStyle::Severity(Severity)` variant resolved via `theme.severity_style(*sev)` in `cell_style_to_ratatui` (the renderer's already-in-scope `&Theme`). No `TableRow` trait churn; severity awareness lives in the `Cell` value, not the trait. New `Cell::severity(text, sev)` constructor (semantic shorthand) and `Cell::with_severity(sev)` builder (typed-cell chain, preserves G7 `SortKey`, last-call-wins precedence with `with_style` documented). Bundled `#[non_exhaustive]` on `CellStyle` — matches `Severity` / `NamedColor` precedent from PR #473 (one breaking change beats two).
 
+### Resolved 2026-05-19 — StyledText DX: line primitive + `paragraph` rename
+
+Spec PR #480, plan PR #481, implementation PR #482 (`72b1875`). Two coupled DX gaps in the same `StyledText` / `StyledContent` surface area shipped together.
+
+- **D5** ✅ Line primitive — shipped as `envision::render::styled_line(frame, area, &[StyledInline], theme)` free function in new top-level `src/render.rs` module (mirrors `envision::scroll::render_scrollbar` convention). Re-exported at crate root as `envision::styled_line`. Internal implementation lifts the existing borderless-`StyledText` render path via a one-block `StyledContent` — zero new rendering logic; consumer side collapses from six-types-three-methods to one call. Module + re-export gated behind `display-components` feature for `--no-default-features` builds.
+- **D14** ✅ `StyledContent::paragraph(...)` → `StyledContent::line(...)` rename — old method deleted outright (pre-1.0 ruthlessness). Bundled with `StyledBlock::Paragraph(Vec<StyledInline>)` → `StyledBlock::Line(Vec<StyledInline>)` variant rename and private `fn render_paragraph` → `fn render_line` helper rename for source-level coherence. `paragraph` name reserved for future real block-level wrapped-text semantics (lands when a consumer needs it).
+- **Migration**: 18 mechanical call-site updates across 3 files (10 in `examples/styling_showcase.rs`, 8 internal across `src/component/styled_text/` including one doctest-example site the plan-time grep missed). All insta snapshots byte-identical pre/post — rename is name-only, no rendering changes.
+
 ### Other follow-ups (pre-existing gaps)
 
 - **G4** `PaneLayout` per-pane title style — title inherits border style; no `PaneConfig::with_title_style(Style)` or pre-styled `Vec<Span>` form.
@@ -65,7 +72,6 @@ Spec PR #476, plan PR #477, implementation PR #478 (`932b205`). Closes the loop 
 - **D10** `App::handle_event` vs `handle_event_with_state` — both exist on the trait, unclear which is canonical and when to override which. Want consolidation to one method or much clearer doc.
 - **D12** `StatusBarState::with_separator` is global per-bar — no per-section override. Want per-section separator config or per-item-trailing-separator property.
 - **D13** No quit hook — `Command::quit()` exists but no `App::on_quit(state) -> Result<()>` for autosave. Relationship between `load_state` re-export and quit is undocumented. Want documented `on_quit` lifecycle hook.
-- **D14** `StyledContent::paragraph(...)` produces a single line, not a wrapped paragraph — name conflicts with intuition. Want rename to `line(...)`; reserve `paragraph` for wrapped block-level text.
 
 ## Plan of attack (proposed sequencing)
 
@@ -75,14 +81,14 @@ This is a sketch — treat as draft until reviewed.
 2. **High-leverage batch — separate PRs each**:
    - ~~D1 (`App::init` args + `Runtime` builder)~~ ✅ shipped 2026-05-02 via PR #465
    - ~~D2 (`PaneLayout::view_with` closure flow)~~ ✅ shipped 2026-05-02 via PR #469
-   - D5 (styled-line primitive)
+   - ~~D5 (styled-line primitive)~~ ✅ shipped 2026-05-19 via PR #482
    - D7 (snapshot testing docs/example)
 3. **Component polish batch**:
    - ~~G2 + D11 (Table chrome / border type hint / chrome_owned flag)~~ ✅ shipped 2026-05-02 via PR #469 (combined with D2)
    - G4 (PaneLayout per-pane title style)
    - G5 (StatusBarItem per-item color)
    - G6 (StyledInline composable styles)
-   - D14 (`paragraph` → `line` rename)
+   - ~~D14 (`paragraph` → `line` rename)~~ ✅ shipped 2026-05-19 via PR #482 (combined with D5)
    - D12 (StatusBar per-section separator)
 4. **Theme system batch**:
    - ~~D6 (severity helper)~~ ✅ shipped 2026-05-08 via PR #473
