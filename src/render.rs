@@ -76,3 +76,119 @@ pub fn styled_line(
     let paragraph = Paragraph::new(text);
     frame.render_widget(paragraph, area);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::component::styled_text::StyledInline;
+    use crate::component::test_utils::setup_render;
+    use ratatui::style::Color;
+
+    #[test]
+    fn test_styled_line_renders_inlines() {
+        // Plain + Bold + Colored — all three appear in the rendered text in order.
+        let inlines = vec![
+            StyledInline::Plain("hello ".to_string()),
+            StyledInline::Bold("bold".to_string()),
+            StyledInline::Plain(" world".to_string()),
+        ];
+
+        let (mut terminal, theme) = setup_render(40, 1);
+        terminal
+            .draw(|frame| {
+                styled_line(frame, frame.area(), &inlines, &theme);
+            })
+            .unwrap();
+
+        let plain = terminal.backend().to_string();
+        insta::assert_snapshot!(plain);
+    }
+
+    #[test]
+    fn test_styled_line_applies_theme_color() {
+        // StyledInline::Colored carries an explicit fg color. ANSI red = \x1b[31m.
+        let inlines = vec![StyledInline::Colored {
+            text: "err".to_string(),
+            fg: Some(Color::Red),
+            bg: None,
+        }];
+
+        let (mut terminal, theme) = setup_render(20, 1);
+        terminal
+            .draw(|frame| {
+                styled_line(frame, frame.area(), &inlines, &theme);
+            })
+            .unwrap();
+
+        let ansi = terminal.backend().to_ansi();
+        assert!(
+            ansi.contains("\x1b[31m"),
+            "expected red (31m) ANSI fg for Colored(Red) inline, got:\n{ansi}",
+        );
+    }
+
+    #[test]
+    fn test_styled_line_truncates_to_area_width() {
+        // 60 chars of plain text rendered into a 20-wide area — truncates
+        // per ratatui's Paragraph default. Snapshot pins truncation behavior.
+        let inlines = vec![StyledInline::Plain(
+            "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWX".to_string(),
+        )];
+
+        let (mut terminal, theme) = setup_render(20, 1);
+        terminal
+            .draw(|frame| {
+                styled_line(frame, frame.area(), &inlines, &theme);
+            })
+            .unwrap();
+
+        let plain = terminal.backend().to_string();
+        insta::assert_snapshot!(plain);
+    }
+
+    #[test]
+    fn test_styled_line_empty_inlines_renders_nothing() {
+        // Empty slice — primitive returns without panicking; buffer stays empty.
+        let inlines: &[StyledInline] = &[];
+
+        let (mut terminal, theme) = setup_render(40, 1);
+        terminal
+            .draw(|frame| {
+                styled_line(frame, frame.area(), inlines, &theme);
+            })
+            .unwrap();
+
+        let plain = terminal.backend().to_string();
+        insta::assert_snapshot!(plain);
+    }
+
+    #[test]
+    fn test_styled_line_no_chrome_drawn() {
+        // Render into a 40x3 area but only the first row should have content;
+        // rows 2 and 3 stay blank. Pins that the primitive draws no chrome /
+        // no border / no fill in unused rows.
+        let inlines = vec![StyledInline::Plain("only first row".to_string())];
+
+        let (mut terminal, theme) = setup_render(40, 3);
+        terminal
+            .draw(|frame| {
+                // Use the full frame area (40x3). styled_line renders into
+                // row 0 only; rows 1 and 2 must stay blank.
+                styled_line(frame, frame.area(), &inlines, &theme);
+            })
+            .unwrap();
+
+        let plain = terminal.backend().to_string();
+        // Snapshot captures the three-row layout; visual confirmation that
+        // rows 1 and 2 are blank.
+        insta::assert_snapshot!(plain);
+
+        // Also assert rows 1 and 2 are entirely spaces (no chrome glyphs).
+        let rows: Vec<&str> = plain.lines().collect();
+        assert!(rows.len() >= 3, "expected 3 rows, got {}: {plain}", rows.len());
+        let row1_blank = rows[1].chars().all(|c| c == ' ');
+        let row2_blank = rows[2].chars().all(|c| c == ' ');
+        assert!(row1_blank, "row 1 should be blank (no chrome), got: {:?}", rows[1]);
+        assert!(row2_blank, "row 2 should be blank (no chrome), got: {:?}", rows[2]);
+    }
+}
