@@ -223,6 +223,75 @@ is serialization: pre-G5 serialized blobs lack the new `title_style`
 new field handles round-tripping cleanly. No struct-literal break for
 external code.
 
+### `StyledInline` composable styles (G6)
+
+Replaces the 7-variant `StyledInline` enum (`Plain | Bold | Italic | Underline |
+Strikethrough | Colored | Code`) with a 3-variant composable shape. The leaf
+variants forced single-dimension styling — `Bold + Colored` required two adjacent
+inlines because each leaf captured one dimension. Combinatorial explosion (2^6 =
+64 variants for full dimension coverage) was the wrong shape; composable struct
+is right.
+
+**New 3-variant enum:**
+
+- `StyledInline::Plain(String)` — unchanged
+- `StyledInline::Code(String)` — unchanged (theme-coupled fast path)
+- `StyledInline::Styled { text, style: InlineStyle }` — new composable variant
+- Enum gains `#[non_exhaustive]` for future variant additions
+
+**New `InlineStyle` struct:**
+
+- 6 optional dimensions: `fg`, `bg`, `bold`, `italic`, `underlined`, `strikethrough`
+- 7 `const fn` builder methods (`new`, `fg`, `bg`, `bold`, `italic`, `underlined`,
+  `strikethrough`) — usable in `const` contexts (module-level static styles)
+- `#[non_exhaustive]` — forces builder use over struct literal; future modifier
+  additions land additively
+- Note: `strikethrough: bool` maps to `ratatui::style::Modifier::CROSSED_OUT`
+  (ratatui's name for this modifier)
+
+**Six new constructors on `StyledInline`:**
+
+- `StyledInline::styled(text, style)` — general-purpose pair-with-style wrapper
+- `StyledInline::bold(text)`, `italic(text)`, `underlined(text)`,
+  `strikethrough(text)`, `colored(text, fg)` — leaf helpers for single-dimension
+  cases (~80% of styled-inline usage)
+
+**Top-line payoff — bold-on-banner-values:**
+
+leadline's per-op summary banner at `app.rs:412-455` (`build_summary_inlines`)
+renders 5 value segments (iconnx/ort/ratio/delta/iters) that need bold +
+severity-color in a single inline run. Pre-G6, the bold half was dropped
+because `Bold(t)` had no color field and `Colored {..}` had no bold field.
+Post-G6, `StyledInline::styled(value, InlineStyle::new().fg(value_color).bold())`
+lands the combo. The summary banner reads with weight contrast on value
+segments — magnitude of slowdown "jumps" at the user via bold weight in
+addition to severity color.
+
+**Migration:**
+
+- `StyledInline::Bold(t)` → `StyledInline::bold(t)`
+- `StyledInline::Italic(t)` → `StyledInline::italic(t)`
+- `StyledInline::Underline(t)` → `StyledInline::underlined(t)` (past-tense rename)
+- `StyledInline::Strikethrough(t)` → `StyledInline::strikethrough(t)`
+- `StyledInline::Colored { text, fg: Some(c), bg: None }` → `StyledInline::colored(t, c)`
+- Multi-field `Colored` cases → `StyledInline::styled(t, InlineStyle::new().fg(c).bg(b))`
+
+102 internal envision references migrated mechanically across 6 files. Old
+leaf variants deleted outright (pre-1.0 ruthlessness; same pattern as D14
+`paragraph→line`, D5+D14 `StyledTextState` collapse, G5 `severity_status_style`
+deletion).
+
+**Breaking changes:**
+
+- 5 enum variants deleted (`Bold`, `Italic`, `Underline`, `Strikethrough`,
+  `Colored`). External code pattern-matching `StyledInline` exhaustively must
+  rewrite for the new 3-variant shape (with `_` arm for `#[non_exhaustive]`).
+- `StyledInline::Underline` renamed to the helper `StyledInline::underlined`
+  (past-tense, matches ratatui's `Modifier::UNDERLINED` and the boolean field
+  naming convention).
+- `InlineStyle` struct uses `#[non_exhaustive]` — external code cannot
+  construct via struct literal; must use the `InlineStyle::new()...` builder.
+
 ## [Unreleased] — Breaking: `App::init` takes args; `RuntimeBuilder` split
 
 ### Breaking changes — `App::init` takes args
