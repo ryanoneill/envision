@@ -1,0 +1,5 @@
+---
+source: src/component/status_bar/snapshot_tests.rs
+expression: plain
+---
+good | mild | bad | crit

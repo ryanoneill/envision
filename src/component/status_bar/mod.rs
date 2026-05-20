@@ -661,7 +661,13 @@ impl StatusBar {
         let mut spans = Vec::new();
 
         for (idx, item) in items.iter().enumerate() {
-            let style = item.style.style(theme);
+            let style = if let Some(s) = item.style_override {
+                s
+            } else if let Some(c) = item.color {
+                ratatui::style::Style::default().fg(c)
+            } else {
+                item.style.style(theme)
+            };
             spans.push(Span::styled(item.text(), style));
 
             // Add separator if not last item and item has separator enabled

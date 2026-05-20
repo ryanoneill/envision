@@ -501,3 +501,68 @@ fn test_content_heartbeat_all_inactive_frames_same() {
         assert_eq!(content.display_text(), "\u{2661}");
     }
 }
+
+#[test]
+fn with_color_sets_color_only() {
+    use ratatui::style::Color;
+
+    let item = StatusBarItem::new("x").with_color(Color::Red);
+    assert_eq!(item.color(), Some(Color::Red));
+    assert_eq!(item.style_override(), None);
+    // Semantic baseline unchanged.
+    assert_eq!(item.style(), StatusBarStyle::Default,);
+}
+
+#[test]
+fn with_style_override_sets_override_only() {
+    use ratatui::style::{Color, Style};
+
+    let s = Style::default().fg(Color::Magenta).bg(Color::Black);
+    let item = StatusBarItem::new("x").with_style_override(s);
+    assert_eq!(item.style_override(), Some(s));
+    assert_eq!(item.color(), None);
+}
+
+#[test]
+fn with_color_then_with_style_override_preserves_color() {
+    // Layered semantics, NOT last-call-wins: setting style_override does
+    // not clear a prior color. Each setter writes its own field; render-
+    // time precedence picks. This test pins the G5 contract.
+    use ratatui::style::{Color, Modifier, Style};
+
+    let override_style = Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD);
+    let item = StatusBarItem::new("x")
+        .with_style(StatusBarStyle::Info)
+        .with_color(Color::Red)
+        .with_style_override(override_style);
+
+    // All three fields populated; render picks per precedence at draw time.
+    assert_eq!(item.style(), StatusBarStyle::Info,);
+    assert_eq!(item.color(), Some(Color::Red));
+    assert_eq!(item.style_override(), Some(override_style));
+}
+
+#[test]
+fn branched_construction_preserves_color() {
+    // The practical case that decides layered vs last-call-wins: build an
+    // item with a brand color, then CONDITIONALLY apply an override. After
+    // the conditional, color is still set even though style_override is
+    // also set. Render-time precedence gives the override priority while
+    // the brand color stays rebuildable.
+    use ratatui::style::{Color, Style};
+
+    let brand = Color::Rgb(0xB4, 0xBE, 0xFE); // Lavender
+    let mut item = StatusBarItem::new("leadline").with_color(brand);
+
+    let user_wants_emphasis = true;
+    if user_wants_emphasis {
+        item = item.with_style_override(Style::default().fg(Color::Red));
+    }
+
+    assert_eq!(
+        item.color(),
+        Some(brand),
+        "branded color must persist through subsequent with_style_override",
+    );
+    assert!(item.style_override().is_some());
+}

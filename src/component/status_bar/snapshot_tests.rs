@@ -126,3 +126,60 @@ fn test_snapshot_custom_separator() {
         .unwrap();
     insta::assert_snapshot!(terminal.backend().to_string());
 }
+
+#[test]
+fn snapshot_status_bar_four_stop_severity_ramp() {
+    use crate::theme::{Severity, Theme};
+
+    // The Q-gamma payoff: four distinct ANSI fg colors when each Severity
+    // band gets its own theme.severity_color. Pre-G5, the consumer-side
+    // severity_status_style helper collapsed Bad+Mild -> Warning because
+    // StatusBarStyle had no Peach variant. Post-G5, with_color + the
+    // theme palette restores the full four-stop ramp.
+    let theme = Theme::catppuccin_mocha();
+    let items = vec![
+        StatusBarItem::new("good").with_color(theme.severity_color(Severity::Good)),
+        StatusBarItem::new("mild").with_color(theme.severity_color(Severity::Mild)),
+        StatusBarItem::new("bad").with_color(theme.severity_color(Severity::Bad)),
+        StatusBarItem::new("crit").with_color(theme.severity_color(Severity::Critical)),
+    ];
+    let mut state = StatusBarState::new();
+    for item in items {
+        state.push_left(item);
+    }
+
+    // Render with the actual Catppuccin theme so the four colors are
+    // distinct RGB values, not basic-Color collapses.
+    let (mut terminal, _) = test_utils::setup_render(40, 1);
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
+        })
+        .unwrap();
+
+    let plain = terminal.backend().to_string();
+    let ansi = terminal.backend().to_ansi();
+
+    // ratatui emits RGB foregrounds as \x1b[38;2;R;G;Bm. Each of the four
+    // bands should produce a distinct escape. Catppuccin: Good=Green (166,
+    // 227, 161), Mild=Yellow (249, 226, 175), Bad=Peach (250, 179, 135),
+    // Critical=Red (243, 139, 168).
+    assert!(
+        ansi.contains("\x1b[38;2;166;227;161m"),
+        "expected Catppuccin Green for Severity::Good, got:\n{ansi}",
+    );
+    assert!(
+        ansi.contains("\x1b[38;2;249;226;175m"),
+        "expected Catppuccin Yellow for Severity::Mild, got:\n{ansi}",
+    );
+    assert!(
+        ansi.contains("\x1b[38;2;250;179;135m"),
+        "expected Catppuccin Peach for Severity::Bad (the restored band), got:\n{ansi}",
+    );
+    assert!(
+        ansi.contains("\x1b[38;2;243;139;168m"),
+        "expected Catppuccin Red for Severity::Critical, got:\n{ansi}",
+    );
+
+    insta::assert_snapshot!(plain);
+}
