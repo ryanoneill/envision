@@ -42,6 +42,7 @@ use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, Key};
 
 mod view_with;
+pub mod title_style;
 
 /// The direction in which panes are arranged.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -80,6 +81,8 @@ pub enum PaneDirection {
 pub struct PaneConfig {
     id: String,
     title: Option<String>,
+    #[cfg_attr(feature = "serialization", serde(default))]
+    title_style: Option<ratatui::style::Style>,
     proportion: f32,
     min_size: u16,
     max_size: u16,
@@ -101,6 +104,7 @@ impl PaneConfig {
         Self {
             id: id.into(),
             title: None,
+            title_style: None,
             proportion: 1.0,
             min_size: 1,
             max_size: 0,

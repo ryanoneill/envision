@@ -51,7 +51,12 @@ where
             .border_style(border_style);
 
         if let Some(title) = &pane.title {
-            block = block.title(format!(" {} ", title));
+            let span = if let Some(style) = pane.title_style {
+                ratatui::text::Span::styled(format!(" {} ", title), style)
+            } else {
+                ratatui::text::Span::raw(format!(" {} ", title))
+            };
+            block = block.title(span);
         }
 
         ctx.frame.render_widget(block, *rect);
