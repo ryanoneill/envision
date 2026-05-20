@@ -67,7 +67,7 @@ pub enum StyledInline {
 /// Style dimensions for a styled inline run.
 ///
 /// All dimensions are optional and compose freely. Use [`InlineStyle::new`]
-/// + builder methods (`fg`, `bg`, `bold`, `italic`, `underlined`,
+/// with builder methods (`fg`, `bg`, `bold`, `italic`, `underlined`,
 /// `strikethrough`) to construct; struct-literal construction is
 /// intentionally not supported (`#[non_exhaustive]`) so future modifier
 /// additions land additively without breaking consumers.
@@ -131,36 +131,92 @@ impl InlineStyle {
     }
 
     /// Builder: set foreground color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    /// use ratatui::style::Color;
+    ///
+    /// let s = InlineStyle::new().fg(Color::Red);
+    /// assert_eq!(s.fg, Some(Color::Red));
+    /// ```
     pub const fn fg(mut self, c: Color) -> Self {
         self.fg = Some(c);
         self
     }
 
     /// Builder: set background color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    /// use ratatui::style::Color;
+    ///
+    /// let s = InlineStyle::new().bg(Color::Black);
+    /// assert_eq!(s.bg, Some(Color::Black));
+    /// ```
     pub const fn bg(mut self, c: Color) -> Self {
         self.bg = Some(c);
         self
     }
 
     /// Builder: enable bold.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    ///
+    /// let s = InlineStyle::new().bold();
+    /// assert!(s.bold);
+    /// ```
     pub const fn bold(mut self) -> Self {
         self.bold = true;
         self
     }
 
     /// Builder: enable italic.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    ///
+    /// let s = InlineStyle::new().italic();
+    /// assert!(s.italic);
+    /// ```
     pub const fn italic(mut self) -> Self {
         self.italic = true;
         self
     }
 
     /// Builder: enable underlined (past tense — matches ratatui's `Modifier::UNDERLINED`).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    ///
+    /// let s = InlineStyle::new().underlined();
+    /// assert!(s.underlined);
+    /// ```
     pub const fn underlined(mut self) -> Self {
         self.underlined = true;
         self
     }
 
     /// Builder: enable strikethrough (maps to `Modifier::CROSSED_OUT` in ratatui).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    ///
+    /// let s = InlineStyle::new().strikethrough();
+    /// assert!(s.strikethrough);
+    /// ```
     pub const fn strikethrough(mut self) -> Self {
         self.strikethrough = true;
         self
