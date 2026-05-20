@@ -59,10 +59,17 @@ Spec PR #480, plan PR #481, implementation PR #482 (`72b1875`). Two coupled DX g
 - **D14** ✅ `StyledContent::paragraph(...)` → `StyledContent::line(...)` rename — old method deleted outright (pre-1.0 ruthlessness). Bundled with `StyledBlock::Paragraph(Vec<StyledInline>)` → `StyledBlock::Line(Vec<StyledInline>)` variant rename and private `fn render_paragraph` → `fn render_line` helper rename for source-level coherence. `paragraph` name reserved for future real block-level wrapped-text semantics (lands when a consumer needs it).
 - **Migration**: 18 mechanical call-site updates across 3 files (10 in `examples/styling_showcase.rs`, 8 internal across `src/component/styled_text/` including one doctest-example site the plan-time grep missed). All insta snapshots byte-identical pre/post — rename is name-only, no rendering changes.
 
+### Resolved 2026-05-20 — Per-component style overrides
+
+Spec PR #485, plan PR #486, implementation PR #487 (`8201a04`). Two coupled parent-side style hooks shipped together — both restore consumer flexibility previously bottlenecked by closed-enum or border-inheritance constraints. Top-line payoff: G5 unblocks the four-stop severity ramp deferred during D6 + D9 design.
+
+- **G4** ✅ Pane title styling — shipped as `PaneConfig::with_title_style(Style)` builder + `title_style(&self) -> Option<Style>` getter. When set, the pane title renders with the given style; when `None` (default), the title inherits the border style (current behavior). Focus-invariant by design — consumer-set styles aren't silently overridden by focus state. New sibling file `src/component/pane_layout/title_style.rs` houses the impl + inline tests (mirrors the `view_with.rs` split pattern; keeps `mod.rs` under the 1000-line cap). Multi-segment `with_title_spans(Vec<Span>)` deferred per Q-α — lands when a consumer needs multi-style titles.
+- **G5** ✅ StatusBar layered coloring — shipped as `StatusBarItem::with_color(Color)` + `with_style_override(Style)` builders with matching getters. Render-time precedence: `style_override > color > style.style(theme)`. **Layered setter semantics, not last-call-wins** — each setter writes its own field idempotently; branched construction (`if user_wants_emphasis { item.with_style_override(s) } else { item }`) keeps the brand color rebuildable. `with_color(c)` produces `Style::default().fg(c)` — clean separation; consumers wanting layered semantics reach for `with_style_override` explicitly.
+- **Q-γ payoff — four-stop severity ramp restored**: Consumer-side `severity_status_style` helpers that collapsed Bad+Mild → Warning delete entirely; `StatusBarItem::new(t).with_color(theme.severity_color(sev))` distinguishes all four `Severity` bands on full-palette themes. Three convergence views (D15 cells via `CellStyle::Severity`, D5 banner via `styled_line` + `theme.severity_color`, G5 status segments via `with_color`) reach the same gradient.
+- **Field-add safety**: Both `PaneConfig` and `StatusBarItem` had non-public fields (private + `pub(super)`) before this PR, so external consumers can't struct-literal-construct either. Only forward-compat concern was serialization; `#[serde(default)]` on every new field handles round-tripping.
+
 ### Other follow-ups (pre-existing gaps)
 
-- **G4** `PaneLayout` per-pane title style — title inherits border style; no `PaneConfig::with_title_style(Style)` or pre-styled `Vec<Span>` form.
-- **G5** `StatusBarItem::with_style(StatusBarStyle)` enum is closed — no per-item arbitrary `Color` or full `Style` override. Want `with_color(Color)` and `with_style_override(Style)`.
 - **G6** `StyledInline` cannot combine color + modifier — leaf variants only (`Bold`, `Italic`, `Colored{..}`). Want a single composable `Styled { text, style: InlineStyle }` variant with the leaf forms as constructors.
 
 ### Other follow-ups (new from 2026-05-01 conversation)
@@ -85,8 +92,8 @@ This is a sketch — treat as draft until reviewed.
    - D7 (snapshot testing docs/example)
 3. **Component polish batch**:
    - ~~G2 + D11 (Table chrome / border type hint / chrome_owned flag)~~ ✅ shipped 2026-05-02 via PR #469 (combined with D2)
-   - G4 (PaneLayout per-pane title style)
-   - G5 (StatusBarItem per-item color)
+   - ~~G4 (PaneLayout per-pane title style)~~ ✅ shipped 2026-05-20 via PR #487
+   - ~~G5 (StatusBarItem per-item color)~~ ✅ shipped 2026-05-20 via PR #487
    - G6 (StyledInline composable styles)
    - ~~D14 (`paragraph` → `line` rename)~~ ✅ shipped 2026-05-19 via PR #482 (combined with D5)
    - D12 (StatusBar per-section separator)
