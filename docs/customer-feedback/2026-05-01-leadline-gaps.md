@@ -68,9 +68,13 @@ Spec PR #485, plan PR #486, implementation PR #487 (`8201a04`). Two coupled pare
 - **Q-γ payoff — four-stop severity ramp restored**: Consumer-side `severity_status_style` helpers that collapsed Bad+Mild → Warning delete entirely; `StatusBarItem::new(t).with_color(theme.severity_color(sev))` distinguishes all four `Severity` bands on full-palette themes. Three convergence views (D15 cells via `CellStyle::Severity`, D5 banner via `styled_line` + `theme.severity_color`, G5 status segments via `with_color`) reach the same gradient.
 - **Field-add safety**: Both `PaneConfig` and `StatusBarItem` had non-public fields (private + `pub(super)`) before this PR, so external consumers can't struct-literal-construct either. Only forward-compat concern was serialization; `#[serde(default)]` on every new field handles round-tripping.
 
-### Other follow-ups (pre-existing gaps)
+### Resolved 2026-05-20 — `StyledInline` composable styles
 
-- **G6** `StyledInline` cannot combine color + modifier — leaf variants only (`Bold`, `Italic`, `Colored{..}`). Want a single composable `Styled { text, style: InlineStyle }` variant with the leaf forms as constructors.
+Spec PR #489, plan PR #490, implementation PR #491 (`5c44ab4`). The 7-variant `StyledInline` leaf-enum forced single-dimension styling — `Bold + Colored` required two inlines because each leaf captured one dimension. Combinatorial explosion (2^6 = 64 variants for full coverage) ruled out; composable struct shape ships instead.
+
+- **G6** ✅ Composable inline styling — shipped as 3-variant `StyledInline` enum (`Plain | Code | Styled { text, style: InlineStyle }`, `#[non_exhaustive]`) replacing the 7-variant leaf form. New `InlineStyle` struct (`#[non_exhaustive]`) with 6 optional dimensions (`fg`, `bg`, `bold`, `italic`, `underlined`, `strikethrough`) and 7 `const fn` builder methods (`new`, `fg`, `bg`, `bold`, `italic`, `underlined`, `strikethrough`) — usable in `const` contexts. Two-layer constructor surface on `StyledInline`: general-purpose `styled(text, style)` + 5 leaf helpers (`bold`, `italic`, `underlined`, `strikethrough`, `colored`) for single-dimension cases (~80% of usage). `strikethrough: bool` maps to `ratatui::style::Modifier::CROSSED_OUT` (ratatui's naming convention; documented in 5 places — CHANGELOG + field docstring + builder method docstring + render-arm comment + spec).
+- **Migration**: All internal envision references migrated mechanically across 6 files (`examples/styling_showcase.rs`, `src/component/styled_text/tests.rs`, `src/component/styled_text/content.rs`, `src/render.rs`, `examples/styled_text.rs`, `src/component/styled_text/mod.rs`). 3-phase additive-first shape (Phase 1 adds surface alongside leaves; Phase 2 mechanical site migration; Phase 3 deletes 5 leaf variants) gives clean bisect granularity. Phase 3's compiler-enforced completeness + post-merge `grep -rn 'StyledInline::Bold\|Italic\|Underline\|Strikethrough\|Colored'` returning 0 matches both confirm migration is complete. Insta snapshots byte-identical pre/post — single-dimension cases route through the new `Styled` arm with equivalent rendering semantics.
+- **Top-line payoff — bold-on-banner-values**: leadline's per-op summary banner at `app.rs:412-455` (`build_summary_inlines`) renders 5 value segments (iconnx/ort/ratio/delta/iters) that need bold + severity-color in a single inline run. Pre-G6, the bold half dropped (`Bold(t)` had no color field; `Colored {..}` had no bold field). Post-G6, `StyledInline::styled(value, InlineStyle::new().fg(value_color).bold())` lands the combo — the summary banner reads with weight contrast on value segments and the magnitude of slowdown "jumps" at the user via bold weight in addition to severity color. Snapshot test `snapshot_styled_inline_bold_and_colored_combined` ANSI-asserts both `\x1b[31m` (red) AND `\x1b[1m` (BOLD) appear on the same span — vindication of the combo.
 
 ### Other follow-ups (new from 2026-05-01 conversation)
 
@@ -94,7 +98,7 @@ This is a sketch — treat as draft until reviewed.
    - ~~G2 + D11 (Table chrome / border type hint / chrome_owned flag)~~ ✅ shipped 2026-05-02 via PR #469 (combined with D2)
    - ~~G4 (PaneLayout per-pane title style)~~ ✅ shipped 2026-05-20 via PR #487
    - ~~G5 (StatusBarItem per-item color)~~ ✅ shipped 2026-05-20 via PR #487
-   - G6 (StyledInline composable styles)
+   - ~~G6 (StyledInline composable styles)~~ ✅ shipped 2026-05-20 via PR #491
    - ~~D14 (`paragraph` → `line` rename)~~ ✅ shipped 2026-05-19 via PR #482 (combined with D5)
    - D12 (StatusBar per-section separator)
 4. **Theme system batch**:
