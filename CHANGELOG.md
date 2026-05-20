@@ -171,6 +171,58 @@ wrapped-text semantics. Lands as a separate PR when a consumer needs it.
 **Migration count:** 17 call sites updated in this PR (10 in
 `examples/styling_showcase.rs`, 7 internal across `src/component/styled_text/`).
 
+### Per-component style overrides (G4 + G5)
+
+Two coupled parent-side style hooks land together. Both restore consumer
+flexibility that was previously bottlenecked by closed-enum or border-inheritance
+constraints.
+
+**G4 — `PaneConfig::with_title_style(Style)`:**
+
+- New builder + getter: `with_title_style(self, style: Style)` and
+  `title_style(&self) -> Option<Style>`. When set, the pane title renders
+  with the given style; when `None` (default), the title inherits the
+  border style (current behavior).
+- Focus-invariant by design: consumer-set title styles aren't silently
+  overridden by focus state. A future focused-vs-unfocused title style
+  would be a separate builder, not a surprise in this one.
+- New file `src/component/pane_layout/title_style.rs` houses the impl +
+  inline tests (keeps `mod.rs` under the 1000-line cap; mirrors the
+  existing `view_with.rs` split pattern).
+
+**G5 — `StatusBarItem::with_color(Color)` + `with_style_override(Style)`:**
+
+- Two new layered builders + getters. Render-time precedence:
+  `style_override > color > style.style(theme)`.
+- **Layered semantics, not last-call-wins:** each setter writes its own
+  field idempotently. Calling `with_style_override(s)` does NOT clear a
+  prior `with_color(c)`; the override just wins until cleared. Branched
+  construction (`if user_wants_emphasis { item.with_style_override(s) }
+  else { item }`) keeps the brand color rebuildable.
+- `with_color(c)` produces `Style::default().fg(c)` — clean separation;
+  background and modifiers are not inherited from the semantic baseline.
+  Consumers wanting layered semantics reach for `with_style_override`
+  explicitly.
+
+**Q-γ payoff — four-stop severity ramp restored:** The D6+D9 design
+deferred the StatusBar four-stop severity ramp because `StatusBarStyle`
+had no Peach variant — consumer-side `severity_status_style` helpers
+collapsed `Severity::Bad` and `Severity::Mild` both to
+`StatusBarStyle::Warning`. Post-G5, the helper deletes; the call site
+uses `StatusBarItem::new(t).with_color(theme.severity_color(sev))`
+directly. Three convergence views (table cells via D15
+`CellStyle::Severity`, summary banner via D5 `styled_line` +
+`theme.severity_color`, StatusBar slowdown segments via G5
+`with_color`) reach the same four-stop gradient.
+
+**Field-add safety:** `PaneConfig` fields were already private and
+`StatusBarItem` fields were `pub(super)`, so external consumers can't
+struct-literal-construct either struct. The only forward-compat concern
+is serialization: pre-G5 serialized blobs lack the new `title_style`
+/ `color` / `style_override` fields, and `#[serde(default)]` on each
+new field handles round-tripping cleanly. No struct-literal break for
+external code.
+
 ## [Unreleased] — Breaking: `App::init` takes args; `RuntimeBuilder` split
 
 ### Breaking changes — `App::init` takes args

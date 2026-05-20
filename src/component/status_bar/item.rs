@@ -207,6 +207,14 @@ pub struct StatusBarItem {
     pub(super) content: StatusBarItemContent,
     /// The style of the item.
     pub(super) style: StatusBarStyle,
+    /// Layer 2: foreground color override. Wins over `style.style(theme)` but
+    /// loses to `style_override`. `None` defers to `style`.
+    #[cfg_attr(feature = "serialization", serde(default))]
+    pub(super) color: Option<ratatui::style::Color>,
+    /// Layer 3: full `Style` override. Wins over `color` and `style.style(theme)`.
+    /// `None` defers to `color`.
+    #[cfg_attr(feature = "serialization", serde(default))]
+    pub(super) style_override: Option<ratatui::style::Style>,
     /// Whether to show a separator after this item.
     separator: bool,
 }
@@ -226,6 +234,8 @@ impl StatusBarItem {
         Self {
             content: StatusBarItemContent::Static(text.into()),
             style: StatusBarStyle::Default,
+            color: None,
+            style_override: None,
             separator: true,
         }
     }
@@ -244,6 +254,8 @@ impl StatusBarItem {
         Self {
             content: StatusBarItemContent::elapsed_time(),
             style: StatusBarStyle::Default,
+            color: None,
+            style_override: None,
             separator: true,
         }
     }
@@ -266,6 +278,8 @@ impl StatusBarItem {
                 long_format: true,
             },
             style: StatusBarStyle::Default,
+            color: None,
+            style_override: None,
             separator: true,
         }
     }
@@ -283,6 +297,8 @@ impl StatusBarItem {
         Self {
             content: StatusBarItemContent::counter(),
             style: StatusBarStyle::Default,
+            color: None,
+            style_override: None,
             separator: true,
         }
     }
@@ -300,6 +316,8 @@ impl StatusBarItem {
         Self {
             content: StatusBarItemContent::heartbeat(),
             style: StatusBarStyle::Default,
+            color: None,
+            style_override: None,
             separator: true,
         }
     }
@@ -372,6 +390,105 @@ impl StatusBarItem {
     pub fn with_style(mut self, style: StatusBarStyle) -> Self {
         self.style = style;
         self
+    }
+
+    /// Sets a foreground color override (builder pattern).
+    ///
+    /// Wins at render time over the semantic `StatusBarStyle` baseline but
+    /// loses to `with_style_override`. Produces `Style::default().fg(color)` —
+    /// background and modifiers are NOT inherited from the semantic baseline.
+    /// For tinted-background or modifier scenarios, use `with_style_override`.
+    ///
+    /// # Precedence
+    ///
+    /// At render time: `style_override > color > style.style(theme)`. Setting
+    /// `with_color` does NOT clear a prior `with_style_override`; the override
+    /// continues to win until cleared explicitly.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    /// use envision::theme::{Severity, Theme};
+    ///
+    /// let theme = Theme::catppuccin_mocha();
+    /// let item = StatusBarItem::new("slowdown")
+    ///     .with_color(theme.severity_color(Severity::Bad));
+    /// // Renders in the theme's Peach (full four-stop severity ramp).
+    /// assert!(item.color().is_some());
+    /// ```
+    pub fn with_color(mut self, color: ratatui::style::Color) -> Self {
+        self.color = Some(color);
+        self
+    }
+
+    /// Returns the color override, if explicitly set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    /// use ratatui::style::Color;
+    ///
+    /// let plain = StatusBarItem::new("ok");
+    /// assert_eq!(plain.color(), None);
+    ///
+    /// let colored = plain.with_color(Color::Red);
+    /// assert_eq!(colored.color(), Some(Color::Red));
+    /// ```
+    pub fn color(&self) -> Option<ratatui::style::Color> {
+        self.color
+    }
+
+    /// Sets a full `Style` override (builder pattern).
+    ///
+    /// Highest-precedence layer — wins over both `with_color` and the semantic
+    /// `StatusBarStyle` baseline. Use when arbitrary modifiers (BOLD, ITALIC,
+    /// UNDERLINED), background coloring, or full custom styling is needed.
+    ///
+    /// # Precedence
+    ///
+    /// At render time: `style_override > color > style.style(theme)`. Setting
+    /// `with_style_override` does NOT clear a prior `with_color`; the override
+    /// just wins for as long as it's set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    /// use ratatui::style::{Color, Modifier, Style};
+    ///
+    /// let item = StatusBarItem::new("EMERGENCY")
+    ///     .with_style_override(
+    ///         Style::default()
+    ///             .fg(Color::White)
+    ///             .bg(Color::Red)
+    ///             .add_modifier(Modifier::BOLD),
+    ///     );
+    /// assert!(item.style_override().is_some());
+    /// ```
+    pub fn with_style_override(mut self, style: ratatui::style::Style) -> Self {
+        self.style_override = Some(style);
+        self
+    }
+
+    /// Returns the style override, if explicitly set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let plain = StatusBarItem::new("ok");
+    /// assert_eq!(plain.style_override(), None);
+    ///
+    /// let s = Style::default().fg(Color::White).bg(Color::Red);
+    /// let overridden = plain.with_style_override(s);
+    /// assert_eq!(overridden.style_override(), Some(s));
+    /// ```
+    pub fn style_override(&self) -> Option<ratatui::style::Style> {
+        self.style_override
     }
 
     /// Sets whether to show a separator after this item.

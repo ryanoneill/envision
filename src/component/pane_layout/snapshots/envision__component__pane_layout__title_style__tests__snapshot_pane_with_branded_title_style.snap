@@ -1,0 +1,9 @@
+---
+source: src/component/pane_layout/title_style.rs
+expression: plain
+---
+┌ Brand ───────────┐┌ Plain ───────────┐
+│                  ││                  │
+│                  ││                  │
+│                  ││                  │
+└──────────────────┘└──────────────────┘
