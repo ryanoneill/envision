@@ -34,7 +34,7 @@
 
 pub mod content;
 
-pub use content::{StyledBlock, StyledContent, StyledInline};
+pub use content::{InlineStyle, StyledBlock, StyledContent, StyledInline};
 
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
