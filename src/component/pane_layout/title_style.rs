@@ -50,6 +50,19 @@ impl PaneConfig {
     /// Returns the title style, if explicitly set.
     ///
     /// `None` means the title inherits the border style (default behavior).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::pane_layout::PaneConfig;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let plain = PaneConfig::new("plain").with_title("hello");
+    /// assert_eq!(plain.title_style(), None);
+    ///
+    /// let styled = plain.with_title_style(Style::default().fg(Color::Magenta));
+    /// assert!(styled.title_style().is_some());
+    /// ```
     pub fn title_style(&self) -> Option<Style> {
         self.title_style
     }
@@ -75,9 +88,9 @@ mod tests {
 
     #[test]
     fn snapshot_pane_with_branded_title_style() {
+        use crate::component::RenderContext;
         use crate::component::pane_layout::{PaneDirection, PaneLayout, PaneLayoutState};
         use crate::component::test_utils::setup_render;
-        use crate::component::RenderContext;
         use ratatui::style::Modifier;
 
         // 2-pane horizontal: left pane has a magenta+bold title; right is plain.
@@ -90,7 +103,9 @@ mod tests {
                         .add_modifier(Modifier::BOLD),
                 )
                 .with_proportion(0.5),
-            PaneConfig::new("right").with_title("Plain").with_proportion(0.5),
+            PaneConfig::new("right")
+                .with_title("Plain")
+                .with_proportion(0.5),
         ];
         let state = PaneLayoutState::new(PaneDirection::Horizontal, panes);
 
@@ -123,9 +138,9 @@ mod tests {
 
     #[test]
     fn snapshot_pane_title_style_focus_invariant() {
+        use crate::component::RenderContext;
         use crate::component::pane_layout::{PaneDirection, PaneLayout, PaneLayoutState};
         use crate::component::test_utils::setup_render;
-        use crate::component::RenderContext;
 
         // 2-pane horizontal: BOTH panes get the same with_title_style(magenta).
         // One pane is focused, the other isn't. The title rendering must be

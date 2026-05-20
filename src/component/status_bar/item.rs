@@ -423,6 +423,19 @@ impl StatusBarItem {
     }
 
     /// Returns the color override, if explicitly set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    /// use ratatui::style::Color;
+    ///
+    /// let plain = StatusBarItem::new("ok");
+    /// assert_eq!(plain.color(), None);
+    ///
+    /// let colored = plain.with_color(Color::Red);
+    /// assert_eq!(colored.color(), Some(Color::Red));
+    /// ```
     pub fn color(&self) -> Option<ratatui::style::Color> {
         self.color
     }
@@ -460,6 +473,20 @@ impl StatusBarItem {
     }
 
     /// Returns the style override, if explicitly set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::StatusBarItem;
+    /// use ratatui::style::{Color, Style};
+    ///
+    /// let plain = StatusBarItem::new("ok");
+    /// assert_eq!(plain.style_override(), None);
+    ///
+    /// let s = Style::default().fg(Color::White).bg(Color::Red);
+    /// let overridden = plain.with_style_override(s);
+    /// assert_eq!(overridden.style_override(), Some(s));
+    /// ```
     pub fn style_override(&self) -> Option<ratatui::style::Style> {
         self.style_override
     }

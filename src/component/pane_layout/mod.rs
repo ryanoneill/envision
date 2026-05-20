@@ -41,8 +41,8 @@ use ratatui::prelude::*;
 use super::{Component, EventContext, RenderContext};
 use crate::input::{Event, Key};
 
-mod view_with;
 pub mod title_style;
+mod view_with;
 
 /// The direction in which panes are arranged.
 #[derive(Clone, Debug, PartialEq, Eq)]

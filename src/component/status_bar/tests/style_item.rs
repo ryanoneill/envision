@@ -530,7 +530,9 @@ fn with_color_then_with_style_override_preserves_color() {
     // time precedence picks. This test pins the G5 contract.
     use ratatui::style::{Color, Modifier, Style};
 
-    let override_style = Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD);
+    let override_style = Style::default()
+        .fg(Color::Yellow)
+        .add_modifier(Modifier::BOLD);
     let item = StatusBarItem::new("x")
         .with_style(StatusBarStyle::Info)
         .with_color(Color::Red)
