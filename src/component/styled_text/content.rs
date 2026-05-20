@@ -41,29 +41,291 @@ pub enum StyledBlock {
 }
 
 /// An inline styling element within a paragraph or list item.
+///
+/// `#[non_exhaustive]` so envision can add inline variants later without
+/// breaking downstream `match` arms in consumer crates.
+#[non_exhaustive]
 #[derive(Clone, Debug, PartialEq)]
 pub enum StyledInline {
     /// Plain unstyled text.
     Plain(String),
-    /// Bold text.
-    Bold(String),
-    /// Italic text.
-    Italic(String),
-    /// Underlined text.
-    Underline(String),
-    /// Strikethrough text.
-    Strikethrough(String),
-    /// Text with explicit foreground and/or background colors.
-    Colored {
+    /// Inline code (renders with theme-coupled styling — bold info color).
+    Code(String),
+    /// Styled run combining color, modifiers, and optional background.
+    ///
+    /// The composable form. Use [`StyledInline::styled`] or one of the
+    /// leaf-helper constructors (`bold`, `italic`, `underlined`,
+    /// `strikethrough`, `colored`) to construct.
+    Styled {
         /// The text content.
         text: String,
-        /// Optional foreground color.
-        fg: Option<Color>,
-        /// Optional background color.
-        bg: Option<Color>,
+        /// Style dimensions applied on top of the surrounding base style.
+        style: InlineStyle,
     },
-    /// Inline code (displayed with distinct styling).
-    Code(String),
+}
+
+/// Style dimensions for a styled inline run.
+///
+/// All dimensions are optional and compose freely. Use [`InlineStyle::new`]
+/// with builder methods (`fg`, `bg`, `bold`, `italic`, `underlined`,
+/// `strikethrough`) to construct; struct-literal construction is
+/// intentionally not supported (`#[non_exhaustive]`) so future modifier
+/// additions land additively without breaking consumers.
+///
+/// All builder methods are `const fn` — `InlineStyle` chains can be used
+/// in `const` contexts (e.g., module-level static styles).
+///
+/// # Example
+///
+/// ```rust
+/// use envision::component::styled_text::InlineStyle;
+/// use ratatui::style::Color;
+///
+/// let style = InlineStyle::new().fg(Color::Red).bold();
+/// assert_eq!(style.fg, Some(Color::Red));
+/// assert!(style.bold);
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct InlineStyle {
+    /// Foreground color override.
+    pub fg: Option<Color>,
+    /// Background color override.
+    pub bg: Option<Color>,
+    /// Render text in bold.
+    pub bold: bool,
+    /// Render text in italic.
+    pub italic: bool,
+    /// Render text underlined (past tense — matches `ratatui::style::Modifier::UNDERLINED`).
+    pub underlined: bool,
+    /// Render text with strikethrough.
+    ///
+    /// Note: ratatui's modifier name for this is `Modifier::CROSSED_OUT`,
+    /// not `STRIKETHROUGH`. The render path maps `strikethrough: true` to
+    /// `add_modifier(Modifier::CROSSED_OUT)`.
+    pub strikethrough: bool,
+}
+
+impl InlineStyle {
+    /// Creates an empty style (no modifiers, no colors).
+    ///
+    /// Equivalent to [`InlineStyle::default`].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    ///
+    /// let s = InlineStyle::new();
+    /// assert_eq!(s, InlineStyle::default());
+    /// ```
+    pub const fn new() -> Self {
+        Self {
+            fg: None,
+            bg: None,
+            bold: false,
+            italic: false,
+            underlined: false,
+            strikethrough: false,
+        }
+    }
+
+    /// Builder: set foreground color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    /// use ratatui::style::Color;
+    ///
+    /// let s = InlineStyle::new().fg(Color::Red);
+    /// assert_eq!(s.fg, Some(Color::Red));
+    /// ```
+    pub const fn fg(mut self, c: Color) -> Self {
+        self.fg = Some(c);
+        self
+    }
+
+    /// Builder: set background color.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    /// use ratatui::style::Color;
+    ///
+    /// let s = InlineStyle::new().bg(Color::Black);
+    /// assert_eq!(s.bg, Some(Color::Black));
+    /// ```
+    pub const fn bg(mut self, c: Color) -> Self {
+        self.bg = Some(c);
+        self
+    }
+
+    /// Builder: enable bold.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    ///
+    /// let s = InlineStyle::new().bold();
+    /// assert!(s.bold);
+    /// ```
+    pub const fn bold(mut self) -> Self {
+        self.bold = true;
+        self
+    }
+
+    /// Builder: enable italic.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    ///
+    /// let s = InlineStyle::new().italic();
+    /// assert!(s.italic);
+    /// ```
+    pub const fn italic(mut self) -> Self {
+        self.italic = true;
+        self
+    }
+
+    /// Builder: enable underlined (past tense — matches ratatui's `Modifier::UNDERLINED`).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    ///
+    /// let s = InlineStyle::new().underlined();
+    /// assert!(s.underlined);
+    /// ```
+    pub const fn underlined(mut self) -> Self {
+        self.underlined = true;
+        self
+    }
+
+    /// Builder: enable strikethrough (maps to `Modifier::CROSSED_OUT` in ratatui).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::InlineStyle;
+    ///
+    /// let s = InlineStyle::new().strikethrough();
+    /// assert!(s.strikethrough);
+    /// ```
+    pub const fn strikethrough(mut self) -> Self {
+        self.strikethrough = true;
+        self
+    }
+}
+
+impl StyledInline {
+    /// Wrap text with an explicit [`InlineStyle`]. The general-purpose
+    /// constructor for any combination of dimensions.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::{InlineStyle, StyledInline};
+    /// use ratatui::style::Color;
+    ///
+    /// let inline = StyledInline::styled(
+    ///     "840.16 ms",
+    ///     InlineStyle::new().fg(Color::Red).bold(),
+    /// );
+    /// // Renders as red AND bold.
+    /// # let _ = inline;
+    /// ```
+    pub fn styled(text: impl Into<String>, style: InlineStyle) -> Self {
+        Self::Styled {
+            text: text.into(),
+            style,
+        }
+    }
+
+    /// Single-dimension helper: bold text.
+    ///
+    /// Equivalent to `StyledInline::styled(text, InlineStyle::new().bold())`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledInline;
+    /// let inline = StyledInline::bold("emphasis");
+    /// # let _ = inline;
+    /// ```
+    pub fn bold(text: impl Into<String>) -> Self {
+        Self::styled(text, InlineStyle::new().bold())
+    }
+
+    /// Single-dimension helper: italic text.
+    ///
+    /// Equivalent to `StyledInline::styled(text, InlineStyle::new().italic())`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledInline;
+    /// let inline = StyledInline::italic("aside");
+    /// # let _ = inline;
+    /// ```
+    pub fn italic(text: impl Into<String>) -> Self {
+        Self::styled(text, InlineStyle::new().italic())
+    }
+
+    /// Single-dimension helper: underlined text.
+    ///
+    /// Equivalent to `StyledInline::styled(text, InlineStyle::new().underlined())`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledInline;
+    /// let inline = StyledInline::underlined("link");
+    /// # let _ = inline;
+    /// ```
+    pub fn underlined(text: impl Into<String>) -> Self {
+        Self::styled(text, InlineStyle::new().underlined())
+    }
+
+    /// Single-dimension helper: strikethrough text.
+    ///
+    /// Equivalent to `StyledInline::styled(text, InlineStyle::new().strikethrough())`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledInline;
+    /// let inline = StyledInline::strikethrough("deleted");
+    /// # let _ = inline;
+    /// ```
+    pub fn strikethrough(text: impl Into<String>) -> Self {
+        Self::styled(text, InlineStyle::new().strikethrough())
+    }
+
+    /// Single-dimension helper: text with foreground color.
+    ///
+    /// "Colored" idiomatically means foreground in TUI contexts (matches
+    /// `Span::styled(text, Style::default().fg(...))` ergonomics). For
+    /// bg-only or fg+bg cases, use [`StyledInline::styled`] with
+    /// `InlineStyle::new().bg(...)` or `.fg(...).bg(...)`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::styled_text::StyledInline;
+    /// use ratatui::style::Color;
+    ///
+    /// let inline = StyledInline::colored("warning", Color::Yellow);
+    /// # let _ = inline;
+    /// ```
+    pub fn colored(text: impl Into<String>, fg: Color) -> Self {
+        Self::styled(text, InlineStyle::new().fg(fg))
+    }
 }
 
 /// A builder for constructing rich text content.
@@ -158,7 +420,7 @@ impl StyledContent {
     /// let content = StyledContent::new()
     ///     .line(vec![
     ///         StyledInline::Plain("Hello, ".to_string()),
-    ///         StyledInline::Bold("world".to_string()),
+    ///         StyledInline::bold("world".to_string()),
     ///     ]);
     /// assert_eq!(content.len(), 1);
     /// ```
@@ -474,21 +736,10 @@ fn render_line(
 
 fn render_inline(inline: &StyledInline, theme: &Theme, base_style: Style) -> RatSpan<'static> {
     match inline {
-        // Code and Colored use theme-specific styles; everything else uses base_style
         StyledInline::Code(text) => RatSpan::styled(
             text.clone(),
             theme.info_style().add_modifier(Modifier::BOLD),
         ),
-        StyledInline::Colored { text, fg, bg } => {
-            let mut style = base_style;
-            if let Some(fg) = fg {
-                style = style.fg(*fg);
-            }
-            if let Some(bg) = bg {
-                style = style.bg(*bg);
-            }
-            RatSpan::styled(text.clone(), style)
-        }
         other => render_inline_styled(other, base_style),
     }
 }
@@ -497,30 +748,49 @@ fn render_inline(inline: &StyledInline, theme: &Theme, base_style: Style) -> Rat
 fn render_inline_styled(inline: &StyledInline, base_style: Style) -> RatSpan<'static> {
     match inline {
         StyledInline::Plain(text) => RatSpan::styled(text.clone(), base_style),
-        StyledInline::Bold(text) => {
-            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::BOLD))
-        }
-        StyledInline::Italic(text) => {
-            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::ITALIC))
-        }
-        StyledInline::Underline(text) => {
-            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::UNDERLINED))
-        }
-        StyledInline::Strikethrough(text) => {
-            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::CROSSED_OUT))
-        }
-        StyledInline::Colored { text, fg, bg } => {
-            let mut style = base_style;
-            if let Some(fg) = fg {
-                style = style.fg(*fg);
-            }
-            if let Some(bg) = bg {
-                style = style.bg(*bg);
-            }
-            RatSpan::styled(text.clone(), style)
-        }
         StyledInline::Code(text) => {
+            // Code keeps theme-coupled bold + info color in render_inline;
+            // here in render_inline_styled (theme-less path), apply bold only.
             RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::BOLD))
+        }
+        StyledInline::Styled { text, style } => {
+            let mut s = base_style;
+            if let Some(fg) = style.fg {
+                s = s.fg(fg);
+            }
+            if let Some(bg) = style.bg {
+                s = s.bg(bg);
+            }
+            if style.bold {
+                s = s.add_modifier(Modifier::BOLD);
+            }
+            if style.italic {
+                s = s.add_modifier(Modifier::ITALIC);
+            }
+            if style.underlined {
+                s = s.add_modifier(Modifier::UNDERLINED);
+            }
+            if style.strikethrough {
+                // ratatui names this modifier CROSSED_OUT, not STRIKETHROUGH.
+                s = s.add_modifier(Modifier::CROSSED_OUT);
+            }
+            RatSpan::styled(text.clone(), s)
         }
     }
+}
+
+#[cfg(test)]
+mod const_builder_test {
+    use super::InlineStyle;
+    use ratatui::style::Color;
+
+    // Compile-time verification: all 7 builder methods are const fn.
+    // If any method drops const, this const declaration fails to compile.
+    const _STYLE: InlineStyle = InlineStyle::new()
+        .fg(Color::Red)
+        .bg(Color::Black)
+        .bold()
+        .italic()
+        .underlined()
+        .strikethrough();
 }

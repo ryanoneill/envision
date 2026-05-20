@@ -46,7 +46,7 @@ fn test_content_text() {
 #[test]
 fn test_content_line_with_inlines() {
     let inlines = vec![
-        StyledInline::Bold("bold".to_string()),
+        StyledInline::bold("bold".to_string()),
         StyledInline::Plain(" text".to_string()),
     ];
     let content = StyledContent::new().line(inlines);
@@ -146,39 +146,47 @@ fn test_inline_plain() {
 
 #[test]
 fn test_inline_bold() {
-    let inline = StyledInline::Bold("bold".to_string());
-    assert!(matches!(inline, StyledInline::Bold(s) if s == "bold"));
+    let inline = StyledInline::bold("bold".to_string());
+    assert!(matches!(
+        inline,
+        StyledInline::Styled { ref text, style: InlineStyle { bold: true, .. } } if text == "bold"
+    ));
 }
 
 #[test]
 fn test_inline_italic() {
-    let inline = StyledInline::Italic("italic".to_string());
-    assert!(matches!(inline, StyledInline::Italic(s) if s == "italic"));
+    let inline = StyledInline::italic("italic".to_string());
+    assert!(matches!(
+        inline,
+        StyledInline::Styled { ref text, style: InlineStyle { italic: true, .. } } if text == "italic"
+    ));
 }
 
 #[test]
 fn test_inline_underline() {
-    let inline = StyledInline::Underline("underline".to_string());
-    assert!(matches!(inline, StyledInline::Underline(s) if s == "underline"));
+    let inline = StyledInline::underlined("underline".to_string());
+    assert!(matches!(
+        inline,
+        StyledInline::Styled { ref text, style: InlineStyle { underlined: true, .. } } if text == "underline"
+    ));
 }
 
 #[test]
 fn test_inline_strikethrough() {
-    let inline = StyledInline::Strikethrough("strike".to_string());
-    assert!(matches!(inline, StyledInline::Strikethrough(s) if s == "strike"));
+    let inline = StyledInline::strikethrough("strike".to_string());
+    assert!(matches!(
+        inline,
+        StyledInline::Styled { ref text, style: InlineStyle { strikethrough: true, .. } } if text == "strike"
+    ));
 }
 
 #[test]
 fn test_inline_colored() {
     use ratatui::style::Color;
-    let inline = StyledInline::Colored {
-        text: "colored".to_string(),
-        fg: Some(Color::Red),
-        bg: None,
-    };
+    let inline = StyledInline::colored("colored".to_string(), Color::Red);
     assert!(matches!(
         inline,
-        StyledInline::Colored { text, fg: Some(Color::Red), bg: None } if text == "colored"
+        StyledInline::Styled { ref text, style: InlineStyle { fg: Some(Color::Red), bg: None, .. } } if text == "colored"
     ));
 }
 
@@ -518,7 +526,7 @@ fn test_view_bullet_list() {
     let content = StyledContent::new().heading(2, "Items").bullet_list(vec![
         vec![StyledInline::Plain("First item".to_string())],
         vec![StyledInline::Plain("Second item".to_string())],
-        vec![StyledInline::Bold("Bold item".to_string())],
+        vec![StyledInline::bold("Bold item".to_string())],
     ]);
     let state = StyledTextState::new().with_content(content);
 
@@ -710,4 +718,251 @@ fn test_view_skips_border_when_chrome_owned_even_if_show_border_true() {
 
     let display = terminal.backend().to_string();
     insta::assert_snapshot!("view_chrome_owned_no_border", display);
+}
+
+// ========== InlineStyle + StyledInline Composable API Tests ==========
+
+#[test]
+fn test_inline_style_new_is_default() {
+    use crate::component::styled_text::InlineStyle;
+
+    // Pins the contract that ::new() and ::default() produce equivalent
+    // empty styles. Consumer code can use either interchangeably.
+    assert_eq!(InlineStyle::new(), InlineStyle::default());
+}
+
+#[test]
+fn test_inline_style_builder_chain() {
+    use crate::component::styled_text::InlineStyle;
+    use ratatui::style::Color;
+
+    // Each builder method sets exactly the field it names; other fields
+    // stay at their default. Pin via field-level assertions.
+    let style = InlineStyle::new().bold().fg(Color::Red).underlined();
+
+    assert!(style.bold);
+    assert_eq!(style.fg, Some(Color::Red));
+    assert!(style.underlined);
+
+    // Untouched fields remain default.
+    assert!(!style.italic);
+    assert!(!style.strikethrough);
+    assert_eq!(style.bg, None);
+}
+
+#[test]
+fn test_styled_inline_styled_pairs_text_and_style() {
+    use crate::component::styled_text::{InlineStyle, StyledInline};
+    use ratatui::style::Color;
+
+    let style = InlineStyle::new().fg(Color::Magenta).bold();
+    let inline = StyledInline::styled("hello", style);
+
+    // The general-purpose constructor pairs text with style verbatim.
+    match inline {
+        StyledInline::Styled { text, style: s } => {
+            assert_eq!(text, "hello");
+            assert_eq!(s, style);
+        }
+        _ => panic!("expected Styled variant, got: {inline:?}"),
+    }
+}
+
+#[test]
+fn test_styled_inline_leaf_helpers_match_builder() {
+    use crate::component::styled_text::{InlineStyle, StyledInline};
+    use ratatui::style::Color;
+
+    // Each leaf helper must produce the same StyledInline value as
+    // StyledInline::styled(t, InlineStyle::new().<dim>()). Pins the
+    // helper-vs-builder contract so refactors don't drift.
+    assert_eq!(
+        StyledInline::bold("t"),
+        StyledInline::styled("t", InlineStyle::new().bold()),
+    );
+    assert_eq!(
+        StyledInline::italic("t"),
+        StyledInline::styled("t", InlineStyle::new().italic()),
+    );
+    assert_eq!(
+        StyledInline::underlined("t"),
+        StyledInline::styled("t", InlineStyle::new().underlined()),
+    );
+    assert_eq!(
+        StyledInline::strikethrough("t"),
+        StyledInline::styled("t", InlineStyle::new().strikethrough()),
+    );
+    assert_eq!(
+        StyledInline::colored("t", Color::Red),
+        StyledInline::styled("t", InlineStyle::new().fg(Color::Red)),
+    );
+}
+
+// ========== StyledInline Render-Path Tests ==========
+
+#[test]
+fn snapshot_styled_inline_bold_and_colored_combined() {
+    use crate::component::styled_text::{InlineStyle, StyledInline};
+    use crate::render::styled_line;
+    use ratatui::style::Color;
+
+    // THE LOAD-BEARING G6 PAYOFF PIN.
+    //
+    // The bold+colored combo specifically because it's the user-visible
+    // payoff for G6: leadline's build_summary_inlines (app.rs:412-455)
+    // emits 5 value segments (iconnx/ort/ratio/delta/iters) that need
+    // bold + severity-color in a SINGLE inline run. Pre-G6, Bold(t)
+    // had no color field and Colored {..} had no bold field, so the
+    // bold half was dropped. Post-G6, this test asserts the combo
+    // lands — both \x1b[31m (red) AND \x1b[1m (BOLD) appear on the
+    // same Span in the rendered ANSI output.
+    //
+    // If either escape goes missing, build_summary_inlines reads flat
+    // again — the user loses the magnitude-jump weight contrast that
+    // makes the per-op summary banner readable at a glance.
+    let inlines = vec![StyledInline::styled(
+        "840.16 ms",
+        InlineStyle::new().fg(Color::Red).bold(),
+    )];
+
+    let (mut terminal, theme) = setup_render(20, 1);
+    terminal
+        .draw(|frame| {
+            styled_line(frame, frame.area(), &inlines, &theme);
+        })
+        .unwrap();
+
+    let plain = terminal.backend().to_string();
+    let ansi = terminal.backend().to_ansi();
+
+    assert!(
+        ansi.contains("\x1b[31m"),
+        "expected red (31m) ANSI fg for fg(Red), got:\n{ansi}",
+    );
+    assert!(
+        ansi.contains("\x1b[1m"),
+        "expected BOLD (1m) ANSI modifier for bold(), got:\n{ansi}",
+    );
+
+    insta::assert_snapshot!(plain);
+}
+
+#[test]
+fn snapshot_styled_inline_full_dimension_combo() {
+    use crate::component::styled_text::{InlineStyle, StyledInline};
+    use crate::render::styled_line;
+    use ratatui::style::Color;
+
+    // Render every dimension at once. Pins the full composability
+    // surface: 6 dimensions in a single inline (bold + italic +
+    // underlined + strikethrough + fg + bg).
+    let inlines = vec![StyledInline::styled(
+        "ALL",
+        InlineStyle::new()
+            .bold()
+            .italic()
+            .underlined()
+            .strikethrough()
+            .fg(Color::Red)
+            .bg(Color::Black),
+    )];
+
+    let (mut terminal, theme) = setup_render(20, 1);
+    terminal
+        .draw(|frame| {
+            styled_line(frame, frame.area(), &inlines, &theme);
+        })
+        .unwrap();
+
+    let ansi = terminal.backend().to_ansi();
+
+    // All 6 SGR codes appear. CaptureBackend combines modifier codes into a
+    // single CSI sequence (e.g. \x1b[1;3;4;9m) while emitting color codes
+    // separately. The helper below checks for a code appearing either
+    // standalone (\x1b[Xm) or combined (\x1b[...;X;...m / \x1b[X;...m /
+    // \x1b[...;Xm) so assertions are robust against either format.
+    fn has_sgr(ansi: &str, code: &str) -> bool {
+        // Matches: \x1b[ ... code ... m where code is preceded by [ or ; and
+        // followed by ; or m.
+        let pat_standalone = format!("\x1b[{}m", code);
+        let pat_prefix = format!("\x1b[{};", code);
+        let pat_mid = format!(";{};", code);
+        let pat_suffix = format!(";{}m", code);
+        ansi.contains(&pat_standalone)
+            || ansi.contains(&pat_prefix)
+            || ansi.contains(&pat_mid)
+            || ansi.contains(&pat_suffix)
+    }
+
+    // - 1   bold
+    // - 3   italic
+    // - 4   underlined
+    // - 9   strikethrough (ratatui Modifier::CROSSED_OUT)
+    // - 31  red foreground
+    // - 40  black background
+    assert!(has_sgr(&ansi, "1"), "expected bold (1), got:\n{ansi}");
+    assert!(has_sgr(&ansi, "3"), "expected italic (3), got:\n{ansi}");
+    assert!(has_sgr(&ansi, "4"), "expected underlined (4), got:\n{ansi}");
+    assert!(
+        has_sgr(&ansi, "9"),
+        "expected strikethrough/crossed_out (9), got:\n{ansi}"
+    );
+    assert!(has_sgr(&ansi, "31"), "expected red fg (31), got:\n{ansi}");
+    assert!(has_sgr(&ansi, "40"), "expected black bg (40), got:\n{ansi}");
+
+    let plain = terminal.backend().to_string();
+    insta::assert_snapshot!(plain);
+}
+
+#[test]
+fn test_inline_style_default_no_modifiers_applied() {
+    use crate::component::styled_text::{InlineStyle, StyledInline};
+    use crate::render::styled_line;
+
+    // Rendering StyledInline::styled(t, InlineStyle::default()) should
+    // produce no ANSI modifiers — equivalent to Plain(t) at the
+    // rendering level.
+    let styled_default = vec![StyledInline::styled("text", InlineStyle::default())];
+
+    let (mut term_styled, theme) = setup_render(20, 1);
+    term_styled
+        .draw(|frame| {
+            styled_line(frame, frame.area(), &styled_default, &theme);
+        })
+        .unwrap();
+    let styled_ansi = term_styled.backend().to_ansi();
+
+    // No bold/italic/underlined/strikethrough escapes — empty InlineStyle
+    // adds no modifiers.
+    for escape in ["\x1b[1m", "\x1b[3m", "\x1b[4m", "\x1b[9m"] {
+        assert!(
+            !styled_ansi.contains(escape),
+            "Styled(default) should not emit modifier {escape}, got:\n{styled_ansi}",
+        );
+    }
+}
+
+#[test]
+fn snapshot_styled_inline_plain_and_code_unchanged_postmigration() {
+    use crate::component::styled_text::StyledInline;
+    use crate::render::styled_line;
+
+    // Plain and Code are the two variants that survive G6 unchanged.
+    // Their rendering must be byte-identical post-migration — pin via
+    // snapshot. If either snapshot drifts, the G6 enum reshape
+    // inadvertently altered the surviving variants.
+    let inlines = vec![
+        StyledInline::Plain("plain text".into()),
+        StyledInline::Code("code text".into()),
+    ];
+
+    let (mut terminal, theme) = setup_render(40, 1);
+    terminal
+        .draw(|frame| {
+            styled_line(frame, frame.area(), &inlines, &theme);
+        })
+        .unwrap();
+
+    let plain = terminal.backend().to_string();
+    insta::assert_snapshot!(plain);
 }

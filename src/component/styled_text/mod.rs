@@ -21,7 +21,7 @@
 //!     .heading(1, "Welcome")
 //!     .text("This is a styled paragraph.")
 //!     .bullet_list(vec![
-//!         vec![StyledInline::Bold("Important".to_string())],
+//!         vec![StyledInline::bold("Important".to_string())],
 //!         vec![StyledInline::Plain("Normal item".to_string())],
 //!     ]);
 //!
@@ -34,7 +34,7 @@
 
 pub mod content;
 
-pub use content::{StyledBlock, StyledContent, StyledInline};
+pub use content::{InlineStyle, StyledBlock, StyledContent, StyledInline};
 
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};

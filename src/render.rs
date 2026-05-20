@@ -20,7 +20,7 @@
 //! fn render(frame: &mut ratatui::Frame, area: Rect, theme: &Theme) {
 //!     let inlines = vec![
 //!         StyledInline::Plain("Hello, ".to_string()),
-//!         StyledInline::Bold("world".to_string()),
+//!         StyledInline::bold("world".to_string()),
 //!     ];
 //!     styled_line(frame, area, &inlines, theme);
 //! }
@@ -54,7 +54,7 @@ use crate::theme::Theme;
 /// fn render(frame: &mut ratatui::Frame, area: Rect, theme: &Theme) {
 ///     let inlines = vec![
 ///         StyledInline::Plain("status: ".to_string()),
-///         StyledInline::Bold("ready".to_string()),
+///         StyledInline::bold("ready".to_string()),
 ///     ];
 ///     styled_line(frame, area, &inlines, theme);
 /// }
@@ -84,7 +84,7 @@ mod tests {
         // Plain + Bold + Colored — all three appear in the rendered text in order.
         let inlines = vec![
             StyledInline::Plain("hello ".to_string()),
-            StyledInline::Bold("bold".to_string()),
+            StyledInline::bold("bold".to_string()),
             StyledInline::Plain(" world".to_string()),
         ];
 
@@ -101,12 +101,8 @@ mod tests {
 
     #[test]
     fn test_styled_line_applies_theme_color() {
-        // StyledInline::Colored carries an explicit fg color. ANSI red = \x1b[31m.
-        let inlines = vec![StyledInline::Colored {
-            text: "err".to_string(),
-            fg: Some(Color::Red),
-            bg: None,
-        }];
+        // StyledInline::colored carries an explicit fg color. ANSI red = \x1b[31m.
+        let inlines = vec![StyledInline::colored("err".to_string(), Color::Red)];
 
         let (mut terminal, theme) = setup_render(20, 1);
         terminal

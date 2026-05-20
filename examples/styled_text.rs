@@ -50,29 +50,29 @@ impl App for StyledTextApp {
             .heading(2, "Features")
             .bullet_list(vec![
                 vec![
-                    styled_text::StyledInline::Bold("Component System".to_string()),
+                    styled_text::StyledInline::bold("Component System".to_string()),
                     styled_text::StyledInline::Plain(" - 25+ composable components".to_string()),
                 ],
                 vec![
-                    styled_text::StyledInline::Bold("Theme Support".to_string()),
+                    styled_text::StyledInline::bold("Theme Support".to_string()),
                     styled_text::StyledInline::Plain(
                         " - Consistent styling across components".to_string(),
                     ),
                 ],
                 vec![
-                    styled_text::StyledInline::Bold("Keyboard Navigation".to_string()),
+                    styled_text::StyledInline::bold("Keyboard Navigation".to_string()),
                     styled_text::StyledInline::Plain(
                         " - Full keyboard-driven interaction".to_string(),
                     ),
                 ],
                 vec![
-                    styled_text::StyledInline::Bold("Virtual Terminal".to_string()),
+                    styled_text::StyledInline::bold("Virtual Terminal".to_string()),
                     styled_text::StyledInline::Plain(
                         " - Headless testing without a real terminal".to_string(),
                     ),
                 ],
                 vec![
-                    styled_text::StyledInline::Bold("Async Support".to_string()),
+                    styled_text::StyledInline::bold("Async Support".to_string()),
                     styled_text::StyledInline::Plain(
                         " - Built on tokio for async operations".to_string(),
                     ),
