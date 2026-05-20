@@ -903,7 +903,10 @@ fn snapshot_styled_inline_full_dimension_combo() {
     assert!(has_sgr(&ansi, "1"), "expected bold (1), got:\n{ansi}");
     assert!(has_sgr(&ansi, "3"), "expected italic (3), got:\n{ansi}");
     assert!(has_sgr(&ansi, "4"), "expected underlined (4), got:\n{ansi}");
-    assert!(has_sgr(&ansi, "9"), "expected strikethrough/crossed_out (9), got:\n{ansi}");
+    assert!(
+        has_sgr(&ansi, "9"),
+        "expected strikethrough/crossed_out (9), got:\n{ansi}"
+    );
     assert!(has_sgr(&ansi, "31"), "expected red fg (31), got:\n{ansi}");
     assert!(has_sgr(&ansi, "40"), "expected black bg (40), got:\n{ansi}");
 
