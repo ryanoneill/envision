@@ -381,7 +381,7 @@ impl StyledContent {
     /// let content = StyledContent::new()
     ///     .line(vec![
     ///         StyledInline::Plain("Hello, ".to_string()),
-    ///         StyledInline::Bold("world".to_string()),
+    ///         StyledInline::bold("world".to_string()),
     ///     ]);
     /// assert_eq!(content.len(), 1);
     /// ```

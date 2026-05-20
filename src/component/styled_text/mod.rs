@@ -21,7 +21,7 @@
 //!     .heading(1, "Welcome")
 //!     .text("This is a styled paragraph.")
 //!     .bullet_list(vec![
-//!         vec![StyledInline::Bold("Important".to_string())],
+//!         vec![StyledInline::bold("Important".to_string())],
 //!         vec![StyledInline::Plain("Normal item".to_string())],
 //!     ]);
 //!

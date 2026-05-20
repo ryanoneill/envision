@@ -121,16 +121,16 @@ fn build_rich_text_content() -> styled_text::StyledContent {
         .line(vec![styled_text::StyledInline::Plain(
             "This is Plain text — the default inline style.".to_string(),
         )])
-        .line(vec![styled_text::StyledInline::Bold(
+        .line(vec![styled_text::StyledInline::bold(
             "This is Bold text — for emphasis and headings.".to_string(),
         )])
-        .line(vec![styled_text::StyledInline::Italic(
+        .line(vec![styled_text::StyledInline::italic(
             "This is Italic text — for subtle emphasis or titles.".to_string(),
         )])
-        .line(vec![styled_text::StyledInline::Underline(
+        .line(vec![styled_text::StyledInline::underlined(
             "This is Underline text — for links or key terms.".to_string(),
         )])
-        .line(vec![styled_text::StyledInline::Strikethrough(
+        .line(vec![styled_text::StyledInline::strikethrough(
             "This is Strikethrough text — for deprecated or removed items.".to_string(),
         )])
         .line(vec![styled_text::StyledInline::Code(
@@ -139,63 +139,34 @@ fn build_rich_text_content() -> styled_text::StyledContent {
         .blank_line()
         .heading(2, "Colored Inline Text")
         .line(vec![
-            styled_text::StyledInline::Colored {
-                text: "Red foreground".to_string(),
-                fg: Some(Color::Red),
-                bg: None,
-            },
+            styled_text::StyledInline::colored("Red foreground".to_string(), Color::Red),
             styled_text::StyledInline::Plain(" | ".to_string()),
-            styled_text::StyledInline::Colored {
-                text: "Green foreground".to_string(),
-                fg: Some(Color::Green),
-                bg: None,
-            },
+            styled_text::StyledInline::colored("Green foreground".to_string(), Color::Green),
             styled_text::StyledInline::Plain(" | ".to_string()),
-            styled_text::StyledInline::Colored {
-                text: "Blue foreground".to_string(),
-                fg: Some(Color::Blue),
-                bg: None,
-            },
+            styled_text::StyledInline::colored("Blue foreground".to_string(), Color::Blue),
         ])
         .line(vec![
-            styled_text::StyledInline::Colored {
-                text: "Cyan foreground".to_string(),
-                fg: Some(Color::Cyan),
-                bg: None,
-            },
+            styled_text::StyledInline::colored("Cyan foreground".to_string(), Color::Cyan),
             styled_text::StyledInline::Plain(" | ".to_string()),
-            styled_text::StyledInline::Colored {
-                text: "Magenta foreground".to_string(),
-                fg: Some(Color::Magenta),
-                bg: None,
-            },
+            styled_text::StyledInline::colored("Magenta foreground".to_string(), Color::Magenta),
             styled_text::StyledInline::Plain(" | ".to_string()),
-            styled_text::StyledInline::Colored {
-                text: "Yellow foreground".to_string(),
-                fg: Some(Color::Yellow),
-                bg: None,
-            },
+            styled_text::StyledInline::colored("Yellow foreground".to_string(), Color::Yellow),
         ])
-        .line(vec![styled_text::StyledInline::Colored {
-            text: " Highlighted text with background ".to_string(),
-            fg: Some(Color::White),
-            bg: Some(Color::Blue),
-        }])
+        .line(vec![styled_text::StyledInline::styled(
+            " Highlighted text with background ".to_string(),
+            styled_text::InlineStyle::new().fg(Color::White).bg(Color::Blue),
+        )])
         .blank_line()
         .heading(2, "Mixed Inline Styles")
         .line(vec![
             styled_text::StyledInline::Plain("You can ".to_string()),
-            styled_text::StyledInline::Bold("mix".to_string()),
+            styled_text::StyledInline::bold("mix".to_string()),
             styled_text::StyledInline::Plain(" and ".to_string()),
-            styled_text::StyledInline::Italic("match".to_string()),
+            styled_text::StyledInline::italic("match".to_string()),
             styled_text::StyledInline::Plain(" different styles within a ".to_string()),
             styled_text::StyledInline::Code("single paragraph".to_string()),
             styled_text::StyledInline::Plain(". Here's ".to_string()),
-            styled_text::StyledInline::Colored {
-                text: "colored".to_string(),
-                fg: Some(Color::Cyan),
-                bg: None,
-            },
+            styled_text::StyledInline::colored("colored".to_string(), Color::Cyan),
             styled_text::StyledInline::Plain(" text too.".to_string()),
         ])
         .blank_line()
@@ -203,11 +174,11 @@ fn build_rich_text_content() -> styled_text::StyledContent {
         .text("Bullet lists group related items:")
         .bullet_list(vec![
             vec![
-                styled_text::StyledInline::Bold("First item".to_string()),
+                styled_text::StyledInline::bold("First item".to_string()),
                 styled_text::StyledInline::Plain(" — with bold label".to_string()),
             ],
             vec![
-                styled_text::StyledInline::Italic("Second item".to_string()),
+                styled_text::StyledInline::italic("Second item".to_string()),
                 styled_text::StyledInline::Plain(" — with italic label".to_string()),
             ],
             vec![styled_text::StyledInline::Plain(

@@ -46,7 +46,7 @@ fn test_content_text() {
 #[test]
 fn test_content_line_with_inlines() {
     let inlines = vec![
-        StyledInline::Bold("bold".to_string()),
+        StyledInline::bold("bold".to_string()),
         StyledInline::Plain(" text".to_string()),
     ];
     let content = StyledContent::new().line(inlines);
@@ -146,39 +146,47 @@ fn test_inline_plain() {
 
 #[test]
 fn test_inline_bold() {
-    let inline = StyledInline::Bold("bold".to_string());
-    assert!(matches!(inline, StyledInline::Bold(s) if s == "bold"));
+    let inline = StyledInline::bold("bold".to_string());
+    assert!(matches!(
+        inline,
+        StyledInline::Styled { ref text, style: InlineStyle { bold: true, .. } } if text == "bold"
+    ));
 }
 
 #[test]
 fn test_inline_italic() {
-    let inline = StyledInline::Italic("italic".to_string());
-    assert!(matches!(inline, StyledInline::Italic(s) if s == "italic"));
+    let inline = StyledInline::italic("italic".to_string());
+    assert!(matches!(
+        inline,
+        StyledInline::Styled { ref text, style: InlineStyle { italic: true, .. } } if text == "italic"
+    ));
 }
 
 #[test]
 fn test_inline_underline() {
-    let inline = StyledInline::Underline("underline".to_string());
-    assert!(matches!(inline, StyledInline::Underline(s) if s == "underline"));
+    let inline = StyledInline::underlined("underline".to_string());
+    assert!(matches!(
+        inline,
+        StyledInline::Styled { ref text, style: InlineStyle { underlined: true, .. } } if text == "underline"
+    ));
 }
 
 #[test]
 fn test_inline_strikethrough() {
-    let inline = StyledInline::Strikethrough("strike".to_string());
-    assert!(matches!(inline, StyledInline::Strikethrough(s) if s == "strike"));
+    let inline = StyledInline::strikethrough("strike".to_string());
+    assert!(matches!(
+        inline,
+        StyledInline::Styled { ref text, style: InlineStyle { strikethrough: true, .. } } if text == "strike"
+    ));
 }
 
 #[test]
 fn test_inline_colored() {
     use ratatui::style::Color;
-    let inline = StyledInline::Colored {
-        text: "colored".to_string(),
-        fg: Some(Color::Red),
-        bg: None,
-    };
+    let inline = StyledInline::colored("colored".to_string(), Color::Red);
     assert!(matches!(
         inline,
-        StyledInline::Colored { text, fg: Some(Color::Red), bg: None } if text == "colored"
+        StyledInline::Styled { ref text, style: InlineStyle { fg: Some(Color::Red), bg: None, .. } } if text == "colored"
     ));
 }
 
@@ -518,7 +526,7 @@ fn test_view_bullet_list() {
     let content = StyledContent::new().heading(2, "Items").bullet_list(vec![
         vec![StyledInline::Plain("First item".to_string())],
         vec![StyledInline::Plain("Second item".to_string())],
-        vec![StyledInline::Bold("Bold item".to_string())],
+        vec![StyledInline::bold("Bold item".to_string())],
     ]);
     let state = StyledTextState::new().with_content(content);
 
