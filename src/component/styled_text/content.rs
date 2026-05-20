@@ -49,24 +49,7 @@ pub enum StyledBlock {
 pub enum StyledInline {
     /// Plain unstyled text.
     Plain(String),
-    /// Bold text.
-    Bold(String),
-    /// Italic text.
-    Italic(String),
-    /// Underlined text.
-    Underline(String),
-    /// Strikethrough text.
-    Strikethrough(String),
-    /// Text with explicit foreground and/or background colors.
-    Colored {
-        /// The text content.
-        text: String,
-        /// Optional foreground color.
-        fg: Option<Color>,
-        /// Optional background color.
-        bg: Option<Color>,
-    },
-    /// Inline code (displayed with distinct styling).
+    /// Inline code (renders with theme-coupled styling — bold info color).
     Code(String),
     /// Styled run combining color, modifiers, and optional background.
     ///
@@ -697,21 +680,10 @@ fn render_line(
 
 fn render_inline(inline: &StyledInline, theme: &Theme, base_style: Style) -> RatSpan<'static> {
     match inline {
-        // Code and Colored use theme-specific styles; everything else uses base_style
         StyledInline::Code(text) => RatSpan::styled(
             text.clone(),
             theme.info_style().add_modifier(Modifier::BOLD),
         ),
-        StyledInline::Colored { text, fg, bg } => {
-            let mut style = base_style;
-            if let Some(fg) = fg {
-                style = style.fg(*fg);
-            }
-            if let Some(bg) = bg {
-                style = style.bg(*bg);
-            }
-            RatSpan::styled(text.clone(), style)
-        }
         other => render_inline_styled(other, base_style),
     }
 }
@@ -720,29 +692,9 @@ fn render_inline(inline: &StyledInline, theme: &Theme, base_style: Style) -> Rat
 fn render_inline_styled(inline: &StyledInline, base_style: Style) -> RatSpan<'static> {
     match inline {
         StyledInline::Plain(text) => RatSpan::styled(text.clone(), base_style),
-        StyledInline::Bold(text) => {
-            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::BOLD))
-        }
-        StyledInline::Italic(text) => {
-            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::ITALIC))
-        }
-        StyledInline::Underline(text) => {
-            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::UNDERLINED))
-        }
-        StyledInline::Strikethrough(text) => {
-            RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::CROSSED_OUT))
-        }
-        StyledInline::Colored { text, fg, bg } => {
-            let mut style = base_style;
-            if let Some(fg) = fg {
-                style = style.fg(*fg);
-            }
-            if let Some(bg) = bg {
-                style = style.bg(*bg);
-            }
-            RatSpan::styled(text.clone(), style)
-        }
         StyledInline::Code(text) => {
+            // Code keeps theme-coupled bold + info color in render_inline;
+            // here in render_inline_styled (theme-less path), apply bold only.
             RatSpan::styled(text.clone(), base_style.add_modifier(Modifier::BOLD))
         }
         StyledInline::Styled { text, style } => {
