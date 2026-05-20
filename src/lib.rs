@@ -455,6 +455,10 @@ pub mod prelude {
     // Scroll infrastructure
     pub use crate::scroll::ScrollState;
 
+    // Render primitives (gated like the source module)
+    #[cfg(feature = "display-components")]
+    pub use crate::render::styled_line;
+
     // All component types (the primary user-facing API)
     pub use crate::component::*;
 

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — Chrome ownership protocol (G2 + D2 + D11)
 
+### Prelude: re-export `styled_line`
+
+`envision::prelude::*` now re-exports `styled_line` (gated behind
+`display-components` to match the source module). Consumers using the
+prelude get `styled_line` without an explicit `use envision::render::styled_line;`.
+Follow-up to D5 + D14 (PR #482) surfaced by leadline's migration —
+`render_scrollbar` reached the prelude via `pub use crate::component::*`
+but the new top-level `render` module didn't.
+
 ### Chrome ownership protocol (G2 + D2 + D11)
 
 `RenderContext::chrome_owned: bool` — new public field. `true` signals to
