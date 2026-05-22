@@ -55,6 +55,7 @@
 //! ```
 
 mod item;
+mod per_side_separators;
 pub use item::*;
 
 use ratatui::prelude::*;
@@ -186,8 +187,20 @@ pub struct StatusBarState {
     center: Vec<StatusBarItem>,
     /// Items aligned to the right.
     right: Vec<StatusBarItem>,
-    /// The separator character to use between items.
+    /// The separator character to use between items (global default).
     separator: String,
+    /// Per-side override for the left section. When `Some`, takes
+    /// precedence over `separator` for left-section rendering.
+    #[cfg_attr(feature = "serialization", serde(default))]
+    left_separator: Option<String>,
+    /// Per-side override for the center section. When `Some`, takes
+    /// precedence over `separator` for center-section rendering.
+    #[cfg_attr(feature = "serialization", serde(default))]
+    center_separator: Option<String>,
+    /// Per-side override for the right section. When `Some`, takes
+    /// precedence over `separator` for right-section rendering.
+    #[cfg_attr(feature = "serialization", serde(default))]
+    right_separator: Option<String>,
     /// Background style for the entire bar.
     background: Color,
     /// Whether the component is disabled.
@@ -215,6 +228,9 @@ impl Default for StatusBarState {
             center: Vec::new(),
             right: Vec::new(),
             separator: " | ".to_string(),
+            left_separator: None,
+            center_separator: None,
+            right_separator: None,
             background: Color::DarkGray,
             disabled: false,
         }
@@ -847,9 +863,21 @@ impl Component for StatusBar {
         let bg_style = Style::default().bg(state.background);
 
         // Calculate section widths
-        let left_spans = Self::render_section(&state.left, &state.separator, ctx.theme);
-        let center_spans = Self::render_section(&state.center, &state.separator, ctx.theme);
-        let right_spans = Self::render_section(&state.right, &state.separator, ctx.theme);
+        let left_sep = state
+            .left_separator
+            .as_deref()
+            .unwrap_or(&state.separator);
+        let center_sep = state
+            .center_separator
+            .as_deref()
+            .unwrap_or(&state.separator);
+        let right_sep = state
+            .right_separator
+            .as_deref()
+            .unwrap_or(&state.separator);
+        let left_spans = Self::render_section(&state.left, left_sep, ctx.theme);
+        let center_spans = Self::render_section(&state.center, center_sep, ctx.theme);
+        let right_spans = Self::render_section(&state.right, right_sep, ctx.theme);
 
         // Calculate the width of each section
         let left_width: usize = left_spans.iter().map(|s| s.content.len()).sum();
