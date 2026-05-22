@@ -183,3 +183,79 @@ fn snapshot_status_bar_four_stop_severity_ramp() {
 
     insta::assert_snapshot!(plain);
 }
+
+#[test]
+fn snapshot_status_bar_per_side_separators() {
+    // RENDER-PATH PIN: distinct per-side separators visible in the rendered
+    // output. Pins that the per-side fallback resolution at mod.rs:850-852
+    // correctly routes each section's separator through render_section.
+    //
+    // leadline's actual transformation (the load-bearing motivation):
+    // global " · " separator on left items, but " " (space) between
+    // right-section slowdown segments. Pre-D12, the right section
+    // inherited the global " · " — visually weird. Post-D12, the
+    // right-section override lands.
+    let mut state = StatusBarState::with_separator(" · ").with_right_separator(" ");
+    state.push_left(StatusBarItem::new("L1"));
+    state.push_left(StatusBarItem::new("L2"));
+    state.push_right(StatusBarItem::new("R1"));
+    state.push_right(StatusBarItem::new("R2"));
+
+    let (mut terminal, theme) = test_utils::setup_render(40, 1);
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
+        })
+        .unwrap();
+
+    let plain = terminal.backend().to_string();
+
+    // Left section uses global " · ": "L1 · L2" appears.
+    assert!(
+        plain.contains("L1 · L2"),
+        "expected left section to use global ' · ' separator, got:\n{plain}",
+    );
+
+    // Right section uses override " ": "R1 R2" appears (single space
+    // between, not " · ").
+    assert!(
+        plain.contains("R1 R2"),
+        "expected right section to use override ' ' separator, got:\n{plain}",
+    );
+
+    insta::assert_snapshot!(plain);
+}
+
+#[test]
+fn snapshot_status_bar_per_side_separators_byte_identical_when_unset() {
+    // REGRESSION PIN: when no per-side overrides are set, rendering is
+    // byte-identical to pre-D12 behavior. Consumers who don't opt in to
+    // per-side overrides see zero behavior change.
+    let mut state = StatusBarState::with_separator(" · ");
+    state.push_left(StatusBarItem::new("L1"));
+    state.push_left(StatusBarItem::new("L2"));
+    state.push_right(StatusBarItem::new("R1"));
+    state.push_right(StatusBarItem::new("R2"));
+
+    let (mut terminal, theme) = test_utils::setup_render(40, 1);
+    terminal
+        .draw(|frame| {
+            StatusBar::view(&state, &mut RenderContext::new(frame, frame.area(), &theme));
+        })
+        .unwrap();
+
+    let plain = terminal.backend().to_string();
+
+    // Both sections use the global " · " separator (no per-side override
+    // set, so fallback to global applies everywhere).
+    assert!(
+        plain.contains("L1 · L2"),
+        "expected left section to use global ' · ' separator, got:\n{plain}",
+    );
+    assert!(
+        plain.contains("R1 · R2"),
+        "expected right section to also use global ' · ' separator (no override set), got:\n{plain}",
+    );
+
+    insta::assert_snapshot!(plain);
+}

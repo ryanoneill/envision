@@ -545,3 +545,77 @@ fn test_section_copy() {
     assert_eq!(section, Section::Right);
     assert_eq!(copied, Section::Right);
 }
+
+// Per-side separator tests
+
+#[test]
+fn test_default_per_side_separators_none() {
+    // Defaults: all three per-side overrides are None.
+    let state = StatusBarState::default();
+    assert_eq!(state.left_separator(), None);
+    assert_eq!(state.center_separator(), None);
+    assert_eq!(state.right_separator(), None);
+    // Global separator unchanged from existing default.
+    assert_eq!(state.separator(), " | ");
+}
+
+#[test]
+fn test_with_left_separator_sets_field() {
+    let state = StatusBarState::new().with_left_separator(" | ");
+    assert_eq!(state.left_separator(), Some(" | "));
+    // Other per-side overrides remain None.
+    assert_eq!(state.center_separator(), None);
+    assert_eq!(state.right_separator(), None);
+    // Global separator unchanged.
+    assert_eq!(state.separator(), " | ");
+}
+
+#[test]
+fn test_with_center_separator_sets_field() {
+    let state = StatusBarState::new().with_center_separator(" :: ");
+    assert_eq!(state.center_separator(), Some(" :: "));
+    // Other per-side overrides remain None.
+    assert_eq!(state.left_separator(), None);
+    assert_eq!(state.right_separator(), None);
+}
+
+#[test]
+fn test_with_right_separator_sets_field() {
+    let state = StatusBarState::new().with_right_separator(" ");
+    assert_eq!(state.right_separator(), Some(" "));
+    // Other per-side overrides remain None.
+    assert_eq!(state.left_separator(), None);
+    assert_eq!(state.center_separator(), None);
+}
+
+#[test]
+fn test_with_separator_then_per_side_override() {
+    // LAYERED SEMANTICS PIN: per-side override doesn't clear the global.
+    // Chain with_separator(...) then with_right_separator(...) — both
+    // fields populated; render-time precedence resolves per section.
+    let state = StatusBarState::with_separator(" · ").with_right_separator(" ");
+
+    // Global separator unchanged by the per-side override.
+    assert_eq!(state.separator(), " · ");
+    // Right-side override is set.
+    assert_eq!(state.right_separator(), Some(" "));
+    // Other per-side overrides remain None.
+    assert_eq!(state.left_separator(), None);
+    assert_eq!(state.center_separator(), None);
+}
+
+#[test]
+fn test_per_side_separator_independent_setters() {
+    // Setting all three per-side overrides leaves the global unchanged;
+    // each per-side field is independent of the others.
+    let state = StatusBarState::with_separator(" · ")
+        .with_left_separator(" | ")
+        .with_center_separator(" :: ")
+        .with_right_separator(" ");
+
+    assert_eq!(state.left_separator(), Some(" | "));
+    assert_eq!(state.center_separator(), Some(" :: "));
+    assert_eq!(state.right_separator(), Some(" "));
+    // Global separator unchanged.
+    assert_eq!(state.separator(), " · ");
+}
