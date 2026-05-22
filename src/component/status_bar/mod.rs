@@ -863,18 +863,12 @@ impl Component for StatusBar {
         let bg_style = Style::default().bg(state.background);
 
         // Calculate section widths
-        let left_sep = state
-            .left_separator
-            .as_deref()
-            .unwrap_or(&state.separator);
+        let left_sep = state.left_separator.as_deref().unwrap_or(&state.separator);
         let center_sep = state
             .center_separator
             .as_deref()
             .unwrap_or(&state.separator);
-        let right_sep = state
-            .right_separator
-            .as_deref()
-            .unwrap_or(&state.separator);
+        let right_sep = state.right_separator.as_deref().unwrap_or(&state.separator);
         let left_spans = Self::render_section(&state.left, left_sep, ctx.theme);
         let center_spans = Self::render_section(&state.center, center_sep, ctx.theme);
         let right_spans = Self::render_section(&state.right, right_sep, ctx.theme);
