@@ -76,13 +76,18 @@ Spec PR #489, plan PR #490, implementation PR #491 (`5c44ab4`). The 7-variant `S
 - **Migration**: All internal envision references migrated mechanically across 6 files (`examples/styling_showcase.rs`, `src/component/styled_text/tests.rs`, `src/component/styled_text/content.rs`, `src/render.rs`, `examples/styled_text.rs`, `src/component/styled_text/mod.rs`). 3-phase additive-first shape (Phase 1 adds surface alongside leaves; Phase 2 mechanical site migration; Phase 3 deletes 5 leaf variants) gives clean bisect granularity. Phase 3's compiler-enforced completeness + post-merge `grep -rn 'StyledInline::Bold\|Italic\|Underline\|Strikethrough\|Colored'` returning 0 matches both confirm migration is complete. Insta snapshots byte-identical pre/post — single-dimension cases route through the new `Styled` arm with equivalent rendering semantics.
 - **Top-line payoff — bold-on-banner-values**: leadline's per-op summary banner at `app.rs:412-455` (`build_summary_inlines`) renders 5 value segments (iconnx/ort/ratio/delta/iters) that need bold + severity-color in a single inline run. Pre-G6, the bold half dropped (`Bold(t)` had no color field; `Colored {..}` had no bold field). Post-G6, `StyledInline::styled(value, InlineStyle::new().fg(value_color).bold())` lands the combo — the summary banner reads with weight contrast on value segments and the magnitude of slowdown "jumps" at the user via bold weight in addition to severity color. Snapshot test `snapshot_styled_inline_bold_and_colored_combined` ANSI-asserts both `\x1b[31m` (red) AND `\x1b[1m` (BOLD) appear on the same span — vindication of the combo.
 
+### Resolved 2026-05-24 — Punch-list closure (D10 + D12 + D13)
+
+Three items from the original "small rough edges" punch list close together — D12 via this cadence's new code, D10 and D13 via verification that the originally-flagged ergonomic problems were already resolved on the envision side (D10 through prior docstring work; D13 through silent shipment of `App::on_exit`). One coherent tracking-doc PR per leadline's bundling preference.
+
+- **D10** ✅ `App::handle_event` vs `handle_event_with_state` ambiguity — resolved-via-docs. Current trait at `src/app/model/mod.rs:238-255` carries crystal-clear docstrings: `handle_event` is documented as "Override this for simple stateless event mapping (most apps)"; `handle_event_with_state` is documented as "Override this instead of `handle_event` when you need state for overlay-precedence checks or mode-dependent key bindings. The default implementation delegates to `handle_event`, ignoring state." The original "took source-reading to figure out" discovery problem the brief flagged is gone. Brief's Option A (consolidate to one) was an alternative; the chosen path (keep both, document clearly) is principled and shipped.
+- **D12** ✅ StatusBar per-section separator override — shipped as `StatusBarState::with_left_separator(impl Into<String>)` + `with_center_separator(...)` + `with_right_separator(...)` builders with matching getters. Per-side override takes precedence over the existing global `separator` at render time (`state.<side>_separator.as_deref().unwrap_or(&state.separator)` in `status_bar/mod.rs:850-852`). Layered semantics, not last-call-wins — global stays, per-side overrides layer on top. Three new `Option<String>` fields on `StatusBarState` with `#[serde(default)]` for serialization forward-compat. Methods live in new sibling file `src/component/status_bar/per_side_separators.rs` (same multi-module impl pattern as `pane_layout/title_style.rs` from G4; keeps `mod.rs` under 1000-line cap). Spec PR #493, plan PR #494, implementation PR #495 (`9ceaed2`).
+- **D13** ✅ Quit/exit hook — already shipped as `App::on_exit(state: &Self::State)` default-no-op trait method at `src/app/model/mod.rs:257-260`, wired into both terminal runtime (`runtime/terminal.rs:210-211`) and virtual runtime (`runtime/mod.rs:782`). Tests pin default-no-op + custom-override behavior at `model/tests.rs:89` and `:208`. The brief's autosave use case is fully supported by overriding `on_exit`. Likely silently landed as side-effect of D1 runtime work or independent runtime maintenance; no envision-side cadence needed for this item.
+
 ### Other follow-ups (new from 2026-05-01 conversation)
 
 - **D3** `Column` width tuning is trial-and-error — no doc on "Length for known-width + Min for flex" pattern, no debug output when columns get clipped. Want canonical doctring + render-time clip warning.
 - **D8** No multi-view drill-down example — Roster → Enter → Per-op → Esc → Roster pattern of every dashboard. Want a 100-line example showing two views, modal navigation, per-view key hints, state preservation. (`Router` exists but its scope is unclear.)
-- **D10** `App::handle_event` vs `handle_event_with_state` — both exist on the trait, unclear which is canonical and when to override which. Want consolidation to one method or much clearer doc.
-- **D12** `StatusBarState::with_separator` is global per-bar — no per-section override. Want per-section separator config or per-item-trailing-separator property.
-- **D13** No quit hook — `Command::quit()` exists but no `App::on_quit(state) -> Result<()>` for autosave. Relationship between `load_state` re-export and quit is undocumented. Want documented `on_quit` lifecycle hook.
 
 ## Plan of attack (proposed sequencing)
 
@@ -100,13 +105,13 @@ This is a sketch — treat as draft until reviewed.
    - ~~G5 (StatusBarItem per-item color)~~ ✅ shipped 2026-05-20 via PR #487
    - ~~G6 (StyledInline composable styles)~~ ✅ shipped 2026-05-20 via PR #491
    - ~~D14 (`paragraph` → `line` rename)~~ ✅ shipped 2026-05-19 via PR #482 (combined with D5)
-   - D12 (StatusBar per-section separator)
+   - ~~D12 (StatusBar per-section separator)~~ ✅ shipped 2026-05-24 via PR #495
 4. **Theme system batch**:
    - ~~D6 (severity helper)~~ ✅ shipped 2026-05-08 via PR #473
    - ~~D9 (theme palette accessor)~~ ✅ shipped 2026-05-08 via PR #473
 5. **App lifecycle batch**:
-   - D10 (handle_event consolidation)
-   - D13 (on_quit hook + save_state docs)
+   - ~~D10 (handle_event consolidation)~~ ✅ resolved-via-docs at re-verification 2026-05-24 (current docstrings on handle_event vs handle_event_with_state at app/model/mod.rs:238-255 are crystal-clear; original discovery problem gone)
+   - ~~D13 (on_quit hook + save_state docs)~~ ✅ already shipped as App::on_exit at app/model/mod.rs:257-260 (silent shipment; verified during D12 re-verification 2026-05-24)
 6. **Docs batch**:
    - D3 (column width pattern doc + clip warning)
    - D8 (multi-view drill-down example)
