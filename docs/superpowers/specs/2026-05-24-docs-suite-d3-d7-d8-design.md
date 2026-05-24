@@ -50,13 +50,18 @@ All three items leave existing public API surface unchanged. D3 adds one `pub(cr
 /// `Column::new` takes any `ratatui::layout::Constraint`. The most common
 /// patterns:
 ///
-/// - [`Constraint::Length(n)`] — a hard request for exactly `n` cells. If
-///   the resolved area is narrower, the column is clipped (a warning fires
-///   when the `tracing` feature is enabled — see "Clipping diagnostics").
+/// - [`Constraint::Length(n)`] — a hard request for exactly `n` cells.
 /// - [`Constraint::Min(n)`] — a minimum of `n` cells, growing to fill
 ///   available space. Typical choice for one "flexible" column.
 /// - [`Constraint::Percentage(n)`] — `n%` of the resolved area, partitioned
 ///   left-to-right with the other constraints.
+///
+/// `Length` and `Min` both declare an absolute floor. When the resolved
+/// area is narrower than the declared floor — a `Length(n)` column that
+/// got `<n` cells, or a `Min(n)` column that got `<n` cells — the column
+/// emits a warning (see "Clipping diagnostics"). `Percentage` is a share
+/// of the resolved area and has no absolute floor, so it is never
+/// flagged.
 ///
 /// For these three idioms the shorthand constructors [`Column::fixed`],
 /// [`Column::min`], and [`Column::percent`] read more directly than
@@ -82,12 +87,12 @@ All three items leave existing public API surface unchanged. D3 adds one `pub(cr
 ///
 /// # Clipping diagnostics
 ///
-/// When the resolved table area is narrower than the sum of declared
-/// `Length(n)` columns, each clipped column emits a `tracing::warn!`
-/// once. Dedup is per `(column index, area width)`: the warning re-arms
-/// when the terminal is resized or the column set is replaced via
-/// `set_columns`. This is best-effort observability — the table still
-/// renders. Enable with the `tracing` feature.
+/// When a `Length(n)` or `Min(n)` column resolves to fewer than `n`
+/// cells, the column emits a `tracing::warn!` once. Dedup is per
+/// `(column index, area width)`: the warning re-arms when the terminal
+/// is resized or the column set is replaced via `set_columns`. This is
+/// best-effort observability — the table still renders. Enable with
+/// the `tracing` feature.
 ```
 
 The existing `Column::fixed`, `Column::min`, `Column::percent` doc-tests stay as-is. The cross-references in the new docstring give readers a single canonical entry point.
@@ -99,28 +104,64 @@ The existing `Column::fixed`, `Column::min`, `Column::percent` doc-tests stay as
 **Detection logic** — extract to a `pub(crate)` helper in `src/component/table/render.rs`:
 
 ```rust
-/// Returns indices of columns whose `Length(n)` constraint was clipped by
-/// the resolved layout.
+/// Identifies columns whose declared lower-bound width constraint
+/// (`Length(n)` or `Min(n)`) was violated by the resolved layout.
 ///
-/// Only `Constraint::Length` triggers detection — `Min` is grow-friendly by
-/// construction and `Percentage` is share-of-area by construction.
+/// `Length` declares an exact width that doubles as both upper and
+/// lower bound; `Min` declares an explicit lower bound. Both are
+/// floors the consumer wrote into their column declaration, and both
+/// produce the same actionable signal when the resolved width is
+/// smaller. `Percentage` is a share of the resolved area with no
+/// absolute floor, so it is never flagged.
 pub(crate) fn detect_clipped_columns(
     columns: &[Column],
     resolved_widths: &[u16],
-) -> Vec<usize> {
+) -> Vec<ClippedColumn> {
+    use ratatui::layout::Constraint;
+
     columns
         .iter()
         .zip(resolved_widths.iter())
         .enumerate()
-        .filter_map(|(i, (col, &resolved))| match col.width() {
-            ratatui::layout::Constraint::Length(declared) if resolved < declared => Some(i),
-            _ => None,
+        .filter_map(|(idx, (col, &resolved))| {
+            let (declared, kind) = match col.width() {
+                Constraint::Length(n) if resolved < n => (n, ClipKind::Length),
+                Constraint::Min(n) if resolved < n => (n, ClipKind::Min),
+                _ => return None,
+            };
+            Some(ClippedColumn { idx, declared, resolved, kind })
         })
         .collect()
 }
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct ClippedColumn {
+    pub idx: usize,
+    pub declared: u16,
+    pub resolved: u16,
+    pub kind: ClipKind,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ClipKind {
+    Length,
+    Min,
+}
+
+impl ClipKind {
+    /// Renders as `"Length"` or `"Min"` for warning text.
+    pub(crate) fn label(self) -> &'static str {
+        match self {
+            ClipKind::Length => "Length",
+            ClipKind::Min => "Min",
+        }
+    }
+}
 ```
 
-**Render-path integration** — at `src/component/table/render.rs` (where `widths: Vec<Constraint>` is built), perform a one-shot layout split using `ratatui::layout::Layout::horizontal(widths.clone()).split(area)` to compute resolved widths. Compare against declared widths via `detect_clipped_columns`. For each clipped index, check the lifetime-scoped dedup set on `TableState` and emit `tracing::warn!` on first detection (or on re-detection after a terminal resize — see below).
+Returning a struct (instead of a bare `Vec<usize>`) keeps the warning emission site free of constraint re-lookup and makes the diagnostic content (`declared`, `resolved`, `kind`) reviewable independently of `Column` internals.
+
+**Render-path integration** — at `src/component/table/render.rs` (where `widths: Vec<Constraint>` is built), perform a one-shot layout split using `ratatui::layout::Layout::horizontal(widths.clone()).split(area)` to compute resolved widths. Compare against declared widths via `detect_clipped_columns`. For each `ClippedColumn` returned, check the lifetime-scoped dedup set on `TableState` and emit `tracing::warn!` on first detection (or on re-detection after a terminal resize — see below).
 
 **Dedup state** — `Table::view` takes `state: &Self::State` (immutable, at `src/component/table/mod.rs:492`), so the dedup field uses interior mutability:
 
@@ -158,31 +199,33 @@ This gives "one warn per (column index, area width) combination over the column-
 
 ```text
 table column 'Description' clipped: declared Length(20), resolved 12 (table area 30)
+table column 'Description' clipped: declared Min(20), resolved 12 (table area 30)
 ```
 
-Includes column header, declared width, resolved width, table area width — actionable.
+The constraint label (`Length` or `Min`) is supplied by `ClipKind::label()`. Includes column header, declared width, resolved width, table area width — actionable.
 
 **Feature gating** — `#[cfg(feature = "tracing")]` around the emission block, matching `state.rs:686`. The detection helper itself is unconditional (pure function, trivially testable).
 
 ### Scope guards
 
-- Only `Constraint::Length(n)` triggers a warning. `Min(n)` and `Percentage(n)` are grow-by-construction and silent.
+- Only declared lower-bound constraints trigger a warning: `Length(n)` (exact, doubles as floor) and `Min(n)` (explicit floor). `Percentage(n)` is a share of the resolved area with no absolute floor and is never flagged.
 - Best-effort observability — never panics, never changes render output.
 - Dedup is per `(column index, area width)` over the column-set lifetime — quiet in steady-state, re-arms on resize or column replacement.
 
 ### Tests for D3
 
 1. `detect_clipped_columns_returns_empty_when_widths_fit` — Length(8)+Length(10) in 30 width → empty.
-2. `detect_clipped_columns_identifies_truncated_length_columns` — Length(20) in 10 width → returns `[0]`.
-3. `detect_clipped_columns_ignores_min_constraints` — Min(20) resolved to 10 → empty (Min is grow-friendly).
-4. `detect_clipped_columns_ignores_percentage_constraints` — Percentage(50) resolved to 5 → empty.
-5. `detect_clipped_columns_multiple_truncated` — three Length cols all under-resolved → returns `[0,1,2]`.
-6. `clip_warn_state_dedupes_within_same_area_width` — render twice at the same area width with clipping; assert `warned_cols` matches the first pass's set on the second pass (no second insert).
-7. `clip_warn_state_re_arms_on_area_width_change` — render at width 30 (clipped), then at width 50 (not clipped), then at width 30 again (clipped); assert the third render's `warned_cols` was reset by the intermediate width change.
-8. `clip_warn_state_clears_on_set_columns` — render clipped, replace columns via `set_columns`, render clipped again; assert `warned_cols` was cleared by the column replacement.
-9. Snapshot test `table_renders_when_columns_clipped` — render a clipped table, confirm output isn't corrupted and the table still functions.
+2. `detect_clipped_columns_identifies_truncated_length_columns` — Length(20) resolved to 10 → returns one `ClippedColumn` with `kind: Length, declared: 20, resolved: 10`.
+3. `detect_clipped_columns_identifies_violated_min_constraints` — Min(20) resolved to 10 → returns one `ClippedColumn` with `kind: Min, declared: 20, resolved: 10`.
+4. `detect_clipped_columns_ignores_min_when_resolved_meets_floor` — Min(10) resolved to 20 → empty (above floor is grow-friendly).
+5. `detect_clipped_columns_ignores_percentage_constraints` — Percentage(50) resolved to 5 → empty (no declared floor).
+6. `detect_clipped_columns_multiple_violations_mixed_kinds` — Length(20) + Min(20) + Percentage(50) all under-resolved → returns two `ClippedColumn` entries with the correct `kind` per entry; Percentage is excluded.
+7. `clip_warn_state_dedupes_within_same_area_width` — render twice at the same area width with clipping; assert `warned_cols` matches the first pass's set on the second pass (no second insert).
+8. `clip_warn_state_re_arms_on_area_width_change` — render at width 30 (clipped), then at width 50 (not clipped), then at width 30 again (clipped); assert the third render's `warned_cols` was reset by the intermediate width change.
+9. `clip_warn_state_clears_on_set_columns` — render clipped, replace columns via `set_columns`, render clipped again; assert `warned_cols` was cleared by the column replacement.
+10. Snapshot test `table_renders_when_columns_clipped` — render a clipped table, confirm output isn't corrupted and the table still functions.
 
-(Tracing emission itself isn't tested — matches existing precedent at `state.rs:686` where `cross_variant_warned_cols` field is internal-only and the warn is observability, not behavior. Tests #6–#8 assert the dedup STATE directly via a `pub(super) fn clip_warn_state_for_test(&self) -> &RefCell<ClipWarnState>` accessor gated behind `#[cfg(test)]`.)
+(Tracing emission itself isn't tested — matches existing precedent at `state.rs:686` where `cross_variant_warned_cols` field is internal-only and the warn is observability, not behavior. Tests #7–#9 assert the dedup STATE directly via a `pub(super) fn clip_warn_state_for_test(&self) -> &RefCell<ClipWarnState>` accessor gated behind `#[cfg(test)]`.)
 
 ---
 
@@ -467,7 +510,7 @@ The history-stack walk in `main()` stays unchanged — that's the demonstrated R
 
 ```markdown
 ### Added
-- `Column::new` now documents the canonical Length+Min multi-column idiom and emits a `tracing::warn!` (feature-gated) when a `Constraint::Length(n)` column resolves to fewer cells than declared. Best-effort observability; no behavior change for consumers without `tracing` enabled.
+- `Column::new` now documents the canonical Length+Min multi-column idiom and emits a `tracing::warn!` (feature-gated) when a `Constraint::Length(n)` or `Constraint::Min(n)` column resolves to fewer cells than declared. Best-effort observability; no behavior change for consumers without `tracing` enabled. `Percentage` constraints are never flagged (no declared floor).
 - `src/harness` module docs now include a "Choosing a Harness" decision table comparing `TestHarness`, `AppHarness`, and `Runtime::virtual_terminal`.
 - `src/harness/snapshot` module docs now include a runnable canonical golden-file snapshot-diff recipe (dependency-free, `std::fs` + manual diff; `insta` linked as the upgrade path).
 - `examples/drilldown.rs` — master+detail drill-down pattern using `TableState`, `PaneLayout::view_with`, `styled_line`, and `StatusBar::with_right_separator`.
