@@ -292,6 +292,61 @@ deletion).
 - `InlineStyle` struct uses `#[non_exhaustive]` — external code cannot
   construct via struct literal; must use the `InlineStyle::new()...` builder.
 
+### StatusBar per-side separator overrides (D12)
+
+Adds three optional per-section separator overrides on `StatusBarState`.
+Per-side override takes precedence over the existing global `separator` at
+render time. Purely additive — default state has all three Options as
+`None`, preserving identical behavior for consumers who don't opt in.
+
+**New fields on `StatusBarState`:**
+
+- `left_separator: Option<String>` (with `#[serde(default)]`)
+- `center_separator: Option<String>` (with `#[serde(default)]`)
+- `right_separator: Option<String>` (with `#[serde(default)]`)
+
+Clustered immediately after the existing global `separator: String` field —
+matches the G4 (`title_style` next to `title`) and G5 (`color`/`style_override`
+next to `style`) field-grouping convention.
+
+**New builder methods + getters:**
+
+- `with_left_separator(impl Into<String>)` / `left_separator() -> Option<&str>`
+- `with_center_separator(impl Into<String>)` / `center_separator() -> Option<&str>`
+- `with_right_separator(impl Into<String>)` / `right_separator() -> Option<&str>`
+
+Builder methods take `mut self` (consistent with existing `with_disabled`).
+Chain cleanly with both `StatusBarState::new()` and `StatusBarState::with_separator(...)`:
+
+```rust
+// Load-bearing use case: global " · " everywhere except the right-section
+// slowdown segments, which use " " (space) instead.
+StatusBarState::with_separator(" · ")
+    .with_right_separator(" ")
+    // ... push items ...
+```
+
+Methods live in `src/component/status_bar/per_side_separators.rs` (a sibling
+file) to keep `mod.rs` under the 1000-line cap. Same multi-module impl pattern
+as `pane_layout/title_style.rs` from G4.
+
+**Layered semantics, not last-call-wins:** per-side override is independent
+of global `separator`. Setting `with_separator(" · ").with_right_separator(" ")`
+results in BOTH fields populated; render-time precedence resolves which
+applies per section (`state.right_separator.as_deref().unwrap_or(&state.separator)`).
+Same model as G4/G5 per-component style overrides.
+
+**Render-path:** three single-line fallback expressions inserted at
+`status_bar/mod.rs:850-852`. `render_section` signature unchanged (it already
+takes `&str`).
+
+**Forward-compat:** `#[serde(default)]` on all three new fields means
+pre-D12 serialized `StatusBarState` blobs deserialize cleanly with all three
+as `None` — behavior identical to pre-D12.
+
+**No struct-literal break** for external consumers — fields are private
+(matches existing field visibility on the struct).
+
 ## [Unreleased] — Breaking: `App::init` takes args; `RuntimeBuilder` split
 
 ### Breaking changes — `App::init` takes args

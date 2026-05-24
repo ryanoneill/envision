@@ -1,0 +1,5 @@
+---
+source: src/component/status_bar/snapshot_tests.rs
+expression: plain
+---
+L1 · L2                           R1 R2
