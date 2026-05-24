@@ -169,8 +169,7 @@ Returning a struct (instead of a bare `Vec<usize>`) keeps the warning emission s
 /// Transient observability state for clip-warning dedup. Tracks the
 /// last area width at which clipping was evaluated and the set of
 /// column indices already warned about. Reset when the area width
-/// changes (terminal resize re-arms detection) or when `set_columns`
-/// replaces the column set.
+/// changes (terminal resize re-arms detection).
 ///
 /// Runtime-only state; not part of logical equality and not serialized.
 #[cfg_attr(feature = "serialization", serde(skip))]
@@ -189,11 +188,12 @@ pub(super) struct ClipWarnState {
 
 1. On render, compare `area.width` against `last_area_width`. If different (or `None`), clear `warned_cols` and set `last_area_width = Some(area.width)`.
 2. Run `detect_clipped_columns`. For each clipped index, if `warned_cols.insert(idx)` returns `true`, emit the warn.
-3. When `set_columns()` is called (mutating column set), clear the entire `ClipWarnState` (both fields) so the new layout re-detects.
 
-This gives "one warn per (column index, area width) combination over the column-set lifetime" — terminal resize re-arms; replacing columns re-arms; otherwise quiet steady-state.
+This gives "one warn per (column index, area width) combination over the TableState's lifetime" — terminal resize re-arms; constructing a new TableState resets via `Default`; otherwise quiet steady-state.
 
-**PartialEq exclusion** — the existing custom `PartialEq for TableState` at `src/component/table/mod.rs:104-116` already excludes `cross_variant_warned_cols`. Add `clip_warn_state` to the exclusion list (same justification: transient observability).
+**Column-replacement note** — TableState's column set is established at construction (`TableState::new(rows, columns)` at `src/component/table/state.rs:41`, `TableState::with_selected` at `state.rs:80`) and not mutated post-construction. There is no `set_columns()` method to hook. Replacing columns means constructing a new TableState, which resets the ClipWarnState to `Default`.
+
+**PartialEq exclusion** — the existing custom `PartialEq for TableState` at `src/component/table/mod.rs:100-113` already excludes `cross_variant_warned_cols`. Add `clip_warn_state` to the exclusion list (same justification: transient observability).
 
 **Warning text:**
 
@@ -210,7 +210,7 @@ The constraint label (`Length` or `Min`) is supplied by `ClipKind::label()`. Inc
 
 - Only declared lower-bound constraints trigger a warning: `Length(n)` (exact, doubles as floor) and `Min(n)` (explicit floor). `Percentage(n)` is a share of the resolved area with no absolute floor and is never flagged.
 - Best-effort observability — never panics, never changes render output.
-- Dedup is per `(column index, area width)` over the column-set lifetime — quiet in steady-state, re-arms on resize or column replacement.
+- Dedup is per `(column index, area width)` over the TableState's lifetime — quiet in steady-state, re-arms on resize. Constructing a new TableState resets via `Default`.
 
 ### Tests for D3
 
@@ -222,7 +222,7 @@ The constraint label (`Length` or `Min`) is supplied by `ClipKind::label()`. Inc
 6. `detect_clipped_columns_multiple_violations_mixed_kinds` — Length(20) + Min(20) + Percentage(50) all under-resolved → returns two `ClippedColumn` entries with the correct `kind` per entry; Percentage is excluded.
 7. `clip_warn_state_dedupes_within_same_area_width` — render twice at the same area width with clipping; assert `warned_cols` matches the first pass's set on the second pass (no second insert).
 8. `clip_warn_state_re_arms_on_area_width_change` — render at width 30 (clipped), then at width 50 (not clipped), then at width 30 again (clipped); assert the third render's `warned_cols` was reset by the intermediate width change.
-9. `clip_warn_state_clears_on_set_columns` — render clipped, replace columns via `set_columns`, render clipped again; assert `warned_cols` was cleared by the column replacement.
+9. `clip_warn_state_defaults_empty_on_new_table_state` — construct a fresh `TableState`; assert `clip_warn_state` is `Default` (no last_area_width, no warned_cols). Replacing a TableState gives a fresh dedup naturally.
 10. Snapshot test `table_renders_when_columns_clipped` — render a clipped table, confirm output isn't corrupted and the table still functions.
 
 (Tracing emission itself isn't tested — matches existing precedent at `state.rs:686` where `cross_variant_warned_cols` field is internal-only and the warn is observability, not behavior. Tests #7–#9 assert the dedup STATE directly via a `pub(super) fn clip_warn_state_for_test(&self) -> &RefCell<ClipWarnState>` accessor gated behind `#[cfg(test)]`.)
