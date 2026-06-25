@@ -89,6 +89,42 @@ Three items from the original "small rough edges" punch list close together — 
 - **D3** `Column` width tuning is trial-and-error — no doc on "Length for known-width + Min for flex" pattern, no debug output when columns get clipped. Want canonical doctring + render-time clip warning.
 - **D8** No multi-view drill-down example — Roster → Enter → Per-op → Esc → Roster pattern of every dashboard. Want a 100-line example showing two views, modal navigation, per-view key hints, state preservation. (`Router` exists but its scope is unclear.)
 
+### Review 2026-06-25 — D3 + D7 + D8 docs-suite spec + plan (from leadline)
+
+leadline reviewed `docs/superpowers/specs/2026-05-24-docs-suite-d3-d7-d8-design.md`
++ plan + amendments (`d8564a9`, `9b27761`). **Design approved for all three.**
+Three items to fold in before the impl cadence runs:
+
+- **D3 — layout-split correctness (real bug).** `detect_clipped_columns` must
+  be fed the resolved widths from splitting the *same* `widths` vec the
+  renderer resolves (which includes the reserved status `Length(2)` slot),
+  then mapped back to user columns offset by `has_status as usize`. Plan
+  Step 5 splits only `user_column_widths` over the full `area`, so when
+  `has_status` is set the resolved figure is too generous by ~2 cells — a
+  column clipped in the real render can read as non-clipped in detection, and
+  the "resolved N" in the warning text is wrong. The spec's "Render-path
+  integration" (split full `widths.clone()`) is the correct shape; the plan
+  call site needs to match it. Dedup-per-`(column, area-width)` and `Min(n)`
+  detection are endorsed as-is (better than leadline's once-per-render
+  suggestion).
+- **D7 — naming.** The "Choosing a Harness" table names
+  `Runtime::virtual_terminal`; the public surface is
+  `Runtime::<App, _>::virtual_builder(w, h).build()`. Name `virtual_builder`
+  consistently so the table entry isn't a dead reference. Decision table +
+  dependency-free golden-file recipe otherwise approved.
+- **D8 — KeyHints + state-aware events.** The brief asked for "key hints
+  update per view," and a stateless `handle_event` with global Up/Down ticks
+  the roster selection while in the detail screen — the wrong behavior to
+  demonstrate. Switch `drilldown.rs` to `handle_event_with_state` gating
+  Up/Down to the active `Screen`, and render a per-view `KeyHints` bar
+  (Roster: "↑/↓ select · Enter open · q quit"; PerOp: "Esc back · q quit").
+
+leadline owes no migration for D3/D7/D8 (docs/examples only). Post-merge,
+leadline will write golden-frame regression tests for `virtual_preview`'s
+frames (D7 removal trigger) and enable envision's `tracing` feature in dev +
+a subscriber so the D3 clip warning surfaces. Tracked leadline-side in
+`notes/envision_gaps.md` (D3/D7/D8 review notes, 2026-06-25).
+
 ## Plan of attack (proposed sequencing)
 
 This is a sketch — treat as draft until reviewed.
