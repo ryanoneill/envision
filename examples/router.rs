@@ -98,12 +98,27 @@ impl App for RouterApp {
             ),
         };
 
-        let widget = ratatui::widgets::Paragraph::new(body).block(
-            ratatui::widgets::Block::default()
-                .borders(ratatui::widgets::Borders::ALL)
-                .title(title),
+        use envision::component::pane_layout::{
+            PaneConfig, PaneDirection, PaneLayout, PaneLayoutState,
+        };
+        let theme = Theme::default();
+        let pane_layout = PaneLayoutState::new(
+            PaneDirection::Vertical,
+            vec![
+                PaneConfig::new("screen")
+                    .with_title(format!(" {} ", title))
+                    .with_proportion(1.0),
+            ],
         );
-        frame.render_widget(widget, chunks[0]);
+        PaneLayout::view_with(
+            &pane_layout,
+            &mut RenderContext::new(frame, chunks[0], &theme).focused(true),
+            |_pane_id, child_ctx| {
+                child_ctx
+                    .frame
+                    .render_widget(ratatui::widgets::Paragraph::new(body), child_ctx.area);
+            },
+        );
 
         let history_len = state.router.history_len();
         let can_back = state.router.can_go_back();
