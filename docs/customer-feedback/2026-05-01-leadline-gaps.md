@@ -84,10 +84,21 @@ Three items from the original "small rough edges" punch list close together — 
 - **D12** ✅ StatusBar per-section separator override — shipped as `StatusBarState::with_left_separator(impl Into<String>)` + `with_center_separator(...)` + `with_right_separator(...)` builders with matching getters. Per-side override takes precedence over the existing global `separator` at render time (`state.<side>_separator.as_deref().unwrap_or(&state.separator)` in `status_bar/mod.rs:850-852`). Layered semantics, not last-call-wins — global stays, per-side overrides layer on top. Three new `Option<String>` fields on `StatusBarState` with `#[serde(default)]` for serialization forward-compat. Methods live in new sibling file `src/component/status_bar/per_side_separators.rs` (same multi-module impl pattern as `pane_layout/title_style.rs` from G4; keeps `mod.rs` under 1000-line cap). Spec PR #493, plan PR #494, implementation PR #495 (`9ceaed2`).
 - **D13** ✅ Quit/exit hook — already shipped as `App::on_exit(state: &Self::State)` default-no-op trait method at `src/app/model/mod.rs:257-260`, wired into both terminal runtime (`runtime/terminal.rs:210-211`) and virtual runtime (`runtime/mod.rs:782`). Tests pin default-no-op + custom-override behavior at `model/tests.rs:89` and `:208`. The brief's autosave use case is fully supported by overriding `on_exit`. Likely silently landed as side-effect of D1 runtime work or independent runtime maintenance; no envision-side cadence needed for this item.
 
-### Other follow-ups (new from 2026-05-01 conversation)
+### Resolved 2026-06-25 — Docs suite D3 + D7 + D8 (May 2026 brief queue closure)
 
-- **D3** `Column` width tuning is trial-and-error — no doc on "Length for known-width + Min for flex" pattern, no debug output when columns get clipped. Want canonical doctring + render-time clip warning.
-- **D8** No multi-view drill-down example — Roster → Enter → Per-op → Esc → Roster pattern of every dashboard. Want a 100-line example showing two views, modal navigation, per-view key hints, state preservation. (`Router` exists but its scope is unclear.)
+Three documentation-suite items shipped as one impl PR with three logically-separated commits — the 10th and FINAL cadence in the May 2026 leadline brief queue. After this entry, the original suite is complete.
+
+Spec PR #497 (`d53993a`), plan PR #498 (`772a9e6`), review-record PR #499 (`aec8a8c`), implementation PR #500 (`773661e`). Spec + plan went through three rounds of leadline review (`53b4797` → `7fb9383` → `78be148` → `562d31d` approving) before impl dispatched; final whole-branch opus review caught 2 additional Criticals (cargo-doc warnings + dead-code on default features) that per-task reviews missed, fixed in the impl cadence. CI fixup post-final-review gated `examples/drilldown.rs` behind required-features.
+
+- **D3** ✅ `Column::new` canonical Length+Min docstring + render-time clipping warning — shipped as `pub(crate) fn detect_clipped_columns(columns: &[Column], resolved_widths: &[u16]) -> Vec<ClippedColumn>` returning `{ idx, declared, resolved, kind: Length|Min }`. Emission via `tracing::warn!` feature-gated on `tracing`; dedup via `RefCell<ClipWarnState>` on `TableState` (interior mutability required — `Table::view` takes `&state`) keyed by `(column index, area width)` with terminal-resize re-arm. `ClipWarnState` lives in sibling `src/component/table/clip_warn.rs` for file-size discipline; excluded from `PartialEq` mirroring `cross_variant_warned_cols` precedent. Render-path detection mirrors the full ratatui 0.29 `Table` width formula via the spec's Canonical Reservation Contract: (1) `area.inner(Margin{1,1})` when `!chrome_owned`, (2) subtract `HIGHLIGHT_SYMBOL_WIDTH = 2` when `state.selected.is_some()` (matches `"> "` highlight symbol at `render.rs:153` + default `HighlightSpacing::WhenSelected`), (3) `Layout::horizontal(widths).spacing(COLUMN_SPACING).split(area)` with `COLUMN_SPACING = 1` (matches ratatui Table default; `Flex::Start` left as matching default), (4) `resolved_rects.iter().skip(has_status as usize)` mapping back to `state.columns`. `impl ClipKind` gated with `#[cfg(feature = "tracing")]` so default builds stay warning-free. 12 new tests (7 detection + 4 dedup + 1 snapshot).
+- **D7** ✅ View-snapshot testing documented — `src/harness/mod.rs` module docs gained "Choosing a Harness" decision table comparing `TestHarness` (closure-level), `AppHarness` (App with time control), and `Runtime::virtual_builder` (programmatic App without time-control ceremony) + per-harness blurbs naming `Runtime::<App, _>::virtual_builder(w, h).build()` as the call shape. `src/harness/snapshot/mod.rs` gained runnable canonical golden-file snapshot-diff recipe: dependency-free (`std::fs` + manual diff) two-function pattern (`update_golden` + `assert_matches_golden` + private `unified_diff` helper), `insta` linked as the upgrade path. Doc-test exercises the recipe end-to-end against tempdir. `examples/test_harness.rs` gained header pointer to the new module docs.
+- **D8** ✅ Multi-view drill-down example — new `examples/drilldown.rs` (~280 lines after rustfmt) demonstrates master+detail navigation via Screen enum (Roster → Enter → PerOp → Esc → Roster) using `TableState<Operation>`, `PaneLayout::view_with` for the PerOp header+body split, `styled_line + StyledInline` for emphasized metrics, `PaneConfig::with_title_style` for the PerOp header. Selection preserved across drill-in/drill-out via `state.roster.set_selected(Some(selected))`. Per-view `KeyHints` bar in BOTH screens (Roster: "↑/↓ select · Enter open · q quit"; PerOp: "Esc back · q quit"). `App::handle_event_with_state` (not stateless `handle_event`) gates Up/Down → Roster only, Esc → PerOp only, `q` quits anywhere — matches advertised affordances. `Runtime::<DrillApp, _>::virtual_builder(60, 16).build()` (height 16 to accommodate the hints row). `examples/router.rs` refreshed: raw `ratatui::widgets::Paragraph + Block::borders` chrome replaced with `PaneLayout::view_with` (no behavior change, better envision-component showcase). `src/component/router/mod.rs` module docs gained "Choosing Router vs. an in-state enum" section with cross-links to both examples.
+
+leadline's removal triggers for this cadence are docs/examples only (no migration). Post-merge follow-ups tracked leadline-side: D7 golden-frame regression tests for `virtual_preview` frames (first automated TUI coverage); D3 enabling envision's `tracing` feature in dev + a subscriber in `virtual_preview` so the clip warning surfaces.
+
+---
+
+**May 2026 brief queue: CLOSED.** All 10 original items (G1–G7 + D1–D15, minus any deferred) shipped between 2026-05-02 and 2026-06-25 via the validated 4-PR cadence pattern (brainstorm → spec PR → plan PR → impl PR → tracking-doc PR). Net velocity: 10 cadences, ~8 weeks, signed commits throughout, zero quality regressions on the audit scorecard (8/9 baseline preserved; `resource_gauge::set_values` gap pre-existing).
 
 ### Review 2026-06-25 — D3 + D7 + D8 docs-suite spec + plan (from leadline)
 
@@ -200,7 +211,7 @@ This is a sketch — treat as draft until reviewed.
    - ~~D1 (`App::init` args + `Runtime` builder)~~ ✅ shipped 2026-05-02 via PR #465
    - ~~D2 (`PaneLayout::view_with` closure flow)~~ ✅ shipped 2026-05-02 via PR #469
    - ~~D5 (styled-line primitive)~~ ✅ shipped 2026-05-19 via PR #482
-   - D7 (snapshot testing docs/example)
+   - ~~D7 (snapshot testing docs/example)~~ ✅ shipped 2026-06-25 via PR #500
 3. **Component polish batch**:
    - ~~G2 + D11 (Table chrome / border type hint / chrome_owned flag)~~ ✅ shipped 2026-05-02 via PR #469 (combined with D2)
    - ~~G4 (PaneLayout per-pane title style)~~ ✅ shipped 2026-05-20 via PR #487
@@ -215,8 +226,8 @@ This is a sketch — treat as draft until reviewed.
    - ~~D10 (handle_event consolidation)~~ ✅ resolved-via-docs at re-verification 2026-05-24 (current docstrings on handle_event vs handle_event_with_state at app/model/mod.rs:238-255 are crystal-clear; original discovery problem gone)
    - ~~D13 (on_quit hook + save_state docs)~~ ✅ already shipped as App::on_exit at app/model/mod.rs:257-260 (silent shipment; verified during D12 re-verification 2026-05-24)
 6. **Docs batch**:
-   - D3 (column width pattern doc + clip warning)
-   - D8 (multi-view drill-down example)
+   - ~~D3 (column width pattern doc + clip warning)~~ ✅ shipped 2026-06-25 via PR #500
+   - ~~D8 (multi-view drill-down example)~~ ✅ shipped 2026-06-25 via PR #500
 
 leadline Claude has offered to write focused briefs (like the sort one) for D1, D2, D5, D7 — accept those before scoping each.
 
