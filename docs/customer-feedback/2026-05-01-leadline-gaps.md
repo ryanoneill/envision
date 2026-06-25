@@ -89,6 +89,108 @@ Three items from the original "small rough edges" punch list close together — 
 - **D3** `Column` width tuning is trial-and-error — no doc on "Length for known-width + Min for flex" pattern, no debug output when columns get clipped. Want canonical doctring + render-time clip warning.
 - **D8** No multi-view drill-down example — Roster → Enter → Per-op → Esc → Roster pattern of every dashboard. Want a 100-line example showing two views, modal navigation, per-view key hints, state preservation. (`Router` exists but its scope is unclear.)
 
+### Review 2026-06-25 — D3 + D7 + D8 docs-suite spec + plan (from leadline)
+
+leadline reviewed `docs/superpowers/specs/2026-05-24-docs-suite-d3-d7-d8-design.md`
++ plan + amendments (`d8564a9`, `9b27761`). **Design approved for all three.**
+Three items to fold in before the impl cadence runs:
+
+- **D3 — layout-split correctness (real bug).** `detect_clipped_columns` must
+  be fed the resolved widths from splitting the *same* `widths` vec the
+  renderer resolves (which includes the reserved status `Length(2)` slot),
+  then mapped back to user columns offset by `has_status as usize`. Plan
+  Step 5 splits only `user_column_widths` over the full `area`, so when
+  `has_status` is set the resolved figure is too generous by ~2 cells — a
+  column clipped in the real render can read as non-clipped in detection, and
+  the "resolved N" in the warning text is wrong. The spec's "Render-path
+  integration" (split full `widths.clone()`) is the correct shape; the plan
+  call site needs to match it. Dedup-per-`(column, area-width)` and `Min(n)`
+  detection are endorsed as-is (better than leadline's once-per-render
+  suggestion).
+- **D7 — naming.** The "Choosing a Harness" table names
+  `Runtime::virtual_terminal`; the public surface is
+  `Runtime::<App, _>::virtual_builder(w, h).build()`. Name `virtual_builder`
+  consistently so the table entry isn't a dead reference. Decision table +
+  dependency-free golden-file recipe otherwise approved.
+- **D8 — KeyHints + state-aware events.** The brief asked for "key hints
+  update per view," and a stateless `handle_event` with global Up/Down ticks
+  the roster selection while in the detail screen — the wrong behavior to
+  demonstrate. Switch `drilldown.rs` to `handle_event_with_state` gating
+  Up/Down to the active `Screen`, and render a per-view `KeyHints` bar
+  (Roster: "↑/↓ select · Enter open · q quit"; PerOp: "Esc back · q quit").
+
+leadline owes no migration for D3/D7/D8 (docs/examples only). Post-merge,
+leadline will write golden-frame regression tests for `virtual_preview`'s
+frames (D7 removal trigger) and enable envision's `tracing` feature in dev +
+a subscriber so the D3 clip warning surfaces. Tracked leadline-side in
+`notes/envision_gaps.md` (D3/D7/D8 review notes, 2026-06-25).
+
+### Round 2 (same date) — D3 highlight-symbol false-negative
+
+Re-review of the round-1 amendments (`7a271ba` spec / `e994d40` plan)
+surfaced one more accuracy bug in D3, recorded leadline-side in
+`notes/envision_gaps.md` commit `7fb9383`. D7 and D8 amendments
+fully resolved.
+
+- **D3 (still inaccurate).** envision's `Table` is constructed with
+  `.highlight_symbol("> ")` at `render.rs:153` and no explicit
+  `.highlight_spacing(...)` call, so ratatui's default
+  `HighlightSpacing::WhenSelected` applies — ratatui reserves the
+  highlight symbol's display width (2 cells) from the
+  column-distribution area BEFORE laying out columns whenever
+  `state.selected.is_some()` (the normal case). The round-1 amendment
+  split over the full `inner_area.width` without subtracting that
+  reservation, so resolved widths come out ~2 cells too generous on
+  every render with a selected row — the same false-negative the
+  amendment set out to eliminate, reintroduced via the highlight
+  symbol. The spec's "highlight-symbol does not affect column layout"
+  note was wrong and is being corrected. Fix: subtract 2 from the
+  column-distribution area's width when `state.selected.is_some()`
+  before the `Layout::horizontal::split`. Best-effort diagnostic, so
+  not a release blocker, but defeats the accuracy the D3 amendment
+  was for.
+
+Round-2 corrections land as spec amendment `381c47f` + plan amendment
+`a0304c8` (mirroring the spec contract in Task 1 Step 5).
+
+### Round 3 (same date) — D3 column_spacing + convergence formula
+
+Re-review of the round-2 amendments (`381c47f` spec / `a0304c8` plan)
+identified one more accuracy bug in the same false-negative class,
+recorded leadline-side in `notes/envision_gaps.md` commit `78be148`.
+D7 and D8 remain approved.
+
+- **D3 (still inaccurate — third reservation term missed).** ratatui
+  0.29's `Table::render` distributes columns via
+  `Layout::horizontal(constraints).flex(Flex::Start).spacing(column_spacing)`
+  with `column_spacing` defaulting to 1 cell. envision's Table at
+  `render.rs:150-153` makes no explicit `.column_spacing(...)` or
+  `.flex(...)` call, so the defaults apply. The round-2 detection
+  used `Layout::horizontal(widths)` which defaults to spacing 0 —
+  over-distributing by `(num_columns − 1)` cells (3 cells too generous
+  for leadline's status + 3-column roster). Same false-negative class
+  as rounds 1 and 2. Fix: add `.spacing(COLUMN_SPACING)` with
+  `COLUMN_SPACING = 1` (carrying a `render.rs:150-153` back-reference).
+  `Flex::Start` already matches `Layout::horizontal`'s default, so no
+  `.flex(...)` opt-in needed.
+
+**Convergence — full ratatui 0.29 Table width formula (now mirrored
+in spec + plan):**
+
+| Step | Term | Status |
+|---|---|---|
+| 1 | `area` − Block border inset when `!chrome_owned` | ✓ round 1 |
+| 2 | − selection_width (2 cells when selected, default `WhenSelected`) | ✓ round 2 |
+| 3 | distribute `widths` with `Flex::Start` + `column_spacing = 1` | ✓ round 3 (flex was always correct via default-default match; spacing was the gap) |
+| 4 | map back skipping `has_status` | ✓ round 1 |
+
+Every term accounted for. No further reservation outstanding — this
+converges. The spec's "Canonical reservation contract" section now
+documents the formula with citations so future drift surfaces at audit.
+
+Round-3 corrections land as spec amendment `0adc828` + plan amendment
+`8d75504` (`.spacing(COLUMN_SPACING)` added to the detection split).
+
 ## Plan of attack (proposed sequencing)
 
 This is a sketch — treat as draft until reviewed.
