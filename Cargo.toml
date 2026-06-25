@@ -219,6 +219,10 @@ name = "key_hints"
 required-features = ["display-components"]
 
 [[example]]
+name = "drilldown"
+required-features = ["data-components", "display-components", "navigation-components"]
+
+[[example]]
 name = "loading_list"
 required-features = ["data-components"]
 
