@@ -4,7 +4,7 @@
 
 **Goal:** Ship the three documentation-suite gaps remaining from the May 2026 leadline brief — D3 (Column docs + clip warning), D7 (harness compare-and-contrast + snapshot recipe), D8 (drilldown example + Router docs + router.rs refresh) — as one impl PR with three logically separated commits, closing the May 2026 brief queue.
 
-**Architecture:** Three independent file-set touchpoints with no cross-coupling: D3 touches `src/component/table/` (types, render, mod, state, tests), D7 touches `src/harness/` and one example header, D8 touches `examples/` (drilldown, router) and `src/component/router/mod.rs`. Detection in D3 is a `pub(crate)` pure function plus a render-path emission site with interior-mutability dedup (`RefCell<ClipWarnState>`) — render path stays `&state`. D7 is pure documentation expansion plus one runnable doc-test. D8 swaps raw-ratatui rendering in `router.rs` for envision components and adds a new ~120-line `drilldown.rs` showing master+detail without history-stack.
+**Architecture:** Three independent file-set touchpoints with no cross-coupling: D3 touches `src/component/table/` (types, render, mod, state, tests), D7 touches `src/harness/` and one example header, D8 touches `examples/` (drilldown, router) and `src/component/router/mod.rs`. Detection in D3 is a `pub(crate)` pure function (consuming the same widths vec the renderer resolves, then sliced past the status-column reservation by `has_status as usize`) plus a render-path emission site with interior-mutability dedup (`RefCell<ClipWarnState>`) — render path stays `&state`. D7 is pure documentation expansion plus one runnable doc-test. D8 swaps raw-ratatui rendering in `router.rs` for envision components and adds a new ~160-line `drilldown.rs` showing master+detail without history-stack, with per-view `KeyHints` and `App::handle_event_with_state` so screen-gated key bindings match the advertised affordances.
 
 **Tech Stack:** Rust 2024 (MSRV 1.85) · ratatui 0.29 · tracing 0.1 (optional feature) · tempfile (dev-dep) · insta (dev-dep; linked as upgrade path) · cargo-nextest
 
@@ -33,7 +33,7 @@
 ### Created
 
 - `src/component/table/clip_warn.rs` — new module housing `ClipWarnState` struct + `Default` impl (Task 1, Step 4). Keeps `mod.rs` from creeping toward the 1000-line cap and matches the G4 sibling-file pattern.
-- `examples/drilldown.rs` — new ~120-line master+detail example (Task 3, Step 1)
+- `examples/drilldown.rs` — new ~160-line master+detail example (Task 3, Step 1)
 
 ---
 
@@ -320,25 +320,40 @@ Expected: clean check.
     }
 ```
 
-- [ ] Immediately after the `widths` vector is fully populated, add the resolve-and-detect-and-emit block. Use the area passed in to `render_table` (the function parameter `area: Rect`):
+- [ ] Immediately after the `widths` vector is fully populated, add the resolve-and-detect-and-emit block. The split MUST mirror what ratatui actually feeds the Table widget so detection matches the real render — see spec's "Render-path integration" section. Concretely: feed the FULL `widths` vec (incl. the status reservation) to `Layout::horizontal`, split over the inner area ratatui actually uses for the table (subtract the border margin when `!chrome_owned`), and slice the resolved rects by `has_status as usize` before mapping back to user columns.
 
 ```rust
     // Best-effort clip-warning diagnostic: compute resolved column
-    // widths via a one-shot Layout split, detect any Length/Min
-    // declared-floor violations, dedup per (column index, area width)
-    // across the TableState's lifetime, and emit a tracing warning on
-    // first detection.
+    // widths via a one-shot Layout split that mirrors what ratatui
+    // feeds the Table widget — full `widths` vec (incl. status
+    // reservation) over the inner area — then slice off the status
+    // reservation before mapping back to user columns. Detects
+    // Length/Min declared-floor violations, dedups per
+    // (column index, area width) across the TableState's lifetime,
+    // and emits a tracing warning on first detection.
     //
-    // Skipped entirely when the table has no columns (empty case) or
-    // when has_status reserved the first width slot — the user-declared
-    // column widths live at indices [has_status as usize..].
-    let user_column_widths = &widths[has_status as usize..];
-    if !user_column_widths.is_empty() {
+    // Skipped entirely when the table has no user columns.
+    if !state.columns.is_empty() {
+        // ratatui wraps the table in Block::default().borders(Borders::ALL)
+        // when !chrome_owned (see the block construction below), which
+        // shrinks the inner rect by 1 cell on each side. When chrome_owned,
+        // the parent owns the border and `area` is already inner.
+        let inner_area = if chrome_owned {
+            area
+        } else {
+            area.inner(ratatui::layout::Margin { horizontal: 1, vertical: 1 })
+        };
         let resolved_rects =
-            ratatui::layout::Layout::horizontal(user_column_widths.iter().copied())
-                .split(area);
-        let resolved: Vec<u16> = resolved_rects.iter().map(|r| r.width).collect();
-        let clipped = detect_clipped_columns(state.columns.as_slice(), &resolved);
+            ratatui::layout::Layout::horizontal(widths.iter().copied())
+                .split(inner_area);
+        // Skip the status reservation when mapping back to user columns.
+        // resolved_rects[has_status as usize..] aligns 1:1 with state.columns.
+        let user_resolved: Vec<u16> = resolved_rects
+            .iter()
+            .skip(has_status as usize)
+            .map(|r| r.width)
+            .collect();
+        let clipped = detect_clipped_columns(state.columns.as_slice(), &user_resolved);
 
         if !clipped.is_empty() {
             let mut dedup = state.clip_warn_state.borrow_mut();
@@ -743,9 +758,9 @@ If signing fails, STOP and ask the user. Never bypass.
 //! |---|---|---|---|
 //! | [`TestHarness`] | Testing a render closure or a widget in isolation | Closure | None (synchronous) |
 //! | [`AppHarness`] | Testing a full `App` with async commands/subscriptions | App | Via `tokio::test(start_paused)` + `advance_time()` |
-//! | [`Runtime::virtual_terminal`][vt] | Programmatic control (agents, scripted demos, integration tests) | App | None |
+//! | [`Runtime::virtual_builder`][vb] | Programmatic control (agents, scripted demos, integration tests) | App | None |
 //!
-//! [vt]: crate::app::Runtime
+//! [vb]: crate::app::Runtime::virtual_builder
 //!
 //! ## `TestHarness` — widget-level testing
 //!
@@ -760,7 +775,7 @@ If signing fails, STOP and ask the user. Never bypass.
 //! when your `App` has subscriptions, commands, or any time-dependent
 //! logic.
 //!
-//! ## `Runtime::virtual_terminal` — programmatic App control
+//! ## `Runtime::virtual_builder` — programmatic App control
 //!
 //! Constructed via `Runtime::<A, _>::virtual_builder(w, h).build()`.
 //! Returns a `Runtime<A, CaptureBackend>` with `send()`, `dispatch()`,
@@ -794,7 +809,7 @@ The rest of the file (mod declarations and `pub use` re-exports, lines 28-38) is
 
 - [ ] Save. Run `cargo doc --no-deps --all-features 2>&1 | grep -iE "warning|error" | head -10`.
 
-Expected: no warnings on intra-doc links. The `[`Runtime::virtual_terminal`][vt]` style should resolve cleanly.
+Expected: no warnings on intra-doc links. The `[`Runtime::virtual_builder`][vb]` style should resolve cleanly.
 
 ### Step 2: Header pointer in `examples/test_harness.rs`
 
@@ -959,7 +974,7 @@ D7: harness compare-and-contrast docs + golden-file snapshot recipe
 
 src/harness module-level docs now lead with a "Choosing a Harness"
 decision table comparing TestHarness, AppHarness, and
-Runtime::virtual_terminal, followed by per-harness blurbs explaining
+Runtime::virtual_builder, followed by per-harness blurbs explaining
 when each fits. The existing TestHarness intro example is preserved
 as the runnable Example: block.
 
@@ -994,7 +1009,7 @@ EOF
 
 ### Step 1: Create `examples/drilldown.rs`
 
-- [ ] Create the new file. It should be ~120 lines demonstrating the master+detail pattern:
+- [ ] Create the new file. It should be ~160 lines demonstrating the master+detail pattern, with per-view `KeyHints` and state-aware event handling so global keys (Up/Down/Enter/Esc) only fire on the screen where they make sense:
 
 ```rust
 //! Drilldown example — master+detail pattern with selection preservation.
@@ -1006,23 +1021,30 @@ EOF
 //! PerOp detail screen, and presses Esc to return to the Roster with
 //! the original selection preserved.
 //!
+//! Per-view KeyHints + state-aware event handling: the bottom row of
+//! each screen renders a `KeyHints` bar listing only the keys active
+//! on that screen, and `handle_event_with_state` gates Up/Down to the
+//! Roster (no roster-selection ticks while drilled in) and Esc to the
+//! PerOp (no drill-out attempts from the Roster). `q` quits from any
+//! screen.
+//!
 //! Surface exercised:
 //! - TableState<Operation> for the Roster
 //! - PaneLayout::view_with for the PerOp split (header + body)
 //! - styled_line + InlineStyle for emphasized metrics
-//! - PaneConfig::with_title_style + with_color for the PerOp title
-//! - StatusBar with per-side separator (post-D12 surface)
+//! - PaneConfig::with_title_style for the PerOp header pane
+//! - KeyHints for per-view affordance hints
+//! - App::handle_event_with_state for screen-gated key bindings
 //!
 //! Compare with examples/router.rs (history-stack navigation via
 //! RouterState). See src/component/router/mod.rs module docs for
 //! "When to use Router vs an in-state enum".
 //!
-//! Run with: cargo run --example drilldown --features navigation-components
+//! Run with: cargo run --example drilldown --all-features
 
 use envision::component::cell::Cell;
 use envision::component::table::TableRow;
 use envision::prelude::*;
-use ratatui::style::{Color, Modifier, Style};
 
 /// One operation row in the Roster.
 #[derive(Clone, Debug, PartialEq)]
@@ -1060,6 +1082,8 @@ struct State {
     screen: Screen,
     roster: TableState<Operation>,
     operations: Vec<Operation>,
+    roster_hints: KeyHintsState,
+    perop_hints: KeyHintsState,
 }
 
 #[derive(Clone, Debug)]
@@ -1069,6 +1093,12 @@ enum Msg {
     SelectNext,
     SelectPrev,
     Quit,
+}
+
+/// Carve out the bottom row for KeyHints; return (main_area, hints_area).
+fn split_hints_row(area: Rect) -> (Rect, Rect) {
+    let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
+    (chunks[0], chunks[1])
 }
 
 impl App for DrillApp {
@@ -1083,17 +1113,28 @@ impl App for DrillApp {
             Operation { id: "op-003".into(), duration_ms: 4.1, status: "ok".into() },
         ];
         let columns = vec![
-            Column::new("ID", ratatui::layout::Constraint::Length(12)),
-            Column::new("Duration", ratatui::layout::Constraint::Length(14)),
-            Column::new("Status", ratatui::layout::Constraint::Min(10)),
+            Column::new("ID", Constraint::Length(12)),
+            Column::new("Duration", Constraint::Length(14)),
+            Column::new("Status", Constraint::Min(10)),
         ];
         let mut roster = TableState::new(operations.clone(), columns);
         roster.set_selected(Some(0));
+
+        let roster_hints = KeyHintsState::new()
+            .hint("↑/↓", "select")
+            .hint("Enter", "open")
+            .hint("q", "quit");
+        let perop_hints = KeyHintsState::new()
+            .hint("Esc", "back")
+            .hint("q", "quit");
+
         (
             State {
                 screen: Screen::Roster,
                 roster,
                 operations,
+                roster_hints,
+                perop_hints,
             },
             Command::none(),
         )
@@ -1130,11 +1171,14 @@ impl App for DrillApp {
         use envision::component::pane_layout::{PaneConfig, PaneDirection, PaneLayout, PaneLayoutState};
         let area = frame.area();
         let theme = Theme::default();
+        let (main_area, hints_area) = split_hints_row(area);
 
         match &state.screen {
             Screen::Roster => {
-                let mut ctx = RenderContext::new(frame, area, &theme).focused(true);
+                let mut ctx = RenderContext::new(frame, main_area, &theme).focused(true);
                 <Table<Operation> as Component>::view(&state.roster, &mut ctx);
+                let mut hints_ctx = RenderContext::new(frame, hints_area, &theme).focused(true);
+                <KeyHints as Component>::view(&state.roster_hints, &mut hints_ctx);
             }
             Screen::PerOp { selected } => {
                 use envision::component::styled_text::StyledInline;
@@ -1161,7 +1205,7 @@ impl App for DrillApp {
 
                 PaneLayout::view_with(
                     &layout,
-                    &mut RenderContext::new(frame, area, &theme).focused(true),
+                    &mut RenderContext::new(frame, main_area, &theme).focused(true),
                     |pane_id, child_ctx| match pane_id {
                         "header" => {
                             let inlines = vec![
@@ -1180,28 +1224,40 @@ impl App for DrillApp {
                         _ => {}
                     },
                 );
+
+                let mut hints_ctx = RenderContext::new(frame, hints_area, &theme).focused(true);
+                <KeyHints as Component>::view(&state.perop_hints, &mut hints_ctx);
             }
         }
     }
 
-    fn handle_event(event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            match key.code {
-                Key::Enter => Some(Msg::DrillIn),
-                Key::Esc => Some(Msg::DrillOut),
+    /// State-aware key handling: each screen owns only the keys it
+    /// advertises. Up/Down moves the Roster selection only when the
+    /// Roster is the active screen; Esc returns to the Roster only
+    /// from PerOp. `q` quits from any screen.
+    fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
+        let key = event.as_key()?;
+        if matches!(key.code, Key::Char('q')) {
+            return Some(Msg::Quit);
+        }
+        match state.screen {
+            Screen::Roster => match key.code {
                 Key::Down => Some(Msg::SelectNext),
                 Key::Up => Some(Msg::SelectPrev),
-                Key::Char('q') => Some(Msg::Quit),
+                Key::Enter => Some(Msg::DrillIn),
                 _ => None,
-            }
-        } else {
-            None
+            },
+            Screen::PerOp { .. } => match key.code {
+                Key::Esc => Some(Msg::DrillOut),
+                _ => None,
+            },
         }
     }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut vt = Runtime::<DrillApp, _>::virtual_builder(60, 12).build()?;
+    // 16 rows: ~13 for the main content + 1 for hints + table chrome.
+    let mut vt = Runtime::<DrillApp, _>::virtual_builder(60, 16).build()?;
 
     println!("=== Drilldown Example ===\n");
 
@@ -1216,19 +1272,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     vt.dispatch(Msg::DrillIn);
     vt.tick()?;
-    println!("After Enter (PerOp detail for op-002):");
+    println!("After Enter (PerOp detail for op-002, PerOp hints active):");
     println!("{}\n", vt.display());
 
     vt.dispatch(Msg::DrillOut);
     vt.tick()?;
-    println!("After Esc (back to Roster, selection preserved):");
+    println!("After Esc (back to Roster, selection preserved, Roster hints restored):");
     println!("{}\n", vt.display());
 
     Ok(())
 }
 ```
 
-(Surface notes pre-verified during plan-writing: `styled_line` lives at `envision::render::styled_line` with signature `(frame: &mut Frame, area: Rect, inlines: &[StyledInline], theme: &Theme)` — it renders directly, it does NOT construct a `Line`. `StyledInline` constructors: `::Plain(String)`, `::bold(String)`, `::italic(String)`, `::underlined(String)`, `::colored(String, Color)`. `PaneConfig::with_title_style` accepts `ratatui::style::Style`. `PaneLayoutState::new` returns `Result` so the example uses `.unwrap()` since the configuration is static. `RenderContext` exposes `.theme` to the child closure via `child_ctx.theme`.)
+(Surface notes pre-verified during plan-writing: `styled_line` lives at `envision::render::styled_line` with signature `(frame: &mut Frame, area: Rect, inlines: &[StyledInline], theme: &Theme)` — it renders directly, it does NOT construct a `Line`. `StyledInline` constructors: `::Plain(String)`, `::bold(String)`, `::italic(String)`, `::underlined(String)`, `::colored(String, Color)`. `PaneConfig::with_title_style` accepts `ratatui::style::Style`. `PaneLayoutState::new` returns `Result` so the example uses `.unwrap()` since the configuration is static. `RenderContext` exposes `.theme` to the child closure via `child_ctx.theme`. `KeyHintsState::new().hint(key, action)` is the chainable builder for inline hint construction; `<KeyHints as Component>::view(state, ctx)` is the render call. `App::handle_event_with_state(state, event)` at `src/app/model/mod.rs:252` is the state-aware variant; its default delegates to `handle_event`, so overriding it does not require also implementing `handle_event`.)
 
 - [ ] Save. Run `cargo build --example drilldown --all-features 2>&1 | tail -10`.
 
@@ -1361,6 +1417,12 @@ styled_line + InlineStyle) → Esc → Roster (selection preserved via
 set_selected). The pattern is the in-state-enum alternative to
 Router for navigation that doesn't need back-stack semantics.
 
+Each screen renders a per-view KeyHints bar listing only the keys
+active on that screen, and the example uses handle_event_with_state
+to gate Up/Down to the Roster (no roster-selection ticks while
+drilled in) and Esc to the PerOp. Demonstrates the discipline of
+matching advertised affordances to active bindings.
+
 src/component/router module-level docs now include a "Choosing Router
 vs an in-state enum" section explaining when each fits and
 cross-linking both examples.
@@ -1394,9 +1456,9 @@ EOF
 ### Added
 
 - `Column::new` now documents the canonical Length+Min multi-column idiom and emits a `tracing::warn!` (feature-gated) when a `Constraint::Length(n)` or `Constraint::Min(n)` column resolves to fewer cells than declared. Best-effort observability; no behavior change for consumers without `tracing` enabled. `Percentage` constraints are never flagged (no declared floor).
-- `src/harness` module docs now include a "Choosing a Harness" decision table comparing `TestHarness`, `AppHarness`, and `Runtime::virtual_terminal`.
+- `src/harness` module docs now include a "Choosing a Harness" decision table comparing `TestHarness`, `AppHarness`, and `Runtime::virtual_builder`.
 - `src/harness/snapshot` module docs now include a runnable canonical golden-file snapshot-diff recipe (dependency-free, `std::fs` + manual diff; `insta` linked as the upgrade path).
-- `examples/drilldown.rs` — master+detail drill-down pattern using `TableState`, `PaneLayout::view_with`, `styled_line`, and selection preservation across drill-in/drill-out.
+- `examples/drilldown.rs` — master+detail drill-down pattern using `TableState`, `PaneLayout::view_with`, `styled_line`, per-view `KeyHints`, and `App::handle_event_with_state` for screen-gated key bindings; selection preserved across drill-in/drill-out.
 - `Router` module docs now include guidance on choosing between `Router` (history stack) and an in-state enum (mutual-exclusion screens with restored selection).
 
 ### Changed
@@ -1494,8 +1556,8 @@ gh pr create --title "Impl: docs suite D3+D7+D8 (May 2026 closure)" --body "$(ca
 Implementation of the 10th and FINAL cadence in the May 2026 leadline brief queue. Three documentation-suite items shipped as three logically-separated signed commits:
 
 - **D3** — `Column::new` canonical Length+Min docstring + render-time clipping warning. New `pub(crate)` `detect_clipped_columns` helper returning `Vec<ClippedColumn { idx, declared, resolved, kind: Length|Min }>`. Emission feature-gated on `tracing`; dedup via `RefCell<ClipWarnState>` on TableState (interior mutability required because `Table::view` takes `&state`); keyed by `(column index, area width)` with terminal-resize re-arm.
-- **D7** — `src/harness` module docs gained "Choosing a Harness" decision table + per-harness blurbs for TestHarness / AppHarness / Runtime::virtual_terminal. `src/harness/snapshot` module docs gained runnable canonical golden-file snapshot-diff recipe (dependency-free, `std::fs` + manual diff; `insta` linked as upgrade path).
-- **D8** — New `examples/drilldown.rs` showing master+detail pattern using `TableState`, `PaneLayout::view_with`, `styled_line`, and selection preservation. Router docs gained Router-vs-in-state-enum guidance. `examples/router.rs` refreshed to use `PaneLayout::view_with` chrome instead of raw `ratatui::widgets::Paragraph + Block`.
+- **D7** — `src/harness` module docs gained "Choosing a Harness" decision table + per-harness blurbs for TestHarness / AppHarness / Runtime::virtual_builder. `src/harness/snapshot` module docs gained runnable canonical golden-file snapshot-diff recipe (dependency-free, `std::fs` + manual diff; `insta` linked as upgrade path).
+- **D8** — New `examples/drilldown.rs` showing master+detail pattern using `TableState`, `PaneLayout::view_with`, `styled_line`, per-view `KeyHints`, `App::handle_event_with_state` for screen-gated key bindings, and selection preservation. Router docs gained Router-vs-in-state-enum guidance. `examples/router.rs` refreshed to use `PaneLayout::view_with` chrome instead of raw `ratatui::widgets::Paragraph + Block`.
 
 After this PR + the tracking-doc PR merge, the May 2026 brief queue is closed.
 
