@@ -153,6 +153,44 @@ fully resolved.
 Round-2 corrections land as spec amendment `381c47f` + plan amendment
 `a0304c8` (mirroring the spec contract in Task 1 Step 5).
 
+### Round 3 (same date) — D3 column_spacing + convergence formula
+
+Re-review of the round-2 amendments (`381c47f` spec / `a0304c8` plan)
+identified one more accuracy bug in the same false-negative class,
+recorded leadline-side in `notes/envision_gaps.md` commit `78be148`.
+D7 and D8 remain approved.
+
+- **D3 (still inaccurate — third reservation term missed).** ratatui
+  0.29's `Table::render` distributes columns via
+  `Layout::horizontal(constraints).flex(Flex::Start).spacing(column_spacing)`
+  with `column_spacing` defaulting to 1 cell. envision's Table at
+  `render.rs:150-153` makes no explicit `.column_spacing(...)` or
+  `.flex(...)` call, so the defaults apply. The round-2 detection
+  used `Layout::horizontal(widths)` which defaults to spacing 0 —
+  over-distributing by `(num_columns − 1)` cells (3 cells too generous
+  for leadline's status + 3-column roster). Same false-negative class
+  as rounds 1 and 2. Fix: add `.spacing(COLUMN_SPACING)` with
+  `COLUMN_SPACING = 1` (carrying a `render.rs:150-153` back-reference).
+  `Flex::Start` already matches `Layout::horizontal`'s default, so no
+  `.flex(...)` opt-in needed.
+
+**Convergence — full ratatui 0.29 Table width formula (now mirrored
+in spec + plan):**
+
+| Step | Term | Status |
+|---|---|---|
+| 1 | `area` − Block border inset when `!chrome_owned` | ✓ round 1 |
+| 2 | − selection_width (2 cells when selected, default `WhenSelected`) | ✓ round 2 |
+| 3 | distribute `widths` with `Flex::Start` + `column_spacing = 1` | ✓ round 3 (flex was always correct via default-default match; spacing was the gap) |
+| 4 | map back skipping `has_status` | ✓ round 1 |
+
+Every term accounted for. No further reservation outstanding — this
+converges. The spec's "Canonical reservation contract" section now
+documents the formula with citations so future drift surfaces at audit.
+
+Round-3 corrections land as spec amendment `0adc828` + plan amendment
+`8d75504` (`.spacing(COLUMN_SPACING)` added to the detection split).
+
 ## Plan of attack (proposed sequencing)
 
 This is a sketch — treat as draft until reviewed.
