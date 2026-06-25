@@ -1,5 +1,9 @@
 //! Test Harness example demonstrating testing utilities.
 //!
+//! See `envision::harness` module docs for the "Choosing a Harness"
+//! decision table that contextualizes the three approaches demonstrated
+//! here.
+//!
 //! This example shows different ways to test TUI applications:
 //! - TestHarness for basic render testing with closures
 //! - Runtime::headless for testing App implementations
