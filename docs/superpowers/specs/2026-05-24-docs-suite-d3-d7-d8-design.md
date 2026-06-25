@@ -161,7 +161,12 @@ impl ClipKind {
 
 Returning a struct (instead of a bare `Vec<usize>`) keeps the warning emission site free of constraint re-lookup and makes the diagnostic content (`declared`, `resolved`, `kind`) reviewable independently of `Column` internals.
 
-**Render-path integration** — at `src/component/table/render.rs` (where `widths: Vec<Constraint>` is built), perform a one-shot layout split using `ratatui::layout::Layout::horizontal(widths.clone()).split(area)` to compute resolved widths. Compare against declared widths via `detect_clipped_columns`. For each `ClippedColumn` returned, check the lifetime-scoped dedup set on `TableState` and emit `tracing::warn!` on first detection (or on re-detection after a terminal resize — see below).
+**Render-path integration** — at `src/component/table/render.rs` (where `widths: Vec<Constraint>` is built at `render.rs:130-136`), perform a one-shot layout split using `ratatui::layout::Layout::horizontal(widths.clone()).split(inner_area)` to compute resolved widths. The split MUST mirror what ratatui actually feeds the Table widget so the detected resolved widths match the real render:
+
+- The split's input vec is the full `widths` (including the leading `Constraint::Length(2)` status reservation pushed when `has_status` is true at `render.rs:131-133`) — not just the user-column slice. Splitting only the user portion over the full area produces resolved widths that are too generous by ~2 cells when `has_status` is set, masking real clipping.
+- The split's input area is the inner area ratatui hands to the Table — `area.inner(Margin{ horizontal: 1, vertical: 1 })` when `chrome_owned == false` (the Block::default().borders(Borders::ALL) wrap at `render.rs:155-163` shrinks by one cell on each side); otherwise `area` is already inner and used as-is. Highlight-symbol reservation (`"> "`, 2 cells) is accounted for by ratatui internally on a per-row basis and does not affect the column layout — no further adjustment needed at the column level.
+
+Map the resolved widths back to user columns by skipping the status reservation: pass `&resolved_widths[has_status as usize..]` alongside `&state.columns` to `detect_clipped_columns`. The returned `ClippedColumn.idx` values then correspond to user-column indices in `state.columns` (matching the indices the consumer sees), and `resolved` reflects what the renderer actually applied. For each `ClippedColumn` returned, check the lifetime-scoped dedup set on `TableState` and emit `tracing::warn!` on first detection (or on re-detection after a terminal resize — see below).
 
 **Dedup state** — `Table::view` takes `state: &Self::State` (immutable, at `src/component/table/mod.rs:492`), so the dedup field uses interior mutability:
 
