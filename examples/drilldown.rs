@@ -17,7 +17,7 @@
 //! Surface exercised:
 //! - TableState<Operation> for the Roster
 //! - PaneLayout::view_with for the PerOp split (header + body)
-//! - styled_line + InlineStyle for emphasized metrics
+//! - styled_line + StyledInline for emphasized metrics
 //! - PaneConfig::with_title_style for the PerOp header pane
 //! - KeyHints for per-view affordance hints
 //! - App::handle_event_with_state for screen-gated key bindings

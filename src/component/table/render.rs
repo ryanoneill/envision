@@ -25,6 +25,7 @@ pub(crate) enum ClipKind {
     Min,
 }
 
+#[cfg(feature = "tracing")]
 impl ClipKind {
     /// Renders as `"Length"` or `"Min"` for warning text.
     pub(crate) fn label(self) -> &'static str {
@@ -281,10 +282,6 @@ pub(super) fn render_table<T: TableRow>(
                     clip.resolved,
                     area.width,
                 );
-                // `clip` referenced inside cfg-gated block; suppress
-                // unused-binding lint when tracing is disabled.
-                #[cfg(not(feature = "tracing"))]
-                let _ = clip;
             }
         }
     }
@@ -424,6 +421,7 @@ mod tests {
         assert_eq!(result[1].kind, ClipKind::Min);
     }
 
+    #[cfg(feature = "tracing")]
     #[test]
     fn clip_kind_label_returns_constraint_name() {
         assert_eq!(ClipKind::Length.label(), "Length");

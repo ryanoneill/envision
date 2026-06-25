@@ -84,10 +84,10 @@ impl Column {
     /// `Column::new` takes any `ratatui::layout::Constraint`. The most
     /// common patterns:
     ///
-    /// - [`Constraint::Length(n)`] — a hard request for exactly `n` cells.
-    /// - [`Constraint::Min(n)`] — a minimum of `n` cells, growing to fill
+    /// - [`Constraint::Length`] `(n)` — a hard request for exactly `n` cells.
+    /// - [`Constraint::Min`] `(n)` — a minimum of `n` cells, growing to fill
     ///   available space. Typical choice for one "flexible" column.
-    /// - [`Constraint::Percentage(n)`] — `n%` of the resolved area,
+    /// - [`Constraint::Percentage`] `(n)` — `n%` of the resolved area,
     ///   partitioned left-to-right with the other constraints.
     ///
     /// `Length` and `Min` both declare an absolute floor. When the
