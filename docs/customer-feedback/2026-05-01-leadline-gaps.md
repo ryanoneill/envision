@@ -125,6 +125,34 @@ frames (D7 removal trigger) and enable envision's `tracing` feature in dev +
 a subscriber so the D3 clip warning surfaces. Tracked leadline-side in
 `notes/envision_gaps.md` (D3/D7/D8 review notes, 2026-06-25).
 
+### Round 2 (same date) — D3 highlight-symbol false-negative
+
+Re-review of the round-1 amendments (`7a271ba` spec / `e994d40` plan)
+surfaced one more accuracy bug in D3, recorded leadline-side in
+`notes/envision_gaps.md` commit `7fb9383`. D7 and D8 amendments
+fully resolved.
+
+- **D3 (still inaccurate).** envision's `Table` is constructed with
+  `.highlight_symbol("> ")` at `render.rs:153` and no explicit
+  `.highlight_spacing(...)` call, so ratatui's default
+  `HighlightSpacing::WhenSelected` applies — ratatui reserves the
+  highlight symbol's display width (2 cells) from the
+  column-distribution area BEFORE laying out columns whenever
+  `state.selected.is_some()` (the normal case). The round-1 amendment
+  split over the full `inner_area.width` without subtracting that
+  reservation, so resolved widths come out ~2 cells too generous on
+  every render with a selected row — the same false-negative the
+  amendment set out to eliminate, reintroduced via the highlight
+  symbol. The spec's "highlight-symbol does not affect column layout"
+  note was wrong and is being corrected. Fix: subtract 2 from the
+  column-distribution area's width when `state.selected.is_some()`
+  before the `Layout::horizontal::split`. Best-effort diagnostic, so
+  not a release blocker, but defeats the accuracy the D3 amendment
+  was for.
+
+Round-2 corrections land as spec amendment `381c47f` + plan amendment
+`a0304c8` (mirroring the spec contract in Task 1 Step 5).
+
 ## Plan of attack (proposed sequencing)
 
 This is a sketch — treat as draft until reviewed.
