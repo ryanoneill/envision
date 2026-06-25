@@ -334,8 +334,11 @@ Expected: clean check.
     //
     // Skipped entirely when the table has no user columns.
     if !state.columns.is_empty() {
-        // Two adjustments to mirror what ratatui actually distributes
-        // column widths over:
+        // Mirror the full ratatui 0.29 Table width formula so detection
+        // matches what the renderer actually distributes columns over.
+        // Every term below corresponds to a row in the spec's "Canonical
+        // reservation contract" table.
+        //
         //   1. Border margin: when !chrome_owned the table is wrapped in
         //      Block::default().borders(Borders::ALL) below, which
         //      shrinks the inner rect by 1 cell on each side. When
@@ -346,7 +349,18 @@ Expected: clean check.
         //      default HighlightSpacing::WhenSelected applies — when
         //      state.selected.is_some(), ratatui reserves 2 cells from
         //      the column-distribution area before laying out columns.
+        //   3. column_spacing: the Table is constructed with no explicit
+        //      .column_spacing(...) call, so ratatui's default of 1 cell
+        //      between columns applies. Layout::horizontal's default
+        //      spacing is 0, so detection must opt into .spacing(1) to
+        //      mirror what ratatui actually does — otherwise it
+        //      over-distributes by (num_columns - 1) cells.
+        //   4. has_status offset: see slicing comment below.
+        //
+        // Flex::Start is the default for both Table and Layout::horizontal
+        // — no explicit .flex(...) call needed.
         const HIGHLIGHT_SYMBOL_WIDTH: u16 = 2; // matches "> " set at render.rs:153
+        const COLUMN_SPACING: u16 = 1; // matches ratatui Table default; render.rs:150-153 sets no override
         let mut col_dist_area = if chrome_owned {
             area
         } else {
@@ -358,6 +372,7 @@ Expected: clean check.
         }
         let resolved_rects =
             ratatui::layout::Layout::horizontal(widths.iter().copied())
+                .spacing(COLUMN_SPACING)
                 .split(col_dist_area);
         // Skip the status reservation when mapping back to user columns.
         // resolved_rects[has_status as usize..] aligns 1:1 with state.columns.
