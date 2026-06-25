@@ -53,6 +53,22 @@
 //!     }
 //! }
 //! ```
+//!
+//! # Choosing Router vs. an in-state enum
+//!
+//! `Router` provides a history stack with back navigation, breadcrumbs,
+//! and deep-link semantics. Reach for it when:
+//!
+//! - Users need a "Back" button or breadcrumb trail
+//! - Screens can be revisited in different orders
+//! - You want to model "where did the user come from?"
+//!
+//! For simpler navigation — where screens are mutually exclusive and
+//! "back" just means "return to the prior selection" — an in-state
+//! enum (e.g., `enum Screen { Roster, PerOp { selected: usize } }`) is
+//! lighter and clearer. See `examples/drilldown.rs` for the
+//! in-state-enum pattern and `examples/router.rs` for the Router
+//! pattern.
 
 use super::{Component, RenderContext};
 

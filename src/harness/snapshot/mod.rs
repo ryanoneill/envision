@@ -1,4 +1,98 @@
 //! Snapshot testing support.
+//!
+//! # Golden-file snapshot pattern
+//!
+//! Envision keeps snapshot testing dependency-light: a render produces
+//! a string, and you compare it against a fixture on disk. The recipe
+//! below provides two functions — `update_golden` writes the fixture
+//! unconditionally, `assert_matches_golden` reads-and-compares and
+//! panics on mismatch with a unified diff.
+//!
+//! Typical workflow: invoke `update_golden` once (often gated by an
+//! `UPDATE_GOLDEN` env check at the call site) to capture the expected
+//! output, then call `assert_matches_golden` from the test body to
+//! verify on subsequent runs.
+//!
+//! ```rust
+//! use std::fs;
+//! use std::path::Path;
+//!
+//! fn update_golden(path: &Path, content: &str) {
+//!     if let Some(parent) = path.parent() {
+//!         fs::create_dir_all(parent).unwrap();
+//!     }
+//!     fs::write(path, content).unwrap();
+//! }
+//!
+//! fn assert_matches_golden(path: &Path, actual: &str) {
+//!     let expected = fs::read_to_string(path).unwrap_or_else(|e| {
+//!         panic!(
+//!             "golden fixture missing at {}: {} (run with UPDATE_GOLDEN=1 to create)",
+//!             path.display(),
+//!             e,
+//!         )
+//!     });
+//!     if expected != actual {
+//!         panic!(
+//!             "snapshot mismatch at {}:\n{}",
+//!             path.display(),
+//!             unified_diff(&expected, actual),
+//!         );
+//!     }
+//! }
+//!
+//! fn unified_diff(expected: &str, actual: &str) -> String {
+//!     let mut out = String::new();
+//!     let e: Vec<&str> = expected.lines().collect();
+//!     let a: Vec<&str> = actual.lines().collect();
+//!     for i in 0..e.len().max(a.len()) {
+//!         match (e.get(i), a.get(i)) {
+//!             (Some(l), Some(r)) if l == r => out.push_str(&format!("  {l}\n")),
+//!             (Some(l), Some(r)) => {
+//!                 out.push_str(&format!("- {l}\n"));
+//!                 out.push_str(&format!("+ {r}\n"));
+//!             }
+//!             (Some(l), None) => out.push_str(&format!("- {l}\n")),
+//!             (None, Some(r)) => out.push_str(&format!("+ {r}\n")),
+//!             (None, None) => {}
+//!         }
+//!     }
+//!     out
+//! }
+//!
+//! // End-to-end demo using a tempdir so the doc-test is
+//! // self-contained.
+//! let tmp = tempfile::tempdir().unwrap();
+//! let path = tmp.path().join("golden.txt");
+//! let rendered = "row 1\nrow 2\nrow 3\n";
+//!
+//! // First run: capture the fixture.
+//! update_golden(&path, rendered);
+//!
+//! // Subsequent runs: assert match.
+//! assert_matches_golden(&path, rendered);
+//! ```
+//!
+//! ## Real-world call-site sketch
+//!
+//! ```ignore
+//! let path = Path::new("tests/golden/dashboard.txt");
+//! let actual = harness.snapshot_plain();
+//!
+//! if std::env::var("UPDATE_GOLDEN").is_ok() {
+//!     update_golden(path, &actual);
+//! } else {
+//!     assert_matches_golden(path, &actual);
+//! }
+//! ```
+//!
+//! ## When to upgrade
+//!
+//! For richer diffs, review tooling (`cargo insta review`), and
+//! parallel test isolation, switch to the [`insta`](https://docs.rs/insta)
+//! crate. envision's own snapshot tests use `insta` internally; the
+//! pattern above is offered as a starting point for downstream
+//! consumers who want zero new dependencies.
 
 use std::path::Path;
 

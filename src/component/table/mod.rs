@@ -54,14 +54,18 @@
 //! }));
 //! ```
 
+mod clip_warn;
 mod render;
 mod state;
 mod types;
 
 pub use types::{Column, InitialSort, SortDirection, TableMessage, TableOutput, TableRow};
 
+use std::cell::RefCell;
 use std::collections::HashSet;
 use std::marker::PhantomData;
+
+use clip_warn::ClipWarnState;
 
 use ratatui::prelude::*;
 
@@ -99,13 +103,23 @@ pub struct TableState<T: TableRow> {
     /// serialized.
     #[cfg_attr(feature = "serialization", serde(skip))]
     cross_variant_warned_cols: HashSet<usize>,
+    /// Transient observability state for clip-warning dedup. Tracks the
+    /// last area width at which clipping was evaluated and the set of
+    /// column indices already warned about. Reset when the area width
+    /// changes (terminal resize re-arms detection).
+    ///
+    /// Runtime-only state; not part of logical equality and not
+    /// serialized.
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    clip_warn_state: RefCell<ClipWarnState>,
 }
 
 impl<T: TableRow + PartialEq> PartialEq for TableState<T> {
     fn eq(&self, other: &Self) -> bool {
-        // `cross_variant_warned_cols` is intentionally excluded — it's
-        // transient, render-pass-scoped diagnostics state, not part of
-        // the logical equality of the table.
+        // `cross_variant_warned_cols` and `clip_warn_state` are
+        // intentionally excluded — both are transient diagnostics state
+        // (sort-pass and render-pass respectively), not part of the
+        // logical equality of the table.
         self.rows == other.rows
             && self.columns == other.columns
             && self.selected == other.selected
@@ -126,6 +140,7 @@ impl<T: TableRow> Default for TableState<T> {
             filter_text: String::new(),
             scroll: ScrollState::default(),
             cross_variant_warned_cols: HashSet::new(),
+            clip_warn_state: RefCell::new(ClipWarnState::default()),
         }
     }
 }
@@ -508,6 +523,8 @@ mod filter_tests;
 mod multi_sort_tests;
 #[cfg(test)]
 mod resize_tests;
+#[cfg(test)]
+mod snapshot_tests;
 #[cfg(test)]
 mod sort_proptests;
 #[cfg(test)]

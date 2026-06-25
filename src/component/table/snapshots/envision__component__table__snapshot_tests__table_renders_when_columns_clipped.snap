@@ -1,0 +1,10 @@
+---
+source: src/component/table/snapshot_tests.rs
+expression: term.backend().to_string()
+---
+┌──────────────────┐
+│  Long     Also Lo│
+│                  │
+│> aaa      bbb    │
+│  ccc      ddd    │
+└──────────────────┘

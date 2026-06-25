@@ -347,6 +347,18 @@ as `None` — behavior identical to pre-D12.
 **No struct-literal break** for external consumers — fields are private
 (matches existing field visibility on the struct).
 
+### Added
+
+- `Column::new` now documents the canonical Length+Min multi-column idiom and emits a `tracing::warn!` (feature-gated) when a `Constraint::Length(n)` or `Constraint::Min(n)` column resolves to fewer cells than declared. Best-effort observability; no behavior change for consumers without `tracing` enabled. `Percentage` constraints are never flagged (no declared floor).
+- `src/harness` module docs now include a "Choosing a Harness" decision table comparing `TestHarness`, `AppHarness`, and `Runtime::virtual_builder`.
+- `src/harness/snapshot` module docs now include a runnable canonical golden-file snapshot-diff recipe (dependency-free, `std::fs` + manual diff; `insta` linked as the upgrade path).
+- `examples/drilldown.rs` — master+detail drill-down pattern using `TableState`, `PaneLayout::view_with`, `styled_line`, per-view `KeyHints`, and `App::handle_event_with_state` for screen-gated key bindings; selection preserved across drill-in/drill-out.
+- `Router` module docs now include guidance on choosing between `Router` (history stack) and an in-state enum (mutual-exclusion screens with restored selection).
+
+### Changed
+
+- `examples/router.rs` screen-render bodies now use `PaneLayout::view_with` (was: raw `ratatui::widgets::Paragraph` + `Block::borders`). No behavior change; better showcase of envision surface.
+
 ## [Unreleased] — Breaking: `App::init` takes args; `RuntimeBuilder` split
 
 ### Breaking changes — `App::init` takes args

@@ -79,18 +79,55 @@ pub struct Column {
 impl Column {
     /// Creates a new column with the given header and width.
     ///
+    /// # Width semantics
+    ///
+    /// `Column::new` takes any `ratatui::layout::Constraint`. The most
+    /// common patterns:
+    ///
+    /// - [`Constraint::Length`] `(n)` — a hard request for exactly `n` cells.
+    /// - [`Constraint::Min`] `(n)` — a minimum of `n` cells, growing to fill
+    ///   available space. Typical choice for one "flexible" column.
+    /// - [`Constraint::Percentage`] `(n)` — `n%` of the resolved area,
+    ///   partitioned left-to-right with the other constraints.
+    ///
+    /// `Length` and `Min` both declare an absolute floor. When the
+    /// resolved area is narrower than the declared floor — a `Length(n)`
+    /// column that got `<n` cells, or a `Min(n)` column that got `<n`
+    /// cells — the column emits a warning (see "Clipping diagnostics").
+    /// `Percentage` is a share of the resolved area and has no absolute
+    /// floor, so it is never flagged.
+    ///
+    /// For these three idioms the shorthand constructors
+    /// [`Column::fixed`], [`Column::min`], and [`Column::percent`] read
+    /// more directly than `Column::new`.
+    ///
     /// The column is not sortable by default.
     ///
     /// # Example
+    ///
+    /// Three-column layout: fixed ID, fixed price, flexible description.
     ///
     /// ```rust
     /// use envision::component::Column;
     /// use ratatui::layout::Constraint;
     ///
-    /// let col = Column::new("Name", Constraint::Length(20));
-    /// assert_eq!(col.header(), "Name");
-    /// assert!(!col.is_sortable());
+    /// let cols = vec![
+    ///     Column::new("ID",          Constraint::Length(8)),
+    ///     Column::new("Price",       Constraint::Length(10)),
+    ///     Column::new("Description", Constraint::Min(20)),
+    /// ];
+    /// assert_eq!(cols.len(), 3);
+    /// assert_eq!(cols[0].width(), Constraint::Length(8));
+    /// assert_eq!(cols[2].width(), Constraint::Min(20));
     /// ```
+    ///
+    /// # Clipping diagnostics
+    ///
+    /// When a `Length(n)` or `Min(n)` column resolves to fewer than `n`
+    /// cells, the column emits a `tracing::warn!` once. Dedup is per
+    /// `(column index, area width)`: the warning re-arms when the
+    /// terminal is resized. This is best-effort observability — the
+    /// table still renders. Enable with the `tracing` feature.
     pub fn new(header: impl Into<String>, width: Constraint) -> Self {
         Self {
             header: header.into(),
