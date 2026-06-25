@@ -2,6 +2,7 @@
 //!
 //! Extracted from the main table module to keep file sizes manageable.
 
+use std::cell::RefCell;
 use std::collections::HashSet;
 
 use super::{
@@ -9,6 +10,7 @@ use super::{
 };
 use crate::component::Component;
 use crate::component::cell::{RowStatus, SortKey};
+use crate::component::table::clip_warn::ClipWarnState;
 use crate::scroll::ScrollState;
 
 impl<T: TableRow> TableState<T> {
@@ -51,6 +53,7 @@ impl<T: TableRow> TableState<T> {
             filter_text: String::new(),
             scroll,
             cross_variant_warned_cols: HashSet::new(),
+            clip_warn_state: RefCell::new(ClipWarnState::default()),
         }
     }
 
@@ -94,6 +97,7 @@ impl<T: TableRow> TableState<T> {
             filter_text: String::new(),
             scroll,
             cross_variant_warned_cols: HashSet::new(),
+            clip_warn_state: RefCell::new(ClipWarnState::default()),
         }
     }
 
@@ -749,5 +753,120 @@ impl<T: TableRow + 'static> TableState<T> {
     /// ```
     pub fn update(&mut self, msg: TableMessage) -> Option<TableOutput<T>> {
         Table::update(self, msg)
+    }
+}
+
+#[cfg(test)]
+impl<T: TableRow> TableState<T> {
+    pub(super) fn clip_warn_state_for_test(
+        &self,
+    ) -> &std::cell::RefCell<crate::component::table::clip_warn::ClipWarnState> {
+        &self.clip_warn_state
+    }
+}
+
+#[cfg(test)]
+mod state_dedup_tests {
+    use super::*;
+    use ratatui::layout::{Constraint, Rect};
+
+    // A trivial TableRow impl for tests.
+    #[derive(Clone, Debug, PartialEq)]
+    struct R {
+        v: String,
+    }
+    impl TableRow for R {
+        fn cells(&self) -> Vec<crate::component::cell::Cell> {
+            vec![crate::component::cell::Cell::from(self.v.clone())]
+        }
+    }
+
+    fn render_with_state(state: &TableState<R>, width: u16) {
+        use super::super::render;
+        use crate::theme::Theme;
+        use ratatui::Terminal;
+        use ratatui::backend::TestBackend;
+
+        let backend = TestBackend::new(width, 5);
+        let mut term = Terminal::new(backend).unwrap();
+        let theme = Theme::default();
+        term.draw(|frame| {
+            render::render_table(
+                state,
+                frame,
+                Rect::new(0, 0, width, 5),
+                &theme,
+                false,
+                false,
+                false,
+            );
+        })
+        .unwrap();
+    }
+
+    #[test]
+    fn clip_warn_state_dedupes_within_same_area_width() {
+        let columns = vec![Column::new("X", Constraint::Length(20))];
+        let state = TableState::new(vec![R { v: "a".into() }], columns);
+        render_with_state(&state, 10);
+        let after_first = state
+            .clip_warn_state_for_test()
+            .borrow()
+            .warned_cols
+            .clone();
+        render_with_state(&state, 10);
+        let after_second = state
+            .clip_warn_state_for_test()
+            .borrow()
+            .warned_cols
+            .clone();
+        assert_eq!(after_first, after_second);
+        assert!(after_first.contains(&0));
+    }
+
+    #[test]
+    fn clip_warn_state_re_arms_on_area_width_change() {
+        let columns = vec![Column::new("X", Constraint::Length(20))];
+        let state = TableState::new(vec![R { v: "a".into() }], columns);
+        render_with_state(&state, 10); // clipped
+        assert!(
+            state
+                .clip_warn_state_for_test()
+                .borrow()
+                .warned_cols
+                .contains(&0)
+        );
+        render_with_state(&state, 50); // not clipped, dedup re-arms
+        assert!(
+            state
+                .clip_warn_state_for_test()
+                .borrow()
+                .warned_cols
+                .is_empty()
+        );
+        render_with_state(&state, 10); // clipped again, fresh re-arm
+        assert!(
+            state
+                .clip_warn_state_for_test()
+                .borrow()
+                .warned_cols
+                .contains(&0)
+        );
+    }
+
+    #[test]
+    fn clip_warn_state_defaults_empty_on_new_table_state() {
+        let state: TableState<R> = TableState::default();
+        let s = state.clip_warn_state_for_test().borrow();
+        assert!(s.last_area_width.is_none());
+        assert!(s.warned_cols.is_empty());
+    }
+
+    #[test]
+    fn clip_warn_state_initialized_in_constructor() {
+        let state = TableState::new(vec![R { v: "x".into() }], vec![]);
+        let s = state.clip_warn_state_for_test().borrow();
+        assert!(s.last_area_width.is_none());
+        assert!(s.warned_cols.is_empty());
     }
 }
