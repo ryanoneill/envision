@@ -161,12 +161,20 @@ impl ClipKind {
 
 Returning a struct (instead of a bare `Vec<usize>`) keeps the warning emission site free of constraint re-lookup and makes the diagnostic content (`declared`, `resolved`, `kind`) reviewable independently of `Column` internals.
 
-**Render-path integration** — at `src/component/table/render.rs` (where `widths: Vec<Constraint>` is built at `render.rs:130-136`), perform a one-shot layout split using `ratatui::layout::Layout::horizontal(widths.clone()).split(inner_area)` to compute resolved widths. The split MUST mirror what ratatui actually feeds the Table widget so the detected resolved widths match the real render:
+**Render-path integration** — at `src/component/table/render.rs` (where `widths: Vec<Constraint>` is built at `render.rs:130-136`), perform a one-shot layout split that mirrors the *full* ratatui 0.29 `Table` width formula. Anything short of full-formula parity reintroduces false-negatives.
 
-- The split's input vec is the full `widths` (including the leading `Constraint::Length(2)` status reservation pushed when `has_status` is true at `render.rs:131-133`) — not just the user-column slice. Splitting only the user portion over the full area produces resolved widths that are too generous by ~2 cells when `has_status` is set, masking real clipping.
-- The split's input area is the inner area ratatui hands to the Table. Start from `area.inner(Margin{ horizontal: 1, vertical: 1 })` when `chrome_owned == false` (the Block::default().borders(Borders::ALL) wrap at `render.rs:155-163` shrinks by one cell on each side); otherwise `area` is already inner. Then subtract the highlight-symbol reservation: ratatui's default `HighlightSpacing::WhenSelected` reserves the highlight symbol's display width (2 cells for `"> "` set at `render.rs:153`) from the column-distribution area whenever `state.selected.is_some()`. When a row is selected, subtract 2 from the width of that area BEFORE calling `Layout::horizontal::split`. The Table widget is constructed with no explicit `highlight_spacing` call, so the default applies. (`state.selected` is the field at `state.rs:486`-vintage `TableState`.)
+**Canonical reservation contract.** Every term in the formula must be accounted for; this is the gating checklist:
 
-Map the resolved widths back to user columns by skipping the status reservation: pass `&resolved_widths[has_status as usize..]` alongside `&state.columns` to `detect_clipped_columns`. The returned `ClippedColumn.idx` values then correspond to user-column indices in `state.columns` (matching the indices the consumer sees), and `resolved` reflects what the renderer actually applied. For each `ClippedColumn` returned, check the lifetime-scoped dedup set on `TableState` and emit `tracing::warn!` on first detection (or on re-detection after a terminal resize — see below).
+| Step | Term | Source | Detection handling |
+|---|---|---|---|
+| 1 | `area` − Block border inset (1 cell each side) when `!chrome_owned` | Block at `render.rs:155-163` | `area.inner(Margin{ horizontal: 1, vertical: 1 })` when `!chrome_owned`, else `area` |
+| 2 | − selection reservation (2 cells when `state.selected.is_some()`) | `.highlight_symbol("> ")` at `render.rs:153` + default `HighlightSpacing::WhenSelected` (no explicit `.highlight_spacing(...)` call) | Subtract `HIGHLIGHT_SYMBOL_WIDTH = 2` from area width when `state.selected.is_some()` |
+| 3 | Distribute `widths` (incl. leading `Length(2)` status slot when `has_status`) with `Flex::Start` + `column_spacing = 1` | `Table::new(rows, widths)` at `render.rs:150-153`, no explicit `.column_spacing(...)` or `.flex(...)` — ratatui defaults: `Flex::Start`, `column_spacing = 1` | `Layout::horizontal(widths.iter().copied()).spacing(COLUMN_SPACING).split(col_dist_area)` with `COLUMN_SPACING = 1`. `Flex::Start` matches `Layout::horizontal`'s default — no explicit `.flex(...)` needed. |
+| 4 | Map resolved column rects back to user columns | `widths[0]` is the status slot when `has_status` | Slice `resolved_rects[has_status as usize..]` before zipping with `state.columns` — `ClippedColumn.idx` then aligns with `state.columns` indices the consumer sees |
+
+The numeric reservation constants (`HIGHLIGHT_SYMBOL_WIDTH = 2`, `COLUMN_SPACING = 1`) carry inline back-references to `render.rs:153` / `render.rs:150-153` so any future change to the Table widget's construction surfaces alongside the detection call site at audit time.
+
+For each `ClippedColumn` returned, check the lifetime-scoped dedup set on `TableState` and emit `tracing::warn!` on first detection (or on re-detection after a terminal resize — see below).
 
 **Dedup state** — `Table::view` takes `state: &Self::State` (immutable, at `src/component/table/mod.rs:492`), so the dedup field uses interior mutability:
 
