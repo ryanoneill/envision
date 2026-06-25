@@ -320,32 +320,45 @@ Expected: clean check.
     }
 ```
 
-- [ ] Immediately after the `widths` vector is fully populated, add the resolve-and-detect-and-emit block. The split MUST mirror what ratatui actually feeds the Table widget so detection matches the real render — see spec's "Render-path integration" section. Concretely: feed the FULL `widths` vec (incl. the status reservation) to `Layout::horizontal`, split over the inner area ratatui actually uses for the table (subtract the border margin when `!chrome_owned`), and slice the resolved rects by `has_status as usize` before mapping back to user columns.
+- [ ] Immediately after the `widths` vector is fully populated, add the resolve-and-detect-and-emit block. The split MUST mirror what ratatui actually feeds the Table widget so detection matches the real render — see spec's "Render-path integration" section. Concretely: feed the FULL `widths` vec (incl. the status reservation) to `Layout::horizontal`, split over the column-distribution area ratatui actually uses (subtract the border margin when `!chrome_owned`, AND subtract the highlight-symbol reservation when a row is selected), then slice the resolved rects by `has_status as usize` before mapping back to user columns.
 
 ```rust
     // Best-effort clip-warning diagnostic: compute resolved column
     // widths via a one-shot Layout split that mirrors what ratatui
     // feeds the Table widget — full `widths` vec (incl. status
-    // reservation) over the inner area — then slice off the status
-    // reservation before mapping back to user columns. Detects
-    // Length/Min declared-floor violations, dedups per
-    // (column index, area width) across the TableState's lifetime,
-    // and emits a tracing warning on first detection.
+    // reservation) over the column-distribution area — then slice
+    // off the status reservation before mapping back to user
+    // columns. Detects Length/Min declared-floor violations, dedups
+    // per (column index, area width) across the TableState's
+    // lifetime, and emits a tracing warning on first detection.
     //
     // Skipped entirely when the table has no user columns.
     if !state.columns.is_empty() {
-        // ratatui wraps the table in Block::default().borders(Borders::ALL)
-        // when !chrome_owned (see the block construction below), which
-        // shrinks the inner rect by 1 cell on each side. When chrome_owned,
-        // the parent owns the border and `area` is already inner.
-        let inner_area = if chrome_owned {
+        // Two adjustments to mirror what ratatui actually distributes
+        // column widths over:
+        //   1. Border margin: when !chrome_owned the table is wrapped in
+        //      Block::default().borders(Borders::ALL) below, which
+        //      shrinks the inner rect by 1 cell on each side. When
+        //      chrome_owned, `area` is already inner.
+        //   2. Highlight-symbol reservation: the Table is constructed
+        //      with .highlight_symbol("> ") (display width 2) and no
+        //      explicit .highlight_spacing(...) call, so ratatui's
+        //      default HighlightSpacing::WhenSelected applies — when
+        //      state.selected.is_some(), ratatui reserves 2 cells from
+        //      the column-distribution area before laying out columns.
+        const HIGHLIGHT_SYMBOL_WIDTH: u16 = 2; // matches "> " set at render.rs:153
+        let mut col_dist_area = if chrome_owned {
             area
         } else {
             area.inner(ratatui::layout::Margin { horizontal: 1, vertical: 1 })
         };
+        if state.selected.is_some() {
+            col_dist_area.width =
+                col_dist_area.width.saturating_sub(HIGHLIGHT_SYMBOL_WIDTH);
+        }
         let resolved_rects =
             ratatui::layout::Layout::horizontal(widths.iter().copied())
-                .split(inner_area);
+                .split(col_dist_area);
         // Skip the status reservation when mapping back to user columns.
         // resolved_rects[has_status as usize..] aligns 1:1 with state.columns.
         let user_resolved: Vec<u16> = resolved_rects
