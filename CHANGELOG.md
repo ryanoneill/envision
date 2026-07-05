@@ -56,6 +56,29 @@ New accessor: `state.values() -> ResourceValues` (closes accessor-symmetry gap w
 
 See `MIGRATION.md#v016x-to-v0170`.
 
+#### Component selection accessors unified on `selected_item()`
+
+Six components had divergent accessor shapes for "which is selected?" — literal aliases (`selected_value()` / `selected_row()` / `selected()`), semantic outliers (`active_tab()` on tab_bar), and type-incoherent overloads (heatmap's `selected_value() -> f64` returning the data value at coordinates, not the selection itself). Unified on canonical `selected_item()` returning `Option<&T>` where the concept fits; renamed the semantic outliers to disambiguate:
+
+- `dropdown::selected_value()` — deleted; use `selected_item() -> Option<&str>`
+- `select::selected_value()` — deleted; use `selected_item() -> Option<&str>`
+- `heatmap::selected_value() -> Option<f64>` — renamed to `value_at_selection() -> Option<f64>` (returns data value at cursor coords; not a selection accessor)
+- `tab_bar::selected()` — deleted; use `selected_index()`
+- `tab_bar::active_tab() -> Option<&Tab>` — renamed to `selected_item() -> Option<&Tab>`
+- `tab_bar::active_tab_mut() -> Option<&mut Tab>` — renamed to `selected_item_mut() -> Option<&mut Tab>`
+- `data_grid::selected()` — deleted; use `selected_index()`
+- `data_grid::selected_row()` — deleted; use `selected_item()`
+- `table::selected()` — deleted; use `selected_index()`
+- `table::selected_row()` — deleted; use `selected_item()`
+
+Closes audit finding #6 (`selected_value` / `selected_item` / `active_tab` divergence). See `MIGRATION.md#v016x-to-v0170` for the full migration table.
+
+#### `MessageSender<M>` replaces `tokio::sync::mpsc::Sender` in AppHarness surface
+
+`AppHarness::message_sender()` now returns a first-party `MessageSender<A::Message>` newtype instead of raw `tokio::sync::mpsc::Sender<A::Message>`. Consumers no longer need `tokio` as a direct dependency to use the accessor. Full tokio Sender semantics preserved through passthrough methods; an explicit `MessageSender::into_inner()` escape hatch is available for consumers needing `reserve` / `send_timeout` / `same_channel` / `downgrade` / `closed()` future.
+
+Closes audit finding #8 (dependency leakage on AppHarness surface). See `MIGRATION.md#v016x-to-v0170` for the migration table.
+
 ### Added
 
 #### Chrome ownership protocol (G2 + D2 + D11)
@@ -140,6 +163,14 @@ Removed leaf variants: `Bold`, `Italic`, `Underline`, `Strikethrough`, `Colored`
 - `ResourceGaugeState::values(&self) -> ResourceValues` — matching accessor for the existing `set_values` multi-field mutator; closes the audit's 9/9 scorecard gap.
 - New `examples/resource_gauge.rs` — K8s pod-quota shape.
 
+#### `MessageSender<M>` + `MessageSendError<T>` + `TrySendError<T>` (this cadence, Unit 2)
+
+New first-party types in `envision::harness` (re-exported at crate root and prelude):
+
+- `MessageSender<M: Send + 'static>` — newtype wrapper around `tokio::sync::mpsc::Sender<M>`. Full passthrough surface: `send()`, `try_send()`, `is_closed()`, `capacity()`, `max_capacity()`, plus `into_inner()` explicit escape hatch. `Clone + Debug + Send + Sync` (when `M: Send`).
+- `MessageSendError<T>(pub T)` — returned by `send()` when the receiver has been dropped. Carries the message back so the caller can inspect it. Implements `Debug + Display + Error`.
+- `TrySendError<T>::{Full(T), Closed(T)}` — returned by `try_send()`. Preserves tokio's Full/Closed distinction so consumers can retry-on-full or exit-on-closed with a match arm. Includes `into_inner(self) -> T` extractor.
+
 ### Changed
 
 #### Chrome ownership protocol
@@ -153,10 +184,11 @@ Removed leaf variants: `Bold`, `Italic`, `Underline`, `Strikethrough`, `Colored`
 
 ### Known Deferred Findings
 
-The 2026-07-04 audit (Fable) surfaced two API incoherences deliberately deferred beyond v0.17.0. Both are tracked as follow-up cadences and will be addressed in v0.18.0 or later:
+The 2026-07-04 audit surfaced items that remain deferred beyond v0.17.0:
 
-- **`selected_value` / `selected_item` / `active_tab` accessor shape divergence** across `dropdown`, `select`, `heatmap`, `tab_bar`, and `data_grid`. `dropdown::selected_value()` and `dropdown::selected_item()` are literal `&str` aliases; `heatmap::selected_value()` returns `f64` (type-incoherent with the string variant); `tab_bar` uses `active_tab()` instead of `selected_item()`; `data_grid` has four selection accessors (`selected`, `selected_index`, `selected_row`, `selected_item`). Requires a dedicated consistency-sweep cadence.
-- **Dependency leakage in 8 public signatures** (`ratatui::layout::Position`, `ratatui::buffer::Cell`, `ratatui::style::Color`, `ratatui::style::Style`, `ratatui::widgets::Widget`, `tokio::sync::mpsc::Sender` at `harness/app_harness/mod.rs:264`, plus 2 others). Architectural discussion; not release-blocking.
+- **`selected()` alias on ~15 additional components** (accordion, tabs, radio_group, searchable_list, selectable_list, tree, menu, box_plot, loading_list, alert_panel, and others) — these components have `selected() -> Option<usize>` as a literal alias for `selected_index()`, similar to the aliases just removed from tab_bar/data_grid/table in this release but without the additional divergence that motivated their inclusion this round. Scheduled for **Cadence D** (v0.18+): finish the consistency sweep across the remaining alias sites.
+
+If audit findings #6 (selected_value/selected_item/active_tab across 5 originally-flagged components) and #8 (dependency leakage in 8 public signatures) previously appeared here, they were closed by the v0.17.0 consistency-cleanup cadence (see Breaking Changes / Added subsections above).
 
 ## [0.16.0] - 2026-04-20
 
