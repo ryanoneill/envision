@@ -5,366 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — Chrome ownership protocol (G2 + D2 + D11)
+## [Unreleased]
 
-### Chrome ownership protocol (G2 + D2 + D11)
+### Breaking Changes
 
-`RenderContext::chrome_owned: bool` — new public field. `true` signals to
-child components that the parent has already drawn the chrome (border,
-title, focus ring); children consult this flag and suppress their own
-chrome. Defaults to `false`. Propagates through `with_area`. Set
-automatically by `PaneLayout::view_with`.
+#### `App::init` takes args; `RuntimeBuilder` split
 
-`PaneLayout::view_with(state, ctx, render_child)` — new closure-based
-inherent method. Draws pane chrome and invokes `render_child(pane_id,
-&mut child_ctx)` per pane with `child_ctx.chrome_owned = true` and
-`child_ctx.area` already inset for the chrome. Replaces the consumer-side
-three-step dance (`state.layout()` + `view()` + manual `Margin{1,1}` +
-manual child render).
-
-`PaneLayout::view` (the `Component` trait method) keeps its chrome-only
-semantics — generic-`Component` code (FocusManager, harness, registry)
-gets chrome only without children, as before. Embedded children require
-calling `view_with` directly on the concrete type.
-
-Components patched to consult `ctx.chrome_owned` and skip their outer
-Block when true: `Table`, `StyledText`, plus the broader audit set
-(LogViewer, ScrollableText, ScrollView, MarkdownRenderer, ConversationView,
-DataGrid, MetricsDashboard, KeyHints, StatusLog, EventStream,
-LogCorrelation, TerminalOutput, FileBrowser, FlameGraph, SearchableList,
-SelectableList, AlertPanel, HelpPanel, TitleCard, BoxPlot, Histogram,
-Heatmap, Treemap, Diagram, Sparkline, Chart, Timeline, Calendar,
-UsageDisplay, MultiProgress, StepIndicator, Tabs, TabBar, CodeBlock,
-DiffViewer, StatusBar, etc. — see implementation commit for the full list).
-
-#### Migration
-
-| Old | New |
-|---|---|
-| `let rects = layout_state.layout(area); PaneLayout::view(&layout_state, ctx); let inner = rects[i].inner(Margin{1,1}); Child::view(&state, &mut RenderContext::new(frame, inner, theme));` | `PaneLayout::view_with(&layout_state, ctx, \|id, child_ctx\| match id { "child" => Child::view(&state, child_ctx), _ => {} });` |
-| `Table::view(&state, &mut RenderContext::new(frame, inner, theme))` (always inner border) | `Table::view(&state, child_ctx)` — `chrome_owned = true` propagated; inner border skipped |
-| `StyledText::view(&state.with_show_border(false), ctx)` (consumer-side suppression) | `StyledText::view(&state, child_ctx)` — `chrome_owned = true` propagated. `with_show_border(false)` stays for standalone-no-border case |
-
-Tracks leadline gaps G2 + D2 + D11. See `docs/superpowers/specs/2026-05-02-chrome-ownership-design.md` for the design rationale.
-
-### Theme palette + severity helper (D6 + D9)
-
-Three new types extend `Theme` with theme-aware named-color access and a unified
-severity vocabulary, eliminating the need to import raw `CATPPUCCIN_*` /
-`NORD_*` / `DRACULA_*` / `SOLARIZED_*` / `GRUVBOX_*` constants.
-
-**New public types:**
-
-- `NamedColor` enum (`#[non_exhaustive]`) — 26 variants derived from Catppuccin
-  Mocha (Rosewater, Flamingo, Pink, Mauve, Red, Maroon, Peach, Yellow, Green,
-  Teal, Sky, Sapphire, Blue, Lavender, Text, Subtext1, Subtext0, Overlay2,
-  Overlay1, Overlay0, Surface2, Surface1, Surface0, Base, Mantle, Crust).
-- `Palette` struct — one public `Color` field per `NamedColor` variant. Custom
-  themes can construct a `Palette` directly without modifying envision.
-- `Severity` enum (`#[non_exhaustive]`) — `Good | Mild | Bad | Critical`. Use
-  `Severity::from_thresholds(value, &[(cutoff, severity), ...])` to bucket a
-  numeric value via first-match-wins.
-
-**New `Theme` methods:**
-
-- `theme.color(NamedColor) -> Color` — theme-aware named-color lookup. Always
-  succeeds; non-Catppuccin themes use documented nearest-equivalent palette
-  mappings.
-- `theme.severity_color(Severity) -> Color` — palette-routed severity color
-  (Good→Green, Mild→Yellow, Bad→Peach, Critical→Red).
-- `theme.severity_style(Severity) -> Style` — color + `BOLD` modifier on
-  `Critical` only.
-
-**New `Theme` field:**
-
-- `theme.palette: Palette` — the theme's full 26-color palette. Already
-  populated by every shipped theme constructor.
-
-**Deprecations (no removals):**
-
-- `CATPPUCCIN_*`, `NORD0`–`NORD15`, `DRACULA_*`, `SOLARIZED_*`, `GRUVBOX_*`
-  `pub const` items are now `#[deprecated(since = "0.17.0")]` in favor of
-  `theme.color(NamedColor::X)`. Constants stay accessible during the
-  transition window; a follow-up PR will remove them.
-
-**Default theme palette collapse:** the `Default` theme uses ratatui's basic
-`Color` enum, so multiple `NamedColor` variants collapse to the same basic
-color (e.g., `Peach` and `Yellow` both map to `Color::Yellow`). This affects
-`severity_color`: on `Default`, `Mild` and `Bad` render identically. The
-`severity_style(Critical)` `BOLD` modifier keeps the strongest band visually
-distinguishable. Consumers wanting full palette fidelity should use
-`Theme::catppuccin_mocha()` or another full-palette theme. Documented on
-`Theme::default()`.
-
-### CellStyle::Severity(Severity) (D15)
-
-`Cell` gains a new severity-styled variant resolved at render time, closing
-the loop on the D6+D9 theme palette + severity helper. Eliminates the need
-for consumers to construct `Theme::catppuccin_mocha()` inline at row-build
-time to access `theme.severity_style(sev)`.
-
-**New variants:**
-
-- `CellStyle::Severity(Severity)` — resolves to `theme.severity_style(*sev)`
-  at render time. Color routes through the theme's palette (Good→Green,
-  Mild→Yellow, Bad→Peach, Critical→Red); `Critical` adds `BOLD`.
-
-**New `Cell` constructors:**
-
-- `Cell::severity(text, sev)` — semantic shorthand mirroring
-  `Cell::success/warning/error/muted`.
-- `Cell::with_severity(sev)` — typed-cell builder for the G7 chain
-  `Cell::number(x).with_text(formatted).with_severity(sev)`. Preserves the
-  typed `SortKey` while layering severity color. Last-call-wins precedence
-  with `with_style(...)`.
-
-**Breaking change:**
-
-- `CellStyle` is now `#[non_exhaustive]`. External code that pattern-matches
-  `CellStyle` exhaustively must add a `_` arm. Matches the convention set
-  by `Severity` and `NamedColor` in the prior release. Internal `match` arms
-  inside the crate are still exhaustive — the attribute applies only to
-  external consumers.
-
-**Migration for severity-aware cells:** drop any `severity_cell_style`-style
-helper that constructs a hardcoded theme. Replace with
-`Severity::from_thresholds(...)` + `CellStyle::Severity(sev)` (or
-`Cell::severity(text, sev)` / `.with_severity(sev)` shortcuts). Theme-swap
-now works correctly.
-
-### StyledText DX: line primitive + `paragraph` rename (D5 + D14)
-
-Two coupled changes in one PR, both targeting `StyledText` / `StyledContent`
-ergonomics:
-
-**New `envision::render` module + primitive:**
-
-- `envision::render::styled_line(frame, area, &[StyledInline], theme)` —
-  free-function primitive that renders one styled line into the given area.
-  Replaces the six-types-three-methods construction pattern (`StyledTextState::new()
-  .with_content(StyledContent::new().line(...)).with_show_border(false)` +
-  `StyledText::view(...)`) with one call. Also re-exported at the crate root
-  as `envision::styled_line`.
-
-**Method + variant rename:**
-
-- `StyledContent::paragraph(inlines)` → `StyledContent::line(inlines)`. The
-  method always produced one line, not a wrapped block-level paragraph; the
-  old name was a misnomer.
-- `StyledBlock::Paragraph(Vec<StyledInline>)` → `StyledBlock::Line(Vec<StyledInline>)`.
-  Internal coherence with the method rename; source-spelunkers no longer hit
-  the misnomer from the variant side.
-- Private helper `render_paragraph` → `render_line` (no API impact;
-  source-level coherence).
-
-Both renames delete the old names outright — no `#[deprecated]` shim. envision
-is pre-1.0; one mechanical migration in the same PR.
-
-**Breaking change:** any external code that matches `StyledBlock::Paragraph` or
-calls `.paragraph(...)` on `StyledContent` must rename to `StyledBlock::Line`
-and `.line(...)` respectively. Renamed APIs are functionally identical; no
-behavior changes.
-
-**Reserved for future:** the `paragraph` name is now free for real block-level
-wrapped-text semantics. Lands as a separate PR when a consumer needs it.
-
-**Migration count:** 17 call sites updated in this PR (10 in
-`examples/styling_showcase.rs`, 7 internal across `src/component/styled_text/`).
-
-### Per-component style overrides (G4 + G5)
-
-Two coupled parent-side style hooks land together. Both restore consumer
-flexibility that was previously bottlenecked by closed-enum or border-inheritance
-constraints.
-
-**G4 — `PaneConfig::with_title_style(Style)`:**
-
-- New builder + getter: `with_title_style(self, style: Style)` and
-  `title_style(&self) -> Option<Style>`. When set, the pane title renders
-  with the given style; when `None` (default), the title inherits the
-  border style (current behavior).
-- Focus-invariant by design: consumer-set title styles aren't silently
-  overridden by focus state. A future focused-vs-unfocused title style
-  would be a separate builder, not a surprise in this one.
-- New file `src/component/pane_layout/title_style.rs` houses the impl +
-  inline tests (keeps `mod.rs` under the 1000-line cap; mirrors the
-  existing `view_with.rs` split pattern).
-
-**G5 — `StatusBarItem::with_color(Color)` + `with_style_override(Style)`:**
-
-- Two new layered builders + getters. Render-time precedence:
-  `style_override > color > style.style(theme)`.
-- **Layered semantics, not last-call-wins:** each setter writes its own
-  field idempotently. Calling `with_style_override(s)` does NOT clear a
-  prior `with_color(c)`; the override just wins until cleared. Branched
-  construction (`if user_wants_emphasis { item.with_style_override(s) }
-  else { item }`) keeps the brand color rebuildable.
-- `with_color(c)` produces `Style::default().fg(c)` — clean separation;
-  background and modifiers are not inherited from the semantic baseline.
-  Consumers wanting layered semantics reach for `with_style_override`
-  explicitly.
-
-**Q-γ payoff — four-stop severity ramp restored:** The D6+D9 design
-deferred the StatusBar four-stop severity ramp because `StatusBarStyle`
-had no Peach variant — consumer-side `severity_status_style` helpers
-collapsed `Severity::Bad` and `Severity::Mild` both to
-`StatusBarStyle::Warning`. Post-G5, the helper deletes; the call site
-uses `StatusBarItem::new(t).with_color(theme.severity_color(sev))`
-directly. Three convergence views (table cells via D15
-`CellStyle::Severity`, summary banner via D5 `styled_line` +
-`theme.severity_color`, StatusBar slowdown segments via G5
-`with_color`) reach the same four-stop gradient.
-
-**Field-add safety:** `PaneConfig` fields were already private and
-`StatusBarItem` fields were `pub(super)`, so external consumers can't
-struct-literal-construct either struct. The only forward-compat concern
-is serialization: pre-G5 serialized blobs lack the new `title_style`
-/ `color` / `style_override` fields, and `#[serde(default)]` on each
-new field handles round-tripping cleanly. No struct-literal break for
-external code.
-
-### `StyledInline` composable styles (G6)
-
-Replaces the 7-variant `StyledInline` enum (`Plain | Bold | Italic | Underline |
-Strikethrough | Colored | Code`) with a 3-variant composable shape. The leaf
-variants forced single-dimension styling — `Bold + Colored` required two adjacent
-inlines because each leaf captured one dimension. Combinatorial explosion (2^6 =
-64 variants for full dimension coverage) was the wrong shape; composable struct
-is right.
-
-**New 3-variant enum:**
-
-- `StyledInline::Plain(String)` — unchanged
-- `StyledInline::Code(String)` — unchanged (theme-coupled fast path)
-- `StyledInline::Styled { text, style: InlineStyle }` — new composable variant
-- Enum gains `#[non_exhaustive]` for future variant additions
-
-**New `InlineStyle` struct:**
-
-- 6 optional dimensions: `fg`, `bg`, `bold`, `italic`, `underlined`, `strikethrough`
-- 7 `const fn` builder methods (`new`, `fg`, `bg`, `bold`, `italic`, `underlined`,
-  `strikethrough`) — usable in `const` contexts (module-level static styles)
-- `#[non_exhaustive]` — forces builder use over struct literal; future modifier
-  additions land additively
-- Note: `strikethrough: bool` maps to `ratatui::style::Modifier::CROSSED_OUT`
-  (ratatui's name for this modifier)
-
-**Six new constructors on `StyledInline`:**
-
-- `StyledInline::styled(text, style)` — general-purpose pair-with-style wrapper
-- `StyledInline::bold(text)`, `italic(text)`, `underlined(text)`,
-  `strikethrough(text)`, `colored(text, fg)` — leaf helpers for single-dimension
-  cases (~80% of styled-inline usage)
-
-**Top-line payoff — bold-on-banner-values:**
-
-leadline's per-op summary banner at `app.rs:412-455` (`build_summary_inlines`)
-renders 5 value segments (iconnx/ort/ratio/delta/iters) that need bold +
-severity-color in a single inline run. Pre-G6, the bold half was dropped
-because `Bold(t)` had no color field and `Colored {..}` had no bold field.
-Post-G6, `StyledInline::styled(value, InlineStyle::new().fg(value_color).bold())`
-lands the combo. The summary banner reads with weight contrast on value
-segments — magnitude of slowdown "jumps" at the user via bold weight in
-addition to severity color.
-
-**Migration:**
-
-- `StyledInline::Bold(t)` → `StyledInline::bold(t)`
-- `StyledInline::Italic(t)` → `StyledInline::italic(t)`
-- `StyledInline::Underline(t)` → `StyledInline::underlined(t)` (past-tense rename)
-- `StyledInline::Strikethrough(t)` → `StyledInline::strikethrough(t)`
-- `StyledInline::Colored { text, fg: Some(c), bg: None }` → `StyledInline::colored(t, c)`
-- Multi-field `Colored` cases → `StyledInline::styled(t, InlineStyle::new().fg(c).bg(b))`
-
-102 internal envision references migrated mechanically across 6 files. Old
-leaf variants deleted outright (pre-1.0 ruthlessness; same pattern as D14
-`paragraph→line`, D5+D14 `StyledTextState` collapse, G5 `severity_status_style`
-deletion).
-
-**Breaking changes:**
-
-- 5 enum variants deleted (`Bold`, `Italic`, `Underline`, `Strikethrough`,
-  `Colored`). External code pattern-matching `StyledInline` exhaustively must
-  rewrite for the new 3-variant shape (with `_` arm for `#[non_exhaustive]`).
-- `StyledInline::Underline` renamed to the helper `StyledInline::underlined`
-  (past-tense, matches ratatui's `Modifier::UNDERLINED` and the boolean field
-  naming convention).
-- `InlineStyle` struct uses `#[non_exhaustive]` — external code cannot
-  construct via struct literal; must use the `InlineStyle::new()...` builder.
-
-### StatusBar per-side separator overrides (D12)
-
-Adds three optional per-section separator overrides on `StatusBarState`.
-Per-side override takes precedence over the existing global `separator` at
-render time. Purely additive — default state has all three Options as
-`None`, preserving identical behavior for consumers who don't opt in.
-
-**New fields on `StatusBarState`:**
-
-- `left_separator: Option<String>` (with `#[serde(default)]`)
-- `center_separator: Option<String>` (with `#[serde(default)]`)
-- `right_separator: Option<String>` (with `#[serde(default)]`)
-
-Clustered immediately after the existing global `separator: String` field —
-matches the G4 (`title_style` next to `title`) and G5 (`color`/`style_override`
-next to `style`) field-grouping convention.
-
-**New builder methods + getters:**
-
-- `with_left_separator(impl Into<String>)` / `left_separator() -> Option<&str>`
-- `with_center_separator(impl Into<String>)` / `center_separator() -> Option<&str>`
-- `with_right_separator(impl Into<String>)` / `right_separator() -> Option<&str>`
-
-Builder methods take `mut self` (consistent with existing `with_disabled`).
-Chain cleanly with both `StatusBarState::new()` and `StatusBarState::with_separator(...)`:
-
-```rust
-// Load-bearing use case: global " · " everywhere except the right-section
-// slowdown segments, which use " " (space) instead.
-StatusBarState::with_separator(" · ")
-    .with_right_separator(" ")
-    // ... push items ...
-```
-
-Methods live in `src/component/status_bar/per_side_separators.rs` (a sibling
-file) to keep `mod.rs` under the 1000-line cap. Same multi-module impl pattern
-as `pane_layout/title_style.rs` from G4.
-
-**Layered semantics, not last-call-wins:** per-side override is independent
-of global `separator`. Setting `with_separator(" · ").with_right_separator(" ")`
-results in BOTH fields populated; render-time precedence resolves which
-applies per section (`state.right_separator.as_deref().unwrap_or(&state.separator)`).
-Same model as G4/G5 per-component style overrides.
-
-**Render-path:** three single-line fallback expressions inserted at
-`status_bar/mod.rs:850-852`. `render_section` signature unchanged (it already
-takes `&str`).
-
-**Forward-compat:** `#[serde(default)]` on all three new fields means
-pre-D12 serialized `StatusBarState` blobs deserialize cleanly with all three
-as `None` — behavior identical to pre-D12.
-
-**No struct-literal break** for external consumers — fields are private
-(matches existing field visibility on the struct).
-
-### Added
-
-- `Column::new` now documents the canonical Length+Min multi-column idiom and emits a `tracing::warn!` (feature-gated) when a `Constraint::Length(n)` or `Constraint::Min(n)` column resolves to fewer cells than declared. Best-effort observability; no behavior change for consumers without `tracing` enabled. `Percentage` constraints are never flagged (no declared floor).
-- `src/harness` module docs now include a "Choosing a Harness" decision table comparing `TestHarness`, `AppHarness`, and `Runtime::virtual_builder`.
-- `src/harness/snapshot` module docs now include a runnable canonical golden-file snapshot-diff recipe (dependency-free, `std::fs` + manual diff; `insta` linked as the upgrade path).
-- `examples/drilldown.rs` — master+detail drill-down pattern using `TableState`, `PaneLayout::view_with`, `styled_line`, per-view `KeyHints`, and `App::handle_event_with_state` for screen-gated key bindings; selection preserved across drill-in/drill-out.
-- `Router` module docs now include guidance on choosing between `Router` (history stack) and an in-state enum (mutual-exclusion screens with restored selection).
-
-### Changed
-
-- `examples/router.rs` screen-render bodies now use `PaneLayout::view_with` (was: raw `ratatui::widgets::Paragraph` + `Block::borders`). No behavior change; better showcase of envision surface.
-
-## [Unreleased] — Breaking: `App::init` takes args; `RuntimeBuilder` split
-
-### Breaking changes — `App::init` takes args
-
-`App::init() -> (State, Command<Msg>)` is replaced with
-`App::init(args: Self::Args) -> (State, Command<Msg>)`.
+`App::init() -> (State, Command<Msg>)` is replaced with `App::init(args: Self::Args) -> (State, Command<Msg>)`.
 
 - `App` trait gains `type Args` (no default; explicit `type Args = ();` required for no-args apps on stable Rust).
 - The panicking default impl of `init` is deleted; `init` is now required.
@@ -374,67 +21,142 @@ as `None` — behavior identical to pre-D12.
 - `RuntimeBuilder::build()` is now only available when `A::Args: OptionalArgs` (sealed marker, implemented only for `()`). Forgetting `with_args` for non-`()` Args is a compile error, not a runtime panic.
 - `AppHarness::new` and `AppHarness::with_config` similarly require `A::Args: OptionalArgs`.
 
-#### Migration
+Tracks leadline gap D1. See `docs/superpowers/specs/2026-05-02-app-init-args-design.md`. Migration table lifted verbatim into `MIGRATION.md#v016x-to-v0170`.
 
-| Old | New |
-|---|---|
-| `fn init() -> (State, Command<Msg>)` | `type Args = (); fn init(_args: ()) -> (State, Command<Msg>)` |
-| `static GLOBAL: OnceLock<T>; fn init() { GLOBAL.get()... }` | `type Args = MyArgs; fn init(args: MyArgs) { args.field... }` |
-| `RuntimeBuilder::state(state, cmd)` | `RuntimeBuilder::with_args(args)`; move state-building into `init` |
-| `AppHarness::with_state(w, h, state, cmd)` | `AppHarness::with_args(w, h, args)`; build state from args inside `init` |
-| `AppHarness::with_state_and_config(w, h, state, cmd, cfg)` | `AppHarness::with_args_and_config(w, h, args, cfg)` |
+#### Table sort & cell API redesign
 
-Tracks leadline gap D1. See `docs/superpowers/specs/2026-05-02-app-init-args-design.md`.
+Removed:
+- `TableMessage::SortBy`, `TableMessage::AddSort`, `TableMessage::ClearSort` — replaced by explicit primitives.
+- `Column::with_comparator` / `Column::comparator` / `SortComparator` / `numeric_comparator` / `date_comparator`.
+- `ResourceTable`, `ResourceRow`, `ResourceCell`, `ResourceColumn`, `ResourceTableState`, `ResourceTableMessage`, `ResourceTableOutput`.
 
-## [Unreleased] — Breaking: Table sort & cell API redesign
-
-### Removed
-
-- `TableMessage::SortBy`, `TableMessage::AddSort`, `TableMessage::ClearSort` —
-  replaced by explicit primitives.
-- `Column::with_comparator` / `Column::comparator` / `SortComparator` /
-  `numeric_comparator` / `date_comparator`.
-- `ResourceTable`, `ResourceRow`, `ResourceCell`, `ResourceColumn`,
-  `ResourceTableState`, `ResourceTableMessage`, `ResourceTableOutput`.
-
-### Added
-
+Added:
 - `Cell { text, style, sort_key }` — unified cell type for all tabular components.
 - `SortKey` enum (`String`, `I64`, `U64`, `F64`, `Bool`, `Duration`, `DateTime`, `None`).
-- `TableMessage::{SortAsc, SortDesc, SortToggle, SortClear, RemoveSort,
-  AddSortAsc, AddSortDesc, AddSortToggle}`.
+- `TableMessage::{SortAsc, SortDesc, SortToggle, SortClear, RemoveSort, AddSortAsc, AddSortDesc, AddSortToggle}` — explicit sort primitives, each carrying the column index.
 - `Column::with_default_sort(SortDirection)` — declare per-column natural direction.
 - `TableState::with_initial_sort(col, dir)` and `with_initial_sorts(Vec<InitialSort>)`.
 - `TableRow::status()` (default `RowStatus::None`) — optional row-status dot column.
 - `CellStyle` enum and per-cell styling in `Table` rendering.
 
+Tracks leadline gaps G1 + G3 + G7. See `docs/superpowers/specs/2026-05-02-table-sort-cell-unification-design.md`. Migration table in `MIGRATION.md#v016x-to-v0170`.
+
+#### `FileSortDirection` removed
+
+`file_browser::FileSortDirection` deleted. `file_browser` uses `table::SortDirection` (same 2-variant Ascending/Descending shape). `sort_direction()` getter signature changes to return by value (SortDirection is Copy).
+
+See `MIGRATION.md#v016x-to-v0170` for the full before/after table.
+
+#### `ResourceGaugeState::new` replaced by named-struct + builder
+
+`ResourceGaugeState::new(actual, request, limit)` (three unlabeled positional f64 args) deleted. Replaced by `ResourceGaugeState::default().with_values(ResourceValues { actual, request, limit })` single-call form or fluent builder chain (`with_actual`, `with_request`, `with_limit`).
+
+New public type: `envision::component::ResourceValues { actual, request, limit }`.
+New accessor: `state.values() -> ResourceValues` (closes accessor-symmetry gap with `set_values`).
+
+See `MIGRATION.md#v016x-to-v0170`.
+
+### Added
+
+#### Chrome ownership protocol (G2 + D2 + D11)
+
+- `PaneLayout::view_with(state, ctx, |pane_id, child_ctx| ...)` — closure-based renderer; envision owns inner-rect computation.
+- `RenderContext::chrome_owned` flag — Table, StyledText, and other chrome-drawing components consult it and skip their outer Block when embedded.
+- 35+ chrome-drawing components audited to consult the flag (Table, StyledText, LogViewer, ScrollableText, ScrollView, MarkdownRenderer, ConversationView, DataGrid, MetricsDashboard, KeyHints, StatusLog, EventStream, LogCorrelation, TerminalOutput, FileBrowser, FlameGraph, SearchableList, SelectableList, AlertPanel, HelpPanel, TitleCard, BoxPlot, Histogram, Heatmap, Treemap, Diagram, Sparkline, Chart, Timeline, Calendar, UsageDisplay, MultiProgress, StepIndicator, Tabs, TabBar, CodeBlock, DiffViewer, StatusBar, and others).
+
+Tracks leadline gaps G2 + D2 + D11.
+
+#### `App::on_exit` shipped
+
+- `App::on_exit(state: &Self::State)` default-no-op trait method. Wired into both terminal and virtual runtimes. Consumers override for autosave / cleanup.
+
+Tracks leadline gap D13.
+
+#### Theme palette + severity helper (D6 + D9)
+
+- `Severity` enum (`Good | Mild | Bad | Critical`, `#[non_exhaustive]`).
+- `Severity::from_thresholds(value, &[(threshold, severity)])` first-match-wins bucketer.
+- `Theme::severity_color(Severity) -> Color`, `Theme::severity_style(Severity) -> Style`.
+- `NamedColor` enum (26 variants, `#[non_exhaustive]`).
+- `Palette` struct — one `Color` field per `NamedColor`.
+- `Theme::color(NamedColor) -> Color` accessor.
+- Per-palette module extraction (`nord.rs`, `dracula.rs`, `solarized.rs`, `gruvbox.rs`) mirroring `catppuccin.rs`.
+
+Raw `pub const` color constants (`CATPPUCCIN_*`, `NORD0`–`NORD15`, `DRACULA_*`, `SOLARIZED_*`, `GRUVBOX_*`) marked `#[deprecated(since = "0.17.0")]` — accessible during transition window.
+
+#### `CellStyle::Severity(Severity)` (D15)
+
+- Severity-aware cells reach the active theme at render time via `theme.severity_style(*sev)` in `cell_style_to_ratatui`.
+- `Cell::severity(text, sev)` constructor + `Cell::with_severity(sev)` builder.
+- `CellStyle` gains `#[non_exhaustive]`.
+
+#### StyledText DX: `styled_line` primitive + `paragraph` → `line` rename (D5 + D14)
+
+- `envision::render::styled_line(frame, area, &[StyledInline], theme)` free function (`src/render.rs`). Re-exported at `envision::styled_line`. Module + re-export gated on `display-components`.
+- `StyledContent::paragraph(...)` deleted; `StyledContent::line(...)` replaces it. Also `StyledBlock::Paragraph` → `StyledBlock::Line`.
+
+#### Per-component style overrides (G4 + G5)
+
+- `PaneConfig::with_title_style(Style)` + `title_style() -> Option<Style>` — pane title styling independent of border.
+- `StatusBarItem::with_color(Color)` + `with_style_override(Style)` — layered semantics, not last-call-wins; restores the four-stop severity ramp for StatusBar consumers.
+
+Sibling file split: `pane_layout/title_style.rs`.
+
+#### `StyledInline` composable styles (G6)
+
+- 3-variant enum: `Plain | Code | Styled { text, style: InlineStyle }`.
+- New `InlineStyle` struct with 6 optional dimensions (`fg`, `bg`, `bold`, `italic`, `underlined`, `strikethrough`) and 7 `const fn` builder methods.
+- Two-layer constructor surface: `StyledInline::styled(text, style)` + 5 leaf helpers (`bold`, `italic`, `underlined`, `strikethrough`, `colored`).
+
+Removed leaf variants: `Bold`, `Italic`, `Underline`, `Strikethrough`, `Colored`.
+
+#### D3 column clip warning
+
+- `Column::new` docstring gains canonical Length+Min multi-column idiom.
+- `pub(crate) detect_clipped_columns(columns, resolved_widths) -> Vec<ClippedColumn>` helper mirrors the full ratatui 0.29 Table width formula (border / selection / column_spacing / has_status offset).
+- `RefCell<ClipWarnState>` on `TableState` for interior-mutability dedup keyed by `(column index, area width)`. Terminal-resize re-arm.
+- Emission via `tracing::warn!` feature-gated on `tracing`. `impl ClipKind` also gated so default-feature builds stay warning-free.
+
+#### D7 harness compare-and-contrast + golden-file snapshot recipe
+
+- `src/harness` module docs gain "Choosing a Harness" decision table comparing `TestHarness` / `AppHarness` / `Runtime::virtual_builder`.
+- `src/harness/snapshot` module docs gain runnable golden-file recipe (`update_golden` / `assert_matches_golden` / `unified_diff`), dependency-free, `insta` linked as upgrade.
+
+#### D8 drilldown example + Router-vs-state-enum docs
+
+- `examples/drilldown.rs` — master+detail pattern via Screen enum, per-view `KeyHints`, `handle_event_with_state` for screen-gated bindings, selection preservation.
+- `src/component/router/mod.rs` module docs gain "Choosing Router vs. an in-state enum" section.
+
+#### StatusBar per-side separator overrides (D12)
+
+- `StatusBarState::with_left_separator(...)` / `with_center_separator(...)` / `with_right_separator(...)` — per-side overrides layer on top of the global `separator`.
+- Sibling file split: `status_bar/per_side_separators.rs`.
+
+#### `resource_gauge` builder + accessor closure (this cadence, Unit 3)
+
+- New public type: `ResourceValues { actual: f64, request: f64, limit: f64 }` (`Clone`, `Copy`, `Debug`, `Default`, `PartialEq`).
+- `ResourceGaugeState::with_values(ResourceValues) -> Self` — named-struct single-call constructor.
+- `ResourceGaugeState::with_actual(f64) -> Self` / `with_request(f64) -> Self` / `with_limit(f64) -> Self` — fluent builder.
+- `ResourceGaugeState::values(&self) -> ResourceValues` — matching accessor for the existing `set_values` multi-field mutator; closes the audit's 9/9 scorecard gap.
+- New `examples/resource_gauge.rs` — K8s pod-quota shape.
+
 ### Changed
 
-- `TableRow::cells()` now returns `Vec<Cell>` instead of `Vec<String>`.
-- Sort comparator is `SortKey`-driven (no more parsing display strings on every comparison).
+#### Chrome ownership protocol
 
-### Migration
+- `Table`, `LogViewer`, `ScrollView`, `ScrollableText`, `MarkdownRenderer`, `ConversationView`, `DataGrid`, `MetricsDashboard` (per-cell only), and 27 others skip their outer Block when `RenderContext::chrome_owned == true`.
+- Consumers embedding any of them get correct behavior without further envision changes.
 
-| Old | New |
-|---|---|
-| `TableMessage::SortBy(col)` for header-click intent | `TableMessage::SortToggle(col)` |
-| `TableMessage::SortBy(col)` for "always Asc" | `TableMessage::SortAsc(col)` |
-| `TableMessage::SortBy(col)` for "always Desc" | `TableMessage::SortDesc(col)` |
-| `SortBy(col); SortBy(col)` (init bootstrap to Desc) | `TableState::with_initial_sort(col, Descending)` |
-| `TableMessage::AddSort(col)` for tiebreaker click | `TableMessage::AddSortToggle(col)` |
-| `TableMessage::AddSort(col)` for "always Asc tiebreaker" | `TableMessage::AddSortAsc(col)` |
-| `TableMessage::ClearSort` | `TableMessage::SortClear` |
-| `Column::with_comparator(numeric_comparator())` | `Cell::number(value)` per cell. Mixed-precision: `Cell::number(value).with_text(format!("{:.2}", value))` |
-| `Column::with_comparator(date_comparator())` | `Cell::datetime(value)` per cell |
-| `Column::with_comparator(custom_fn)` | `Cell::new(text).with_sort_key(SortKey::...)` per cell |
-| `TableRow::cells() -> Vec<String>` | `TableRow::cells() -> Vec<Cell>` (use `Cell::new(s)` or `s.into()`) |
-| `ResourceTable*` | `Table` with optional `TableRow::status()` for the status dot |
-| `ResourceCell::*` constructors | `Cell::*` (constructors map 1:1) |
-| `RowStatus` (formerly in `resource_table`) | `RowStatus` (in `envision::cell`, re-exported at crate root) |
+#### `examples/router.rs` refresh (D8)
 
-See `docs/customer-feedback/2026-05-01-leadline-gaps.md` for the trail of consumer-side workarounds this redesign retires.
+- Screen-render bodies now use `PaneLayout::view_with` chrome instead of raw `ratatui::widgets::Paragraph + Block::borders`. No behavior change; better envision-component showcase.
 
-See `docs/superpowers/specs/2026-05-02-table-sort-cell-unification-design.md` for the full design.
+### Known Deferred Findings
+
+The 2026-07-04 audit (Fable) surfaced two API incoherences deliberately deferred beyond v0.17.0. Both are tracked as follow-up cadences and will be addressed in v0.18.0 or later:
+
+- **`selected_value` / `selected_item` / `active_tab` accessor shape divergence** across `dropdown`, `select`, `heatmap`, `tab_bar`, and `data_grid`. `dropdown::selected_value()` and `dropdown::selected_item()` are literal `&str` aliases; `heatmap::selected_value()` returns `f64` (type-incoherent with the string variant); `tab_bar` uses `active_tab()` instead of `selected_item()`; `data_grid` has four selection accessors (`selected`, `selected_index`, `selected_row`, `selected_item`). Requires a dedicated consistency-sweep cadence.
+- **Dependency leakage in 8 public signatures** (`ratatui::layout::Position`, `ratatui::buffer::Cell`, `ratatui::style::Color`, `ratatui::style::Style`, `ratatui::widgets::Widget`, `tokio::sync::mpsc::Sender` at `harness/app_harness/mod.rs:264`, plus 2 others). Architectural discussion; not release-blocking.
 
 ## [0.16.0] - 2026-04-20
 

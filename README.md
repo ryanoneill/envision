@@ -10,7 +10,8 @@ A [ratatui](https://github.com/ratatui/ratatui) framework for collaborative TUI 
 
 ## Features
 
-- **Component Library** - 73 ready-to-use UI components following TEA pattern
+<!-- component-count: keep in sync with docs/CHOOSING.md -->
+- **Component Library** - 74 ready-to-use UI components following TEA pattern
 - **Headless Testing** - Render your TUI without a terminal using `CaptureBackend`
 - **TEA Architecture** - The Elm Architecture pattern with `App`, `Runtime`, and `Command`
 - **Async Runtime** - Full async support with subscriptions, timers, and async commands
@@ -18,6 +19,33 @@ A [ratatui](https://github.com/ratatui/ratatui) framework for collaborative TUI 
 - **Test Harness** - Fluent assertions and snapshot testing for TUI applications
 - **Input Simulation** - Programmatically simulate keyboard and mouse events
 - **Multiple Output Formats** - Plain text, ANSI-colored, and JSON output
+
+## Feature Flags
+
+Envision is feature-gated so consumers can opt out of the parts they don't need. Default features enable serialization and all component groups.
+
+| Flag | On by default | What it turns on |
+|---|---|---|
+| `full` | yes | All component groups + clipboard + markdown + regex (convenience alias) |
+| `input-components` | yes (via `full`) | Interactive input widgets (`LineInput`, `TextArea`, `Dropdown`, `Select`, ...) |
+| `data-components` | yes (via `full`) | Data-display widgets (`Table`, `DataGrid`, `Tree`, `ResourceGauge`, ...) |
+| `display-components` | yes (via `full`) | Text and chart widgets (`StyledText`, `Chart`, `Sparkline`, ...) |
+| `navigation-components` | yes (via `full`) | `PaneLayout`, `Router`, `TabBar`, `KeyHints` |
+| `overlay-components` | yes (via `full`) | Overlay stack primitives |
+| `compound-components` | yes (via `full`) | Higher-level compositions (`Diagram`, `LogViewer`, `ConversationView`) |
+| `serialization` | yes | `serde::Serialize`/`Deserialize` on component state |
+| `tracing` | no | Emits `tracing::warn!` diagnostics (e.g., table column clip warnings) |
+| `clipboard` | yes (via `full`) | `arboard`-backed clipboard on `TextArea` |
+| `markdown` | yes (via `full`) | Markdown rendering in `StyledText` |
+| `regex` | yes (via `full`) | Regex search in `EventStream`, `LogViewer` |
+| `test-utils` | no | `AppHarness` async test utilities (`advance_time`, `wait_for`) at the crate boundary for downstream tests |
+
+To opt out of everything and only pull in specific groups:
+
+```toml
+[dependencies]
+envision = { version = "0.17", default-features = false, features = ["data-components", "display-components"] }
+```
 
 ## Quick Start
 
@@ -54,6 +82,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 use envision::prelude::*;
+use ratatui::widgets::Paragraph;
 
 struct MyApp;
 
@@ -71,8 +100,9 @@ enum Msg {
 impl App for MyApp {
     type State = State;
     type Message = Msg;
+    type Args = ();
 
-    fn init() -> (State, Command<Msg>) {
+    fn init(_args: ()) -> (State, Command<Msg>) {
         (State::default(), Command::none())
     }
 
@@ -91,36 +121,74 @@ impl App for MyApp {
 }
 ```
 
-### Testing with Runtime
+### Testing with AppHarness
 
 ```rust
 use envision::prelude::*;
 use ratatui::widgets::Paragraph;
 
-// Given the MyApp defined above:
-#[test]
-fn test_my_app() {
-    let mut runtime = Runtime::<MyApp>::virtual_terminal(80, 24).unwrap();
+struct MyApp;
 
-    runtime.dispatch(Msg::Increment);
-    runtime.dispatch(Msg::Increment);
-    runtime.render().unwrap();
-
-    assert!(runtime.contains_text("Count: 2"));
+#[derive(Default, Clone)]
+struct State {
+    count: i32,
 }
+
+#[derive(Clone)]
+enum Msg {
+    Increment,
+    Decrement,
+}
+
+impl App for MyApp {
+    type State = State;
+    type Message = Msg;
+    type Args = ();
+
+    fn init(_args: ()) -> (State, Command<Msg>) {
+        (State::default(), Command::none())
+    }
+
+    fn update(state: &mut State, msg: Msg) -> Command<Msg> {
+        match msg {
+            Msg::Increment => state.count += 1,
+            Msg::Decrement => state.count -= 1,
+        }
+        Command::none()
+    }
+
+    fn view(state: &State, frame: &mut Frame) {
+        let text = format!("Count: {}", state.count);
+        frame.render_widget(Paragraph::new(text), frame.area());
+    }
+}
+
+fn test_my_app() {
+    let mut harness = AppHarness::<MyApp>::new(80, 24).unwrap();
+
+    harness.dispatch(Msg::Increment);
+    harness.dispatch(Msg::Increment);
+    harness.render().unwrap();
+
+    harness.assert_contains("Count: 2");
+}
+
+test_my_app();
 ```
 
 ### Test Harness for Custom Rendering
 
 ```rust
-use envision::harness::TestHarness;
+use envision::prelude::*;
 use ratatui::widgets::Paragraph;
 
 let mut harness = TestHarness::new(80, 24);
 
-harness.render(|frame| {
-    frame.render_widget(Paragraph::new("Hello!"), frame.area());
-});
+harness
+    .render(|frame| {
+        frame.render_widget(Paragraph::new("Hello!"), frame.area());
+    })
+    .unwrap();
 
 harness.assert_contains("Hello!");
 ```
@@ -154,7 +222,8 @@ cargo run --example component_showcase
 
 ## Components
 
-Envision provides a comprehensive library of 73 reusable UI components, all following the TEA (The Elm Architecture) pattern with `Component` and `Toggleable` traits.
+<!-- component-count: keep in sync with docs/CHOOSING.md -->
+Envision provides a comprehensive library of 74 reusable UI components, all following the TEA (The Elm Architecture) pattern with `Component` and `Toggleable` traits.
 
 ### Input Components
 
@@ -296,7 +365,7 @@ assert_eq!(output, Some(ButtonOutput::Pressed));
 
 Envision follows The Elm Architecture (TEA) pattern:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                    Application                           │
 │                                                          │
@@ -318,9 +387,10 @@ Envision follows The Elm Architecture (TEA) pattern:
 
 ## Modules
 
+<!-- component-count: keep in sync with docs/CHOOSING.md -->
 | Module | Description |
 |--------|-------------|
-| `component` | 73 reusable UI components with `Component`, `Toggleable` traits |
+| `component` | 74 reusable UI components with `Component`, `Toggleable` traits |
 | `backend` | `CaptureBackend` for headless rendering |
 | `app` | TEA architecture: `App`, `Runtime`, `Command`, subscriptions |
 | `harness` | `TestHarness` and `AppHarness` for testing |

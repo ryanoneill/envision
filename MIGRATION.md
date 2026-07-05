@@ -1,5 +1,78 @@
 # Migration Guide
 
+## v0.16.x to v0.17.0
+
+### `App::init` takes args; `RuntimeBuilder` split
+
+`App::init() -> (State, Command<Msg>)` is replaced with `App::init(args: Self::Args) -> (State, Command<Msg>)`. Migration:
+
+| Old | New |
+|---|---|
+| `fn init() -> (State, Command<Msg>)` | `type Args = (); fn init(_args: ()) -> (State, Command<Msg>)` |
+| `static GLOBAL: OnceLock<T>; fn init() { GLOBAL.get()... }` | `type Args = MyArgs; fn init(args: MyArgs) { args.field... }` |
+| `RuntimeBuilder::state(state, cmd)` | `RuntimeBuilder::with_args(args)`; move state-building into `init` |
+| `AppHarness::with_state(w, h, state, cmd)` | `AppHarness::with_args(w, h, args)`; build state from args inside `init` |
+| `AppHarness::with_state_and_config(w, h, state, cmd, cfg)` | `AppHarness::with_args_and_config(w, h, args, cfg)` |
+
+Forgetting `with_args` for a non-`()` Args is now a compile error (via the sealed `OptionalArgs` marker), not a runtime panic.
+
+### Table sort & cell API redesign
+
+`TableMessage::SortBy` / `AddSort` / `ClearSort` are removed and replaced by explicit primitives. `Column::with_comparator` / `comparator` / `SortComparator` are removed and replaced by the reified `Cell { text, style, sort_key }` type + `SortKey` enum. `ResourceTable` and its supporting types are removed in favor of `Table` with an optional row-status column.
+
+| Old | New |
+|---|---|
+| `TableMessage::SortBy(col)` for header-click intent | `TableMessage::SortToggle(col)` |
+| `TableMessage::SortBy(col)` for "always Asc" | `TableMessage::SortAsc(col)` |
+| `TableMessage::SortBy(col)` for "always Desc" | `TableMessage::SortDesc(col)` |
+| `SortBy(col); SortBy(col)` (init bootstrap to Desc) | `TableState::with_initial_sort(col, Descending)` |
+| `TableMessage::AddSort(col)` for tiebreaker click | `TableMessage::AddSortToggle(col)` |
+| `TableMessage::AddSort(col)` for "always Asc tiebreaker" | `TableMessage::AddSortAsc(col)` |
+| `TableMessage::ClearSort` | `TableMessage::SortClear` |
+| `TableMessage::RemoveSort(col)` was already the drop-one-column primitive | `TableMessage::RemoveSort(col)` (unchanged) |
+| `Column::with_comparator(numeric_comparator())` | `Cell::number(value)` per cell. Mixed-precision: `Cell::number(value).with_text(format!("{:.2}", value))` |
+| `Column::with_comparator(date_comparator())` | `Cell::datetime(value)` per cell |
+| `Column::with_comparator(custom_fn)` | `Cell::new(text).with_sort_key(SortKey::...)` per cell |
+| `TableRow::cells() -> Vec<String>` | `TableRow::cells() -> Vec<Cell>` (use `Cell::new(s)` or `s.into()`) |
+| `ResourceTable*` | `Table` with optional `TableRow::status()` for the status dot |
+| `ResourceCell::*` constructors | `Cell::*` (constructors map 1:1) |
+| `RowStatus` (formerly in `resource_table`) | `RowStatus` (in `envision::cell`, re-exported at crate root) |
+
+See `docs/superpowers/specs/2026-05-02-table-sort-cell-unification-design.md` for the full design.
+
+### FileSortDirection migration (Unit 2, this cadence)
+
+Placeholder for FileSortDirection migration (filled by Task 4 after Unit 2 lands).
+
+### ResourceGaugeState migration (Unit 3, this cadence)
+
+Placeholder for ResourceGaugeState migration (filled by Task 4 after Unit 3 lands).
+
+## v0.15.x to v0.16.0
+
+### `DependencyGraph` removed; use `Diagram`
+
+`DependencyGraph` and its supporting types (`GraphNode`, `GraphEdge`, `GraphOrientation`, `NodeStatus`, all `DependencyGraph*` types) are deleted. Replaced by `Diagram`, which provides:
+
+- Sugiyama hierarchical layout with barycenter crossing minimization
+- Fruchterman-Reingold force-directed layout
+- Spatial keyboard navigation, edge following, search, clusters, minimap
+- Viewport pan/zoom, edge styles, node shapes
+- Batch buffer rendering and layout caching
+
+`NodeStatus` moved from `dependency_graph::types` to `diagram::types`.
+
+| Old | New |
+|---|---|
+| `use envision::component::{DependencyGraph, DependencyGraphState};` | `use envision::component::{Diagram, DiagramState};` |
+| `DependencyGraphState::new(nodes, edges)` | `DiagramState::hierarchical(nodes, edges)` or `DiagramState::force_directed(nodes, edges)` |
+| `GraphNode { id, label }` | `DiagramNode { id, label, .. }` (richer node type) |
+| `GraphEdge { from, to }` | `DiagramEdge { from, to, style: EdgeStyle::Solid, .. }` |
+| `GraphOrientation::TopDown` | Handled via `LayoutDirection::TopDown` in `LayoutConfig` |
+| `use dependency_graph::types::NodeStatus;` | `use diagram::types::NodeStatus;` |
+
+See CHANGELOG `[0.16.0]` entry for the full feature list.
+
 ## v0.14.x to v0.15.0
 
 ### Message `Clone` bound removed

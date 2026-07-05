@@ -416,6 +416,14 @@ pub use render::styled_line;
 pub use scroll::{ScrollState, render_scrollbar, render_scrollbar_inside_border};
 pub use theme::{NamedColor, Palette, Severity, Theme};
 
+/// Compiles the code blocks in `README.md` as doctests so they can't rot silently.
+///
+/// The `#[cfg(doctest)]` gate keeps this out of both the normal build and the public
+/// API surface — the struct exists only when `cargo test --doc` is running.
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+pub struct ReadmeDoctests;
+
 /// Prelude module for convenient imports.
 ///
 /// Provides all framework types and component types needed by most applications.
