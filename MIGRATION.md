@@ -40,13 +40,48 @@ Forgetting `with_args` for a non-`()` Args is now a compile error (via the seale
 
 See `docs/superpowers/specs/2026-05-02-table-sort-cell-unification-design.md` for the full design.
 
-### FileSortDirection migration (Unit 2, this cadence)
+### `FileSortDirection` removed; use `table::SortDirection`
 
-Placeholder for FileSortDirection migration (filled by Task 4 after Unit 2 lands).
+`file_browser::FileSortDirection` deleted. `file_browser` now uses `crate::component::table::SortDirection` at every use site (canonical single path — no local re-export at the `file_browser` boundary). The two enums had identical 2-variant Ascending/Descending shape; unification eliminates two-names-for-one-concept.
 
-### ResourceGaugeState migration (Unit 3, this cadence)
+`SortDirection` also derives `Copy + Default` (where `FileSortDirection` didn't), forcing a getter-shape improvement: `sort_direction()` returns by value.
 
-Placeholder for ResourceGaugeState migration (filled by Task 4 after Unit 3 lands).
+| Old | New |
+|---|---|
+| `use envision::component::file_browser::FileSortDirection;` | `use envision::component::SortDirection;` |
+| `FileSortDirection::Ascending` | `SortDirection::Ascending` |
+| `FileSortDirection::Descending` | `SortDirection::Descending` |
+| `FileBrowserOutput::SortChanged(field, FileSortDirection::Ascending)` | `FileBrowserOutput::SortChanged(field, SortDirection::Ascending)` |
+| `fn sort_direction(&self) -> &FileSortDirection` | `fn sort_direction(&self) -> SortDirection` (by value; `SortDirection: Copy`) |
+| `let dir = *state.sort_direction();` | `let dir = state.sort_direction();` (no deref needed — returns by value) |
+| `match state.sort_direction() { FileSortDirection::Ascending => …, FileSortDirection::Descending => … }` | `match state.sort_direction() { SortDirection::Ascending => …, SortDirection::Descending => … }` |
+
+Bonus: `SortDirection::toggle()` is available; use it to replace hand-rolled asc/desc flips.
+
+### `ResourceGaugeState::new` replaced by named-struct + builder
+
+`ResourceGaugeState::new(actual, request, limit)` took three unlabeled positional `f64` arguments; transposing `request` and `limit` was silent. Replaced by two named forms — pick whichever fits your construction site:
+
+**Named-struct single call** (recommended when all three values are known up front — test fixtures, snapshots):
+
+| Old | New |
+|---|---|
+| `ResourceGaugeState::new(250.0, 500.0, 1000.0)` | `ResourceGaugeState::default().with_values(ResourceValues { actual: 250.0, request: 500.0, limit: 1000.0 })` |
+
+**Fluent builder** (recommended when values are computed independently):
+
+| Old | New |
+|---|---|
+| `let a = compute_actual(); let r = ..; let l = ..; ResourceGaugeState::new(a, r, l)` | `ResourceGaugeState::default().with_actual(a).with_request(r).with_limit(l)` |
+
+**Accessor symmetry** (this cadence also closes the `set_values`/no-getter gap):
+
+| Old | New |
+|---|---|
+| `state.actual(); state.request(); state.limit();` (three separate calls) | Still supported. Plus new `state.values() -> ResourceValues` returning all three at once. |
+| `state.set_values(a, r, l);` (existing, unchanged) | Existing, unchanged. Getter counterpart is `state.values()`. |
+
+**New type**: `envision::component::ResourceValues { actual, request, limit }` — also available at `envision::prelude::ResourceValues`.
 
 ## v0.15.x to v0.16.0
 
