@@ -222,10 +222,10 @@ fn test_set_rows_clamps_selection() {
 #[test]
 fn test_set_selected() {
     let mut state = TableState::new(test_rows(), test_columns());
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
     assert_eq!(state.selected_index(), Some(2));
 
-    state.set_selected(None);
+    state.set_selected_index(None);
     assert_eq!(state.selected_index(), None);
 }
 
@@ -569,7 +569,7 @@ fn test_set_rows_to_empty() {
 #[test]
 fn test_set_rows_with_no_prior_selection() {
     let mut state = TableState::new(test_rows(), test_columns());
-    state.set_selected(None);
+    state.set_selected_index(None);
     assert_eq!(state.selected_index(), None);
 
     state.set_rows(vec![TestRow::new("New", "1")]);
@@ -581,7 +581,7 @@ fn test_set_rows_with_no_prior_selection() {
 fn test_set_selected_out_of_bounds() {
     let mut state = TableState::new(test_rows(), test_columns());
     // Try to set selection out of bounds
-    state.set_selected(Some(100));
+    state.set_selected_index(Some(100));
     // Should be ignored, selection unchanged
     assert_eq!(state.selected_index(), Some(0));
 }

@@ -401,6 +401,9 @@ impl TabBarState {
     ///
     /// `None` clears the selection. `Some(i)` is clamped to the valid range.
     ///
+    /// Renamed from `set_selected()` in v0.17.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -410,13 +413,13 @@ impl TabBarState {
     ///     Tab::new("a", "A"),
     ///     Tab::new("b", "B"),
     /// ]);
-    /// state.set_selected(Some(1));
+    /// state.set_selected_index(Some(1));
     /// assert_eq!(state.selected_index(), Some(1));
     ///
-    /// state.set_selected(None);
+    /// state.set_selected_index(None);
     /// assert_eq!(state.selected_index(), None);
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) if !self.tabs.is_empty() => {
                 self.active = Some(i.min(self.tabs.len() - 1));

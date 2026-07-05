@@ -70,6 +70,9 @@ Six components had divergent accessor shapes for "which is selected?" — litera
 - `data_grid::selected_row()` — deleted; use `selected_item()`
 - `table::selected()` — deleted; use `selected_index()`
 - `table::selected_row()` — deleted; use `selected_item()`
+- `tab_bar::set_selected()` — renamed to `set_selected_index()` for symmetry
+- `data_grid::set_selected()` — renamed to `set_selected_index()` for symmetry
+- `table::set_selected()` — renamed to `set_selected_index()` for symmetry
 
 Closes audit finding #6 (`selected_value` / `selected_item` / `active_tab` divergence). See `MIGRATION.md#v016x-to-v0170` for the full migration table.
 

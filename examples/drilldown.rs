@@ -110,7 +110,7 @@ impl App for DrillApp {
             Column::new("Status", Constraint::Min(10)),
         ];
         let mut roster = TableState::new(operations.clone(), columns);
-        roster.set_selected(Some(0));
+        roster.set_selected_index(Some(0));
 
         let roster_hints = KeyHintsState::new()
             .hint("↑/↓", "select")
@@ -139,7 +139,7 @@ impl App for DrillApp {
             }
             Msg::DrillOut => {
                 if let Screen::PerOp { selected } = state.screen {
-                    state.roster.set_selected(Some(selected));
+                    state.roster.set_selected_index(Some(selected));
                     state.screen = Screen::Roster;
                 }
             }
@@ -150,11 +150,11 @@ impl App for DrillApp {
                     .map(|i| i + 1)
                     .unwrap_or(0)
                     .min(state.operations.len().saturating_sub(1));
-                state.roster.set_selected(Some(next));
+                state.roster.set_selected_index(Some(next));
             }
             Msg::SelectPrev => {
                 let prev = state.roster.selected_index().unwrap_or(0).saturating_sub(1);
-                state.roster.set_selected(Some(prev));
+                state.roster.set_selected_index(Some(prev));
             }
             Msg::Quit => return Command::quit(),
         }

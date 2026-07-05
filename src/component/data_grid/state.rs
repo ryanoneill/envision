@@ -149,6 +149,9 @@ impl<T: TableRow> DataGridState<T> {
     /// The index is clamped to the valid range. Has no effect on empty grids.
     /// Cancels any active edit.
     ///
+    /// Renamed from `set_selected()` in v0.17.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -165,10 +168,10 @@ impl<T: TableRow> DataGridState<T> {
     ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
     ///     vec![Column::new("Name", Constraint::Min(10))],
     /// );
-    /// state.set_selected(Some(1));
+    /// state.set_selected_index(Some(1));
     /// assert_eq!(state.selected_index(), Some(1));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
                 if self.rows.is_empty() {

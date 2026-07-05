@@ -139,18 +139,18 @@ fn test_state_set_selected() {
         Tab::new("b", "B"),
         Tab::new("c", "C"),
     ]);
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
     assert_eq!(state.selected_index(), Some(2));
-    state.set_selected(Some(100));
+    state.set_selected_index(Some(100));
     assert_eq!(state.selected_index(), Some(2)); // clamped
-    state.set_selected(None);
+    state.set_selected_index(None);
     assert_eq!(state.selected_index(), None);
 }
 
 #[test]
 fn test_state_set_selected_empty() {
     let mut state = TabBarState::new(vec![]);
-    state.set_selected(Some(0));
+    state.set_selected_index(Some(0));
     assert_eq!(state.selected_index(), None);
 }
 
@@ -166,7 +166,7 @@ fn test_state_mutators() {
 #[test]
 fn test_state_set_tabs() {
     let mut state = TabBarState::new(vec![Tab::new("a", "A"), Tab::new("b", "B")]);
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     state.set_tabs(vec![Tab::new("x", "X")]);
     assert_eq!(state.len(), 1);
     assert_eq!(state.selected_index(), Some(0)); // clamped
@@ -332,7 +332,7 @@ fn test_close_tab_before_active() {
         Tab::new("b", "B").with_closable(true),
         Tab::new("c", "C").with_closable(true),
     ]);
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     let output = TabBar::update(&mut state, TabBarMessage::CloseTab(0));
     assert_eq!(output, Some(TabBarOutput::TabClosed(0)));
     assert_eq!(state.len(), 2);
@@ -347,7 +347,7 @@ fn test_close_tab_active() {
         Tab::new("b", "B").with_closable(true),
         Tab::new("c", "C").with_closable(true),
     ]);
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     let output = TabBar::update(&mut state, TabBarMessage::CloseTab(1));
     assert_eq!(output, Some(TabBarOutput::TabClosed(1)));
     assert_eq!(state.selected_index(), Some(1));
@@ -360,7 +360,7 @@ fn test_close_tab_last_becomes_new_last() {
         Tab::new("a", "A").with_closable(true),
         Tab::new("b", "B").with_closable(true),
     ]);
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     let output = TabBar::update(&mut state, TabBarMessage::CloseTab(1));
     assert_eq!(output, Some(TabBarOutput::TabClosed(1)));
     assert_eq!(state.selected_index(), Some(0));

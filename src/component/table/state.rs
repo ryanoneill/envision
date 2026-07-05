@@ -419,6 +419,9 @@ impl<T: TableRow> TableState<T> {
     /// Pass `None` to clear the selection.
     /// Out of bounds indices are ignored.
     ///
+    /// Renamed from `set_selected()` in v0.17.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
+    ///
     /// # Examples
     ///
     /// ```
@@ -434,10 +437,10 @@ impl<T: TableRow> TableState<T> {
     ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
     ///     vec![Column::fixed("Name", 10)],
     /// );
-    /// state.set_selected(Some(1));
+    /// state.set_selected_index(Some(1));
     /// assert_eq!(state.selected_index(), Some(1));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) if i < self.display_order.len() => self.selected = Some(i),
             Some(_) => {} // Out of bounds, ignore

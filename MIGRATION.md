@@ -99,8 +99,11 @@ Six components had divergent shapes for "which is selected?"; unified on canonic
 | `data_grid` | `state.selected_row()` (was: literal alias for `selected_item()`) | `state.selected_item()` |
 | `table` | `state.selected()` (was: literal alias for `selected_index()`) | `state.selected_index()` |
 | `table` | `state.selected_row()` (was: literal alias for `selected_item()`) | `state.selected_item()` |
+| `tab_bar` | `state.set_selected(idx)` | `state.set_selected_index(idx)` (renamed for symmetry with `selected_index()`) |
+| `data_grid` | `state.set_selected(idx)` | `state.set_selected_index(idx)` (renamed for symmetry with `selected_index()`) |
+| `table` | `state.set_selected(idx)` | `state.set_selected_index(idx)` (renamed for symmetry with `selected_index()`) |
 
-Grep hint for consumers: search your codebase for `\.selected_value(`, `\.active_tab(`, `\.active_tab_mut(`, `\.selected_row(`, and `\.selected(` (the last only on tab_bar / data_grid / table state) — every hit needs to migrate to the new form per the table above.
+Grep hint for consumers: search your codebase for `\.selected_value(`, `\.active_tab(`, `\.active_tab_mut(`, `\.selected_row(`, `\.selected(` (the last only on tab_bar / data_grid / table state), and `\.set_selected(` (only on tab_bar / data_grid / table state) — every hit needs to migrate to the new form per the table above.
 
 ### `MessageSender<M>` wraps `tokio::sync::mpsc::Sender<M>`
 

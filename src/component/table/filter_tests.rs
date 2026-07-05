@@ -95,7 +95,7 @@ fn test_clear_filter() {
 fn test_filter_preserves_selection() {
     let mut state = TableState::new(test_rows(), test_columns());
     // Select Apricot (display index 3)
-    state.set_selected(Some(3));
+    state.set_selected_index(Some(3));
     assert_eq!(state.selected_item().unwrap().name, "Apricot");
 
     // Filter to "ap" — Apple(0), Apricot(3)
@@ -108,7 +108,7 @@ fn test_filter_preserves_selection() {
 fn test_filter_resets_selection_when_row_hidden() {
     let mut state = TableState::new(test_rows(), test_columns());
     // Select Carrot (display index 2)
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
     assert_eq!(state.selected_item().unwrap().name, "Carrot");
 
     // Filter to "fruit" — Carrot is "Vegetable", gets filtered out
