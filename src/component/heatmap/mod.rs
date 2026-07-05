@@ -453,7 +453,16 @@ impl HeatmapState {
         }
     }
 
-    /// Returns the value of the currently selected cell.
+    /// Returns the data value at the currently selected cell, or `None` if
+    /// no cell is selected.
+    ///
+    /// This is distinct from [`selected`](Self::selected), which returns
+    /// the `(row, col)` coordinate pair — `value_at_selection()` reads that
+    /// coordinate out of the underlying data grid.
+    ///
+    /// Renamed from `selected_value()` in v0.17.0 to disambiguate from the
+    /// collection-selection pattern used by other components (see
+    /// MIGRATION.md `v0.16.x to v0.17.0`).
     ///
     /// # Example
     ///
@@ -461,9 +470,9 @@ impl HeatmapState {
     /// use envision::component::HeatmapState;
     ///
     /// let state = HeatmapState::with_data(vec![vec![7.5, 3.2]]);
-    /// assert_eq!(state.selected_value(), Some(7.5));
+    /// assert_eq!(state.value_at_selection(), Some(7.5));
     /// ```
-    pub fn selected_value(&self) -> Option<f64> {
+    pub fn value_at_selection(&self) -> Option<f64> {
         let (r, c) = self.selected()?;
         self.get(r, c)
     }

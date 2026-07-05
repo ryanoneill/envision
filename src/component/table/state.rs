@@ -247,61 +247,9 @@ impl<T: TableRow> TableState<T> {
         self.selected
     }
 
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Cell, Column, TableRow, TableState};
-    /// use ratatui::layout::Constraint;
-    ///
-    /// #[derive(Clone)]
-    /// struct Item { name: String }
-    /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
-    /// }
-    ///
-    /// let state = TableState::new(
-    ///     vec![Item { name: "A".into() }],
-    ///     vec![Column::fixed("Name", 10)],
-    /// );
-    /// assert_eq!(state.selected(), Some(0));
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
-    /// Returns a reference to the currently selected row.
-    ///
-    /// Returns `None` if no row is selected or the table is empty.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// #[derive(Clone, Debug, PartialEq)]
-    /// struct Item { name: String }
-    /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
-    /// }
-    ///
-    /// let state = TableState::new(
-    ///     vec![Item { name: "first".into() }, Item { name: "second".into() }],
-    ///     vec![Column::fixed("Name", 10)],
-    /// );
-    /// assert_eq!(state.selected_row().unwrap().name, "first");
-    /// ```
-    pub fn selected_row(&self) -> Option<&T> {
-        self.selected
-            .and_then(|i| self.display_order.get(i))
-            .and_then(|&idx| self.rows.get(idx))
-    }
-
     /// Returns a reference to the currently selected item.
     ///
-    /// This is an alias for [`selected_row()`](Self::selected_row) that provides a
-    /// consistent accessor name across all selection-based components.
+    /// Returns `None` if no row is selected or the table is empty.
     ///
     /// # Example
     ///
@@ -321,7 +269,9 @@ impl<T: TableRow> TableState<T> {
     /// assert_eq!(state.selected_item().unwrap().name, "First");
     /// ```
     pub fn selected_item(&self) -> Option<&T> {
-        self.selected_row()
+        self.selected
+            .and_then(|i| self.display_order.get(i))
+            .and_then(|&idx| self.rows.get(idx))
     }
 
     /// Returns the primary (highest-priority) sort column and direction.

@@ -449,19 +449,19 @@ fn test_tab_bar_add_close_navigate() {
 
     assert_eq!(state.len(), 3);
     assert_eq!(state.selected_index(), Some(0));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("main.rs"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("main.rs"));
 
     // Navigate to next tab
     let output = TabBar::update(&mut state, TabBarMessage::NextTab);
     assert_eq!(output, Some(TabBarOutput::TabSelected(1)));
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("lib.rs"));
-    assert!(state.active_tab().map(|t| t.modified()).unwrap_or(false));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("lib.rs"));
+    assert!(state.selected_item().map(|t| t.modified()).unwrap_or(false));
 
     // Navigate to last tab
     TabBar::update(&mut state, TabBarMessage::NextTab);
     assert_eq!(state.selected_index(), Some(2));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("test.rs"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("test.rs"));
 
     // NextTab at last position does not wrap - stays at last
     let output = TabBar::update(&mut state, TabBarMessage::NextTab);

@@ -23,7 +23,7 @@
 //! let mut state = TabBarState::new(tabs);
 //!
 //! assert_eq!(state.selected_index(), Some(0));
-//! assert_eq!(state.active_tab().map(|t| t.label()), Some("main.rs"));
+//! assert_eq!(state.selected_item().map(|t| t.label()), Some("main.rs"));
 //!
 //! // Navigate to the next tab
 //! let output = TabBar::update(&mut state, TabBarMessage::NextTab);
@@ -298,32 +298,11 @@ impl TabBarState {
         self.active
     }
 
-    /// Returns the selected tab index, or `None` if the tab bar is empty.
+    /// Returns the currently selected tab, or `None` if empty.
     ///
-    /// This is the getter counterpart to [`set_selected`](Self::set_selected).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Tab, TabBarState};
-    ///
-    /// let mut state = TabBarState::new(vec![
-    ///     Tab::new("a", "A"),
-    ///     Tab::new("b", "B"),
-    /// ]);
-    /// assert_eq!(state.selected(), Some(0));
-    ///
-    /// state.set_selected(Some(1));
-    /// assert_eq!(state.selected(), Some(1));
-    ///
-    /// state.set_selected(None);
-    /// assert_eq!(state.selected(), None);
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.active
-    }
-
-    /// Returns the currently active tab, or `None` if empty.
+    /// Renamed from `active_tab()` in v0.17.0 for consistency with the
+    /// `selected_item()` accessor pattern used by other components (see
+    /// MIGRATION.md `v0.16.x to v0.17.0`).
     ///
     /// # Example
     ///
@@ -331,13 +310,16 @@ impl TabBarState {
     /// use envision::component::{Tab, TabBarState};
     ///
     /// let state = TabBarState::new(vec![Tab::new("a", "Alpha")]);
-    /// assert_eq!(state.active_tab().unwrap().label(), "Alpha");
+    /// assert_eq!(state.selected_item().unwrap().label(), "Alpha");
     /// ```
-    pub fn active_tab(&self) -> Option<&Tab> {
+    pub fn selected_item(&self) -> Option<&Tab> {
         self.tabs.get(self.active?)
     }
 
-    /// Returns a mutable reference to the active tab.
+    /// Returns a mutable reference to the currently selected tab, or `None` if empty.
+    ///
+    /// Renamed from `active_tab_mut()` in v0.17.0 (see MIGRATION.md
+    /// `v0.16.x to v0.17.0`).
     ///
     /// # Example
     ///
@@ -345,12 +327,13 @@ impl TabBarState {
     /// use envision::component::{Tab, TabBarState};
     ///
     /// let mut state = TabBarState::new(vec![Tab::new("a", "Alpha")]);
-    /// state.active_tab_mut().unwrap().set_modified(true);
-    /// assert!(state.active_tab().unwrap().modified());
+    /// if let Some(tab) = state.selected_item_mut() {
+    ///     tab.set_label("Alpha!");
+    /// }
+    /// assert_eq!(state.selected_item().unwrap().label(), "Alpha!");
     /// ```
-    pub fn active_tab_mut(&mut self) -> Option<&mut Tab> {
-        let idx = self.active?;
-        self.tabs.get_mut(idx)
+    pub fn selected_item_mut(&mut self) -> Option<&mut Tab> {
+        self.tabs.get_mut(self.active?)
     }
 
     /// Returns the number of tabs.

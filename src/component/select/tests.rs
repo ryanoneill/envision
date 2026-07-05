@@ -12,7 +12,7 @@ fn test_new() {
 fn test_with_selection() {
     let state = SelectState::with_selection(vec!["A", "B", "C"], 1);
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(state.selected_value(), Some("B"));
+    assert_eq!(state.selected_item(), Some("B"));
 }
 
 #[test]
@@ -48,7 +48,7 @@ fn test_set_selected() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
     state.set_selected(Some(1));
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(state.selected_value(), Some("B"));
+    assert_eq!(state.selected_item(), Some("B"));
 }
 
 #[test]
@@ -414,13 +414,6 @@ fn test_instance_methods() {
         &EventContext::new().focused(true),
     );
     assert_eq!(output, Some(SelectOutput::SelectionChanged(1)));
-}
-
-#[test]
-fn test_selected_item() {
-    let state = SelectState::with_selection(vec!["A", "B", "C"], 1);
-    assert_eq!(state.selected_item(), Some("B"));
-    assert_eq!(state.selected_item(), state.selected_value());
 }
 
 #[test]

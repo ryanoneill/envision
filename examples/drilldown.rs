@@ -133,7 +133,7 @@ impl App for DrillApp {
     fn update(state: &mut State, msg: Msg) -> Command<Msg> {
         match msg {
             Msg::DrillIn => {
-                if let Some(idx) = state.roster.selected() {
+                if let Some(idx) = state.roster.selected_index() {
                     state.screen = Screen::PerOp { selected: idx };
                 }
             }
@@ -146,14 +146,14 @@ impl App for DrillApp {
             Msg::SelectNext => {
                 let next = state
                     .roster
-                    .selected()
+                    .selected_index()
                     .map(|i| i + 1)
                     .unwrap_or(0)
                     .min(state.operations.len().saturating_sub(1));
                 state.roster.set_selected(Some(next));
             }
             Msg::SelectPrev => {
-                let prev = state.roster.selected().unwrap_or(0).saturating_sub(1);
+                let prev = state.roster.selected_index().unwrap_or(0).saturating_sub(1);
                 state.roster.set_selected(Some(prev));
             }
             Msg::Quit => return Command::quit(),

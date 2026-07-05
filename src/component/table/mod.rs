@@ -280,7 +280,7 @@ impl<T: TableRow + 'static> Component for Table<T> {
                 }
             }
             TableMessage::Select => {
-                if let Some(row) = state.selected_row().cloned() {
+                if let Some(row) = state.selected_item().cloned() {
                     return Some(TableOutput::Selected(row));
                 }
             }

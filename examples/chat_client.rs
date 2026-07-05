@@ -239,7 +239,7 @@ impl App for ChatClient {
                     state.message_count += 1;
 
                     // Mark tab as modified
-                    if let Some(tab) = state.tab_bar.active_tab_mut() {
+                    if let Some(tab) = state.tab_bar.selected_item_mut() {
                         tab.set_modified(true);
                     }
 

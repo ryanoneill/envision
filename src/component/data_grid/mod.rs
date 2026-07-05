@@ -136,7 +136,7 @@ pub struct DataGridState<T: TableRow> {
     /// Column definitions.
     columns: Vec<Column>,
     /// Currently selected row index.
-    selected_row: Option<usize>,
+    selected_row_index: Option<usize>,
     /// Currently selected column index.
     selected_column: usize,
     /// Whether the cell editor is active.
@@ -155,7 +155,7 @@ impl<T: TableRow + PartialEq> PartialEq for DataGridState<T> {
     fn eq(&self, other: &Self) -> bool {
         self.rows == other.rows
             && self.columns == other.columns
-            && self.selected_row == other.selected_row
+            && self.selected_row_index == other.selected_row_index
             && self.selected_column == other.selected_column
             && self.editing == other.editing
     }
@@ -166,7 +166,7 @@ impl<T: TableRow> Default for DataGridState<T> {
         Self {
             rows: Vec::new(),
             columns: Vec::new(),
-            selected_row: None,
+            selected_row_index: None,
             selected_column: 0,
             editing: false,
             editor: InputFieldState::new(),
@@ -262,7 +262,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                 DataGridMessage::Enter => {
                     // Confirm edit
                     let value = state.editor.value().to_string();
-                    let row = state.selected_row.unwrap_or(0);
+                    let row = state.selected_row_index.unwrap_or(0);
                     let col = state.selected_column;
                     state.cancel_editing();
                     Some(DataGridOutput::CellEdited {
@@ -300,14 +300,14 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         } else {
             // Navigation mode
             let len = state.rows.len();
-            let current_row = state.selected_row.unwrap_or(0);
+            let current_row = state.selected_row_index.unwrap_or(0);
             let col_count = state.columns.len();
 
             match msg {
                 DataGridMessage::Up => {
                     let new_index = current_row.saturating_sub(1);
                     if new_index != current_row {
-                        state.selected_row = Some(new_index);
+                        state.selected_row_index = Some(new_index);
                         Some(DataGridOutput::SelectionChanged(new_index))
                     } else {
                         None
@@ -316,7 +316,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                 DataGridMessage::Down => {
                     let new_index = (current_row + 1).min(len - 1);
                     if new_index != current_row {
-                        state.selected_row = Some(new_index);
+                        state.selected_row_index = Some(new_index);
                         Some(DataGridOutput::SelectionChanged(new_index))
                     } else {
                         None
@@ -324,7 +324,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                 }
                 DataGridMessage::First => {
                     if current_row != 0 {
-                        state.selected_row = Some(0);
+                        state.selected_row_index = Some(0);
                         Some(DataGridOutput::SelectionChanged(0))
                     } else {
                         None
@@ -333,7 +333,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                 DataGridMessage::Last => {
                     let last = len - 1;
                     if current_row != last {
-                        state.selected_row = Some(last);
+                        state.selected_row_index = Some(last);
                         Some(DataGridOutput::SelectionChanged(last))
                     } else {
                         None
@@ -469,7 +469,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
                     .enumerate()
                     .map(|(col_idx, cell)| {
                         if state.editing
-                            && state.selected_row == Some(row_idx)
+                            && state.selected_row_index == Some(row_idx)
                             && col_idx == state.selected_column
                         {
                             // Show editor content for the cell being edited
@@ -511,7 +511,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         }
 
         let mut table_state = ratatui::widgets::TableState::default();
-        table_state.select(state.selected_row);
+        table_state.select(state.selected_row_index);
         ctx.frame
             .render_stateful_widget(table, ctx.area, &mut table_state);
 
@@ -542,7 +542,7 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
 
         // Show cursor when editing
         if state.editing && ctx.focused {
-            if let Some(row_idx) = state.selected_row {
+            if let Some(row_idx) = state.selected_row_index {
                 // Calculate cursor position for the edit cell
                 // This is approximate — exact positioning depends on column widths
                 let content_area = ctx.area.inner(Margin::new(1, 1));

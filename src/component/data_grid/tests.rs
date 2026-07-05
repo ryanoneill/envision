@@ -75,16 +75,10 @@ fn test_default() {
 // =============================================================================
 
 #[test]
-fn test_selected_row() {
-    let state = DataGridState::new(sample_rows(), sample_columns());
-    let row = state.selected_row().unwrap();
-    assert_eq!(row.name, "Alice");
-}
-
-#[test]
 fn test_selected_item() {
     let state = DataGridState::new(sample_rows(), sample_columns());
-    assert_eq!(state.selected_item(), state.selected_row());
+    let row = state.selected_item().unwrap();
+    assert_eq!(row.name, "Alice");
 }
 
 #[test]

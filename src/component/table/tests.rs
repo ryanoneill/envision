@@ -164,9 +164,9 @@ fn test_selected_index() {
 }
 
 #[test]
-fn test_selected_row() {
+fn test_selected_item() {
     let state = TableState::with_selected(test_rows(), test_columns(), 1);
-    let row = state.selected_row().unwrap();
+    let row = state.selected_item().unwrap();
     assert_eq!(row.name, "Alice");
 }
 
@@ -407,7 +407,7 @@ fn test_sort_preserves_selection() {
     Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0)); // Sort ascending
 
     // After sort, Alice should still be selected but at a different display index
-    let selected = state.selected_row().unwrap();
+    let selected = state.selected_item().unwrap();
     assert_eq!(selected.name, "Alice");
 }
 
@@ -494,7 +494,7 @@ fn test_full_workflow() {
 
     // Navigate after sort
     Table::<TestRow>::update(&mut state, TableMessage::First);
-    assert_eq!(state.selected_row().unwrap().name, "Alice");
+    assert_eq!(state.selected_item().unwrap().name, "Alice");
 
     // Select
     let output = Table::<TestRow>::update(&mut state, TableMessage::Select);
@@ -515,18 +515,18 @@ fn test_navigation_with_sort() {
 
     // Now display order is: Alice, Bob, Charlie
     // But selection is preserved on the same ROW (Charlie), now at position 2
-    assert_eq!(state.selected_row().unwrap().name, "Charlie");
+    assert_eq!(state.selected_item().unwrap().name, "Charlie");
     assert_eq!(state.selected_index(), Some(2));
 
     // Navigate to first to get to Alice
     Table::<TestRow>::update(&mut state, TableMessage::First);
-    assert_eq!(state.selected_row().unwrap().name, "Alice");
+    assert_eq!(state.selected_item().unwrap().name, "Alice");
 
     Table::<TestRow>::update(&mut state, TableMessage::Down);
-    assert_eq!(state.selected_row().unwrap().name, "Bob");
+    assert_eq!(state.selected_item().unwrap().name, "Bob");
 
     Table::<TestRow>::update(&mut state, TableMessage::Down);
-    assert_eq!(state.selected_row().unwrap().name, "Charlie");
+    assert_eq!(state.selected_item().unwrap().name, "Charlie");
 }
 
 #[test]
@@ -599,7 +599,7 @@ fn test_clear_sort_preserves_selection() {
     Table::<TestRow>::update(&mut state, TableMessage::SortClear);
 
     // Selection should still point to Alice (back at index 1)
-    let selected = state.selected_row().unwrap();
+    let selected = state.selected_item().unwrap();
     assert_eq!(selected.name, "Alice");
 }
 
@@ -830,12 +830,6 @@ mod handle_event_tests {
         );
         assert_eq!(msg, Some(TableMessage::Up));
     }
-}
-#[test]
-fn test_selected_item() {
-    let state = TableState::with_selected(test_rows(), test_columns(), 1);
-    assert_eq!(state.selected_item().unwrap().name, "Alice");
-    assert_eq!(state.selected_item(), state.selected_row());
 }
 
 // Column convenience constructor tests
