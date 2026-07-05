@@ -1,4 +1,5 @@
 use super::*;
+use crate::component::table::SortDirection;
 use crate::input::{Event, Key};
 
 fn sample_entries() -> Vec<FileEntry> {
@@ -69,7 +70,7 @@ fn test_default_state() {
     assert!(!state.show_hidden());
     assert_eq!(state.filter_text(), "");
     assert_eq!(*state.sort_field(), FileSortField::Name);
-    assert_eq!(*state.sort_direction(), FileSortDirection::Ascending);
+    assert_eq!(state.sort_direction(), SortDirection::Ascending);
 }
 
 // =============================================================================
@@ -91,9 +92,9 @@ fn test_with_sort_field() {
 
 #[test]
 fn test_with_sort_direction() {
-    let state = FileBrowserState::new("/", sample_entries())
-        .with_sort_direction(FileSortDirection::Descending);
-    assert_eq!(*state.sort_direction(), FileSortDirection::Descending);
+    let state =
+        FileBrowserState::new("/", sample_entries()).with_sort_direction(SortDirection::Descending);
+    assert_eq!(state.sort_direction(), SortDirection::Descending);
 }
 
 #[test]
@@ -192,8 +193,8 @@ fn test_sort_by_size() {
 
 #[test]
 fn test_sort_descending() {
-    let state = FileBrowserState::new("/", sample_entries())
-        .with_sort_direction(FileSortDirection::Descending);
+    let state =
+        FileBrowserState::new("/", sample_entries()).with_sort_direction(SortDirection::Descending);
     let filtered = state.filtered_entries();
     // Directories still first (in reverse alpha: tests, src), then files in reverse alpha
     assert!(filtered[0].is_dir());
@@ -527,7 +528,7 @@ fn test_set_sort() {
         output,
         Some(FileBrowserOutput::SortChanged(
             FileSortField::Size,
-            FileSortDirection::Ascending
+            SortDirection::Ascending
         ))
     ));
 }
@@ -536,12 +537,12 @@ fn test_set_sort() {
 fn test_toggle_sort_direction() {
     let mut state = focused_state();
     let output = FileBrowser::update(&mut state, FileBrowserMessage::ToggleSortDirection);
-    assert_eq!(*state.sort_direction(), FileSortDirection::Descending);
+    assert_eq!(state.sort_direction(), SortDirection::Descending);
     assert!(matches!(
         output,
         Some(FileBrowserOutput::SortChanged(
             FileSortField::Name,
-            FileSortDirection::Descending
+            SortDirection::Descending
         ))
     ));
 }

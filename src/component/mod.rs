@@ -375,8 +375,8 @@ pub use event_stream::{
 };
 #[cfg(feature = "compound-components")]
 pub use file_browser::{
-    FileBrowser, FileBrowserMessage, FileBrowserOutput, FileBrowserState, FileEntry,
-    FileSortDirection, FileSortField, SelectionMode,
+    FileBrowser, FileBrowserMessage, FileBrowserOutput, FileBrowserState, FileEntry, FileSortField,
+    SelectionMode,
 };
 #[cfg(feature = "compound-components")]
 pub use flame_graph::{
