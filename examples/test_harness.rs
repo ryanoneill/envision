@@ -16,8 +16,6 @@ use std::ops::Not;
 
 use envision::harness::{Assertion, TestHarness};
 use envision::prelude::*;
-use ratatui::layout::{Alignment, Constraint, Layout};
-use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 // =============================================================================
