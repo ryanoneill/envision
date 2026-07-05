@@ -418,9 +418,14 @@ pub use theme::{NamedColor, Palette, Severity, Theme};
 
 /// Compiles the code blocks in `README.md` as doctests so they can't rot silently.
 ///
-/// The `#[cfg(doctest)]` gate keeps this out of both the normal build and the public
-/// API surface — the struct exists only when `cargo test --doc` is running.
-#[cfg(doctest)]
+/// Gated on `all(doctest, feature = "full")` — the README code examples reference
+/// types from every component group (`input-components`, `data-components`,
+/// `display-components`, ...), so the doctests only compile when the `full` feature
+/// is on. Default features include `full`, so the standard `cargo test --doc` invocation
+/// picks up the README blocks. Under `--no-default-features`, the struct is absent
+/// and its doctests are skipped, matching the fact that the referenced types
+/// themselves don't exist in that configuration.
+#[cfg(all(doctest, feature = "full"))]
 #[doc = include_str!("../README.md")]
 pub struct ReadmeDoctests;
 
