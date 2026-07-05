@@ -6,7 +6,7 @@
 //! post-closure builder surface introduced in this cadence:
 //!
 //! - `ResourceGaugeState::default().with_values(ResourceValues { .. })`
-//!   replaces the removed positional `ResourceGaugeState::new(a, r, l)`.
+//!   replaces the removed positional `new(a, r, l)` constructor.
 //! - `state.values()` returns the named `ResourceValues` struct back out,
 //!   matching the existing `set_values` mutator.
 //!
