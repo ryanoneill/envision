@@ -35,4 +35,5 @@ Every report follows the format the `superpowers:audit` skill produces:
 ## Archive
 
 - [2026-07-04 pre-release-hygiene](2026-07-04-pre-release-hygiene.md) — `A-` (3.62 GPA). Surfaced 5 blocking findings that gated v0.17.0. Precipitated the release-readiness cadence (spec PR #502, plan PR #503, impl PR #504).
-- [2026-07-05 post-release-hygiene](2026-07-05-post-release-hygiene.md) — verification audit after the release-readiness cadence merged. Confirms all 5 findings closed and grade recovered.
+- [2026-07-05 post-release-hygiene](2026-07-05-post-release-hygiene.md) — Fable verification audit after the release-readiness cadence merged. `A` (3.91 GPA), 9/9 scorecard, all 5 findings closed.
+- [2026-07-05 post-consistency-cleanup](2026-07-05-post-consistency-cleanup.md) — closure record for the consistency-cleanup cadence (spec PR #506, plan PR #507, impl PR #508). Marks audit findings #6 (`selected_value`/`selected_item`/`active_tab` divergence) and #8 (`tokio::sync::mpsc::Sender` dep leakage on AppHarness) as CLOSED. Scorecard 9/9 preserved. No Fable re-audit — plan opted out; the changes were mechanical and the verification gauntlet was declared sufficient at spec-writing time.
