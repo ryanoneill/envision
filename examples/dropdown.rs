@@ -66,7 +66,7 @@ impl App for DropdownApp {
             &mut RenderContext::new(frame, chunks[0], &theme),
         );
 
-        let selected = state.language.selected_value().unwrap_or("None");
+        let selected = state.language.selected_item().unwrap_or("None");
         let status = format!(" Selected: {}", selected);
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),

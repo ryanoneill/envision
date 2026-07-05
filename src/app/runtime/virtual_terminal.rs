@@ -144,7 +144,7 @@ impl<A: App> Runtime<A, CaptureBackend> {
     }
 
     /// Finds all positions of the given text in the display.
-    pub fn find_text(&self, needle: &str) -> Vec<ratatui::layout::Position> {
+    pub fn find_text(&self, needle: &str) -> Vec<crate::layout::Position> {
         self.core.terminal.backend().find_text(needle)
     }
 }

@@ -33,12 +33,12 @@ impl<T: TableRow> DataGridState<T> {
     /// assert_eq!(state.selected_column(), 0);
     /// ```
     pub fn new(rows: Vec<T>, columns: Vec<Column>) -> Self {
-        let selected_row = if rows.is_empty() { None } else { Some(0) };
+        let selected_row_index = if rows.is_empty() { None } else { Some(0) };
         let scroll = ScrollState::new(rows.len());
         Self {
             rows,
             columns,
-            selected_row,
+            selected_row_index,
             selected_column: 0,
             editing: false,
             editor: InputFieldState::new(),
@@ -117,55 +117,7 @@ impl<T: TableRow> DataGridState<T> {
     /// assert_eq!(state.selected_index(), Some(0));
     /// ```
     pub fn selected_index(&self) -> Option<usize> {
-        self.selected_row
-    }
-
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Cell, DataGridState, TableRow, Column};
-    /// use ratatui::layout::Constraint;
-    ///
-    /// #[derive(Clone)]
-    /// struct Item { name: String }
-    /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
-    /// }
-    ///
-    /// let state = DataGridState::new(
-    ///     vec![Item { name: "A".into() }],
-    ///     vec![Column::new("Name", Constraint::Min(10))],
-    /// );
-    /// assert_eq!(state.selected(), Some(0));
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
-    /// Returns a reference to the currently selected row.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{Cell, DataGridState, TableRow, Column};
-    /// use ratatui::layout::Constraint;
-    ///
-    /// #[derive(Clone)]
-    /// struct Item { name: String }
-    /// impl TableRow for Item {
-    ///     fn cells(&self) -> Vec<Cell> { vec![Cell::new(&self.name)] }
-    /// }
-    ///
-    /// let state = DataGridState::new(
-    ///     vec![Item { name: "Alice".into() }],
-    ///     vec![Column::new("Name", Constraint::Min(10))],
-    /// );
-    /// assert_eq!(state.selected_row().unwrap().name, "Alice");
-    /// ```
-    pub fn selected_row(&self) -> Option<&T> {
-        self.selected_row.and_then(|i| self.rows.get(i))
+        self.selected_row_index
     }
 
     /// Returns a reference to the currently selected item.
@@ -189,13 +141,16 @@ impl<T: TableRow> DataGridState<T> {
     /// assert_eq!(state.selected_item().unwrap().name, "Bob");
     /// ```
     pub fn selected_item(&self) -> Option<&T> {
-        self.selected_row()
+        self.selected_row_index.and_then(|i| self.rows.get(i))
     }
 
     /// Sets the selected row index.
     ///
     /// The index is clamped to the valid range. Has no effect on empty grids.
     /// Cancels any active edit.
+    ///
+    /// Renamed from `set_selected()` in v0.17.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
     ///
     /// # Example
     ///
@@ -213,21 +168,21 @@ impl<T: TableRow> DataGridState<T> {
     ///     vec![Item { name: "A".into() }, Item { name: "B".into() }],
     ///     vec![Column::new("Name", Constraint::Min(10))],
     /// );
-    /// state.set_selected(Some(1));
+    /// state.set_selected_index(Some(1));
     /// assert_eq!(state.selected_index(), Some(1));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
                 if self.rows.is_empty() {
                     return;
                 }
                 self.editing = false;
-                self.selected_row = Some(i.min(self.rows.len() - 1));
+                self.selected_row_index = Some(i.min(self.rows.len() - 1));
             }
             None => {
                 self.editing = false;
-                self.selected_row = None;
+                self.selected_row_index = None;
             }
         }
     }
@@ -325,7 +280,7 @@ impl<T: TableRow> DataGridState<T> {
     /// assert_eq!(state.current_cell_value(), Some("Alice".to_string()));
     /// ```
     pub fn current_cell_value(&self) -> Option<String> {
-        self.selected_row
+        self.selected_row_index
             .and_then(|ri| self.rows.get(ri))
             .map(|row| {
                 let cells = row.cells();
@@ -433,10 +388,10 @@ impl<T: TableRow> DataGridState<T> {
         self.rows = rows;
         self.scroll.set_content_length(self.rows.len());
         if self.rows.is_empty() {
-            self.selected_row = None;
+            self.selected_row_index = None;
         } else {
-            let current = self.selected_row.unwrap_or(0);
-            self.selected_row = Some(current.min(self.rows.len() - 1));
+            let current = self.selected_row_index.unwrap_or(0);
+            self.selected_row_index = Some(current.min(self.rows.len() - 1));
         }
     }
 }

@@ -90,12 +90,12 @@ fn test_table_stress_10000_rows() {
     // Jump to last
     Table::<StressRow>::update(&mut state, TableMessage::Last);
     assert_eq!(state.selected_index(), Some(9999));
-    assert_eq!(state.selected_row().unwrap().name, "Item 9999");
+    assert_eq!(state.selected_item().unwrap().name, "Item 9999");
 
     // Jump to first
     Table::<StressRow>::update(&mut state, TableMessage::First);
     assert_eq!(state.selected_index(), Some(0));
-    assert_eq!(state.selected_row().unwrap().name, "Item 0");
+    assert_eq!(state.selected_item().unwrap().name, "Item 0");
 
     // Sort by column 0 (ascending)
     let output = Table::<StressRow>::update(&mut state, TableMessage::SortAsc(0));

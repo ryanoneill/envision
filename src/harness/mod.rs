@@ -55,11 +55,13 @@
 
 mod app_harness;
 mod assertions;
+mod message_sender;
 mod snapshot;
 mod test_harness;
 
 pub use app_harness::AppHarness;
 pub use assertions::{Assertion, AssertionError, AssertionResult};
+pub use message_sender::{MessageSendError, MessageSender, TrySendError};
 pub use snapshot::{
     Snapshot, SnapshotFormat, SnapshotTest, assert_snapshot_eq, assert_snapshot_text,
 };

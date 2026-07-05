@@ -142,7 +142,7 @@ impl DropdownState {
     ///
     /// let state = DropdownState::with_selection(vec!["A", "B", "C"], 1);
     /// assert_eq!(state.selected_index(), Some(1));
-    /// assert_eq!(state.selected_value(), Some("B"));
+    /// assert_eq!(state.selected_item(), Some("B"));
     /// ```
     pub fn with_selection<S: Into<String>>(options: Vec<S>, selected: usize) -> Self {
         let options: Vec<String> = options.into_iter().map(|s| s.into()).collect();
@@ -235,28 +235,7 @@ impl DropdownState {
         self.selected_index()
     }
 
-    /// Returns the selected option value.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = DropdownState::with_selection(vec!["Apple", "Banana"], 1);
-    /// assert_eq!(state.selected_value(), Some("Banana"));
-    ///
-    /// let state = DropdownState::new(vec!["Apple", "Banana"]);
-    /// assert_eq!(state.selected_value(), None);
-    /// ```
-    pub fn selected_value(&self) -> Option<&str> {
-        self.selected_index
-            .and_then(|idx| self.options.get(idx).map(|s| s.as_str()))
-    }
-
     /// Returns the selected option value as a string reference.
-    ///
-    /// This is an alias for [`selected_value()`](Self::selected_value) that provides a
-    /// consistent accessor name across all selection-based components.
     ///
     /// # Examples
     ///
@@ -267,7 +246,8 @@ impl DropdownState {
     /// assert_eq!(state.selected_item(), Some("Apple"));
     /// ```
     pub fn selected_item(&self) -> Option<&str> {
-        self.selected_value()
+        self.selected_index
+            .and_then(|idx| self.options.get(idx).map(|s| s.as_str()))
     }
 
     /// Sets the selected option index.
@@ -279,10 +259,10 @@ impl DropdownState {
     ///
     /// let mut state = DropdownState::new(vec!["A", "B", "C"]);
     /// state.set_selected(Some(2));
-    /// assert_eq!(state.selected_value(), Some("C"));
+    /// assert_eq!(state.selected_item(), Some("C"));
     ///
     /// state.set_selected(None);
-    /// assert_eq!(state.selected_value(), None);
+    /// assert_eq!(state.selected_item(), None);
     /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         if let Some(idx) = index {
@@ -690,7 +670,7 @@ impl Component for Dropdown {
                 .with_focus(ctx.focused)
                 .with_disabled(ctx.disabled)
                 .with_expanded(state.is_open);
-            if let Some(val) = state.selected_value() {
+            if let Some(val) = state.selected_item() {
                 ann = ann.with_value(val.to_string());
             }
             reg.register(ctx.area, ann);
@@ -719,21 +699,18 @@ impl Component for Dropdown {
             } else {
                 format!("{}█ {}", state.filter_text, arrow)
             }
-        } else if let Some(value) = state.selected_value() {
+        } else if let Some(value) = state.selected_item() {
             format!("{} ▼", value)
         } else {
             format!("{} ▼", state.placeholder)
         };
 
-        let text_style = if !state.is_open
-            && state.selected_value().is_none()
-            && !ctx.disabled
-            && !ctx.focused
-        {
-            ctx.theme.placeholder_style()
-        } else {
-            style
-        };
+        let text_style =
+            if !state.is_open && state.selected_item().is_none() && !ctx.disabled && !ctx.focused {
+                ctx.theme.placeholder_style()
+            } else {
+                style
+            };
 
         let paragraph = Paragraph::new(display_text).style(text_style).block(
             Block::default()

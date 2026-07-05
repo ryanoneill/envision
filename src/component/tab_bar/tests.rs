@@ -84,7 +84,7 @@ fn test_state_new() {
     assert_eq!(state.len(), 2);
     assert!(!state.is_empty());
     assert_eq!(state.selected_index(), Some(0));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("Alpha"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("Alpha"));
 }
 
 #[test]
@@ -92,7 +92,7 @@ fn test_state_new_empty() {
     let state = TabBarState::new(vec![]);
     assert!(state.is_empty());
     assert_eq!(state.selected_index(), None);
-    assert!(state.active_tab().is_none());
+    assert!(state.selected_item().is_none());
 }
 
 #[test]
@@ -111,7 +111,7 @@ fn test_state_with_selected() {
         1,
     );
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("B"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("B"));
 }
 
 #[test]
@@ -139,18 +139,18 @@ fn test_state_set_selected() {
         Tab::new("b", "B"),
         Tab::new("c", "C"),
     ]);
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
     assert_eq!(state.selected_index(), Some(2));
-    state.set_selected(Some(100));
+    state.set_selected_index(Some(100));
     assert_eq!(state.selected_index(), Some(2)); // clamped
-    state.set_selected(None);
+    state.set_selected_index(None);
     assert_eq!(state.selected_index(), None);
 }
 
 #[test]
 fn test_state_set_selected_empty() {
     let mut state = TabBarState::new(vec![]);
-    state.set_selected(Some(0));
+    state.set_selected_index(Some(0));
     assert_eq!(state.selected_index(), None);
 }
 
@@ -166,7 +166,7 @@ fn test_state_mutators() {
 #[test]
 fn test_state_set_tabs() {
     let mut state = TabBarState::new(vec![Tab::new("a", "A"), Tab::new("b", "B")]);
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     state.set_tabs(vec![Tab::new("x", "X")]);
     assert_eq!(state.len(), 1);
     assert_eq!(state.selected_index(), Some(0)); // clamped
@@ -195,10 +195,10 @@ fn test_state_find_tab_by_id() {
 }
 
 #[test]
-fn test_state_active_tab_mut() {
+fn test_state_selected_item_mut() {
     let mut state = TabBarState::new(vec![Tab::new("a", "Alpha")]);
-    state.active_tab_mut().unwrap().set_label("Modified");
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("Modified"));
+    state.selected_item_mut().unwrap().set_label("Modified");
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("Modified"));
 }
 
 #[test]
@@ -332,12 +332,12 @@ fn test_close_tab_before_active() {
         Tab::new("b", "B").with_closable(true),
         Tab::new("c", "C").with_closable(true),
     ]);
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     let output = TabBar::update(&mut state, TabBarMessage::CloseTab(0));
     assert_eq!(output, Some(TabBarOutput::TabClosed(0)));
     assert_eq!(state.len(), 2);
     assert_eq!(state.selected_index(), Some(0));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("B"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("B"));
 }
 
 #[test]
@@ -347,11 +347,11 @@ fn test_close_tab_active() {
         Tab::new("b", "B").with_closable(true),
         Tab::new("c", "C").with_closable(true),
     ]);
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     let output = TabBar::update(&mut state, TabBarMessage::CloseTab(1));
     assert_eq!(output, Some(TabBarOutput::TabClosed(1)));
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("C"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("C"));
 }
 
 #[test]
@@ -360,7 +360,7 @@ fn test_close_tab_last_becomes_new_last() {
         Tab::new("a", "A").with_closable(true),
         Tab::new("b", "B").with_closable(true),
     ]);
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     let output = TabBar::update(&mut state, TabBarMessage::CloseTab(1));
     assert_eq!(output, Some(TabBarOutput::TabClosed(1)));
     assert_eq!(state.selected_index(), Some(0));
@@ -387,7 +387,7 @@ fn test_close_active_tab() {
     ]);
     let output = TabBar::update(&mut state, TabBarMessage::CloseActiveTab);
     assert_eq!(output, Some(TabBarOutput::TabClosed(0)));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("B"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("B"));
 }
 
 #[test]
@@ -427,7 +427,7 @@ fn test_add_tab() {
     assert_eq!(output, Some(TabBarOutput::TabAdded(1)));
     assert_eq!(state.len(), 2);
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("B"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("B"));
 }
 
 #[test]
@@ -754,7 +754,7 @@ fn test_full_workflow() {
     TabBar::update(&mut state, TabBarMessage::NextTab);
     TabBar::update(&mut state, TabBarMessage::NextTab);
     assert_eq!(state.selected_index(), Some(2));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("test.rs"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("test.rs"));
 
     TabBar::update(&mut state, TabBarMessage::PrevTab);
     assert_eq!(state.selected_index(), Some(1));
@@ -762,7 +762,7 @@ fn test_full_workflow() {
     let output = TabBar::update(&mut state, TabBarMessage::CloseActiveTab);
     assert_eq!(output, Some(TabBarOutput::TabClosed(1)));
     assert_eq!(state.len(), 2);
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("test.rs"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("test.rs"));
 
     TabBar::update(&mut state, TabBarMessage::First);
     assert_eq!(state.selected_index(), Some(0));
@@ -772,7 +772,7 @@ fn test_full_workflow() {
         TabBarMessage::AddTab(Tab::new("f4", "new.rs").with_closable(true)),
     );
     assert_eq!(output, Some(TabBarOutput::TabAdded(2)));
-    assert_eq!(state.active_tab().map(|t| t.label()), Some("new.rs"));
+    assert_eq!(state.selected_item().map(|t| t.label()), Some("new.rs"));
 }
 
 #[test]

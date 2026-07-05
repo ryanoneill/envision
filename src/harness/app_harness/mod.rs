@@ -260,9 +260,17 @@ impl<A: App> AppHarness<A> {
         }
     }
 
-    /// Returns a sender that can be used to send messages to the runtime.
-    pub fn message_sender(&self) -> tokio::sync::mpsc::Sender<A::Message> {
-        self.runtime.message_sender()
+    /// Returns a [`MessageSender<A::Message>`](crate::harness::MessageSender) for
+    /// injecting messages into this AppHarness's Runtime from subscription
+    /// callbacks, spawned tasks, or any other non-App-loop code path.
+    ///
+    /// Returns the envision-native newtype rather than the raw
+    /// `tokio::sync::mpsc::Sender<A::Message>` so consumers don't need `tokio`
+    /// as a direct dependency. Use
+    /// [`MessageSender::into_inner`](crate::harness::MessageSender::into_inner)
+    /// as an explicit escape hatch if you need tokio-specific functionality.
+    pub fn message_sender(&self) -> crate::harness::MessageSender<A::Message> {
+        crate::harness::MessageSender::new(self.runtime.message_sender())
     }
 
     // -------------------------------------------------------------------------

@@ -110,7 +110,7 @@ impl App for DrillApp {
             Column::new("Status", Constraint::Min(10)),
         ];
         let mut roster = TableState::new(operations.clone(), columns);
-        roster.set_selected(Some(0));
+        roster.set_selected_index(Some(0));
 
         let roster_hints = KeyHintsState::new()
             .hint("↑/↓", "select")
@@ -133,28 +133,28 @@ impl App for DrillApp {
     fn update(state: &mut State, msg: Msg) -> Command<Msg> {
         match msg {
             Msg::DrillIn => {
-                if let Some(idx) = state.roster.selected() {
+                if let Some(idx) = state.roster.selected_index() {
                     state.screen = Screen::PerOp { selected: idx };
                 }
             }
             Msg::DrillOut => {
                 if let Screen::PerOp { selected } = state.screen {
-                    state.roster.set_selected(Some(selected));
+                    state.roster.set_selected_index(Some(selected));
                     state.screen = Screen::Roster;
                 }
             }
             Msg::SelectNext => {
                 let next = state
                     .roster
-                    .selected()
+                    .selected_index()
                     .map(|i| i + 1)
                     .unwrap_or(0)
                     .min(state.operations.len().saturating_sub(1));
-                state.roster.set_selected(Some(next));
+                state.roster.set_selected_index(Some(next));
             }
             Msg::SelectPrev => {
-                let prev = state.roster.selected().unwrap_or(0).saturating_sub(1);
-                state.roster.set_selected(Some(prev));
+                let prev = state.roster.selected_index().unwrap_or(0).saturating_sub(1);
+                state.roster.set_selected_index(Some(prev));
             }
             Msg::Quit => return Command::quit(),
         }

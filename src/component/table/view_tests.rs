@@ -296,7 +296,7 @@ fn styled_columns() -> Vec<Column> {
 /// output (for color-level assertions). Centralizes the per-style
 /// boilerplate.
 ///
-/// Selection is explicitly cleared via `set_selected(None)` because
+/// Selection is explicitly cleared via `set_selected_index(None)` because
 /// ratatui's row-highlight style overrides per-cell fg colors on the
 /// selected row — leaving the default `Some(0)` selection in place would
 /// mask the very styling these tests are meant to pin.
@@ -306,7 +306,7 @@ fn styled_columns() -> Vec<Column> {
 /// only place where the per-cell style is observable in test output.
 fn render_styled_single_row(cells: Vec<crate::component::cell::Cell>) -> (String, String) {
     let mut state = TableState::new(vec![StyledRow { cells }], styled_columns());
-    state.set_selected(None);
+    state.set_selected_index(None);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
@@ -429,7 +429,7 @@ fn snapshot_table_cells_mixed_styles_in_one_row() {
     let mut state = TableState::new(vec![row], columns);
     // See `render_styled_single_row` — clearing selection prevents the
     // row-highlight style from overriding per-cell fg colors.
-    state.set_selected(None);
+    state.set_selected_index(None);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
 
@@ -583,7 +583,7 @@ fn snapshot_table_cells_with_severity_style() {
         Cell::severity("crit", Severity::Critical),
     ];
     let mut state = TableState::new(vec![StyledRow { cells }], columns);
-    state.set_selected(None);
+    state.set_selected_index(None);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal
@@ -640,7 +640,7 @@ fn snapshot_table_cells_severity_disabled_renders_dark_gray_no_bold() {
         Cell::new("crit").with_style(CellStyle::Severity(Severity::Critical)),
     ];
     let mut state = TableState::new(vec![StyledRow { cells }], columns);
-    state.set_selected(None);
+    state.set_selected_index(None);
 
     let (mut terminal, theme) = crate::component::test_utils::setup_render(40, 10);
     terminal

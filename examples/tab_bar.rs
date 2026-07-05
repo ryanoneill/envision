@@ -90,12 +90,12 @@ impl App for TabBarApp {
 
         let tab_name = state
             .tab_bar
-            .active_tab()
+            .selected_item()
             .map(|t| t.label().to_string())
             .unwrap_or_else(|| "No tab selected".into());
         let modified_str = state
             .tab_bar
-            .active_tab()
+            .selected_item()
             .map(|t| if t.modified() { " [modified]" } else { "" })
             .unwrap_or("");
         let content_text = format!("  Editing: {}{}", tab_name, modified_str);

@@ -227,17 +227,17 @@ fn test_navigation_full_traversal() {
     state.update(HeatmapMessage::SelectDown);
     state.update(HeatmapMessage::SelectRight);
     assert_eq!(state.selected(), Some((1, 1)));
-    assert_eq!(state.selected_value(), Some(5.0));
+    assert_eq!(state.value_at_selection(), Some(5.0));
 
     // Go up
     state.update(HeatmapMessage::SelectUp);
     assert_eq!(state.selected(), Some((0, 1)));
-    assert_eq!(state.selected_value(), Some(2.0));
+    assert_eq!(state.value_at_selection(), Some(2.0));
 
     // Go left
     state.update(HeatmapMessage::SelectLeft);
     assert_eq!(state.selected(), Some((0, 0)));
-    assert_eq!(state.selected_value(), Some(1.0));
+    assert_eq!(state.value_at_selection(), Some(1.0));
 }
 
 // =============================================================================
@@ -245,15 +245,15 @@ fn test_navigation_full_traversal() {
 // =============================================================================
 
 #[test]
-fn test_selected_value() {
+fn test_value_at_selection() {
     let state = HeatmapState::with_data(vec![vec![42.0, 7.5]]);
-    assert_eq!(state.selected_value(), Some(42.0));
+    assert_eq!(state.value_at_selection(), Some(42.0));
 }
 
 #[test]
-fn test_selected_value_empty() {
+fn test_value_at_selection_empty() {
     let state = HeatmapState::default();
-    assert_eq!(state.selected_value(), None);
+    assert_eq!(state.value_at_selection(), None);
 }
 
 // =============================================================================
@@ -497,7 +497,7 @@ fn test_1x1_grid() {
     let mut state = HeatmapState::with_data(vec![vec![42.0]]);
 
     assert_eq!(state.selected(), Some((0, 0)));
-    assert_eq!(state.selected_value(), Some(42.0));
+    assert_eq!(state.value_at_selection(), Some(42.0));
 
     // Navigation should produce None (nowhere to go)
     let output = state.update(HeatmapMessage::SelectUp);

@@ -15,7 +15,7 @@ fn test_new() {
 fn test_with_selection() {
     let state = DropdownState::with_selection(vec!["A", "B", "C"], 1);
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(state.selected_value(), Some("B"));
+    assert_eq!(state.selected_item(), Some("B"));
 }
 
 #[test]
@@ -74,7 +74,7 @@ fn test_set_selected() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
     state.set_selected(Some(1));
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(state.selected_value(), Some("B"));
+    assert_eq!(state.selected_item(), Some("B"));
 }
 
 #[test]
@@ -414,7 +414,7 @@ fn test_confirm_with_filter() {
 
     let output = Dropdown::update(&mut state, DropdownMessage::Confirm);
     assert_eq!(output, Some(DropdownOutput::Selected("Banana".to_string())));
-    assert_eq!(state.selected_value(), Some("Banana"));
+    assert_eq!(state.selected_item(), Some("Banana"));
 }
 
 // ========== Disabled State Tests ==========
@@ -567,7 +567,7 @@ fn test_full_workflow() {
         output,
         Some(DropdownOutput::Selected("Apricot".to_string()))
     );
-    assert_eq!(state.selected_value(), Some("Apricot"));
+    assert_eq!(state.selected_item(), Some("Apricot"));
     assert!(!state.is_open());
     assert_eq!(state.filter_text(), ""); // Filter cleared
 }
@@ -761,13 +761,6 @@ fn test_instance_update() {
     let output = state.update(DropdownMessage::Toggle);
     assert!(output.is_none()); // Toggle just opens, returns None
     assert!(state.is_open());
-}
-
-#[test]
-fn test_selected_item() {
-    let state = DropdownState::with_selection(vec!["A", "B", "C"], 1);
-    assert_eq!(state.selected_item(), Some("B"));
-    assert_eq!(state.selected_item(), state.selected_value());
 }
 
 #[test]

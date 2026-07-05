@@ -178,7 +178,7 @@ fn test_multi_sort_preserves_selection() {
     Table::<TestRow>::update(&mut state, TableMessage::SortAsc(0));
     Table::<TestRow>::update(&mut state, TableMessage::AddSortAsc(1));
 
-    let selected = state.selected_row().unwrap();
+    let selected = state.selected_item().unwrap();
     assert_eq!(selected.name, "Alice");
     assert_eq!(selected.value, "10");
 }

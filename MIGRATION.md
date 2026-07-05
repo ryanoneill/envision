@@ -83,6 +83,46 @@ Bonus: `SortDirection::toggle()` is available; use it to replace hand-rolled asc
 
 **New type**: `envision::component::ResourceValues { actual, request, limit }` — also available at `envision::prelude::ResourceValues`.
 
+### Component selection accessors unified on `selected_item()`
+
+Six components had divergent shapes for "which is selected?"; unified on canonical `selected_item()` returning `Option<&T>` where the concept fits. Semantic outliers renamed to disambiguate.
+
+| Component | Old | New |
+|---|---|---|
+| `dropdown` | `state.selected_value()` | `state.selected_item()` (was already the canonical name; the alias is what's deleted) |
+| `select` | `state.selected_value()` | `state.selected_item()` (same shape) |
+| `heatmap` | `state.selected_value() -> Option<f64>` (returns data value at cursor coordinates) | `state.value_at_selection() -> Option<f64>` (renamed — the `value_` prefix disambiguates from selection-accessor pattern; the coordinate accessor `state.selected() -> Option<(usize, usize)>` is unchanged) |
+| `tab_bar` | `state.active_tab() -> Option<&Tab>` | `state.selected_item() -> Option<&Tab>` |
+| `tab_bar` | `state.active_tab_mut() -> Option<&mut Tab>` | `state.selected_item_mut() -> Option<&mut Tab>` |
+| `tab_bar` | `state.selected() -> Option<usize>` (was: literal alias for `selected_index()`) | `state.selected_index()` |
+| `data_grid` | `state.selected()` (was: literal alias for `selected_index()`) | `state.selected_index()` |
+| `data_grid` | `state.selected_row()` (was: literal alias for `selected_item()`) | `state.selected_item()` |
+| `table` | `state.selected()` (was: literal alias for `selected_index()`) | `state.selected_index()` |
+| `table` | `state.selected_row()` (was: literal alias for `selected_item()`) | `state.selected_item()` |
+| `tab_bar` | `state.set_selected(idx)` | `state.set_selected_index(idx)` (renamed for symmetry with `selected_index()`) |
+| `data_grid` | `state.set_selected(idx)` | `state.set_selected_index(idx)` (renamed for symmetry with `selected_index()`) |
+| `table` | `state.set_selected(idx)` | `state.set_selected_index(idx)` (renamed for symmetry with `selected_index()`) |
+
+Grep hint for consumers: search your codebase for `\.selected_value(`, `\.active_tab(`, `\.active_tab_mut(`, `\.selected_row(`, `\.selected(` (the last only on tab_bar / data_grid / table state), and `\.set_selected(` (only on tab_bar / data_grid / table state) — every hit needs to migrate to the new form per the table above.
+
+### `MessageSender<M>` wraps `tokio::sync::mpsc::Sender<M>`
+
+`AppHarness::message_sender()` now returns a first-party `MessageSender<M>` newtype instead of raw `tokio::sync::mpsc::Sender<M>`. Consumer code changes are limited to type spellings; call sites are identical.
+
+| Old | New |
+|---|---|
+| `let sender: tokio::sync::mpsc::Sender<MyMsg> = harness.message_sender();` | `let sender: envision::MessageSender<MyMsg> = harness.message_sender();` (or use `envision::prelude::MessageSender`) |
+| `sender.send(msg).await` — returns `Result<(), tokio::sync::mpsc::error::SendError<MyMsg>>` | `sender.send(msg).await` — returns `Result<(), envision::MessageSendError<MyMsg>>` |
+| `sender.try_send(msg)` — returns `Result<(), tokio::sync::mpsc::error::TrySendError<MyMsg>>` | `sender.try_send(msg)` — returns `Result<(), envision::TrySendError<MyMsg>>` |
+| `sender.is_closed()` — still available | `sender.is_closed()` — still available (passthrough) |
+| `sender.capacity()` — still available | `sender.capacity()` — still available (passthrough) |
+| `sender.max_capacity()` — still available | `sender.max_capacity()` — still available (passthrough) |
+| `sender.reserve()`, `.send_timeout()`, `.same_channel()`, `.downgrade()`, `.closed()` future | `let tokio_sender = sender.into_inner();` — explicit escape hatch that re-couples to tokio |
+
+`MessageSender<M>` is `Clone + Debug + Send + Sync` (when `M: Send`). Its `send`/`try_send` methods have the same semantics as tokio's Sender (bounded channel, receiver-dropped errors carry the message back).
+
+**Generic parameter note:** `MessageSender<M>` is parameterized on the message type `M`, not on an App type. This means portable helper functions like `fn spawn_watcher<M: Send + 'static>(sender: MessageSender<M>) { ... }` work without depending on envision's `App` trait.
+
 ## v0.15.x to v0.16.0
 
 ### `DependencyGraph` removed; use `Diagram`

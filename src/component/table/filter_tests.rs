@@ -61,7 +61,7 @@ fn test_filter_matches_any_cell() {
     let mut state = TableState::new(test_rows(), test_columns());
     state.set_filter_text("vegetable");
     assert_eq!(state.visible_count(), 1); // Carrot (category = Vegetable)
-    assert_eq!(state.selected_row().unwrap().name, "Carrot");
+    assert_eq!(state.selected_item().unwrap().name, "Carrot");
 }
 
 #[test]
@@ -69,7 +69,7 @@ fn test_filter_case_insensitive() {
     let mut state = TableState::new(test_rows(), test_columns());
     state.set_filter_text("APPLE");
     assert_eq!(state.visible_count(), 1);
-    assert_eq!(state.selected_row().unwrap().name, "Apple");
+    assert_eq!(state.selected_item().unwrap().name, "Apple");
 }
 
 #[test]
@@ -77,7 +77,7 @@ fn test_filter_no_matches() {
     let mut state = TableState::new(test_rows(), test_columns());
     state.set_filter_text("xyz");
     assert_eq!(state.visible_count(), 0);
-    assert_eq!(state.selected_row(), None);
+    assert_eq!(state.selected_item(), None);
 }
 
 #[test]
@@ -95,27 +95,27 @@ fn test_clear_filter() {
 fn test_filter_preserves_selection() {
     let mut state = TableState::new(test_rows(), test_columns());
     // Select Apricot (display index 3)
-    state.set_selected(Some(3));
-    assert_eq!(state.selected_row().unwrap().name, "Apricot");
+    state.set_selected_index(Some(3));
+    assert_eq!(state.selected_item().unwrap().name, "Apricot");
 
     // Filter to "ap" — Apple(0), Apricot(3)
     state.set_filter_text("ap");
     assert_eq!(state.visible_count(), 2);
-    assert_eq!(state.selected_row().unwrap().name, "Apricot");
+    assert_eq!(state.selected_item().unwrap().name, "Apricot");
 }
 
 #[test]
 fn test_filter_resets_selection_when_row_hidden() {
     let mut state = TableState::new(test_rows(), test_columns());
     // Select Carrot (display index 2)
-    state.set_selected(Some(2));
-    assert_eq!(state.selected_row().unwrap().name, "Carrot");
+    state.set_selected_index(Some(2));
+    assert_eq!(state.selected_item().unwrap().name, "Carrot");
 
     // Filter to "fruit" — Carrot is "Vegetable", gets filtered out
     state.set_filter_text("fruit");
     assert_eq!(state.visible_count(), 3); // Apple, Banana, Apricot
     // Selection moves to first visible
-    assert_eq!(state.selected_row().unwrap().name, "Apple");
+    assert_eq!(state.selected_item().unwrap().name, "Apple");
 }
 
 #[test]
@@ -124,10 +124,10 @@ fn test_filter_navigation() {
     state.set_filter_text("ap");
     // Filtered: Apple(0), Apricot(3)
     assert_eq!(state.visible_count(), 2);
-    assert_eq!(state.selected_row().unwrap().name, "Apple");
+    assert_eq!(state.selected_item().unwrap().name, "Apple");
 
     let output = Table::<TestRow>::update(&mut state, TableMessage::Down);
-    assert_eq!(state.selected_row().unwrap().name, "Apricot");
+    assert_eq!(state.selected_item().unwrap().name, "Apricot");
     assert_eq!(output, Some(TableOutput::SelectionChanged(1)));
 
     // At end, stay
@@ -159,10 +159,10 @@ fn test_filter_with_sort() {
     // Filter to "ap" — should show Apple and Apricot, sorted
     state.set_filter_text("ap");
     assert_eq!(state.visible_count(), 2);
-    assert_eq!(state.selected_row().unwrap().name, "Apple");
+    assert_eq!(state.selected_item().unwrap().name, "Apple");
 
     Table::<TestRow>::update(&mut state, TableMessage::Down);
-    assert_eq!(state.selected_row().unwrap().name, "Apricot");
+    assert_eq!(state.selected_item().unwrap().name, "Apricot");
 }
 
 #[test]

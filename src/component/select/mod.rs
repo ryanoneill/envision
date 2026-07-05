@@ -223,28 +223,7 @@ impl SelectState {
         self.selected_index()
     }
 
-    /// Returns the selected option value.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use envision::prelude::*;
-    ///
-    /// let state = SelectState::with_selection(vec!["Red", "Green", "Blue"], 2);
-    /// assert_eq!(state.selected_value(), Some("Blue"));
-    ///
-    /// let state = SelectState::new(vec!["Red", "Green", "Blue"]);
-    /// assert_eq!(state.selected_value(), None);
-    /// ```
-    pub fn selected_value(&self) -> Option<&str> {
-        self.selected_index
-            .and_then(|idx| self.options.get(idx).map(|s| s.as_str()))
-    }
-
     /// Returns the selected option value as a string reference.
-    ///
-    /// This is an alias for [`selected_value()`](Self::selected_value) that provides a
-    /// consistent accessor name across all selection-based components.
     ///
     /// # Examples
     ///
@@ -255,7 +234,8 @@ impl SelectState {
     /// assert_eq!(state.selected_item(), Some("Red"));
     /// ```
     pub fn selected_item(&self) -> Option<&str> {
-        self.selected_value()
+        self.selected_index
+            .and_then(|idx| self.options.get(idx).map(|s| s.as_str()))
     }
 
     /// Sets the selected option index.
@@ -267,10 +247,10 @@ impl SelectState {
     ///
     /// let mut state = SelectState::new(vec!["A", "B", "C"]);
     /// state.set_selected(Some(2));
-    /// assert_eq!(state.selected_value(), Some("C"));
+    /// assert_eq!(state.selected_item(), Some("C"));
     ///
     /// state.set_selected(None);
-    /// assert_eq!(state.selected_value(), None);
+    /// assert_eq!(state.selected_item(), None);
     /// ```
     pub fn set_selected(&mut self, index: Option<usize>) {
         if let Some(idx) = index {
@@ -523,7 +503,7 @@ impl Component for Select {
                 .with_focus(ctx.focused)
                 .with_disabled(ctx.disabled)
                 .with_expanded(state.is_open);
-            if let Some(val) = state.selected_value() {
+            if let Some(val) = state.selected_item() {
                 ann = ann.with_value(val.to_string());
             }
             reg.register(ctx.area, ann);
@@ -544,7 +524,7 @@ impl Component for Select {
         };
 
         // Display selected value or placeholder
-        let display_text = if let Some(value) = state.selected_value() {
+        let display_text = if let Some(value) = state.selected_item() {
             let arrow = if state.is_open { "▲" } else { "▼" };
             format!("{} {}", value, arrow)
         } else {

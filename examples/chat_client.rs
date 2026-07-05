@@ -198,7 +198,7 @@ impl App for ChatClient {
                                 if state.active_tab >= state.conversations.len() {
                                     state.active_tab = state.conversations.len().saturating_sub(1);
                                 }
-                                state.tab_bar.set_selected(Some(state.active_tab));
+                                state.tab_bar.set_selected_index(Some(state.active_tab));
                             }
                         }
                         _ => {}
@@ -239,7 +239,7 @@ impl App for ChatClient {
                     state.message_count += 1;
 
                     // Mark tab as modified
-                    if let Some(tab) = state.tab_bar.active_tab_mut() {
+                    if let Some(tab) = state.tab_bar.selected_item_mut() {
                         tab.set_modified(true);
                     }
 
@@ -296,7 +296,7 @@ impl App for ChatClient {
                     ),
                 );
                 state.active_tab = state.conversations.len() - 1;
-                state.tab_bar.set_selected(Some(state.active_tab));
+                state.tab_bar.set_selected_index(Some(state.active_tab));
             }
 
             Msg::CloseTab => {
@@ -309,7 +309,7 @@ impl App for ChatClient {
                     if state.active_tab >= state.conversations.len() {
                         state.active_tab = state.conversations.len().saturating_sub(1);
                     }
-                    state.tab_bar.set_selected(Some(state.active_tab));
+                    state.tab_bar.set_selected_index(Some(state.active_tab));
                 }
             }
 
