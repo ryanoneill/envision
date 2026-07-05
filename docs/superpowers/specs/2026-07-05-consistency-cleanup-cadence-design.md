@@ -13,8 +13,8 @@ Three code-shaped units:
 
 | Unit | What | Files primarily touched |
 |---|---|---|
-| 1 | Consistency sweep — canonical `selected_item()` across 5 components; delete literal aliases; rename semantically distinct accessors to disambiguate | `dropdown/mod.rs`, `select/mod.rs`, `heatmap/mod.rs`, `tab_bar/mod.rs`, `data_grid/state.rs`, plus tests and any example usage |
-| 2 | `MessageSender<A>` newtype wrapping `tokio::sync::mpsc::Sender<A::Message>` + `Position` cosmetic at `virtual_terminal.rs:147` | `src/harness/message_sender.rs` (new), `src/harness/mod.rs`, `src/harness/app_harness/mod.rs`, `src/app/runtime/virtual_terminal.rs` |
+| 1 | Consistency sweep — canonical `selected_item()` across **6 components** (adversarial review M3: Table has byte-identical divergence to data_grid; leaving it out makes the "consistency sweep" framing dishonest, so Table is IN scope); delete literal aliases; rename semantically distinct accessors to disambiguate | `dropdown/mod.rs`, `select/mod.rs`, `heatmap/mod.rs`, `tab_bar/mod.rs`, `data_grid/state.rs`, `table/state.rs`, plus internal component-body call sites, tests, and any example usage |
+| 2 | `MessageSender<M>` newtype wrapping `tokio::sync::mpsc::Sender<M>` + `Position` cosmetic at `virtual_terminal.rs:147` | `src/harness/message_sender.rs` (new), `src/harness/mod.rs`, `src/harness/app_harness/mod.rs`, `src/app/runtime/virtual_terminal.rs` |
 | 3 | CHANGELOG + MIGRATION.md updates — new v0.16→v0.17 subsections, trimmed Known Deferred Findings block | `CHANGELOG.md`, `MIGRATION.md` |
 
 Out of scope (explicitly):
@@ -24,6 +24,7 @@ Out of scope (explicitly):
 - `compact_str` sporadic-adoption commitment decision (finding #4). Its own cadence when the time comes.
 - 22 examples that `use ratatui::...` directly (finding #5). Cosmetic; skip until it matters.
 - Doc-hygiene split of CHANGELOG.md and MIGRATION.md over 1000-line human cap (finding #3). Cadence B, separate brainstorm.
+- **Extending the `selected()` alias removal beyond the 6 in-scope components** (adversarial review A3). Envision has 15+ other components with `selected() -> Option<usize>` as an alias for `selected_index()` — accordion, tabs, radio_group, searchable_list, selectable_list, tree, menu, box_plot, loading_list, alert_panel, and others. Trimming ALL of them in one cadence is a scope leap that would compound migration surface without proportional benefit — the audit specifically named the 6 in this scope because they carry the additional `selected_value` / `selected_row` / `active_tab` divergence. The remaining 15+ components' `selected()` aliases are candidates for **Cadence D (future v0.18+): finish the consistency sweep across all `selected_index` alias sites**. Committed as follow-up; explicitly not in this cadence's scope.
 
 ## Cadence structure
 
@@ -38,7 +39,26 @@ No re-audit gate this time. The audit changes needed to close the findings are m
 
 ## Unit 1 — Consistency sweep on `selected_item()`
 
-Files touched: `src/component/dropdown/mod.rs`, `src/component/select/mod.rs`, `src/component/heatmap/mod.rs`, `src/component/tab_bar/mod.rs`, `src/component/data_grid/state.rs`, plus their `tests.rs`/`tests/` files, plus any test in `tests/` or example in `examples/` that references a deleted accessor.
+Files touched: `src/component/dropdown/mod.rs`, `src/component/select/mod.rs`, `src/component/heatmap/mod.rs`, `src/component/tab_bar/mod.rs`, `src/component/data_grid/state.rs`, `src/component/table/state.rs`, plus their `tests.rs`/`tests/` files, plus any test in `tests/` or example in `examples/` that references a deleted accessor.
+
+### Internal call sites requiring migration alongside the alias deletions
+
+Per adversarial review A1, several components call their own soon-to-be-deleted aliases from inside their `view()` bodies. These must be migrated in the SAME commit that deletes the aliases, otherwise the crate fails to compile:
+
+- `src/component/select/mod.rs:526,547` — `state.selected_value()` calls inside `view()`
+- `src/component/dropdown/mod.rs:693,722,729` — `state.selected_value()` calls inside `view()`
+- Any equivalent internal `state.selected()` / `state.selected_row()` / `state.active_tab()` calls inside data_grid / table / tab_bar `view()` — enumerate at impl time via `grep -rn '\.selected_value\|\.active_tab\|\.selected_row\b\|\.selected\b' src/component/` (post the alias deletions).
+
+### Tautology tests to DELETE (not rename)
+
+Per adversarial review A2, some tests exist specifically to verify that a literal alias returns the same value as its canonical counterpart:
+
+- `src/component/data_grid/tests.rs:87` — `assert_eq!(state.selected_item(), state.selected_row())` (verifies alias) → **delete** after `selected_row` alias is gone
+- `src/component/select/tests.rs:423` — similar shape for `selected_value` / `selected_item` → **delete**
+- `src/component/dropdown/tests.rs:770` — similar shape → **delete**
+- Any tests that specifically exist to prove alias-equivalence for `tab_bar::selected()` vs `selected_index()`, `data_grid::selected()` vs `selected_index()`, `table::selected()` vs `selected_index()`, `table::selected_row()` vs `selected_item()` → **delete**
+
+Once the aliases are gone, these tests become tautologies (`assert_eq!(x, x)`) or dangling. Deletion is the correct action; renaming to the new accessor would create a genuinely tautological test.
 
 ### Per-component changes
 
@@ -57,9 +77,11 @@ Same as dropdown — both accessors are literal aliases returning `Option<&str>`
 
 | Before | After |
 |---|---|
-| `selected_value() -> Option<f64>` (returns the DATA VALUE at the cursor coordinates — not "the item that is selected") | `selected_cell_value() -> Option<f64>` (same body; renamed to signal it's a value at coordinates, not a collection-selection accessor) |
+| `selected_value() -> Option<f64>` (returns the DATA VALUE at the cursor coordinates — not "the item that is selected") | `value_at_selection() -> Option<f64>` (same body; renamed per adversarial review S2 — `selected_cell_value()` still sorts under `selected_*` in IDE autocomplete, defeating the purpose of the disambiguation) |
 
-Rationale: the return type (`f64`) already telegraphs that this isn't the selected-item pattern. The rename makes the semantics explicit. Follow-up docstring update in the same commit: emphasize that this is the value under the cursor, not "which cell is selected" (that is what `selected(&self) -> Option<(usize, usize)>` at the top of the state's accessor block returns).
+Rationale: heatmap already has `selected(&self) -> Option<(usize, usize)>` returning the cursor coordinates. `value_at_selection()` reads naturally as "the value AT the selection (which is a coordinate pair)" — the noun `value` sorts distinctly from `selected_*` in autocomplete, and the phrase makes the relationship between the two accessors explicit. Adversarial review's alternative `selected_cell_value()` was rejected because the `selected_` prefix would still group it visually with the collection-selection accessors this cadence is trying to disentangle.
+
+Follow-up docstring update in the same commit: emphasize that this is the value under the cursor, and cross-link `selected()` as the coordinate-pair companion.
 
 **tab_bar** (`src/component/tab_bar/mod.rs:297,322,336,351`):
 
@@ -72,6 +94,8 @@ Rationale: the return type (`f64`) already telegraphs that this isn't the select
 
 Rationale: `active_tab` is a semantic outlier — every other component with "which one is picked?" uses `selected_item()`. Rename is a one-word substitution across the accessor bodies + docstrings.
 
+Tradeoff acknowledgment (adversarial review S3): `active_tab()` telegraphs the concrete return type (`Tab`) in the name; a downstream consumer typing `state.` in an IDE would recognize it faster than `selected_item()`. Consistency wins here — 15+ components use `selected_item()` and learning one pattern beats memorizing per-component names — but the discoverability tradeoff is real and worth acknowledging. Not a reason to change the design.
+
 **data_grid** (`src/component/data_grid/state.rs:119,143,167,191`):
 
 | Before | After |
@@ -82,6 +106,23 @@ Rationale: `active_tab` is a semantic outlier — every other component with "wh
 | `selected_item() -> Option<&T>` | *unchanged* |
 
 Also unchanged: `set_selected(Option<usize>)` mutator; `selected_column() -> usize` (different concept — column cursor position, not a selection alias).
+
+Struct field `selected_row: Option<usize>` on `DataGridState` (~15 internal references per adversarial review M1) is renamed to `selected_row_index: Option<usize>` in the same commit — retaining the internal semantic while breaking the grep-collision with the deleted method name. Field is private (`selected_row` not `pub selected_row`), so the rename is a search-and-replace inside `data_grid/state.rs` + `data_grid/mod.rs` with zero downstream impact.
+
+**table** (`src/component/table/state.rs:246,270,295,323`) — **NEW: added per adversarial review M3:**
+
+Table exposes byte-identical divergence to data_grid:
+
+| Before | After |
+|---|---|
+| `selected_index() -> Option<usize>` | *unchanged* |
+| `selected() -> Option<usize>` — literal alias for `selected_index()` | *deleted* |
+| `selected_row() -> Option<&T>` — literal alias for `selected_item()` | *deleted* |
+| `selected_item() -> Option<&T>` | *unchanged* |
+
+Also unchanged: `set_selected(Option<usize>)` mutator at `:490`.
+
+Rationale: leaving Table with `selected()` + `selected_row()` while removing them from data_grid would make the "consistency sweep" framing dishonest. A consumer reading MIGRATION.md and seeing data_grid's `selected_row()` drop would reasonably assume Table's did too, then be surprised. Fixing both together is the honest scope.
 
 ### Migration table (goes into MIGRATION.md at Unit 3)
 
@@ -96,25 +137,31 @@ string-keyed components). Literal aliases and semantic outliers are removed.
 |---|---|---|
 | `dropdown` | `state.selected_value()` | `state.selected_item()` |
 | `select` | `state.selected_value()` | `state.selected_item()` |
-| `heatmap` | `state.selected_value() -> Option<f64>` (returns data value at cursor) | `state.selected_cell_value() -> Option<f64>` (renamed — this was never a "selected item" accessor) |
+| `heatmap` | `state.selected_value() -> Option<f64>` (returns data value at cursor) | `state.value_at_selection() -> Option<f64>` (renamed — this was never a "selected item" accessor; the noun `value` sorts distinctly from `selected_*` in IDE autocomplete) |
 | `tab_bar` | `state.active_tab() -> Option<&Tab>` | `state.selected_item() -> Option<&Tab>` |
 | `tab_bar` | `state.active_tab_mut() -> Option<&mut Tab>` | `state.selected_item_mut() -> Option<&mut Tab>` |
 | `tab_bar` | `state.selected()` (was: literal alias for `selected_index()`) | `state.selected_index()` |
 | `data_grid` | `state.selected()` (was: literal alias for `selected_index()`) | `state.selected_index()` |
 | `data_grid` | `state.selected_row()` (was: literal alias for `selected_item()`) | `state.selected_item()` |
+| `table` | `state.selected()` (was: literal alias for `selected_index()`) | `state.selected_index()` |
+| `table` | `state.selected_row()` (was: literal alias for `selected_item()`) | `state.selected_item()` |
 ```
+
+The `heatmap` row updates to reference the actually-chosen destination name (`value_at_selection()`) not the earlier draft (`selected_cell_value()`).
 
 ## Unit 2 — `MessageSender<A>` newtype + Position cosmetic
 
 Files touched: new `src/harness/message_sender.rs`, `src/harness/mod.rs`, `src/harness/app_harness/mod.rs`, `src/app/runtime/virtual_terminal.rs`.
 
-### `MessageSender<A>` design
+### `MessageSender<M>` design (parameterized on message type, per adversarial review S1)
 
-New file `src/harness/message_sender.rs` (~50 lines):
+**Parameter choice:** `MessageSender<M: Send + 'static>` — parameterized on the message type, NOT `<A: App>`. Adversarial review S1 correctly noted that `<A>` propagates an envision-specific `App: App` bound onto every downstream helper function that touches a sender. `<M: Send + 'static>` uses only `std` bounds, so consumers can write portable helper functions like `fn spawn_watcher<M: Send + 'static>(sender: MessageSender<M>) { ... }` without depending on envision's trait system.
+
+New file `src/harness/message_sender.rs` (~120 lines with expanded API surface per adversarial review M4):
 
 ```rust
-//! `MessageSender<A>` — first-party wrapper around the async message channel
-//! that carries `A::Message` between the AppHarness and its Runtime.
+//! `MessageSender<M>` — first-party wrapper around the async message channel
+//! that carries messages into an [`AppHarness`](crate::harness::AppHarness).
 
 use tokio::sync::mpsc;
 
@@ -122,17 +169,20 @@ use tokio::sync::mpsc;
 /// asynchronously — from subscription callbacks, spawned tasks, or any other
 /// non-App-loop code path.
 ///
-/// Wraps `tokio::sync::mpsc::Sender<A::Message>` so envision consumers don't
-/// need `tokio` as a direct dependency to use `AppHarness::message_sender()`.
+/// Wraps `tokio::sync::mpsc::Sender<M>` so envision consumers don't need
+/// `tokio` as a direct dependency to use `AppHarness::message_sender()`.
 /// The Sender's semantics are preserved (bounded, cloneable, send returns
-/// `Result` on receiver-dropped) but the tokio-specific error type is
-/// wrapped in [`MessageSendError`].
-pub struct MessageSender<A: crate::app::App> {
-    inner: mpsc::Sender<A::Message>,
+/// `Result` on receiver-dropped) and its full API surface is available —
+/// send/try_send with first-party error types, plus non-mutating queries
+/// (`is_closed`, `capacity`, `max_capacity`) as passthroughs. Consumers
+/// needing tokio-specific functionality beyond what's exposed can call
+/// [`into_inner`](Self::into_inner) as an explicit escape hatch.
+pub struct MessageSender<M> {
+    inner: mpsc::Sender<M>,
 }
 
-impl<A: crate::app::App> MessageSender<A> {
-    pub(crate) fn new(inner: mpsc::Sender<A::Message>) -> Self {
+impl<M> MessageSender<M> {
+    pub(crate) fn new(inner: mpsc::Sender<M>) -> Self {
         Self { inner }
     }
 
@@ -143,32 +193,70 @@ impl<A: crate::app::App> MessageSender<A> {
     ///
     /// ```rust,no_run
     /// # use envision::prelude::*;
-    /// # async fn example<A: App>(sender: MessageSender<A>, msg: A::Message) {
+    /// # async fn example<M: Send + 'static>(sender: MessageSender<M>, msg: M) {
     /// sender.send(msg).await.expect("harness still alive");
     /// # }
     /// ```
-    pub async fn send(&self, msg: A::Message) -> Result<(), MessageSendError<A::Message>> {
+    pub async fn send(&self, msg: M) -> Result<(), MessageSendError<M>> {
         self.inner.send(msg).await.map_err(|e| MessageSendError(e.0))
     }
 
     /// Attempts to send a message without waiting. Returns an error if the
     /// channel is full or the AppHarness has been dropped.
-    pub fn try_send(&self, msg: A::Message) -> Result<(), TrySendError<A::Message>> {
+    pub fn try_send(&self, msg: M) -> Result<(), TrySendError<M>> {
         self.inner.try_send(msg).map_err(TrySendError::from_tokio)
+    }
+
+    /// Returns `true` if the receiver end of the channel has been dropped.
+    ///
+    /// Useful for `spawn_watcher`-style loops that want to exit before
+    /// wasting work on messages that would fail to send.
+    pub fn is_closed(&self) -> bool {
+        self.inner.is_closed()
+    }
+
+    /// Returns the current available capacity of the channel — the number
+    /// of messages that can be enqueued without blocking or hitting a
+    /// `TrySendError::Full`.
+    pub fn capacity(&self) -> usize {
+        self.inner.capacity()
+    }
+
+    /// Returns the maximum capacity of the channel (the bound configured
+    /// at AppHarness construction).
+    pub fn max_capacity(&self) -> usize {
+        self.inner.max_capacity()
+    }
+
+    /// Explicit escape hatch: consumes the wrapper and returns the underlying
+    /// `tokio::sync::mpsc::Sender<M>` for consumers who need tokio-specific
+    /// functionality (`reserve`, `send_timeout`, `same_channel`, `downgrade`,
+    /// or a `closed()` Future) that this wrapper deliberately doesn't
+    /// expose to keep the default surface minimal.
+    ///
+    /// Using this method re-couples your code to the tokio dep; it's an
+    /// escape hatch by design, not a routine call.
+    pub fn into_inner(self) -> mpsc::Sender<M> {
+        self.inner
     }
 }
 
-impl<A: crate::app::App> Clone for MessageSender<A> {
+impl<M> Clone for MessageSender<M> {
     fn clone(&self) -> Self {
         Self { inner: self.inner.clone() }
     }
 }
 
-impl<A: crate::app::App> std::fmt::Debug for MessageSender<A> {
+impl<M> std::fmt::Debug for MessageSender<M> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("MessageSender").finish_non_exhaustive()
     }
 }
+
+// Ensure MessageSender<M> is Send + Sync when M is (mirrors tokio's Sender).
+// Adversarial review A4: downstream consumers spawn the sender into tokio
+// tasks, so Send + Sync + 'static must be preserved.
+// Verified at compile time by the unit tests in this module.
 
 /// Error returned by [`MessageSender::send`] when the AppHarness receiver
 /// has been dropped. Carries the message back so the caller can inspect it.
@@ -230,12 +318,12 @@ pub fn message_sender(&self) -> tokio::sync::mpsc::Sender<A::Message> {
 Becomes:
 
 ```rust
-pub fn message_sender(&self) -> MessageSender<A> {
+pub fn message_sender(&self) -> MessageSender<A::Message> {
     MessageSender::new(self.runtime.message_sender())
 }
 ```
 
-Consumer code changes from `sender.send(msg).await.unwrap()` to `sender.send(msg).await.unwrap()` — the call shape is identical, only the type flowing out of `message_sender()` is different. Downstream consumers who spelled the type explicitly must update `tokio::sync::mpsc::Sender<Msg>` → `MessageSender<A>`.
+Consumer code changes from `sender.send(msg).await.unwrap()` to `sender.send(msg).await.unwrap()` — the call shape is identical, only the type flowing out of `message_sender()` is different. Downstream consumers who spelled the type explicitly must update `tokio::sync::mpsc::Sender<Msg>` → `MessageSender<Msg>` (parameterized on the message type per adversarial review S1, not on the App type).
 
 ### `virtual_terminal.rs` Position cosmetic
 
@@ -258,21 +346,25 @@ Not called out in MIGRATION.md — the returned type is IDENTICAL (Position is a
 ### Migration table addition
 
 ```markdown
-### `MessageSender<A>` wraps `tokio::sync::mpsc::Sender<A::Message>`
+### `MessageSender<M>` wraps `tokio::sync::mpsc::Sender<M>`
 
-`AppHarness::message_sender()` now returns a first-party `MessageSender<A>`
-newtype instead of raw `tokio::sync::mpsc::Sender<A::Message>`. Consumer code
+`AppHarness::message_sender()` now returns a first-party `MessageSender<M>`
+newtype instead of raw `tokio::sync::mpsc::Sender<M>`. Consumer code
 changes are limited to type spellings; call sites are identical.
 
 | Old | New |
 |---|---|
-| `let sender: tokio::sync::mpsc::Sender<MyMsg> = harness.message_sender();` | `let sender: envision::MessageSender<MyApp> = harness.message_sender();` (or use `envision::prelude::MessageSender`) |
+| `let sender: tokio::sync::mpsc::Sender<MyMsg> = harness.message_sender();` | `let sender: envision::MessageSender<MyMsg> = harness.message_sender();` (or use `envision::prelude::MessageSender`) |
 | `sender.send(msg).await` — returns `Result<(), tokio::sync::mpsc::error::SendError<MyMsg>>` | `sender.send(msg).await` — returns `Result<(), envision::MessageSendError<MyMsg>>` |
 | `sender.try_send(msg)` — returns `Result<(), tokio::sync::mpsc::error::TrySendError<MyMsg>>` | `sender.try_send(msg)` — returns `Result<(), envision::TrySendError<MyMsg>>` |
+| `sender.is_closed()` — still available | `sender.is_closed()` — still available (passthrough) |
+| `sender.capacity()` — still available | `sender.capacity()` — still available (passthrough) |
+| `sender.max_capacity()` — still available | `sender.max_capacity()` — still available (passthrough) |
+| `sender.reserve()`, `.send_timeout()`, `.same_channel()`, `.downgrade()`, `.closed()` | `let tokio_sender = sender.into_inner();` — explicit escape hatch that re-couples to tokio |
 
-`MessageSender<A>` is `Clone`. Its send/try_send methods have the same
-semantics as tokio's Sender (bounded channel, receiver-dropped errors carry
-the message back).
+`MessageSender<M>` is `Clone + Debug + Send + Sync` (when `M: Send`). Its
+send/try_send methods have the same semantics as tokio's Sender (bounded
+channel, receiver-dropped errors carry the message back).
 ```
 
 ## Unit 3 — CHANGELOG + MIGRATION.md updates
@@ -301,10 +393,16 @@ Under `## v0.16.x to v0.17.0`, append two new subsections at the bottom (after t
 
 ## Testing strategy
 
-- Every unit test that references a deleted accessor migrates to the new name (mechanical rename).
+- Every unit test that references a deleted accessor migrates to the new name (mechanical rename), EXCEPT the alias-equivalence sanity tests enumerated above under "Tautology tests to DELETE" — those are deleted, not renamed.
 - Every doc-test that references a deleted accessor updates.
-- Grep-verifiable success: `grep -rn 'active_tab\b\|selected_value\b' src/ tests/ examples/` returns hits ONLY at the `heatmap::selected_cell_value` site (which contains `selected_value` as a substring in its old-alias-name comment if any, otherwise zero hits) and CHANGELOG/MIGRATION migration tables. The 5 renamed accessors produce zero call-site hits at their old names.
-- `MessageSender<A>` unit tests in the same style as EnvisionError tests (round-trip through send/try_send + error variants).
+- **Grep-verifiable success** (rewritten per adversarial review M1+M2 — token-boundary grep collides with unrelated fields and downstream example state):
+  - `grep -rn '\.selected_value(' src/ tests/ examples/` returns hits ONLY in `CHANGELOG.md` / `MIGRATION.md` migration-table prose. Zero method-call hits.
+  - `grep -rn '\.active_tab(' src/ tests/ examples/` returns hits ONLY in `CHANGELOG.md` / `MIGRATION.md` migration-table prose. Zero method-call hits.
+  - `grep -rn '\.active_tab_mut(' src/ tests/ examples/` — same shape.
+  - `grep -rn '\.selected_row(' src/ tests/ examples/` returns ONLY in migration-table prose. Zero method-call hits.
+  - `grep -rn '\.selected()' src/ tests/ examples/` requires closer inspection — some legitimate uses may exist on components NOT in this cadence's scope (accordion, tabs, radio_group, etc. per adversarial review A3 — see Out of scope + Follow-up). Verify at impl time that all `.selected()` hits within the 6-component scope of Unit 1 (dropdown/select/heatmap/tab_bar/data_grid/table) are zero.
+  - The `DataGridState`'s renamed field `selected_row_index: Option<usize>` intentionally shows up in `grep 'selected_row'` results but not in `grep '\.selected_row('` — the two forms are distinct.
+- **`MessageSender<M>` unit tests** in the same style as EnvisionError tests: round-trip through send/try_send + error variants + `is_closed()`/`capacity()`/`max_capacity()` passthroughs + `into_inner()` escape hatch. Plus a compile-time `assert_impl_all!(MessageSender<u32>: Send + Sync + Clone)` gate (uses `static_assertions` crate — verify at impl time that it's already in dev-dependencies; if not, either add it or write an inline `fn _assert_send<T: Send>() {}` shim).
 - Full verification gauntlet unchanged from prior cadences:
   - `cargo fmt --check`
   - `cargo clippy --all-features -- -D warnings`
@@ -327,25 +425,41 @@ Under `## v0.16.x to v0.17.0`, append two new subsections at the bottom (after t
 
 ## Risk register
 
-- **`MessageSender<A>` generic parameter is `A: App`, not `A::Message`.** This is a deliberate choice — mirrors the existing `AppHarness<A>` and `Runtime<A, B>` shape, and lets us extend the type later (e.g., adding a `sender.send_all(msgs)` batch method) without breaking consumer signatures. Alternative was `MessageSender<M>` parameterized on the message type; rejected because it splits from the rest of the harness surface.
+- **`MessageSender<M>` generic parameter is `M: Send + 'static`, not `A: App`.** Amended per adversarial review S1 — the earlier `<A: App>` draft would have propagated envision's `App` trait bound onto every downstream helper function that touches a sender. `<M: Send + 'static>` uses only `std` bounds, so consumers can write portable helper functions without depending on envision's trait system.
 - **`tokio::sync::mpsc::error::TrySendError` has two variants in tokio's actual API (`Full`, `Closed`).** Verify at impl time — the spec's `TrySendError<T>` mirrors those two variants. If tokio's API has drifted since (unlikely at tokio 1.x), adjust.
-- **Heatmap `selected_cell_value()` rename readers can miss.** Mitigation: the docstring on the renamed method explicitly states "renamed from `selected_value()` in v0.17.0 — see MIGRATION.md."
-- **data_grid consumers who spelled `selected()` or `selected_row()` explicitly.** They see the compile error and the migration table names the exact rename. Same pattern as prior cadences.
-- **Ripple effect through tests.** ~10-20 test sites per renamed accessor across the 5 components. Mechanical grep-and-migrate; verified via the grep-clean assertion.
-- **`MessageSender<A>` uses `A: crate::app::App` bound — the `App` trait's re-export path.** Verify the path in impl. If `crate::app::App` doesn't resolve inside `src/harness/message_sender.rs`, use whatever the actual path is (likely just `crate::App` via a lib.rs re-export).
+- **Heatmap `value_at_selection()` rename readers can miss.** Mitigation: the docstring on the renamed method explicitly states "renamed from `selected_value()` in v0.17.0 — see MIGRATION.md." Prior draft used `selected_cell_value()` (adversarial review S2 pointed out this still sorted under `selected_*` in IDE autocomplete, defeating the disambiguation).
+- **data_grid + table consumers who spelled `selected()` or `selected_row()` explicitly.** They see the compile error and the migration table names the exact rename. Same pattern as prior cadences.
+- **Ripple effect through tests.** ~10-25 test sites per renamed accessor across the 6 components (added Table per adversarial review M3). Mechanical grep-and-migrate; verified via the callsite-form grep assertions above.
+- **Split-vs-bundle regret risk (adversarial review S4).** 10 breaking renames in this cadence are literal-alias deletions (zero regret risk) except 3 semantic renames: `heatmap::selected_value → value_at_selection`, `tab_bar::active_tab → selected_item`, `tab_bar::active_tab_mut → selected_item_mut`. If any of those three semantic renames turn out wrong post-release, we'd have to re-break in v0.18. Judgment call: ship as-spec'd because (a) `value_at_selection` addresses S2 more cleanly than the earlier draft, (b) `selected_item` for tab_bar is the framework-consistency win — but log this as the actual regret-risk surface if a re-review of the pattern is ever needed.
+- **`MessageSender<M>` uses `crate::app::App` bound — NOT applicable anymore.** Amended per S1: no App bound propagation. Just `M: Send + 'static`.
 
 ## Open questions
 
-None. Design decisions resolved during brainstorm:
+None. Design decisions resolved through two review rounds:
+
+**Brainstorm (2026-07-05):**
 - Scope: findings #1 (consistency) + #2 (dep-leakage) bundled as one cadence
-- Canonical accessor: `selected_item() -> Option<&T>` across all 5 components
-- Heatmap rename: `selected_cell_value()` (semantically distinct, disambiguates from selection-accessor pattern)
+- Canonical accessor: `selected_item() -> Option<&T>` across the audited components
 - tab_bar: rename `active_tab` → `selected_item`; drop `selected` alias
 - data_grid: keep `selected_index` + `selected_item` + `set_selected` + `selected_column`; drop `selected` + `selected_row` aliases
-- Dep-leakage real scope: only `MessageSender<A>` newtype worth adding + the Position cosmetic
+- Dep-leakage real scope: only `MessageSender<M>` newtype worth adding + the Position cosmetic
 - Deprecate vs delete: delete outright (pre-1.0 precedent)
 - MIGRATION.md: append two new subsections to v0.16→v0.17
 - CHANGELOG Known Deferred Findings: remove findings #6 and #8 (closed by this cadence)
+
+**Adversarial user-persona review (2026-07-05):** four must-fix design bugs + five should-consider items + five additional angles, all folded into this spec via inline amendments. Concrete upgrades from that review:
+
+- **M1+M2 grep gates rewritten** to callsite forms (`\.selected_row(` etc.) instead of token-boundary matches, avoiding collisions with unrelated fields (`data_grid.selected_row: Option<usize>` field ~15 refs) and downstream example state (`chat_client.rs` has its own `active_tab: usize` field).
+- **M3: Table added to scope.** Table has byte-identical `selected() + selected_row()` alias pattern to data_grid — leaving it out would make the "consistency sweep" framing dishonest.
+- **M4: `MessageSender<M>` API surface expanded** to include `is_closed()` + `capacity()` + `max_capacity()` passthroughs + `into_inner()` explicit escape hatch. Prior draft exposed only `send/try_send`, which would have been a regression for consumers using tokio Sender's is-closed loop pattern.
+- **S1: Parameter switch** `MessageSender<A: App>` → `MessageSender<M: Send + 'static>` — avoids propagating envision-specific `App` trait bound onto downstream helper functions.
+- **S2: Heatmap rename** `selected_cell_value` → `value_at_selection` — the `value_` prefix sorts distinctly from `selected_*` in IDE autocomplete, which is exactly what the disambiguation was supposed to achieve.
+- **S3: tab_bar tradeoff acknowledgment** — spec now names the discoverability-vs-consistency tradeoff explicitly rather than asserting the rename is a simple wart.
+- **A1: Internal component-body call sites enumerated** — `select/mod.rs:526,547`, `dropdown/mod.rs:693,722,729` need migration in the SAME commit as the alias deletions or the crate fails to compile.
+- **A2: Tautology tests DELETED not renamed** — enumerated the ~4 alias-equivalence sanity tests that would become `assert_eq!(x, x)` after the aliases are gone.
+- **A3: Cadence D committed as follow-up** — the `selected()` alias exists on 15+ other components; this cadence intentionally scopes to the 6 with the additional divergences the audit named; the remaining alias-only components are scheduled for Cadence D (v0.18+).
+- **A4: Send + Sync + 'static** — `MessageSender<M>` inherits from tokio's Sender when `M: Send`; verified via `assert_impl_all!` compile-time gate in unit tests.
+- **A5: Prelude gate** verified — `TestHarness` at `src/lib.rs:476` is unconditional (no `#[cfg(feature = "test-utils")]`), so `MessageSender` goes unconditional too.
 
 ## Reference
 
