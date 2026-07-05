@@ -405,7 +405,9 @@ pub use component::{
 pub use component::{MarkdownRenderer, MarkdownRendererMessage, MarkdownRendererState};
 
 pub use error::{BoxedError, EnvisionError, Result};
-pub use harness::{AppHarness, Assertion, Snapshot, TestHarness};
+pub use harness::{
+    AppHarness, Assertion, MessageSendError, MessageSender, Snapshot, TestHarness, TrySendError,
+};
 pub use input::{
     Event, EventQueue, Key, KeyEvent, KeyEventKind, Modifiers, MouseButton, MouseEvent,
     MouseEventKind,
@@ -473,7 +475,7 @@ pub mod prelude {
 
     // Testing essentials
     pub use crate::backend::{CaptureBackend, EnhancedCell};
-    pub use crate::harness::{AppHarness, TestHarness};
+    pub use crate::harness::{AppHarness, MessageSender, TestHarness};
 
     // Layout and style re-exports (replacing `pub use ratatui::prelude::*`)
     pub use crate::layout::{
