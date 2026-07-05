@@ -223,6 +223,10 @@ name = "drilldown"
 required-features = ["data-components", "display-components", "navigation-components"]
 
 [[example]]
+name = "resource_gauge"
+required-features = ["display-components"]
+
+[[example]]
 name = "loading_list"
 required-features = ["data-components"]
 

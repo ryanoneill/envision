@@ -6,14 +6,70 @@ use crate::component::test_utils;
 // ---------------------------------------------------------------------------
 
 #[test]
-fn test_new() {
-    let state = ResourceGaugeState::new(100.0, 200.0, 500.0);
+fn test_with_values() {
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 100.0,
+        request: 200.0,
+        limit: 500.0,
+    });
     assert_eq!(state.actual(), 100.0);
     assert_eq!(state.request(), 200.0);
     assert_eq!(state.limit(), 500.0);
     assert_eq!(state.label(), None);
     assert_eq!(state.units(), None);
     assert!(state.show_legend());
+}
+
+#[test]
+fn test_with_actual() {
+    let state = ResourceGaugeState::default().with_actual(42.0);
+    assert_eq!(state.actual(), 42.0);
+    assert_eq!(state.request(), 0.0);
+    assert_eq!(state.limit(), 0.0);
+}
+
+#[test]
+fn test_with_request() {
+    let state = ResourceGaugeState::default().with_request(200.0);
+    assert_eq!(state.actual(), 0.0);
+    assert_eq!(state.request(), 200.0);
+    assert_eq!(state.limit(), 0.0);
+}
+
+#[test]
+fn test_with_limit() {
+    let state = ResourceGaugeState::default().with_limit(1000.0);
+    assert_eq!(state.actual(), 0.0);
+    assert_eq!(state.request(), 0.0);
+    assert_eq!(state.limit(), 1000.0);
+}
+
+#[test]
+fn test_values_accessor() {
+    let state = ResourceGaugeState::default()
+        .with_actual(250.0)
+        .with_request(500.0)
+        .with_limit(1000.0);
+    let values = state.values();
+    assert_eq!(
+        values,
+        ResourceValues {
+            actual: 250.0,
+            request: 500.0,
+            limit: 1000.0,
+        }
+    );
+}
+
+#[test]
+fn test_values_roundtrip_with_values() {
+    let original = ResourceValues {
+        actual: 12.0,
+        request: 34.0,
+        limit: 56.0,
+    };
+    let state = ResourceGaugeState::default().with_values(original);
+    assert_eq!(state.values(), original);
 }
 
 #[test]
@@ -26,7 +82,12 @@ fn test_default() {
 
 #[test]
 fn test_builder_chain() {
-    let state = ResourceGaugeState::new(350.0, 500.0, 1000.0)
+    let state = ResourceGaugeState::default()
+        .with_values(ResourceValues {
+            actual: 350.0,
+            request: 500.0,
+            limit: 1000.0,
+        })
         .with_label("CPU")
         .with_units("m")
         .with_title("Container Resources")
@@ -48,28 +109,40 @@ fn test_builder_chain() {
 
 #[test]
 fn test_set_actual() {
-    let mut state = ResourceGaugeState::new(0.0, 100.0, 200.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(100.0)
+        .with_limit(200.0);
     state.set_actual(75.0);
     assert_eq!(state.actual(), 75.0);
 }
 
 #[test]
 fn test_set_request() {
-    let mut state = ResourceGaugeState::new(50.0, 100.0, 200.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(50.0)
+        .with_request(100.0)
+        .with_limit(200.0);
     state.set_request(150.0);
     assert_eq!(state.request(), 150.0);
 }
 
 #[test]
 fn test_set_limit() {
-    let mut state = ResourceGaugeState::new(50.0, 100.0, 200.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(50.0)
+        .with_request(100.0)
+        .with_limit(200.0);
     state.set_limit(500.0);
     assert_eq!(state.limit(), 500.0);
 }
 
 #[test]
 fn test_set_values() {
-    let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(0.0)
+        .with_limit(0.0);
     state.set_values(350.0, 500.0, 1000.0);
     assert_eq!(state.actual(), 350.0);
     assert_eq!(state.request(), 500.0);
@@ -78,7 +151,10 @@ fn test_set_values() {
 
 #[test]
 fn test_set_label() {
-    let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(0.0)
+        .with_limit(0.0);
     state.set_label(Some("MEM".to_string()));
     assert_eq!(state.label(), Some("MEM"));
     state.set_label(None);
@@ -87,14 +163,20 @@ fn test_set_label() {
 
 #[test]
 fn test_set_units() {
-    let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(0.0)
+        .with_limit(0.0);
     state.set_units(Some("GB".to_string()));
     assert_eq!(state.units(), Some("GB"));
 }
 
 #[test]
 fn test_set_title() {
-    let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(0.0)
+        .with_limit(0.0);
     state.set_title(Some("Resources".to_string()));
     assert_eq!(state.title(), Some("Resources"));
 }
@@ -105,67 +187,119 @@ fn test_set_title() {
 
 #[test]
 fn test_utilization() {
-    let state = ResourceGaugeState::new(250.0, 500.0, 1000.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 250.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert!((state.utilization() - 0.25).abs() < 0.001);
 }
 
 #[test]
 fn test_utilization_zero_limit() {
-    let state = ResourceGaugeState::new(100.0, 0.0, 0.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 100.0,
+        request: 0.0,
+        limit: 0.0,
+    });
     assert_eq!(state.utilization(), 0.0);
 }
 
 #[test]
 fn test_utilization_clamped() {
-    let state = ResourceGaugeState::new(2000.0, 500.0, 1000.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 2000.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert_eq!(state.utilization(), 1.0);
 }
 
 #[test]
 fn test_request_ratio() {
-    let state = ResourceGaugeState::new(250.0, 500.0, 1000.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 250.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert!((state.request_ratio() - 0.5).abs() < 0.001);
 }
 
 #[test]
 fn test_request_ratio_zero() {
-    let state = ResourceGaugeState::new(100.0, 0.0, 1000.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 100.0,
+        request: 0.0,
+        limit: 1000.0,
+    });
     assert_eq!(state.request_ratio(), 0.0);
 }
 
 #[test]
 fn test_is_over_request() {
-    let under = ResourceGaugeState::new(100.0, 500.0, 1000.0);
+    let under = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 100.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert!(!under.is_over_request());
 
-    let at = ResourceGaugeState::new(500.0, 500.0, 1000.0);
+    let at = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 500.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert!(at.is_over_request());
 
-    let over = ResourceGaugeState::new(600.0, 500.0, 1000.0);
+    let over = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 600.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert!(over.is_over_request());
 }
 
 #[test]
 fn test_is_over_request_zero_request() {
-    let state = ResourceGaugeState::new(100.0, 0.0, 1000.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 100.0,
+        request: 0.0,
+        limit: 1000.0,
+    });
     assert!(!state.is_over_request());
 }
 
 #[test]
 fn test_is_near_limit() {
-    let safe = ResourceGaugeState::new(500.0, 500.0, 1000.0);
+    let safe = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 500.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert!(!safe.is_near_limit());
 
-    let near = ResourceGaugeState::new(900.0, 500.0, 1000.0);
+    let near = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 900.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert!(near.is_near_limit());
 
-    let at = ResourceGaugeState::new(1000.0, 500.0, 1000.0);
+    let at = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 1000.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert!(at.is_near_limit());
 }
 
 #[test]
 fn test_is_near_limit_zero_limit() {
-    let state = ResourceGaugeState::new(100.0, 0.0, 0.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 100.0,
+        request: 0.0,
+        limit: 0.0,
+    });
     assert!(!state.is_near_limit());
 }
 
@@ -175,25 +309,41 @@ fn test_is_near_limit_zero_limit() {
 
 #[test]
 fn test_health_color_green() {
-    let state = ResourceGaugeState::new(100.0, 500.0, 1000.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 100.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert_eq!(state.health_color(), Color::Green);
 }
 
 #[test]
 fn test_health_color_yellow() {
-    let state = ResourceGaugeState::new(600.0, 500.0, 1000.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 600.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert_eq!(state.health_color(), Color::Yellow);
 }
 
 #[test]
 fn test_health_color_red() {
-    let state = ResourceGaugeState::new(950.0, 500.0, 1000.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 950.0,
+        request: 500.0,
+        limit: 1000.0,
+    });
     assert_eq!(state.health_color(), Color::Red);
 }
 
 #[test]
 fn test_health_color_zero_limit() {
-    let state = ResourceGaugeState::new(100.0, 0.0, 0.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 100.0,
+        request: 0.0,
+        limit: 0.0,
+    });
     assert_eq!(state.health_color(), Color::DarkGray);
 }
 
@@ -203,19 +353,33 @@ fn test_health_color_zero_limit() {
 
 #[test]
 fn test_legend_text() {
-    let state = ResourceGaugeState::new(350.0, 500.0, 1000.0).with_units("m");
+    let state = ResourceGaugeState::default()
+        .with_values(ResourceValues {
+            actual: 350.0,
+            request: 500.0,
+            limit: 1000.0,
+        })
+        .with_units("m");
     assert_eq!(state.legend_text(), "350m / 500m / 1000m");
 }
 
 #[test]
 fn test_legend_text_no_units() {
-    let state = ResourceGaugeState::new(1.5, 2.0, 4.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 1.5,
+        request: 2.0,
+        limit: 4.0,
+    });
     assert_eq!(state.legend_text(), "1.5 / 2 / 4");
 }
 
 #[test]
 fn test_legend_text_integers() {
-    let state = ResourceGaugeState::new(100.0, 200.0, 500.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 100.0,
+        request: 200.0,
+        limit: 500.0,
+    });
     assert_eq!(state.legend_text(), "100 / 200 / 500");
 }
 
@@ -225,28 +389,40 @@ fn test_legend_text_integers() {
 
 #[test]
 fn test_message_set_actual() {
-    let mut state = ResourceGaugeState::new(0.0, 100.0, 200.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(100.0)
+        .with_limit(200.0);
     ResourceGauge::update(&mut state, ResourceGaugeMessage::SetActual(75.0));
     assert_eq!(state.actual(), 75.0);
 }
 
 #[test]
 fn test_message_set_request() {
-    let mut state = ResourceGaugeState::new(0.0, 100.0, 200.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(100.0)
+        .with_limit(200.0);
     ResourceGauge::update(&mut state, ResourceGaugeMessage::SetRequest(150.0));
     assert_eq!(state.request(), 150.0);
 }
 
 #[test]
 fn test_message_set_limit() {
-    let mut state = ResourceGaugeState::new(0.0, 100.0, 200.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(100.0)
+        .with_limit(200.0);
     ResourceGauge::update(&mut state, ResourceGaugeMessage::SetLimit(500.0));
     assert_eq!(state.limit(), 500.0);
 }
 
 #[test]
 fn test_message_set_values() {
-    let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(0.0)
+        .with_limit(0.0);
     ResourceGauge::update(
         &mut state,
         ResourceGaugeMessage::SetValues {
@@ -262,7 +438,10 @@ fn test_message_set_values() {
 
 #[test]
 fn test_message_set_label() {
-    let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(0.0)
+        .with_limit(0.0);
     ResourceGauge::update(
         &mut state,
         ResourceGaugeMessage::SetLabel(Some("CPU".to_string())),
@@ -272,7 +451,10 @@ fn test_message_set_label() {
 
 #[test]
 fn test_message_set_units() {
-    let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(0.0)
+        .with_limit(0.0);
     ResourceGauge::update(
         &mut state,
         ResourceGaugeMessage::SetUnits(Some("Mi".to_string())),
@@ -282,7 +464,10 @@ fn test_message_set_units() {
 
 #[test]
 fn test_instance_update() {
-    let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    let mut state = ResourceGaugeState::default()
+        .with_actual(0.0)
+        .with_request(0.0)
+        .with_limit(0.0);
     state.update(ResourceGaugeMessage::SetActual(42.0));
     assert_eq!(state.actual(), 42.0);
 }
@@ -299,7 +484,11 @@ fn test_init() {
 
 #[test]
 fn test_handle_event_returns_none() {
-    let state = ResourceGaugeState::new(100.0, 200.0, 500.0);
+    let state = ResourceGaugeState::default().with_values(ResourceValues {
+        actual: 100.0,
+        request: 200.0,
+        limit: 500.0,
+    });
     let event = crate::input::Event::char('x');
     let ctx = EventContext::new().focused(true);
     assert!(ResourceGauge::handle_event(&state, &event, &ctx).is_none());
@@ -311,7 +500,12 @@ fn test_handle_event_returns_none() {
 
 #[test]
 fn test_snapshot_healthy() {
-    let state = ResourceGaugeState::new(200.0, 500.0, 1000.0)
+    let state = ResourceGaugeState::default()
+        .with_values(ResourceValues {
+            actual: 200.0,
+            request: 500.0,
+            limit: 1000.0,
+        })
         .with_label("CPU")
         .with_units("m");
     let (mut terminal, theme) = test_utils::setup_render(50, 3);
@@ -325,7 +519,12 @@ fn test_snapshot_healthy() {
 
 #[test]
 fn test_snapshot_warning() {
-    let state = ResourceGaugeState::new(600.0, 500.0, 1000.0)
+    let state = ResourceGaugeState::default()
+        .with_values(ResourceValues {
+            actual: 600.0,
+            request: 500.0,
+            limit: 1000.0,
+        })
         .with_label("CPU")
         .with_units("m");
     let (mut terminal, theme) = test_utils::setup_render(50, 3);
@@ -339,7 +538,12 @@ fn test_snapshot_warning() {
 
 #[test]
 fn test_snapshot_critical() {
-    let state = ResourceGaugeState::new(950.0, 500.0, 1000.0)
+    let state = ResourceGaugeState::default()
+        .with_values(ResourceValues {
+            actual: 950.0,
+            request: 500.0,
+            limit: 1000.0,
+        })
         .with_label("CPU")
         .with_units("m");
     let (mut terminal, theme) = test_utils::setup_render(50, 3);
@@ -353,7 +557,12 @@ fn test_snapshot_critical() {
 
 #[test]
 fn test_snapshot_over_limit() {
-    let state = ResourceGaugeState::new(1200.0, 500.0, 1000.0)
+    let state = ResourceGaugeState::default()
+        .with_values(ResourceValues {
+            actual: 1200.0,
+            request: 500.0,
+            limit: 1000.0,
+        })
         .with_label("MEM")
         .with_units("Mi");
     let (mut terminal, theme) = test_utils::setup_render(50, 3);
@@ -367,7 +576,13 @@ fn test_snapshot_over_limit() {
 
 #[test]
 fn test_snapshot_zero_limit() {
-    let state = ResourceGaugeState::new(0.0, 0.0, 0.0).with_label("GPU");
+    let state = ResourceGaugeState::default()
+        .with_values(ResourceValues {
+            actual: 0.0,
+            request: 0.0,
+            limit: 0.0,
+        })
+        .with_label("GPU");
     let (mut terminal, theme) = test_utils::setup_render(50, 3);
     terminal
         .draw(|frame| {
@@ -379,7 +594,12 @@ fn test_snapshot_zero_limit() {
 
 #[test]
 fn test_snapshot_with_title() {
-    let state = ResourceGaugeState::new(350.0, 500.0, 1000.0)
+    let state = ResourceGaugeState::default()
+        .with_values(ResourceValues {
+            actual: 350.0,
+            request: 500.0,
+            limit: 1000.0,
+        })
         .with_title("Container CPU")
         .with_units("m");
     let (mut terminal, theme) = test_utils::setup_render(50, 3);
@@ -393,7 +613,12 @@ fn test_snapshot_with_title() {
 
 #[test]
 fn test_snapshot_no_legend() {
-    let state = ResourceGaugeState::new(350.0, 500.0, 1000.0)
+    let state = ResourceGaugeState::default()
+        .with_values(ResourceValues {
+            actual: 350.0,
+            request: 500.0,
+            limit: 1000.0,
+        })
         .with_label("CPU")
         .with_show_legend(false);
     let (mut terminal, theme) = test_utils::setup_render(50, 3);

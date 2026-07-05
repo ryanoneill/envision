@@ -330,6 +330,7 @@ pub use progress_bar::{
 #[cfg(feature = "display-components")]
 pub use resource_gauge::{
     GaugeOrientation, ResourceGauge, ResourceGaugeMessage, ResourceGaugeOutput, ResourceGaugeState,
+    ResourceValues,
 };
 #[cfg(feature = "display-components")]
 pub use sparkline::{
