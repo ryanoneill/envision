@@ -20,9 +20,9 @@
 //! # Examples
 //!
 //! ```
-//! use envision::component::resource_gauge::ResourceGaugeState;
+//! use envision::component::{ResourceGaugeState, ResourceValues};
 //!
-//! let state = ResourceGaugeState::new(350.0, 500.0, 1000.0)
+//! let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 350.0, request: 500.0, limit: 1000.0 })
 //!     .with_label("CPU")
 //!     .with_units("m");
 //!
@@ -42,6 +42,10 @@ use crate::component::Component;
 use crate::component::context::{EventContext, RenderContext};
 use crate::input::Event;
 use crate::theme::Theme;
+
+mod values;
+
+pub use values::ResourceValues;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -81,9 +85,9 @@ pub enum GaugeOrientation {
 /// # Examples
 ///
 /// ```
-/// use envision::component::resource_gauge::ResourceGaugeState;
+/// use envision::component::{ResourceGaugeState, ResourceValues};
 ///
-/// let state = ResourceGaugeState::new(256.0, 384.0, 512.0)
+/// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 256.0, request: 384.0, limit: 512.0 })
 ///     .with_label("Memory")
 ///     .with_units("Mi");
 ///
@@ -124,37 +128,86 @@ impl Default for ResourceGaugeState {
 }
 
 impl ResourceGaugeState {
-    /// Creates a new ResourceGauge with the given values.
+    // -- Builders --
+
+    /// Sets all three values from a named struct in a single call.
     ///
-    /// # Examples
+    /// The struct-literal form (`ResourceValues { actual, request, limit }`)
+    /// names each field at construction, matching the intent of the removed
+    /// positional `new(a, r, l)` without its transposition hazard.
     ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
+    ///
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues {
+    ///     actual: 250.0,
+    ///     request: 500.0,
+    ///     limit: 1000.0,
+    /// });
+    /// assert_eq!(state.actual(), 250.0);
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
-    ///
-    /// let state = ResourceGaugeState::new(100.0, 200.0, 500.0);
-    /// assert_eq!(state.actual(), 100.0);
-    /// assert_eq!(state.request(), 200.0);
-    /// assert_eq!(state.limit(), 500.0);
-    /// ```
-    pub fn new(actual: f64, request: f64, limit: f64) -> Self {
-        Self {
-            actual,
-            request,
-            limit,
-            ..Self::default()
-        }
+    pub fn with_values(mut self, values: ResourceValues) -> Self {
+        self.actual = values.actual;
+        self.request = values.request;
+        self.limit = values.limit;
+        self
     }
 
-    // -- Builders --
+    /// Sets the actual (in-use) value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ResourceGaugeState;
+    ///
+    /// let state = ResourceGaugeState::default().with_actual(250.0);
+    /// assert_eq!(state.actual(), 250.0);
+    /// ```
+    pub fn with_actual(mut self, actual: f64) -> Self {
+        self.actual = actual;
+        self
+    }
+
+    /// Sets the requested value (e.g., K8s pod resource request).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ResourceGaugeState;
+    ///
+    /// let state = ResourceGaugeState::default().with_request(500.0);
+    /// assert_eq!(state.request(), 500.0);
+    /// ```
+    pub fn with_request(mut self, request: f64) -> Self {
+        self.request = request;
+        self
+    }
+
+    /// Sets the hard limit (e.g., K8s pod resource limit).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::ResourceGaugeState;
+    ///
+    /// let state = ResourceGaugeState::default().with_limit(1000.0);
+    /// assert_eq!(state.limit(), 1000.0);
+    /// ```
+    pub fn with_limit(mut self, limit: f64) -> Self {
+        self.limit = limit;
+        self
+    }
 
     /// Sets the label displayed before the bar.
     ///
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0).with_label("CPU");
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 }).with_label("CPU");
     /// assert_eq!(state.label(), Some("CPU"));
     /// ```
     pub fn with_label(mut self, label: impl Into<String>) -> Self {
@@ -167,9 +220,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0).with_units("Mi");
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 }).with_units("Mi");
     /// assert_eq!(state.units(), Some("Mi"));
     /// ```
     pub fn with_units(mut self, units: impl Into<String>) -> Self {
@@ -182,9 +235,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0).with_title("Resource");
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 }).with_title("Resource");
     /// assert_eq!(state.title(), Some("Resource"));
     /// ```
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
@@ -197,9 +250,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0).with_show_legend(false);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 }).with_show_legend(false);
     /// assert!(!state.show_legend());
     /// ```
     pub fn with_show_legend(mut self, show: bool) -> Self {
@@ -212,9 +265,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::{ResourceGaugeState, GaugeOrientation};
+    /// use envision::component::{ResourceGaugeState, GaugeOrientation, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0)
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 })
     ///     .with_orientation(GaugeOrientation::Vertical);
     /// assert_eq!(state.orientation(), &GaugeOrientation::Vertical);
     /// ```
@@ -228,9 +281,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0).with_disabled(true);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 }).with_disabled(true);
     /// assert!(state.is_disabled());
     /// ```
     pub fn with_disabled(mut self, disabled: bool) -> Self {
@@ -245,9 +298,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(42.0, 100.0, 200.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 42.0, request: 100.0, limit: 200.0 });
     /// assert_eq!(state.actual(), 42.0);
     /// ```
     pub fn actual(&self) -> f64 {
@@ -259,9 +312,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(42.0, 100.0, 200.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 42.0, request: 100.0, limit: 200.0 });
     /// assert_eq!(state.request(), 100.0);
     /// ```
     pub fn request(&self) -> f64 {
@@ -273,9 +326,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(42.0, 100.0, 200.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 42.0, request: 100.0, limit: 200.0 });
     /// assert_eq!(state.limit(), 200.0);
     /// ```
     pub fn limit(&self) -> f64 {
@@ -287,9 +340,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 });
     /// assert_eq!(state.label(), None);
     /// ```
     pub fn label(&self) -> Option<&str> {
@@ -301,9 +354,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 });
     /// assert_eq!(state.units(), None);
     /// ```
     pub fn units(&self) -> Option<&str> {
@@ -315,9 +368,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 });
     /// assert_eq!(state.title(), None);
     /// ```
     pub fn title(&self) -> Option<&str> {
@@ -329,9 +382,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 });
     /// assert!(state.show_legend());
     /// ```
     pub fn show_legend(&self) -> bool {
@@ -343,9 +396,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::{ResourceGaugeState, GaugeOrientation};
+    /// use envision::component::{ResourceGaugeState, GaugeOrientation, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 });
     /// assert_eq!(state.orientation(), &GaugeOrientation::Horizontal);
     /// ```
     pub fn orientation(&self) -> &GaugeOrientation {
@@ -357,9 +410,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 0.0, request: 0.0, limit: 0.0 });
     /// assert!(!state.is_disabled());
     /// ```
     pub fn is_disabled(&self) -> bool {
@@ -373,9 +426,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(250.0, 500.0, 1000.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 250.0, request: 500.0, limit: 1000.0 });
     /// assert!((state.utilization() - 0.25).abs() < 0.001);
     /// ```
     pub fn utilization(&self) -> f64 {
@@ -393,9 +446,9 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let state = ResourceGaugeState::new(250.0, 500.0, 1000.0);
+    /// let state = ResourceGaugeState::default().with_values(ResourceValues { actual: 250.0, request: 500.0, limit: 1000.0 });
     /// assert!((state.request_ratio() - 0.5).abs() < 0.001);
     /// ```
     pub fn request_ratio(&self) -> f64 {
@@ -411,12 +464,12 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let under = ResourceGaugeState::new(100.0, 500.0, 1000.0);
+    /// let under = ResourceGaugeState::default().with_values(ResourceValues { actual: 100.0, request: 500.0, limit: 1000.0 });
     /// assert!(!under.is_over_request());
     ///
-    /// let over = ResourceGaugeState::new(600.0, 500.0, 1000.0);
+    /// let over = ResourceGaugeState::default().with_values(ResourceValues { actual: 600.0, request: 500.0, limit: 1000.0 });
     /// assert!(over.is_over_request());
     /// ```
     pub fn is_over_request(&self) -> bool {
@@ -428,12 +481,12 @@ impl ResourceGaugeState {
     /// # Examples
     ///
     /// ```
-    /// use envision::component::resource_gauge::ResourceGaugeState;
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
     ///
-    /// let safe = ResourceGaugeState::new(500.0, 500.0, 1000.0);
+    /// let safe = ResourceGaugeState::default().with_values(ResourceValues { actual: 500.0, request: 500.0, limit: 1000.0 });
     /// assert!(!safe.is_near_limit());
     ///
-    /// let critical = ResourceGaugeState::new(950.0, 500.0, 1000.0);
+    /// let critical = ResourceGaugeState::default().with_values(ResourceValues { actual: 950.0, request: 500.0, limit: 1000.0 });
     /// assert!(critical.is_near_limit());
     /// ```
     pub fn is_near_limit(&self) -> bool {
@@ -449,7 +502,7 @@ impl ResourceGaugeState {
     /// ```
     /// use envision::component::resource_gauge::ResourceGaugeState;
     ///
-    /// let mut state = ResourceGaugeState::new(0.0, 100.0, 200.0);
+    /// let mut state = ResourceGaugeState::default().with_actual(0.0).with_request(100.0).with_limit(200.0);
     /// state.set_actual(75.0);
     /// assert_eq!(state.actual(), 75.0);
     /// ```
@@ -464,7 +517,7 @@ impl ResourceGaugeState {
     /// ```
     /// use envision::component::resource_gauge::ResourceGaugeState;
     ///
-    /// let mut state = ResourceGaugeState::new(50.0, 100.0, 200.0);
+    /// let mut state = ResourceGaugeState::default().with_actual(50.0).with_request(100.0).with_limit(200.0);
     /// state.set_request(150.0);
     /// assert_eq!(state.request(), 150.0);
     /// ```
@@ -479,12 +532,44 @@ impl ResourceGaugeState {
     /// ```
     /// use envision::component::resource_gauge::ResourceGaugeState;
     ///
-    /// let mut state = ResourceGaugeState::new(50.0, 100.0, 200.0);
+    /// let mut state = ResourceGaugeState::default().with_actual(50.0).with_request(100.0).with_limit(200.0);
     /// state.set_limit(500.0);
     /// assert_eq!(state.limit(), 500.0);
     /// ```
     pub fn set_limit(&mut self, limit: f64) {
         self.limit = limit;
+    }
+
+    /// Returns all three values as a named struct.
+    ///
+    /// Complements [`set_values`](Self::set_values); closes the audit
+    /// scorecard accessor-symmetry gap flagged at v0.16.0.
+    ///
+    /// Returning `ResourceValues` (not a bare `(f64, f64, f64)` tuple) keeps
+    /// destructuring safe — `let ResourceValues { actual, request, limit } =
+    /// state.values()` binds each field by name, so callers can't silently
+    /// transpose `request` and `limit`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use envision::component::{ResourceGaugeState, ResourceValues};
+    ///
+    /// let state = ResourceGaugeState::default()
+    ///     .with_actual(250.0)
+    ///     .with_request(500.0)
+    ///     .with_limit(1000.0);
+    /// let ResourceValues { actual, request, limit } = state.values();
+    /// assert_eq!(actual, 250.0);
+    /// assert_eq!(request, 500.0);
+    /// assert_eq!(limit, 1000.0);
+    /// ```
+    pub fn values(&self) -> ResourceValues {
+        ResourceValues {
+            actual: self.actual,
+            request: self.request,
+            limit: self.limit,
+        }
     }
 
     /// Sets all three values at once.
@@ -494,7 +579,7 @@ impl ResourceGaugeState {
     /// ```
     /// use envision::component::resource_gauge::ResourceGaugeState;
     ///
-    /// let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let mut state = ResourceGaugeState::default().with_actual(0.0).with_request(0.0).with_limit(0.0);
     /// state.set_values(350.0, 500.0, 1000.0);
     /// assert_eq!(state.actual(), 350.0);
     /// assert_eq!(state.request(), 500.0);
@@ -513,7 +598,7 @@ impl ResourceGaugeState {
     /// ```
     /// use envision::component::resource_gauge::ResourceGaugeState;
     ///
-    /// let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let mut state = ResourceGaugeState::default().with_actual(0.0).with_request(0.0).with_limit(0.0);
     /// state.set_label(Some("CPU".to_string()));
     /// assert_eq!(state.label(), Some("CPU"));
     /// ```
@@ -528,7 +613,7 @@ impl ResourceGaugeState {
     /// ```
     /// use envision::component::resource_gauge::ResourceGaugeState;
     ///
-    /// let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let mut state = ResourceGaugeState::default().with_actual(0.0).with_request(0.0).with_limit(0.0);
     /// state.set_units(Some("Mi".to_string()));
     /// assert_eq!(state.units(), Some("Mi"));
     /// ```
@@ -543,7 +628,7 @@ impl ResourceGaugeState {
     /// ```
     /// use envision::component::resource_gauge::ResourceGaugeState;
     ///
-    /// let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let mut state = ResourceGaugeState::default().with_actual(0.0).with_request(0.0).with_limit(0.0);
     /// state.set_title(Some("Resource".to_string()));
     /// assert_eq!(state.title(), Some("Resource"));
     /// ```
@@ -558,7 +643,7 @@ impl ResourceGaugeState {
     /// ```
     /// use envision::component::resource_gauge::{ResourceGaugeState, ResourceGaugeMessage};
     ///
-    /// let mut state = ResourceGaugeState::new(0.0, 0.0, 0.0);
+    /// let mut state = ResourceGaugeState::default().with_actual(0.0).with_request(0.0).with_limit(0.0);
     /// state.update(ResourceGaugeMessage::SetValues {
     ///     actual: 100.0,
     ///     request: 200.0,

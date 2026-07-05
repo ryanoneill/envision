@@ -37,6 +37,7 @@ use std::sync::Arc;
 use ratatui::widgets::ListState;
 
 use super::{Component, EventContext, RenderContext};
+use crate::component::table::SortDirection;
 use crate::input::{Event, Key};
 use types::{FileBrowserFocus, compute_segments};
 
@@ -72,7 +73,7 @@ pub struct FileBrowserState {
     internal_focus: FileBrowserFocus,
     selection_mode: SelectionMode,
     sort_field: FileSortField,
-    sort_direction: FileSortDirection,
+    sort_direction: SortDirection,
     directories_first: bool,
     show_hidden: bool,
     pub(crate) list_state: ListState,
@@ -93,7 +94,7 @@ impl Default for FileBrowserState {
             internal_focus: FileBrowserFocus::FileList,
             selection_mode: SelectionMode::Single,
             sort_field: FileSortField::Name,
-            sort_direction: FileSortDirection::Ascending,
+            sort_direction: SortDirection::Ascending,
             directories_first: true,
             show_hidden: false,
             list_state: ListState::default(),
@@ -259,14 +260,15 @@ impl FileBrowserState {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::file_browser::{FileEntry, FileBrowserState, FileSortDirection};
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    /// use envision::component::SortDirection;
     ///
     /// let state = FileBrowserState::new("/", vec![
     ///     FileEntry::file("a.txt", "/a.txt"),
-    /// ]).with_sort_direction(FileSortDirection::Descending);
-    /// assert_eq!(state.sort_direction(), &FileSortDirection::Descending);
+    /// ]).with_sort_direction(SortDirection::Descending);
+    /// assert_eq!(state.sort_direction(), SortDirection::Descending);
     /// ```
-    pub fn with_sort_direction(mut self, direction: FileSortDirection) -> Self {
+    pub fn with_sort_direction(mut self, direction: SortDirection) -> Self {
         self.sort_direction = direction;
         self.sort_and_filter();
         self
@@ -524,14 +526,15 @@ impl FileBrowserState {
     /// # Example
     ///
     /// ```rust
-    /// use envision::component::file_browser::{FileEntry, FileBrowserState, FileSortDirection};
+    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
+    /// use envision::component::SortDirection;
     ///
     /// let state = FileBrowserState::new("/", vec![])
-    ///     .with_sort_direction(FileSortDirection::Descending);
-    /// assert_eq!(state.sort_direction(), &FileSortDirection::Descending);
+    ///     .with_sort_direction(SortDirection::Descending);
+    /// assert_eq!(state.sort_direction(), SortDirection::Descending);
     /// ```
-    pub fn sort_direction(&self) -> &FileSortDirection {
-        &self.sort_direction
+    pub fn sort_direction(&self) -> SortDirection {
+        self.sort_direction
     }
 
     /// Returns whether hidden files are shown.
@@ -643,8 +646,8 @@ impl FileBrowserState {
             };
 
             match sort_direction {
-                FileSortDirection::Ascending => ord,
-                FileSortDirection::Descending => ord.reverse(),
+                SortDirection::Ascending => ord,
+                SortDirection::Descending => ord.reverse(),
             }
         });
 
@@ -917,20 +920,14 @@ impl Component for FileBrowser {
             FileBrowserMessage::SetSort(field) => {
                 state.sort_field = field.clone();
                 state.sort_and_filter();
-                Some(FileBrowserOutput::SortChanged(
-                    field,
-                    state.sort_direction.clone(),
-                ))
+                Some(FileBrowserOutput::SortChanged(field, state.sort_direction))
             }
             FileBrowserMessage::ToggleSortDirection => {
-                state.sort_direction = match state.sort_direction {
-                    FileSortDirection::Ascending => FileSortDirection::Descending,
-                    FileSortDirection::Descending => FileSortDirection::Ascending,
-                };
+                state.sort_direction = state.sort_direction.toggle();
                 state.sort_and_filter();
                 Some(FileBrowserOutput::SortChanged(
                     state.sort_field.clone(),
-                    state.sort_direction.clone(),
+                    state.sort_direction,
                 ))
             }
             FileBrowserMessage::NavigateToSegment(index) => {

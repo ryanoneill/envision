@@ -1,5 +1,7 @@
 //! Types for the file browser component.
 
+use crate::component::table::SortDirection;
+
 /// Messages that can be sent to a FileBrowser.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum FileBrowserMessage {
@@ -57,7 +59,7 @@ pub enum FileBrowserOutput {
     /// The filter text changed.
     FilterChanged(String),
     /// The sort field or direction changed.
-    SortChanged(FileSortField, FileSortDirection),
+    SortChanged(FileSortField, SortDirection),
     /// Hidden file visibility toggled.
     HiddenToggled(bool),
 }
@@ -320,19 +322,6 @@ pub enum FileSortField {
     Modified,
     /// Sort by file extension.
     Extension,
-}
-
-/// Sort direction.
-#[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(
-    feature = "serialization",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-pub enum FileSortDirection {
-    /// Ascending order.
-    Ascending,
-    /// Descending order.
-    Descending,
 }
 
 /// File selection mode.

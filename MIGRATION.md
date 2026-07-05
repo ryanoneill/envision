@@ -1,5 +1,113 @@
 # Migration Guide
 
+## v0.16.x to v0.17.0
+
+### `App::init` takes args; `RuntimeBuilder` split
+
+`App::init() -> (State, Command<Msg>)` is replaced with `App::init(args: Self::Args) -> (State, Command<Msg>)`. Migration:
+
+| Old | New |
+|---|---|
+| `fn init() -> (State, Command<Msg>)` | `type Args = (); fn init(_args: ()) -> (State, Command<Msg>)` |
+| `static GLOBAL: OnceLock<T>; fn init() { GLOBAL.get()... }` | `type Args = MyArgs; fn init(args: MyArgs) { args.field... }` |
+| `RuntimeBuilder::state(state, cmd)` | `RuntimeBuilder::with_args(args)`; move state-building into `init` |
+| `AppHarness::with_state(w, h, state, cmd)` | `AppHarness::with_args(w, h, args)`; build state from args inside `init` |
+| `AppHarness::with_state_and_config(w, h, state, cmd, cfg)` | `AppHarness::with_args_and_config(w, h, args, cfg)` |
+
+Forgetting `with_args` for a non-`()` Args is now a compile error (via the sealed `OptionalArgs` marker), not a runtime panic.
+
+### Table sort & cell API redesign
+
+`TableMessage::SortBy` / `AddSort` / `ClearSort` are removed and replaced by explicit primitives. `Column::with_comparator` / `comparator` / `SortComparator` are removed and replaced by the reified `Cell { text, style, sort_key }` type + `SortKey` enum. `ResourceTable` and its supporting types are removed in favor of `Table` with an optional row-status column.
+
+| Old | New |
+|---|---|
+| `TableMessage::SortBy(col)` for header-click intent | `TableMessage::SortToggle(col)` |
+| `TableMessage::SortBy(col)` for "always Asc" | `TableMessage::SortAsc(col)` |
+| `TableMessage::SortBy(col)` for "always Desc" | `TableMessage::SortDesc(col)` |
+| `SortBy(col); SortBy(col)` (init bootstrap to Desc) | `TableState::with_initial_sort(col, Descending)` |
+| `TableMessage::AddSort(col)` for tiebreaker click | `TableMessage::AddSortToggle(col)` |
+| `TableMessage::AddSort(col)` for "always Asc tiebreaker" | `TableMessage::AddSortAsc(col)` |
+| `TableMessage::ClearSort` | `TableMessage::SortClear` |
+| `TableMessage::RemoveSort(col)` was already the drop-one-column primitive | `TableMessage::RemoveSort(col)` (unchanged) |
+| `Column::with_comparator(numeric_comparator())` | `Cell::number(value)` per cell. Mixed-precision: `Cell::number(value).with_text(format!("{:.2}", value))` |
+| `Column::with_comparator(date_comparator())` | `Cell::datetime(value)` per cell |
+| `Column::with_comparator(custom_fn)` | `Cell::new(text).with_sort_key(SortKey::...)` per cell |
+| `TableRow::cells() -> Vec<String>` | `TableRow::cells() -> Vec<Cell>` (use `Cell::new(s)` or `s.into()`) |
+| `ResourceTable*` | `Table` with optional `TableRow::status()` for the status dot |
+| `ResourceCell::*` constructors | `Cell::*` (constructors map 1:1) |
+| `RowStatus` (formerly in `resource_table`) | `RowStatus` (in `envision::cell`, re-exported at crate root) |
+
+See `docs/superpowers/specs/2026-05-02-table-sort-cell-unification-design.md` for the full design.
+
+### `FileSortDirection` removed; use `table::SortDirection`
+
+`file_browser::FileSortDirection` deleted. `file_browser` now uses `crate::component::table::SortDirection` at every use site (canonical single path — no local re-export at the `file_browser` boundary). The two enums had identical 2-variant Ascending/Descending shape; unification eliminates two-names-for-one-concept.
+
+`SortDirection` also derives `Copy + Default` (where `FileSortDirection` didn't), forcing a getter-shape improvement: `sort_direction()` returns by value.
+
+| Old | New |
+|---|---|
+| `use envision::component::file_browser::FileSortDirection;` | `use envision::component::SortDirection;` |
+| `FileSortDirection::Ascending` | `SortDirection::Ascending` |
+| `FileSortDirection::Descending` | `SortDirection::Descending` |
+| `FileBrowserOutput::SortChanged(field, FileSortDirection::Ascending)` | `FileBrowserOutput::SortChanged(field, SortDirection::Ascending)` |
+| `fn sort_direction(&self) -> &FileSortDirection` | `fn sort_direction(&self) -> SortDirection` (by value; `SortDirection: Copy`) |
+| `let dir = *state.sort_direction();` | `let dir = state.sort_direction();` (no deref needed — returns by value) |
+| `match state.sort_direction() { FileSortDirection::Ascending => …, FileSortDirection::Descending => … }` | `match state.sort_direction() { SortDirection::Ascending => …, SortDirection::Descending => … }` |
+
+Bonus: `SortDirection::toggle()` is available; use it to replace hand-rolled asc/desc flips.
+
+### `ResourceGaugeState::new` replaced by named-struct + builder
+
+`ResourceGaugeState::new(actual, request, limit)` took three unlabeled positional `f64` arguments; transposing `request` and `limit` was silent. Replaced by two named forms — pick whichever fits your construction site:
+
+**Named-struct single call** (recommended when all three values are known up front — test fixtures, snapshots):
+
+| Old | New |
+|---|---|
+| `ResourceGaugeState::new(250.0, 500.0, 1000.0)` | `ResourceGaugeState::default().with_values(ResourceValues { actual: 250.0, request: 500.0, limit: 1000.0 })` |
+
+**Fluent builder** (recommended when values are computed independently):
+
+| Old | New |
+|---|---|
+| `let a = compute_actual(); let r = ..; let l = ..; ResourceGaugeState::new(a, r, l)` | `ResourceGaugeState::default().with_actual(a).with_request(r).with_limit(l)` |
+
+**Accessor symmetry** (this cadence also closes the `set_values`/no-getter gap):
+
+| Old | New |
+|---|---|
+| `state.actual(); state.request(); state.limit();` (three separate calls) | Still supported. Plus new `state.values() -> ResourceValues` returning all three at once. |
+| `state.set_values(a, r, l);` (existing, unchanged) | Existing, unchanged. Getter counterpart is `state.values()`. |
+
+**New type**: `envision::component::ResourceValues { actual, request, limit }` — also available at `envision::prelude::ResourceValues`.
+
+## v0.15.x to v0.16.0
+
+### `DependencyGraph` removed; use `Diagram`
+
+`DependencyGraph` and its supporting types (`GraphNode`, `GraphEdge`, `GraphOrientation`, `NodeStatus`, all `DependencyGraph*` types) are deleted. Replaced by `Diagram`, which provides:
+
+- Sugiyama hierarchical layout with barycenter crossing minimization
+- Fruchterman-Reingold force-directed layout
+- Spatial keyboard navigation, edge following, search, clusters, minimap
+- Viewport pan/zoom, edge styles, node shapes
+- Batch buffer rendering and layout caching
+
+`NodeStatus` moved from `dependency_graph::types` to `diagram::types`.
+
+| Old | New |
+|---|---|
+| `use envision::component::{DependencyGraph, DependencyGraphState};` | `use envision::component::{Diagram, DiagramState};` |
+| `DependencyGraphState::new(nodes, edges)` | `DiagramState::hierarchical(nodes, edges)` or `DiagramState::force_directed(nodes, edges)` |
+| `GraphNode { id, label }` | `DiagramNode { id, label, .. }` (richer node type) |
+| `GraphEdge { from, to }` | `DiagramEdge { from, to, style: EdgeStyle::Solid, .. }` |
+| `GraphOrientation::TopDown` | Handled via `LayoutDirection::TopDown` in `LayoutConfig` |
+| `use dependency_graph::types::NodeStatus;` | `use diagram::types::NodeStatus;` |
+
+See CHANGELOG `[0.16.0]` entry for the full feature list.
+
 ## v0.14.x to v0.15.0
 
 ### Message `Clone` bound removed

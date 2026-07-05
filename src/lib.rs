@@ -227,17 +227,17 @@ pub use component::{
     MultiProgressOutput, MultiProgressState, Paginator, PaginatorMessage, PaginatorOutput,
     PaginatorState, PaginatorStyle, ProgressBar, ProgressBarMessage, ProgressBarOutput,
     ProgressBarState, ProgressItem, ProgressItemStatus, ResourceGauge, ResourceGaugeMessage,
-    ResourceGaugeOutput, ResourceGaugeState, ScrollView, ScrollViewMessage, ScrollViewState,
-    ScrollableText, ScrollableTextMessage, ScrollableTextOutput, ScrollableTextState, Section,
-    Sparkline, SparklineDirection, SparklineMessage, SparklineOutput, SparklineState, Spinner,
-    SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem, StatusBarItemContent,
-    StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog, StatusLogEntry, StatusLogLevel,
-    StatusLogMessage, StatusLogOutput, StatusLogState, StyledText, StyledTextMessage,
-    StyledTextOutput, StyledTextState, TerminalOutput, TerminalOutputMessage, TerminalOutputOutput,
-    TerminalOutputState, ThresholdZone, TitleCard, TitleCardMessage, TitleCardState, Toast,
-    ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState, UsageDisplay,
-    UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric, big_char, big_char_width,
-    format_eta,
+    ResourceGaugeOutput, ResourceGaugeState, ResourceValues, ScrollView, ScrollViewMessage,
+    ScrollViewState, ScrollableText, ScrollableTextMessage, ScrollableTextOutput,
+    ScrollableTextState, Section, Sparkline, SparklineDirection, SparklineMessage, SparklineOutput,
+    SparklineState, Spinner, SpinnerMessage, SpinnerState, SpinnerStyle, StatusBar, StatusBarItem,
+    StatusBarItemContent, StatusBarMessage, StatusBarState, StatusBarStyle, StatusLog,
+    StatusLogEntry, StatusLogLevel, StatusLogMessage, StatusLogOutput, StatusLogState, StyledText,
+    StyledTextMessage, StyledTextOutput, StyledTextState, TerminalOutput, TerminalOutputMessage,
+    TerminalOutputOutput, TerminalOutputState, ThresholdZone, TitleCard, TitleCardMessage,
+    TitleCardState, Toast, ToastItem, ToastLevel, ToastMessage, ToastOutput, ToastState,
+    UsageDisplay, UsageDisplayMessage, UsageDisplayState, UsageLayout, UsageMetric, big_char,
+    big_char_width, format_eta,
 };
 
 // Navigation components
@@ -415,6 +415,19 @@ pub use overlay::{Overlay, OverlayAction, OverlayStack};
 pub use render::styled_line;
 pub use scroll::{ScrollState, render_scrollbar, render_scrollbar_inside_border};
 pub use theme::{NamedColor, Palette, Severity, Theme};
+
+/// Compiles the code blocks in `README.md` as doctests so they can't rot silently.
+///
+/// Gated on `all(doctest, feature = "full")` — the README code examples reference
+/// types from every component group (`input-components`, `data-components`,
+/// `display-components`, ...), so the doctests only compile when the `full` feature
+/// is on. Default features include `full`, so the standard `cargo test --doc` invocation
+/// picks up the README blocks. Under `--no-default-features`, the struct is absent
+/// and its doctests are skipped, matching the fact that the referenced types
+/// themselves don't exist in that configuration.
+#[cfg(all(doctest, feature = "full"))]
+#[doc = include_str!("../README.md")]
+pub struct ReadmeDoctests;
 
 /// Prelude module for convenient imports.
 ///
