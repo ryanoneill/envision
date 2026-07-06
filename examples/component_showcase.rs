@@ -44,8 +44,6 @@ use envision::component::{
     ToastMessage, ToastState,
 };
 use envision::prelude::*;
-use ratatui::layout::{Alignment, Constraint, Layout};
-use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 // ---------------------------------------------------------------------------
