@@ -23,9 +23,6 @@ use envision::component::{
 };
 use envision::prelude::*;
 use envision::theme::NamedColor;
-use ratatui::layout::{Alignment, Constraint, Layout};
-use ratatui::style::{Modifier, Style};
-use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Padding};
 
 // =============================================================================

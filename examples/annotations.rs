@@ -10,11 +10,7 @@
 //! Run with: cargo run --example annotations
 
 use envision::annotation::{Annotate, Annotation, WidgetType, with_annotations};
-use envision::backend::CaptureBackend;
-use envision::harness::TestHarness;
-use ratatui::Terminal;
-use ratatui::layout::{Alignment, Constraint, Layout};
-use ratatui::style::{Color, Modifier, Style};
+use envision::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 
 fn main() {

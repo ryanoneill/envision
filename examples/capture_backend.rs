@@ -5,11 +5,7 @@
 //!
 //! Run with: cargo run --example capture_backend
 
-use envision::backend::CaptureBackend;
-use ratatui::Terminal;
-use ratatui::layout::{Constraint, Layout};
-use ratatui::style::{Color, Style};
-use ratatui::text::{Line, Span};
+use envision::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
