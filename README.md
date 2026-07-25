@@ -238,23 +238,6 @@ Envision provides a comprehensive library of 74 reusable UI components, all foll
 | `Select` | Dropdown selection widget |
 | `TextArea` | Multi-line text editor with scrolling |
 
-### Display Components
-
-| Component | Description |
-|-----------|-------------|
-| `KeyHints` | Keyboard shortcut display bar |
-| `MultiProgress` | Concurrent progress indicators for batch operations |
-| `ProgressBar` | Visual progress indicator with percentage |
-| `ScrollableText` | Scrollable read-only text display with CJK support |
-| `Spinner` | Animated loading indicator (multiple styles) |
-| `StatusBar` | Application status bar with sections, timers, counters |
-| `StatusLog` | Scrolling status messages with severity levels |
-| `StepIndicator` | Multi-step workflow progress display |
-| `StyledText` | Rich text display with inline styling |
-| `TitleCard` | Centered title display with subtitle and prefix/suffix |
-| `Toast` | Non-modal notification system with auto-dismiss |
-| `Tooltip` | Contextual information overlay |
-
 ### Navigation Components
 
 | Component | Description |
