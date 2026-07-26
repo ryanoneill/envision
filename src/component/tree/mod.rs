@@ -515,24 +515,13 @@ impl<T: Clone> TreeState<T> {
         self.selected_index
     }
 
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{TreeState, TreeNode};
-    ///
-    /// let state = TreeState::new(vec![TreeNode::new("Root", ())]);
-    /// assert_eq!(state.selected(), Some(0));
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Sets the selected index in the flattened view.
     ///
     /// The index is clamped to the valid range of visible nodes.
     /// Has no effect on empty trees.
+    ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
     ///
     /// # Example
     ///
@@ -544,10 +533,10 @@ impl<T: Clone> TreeState<T> {
     /// root.add_child(TreeNode::new("Child 2", ()));
     ///
     /// let mut state = TreeState::new(vec![root]);
-    /// state.set_selected(Some(2));
+    /// state.set_selected_index(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
                 if self.roots.is_empty() {

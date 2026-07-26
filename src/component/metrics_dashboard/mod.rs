@@ -344,25 +344,12 @@ impl MetricsDashboardState {
         self.selected
     }
 
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MetricsDashboardState, MetricWidget};
-    ///
-    /// let state = MetricsDashboardState::new(vec![
-    ///     MetricWidget::counter("A", 0),
-    /// ], 1);
-    /// assert_eq!(state.selected(), state.selected_index());
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Sets the selected widget index.
     ///
     /// The index is clamped to the valid range. Has no effect on empty dashboards.
+    ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
     ///
     /// # Example
     ///
@@ -374,10 +361,10 @@ impl MetricsDashboardState {
     ///     MetricWidget::counter("B", 0),
     ///     MetricWidget::counter("C", 0),
     /// ], 3);
-    /// state.set_selected(Some(2));
+    /// state.set_selected_index(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
                 if self.widgets.is_empty() {
@@ -418,7 +405,7 @@ impl MetricsDashboardState {
     ///     MetricWidget::counter("C", 0),
     ///     MetricWidget::counter("D", 0),
     /// ], 3);
-    /// state.set_selected(Some(3)); // 4th widget
+    /// state.set_selected_index(Some(3)); // 4th widget
     /// assert_eq!(state.selected_position(), Some((1, 0))); // row 1, col 0
     /// ```
     pub fn selected_position(&self) -> Option<(usize, usize)> {

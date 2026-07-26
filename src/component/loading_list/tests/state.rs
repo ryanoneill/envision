@@ -87,7 +87,7 @@ fn test_state_selected_index() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
 
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected_item().unwrap().label(), "Item Two");
     assert_eq!(state.selected_data().unwrap().id, 2);
@@ -102,13 +102,13 @@ fn test_selected_item_returns_item() {
     assert!(state.selected_item().is_none());
 
     // With selection returns the item
-    state.set_selected(Some(0));
+    state.set_selected_index(Some(0));
     let item = state.selected_item().unwrap();
     assert_eq!(item.label(), "Item One");
     assert_eq!(item.data().id, 1);
 
     // Verify selected item at different index
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
     assert_eq!(state.selected_item().unwrap().label(), "Item Three");
 }
 
@@ -117,7 +117,7 @@ fn test_state_selected_clamped() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
 
-    state.set_selected(Some(100)); // Too high
+    state.set_selected_index(Some(100)); // Too high
     assert_eq!(state.selected_index(), Some(2)); // Clamped to last
 }
 
@@ -134,7 +134,7 @@ fn test_state_get() {
 fn test_state_clear() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(0));
+    state.set_selected_index(Some(0));
 
     state.clear();
     assert!(state.is_empty());
@@ -322,10 +322,10 @@ fn test_state_partial_eq_different_indicators() {
 fn test_set_selected_none() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     assert_eq!(state.selected_index(), Some(1));
 
-    state.set_selected(None);
+    state.set_selected_index(None);
     assert_eq!(state.selected_index(), None);
     assert!(state.selected_item().is_none());
     assert!(state.selected_data().is_none());
@@ -335,7 +335,7 @@ fn test_set_selected_none() {
 fn test_set_selected_on_empty_list() {
     let mut state: LoadingListState<TestItem> = LoadingListState::new();
     // set_selected with Some on empty list should clamp to 0 but saturating_sub(1) on 0 == 0
-    state.set_selected(Some(0));
+    state.set_selected_index(Some(0));
     // With empty list, index 0 is clamped via min(0.saturating_sub(1)) = min(0, 0) = Some(0)
     // But get will return None since items is empty
     assert!(state.selected_item().is_none());
@@ -356,7 +356,7 @@ fn test_selected_data_none_when_no_selection() {
 fn test_selected_data_returns_data() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(0));
+    state.set_selected_index(Some(0));
     let data = state.selected_data().unwrap();
     assert_eq!(data.id, 1);
     assert_eq!(data.name, "Item One");

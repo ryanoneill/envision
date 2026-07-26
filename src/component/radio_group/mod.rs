@@ -186,20 +186,6 @@ impl<T: Clone> RadioGroupState<T> {
         self.selected
     }
 
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::RadioGroupState;
-    ///
-    /// let state = RadioGroupState::with_selected(vec!["A", "B", "C"], 2);
-    /// assert_eq!(state.selected(), Some(2));
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Returns a reference to the currently selected item.
     ///
     /// Returns `None` if the options are empty or no selection exists.
@@ -221,16 +207,19 @@ impl<T: Clone> RadioGroupState<T> {
     /// Pass `Some(index)` to select an option (out-of-bounds indices are
     /// ignored), or `None` to clear the selection.
     ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
+    ///
     /// # Example
     ///
     /// ```rust
     /// use envision::component::RadioGroupState;
     ///
     /// let mut state = RadioGroupState::new(vec!["A", "B", "C"]);
-    /// state.set_selected(Some(2));
+    /// state.set_selected_index(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) if i < self.options.len() => self.selected = Some(i),
             Some(_) => {} // Out of bounds, ignore

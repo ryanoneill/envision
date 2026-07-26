@@ -309,25 +309,14 @@ impl MenuState {
         self.selected_index
     }
 
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{MenuState, MenuItem};
-    ///
-    /// let state = MenuState::new(vec![MenuItem::new("File"), MenuItem::new("Edit")]);
-    /// assert_eq!(state.selected(), Some(0));
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Sets the selected item index.
     ///
     /// Pass `Some(index)` to select an item (clamped to valid range), or
     /// `None` to clear the selection. Has no effect on an empty menu when
     /// selecting.
+    ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
     ///
     /// # Example
     ///
@@ -339,10 +328,10 @@ impl MenuState {
     ///     MenuItem::new("Edit"),
     ///     MenuItem::new("View"),
     /// ]);
-    /// state.set_selected(Some(2));
+    /// state.set_selected_index(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
                 if !self.items.is_empty() {
@@ -371,7 +360,7 @@ impl MenuState {
     /// assert_eq!(state.selected_index(), Some(1));
     /// ```
     pub fn with_selected(mut self, index: usize) -> Self {
-        self.set_selected(Some(index));
+        self.set_selected_index(Some(index));
         self
     }
 

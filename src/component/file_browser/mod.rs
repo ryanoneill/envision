@@ -430,23 +430,6 @@ impl FileBrowserState {
         self.selected_index
     }
 
-    /// Returns the selected index within the filtered list.
-    ///
-    /// This is an alias for [`selected_index()`](Self::selected_index) that provides a
-    /// consistent accessor name across all selection-based components.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::file_browser::{FileEntry, FileBrowserState};
-    ///
-    /// let state = FileBrowserState::new("/", vec![FileEntry::file("a.txt", "/a.txt")]);
-    /// assert_eq!(state.selected(), Some(0));
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Returns the currently selected file entry.
     ///
     /// This is an alias for [`selected_entry()`](Self::selected_entry) that provides a

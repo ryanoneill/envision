@@ -341,23 +341,6 @@ impl<T: Clone> LoadingListState<T> {
         self.selected
     }
 
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::LoadingListState;
-    ///
-    /// let state = LoadingListState::with_items(
-    ///     vec!["a".to_string()],
-    ///     |s| s.clone(),
-    /// ).with_selected(0);
-    /// assert_eq!(state.selected(), Some(0));
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Returns the selected item.
     ///
     /// Returns `None` if no item is selected.
@@ -376,7 +359,7 @@ impl<T: Clone> LoadingListState<T> {
     /// );
     /// assert!(state.selected_item().is_none());
     ///
-    /// state.set_selected(Some(0));
+    /// state.set_selected_index(Some(0));
     /// assert_eq!(state.selected_item().unwrap().label(), "Build");
     /// ```
     pub fn selected_item(&self) -> Option<&LoadingListItem<T>> {
@@ -402,6 +385,9 @@ impl<T: Clone> LoadingListState<T> {
 
     /// Sets the selected index.
     ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -411,10 +397,10 @@ impl<T: Clone> LoadingListState<T> {
     ///     vec!["a".to_string(), "b".to_string()],
     ///     |s| s.clone(),
     /// );
-    /// state.set_selected(Some(1));
+    /// state.set_selected_index(Some(1));
     /// assert_eq!(state.selected_index(), Some(1));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         self.selected = index.map(|i| i.min(self.items.len().saturating_sub(1)));
     }
 

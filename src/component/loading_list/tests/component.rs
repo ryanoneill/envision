@@ -113,7 +113,7 @@ fn test_update_down() {
 fn test_update_down_wrap() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(2)); // Last item
+    state.set_selected_index(Some(2)); // Last item
 
     LoadingList::update(&mut state, LoadingListMessage::Down);
     assert_eq!(state.selected_index(), Some(0)); // Wraps
@@ -123,7 +123,7 @@ fn test_update_down_wrap() {
 fn test_update_up() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
 
     LoadingList::update(&mut state, LoadingListMessage::Up);
     assert_eq!(state.selected_index(), Some(1));
@@ -133,7 +133,7 @@ fn test_update_up() {
 fn test_update_up_wrap() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(0));
+    state.set_selected_index(Some(0));
 
     LoadingList::update(&mut state, LoadingListMessage::Up);
     assert_eq!(state.selected_index(), Some(2)); // Wraps
@@ -143,7 +143,7 @@ fn test_update_up_wrap() {
 fn test_update_first() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
 
     LoadingList::update(&mut state, LoadingListMessage::First);
     assert_eq!(state.selected_index(), Some(0));
@@ -162,7 +162,7 @@ fn test_update_last() {
 fn test_update_select() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items.clone(), |i| i.name.clone());
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
 
     let output = LoadingList::update(&mut state, LoadingListMessage::Select);
 
@@ -202,7 +202,7 @@ fn test_navigation_empty_list() {
 #[test]
 fn test_update_set_items() {
     let mut state: LoadingListState<TestItem> = LoadingListState::new();
-    state.set_selected(Some(0));
+    state.set_selected_index(Some(0));
 
     let items = make_items();
     LoadingList::update(&mut state, LoadingListMessage::SetItems(items));
@@ -557,7 +557,7 @@ fn test_down_output_value() {
 fn test_up_output_value() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
 
     let output = LoadingList::update(&mut state, LoadingListMessage::Up);
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(1)));
@@ -574,7 +574,7 @@ fn test_up_output_value() {
 fn test_first_output_value() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
 
     let output = LoadingList::update(&mut state, LoadingListMessage::First);
     assert_eq!(output, Some(LoadingListOutput::SelectionChanged(0)));
@@ -655,7 +655,7 @@ fn test_single_item_select() {
         name: "Only".to_string(),
     }];
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(0));
+    state.set_selected_index(Some(0));
 
     let output = LoadingList::update(&mut state, LoadingListMessage::Select);
     assert!(matches!(
@@ -733,7 +733,7 @@ fn test_set_items_default_labeling() {
 fn test_set_items_clears_selection() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
 
     let new_items = vec![
         TestItem {

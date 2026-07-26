@@ -792,19 +792,6 @@ fn test_selected_index_returns_none_when_empty() {
 }
 
 #[test]
-fn test_selected_alias_matches_selected_index() {
-    let panels = vec![AccordionPanel::new("A", "1"), AccordionPanel::new("B", "2")];
-    let state = AccordionState::new(panels);
-    assert_eq!(state.selected(), state.selected_index());
-}
-
-#[test]
-fn test_selected_alias_returns_none_when_empty() {
-    let state = AccordionState::new(vec![]);
-    assert_eq!(state.selected(), None);
-}
-
-#[test]
 fn test_selected_index_after_focus_change() {
     let panels = vec![
         AccordionPanel::new("A", "1"),
@@ -814,5 +801,5 @@ fn test_selected_index_after_focus_change() {
     let mut state = AccordionState::new(panels);
     Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(state.selected(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
 }
