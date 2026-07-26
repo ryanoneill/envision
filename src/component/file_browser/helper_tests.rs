@@ -261,7 +261,7 @@ fn test_selected_index_defaults_to_first_entry() {
 }
 
 #[test]
-fn test_selected_alias_none_when_empty() {
+fn test_selected_index_none_when_empty() {
     let state = FileBrowserState::new("/empty", vec![]);
     assert_eq!(state.selected_index(), None);
 }

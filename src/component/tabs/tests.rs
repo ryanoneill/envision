@@ -66,7 +66,7 @@ fn test_selected_empty() {
 }
 
 #[test]
-fn test_set_selected() {
+fn test_set_selected_index() {
     let mut state = TabsState::new(vec!["A", "B", "C"]);
     state.set_selected_index(Some(2));
     assert_eq!(state.selected_index(), Some(2));

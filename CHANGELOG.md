@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Selection accessors completed on `selected_index()`
 
-Cadence A unified selection accessors across six components. This release finishes the job: every component whose selection accessor was spelled `selected` now spells it `selected_index`, and every corresponding mutator is `set_selected_index`.
+Cadence A unified selection accessors across six components. This release finishes the getter/setter half: every component whose selection accessor was spelled `selected` now spells it `selected_index`, and every corresponding mutator is `set_selected_index`. The `with_selected` builder leg is untouched and remains deferred.
 
 The motivation is that `selected` was ambiguous about return type. Four different signatures shared the spelling: `Option<usize>` (15 components), `Option<(usize, usize)>` (`heatmap`), bare `usize` (`box_plot`), and a `bool` builder (`annotation::widget`). The `selected_index` / `selected_item` / `value_at_selection` system makes the name predict the type.
 
@@ -41,6 +41,8 @@ Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
 
 - **Selection-index accessors under domain-specific names.** `chart::active_series`, `log_correlation::active_stream`, `diff_viewer::current_hunk`, `step_indicator::active_step_index`, `paginator::current_page`, `breadcrumb::focused_index`. Surveyed during Cadence D and deliberately excluded: each name carries domain meaning that a generic rename would erase. Open question for a future cadence.
 - **`box_plot::selected_index()` returns a bare `usize`**, so "no selection" is unrepresentable. Whether it should become `Option<usize>` is a semantic question, deferred — the naming half closed in this release.
+- **The `with_selected` builder leg was not renamed.** `menu`, `tabs`, `tree`, `loading_list`, `selectable_list`, `radio_group`, `table`, and `tab_bar` still expose `with_selected(i)` alongside `set_selected_index()` and `selected_index()`, so one type now carries two spellings of the same concept. Renaming it to `with_selected_index` is a second breaking change that belongs in its own cadence, not bolted onto this one.
+- **Three `selected_item()` one-line aliases survive** — `file_browser::selected_item()` → `selected_entry()`, `tree::selected_item()` → `selected_node()`, `accordion::selected_item()` → `focused_panel()`. These are the same "pure redundancy" shape this release deleted twelve times, kept only because `selected_item()` is the canonical cross-component spelling Cadence A established. Delete-or-keep is an open question.
 - **`accordion::selected_index()` remains a convenience alias for `focused_index()`.** It performs real work (Option-normalizing the empty case) so it is not redundant, but the indirection stands.
 - **`compact_str` adoption is sporadic** — 2 non-test source files (`src/component/cell.rs`, `src/backend/cell/mod.rs`). Needs a commit-or-drop decision.
 - **Naming outliers** — `is_checked`, `label_text` (the `tab_bar` setter outlier previously grouped here is closed by this release). Plus `restore_terminal` → `restore`, `AppShell` placement in the README component table, five files near the 1000-line cap, and snapshot-coverage concentration in ~20 of 74 components.

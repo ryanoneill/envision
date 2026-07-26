@@ -315,11 +315,11 @@ fn test_state_partial_eq_different_indicators() {
 }
 
 // ========================================
-// set_selected Edge Case Tests
+// set_selected_index Edge Case Tests
 // ========================================
 
 #[test]
-fn test_set_selected_none() {
+fn test_set_selected_index_none() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
     state.set_selected_index(Some(1));
@@ -332,9 +332,9 @@ fn test_set_selected_none() {
 }
 
 #[test]
-fn test_set_selected_on_empty_list() {
+fn test_set_selected_index_on_empty_list() {
     let mut state: LoadingListState<TestItem> = LoadingListState::new();
-    // set_selected with Some on empty list should clamp to 0 but saturating_sub(1) on 0 == 0
+    // set_selected_index with Some on empty list should clamp to 0 but saturating_sub(1) on 0 == 0
     state.set_selected_index(Some(0));
     // With empty list, index 0 is clamped via min(0.saturating_sub(1)) = min(0, 0) = Some(0)
     // But get will return None since items is empty

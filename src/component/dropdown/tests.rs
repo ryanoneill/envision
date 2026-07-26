@@ -70,7 +70,7 @@ fn test_set_options_resets_invalid_selection() {
 }
 
 #[test]
-fn test_set_selected() {
+fn test_set_selected_index() {
     let mut state = DropdownState::new(vec!["A", "B", "C"]);
     state.set_selected_index(Some(1));
     assert_eq!(state.selected_index(), Some(1));
@@ -78,7 +78,7 @@ fn test_set_selected() {
 }
 
 #[test]
-fn test_set_selected_out_of_bounds() {
+fn test_set_selected_index_out_of_bounds() {
     let mut state = DropdownState::new(vec!["A", "B"]);
     state.set_selected_index(Some(5));
     assert_eq!(state.selected_index(), None);

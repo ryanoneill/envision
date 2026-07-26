@@ -801,5 +801,4 @@ fn test_selected_index_after_focus_change() {
     let mut state = AccordionState::new(panels);
     Accordion::update(&mut state, AccordionMessage::Down);
     assert_eq!(state.selected_index(), Some(1));
-    assert_eq!(state.selected_index(), Some(1));
 }

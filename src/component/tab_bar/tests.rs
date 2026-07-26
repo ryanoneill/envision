@@ -133,7 +133,7 @@ fn test_state_builder_methods() {
 }
 
 #[test]
-fn test_state_set_selected() {
+fn test_state_set_selected_index() {
     let mut state = TabBarState::new(vec![
         Tab::new("a", "A"),
         Tab::new("b", "B"),
@@ -148,7 +148,7 @@ fn test_state_set_selected() {
 }
 
 #[test]
-fn test_state_set_selected_empty() {
+fn test_state_set_selected_index_empty() {
     let mut state = TabBarState::new(vec![]);
     state.set_selected_index(Some(0));
     assert_eq!(state.selected_index(), None);

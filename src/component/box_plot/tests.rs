@@ -245,7 +245,7 @@ fn test_state_set_orientation() {
 }
 
 #[test]
-fn test_state_set_selected() {
+fn test_state_set_selected_index() {
     let mut state = BoxPlotState::new(vec![
         BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
@@ -255,14 +255,14 @@ fn test_state_set_selected() {
 }
 
 #[test]
-fn test_state_set_selected_clamps_to_last() {
+fn test_state_set_selected_index_clamps_to_last() {
     let mut state = BoxPlotState::new(vec![BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0)]);
     state.set_selected_index(10);
     assert_eq!(state.selected_index(), 0); // Only one item, clamped to index 0
 }
 
 #[test]
-fn test_state_set_selected_empty() {
+fn test_state_set_selected_index_empty() {
     let mut state = BoxPlotState::default();
     state.set_selected_index(5); // No-op on empty datasets
     assert_eq!(state.selected_index(), 0);
