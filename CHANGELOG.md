@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Breaking Changes
+
+#### Selection accessors completed on `selected_index()`
+
+Cadence A unified selection accessors across six components. This release finishes the job: every component whose selection accessor was spelled `selected` now spells it `selected_index`, and every corresponding mutator is `set_selected_index`.
+
+The motivation is that `selected` was ambiguous about return type. Four different signatures shared the spelling: `Option<usize>` (15 components), `Option<(usize, usize)>` (`heatmap`), bare `usize` (`box_plot`), and a `bool` builder (`annotation::widget`). The `selected_index` / `selected_item` / `value_at_selection` system makes the name predict the type.
+
+**Aliases deleted** (body was exactly `self.selected_index()`) — `accordion`, `dropdown`, `file_browser`, `loading_list`, `menu`, `metrics_dashboard`, `radio_group`, `searchable_list`, `select`, `selectable_list`, `tabs`, `tree`.
+
+**Primary accessors renamed** (no `selected_index()` sibling existed) — `alert_panel`, `diagram`, `multi_progress`, `box_plot`.
+
+**Setters renamed** `set_selected` → `set_selected_index` on all twelve components that had one.
+
+`box_plot::selected_index()` keeps its bare `usize` return, matching the existing `flame_graph::selected_index()`. Whether it should become `Option<usize>` is a separate question, deferred.
+
+`heatmap::selected()` is **unchanged** — it returns `Option<(usize, usize)>` coordinates, not an index, and was disentangled from this pattern during Cadence A.
+
+See `MIGRATION.md` § *v0.17.x to v0.18.0* for the full before/after table.
+
+### Added
+
+#### Harness types available from the prelude
+
+`envision::prelude::*` now re-exports the seven harness types available at the crate root. Previously only `AppHarness`, `MessageSender`, and `TestHarness` were included, so consumers matching on `TrySendError::{Full, Closed}`, destructuring `MessageSendError`, or using `Assertion` / `Snapshot` needed a second explicit import.
+
+Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
+
+### Known Deferred Findings
+
+> Supersedes the Known Deferred Findings block under `[0.17.0]`. The Cadence D item listed there — selection-accessor aliases, including `box_plot` — is **closed** by this release.
+
+- **Selection-index accessors under domain-specific names.** `chart::active_series`, `log_correlation::active_stream`, `diff_viewer::current_hunk`, `step_indicator::active_step_index`, `paginator::current_page`, `breadcrumb::focused_index`. Surveyed during Cadence D and deliberately excluded: each name carries domain meaning that a generic rename would erase. Open question for a future cadence.
+- **`box_plot::selected_index()` returns a bare `usize`**, so "no selection" is unrepresentable. Whether it should become `Option<usize>` is a semantic question, deferred — the naming half closed in this release.
+- **`accordion::selected_index()` remains a convenience alias for `focused_index()`.** It performs real work (Option-normalizing the empty case) so it is not redundant, but the indirection stands.
+- **`compact_str` adoption is sporadic** — 2 non-test source files (`src/component/cell.rs`, `src/backend/cell/mod.rs`). Needs a commit-or-drop decision.
+- **Naming outliers** — `is_checked`, `label_text` (the `tab_bar` setter outlier previously grouped here is closed by this release). Plus `restore_terminal` → `restore`, `AppShell` placement in the README component table, five files near the 1000-line cap, and snapshot-coverage concentration in ~20 of 74 components.
+
 ## [0.17.0] - 2026-07-26
 
 ### Breaking Changes

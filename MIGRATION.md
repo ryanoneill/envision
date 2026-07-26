@@ -1,5 +1,54 @@
 # Migration Guide
 
+## v0.17.x to v0.18.0
+
+### Selection accessors completed on `selected_index()`
+
+Every component whose selection accessor was spelled `selected` now spells it `selected_index`; every corresponding mutator is `set_selected_index`.
+
+| Component | Old | New |
+|---|---|---|
+| `accordion` | `state.selected()` | `state.selected_index()` |
+| `alert_panel` | `state.selected()` | `state.selected_index()` |
+| `box_plot` | `state.selected()` | `state.selected_index()` |
+| `box_plot` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `diagram` | `state.selected()` | `state.selected_index()` |
+| `dropdown` | `state.selected()` | `state.selected_index()` |
+| `dropdown` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `file_browser` | `state.selected()` | `state.selected_index()` |
+| `loading_list` | `state.selected()` | `state.selected_index()` |
+| `loading_list` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `menu` | `state.selected()` | `state.selected_index()` |
+| `menu` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `metrics_dashboard` | `state.selected()` | `state.selected_index()` |
+| `metrics_dashboard` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `multi_progress` | `state.selected()` | `state.selected_index()` |
+| `multi_progress` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `radio_group` | `state.selected()` | `state.selected_index()` |
+| `radio_group` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `searchable_list` | `state.selected()` | `state.selected_index()` |
+| `searchable_list` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `select` | `state.selected()` | `state.selected_index()` |
+| `select` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `selectable_list` | `state.selected()` | `state.selected_index()` |
+| `selectable_list` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `tabs` | `state.selected()` | `state.selected_index()` |
+| `tabs` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+| `tree` | `state.selected()` | `state.selected_index()` |
+| `tree` | `state.set_selected(i)` | `state.set_selected_index(i)` |
+
+Return types are unchanged in every case, including `box_plot`, whose accessor stays a bare `usize`.
+
+**Finding your call sites.** Search for `.selected()` and `.set_selected(` on the sixteen components above.
+
+`heatmap::selected()` returns `Option<(usize, usize)>` coordinates and is **unchanged** — do not migrate it.
+
+Because these are renames, `cargo build` identifies every site and the compiler error names the receiver type, which disambiguates `heatmap` from the rest. Note that method references (`SelectState::selected`, or `.map(SelectState::selected)`) will not match a `.selected()` grep but will still fail to compile.
+
+### Harness types available from the prelude
+
+`envision::prelude::*` now re-exports `Assertion`, `MessageSendError`, `Snapshot`, and `TrySendError` alongside the three it already provided. The explicit `use envision::{Assertion, MessageSendError, Snapshot, TrySendError};` import is no longer required.
+
 ## v0.16.x to v0.17.0
 
 ### `App::init` takes args; `RuntimeBuilder` split
