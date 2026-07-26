@@ -252,15 +252,19 @@ impl DiagramState {
 
     /// Returns the selected node index, if any.
     ///
+    /// Renamed from `selected()` in v0.18.0 for consistency with the
+    /// `selected_index()` accessor used across every other component.
+    /// See MIGRATION.md.
+    ///
     /// # Examples
     ///
     /// ```
     /// use envision::component::diagram::DiagramState;
     ///
     /// let state = DiagramState::new();
-    /// assert_eq!(state.selected(), None);
+    /// assert_eq!(state.selected_index(), None);
     /// ```
-    pub fn selected(&self) -> Option<usize> {
+    pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
 
@@ -562,9 +566,9 @@ impl DiagramState {
     ///     .with_node(DiagramNode::new("a", "A"))
     ///     .with_node(DiagramNode::new("b", "B"));
     /// assert!(state.select_next());
-    /// assert_eq!(state.selected(), Some(0));
+    /// assert_eq!(state.selected_index(), Some(0));
     /// assert!(state.select_next());
-    /// assert_eq!(state.selected(), Some(1));
+    /// assert_eq!(state.selected_index(), Some(1));
     /// ```
     pub fn select_next(&mut self) -> bool {
         if self.nodes.is_empty() {
@@ -589,7 +593,7 @@ impl DiagramState {
     ///     .with_node(DiagramNode::new("b", "B"));
     /// state.select_next(); // select "a"
     /// state.select_prev(); // wrap to "b"
-    /// assert_eq!(state.selected(), Some(1));
+    /// assert_eq!(state.selected_index(), Some(1));
     /// ```
     pub fn select_prev(&mut self) -> bool {
         if self.nodes.is_empty() {

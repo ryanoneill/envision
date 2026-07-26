@@ -424,7 +424,7 @@ fn test_diagram_stress_500_nodes_navigation() {
             Diagram::update(&mut state, msg);
         }
     }
-    assert!(state.selected().is_some());
+    assert!(state.selected_index().is_some());
 }
 
 #[test]
@@ -438,7 +438,7 @@ fn test_diagram_stress_edge_following() {
     if let Some(msg) = Diagram::handle_event(&state, &tab, &ctx) {
         Diagram::update(&mut state, msg);
     }
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 
     // Follow edges 50 times
     for _ in 0..50 {
@@ -447,7 +447,7 @@ fn test_diagram_stress_edge_following() {
         }
     }
     // Should have followed the chain without panicking
-    assert!(state.selected().is_some());
+    assert!(state.selected_index().is_some());
 }
 
 #[test]
@@ -467,7 +467,7 @@ fn test_diagram_stress_search() {
     Diagram::update(&mut state, DiagramMessage::SearchNext);
     Diagram::update(&mut state, DiagramMessage::ConfirmSearch);
     assert!(!state.is_searching());
-    assert!(state.selected().is_some());
+    assert!(state.selected_index().is_some());
 }
 
 #[test]
@@ -485,7 +485,7 @@ fn test_diagram_full_lifecycle() {
 
     // Navigate
     Diagram::update(&mut state, DiagramMessage::SelectNext);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(state.selected_node().unwrap().id(), "api");
 
     // Follow edge

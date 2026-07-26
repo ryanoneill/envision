@@ -173,7 +173,7 @@ fn test_scroll_down() {
     }
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollDown);
-    assert_eq!(state.selected(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
 }
 
 #[test]
@@ -182,10 +182,10 @@ fn test_scroll_up() {
     for i in 0..10 {
         state.add(format!("id{}", i), format!("Item {}", i));
     }
-    state.set_selected(Some(5));
+    state.set_selected_index(Some(5));
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollUp);
-    assert_eq!(state.selected(), Some(4));
+    assert_eq!(state.selected_index(), Some(4));
 }
 
 #[test]
@@ -194,7 +194,7 @@ fn test_scroll_to_top() {
     for i in 0..10 {
         state.add(format!("id{}", i), format!("Item {}", i));
     }
-    state.set_selected(Some(5));
+    state.set_selected_index(Some(5));
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollToTop);
     assert_eq!(state.scroll_offset(), 0);
@@ -208,7 +208,7 @@ fn test_scroll_to_bottom() {
     }
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollToBottom);
-    assert_eq!(state.selected(), Some(9));
+    assert_eq!(state.selected_index(), Some(9));
 }
 
 #[test]
@@ -218,7 +218,7 @@ fn test_scroll_up_at_top() {
     assert_eq!(state.scroll_offset(), 0);
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollUp);
-    assert_eq!(state.selected(), Some(0)); // Should stay at 0
+    assert_eq!(state.selected_index(), Some(0)); // Should stay at 0
 }
 
 #[test]
@@ -226,10 +226,10 @@ fn test_scroll_down_at_bottom() {
     let mut state = MultiProgressState::new();
     state.add("id1", "Item 1");
     state.add("id2", "Item 2");
-    state.set_selected(Some(1)); // At the last item
+    state.set_selected_index(Some(1)); // At the last item
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollDown);
-    assert_eq!(state.selected(), Some(1)); // Should stay at 1
+    assert_eq!(state.selected_index(), Some(1)); // Should stay at 1
 }
 
 // ========================================

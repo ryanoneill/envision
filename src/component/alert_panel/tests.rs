@@ -34,7 +34,7 @@ fn test_new() {
     let state = AlertPanelState::new();
     assert!(state.metrics().is_empty());
     assert_eq!(state.columns(), 2);
-    assert_eq!(state.selected(), None);
+    assert_eq!(state.selected_index(), None);
     assert!(state.show_sparklines());
     assert!(!state.show_thresholds());
     assert_eq!(state.title(), None);
@@ -44,7 +44,7 @@ fn test_new() {
 fn test_with_metrics() {
     let state = AlertPanelState::new().with_metrics(sample_metrics());
     assert_eq!(state.metrics().len(), 4);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -222,14 +222,14 @@ fn test_update_value_recomputes_state() {
 #[test]
 fn test_add_metric() {
     let mut state = AlertPanelState::new();
-    assert_eq!(state.selected(), None);
+    assert_eq!(state.selected_index(), None);
     state.add_metric(AlertMetric::new(
         "cpu",
         "CPU",
         AlertThreshold::new(70.0, 90.0),
     ));
     assert_eq!(state.metrics().len(), 1);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -241,7 +241,7 @@ fn test_add_metric_preserves_selection() {
         AlertThreshold::new(50.0, 80.0),
     ));
     assert_eq!(state.metrics().len(), 5);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -363,7 +363,7 @@ fn test_mixed_state_counts() {
 fn test_select_next() {
     let mut state = focused_state();
     let output = AlertPanel::update(&mut state, AlertPanelMessage::SelectNext);
-    assert_eq!(state.selected(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
     assert_eq!(output, Some(AlertPanelOutput::MetricSelected("mem".into())));
 }
 
@@ -372,7 +372,7 @@ fn test_select_prev() {
     let mut state = focused_state();
     AlertPanel::update(&mut state, AlertPanelMessage::SelectNext);
     let output = AlertPanel::update(&mut state, AlertPanelMessage::SelectPrev);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(output, Some(AlertPanelOutput::MetricSelected("cpu".into())));
 }
 
@@ -381,7 +381,7 @@ fn test_select_next_at_row_end() {
     let mut state = focused_state();
     AlertPanel::update(&mut state, AlertPanelMessage::SelectNext);
     let output = AlertPanel::update(&mut state, AlertPanelMessage::SelectNext);
-    assert_eq!(state.selected(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
     assert_eq!(output, None);
 }
 
@@ -389,7 +389,7 @@ fn test_select_next_at_row_end() {
 fn test_select_prev_at_row_start() {
     let mut state = focused_state();
     let output = AlertPanel::update(&mut state, AlertPanelMessage::SelectPrev);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(output, None);
 }
 
@@ -397,7 +397,7 @@ fn test_select_prev_at_row_start() {
 fn test_select_down() {
     let mut state = focused_state();
     let output = AlertPanel::update(&mut state, AlertPanelMessage::SelectDown);
-    assert_eq!(state.selected(), Some(2));
+    assert_eq!(state.selected_index(), Some(2));
     assert_eq!(
         output,
         Some(AlertPanelOutput::MetricSelected("disk".into()))
@@ -409,7 +409,7 @@ fn test_select_up() {
     let mut state = focused_state();
     AlertPanel::update(&mut state, AlertPanelMessage::SelectDown);
     let output = AlertPanel::update(&mut state, AlertPanelMessage::SelectUp);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
     assert_eq!(output, Some(AlertPanelOutput::MetricSelected("cpu".into())));
 }
 
@@ -507,7 +507,7 @@ fn test_remove_last_metric_clears_selection() {
         AlertThreshold::new(70.0, 90.0),
     )]);
     AlertPanel::update(&mut state, AlertPanelMessage::RemoveMetric("cpu".into()));
-    assert_eq!(state.selected(), None);
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
@@ -518,10 +518,10 @@ fn test_remove_metric_adjusts_selection() {
     ]);
     // Select last item
     AlertPanel::update(&mut state, AlertPanelMessage::SelectNext);
-    assert_eq!(state.selected(), Some(1));
+    assert_eq!(state.selected_index(), Some(1));
     // Remove last item
     AlertPanel::update(&mut state, AlertPanelMessage::RemoveMetric("b".into()));
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -530,7 +530,7 @@ fn test_set_metrics_message() {
     let metrics = sample_metrics();
     AlertPanel::update(&mut state, AlertPanelMessage::SetMetrics(metrics));
     assert_eq!(state.metrics().len(), 4);
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
@@ -538,7 +538,7 @@ fn test_set_metrics_empty_message() {
     let mut state = AlertPanelState::new().with_metrics(sample_metrics());
     AlertPanel::update(&mut state, AlertPanelMessage::SetMetrics(vec![]));
     assert!(state.metrics().is_empty());
-    assert_eq!(state.selected(), None);
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]
@@ -753,7 +753,7 @@ fn test_render_with_history() {
 #[test]
 fn test_empty_metrics_selected_none() {
     let state = AlertPanelState::new();
-    assert_eq!(state.selected(), None);
+    assert_eq!(state.selected_index(), None);
     assert!(state.selected_metric().is_none());
 }
 
