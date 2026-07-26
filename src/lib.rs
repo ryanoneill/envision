@@ -475,7 +475,9 @@ pub mod prelude {
 
     // Testing essentials
     pub use crate::backend::{CaptureBackend, EnhancedCell};
-    pub use crate::harness::{AppHarness, MessageSender, TestHarness};
+    pub use crate::harness::{
+        AppHarness, Assertion, MessageSendError, MessageSender, Snapshot, TestHarness, TrySendError,
+    };
 
     // Layout and style re-exports (replacing `pub use ratatui::prelude::*`)
     pub use crate::layout::{

@@ -209,20 +209,6 @@ impl SelectState {
         self.selected_index
     }
 
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::{SelectState};
-    ///
-    /// let state = SelectState::with_selection(vec!["A", "B", "C"], 1);
-    /// assert_eq!(state.selected(), Some(1));
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Returns the selected option value as a string reference.
     ///
     /// # Examples
@@ -240,19 +226,22 @@ impl SelectState {
 
     /// Sets the selected option index.
     ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
+    ///
     /// # Examples
     ///
     /// ```
     /// use envision::prelude::*;
     ///
     /// let mut state = SelectState::new(vec!["A", "B", "C"]);
-    /// state.set_selected(Some(2));
+    /// state.set_selected_index(Some(2));
     /// assert_eq!(state.selected_item(), Some("C"));
     ///
-    /// state.set_selected(None);
+    /// state.set_selected_index(None);
     /// assert_eq!(state.selected_item(), None);
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         if let Some(idx) = index {
             if idx < self.options.len() {
                 self.selected_index = Some(idx);

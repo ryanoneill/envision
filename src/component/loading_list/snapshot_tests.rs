@@ -100,7 +100,7 @@ fn test_snapshot_mixed_states() {
     let mut state = LoadingListState::with_items(tasks, |t| t.name.clone());
     state.set_loading(0);
     state.set_error(2, "Timeout");
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     let (mut terminal, theme) = test_utils::setup_render(50, 10);
     terminal
         .draw(|frame| {

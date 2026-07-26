@@ -78,7 +78,7 @@ pub(super) fn render_vertical(
         };
         let box_style = Style::default().fg(box_color);
 
-        let selected_indicator = if i == state.selected() && focused {
+        let selected_indicator = if i == state.selected_index() && focused {
             Style::default().fg(box_color).add_modifier(Modifier::BOLD)
         } else {
             box_style
@@ -266,7 +266,7 @@ pub(super) fn render_horizontal(
         };
         let box_style = Style::default().fg(box_color);
 
-        let selected_indicator = if i == state.selected() && focused {
+        let selected_indicator = if i == state.selected_index() && focused {
             Style::default().fg(box_color).add_modifier(Modifier::BOLD)
         } else {
             box_style

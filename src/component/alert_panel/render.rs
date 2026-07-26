@@ -96,7 +96,7 @@ pub(super) fn render_alert_panel(
         for (col_idx, col_area) in col_areas.iter().enumerate() {
             let metric_idx = row_idx * cols + col_idx;
             if let Some(metric) = state.metrics().get(metric_idx) {
-                let is_selected = state.selected() == Some(metric_idx);
+                let is_selected = state.selected_index() == Some(metric_idx);
                 render_metric_card(
                     MetricCardInput {
                         metric,

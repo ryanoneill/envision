@@ -422,6 +422,10 @@ impl MultiProgressState {
 
     /// Returns the currently selected item index.
     ///
+    /// Renamed from `selected()` in v0.18.0 for consistency with the
+    /// `selected_index()` accessor used across every other component.
+    /// See MIGRATION.md.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -429,9 +433,9 @@ impl MultiProgressState {
     ///
     /// let mut state = MultiProgressState::new();
     /// state.add("t1", "Task 1");
-    /// assert_eq!(state.selected(), Some(0));
+    /// assert_eq!(state.selected_index(), Some(0));
     /// ```
-    pub fn selected(&self) -> Option<usize> {
+    pub fn selected_index(&self) -> Option<usize> {
         self.selected
     }
 
@@ -452,6 +456,9 @@ impl MultiProgressState {
 
     /// Sets the selected item index. Clamped to valid range.
     ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -460,17 +467,17 @@ impl MultiProgressState {
     /// let mut state = MultiProgressState::new();
     /// state.add("t1", "Task 1");
     /// state.add("t2", "Task 2");
-    /// state.set_selected(Some(1));
-    /// assert_eq!(state.selected(), Some(1));
+    /// state.set_selected_index(Some(1));
+    /// assert_eq!(state.selected_index(), Some(1));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         self.selected = index.map(|i| i.min(self.items.len().saturating_sub(1)));
     }
 
     /// Sets the viewport scroll offset.
     ///
     /// This controls which items are visible in the viewport, independent
-    /// of which item is selected. Use [`set_selected`](Self::set_selected)
+    /// of which item is selected. Use [`set_selected_index`](Self::set_selected_index)
     /// to change the highlighted item. Keyboard navigation (Up/Down)
     /// adjusts both selection and scroll together.
     ///

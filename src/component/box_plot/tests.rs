@@ -163,7 +163,7 @@ fn test_state_default() {
     assert_eq!(state.title(), None);
     assert!(state.show_outliers());
     assert_eq!(state.orientation(), &BoxPlotOrientation::Vertical);
-    assert_eq!(state.selected(), 0);
+    assert_eq!(state.selected_index(), 0);
 }
 
 #[test]
@@ -245,27 +245,27 @@ fn test_state_set_orientation() {
 }
 
 #[test]
-fn test_state_set_selected() {
+fn test_state_set_selected_index() {
     let mut state = BoxPlotState::new(vec![
         BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
     ]);
-    state.set_selected(1);
-    assert_eq!(state.selected(), 1);
+    state.set_selected_index(1);
+    assert_eq!(state.selected_index(), 1);
 }
 
 #[test]
-fn test_state_set_selected_clamps_to_last() {
+fn test_state_set_selected_index_clamps_to_last() {
     let mut state = BoxPlotState::new(vec![BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0)]);
-    state.set_selected(10);
-    assert_eq!(state.selected(), 0); // Only one item, clamped to index 0
+    state.set_selected_index(10);
+    assert_eq!(state.selected_index(), 0); // Only one item, clamped to index 0
 }
 
 #[test]
-fn test_state_set_selected_empty() {
+fn test_state_set_selected_index_empty() {
     let mut state = BoxPlotState::default();
-    state.set_selected(5); // No-op on empty datasets
-    assert_eq!(state.selected(), 0);
+    state.set_selected_index(5); // No-op on empty datasets
+    assert_eq!(state.selected_index(), 0);
 }
 
 #[test]
@@ -304,10 +304,10 @@ fn test_state_clear_datasets() {
         BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
     ]);
-    state.set_selected(1);
+    state.set_selected_index(1);
     state.clear_datasets();
     assert!(state.is_empty());
-    assert_eq!(state.selected(), 0);
+    assert_eq!(state.selected_index(), 0);
 }
 
 // =============================================================================
@@ -512,7 +512,7 @@ fn test_update_next_dataset() {
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
     ]);
     BoxPlot::update(&mut state, BoxPlotMessage::NextDataset);
-    assert_eq!(state.selected(), 1);
+    assert_eq!(state.selected_index(), 1);
 }
 
 #[test]
@@ -521,16 +521,16 @@ fn test_update_next_dataset_wraps() {
         BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
     ]);
-    state.set_selected(1);
+    state.set_selected_index(1);
     BoxPlot::update(&mut state, BoxPlotMessage::NextDataset);
-    assert_eq!(state.selected(), 0);
+    assert_eq!(state.selected_index(), 0);
 }
 
 #[test]
 fn test_update_next_dataset_empty() {
     let mut state = BoxPlotState::default();
     BoxPlot::update(&mut state, BoxPlotMessage::NextDataset);
-    assert_eq!(state.selected(), 0);
+    assert_eq!(state.selected_index(), 0);
 }
 
 #[test]
@@ -539,9 +539,9 @@ fn test_update_prev_dataset() {
         BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
     ]);
-    state.set_selected(1);
+    state.set_selected_index(1);
     BoxPlot::update(&mut state, BoxPlotMessage::PrevDataset);
-    assert_eq!(state.selected(), 0);
+    assert_eq!(state.selected_index(), 0);
 }
 
 #[test]
@@ -551,14 +551,14 @@ fn test_update_prev_dataset_wraps() {
         BoxPlotData::new("B", 6.0, 7.0, 8.0, 9.0, 10.0),
     ]);
     BoxPlot::update(&mut state, BoxPlotMessage::PrevDataset);
-    assert_eq!(state.selected(), 1);
+    assert_eq!(state.selected_index(), 1);
 }
 
 #[test]
 fn test_update_prev_dataset_empty() {
     let mut state = BoxPlotState::default();
     BoxPlot::update(&mut state, BoxPlotMessage::PrevDataset);
-    assert_eq!(state.selected(), 0);
+    assert_eq!(state.selected_index(), 0);
 }
 
 #[test]
@@ -574,7 +574,7 @@ fn test_update_toggle_outliers() {
 #[test]
 fn test_update_set_datasets() {
     let mut state = BoxPlotState::new(vec![BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0)]);
-    state.set_selected(0);
+    state.set_selected_index(0);
     BoxPlot::update(
         &mut state,
         BoxPlotMessage::SetDatasets(vec![
@@ -583,7 +583,7 @@ fn test_update_set_datasets() {
         ]),
     );
     assert_eq!(state.dataset_count(), 2);
-    assert_eq!(state.selected(), 0); // Reset on SetDatasets
+    assert_eq!(state.selected_index(), 0); // Reset on SetDatasets
     assert_eq!(state.datasets()[0].label(), "X");
 }
 
@@ -602,7 +602,7 @@ fn test_update_clear_datasets() {
     let mut state = BoxPlotState::new(vec![BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0)]);
     BoxPlot::update(&mut state, BoxPlotMessage::ClearDatasets);
     assert!(state.is_empty());
-    assert_eq!(state.selected(), 0);
+    assert_eq!(state.selected_index(), 0);
 }
 
 #[test]

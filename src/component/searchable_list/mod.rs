@@ -309,20 +309,6 @@ impl<T: Clone> SearchableListState<T> {
         self.selected
     }
 
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SearchableListState;
-    ///
-    /// let state = SearchableListState::new(vec!["A".to_string(), "B".to_string()]);
-    /// assert_eq!(state.selected(), state.selected_index());
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Returns a reference to the currently selected item.
     ///
     /// # Example
@@ -344,6 +330,9 @@ impl<T: Clone> SearchableListState<T> {
     /// The index is clamped to the valid range of filtered items. Has no effect
     /// on empty filtered lists.
     ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -354,11 +343,11 @@ impl<T: Clone> SearchableListState<T> {
     ///     "Banana".to_string(),
     ///     "Cherry".to_string(),
     /// ]);
-    /// state.set_selected(Some(2));
+    /// state.set_selected_index(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// assert_eq!(state.selected_item(), Some(&"Cherry".to_string()));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
                 if self.filtered_indices.is_empty() {

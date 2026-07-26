@@ -63,7 +63,7 @@ fn test_dispatch_event() {
     for i in 0..10 {
         state.add(format!("id{}", i), format!("Item {}", i));
     }
-    state.set_selected(Some(5));
+    state.set_selected_index(Some(5));
 
     // Down arrow dispatches ScrollDown
     MultiProgress::dispatch_event(
@@ -71,7 +71,7 @@ fn test_dispatch_event() {
         &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
-    assert_eq!(state.selected(), Some(6));
+    assert_eq!(state.selected_index(), Some(6));
 }
 
 // ========================================
@@ -84,7 +84,7 @@ fn test_instance_methods() {
     for i in 0..10 {
         state.add(format!("id{}", i), format!("Item {}", i));
     }
-    state.set_selected(Some(3));
+    state.set_selected_index(Some(3));
 
     // handle_event via associated function
     let msg = MultiProgress::handle_event(
@@ -96,7 +96,7 @@ fn test_instance_methods() {
 
     // instance update
     state.update(MultiProgressMessage::ScrollUp);
-    assert_eq!(state.selected(), Some(2));
+    assert_eq!(state.selected_index(), Some(2));
 
     // dispatch_event via associated function
     MultiProgress::dispatch_event(
@@ -104,7 +104,7 @@ fn test_instance_methods() {
         &Event::key(Key::Down),
         &EventContext::new().focused(true),
     );
-    assert_eq!(state.selected(), Some(3));
+    assert_eq!(state.selected_index(), Some(3));
 }
 
 // ========================================
@@ -150,14 +150,14 @@ fn test_dispatch_event_ignored_when_disabled() {
     for i in 0..10 {
         state.add(format!("id{}", i), format!("Item {}", i));
     }
-    state.set_selected(Some(5));
+    state.set_selected_index(Some(5));
 
     MultiProgress::dispatch_event(
         &mut state,
         &Event::key(Key::Down),
         &EventContext::new().focused(true).disabled(true),
     );
-    assert_eq!(state.selected(), Some(5)); // Should not change
+    assert_eq!(state.selected_index(), Some(5)); // Should not change
 }
 
 // ========================================
@@ -271,14 +271,14 @@ fn test_dispatch_event_scroll_up() {
     for i in 0..10 {
         state.add(format!("id{}", i), format!("Item {}", i));
     }
-    state.set_selected(Some(5));
+    state.set_selected_index(Some(5));
 
     MultiProgress::dispatch_event(
         &mut state,
         &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
-    assert_eq!(state.selected(), Some(4));
+    assert_eq!(state.selected_index(), Some(4));
 }
 
 #[test]
@@ -287,14 +287,14 @@ fn test_dispatch_event_scroll_up_vim_k() {
     for i in 0..10 {
         state.add(format!("id{}", i), format!("Item {}", i));
     }
-    state.set_selected(Some(5));
+    state.set_selected_index(Some(5));
 
     MultiProgress::dispatch_event(
         &mut state,
         &Event::char('k'),
         &EventContext::new().focused(true),
     );
-    assert_eq!(state.selected(), Some(4));
+    assert_eq!(state.selected_index(), Some(4));
 }
 
 #[test]
@@ -303,14 +303,14 @@ fn test_dispatch_event_scroll_down_vim_j() {
     for i in 0..10 {
         state.add(format!("id{}", i), format!("Item {}", i));
     }
-    state.set_selected(Some(3));
+    state.set_selected_index(Some(3));
 
     MultiProgress::dispatch_event(
         &mut state,
         &Event::char('j'),
         &EventContext::new().focused(true),
     );
-    assert_eq!(state.selected(), Some(4));
+    assert_eq!(state.selected_index(), Some(4));
 }
 
 #[test]
@@ -319,14 +319,14 @@ fn test_instance_dispatch_event_scroll_up() {
     for i in 0..10 {
         state.add(format!("id{}", i), format!("Item {}", i));
     }
-    state.set_selected(Some(5));
+    state.set_selected_index(Some(5));
 
     MultiProgress::dispatch_event(
         &mut state,
         &Event::key(Key::Up),
         &EventContext::new().focused(true),
     );
-    assert_eq!(state.selected(), Some(4));
+    assert_eq!(state.selected_index(), Some(4));
 }
 
 // ========================================
@@ -377,7 +377,7 @@ fn test_update_select_emits_selected_output() {
     state.add("id1", "Item 1");
     state.add("id2", "Item 2");
     state.add("id3", "Item 3");
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
 
     let output = MultiProgress::update(&mut state, MultiProgressMessage::Select);
     assert_eq!(output, Some(MultiProgressOutput::Selected(1)));
@@ -399,7 +399,7 @@ fn test_update_select_last_item() {
     state.add("id1", "Item 1");
     state.add("id2", "Item 2");
     state.add("id3", "Item 3");
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
 
     let output = MultiProgress::update(&mut state, MultiProgressMessage::Select);
     assert_eq!(output, Some(MultiProgressOutput::Selected(2)));
@@ -418,7 +418,7 @@ fn test_dispatch_event_enter_selects_item() {
     let mut state = MultiProgressState::new();
     state.add("id1", "Item 1");
     state.add("id2", "Item 2");
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
 
     let output = MultiProgress::dispatch_event(
         &mut state,

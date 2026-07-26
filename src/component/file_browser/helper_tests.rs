@@ -255,16 +255,15 @@ fn test_with_provider() {
 }
 
 #[test]
-fn test_selected_alias() {
+fn test_selected_index_defaults_to_first_entry() {
     let state = FileBrowserState::new("/", sample_entries());
-    assert_eq!(state.selected(), state.selected_index());
-    assert_eq!(state.selected(), Some(0));
+    assert_eq!(state.selected_index(), Some(0));
 }
 
 #[test]
-fn test_selected_alias_none_when_empty() {
+fn test_selected_index_none_when_empty() {
     let state = FileBrowserState::new("/empty", vec![]);
-    assert_eq!(state.selected(), None);
+    assert_eq!(state.selected_index(), None);
 }
 
 #[test]

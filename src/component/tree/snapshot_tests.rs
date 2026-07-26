@@ -66,7 +66,7 @@ fn test_snapshot_focused_selected() {
     root.add_child(TreeNode::new("Child 2", ()));
     root.add_child(TreeNode::new("Child 3", ()));
     let mut state = TreeState::new(vec![root]);
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
     let (mut terminal, theme) = test_utils::setup_render(40, 10);
     terminal
         .draw(|frame| {

@@ -343,26 +343,6 @@ impl AccordionState {
         }
     }
 
-    /// Returns the currently focused panel index as an `Option`.
-    ///
-    /// This is an alias for [`selected_index()`](Self::selected_index) that provides a
-    /// consistent accessor name across all selection-based components.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::AccordionState;
-    ///
-    /// let state = AccordionState::from_pairs(vec![("A", "1"), ("B", "2")]);
-    /// assert_eq!(state.selected(), Some(0));
-    ///
-    /// let empty = AccordionState::new(vec![]);
-    /// assert_eq!(empty.selected(), None);
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Returns the currently focused panel.
     ///
     /// This is an alias for [`focused_panel()`](Self::focused_panel) that provides a

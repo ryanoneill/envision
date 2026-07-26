@@ -87,7 +87,7 @@ pub use viewport::{BoundingBox, Viewport2D};
 ///
 /// assert_eq!(state.nodes().len(), 2);
 /// assert_eq!(state.edges().len(), 1);
-/// assert_eq!(state.selected(), None);
+/// assert_eq!(state.selected_index(), None);
 /// ```
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(

@@ -229,20 +229,6 @@ impl<T: Clone> SelectableListState<T> {
             .and_then(|i| self.filtered_indices.get(i).copied())
     }
 
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::SelectableListState;
-    ///
-    /// let state = SelectableListState::new(vec!["a", "b", "c"]);
-    /// assert_eq!(state.selected(), Some(0));
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Returns a reference to the currently selected item.
     ///
     /// # Examples
@@ -289,20 +275,23 @@ impl<T: Clone> SelectableListState<T> {
     /// `None` to clear the selection. Has no effect on empty lists when
     /// selecting.
     ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
+    ///
     /// # Examples
     ///
     /// ```
     /// use envision::prelude::*;
     ///
     /// let mut state = SelectableListState::new(vec!["a", "b", "c"]);
-    /// state.set_selected(Some(2));
+    /// state.set_selected_index(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// assert_eq!(state.selected_item(), Some(&"c"));
     ///
-    /// state.set_selected(None);
+    /// state.set_selected_index(None);
     /// assert_eq!(state.selected_index(), None);
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
                 if self.items.is_empty() {

@@ -236,6 +236,10 @@ impl BoxPlotState {
 
     /// Returns the currently selected dataset index.
     ///
+    /// Renamed from `selected()` in v0.18.0 for consistency with the
+    /// `selected_index()` accessor used across every other component.
+    /// See MIGRATION.md.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -244,13 +248,16 @@ impl BoxPlotState {
     /// let state = BoxPlotState::new(vec![
     ///     BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
     /// ]);
-    /// assert_eq!(state.selected(), 0);
+    /// assert_eq!(state.selected_index(), 0);
     /// ```
-    pub fn selected(&self) -> usize {
+    pub fn selected_index(&self) -> usize {
         self.selected
     }
 
     /// Sets the selected dataset index.
+    ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
     ///
     /// # Example
     ///
@@ -261,10 +268,10 @@ impl BoxPlotState {
     ///     BoxPlotData::new("A", 1.0, 2.0, 3.0, 4.0, 5.0),
     ///     BoxPlotData::new("B", 2.0, 3.0, 4.0, 5.0, 6.0),
     /// ]);
-    /// state.set_selected(1);
-    /// assert_eq!(state.selected(), 1);
+    /// state.set_selected_index(1);
+    /// assert_eq!(state.selected_index(), 1);
     /// ```
-    pub fn set_selected(&mut self, index: usize) {
+    pub fn set_selected_index(&mut self, index: usize) {
         if !self.datasets.is_empty() {
             self.selected = index.min(self.datasets.len() - 1);
         }

@@ -327,7 +327,7 @@ fn test_dispatch_event_up_navigation() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
 
-    state.set_selected(Some(2));
+    state.set_selected_index(Some(2));
 
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,
@@ -357,7 +357,7 @@ fn test_dispatch_event_enter_selects() {
     let items = make_items();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());
 
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
 
     let output = LoadingList::<TestItem>::dispatch_event(
         &mut state,

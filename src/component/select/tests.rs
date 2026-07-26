@@ -44,17 +44,17 @@ fn test_set_options_resets_invalid_selection() {
 }
 
 #[test]
-fn test_set_selected() {
+fn test_set_selected_index() {
     let mut state = SelectState::new(vec!["A", "B", "C"]);
-    state.set_selected(Some(1));
+    state.set_selected_index(Some(1));
     assert_eq!(state.selected_index(), Some(1));
     assert_eq!(state.selected_item(), Some("B"));
 }
 
 #[test]
-fn test_set_selected_out_of_bounds() {
+fn test_set_selected_index_out_of_bounds() {
     let mut state = SelectState::new(vec!["A", "B"]);
-    state.set_selected(Some(5));
+    state.set_selected_index(Some(5));
     assert_eq!(state.selected_index(), None);
 }
 

@@ -151,20 +151,6 @@ impl<T: Clone> TabsState<T> {
         self.selected
     }
 
-    /// Alias for [`selected_index()`](Self::selected_index).
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use envision::component::TabsState;
-    ///
-    /// let state = TabsState::with_selected(vec!["A", "B", "C"], 2);
-    /// assert_eq!(state.selected(), Some(2));
-    /// ```
-    pub fn selected(&self) -> Option<usize> {
-        self.selected_index()
-    }
-
     /// Returns the currently selected item.
     ///
     /// Returns `None` if there are no tabs or no selection.
@@ -186,16 +172,19 @@ impl<T: Clone> TabsState<T> {
     /// Pass `Some(index)` to select a tab (clamped to valid range), or
     /// `None` to clear the selection.
     ///
+    /// Renamed from `set_selected()` in v0.18.0 for symmetry with
+    /// `selected_index()`. See MIGRATION.md.
+    ///
     /// # Example
     ///
     /// ```rust
     /// use envision::component::TabsState;
     ///
     /// let mut state = TabsState::new(vec!["A", "B", "C"]);
-    /// state.set_selected(Some(2));
+    /// state.set_selected_index(Some(2));
     /// assert_eq!(state.selected_index(), Some(2));
     /// ```
-    pub fn set_selected(&mut self, index: Option<usize>) {
+    pub fn set_selected_index(&mut self, index: Option<usize>) {
         match index {
             Some(i) => {
                 if self.tabs.is_empty() {
