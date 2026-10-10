@@ -74,6 +74,11 @@ rand = "0.9"
 tokio-test = "0.4"
 trybuild = "1"
 
+[lints.rust]
+# `cargo tarpaulin` builds with `--cfg tarpaulin`; tests that cannot run under
+# coverage instrumentation are marked `#[cfg_attr(tarpaulin, ignore = "...")]`.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin)'] }
+
 [[example]]
 name = "alert_panel"
 required-features = ["compound-components"]
