@@ -643,7 +643,7 @@ fn test_message_clone() {
 #[test]
 fn test_message_debug() {
     let msg = StatusBarMessage::Clear;
-    let debug = format!("{:?}", msg);
+    let debug = format!("{msg:?}");
     assert!(debug.contains("Clear"));
 }
 

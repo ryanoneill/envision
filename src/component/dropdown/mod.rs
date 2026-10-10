@@ -194,10 +194,10 @@ impl DropdownState {
         self.options = options.into_iter().map(|s| s.into()).collect();
 
         // Reset selection if out of bounds
-        if let Some(idx) = self.selected_index {
-            if idx >= self.options.len() {
-                self.selected_index = None;
-            }
+        if let Some(idx) = self.selected_index
+            && idx >= self.options.len()
+        {
+            self.selected_index = None;
         }
 
         // Re-filter with current filter text
@@ -684,12 +684,12 @@ impl Component for Dropdown {
             // When open, show filter text with cursor indicator
             let arrow = "▲";
             if state.filter_text.is_empty() {
-                format!("█ {}", arrow)
+                format!("█ {arrow}")
             } else {
                 format!("{}█ {}", state.filter_text, arrow)
             }
         } else if let Some(value) = state.selected_item() {
-            format!("{} ▼", value)
+            format!("{value} ▼")
         } else {
             format!("{} ▼", state.placeholder)
         };
@@ -751,7 +751,7 @@ impl Component for Dropdown {
                             } else {
                                 "  "
                             };
-                            let text = format!("{}{}", prefix, opt);
+                            let text = format!("{prefix}{opt}");
                             let item_style = if i == state.highlighted_index {
                                 ctx.theme.selected_style(ctx.focused)
                             } else {

@@ -481,7 +481,7 @@ impl Component for Spinner {
         };
 
         let text = match &state.label {
-            Some(label) => format!("{} {}", spinner_char, label),
+            Some(label) => format!("{spinner_char} {label}"),
             None => spinner_char,
         };
 

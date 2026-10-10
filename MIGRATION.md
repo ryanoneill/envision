@@ -2,6 +2,8 @@
 
 ## v0.17.x to v0.18.0
 
+Minimum supported Rust version is now 1.88.
+
 ### Selection accessors completed on `selected_index()`
 
 Every component whose selection accessor was spelled `selected` now spells it `selected_index`; every corresponding mutator is `set_selected_index`.

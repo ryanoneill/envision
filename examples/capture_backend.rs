@@ -68,7 +68,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n=== Text Search ===\n");
     if terminal.backend().contains_text("CaptureBackend") {
         let positions = terminal.backend().find_text("CaptureBackend");
-        println!("Found 'CaptureBackend' at positions: {:?}", positions);
+        println!("Found 'CaptureBackend' at positions: {positions:?}");
     }
 
     // Show frame info

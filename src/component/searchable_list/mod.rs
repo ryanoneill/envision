@@ -626,7 +626,7 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
                 .iter()
                 .enumerate()
                 .filter_map(|(i, item)| {
-                    let text = format!("{}", item);
+                    let text = format!("{item}");
                     matcher(&self.filter_text, &text).map(|score| (i, score))
                 })
                 .collect();
@@ -639,7 +639,7 @@ impl<T: Clone + Display + 'static> SearchableListState<T> {
                 .iter()
                 .enumerate()
                 .filter(|(_, item)| {
-                    let text = format!("{}", item).to_lowercase();
+                    let text = format!("{item}").to_lowercase();
                     text.contains(&filter_lower)
                 })
                 .map(|(i, _)| i)

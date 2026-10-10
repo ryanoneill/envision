@@ -480,7 +480,7 @@ impl CaptureBackend {
     pub fn to_semantic_json(&self, registry: &crate::annotation::AnnotationRegistry) -> String {
         let output = self.to_annotated_output(registry);
         serde_json::to_string_pretty(&output)
-            .unwrap_or_else(|e| format!("{{\"error\": \"serialization failed: {}\"}}", e))
+            .unwrap_or_else(|e| format!("{{\"error\": \"serialization failed: {e}\"}}"))
     }
 
     /// Renders the buffer as JSON.

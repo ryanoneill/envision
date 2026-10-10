@@ -884,10 +884,10 @@ fn snapshot_styled_inline_full_dimension_combo() {
     fn has_sgr(ansi: &str, code: &str) -> bool {
         // Matches: \x1b[ ... code ... m where code is preceded by [ or ; and
         // followed by ; or m.
-        let pat_standalone = format!("\x1b[{}m", code);
-        let pat_prefix = format!("\x1b[{};", code);
-        let pat_mid = format!(";{};", code);
-        let pat_suffix = format!(";{}m", code);
+        let pat_standalone = format!("\x1b[{code}m");
+        let pat_prefix = format!("\x1b[{code};");
+        let pat_mid = format!(";{code};");
+        let pat_suffix = format!(";{code}m");
         ansi.contains(&pat_standalone)
             || ansi.contains(&pat_prefix)
             || ansi.contains(&pat_mid)

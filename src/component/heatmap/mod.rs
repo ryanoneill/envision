@@ -426,10 +426,10 @@ impl HeatmapState {
     /// assert_eq!(state.get(0, 1), Some(42.0));
     /// ```
     pub fn set(&mut self, row: usize, col: usize, value: f64) {
-        if let Some(r) = self.data.get_mut(row) {
-            if let Some(cell) = r.get_mut(col) {
-                *cell = value;
-            }
+        if let Some(r) = self.data.get_mut(row)
+            && let Some(cell) = r.get_mut(col)
+        {
+            *cell = value;
         }
     }
 
@@ -702,10 +702,10 @@ impl Component for Heatmap {
             Key::Right | Key::Char('l') => Some(HeatmapMessage::SelectRight),
             Key::Enter => {
                 // Confirm selection -- handled in update to produce CellSelected output
-                if let Some((row, col)) = state.selected() {
-                    if let Some(value) = state.get(row, col) {
-                        return Some(HeatmapMessage::SetCell { row, col, value });
-                    }
+                if let Some((row, col)) = state.selected()
+                    && let Some(value) = state.get(row, col)
+                {
+                    return Some(HeatmapMessage::SetCell { row, col, value });
                 }
                 None
             }

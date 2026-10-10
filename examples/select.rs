@@ -99,7 +99,7 @@ impl App for SelectApp {
         // Summary
         let color_val = state.color.selected_item().unwrap_or("none");
         let size_val = state.size.selected_item().unwrap_or("none");
-        let summary = format!("  Color: {}  Size: {}", color_val, size_val);
+        let summary = format!("  Color: {color_val}  Size: {size_val}");
         let summary_widget = ratatui::widgets::Paragraph::new(summary).block(
             ratatui::widgets::Block::default()
                 .borders(ratatui::widgets::Borders::ALL)

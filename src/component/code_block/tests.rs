@@ -642,7 +642,7 @@ fn test_view_disabled() {
 #[test]
 fn test_view_scrolled() {
     let code = (1..=20)
-        .map(|i| format!("line {}", i))
+        .map(|i| format!("line {i}"))
         .collect::<Vec<_>>()
         .join("\n");
     let mut state = CodeBlockState::new().with_code(&code);
@@ -905,14 +905,12 @@ fn test_horizontal_scroll_renders_shifted_content() {
     // the visible part should start with "aws_instance"
     assert!(
         output.contains("aws_instance"),
-        "Should see aws_instance after scrolling right 10 chars, got:\n{}",
-        output
+        "Should see aws_instance after scrolling right 10 chars, got:\n{output}"
     );
     // "resource" should NOT be visible
     assert!(
         !output.contains("resource"),
-        "resource should be scrolled off-screen, got:\n{}",
-        output
+        "resource should be scrolled off-screen, got:\n{output}"
     );
 }
 

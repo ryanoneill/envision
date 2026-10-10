@@ -82,7 +82,7 @@ pub(super) fn compute_segments(path: &str) -> Vec<String> {
 /// Formats a file size in human-readable form.
 pub(crate) fn format_size(size: u64) -> String {
     if size < 1024 {
-        format!("{}B", size)
+        format!("{size}B")
     } else if size < 1024 * 1024 {
         format!("{:.1}K", size as f64 / 1024.0)
     } else if size < 1024 * 1024 * 1024 {

@@ -5,20 +5,20 @@ use crate::input::{Event, Key};
 fn test_terminal_event_subscription_creation() {
     // Test that we can create a TerminalEventSubscription
     let _sub = TerminalEventSubscription::new(|event: Event| {
-        if let Some(key) = event.as_key() {
-            if key.code == Key::Char('q') {
-                return Some(TestMsg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && key.code == Key::Char('q')
+        {
+            return Some(TestMsg::Quit);
         }
         None
     });
 
     // Test the convenience function
     let _sub2 = terminal_events(|event: Event| {
-        if let Some(key) = event.as_key() {
-            if key.code == Key::Enter {
-                return Some(TestMsg::Tick);
-            }
+        if let Some(key) = event.as_key()
+            && key.code == Key::Enter
+        {
+            return Some(TestMsg::Tick);
         }
         None
     });
@@ -28,10 +28,10 @@ fn test_terminal_event_subscription_creation() {
 fn test_terminal_event_handler_filters_events() {
     // Create handler that only responds to 'q'
     let handler = |event: Event| -> Option<TestMsg> {
-        if let Some(key) = event.as_key() {
-            if key.code == Key::Char('q') {
-                return Some(TestMsg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && key.code == Key::Char('q')
+        {
+            return Some(TestMsg::Quit);
         }
         None
     };
@@ -50,10 +50,11 @@ fn test_terminal_event_handler_filters_events() {
 fn test_terminal_event_handler_with_modifiers() {
     // Create handler that responds to Ctrl+C
     let handler = |event: Event| -> Option<TestMsg> {
-        if let Some(key) = event.as_key() {
-            if key.code == Key::Char('c') && key.modifiers.ctrl() {
-                return Some(TestMsg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && key.code == Key::Char('c')
+            && key.modifiers.ctrl()
+        {
+            return Some(TestMsg::Quit);
         }
         None
     };

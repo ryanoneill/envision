@@ -283,10 +283,10 @@ impl MenuState {
         self.items.remove(index);
         if self.items.is_empty() {
             self.selected_index = None;
-        } else if let Some(selected) = self.selected_index {
-            if selected >= self.items.len() {
-                self.selected_index = Some(self.items.len() - 1);
-            }
+        } else if let Some(selected) = self.selected_index
+            && selected >= self.items.len()
+        {
+            self.selected_index = Some(self.items.len() - 1);
         }
     }
 

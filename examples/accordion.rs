@@ -93,8 +93,7 @@ impl App for AccordionApp {
             .filter(|p| p.is_expanded())
             .count();
         let status = format!(
-            " Panel: {} | Expanded: {} | Up/Down: navigate, Enter: toggle, q: quit",
-            panel_idx, expanded_count
+            " Panel: {panel_idx} | Expanded: {expanded_count} | Up/Down: navigate, Enter: toggle, q: quit"
         );
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
@@ -103,10 +102,10 @@ impl App for AccordionApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
         Accordion::handle_event(&state.accordion, event, &EventContext::new().focused(true))
             .map(Msg::Accordion)

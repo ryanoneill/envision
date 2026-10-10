@@ -32,12 +32,7 @@ impl App for ScrollableTextApp {
 
     fn init(_args: ()) -> (State, Command<Msg>) {
         let content = (1..=50)
-            .map(|i| {
-                format!(
-                    "Line {}: Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                    i
-                )
-            })
+            .map(|i| format!("Line {i}: Lorem ipsum dolor sit amet, consectetur adipiscing elit."))
             .collect::<Vec<_>>()
             .join("\n");
 
@@ -77,10 +72,10 @@ impl App for ScrollableTextApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
 
         ScrollableText::handle_event(&state.text, event, &EventContext::new().focused(true))

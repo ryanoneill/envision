@@ -91,7 +91,7 @@ impl App for SearchableListApp {
         let log_lines: Vec<Line> = state
             .selections
             .iter()
-            .map(|s| Line::from(format!("  Selected: {}", s)))
+            .map(|s| Line::from(format!("  Selected: {s}")))
             .collect();
         let log = ratatui::widgets::Paragraph::new(log_lines).block(
             ratatui::widgets::Block::default()
@@ -102,8 +102,7 @@ impl App for SearchableListApp {
 
         let filtered = state.list.filtered_items().len();
         let status = format!(
-            " {} items shown | Type to filter, Up/Down: navigate, Enter: select, q: quit",
-            filtered
+            " {filtered} items shown | Type to filter, Up/Down: navigate, Enter: select, q: quit"
         );
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
@@ -112,10 +111,10 @@ impl App for SearchableListApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if key.code == Key::Esc {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && key.code == Key::Esc
+        {
+            return Some(Msg::Quit);
         }
         SearchableList::handle_event(&state.list, event, &EventContext::new().focused(true))
             .map(Msg::List)

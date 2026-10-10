@@ -169,7 +169,7 @@ fn test_update_clear_empty() {
 fn test_scroll_down() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollDown);
@@ -180,7 +180,7 @@ fn test_scroll_down() {
 fn test_scroll_up() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
     state.set_selected_index(Some(5));
 
@@ -192,7 +192,7 @@ fn test_scroll_up() {
 fn test_scroll_to_top() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
     state.set_selected_index(Some(5));
 
@@ -204,7 +204,7 @@ fn test_scroll_to_top() {
 fn test_scroll_to_bottom() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollToBottom);

@@ -754,10 +754,10 @@ impl EventStreamState {
     /// Returns true if an event passes all active filters.
     fn matches_filters(&self, event: &StreamEvent) -> bool {
         // Level filter: event level must be >= minimum
-        if let Some(ref min_level) = self.level_filter {
-            if event.level < *min_level {
-                return false;
-            }
+        if let Some(ref min_level) = self.level_filter
+            && event.level < *min_level
+        {
+            return false;
         }
 
         // Source filter

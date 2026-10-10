@@ -518,7 +518,7 @@ fn test_frame_diff_display() {
 
     // Get diff
     let diff = backend.diff_from_previous().unwrap();
-    let display = format!("{}", diff);
+    let display = format!("{diff}");
 
     assert!(display.contains("Frame 0 → 1 changes:"));
     assert!(display.contains("[Cursor moved]"));
@@ -536,7 +536,7 @@ fn test_frame_diff_display_size_changed() {
         cursor_moved: false,
     };
 
-    let display = format!("{}", diff);
+    let display = format!("{diff}");
     assert!(display.contains("[Size changed]"));
 }
 
@@ -603,12 +603,10 @@ fn test_snapshot_with_truncated_cells() {
     // This simulates corrupted data or version mismatch scenarios
     let modifiers = r#"{"bold":false,"dim":false,"italic":false,"underlined":false,"slow_blink":false,"rapid_blink":false,"reversed":false,"hidden":false,"crossed_out":false}"#;
     let cell = format!(
-        r#"{{"symbol":" ","fg":"reset","bg":"reset","modifiers":{},"underline_color":null,"last_modified_frame":0,"skip":false}}"#,
-        modifiers
+        r#"{{"symbol":" ","fg":"reset","bg":"reset","modifiers":{modifiers},"underline_color":null,"last_modified_frame":0,"skip":false}}"#
     );
     let json = format!(
-        r#"{{"frame":0,"size":[5,3],"cursor":{{"position":[0,0],"visible":true}},"cells":[{},{},{},{},{}]}}"#,
-        cell, cell, cell, cell, cell
+        r#"{{"frame":0,"size":[5,3],"cursor":{{"position":[0,0],"visible":true}},"cells":[{cell},{cell},{cell},{cell},{cell}]}}"#
     );
 
     let modified_snapshot: FrameSnapshot = serde_json::from_str(&json).unwrap();

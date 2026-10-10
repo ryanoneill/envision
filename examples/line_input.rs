@@ -91,10 +91,10 @@ impl App for LineInputApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
 
         LineInput::handle_event(&state.input, event, &EventContext::new().focused(true))

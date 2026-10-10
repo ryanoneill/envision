@@ -232,7 +232,7 @@ fn test_navigate_up_outputs_selection_changed() {
 
 #[test]
 fn test_large_radio_group_navigation() {
-    let options: Vec<String> = (0..100).map(|i| format!("Option {}", i)).collect();
+    let options: Vec<String> = (0..100).map(|i| format!("Option {i}")).collect();
     let mut state = RadioGroupState::new(options);
 
     // Navigate to middle

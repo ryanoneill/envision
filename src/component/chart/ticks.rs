@@ -116,7 +116,7 @@ fn round_to_precision(value: f64, step: f64) -> f64 {
     }
 
     // Determine decimal places from step
-    let step_str = format!("{}", step);
+    let step_str = format!("{step}");
     let decimals = if let Some(dot_pos) = step_str.find('.') {
         let frac = &step_str[dot_pos + 1..];
         // Count significant digits (not just trailing zeros)
@@ -153,7 +153,7 @@ pub fn format_tick(value: f64, step: f64) -> String {
     }
 
     // Determine precision from step
-    let step_str = format!("{}", step);
+    let step_str = format!("{step}");
     let precision = if let Some(dot_pos) = step_str.find('.') {
         let frac = &step_str[dot_pos + 1..];
         frac.trim_end_matches('0').len()
@@ -164,7 +164,7 @@ pub fn format_tick(value: f64, step: f64) -> String {
     if precision == 0 {
         format!("{}", value as i64)
     } else {
-        let formatted = format!("{:.prec$}", value, prec = precision);
+        let formatted = format!("{value:.precision$}");
         // Trim trailing zeros
         if formatted.contains('.') {
             let trimmed = formatted.trim_end_matches('0');

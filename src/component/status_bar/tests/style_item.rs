@@ -391,7 +391,7 @@ fn test_content_clone() {
 #[test]
 fn test_content_debug() {
     let content = StatusBarItemContent::static_text("Test");
-    let debug = format!("{:?}", content);
+    let debug = format!("{content:?}");
     assert!(debug.contains("Static"));
 }
 
@@ -411,7 +411,7 @@ fn test_item_clone() {
 #[test]
 fn test_item_debug() {
     let item = StatusBarItem::new("Test");
-    let debug = format!("{:?}", item);
+    let debug = format!("{item:?}");
     assert!(debug.contains("StatusBarItem"));
 }
 

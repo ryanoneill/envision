@@ -111,10 +111,11 @@ impl envision::app::App for App {
     }
 
     fn handle_event_with_state(state: &AppState, event: &Event) -> Option<Msg> {
-        if let Event::Key(key) = event {
-            if key.code == Key::Char('q') && !state.diagram.is_searching() {
-                return Some(Msg::Quit);
-            }
+        if let Event::Key(key) = event
+            && key.code == Key::Char('q')
+            && !state.diagram.is_searching()
+        {
+            return Some(Msg::Quit);
         }
         let ctx = EventContext::new().focused(true);
         Diagram::handle_event(&state.diagram, event, &ctx).map(Msg::Diagram)

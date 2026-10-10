@@ -664,13 +664,11 @@ fn all_sort_variants_silent_noop_on_nonsortable_column() {
         let result = Table::<R>::update(&mut state, variant.clone());
         assert!(
             result.is_none(),
-            "{:?} on non-sortable col must return None",
-            variant,
+            "{variant:?} on non-sortable col must return None",
         );
         assert!(
             state.sort().is_none(),
-            "{:?} must not change sort state",
-            variant,
+            "{variant:?} must not change sort state",
         );
     }
 }

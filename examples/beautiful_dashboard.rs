@@ -232,7 +232,7 @@ impl App for DashboardApp {
                 Toast::update(&mut state.toasts, ToastMessage::Tick(100));
 
                 // Trigger alerts occasionally
-                if state.tick_count % 50 == 0 && state.tick_count > 0 {
+                if state.tick_count.is_multiple_of(50) && state.tick_count > 0 {
                     state.toasts.warning("High CPU usage detected");
                 }
             }
@@ -273,11 +273,11 @@ impl App for DashboardApp {
                 }
             }
             Msg::Select => {
-                if state.focus.is_focused(&Panel::Navigation) {
-                    if let Some(idx) = state.menu.selected_index() {
-                        let name = state.menu.items()[idx].label().to_string();
-                        state.toasts.info(format!("Navigated to {}", name));
-                    }
+                if state.focus.is_focused(&Panel::Navigation)
+                    && let Some(idx) = state.menu.selected_index()
+                {
+                    let name = state.menu.items()[idx].label().to_string();
+                    state.toasts.info(format!("Navigated to {name}"));
                 }
             }
             Msg::ChartNextSeries => {
@@ -362,7 +362,7 @@ fn sync_focus(_state: &mut State) {
 }
 
 fn render_title_bar(state: &State, frame: &mut Frame, area: Rect, theme: &Theme) {
-    let tick_indicator = if state.tick_count % 4 == 0 {
+    let tick_indicator = if state.tick_count.is_multiple_of(4) {
         "\u{25cf}"
     } else if state.tick_count % 4 == 1 {
         "\u{25cb}"

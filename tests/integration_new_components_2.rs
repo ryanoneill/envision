@@ -419,7 +419,7 @@ fn test_conversation_view_messages_and_collapse() {
     // Max messages cap
     let mut capped_state = ConversationViewState::new().with_max_messages(3);
     for i in 0..5 {
-        capped_state.push_user(format!("Message {}", i));
+        capped_state.push_user(format!("Message {i}"));
     }
     assert_eq!(capped_state.message_count(), 3);
 
@@ -746,7 +746,7 @@ where
             let area = Rect::default();
             render_fn(frame, area, &theme);
         })
-        .unwrap_or_else(|e| panic!("{} panicked on zero-size area: {}", name, e));
+        .unwrap_or_else(|e| panic!("{name} panicked on zero-size area: {e}"));
 }
 
 #[test]

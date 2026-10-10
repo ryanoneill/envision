@@ -130,15 +130,15 @@ impl App for NumberInputApp {
             || state.price.is_editing()
             || state.temperature.is_editing();
 
-        if let Some(key) = event.as_key() {
-            if !any_editing {
-                match key.code {
-                    Key::Char('q') | Key::Esc => return Some(Msg::Quit),
-                    Key::Tab if key.modifiers.shift() => return Some(Msg::FocusPrev),
+        if let Some(key) = event.as_key()
+            && !any_editing
+        {
+            match key.code {
+                Key::Char('q') | Key::Esc => return Some(Msg::Quit),
+                Key::Tab if key.modifiers.shift() => return Some(Msg::FocusPrev),
 
-                    Key::Tab => return Some(Msg::FocusNext),
-                    _ => {}
-                }
+                Key::Tab => return Some(Msg::FocusNext),
+                _ => {}
             }
         }
 

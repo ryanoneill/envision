@@ -638,12 +638,12 @@ impl FileBrowserState {
         if self.filtered_indices.is_empty() {
             self.selected_index = None;
             self.list_state.select(None);
-        } else if let Some(sel) = self.selected_index {
-            if sel >= self.filtered_indices.len() {
-                self.selected_index = Some(self.filtered_indices.len() - 1);
-                self.list_state
-                    .select(Some(self.filtered_indices.len() - 1));
-            }
+        } else if let Some(sel) = self.selected_index
+            && sel >= self.filtered_indices.len()
+        {
+            self.selected_index = Some(self.filtered_indices.len() - 1);
+            self.list_state
+                .select(Some(self.filtered_indices.len() - 1));
         }
     }
 

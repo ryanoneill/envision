@@ -594,7 +594,7 @@ fn test_filtered_count() {
 
 #[test]
 fn test_large_dropdown_navigation() {
-    let options: Vec<String> = (0..100).map(|i| format!("Option {}", i)).collect();
+    let options: Vec<String> = (0..100).map(|i| format!("Option {i}")).collect();
     let mut state = DropdownState::new(options);
     Dropdown::update(&mut state, DropdownMessage::Open);
 

@@ -82,7 +82,7 @@ fn render_streams(
                 .border_style(border_style);
 
             if let Some(title) = state.title() {
-                block = block.title(format!(" {} ", title));
+                block = block.title(format!(" {title} "));
             }
 
             let inner = block.inner(area);
@@ -114,7 +114,7 @@ fn render_streams(
             .border_style(outer_border_style);
 
         if let Some(title) = state.title() {
-            outer_block = outer_block.title(format!(" {} ", title));
+            outer_block = outer_block.title(format!(" {title} "));
         }
 
         let inner_area = outer_block.inner(area);
@@ -294,7 +294,7 @@ fn format_entry(entry: &super::CorrelationEntry, max_width: usize) -> String {
     // Format timestamp as HH:MM:SS
     let ts = format_timestamp(entry.timestamp);
     let level = entry.level.label();
-    let prefix = format!("{} {} ", ts, level);
+    let prefix = format!("{ts} {level} ");
 
     let remaining = max_width.saturating_sub(prefix.len());
     let msg = if entry.message.len() > remaining {
@@ -303,7 +303,7 @@ fn format_entry(entry: &super::CorrelationEntry, max_width: usize) -> String {
         &entry.message
     };
 
-    format!("{}{}", prefix, msg)
+    format!("{prefix}{msg}")
 }
 
 /// Formats a floating-point timestamp as HH:MM:SS.
@@ -312,7 +312,7 @@ fn format_timestamp(ts: f64) -> String {
     let hours = (total_secs / 3600) % 24;
     let minutes = (total_secs % 3600) / 60;
     let seconds = total_secs % 60;
-    format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+    format!("{hours:02}:{minutes:02}:{seconds:02}")
 }
 
 /// Renders the status bar at the bottom.
@@ -348,10 +348,7 @@ fn render_status_bar(
 
     let sync_label = if state.sync_scroll() { "ON" } else { "OFF" };
 
-    let status = format!(
-        " Active: {}{}  Sync: {}",
-        active_name, filter_text, sync_label
-    );
+    let status = format!(" Active: {active_name}{filter_text}  Sync: {sync_label}");
 
     let paragraph = Paragraph::new(status).style(style);
     frame.render_widget(paragraph, area);

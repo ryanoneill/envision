@@ -348,7 +348,7 @@ impl Component for Switch {
         };
 
         let text = if let Some(label) = &state.label {
-            format!("{}  {}", label, indicator)
+            format!("{label}  {indicator}")
         } else {
             indicator
         };

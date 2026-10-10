@@ -14,7 +14,7 @@ fn bench_backend_creation(c: &mut Criterion) {
     for (width, height) in [(80, 24), (120, 40), (200, 60), (320, 100)] {
         group.throughput(Throughput::Elements((width * height) as u64));
         group.bench_with_input(
-            BenchmarkId::new("new", format!("{}x{}", width, height)),
+            BenchmarkId::new("new", format!("{width}x{height}")),
             &(width, height),
             |b, &(w, h)| {
                 b.iter(|| CaptureBackend::new(black_box(w), black_box(h)));
@@ -22,7 +22,7 @@ fn bench_backend_creation(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::new("with_history", format!("{}x{}", width, height)),
+            BenchmarkId::new("with_history", format!("{width}x{height}")),
             &(width, height),
             |b, &(w, h)| {
                 b.iter(|| CaptureBackend::with_history(black_box(w), black_box(h), 10));
@@ -53,7 +53,7 @@ fn bench_draw(c: &mut Criterion) {
             .collect();
 
         group.bench_with_input(
-            BenchmarkId::new("full_screen", format!("{}x{}", width, height)),
+            BenchmarkId::new("full_screen", format!("{width}x{height}")),
             &cells,
             |b, cells| {
                 let mut backend = CaptureBackend::new(width, height);
@@ -67,7 +67,7 @@ fn bench_draw(c: &mut Criterion) {
         // Sparse update (10% of cells)
         let sparse_cells: Vec<_> = cells.iter().step_by(10).cloned().collect();
         group.bench_with_input(
-            BenchmarkId::new("sparse_10pct", format!("{}x{}", width, height)),
+            BenchmarkId::new("sparse_10pct", format!("{width}x{height}")),
             &sparse_cells,
             |b, cells| {
                 let mut backend = CaptureBackend::new(width, height);
@@ -177,7 +177,7 @@ fn bench_clear(c: &mut Criterion) {
         group.throughput(Throughput::Elements((width * height) as u64));
 
         group.bench_with_input(
-            BenchmarkId::new("full", format!("{}x{}", width, height)),
+            BenchmarkId::new("full", format!("{width}x{height}")),
             &(width, height),
             |b, &(w, h)| {
                 let mut backend = CaptureBackend::new(w, h);
@@ -256,7 +256,7 @@ fn bench_snapshot(c: &mut Criterion) {
         let backend = CaptureBackend::new(width, height);
 
         group.bench_with_input(
-            BenchmarkId::new("create", format!("{}x{}", width, height)),
+            BenchmarkId::new("create", format!("{width}x{height}")),
             &backend,
             |b, backend| {
                 b.iter(|| backend.snapshot());
@@ -291,7 +291,7 @@ fn bench_diff(c: &mut Criterion) {
         let _snapshot2 = backend2.snapshot();
 
         group.bench_with_input(
-            BenchmarkId::new("identical", format!("{}x{}", width, height)),
+            BenchmarkId::new("identical", format!("{width}x{height}")),
             &snapshot1,
             |b, s1| {
                 b.iter(|| backend1.diff_from(s1));
@@ -299,7 +299,7 @@ fn bench_diff(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::new("10pct_changed", format!("{}x{}", width, height)),
+            BenchmarkId::new("10pct_changed", format!("{width}x{height}")),
             &snapshot1,
             |b, s1| {
                 b.iter(|| backend2.diff_from(s1));
@@ -333,7 +333,7 @@ fn bench_output(c: &mut Criterion) {
         }
 
         group.bench_with_input(
-            BenchmarkId::new("to_string", format!("{}x{}", width, height)),
+            BenchmarkId::new("to_string", format!("{width}x{height}")),
             &backend,
             |b, backend| {
                 b.iter(|| backend.to_string());
@@ -341,7 +341,7 @@ fn bench_output(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::new("to_ansi", format!("{}x{}", width, height)),
+            BenchmarkId::new("to_ansi", format!("{width}x{height}")),
             &backend,
             |b, backend| {
                 b.iter(|| backend.to_ansi());
@@ -349,7 +349,7 @@ fn bench_output(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::new("to_json", format!("{}x{}", width, height)),
+            BenchmarkId::new("to_json", format!("{width}x{height}")),
             &backend,
             |b, backend| {
                 b.iter(|| backend.to_json());
@@ -357,7 +357,7 @@ fn bench_output(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::new("to_json_pretty", format!("{}x{}", width, height)),
+            BenchmarkId::new("to_json_pretty", format!("{width}x{height}")),
             &backend,
             |b, backend| {
                 b.iter(|| backend.to_json_pretty());

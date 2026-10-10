@@ -34,7 +34,7 @@ impl App for ScrollViewApp {
 
     fn init(_args: ()) -> (State, Command<Msg>) {
         let lines: Vec<String> = (1..=80)
-            .map(|i| format!("Item {:>3}: Configuration setting for module {}", i, i))
+            .map(|i| format!("Item {i:>3}: Configuration setting for module {i}"))
             .collect();
 
         let scroll_view = ScrollViewState::new()
@@ -91,10 +91,10 @@ impl App for ScrollViewApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
         ScrollView::handle_event(
             &state.scroll_view,

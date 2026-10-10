@@ -285,14 +285,14 @@ impl App for ChatClient {
 
             Msg::NewTab => {
                 let idx = state.conversations.len() + 1;
-                let name = format!("Chat {}", idx);
+                let name = format!("Chat {idx}");
                 let conv = Conversation::new(&name);
                 state.conversations.push(conv);
 
                 TabBar::update(
                     &mut state.tab_bar,
                     TabBarMessage::AddTab(
-                        Tab::new(format!("chat-{}", idx), &name).with_closable(true),
+                        Tab::new(format!("chat-{idx}"), &name).with_closable(true),
                     ),
                 );
                 state.active_tab = state.conversations.len() - 1;

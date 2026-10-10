@@ -98,7 +98,7 @@ impl App for TabBarApp {
             .selected_item()
             .map(|t| if t.modified() { " [modified]" } else { "" })
             .unwrap_or("");
-        let content_text = format!("  Editing: {}{}", tab_name, modified_str);
+        let content_text = format!("  Editing: {tab_name}{modified_str}");
         let content = ratatui::widgets::Paragraph::new(content_text).block(
             ratatui::widgets::Block::default()
                 .borders(ratatui::widgets::Borders::ALL)

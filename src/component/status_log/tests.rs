@@ -311,7 +311,7 @@ fn test_set_title() {
 fn test_scroll_offset() {
     let mut state = StatusLogState::new();
     for i in 0..10 {
-        state.info(format!("Message {}", i));
+        state.info(format!("Message {i}"));
     }
 
     assert_eq!(state.scroll_offset(), 0);
@@ -409,7 +409,7 @@ fn test_update_remove_nonexistent() {
 fn test_update_scroll_up() {
     let mut state = StatusLogState::new();
     for i in 0..5 {
-        state.info(format!("Msg {}", i));
+        state.info(format!("Msg {i}"));
     }
     state.set_scroll_offset(3);
 
@@ -430,7 +430,7 @@ fn test_update_scroll_up_at_top() {
 fn test_update_scroll_down() {
     let mut state = StatusLogState::new();
     for i in 0..5 {
-        state.info(format!("Msg {}", i));
+        state.info(format!("Msg {i}"));
     }
 
     StatusLog::update(&mut state, StatusLogMessage::ScrollDown);
@@ -452,7 +452,7 @@ fn test_update_scroll_down_at_bottom() {
 fn test_update_scroll_to_top() {
     let mut state = StatusLogState::new();
     for i in 0..5 {
-        state.info(format!("Msg {}", i));
+        state.info(format!("Msg {i}"));
     }
     state.set_scroll_offset(3);
 
@@ -464,7 +464,7 @@ fn test_update_scroll_to_top() {
 fn test_update_scroll_to_bottom() {
     let mut state = StatusLogState::new();
     for i in 0..5 {
-        state.info(format!("Msg {}", i));
+        state.info(format!("Msg {i}"));
     }
 
     StatusLog::update(&mut state, StatusLogMessage::ScrollToBottom);
@@ -671,7 +671,7 @@ fn test_handle_event_ignored_when_unfocused() {
 fn test_dispatch_event() {
     let mut state = StatusLogState::new();
     for i in 0..5 {
-        state.info(format!("Msg {}", i));
+        state.info(format!("Msg {i}"));
     }
     state.set_scroll_offset(3);
 
@@ -687,7 +687,7 @@ fn test_dispatch_event() {
 fn test_instance_methods() {
     let mut state = StatusLogState::new();
     for i in 0..5 {
-        state.info(format!("Msg {}", i));
+        state.info(format!("Msg {i}"));
     }
     state.set_scroll_offset(2);
 
@@ -760,7 +760,7 @@ fn test_handle_event_ignored_when_disabled() {
 fn test_dispatch_event_ignored_when_disabled() {
     let mut state = StatusLogState::new();
     for i in 0..5 {
-        state.info(format!("Msg {}", i));
+        state.info(format!("Msg {i}"));
     }
     state.set_scroll_offset(2);
 

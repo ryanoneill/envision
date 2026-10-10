@@ -65,7 +65,7 @@ fn bench_runtime_creation(c: &mut Criterion) {
 
     for (width, height) in [(80, 24), (120, 40), (200, 60)] {
         group.bench_with_input(
-            BenchmarkId::new("headless", format!("{}x{}", width, height)),
+            BenchmarkId::new("headless", format!("{width}x{height}")),
             &(width, height),
             |b, &(w, h)| {
                 b.iter(|| {
@@ -79,7 +79,7 @@ fn bench_runtime_creation(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::new("with_history", format!("{}x{}", width, height)),
+            BenchmarkId::new("with_history", format!("{width}x{height}")),
             &(width, height),
             |b, &(w, h)| {
                 let config = RuntimeConfig::new().with_history(10);
@@ -134,7 +134,7 @@ fn bench_runtime_tick(c: &mut Criterion) {
 
     for (width, height) in [(80, 24), (200, 60)] {
         group.bench_with_input(
-            BenchmarkId::new("tick", format!("{}x{}", width, height)),
+            BenchmarkId::new("tick", format!("{width}x{height}")),
             &(width, height),
             |b, &(w, h)| {
                 let mut runtime: Runtime<BenchApp, _> =
@@ -146,7 +146,7 @@ fn bench_runtime_tick(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::new("render_only", format!("{}x{}", width, height)),
+            BenchmarkId::new("render_only", format!("{width}x{height}")),
             &(width, height),
             |b, &(w, h)| {
                 let mut runtime: Runtime<BenchApp, _> =

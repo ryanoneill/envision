@@ -53,7 +53,7 @@ pub fn smart_format(value: f64, precision: Option<usize>) -> String {
 
     // Moderate decimal values
     let prec = precision.unwrap_or(2);
-    let formatted = format!("{:.prec$}", value);
+    let formatted = format!("{value:.prec$}");
     // Trim trailing zeros after decimal point
     let trimmed = trim_trailing_zeros(&formatted);
 
@@ -73,15 +73,15 @@ fn format_with_suffix(value: f64) -> String {
 
     if abs >= 1_000_000_000.0 {
         let scaled = abs / 1_000_000_000.0;
-        let formatted = format!("{}{:.1}B", sign, scaled);
+        let formatted = format!("{sign}{scaled:.1}B");
         trim_trailing_zeros_before_suffix(&formatted)
     } else if abs >= 1_000_000.0 {
         let scaled = abs / 1_000_000.0;
-        let formatted = format!("{}{:.1}M", sign, scaled);
+        let formatted = format!("{sign}{scaled:.1}M");
         trim_trailing_zeros_before_suffix(&formatted)
     } else {
         let scaled = abs / 1_000.0;
-        let formatted = format!("{}{:.1}K", sign, scaled);
+        let formatted = format!("{sign}{scaled:.1}K");
         trim_trailing_zeros_before_suffix(&formatted)
     }
 }
@@ -102,9 +102,9 @@ fn format_scientific(value: f64) -> String {
     let sign = if value < 0.0 { "-" } else { "" };
     let exp = abs.log10().floor() as i32;
     let mantissa = abs / 10f64.powi(exp);
-    let formatted = format!("{:.1}", mantissa);
+    let formatted = format!("{mantissa:.1}");
     let trimmed = trim_trailing_zeros(&formatted);
-    format!("{}{}e{}", sign, trimmed, exp)
+    format!("{sign}{trimmed}e{exp}")
 }
 
 /// Returns true if the value is effectively an integer.
@@ -140,7 +140,7 @@ fn trim_trailing_zeros_before_suffix(s: &str) -> String {
         if trimmed.ends_with('.') {
             format!("{}{}", &trimmed[..dot_pos], suffix)
         } else {
-            format!("{}{}", trimmed, suffix)
+            format!("{trimmed}{suffix}")
         }
     } else {
         s.to_string()

@@ -641,16 +641,16 @@ impl AlertPanelState {
 
         let mut parts = Vec::new();
         if ok > 0 {
-            parts.push(format!("{} OK", ok));
+            parts.push(format!("{ok} OK"));
         }
         if warn > 0 {
-            parts.push(format!("{} WARN", warn));
+            parts.push(format!("{warn} WARN"));
         }
         if crit > 0 {
-            parts.push(format!("{} CRIT", crit));
+            parts.push(format!("{crit} CRIT"));
         }
         if unknown > 0 {
-            parts.push(format!("{} UNKNOWN", unknown));
+            parts.push(format!("{unknown} UNKNOWN"));
         }
 
         if parts.is_empty() {
@@ -752,10 +752,10 @@ impl Component for AlertPanel {
                 state.metrics.retain(|m| m.id != id);
                 if state.metrics.is_empty() {
                     state.selected = None;
-                } else if let Some(sel) = state.selected {
-                    if sel >= state.metrics.len() {
-                        state.selected = Some(state.metrics.len() - 1);
-                    }
+                } else if let Some(sel) = state.selected
+                    && sel >= state.metrics.len()
+                {
+                    state.selected = Some(state.metrics.len() - 1);
                 }
                 None
             }

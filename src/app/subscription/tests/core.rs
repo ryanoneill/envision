@@ -244,8 +244,7 @@ async fn test_interval_immediate_subscription() {
     assert_eq!(
         elapsed,
         Duration::ZERO,
-        "First message should be immediate, took {:?}",
-        elapsed
+        "First message should be immediate, took {elapsed:?}"
     );
 
     cancel.cancel();

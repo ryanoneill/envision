@@ -34,7 +34,7 @@ pub(super) fn render_flame_graph(
 
         let mut block = Block::default().borders(Borders::ALL).style(border_style);
         if let Some(title) = &state.title {
-            block = block.title(format!(" {} ", title));
+            block = block.title(format!(" {title} "));
         }
 
         let inner = block.inner(area);

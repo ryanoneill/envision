@@ -154,20 +154,18 @@ fn test_handle_event_returns_none() {
 fn test_big_char_digits() {
     for digit in '0'..='9' {
         let rows = big_char(digit);
-        assert_eq!(rows.len(), 3, "digit {} should have 3 rows", digit);
+        assert_eq!(rows.len(), 3, "digit {digit} should have 3 rows");
         // All rows for a digit should have the same display width
         let width_0 = unicode_width::UnicodeWidthStr::width(rows[0]);
         let width_1 = unicode_width::UnicodeWidthStr::width(rows[1]);
         let width_2 = unicode_width::UnicodeWidthStr::width(rows[2]);
         assert_eq!(
             width_0, width_1,
-            "digit {} row 0 and 1 widths differ ({} vs {})",
-            digit, width_0, width_1
+            "digit {digit} row 0 and 1 widths differ ({width_0} vs {width_1})"
         );
         assert_eq!(
             width_1, width_2,
-            "digit {} row 1 and 2 widths differ ({} vs {})",
-            digit, width_1, width_2
+            "digit {digit} row 1 and 2 widths differ ({width_1} vs {width_2})"
         );
     }
 }
@@ -176,19 +174,17 @@ fn test_big_char_digits() {
 fn test_big_char_punctuation() {
     for ch in ['.', ':', '-', '/', '%', ' '] {
         let rows = big_char(ch);
-        assert_eq!(rows.len(), 3, "char '{}' should have 3 rows", ch);
+        assert_eq!(rows.len(), 3, "char '{ch}' should have 3 rows");
         let width_0 = unicode_width::UnicodeWidthStr::width(rows[0]);
         let width_1 = unicode_width::UnicodeWidthStr::width(rows[1]);
         let width_2 = unicode_width::UnicodeWidthStr::width(rows[2]);
         assert_eq!(
             width_0, width_1,
-            "char '{}' row 0 and 1 widths differ ({} vs {})",
-            ch, width_0, width_1
+            "char '{ch}' row 0 and 1 widths differ ({width_0} vs {width_1})"
         );
         assert_eq!(
             width_1, width_2,
-            "char '{}' row 1 and 2 widths differ ({} vs {})",
-            ch, width_1, width_2
+            "char '{ch}' row 1 and 2 widths differ ({width_1} vs {width_2})"
         );
     }
 }
@@ -197,19 +193,17 @@ fn test_big_char_punctuation() {
 fn test_big_char_uppercase_letters() {
     for ch in 'A'..='Z' {
         let rows = big_char(ch);
-        assert_eq!(rows.len(), 3, "letter {} should have 3 rows", ch);
+        assert_eq!(rows.len(), 3, "letter {ch} should have 3 rows");
         let width_0 = unicode_width::UnicodeWidthStr::width(rows[0]);
         let width_1 = unicode_width::UnicodeWidthStr::width(rows[1]);
         let width_2 = unicode_width::UnicodeWidthStr::width(rows[2]);
         assert_eq!(
             width_0, width_1,
-            "letter {} row 0 and 1 widths differ ({} vs {})",
-            ch, width_0, width_1
+            "letter {ch} row 0 and 1 widths differ ({width_0} vs {width_1})"
         );
         assert_eq!(
             width_1, width_2,
-            "letter {} row 1 and 2 widths differ ({} vs {})",
-            ch, width_1, width_2
+            "letter {ch} row 1 and 2 widths differ ({width_1} vs {width_2})"
         );
     }
 }
@@ -247,7 +241,7 @@ fn test_big_char_specific_digit_one() {
 fn test_big_char_width_digits() {
     for digit in '0'..='9' {
         let width = big_char_width(digit);
-        assert_eq!(width, 3, "digit {} should have width 3", digit);
+        assert_eq!(width, 3, "digit {digit} should have width 3");
     }
 }
 

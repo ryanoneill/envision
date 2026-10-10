@@ -427,7 +427,7 @@ fn test_add_with_string_types() {
 fn test_add_multiple_items() {
     let mut state = MultiProgressState::new();
     for i in 0..20 {
-        assert!(state.add(format!("id{}", i), format!("Item {}", i)));
+        assert!(state.add(format!("id{i}"), format!("Item {i}")));
     }
     assert_eq!(state.len(), 20);
 }
@@ -440,7 +440,7 @@ fn test_add_multiple_items() {
 fn test_clear_resets_scroll_offset() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
     state.set_scroll_offset(5);
     assert_eq!(state.scroll_offset(), 5);
@@ -470,7 +470,7 @@ fn test_state_clone() {
 #[test]
 fn test_state_debug() {
     let state = MultiProgressState::new().with_title("Test");
-    let debug_str = format!("{:?}", state);
+    let debug_str = format!("{state:?}");
     assert!(debug_str.contains("Test"));
 }
 

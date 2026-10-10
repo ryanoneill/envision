@@ -65,7 +65,7 @@ pub(super) fn render_command_palette(
         .borders(Borders::ALL)
         .border_style(border_style)
         .title(Span::styled(
-            format!(" {} ", title_text),
+            format!(" {title_text} "),
             theme.normal_style(),
         ));
 

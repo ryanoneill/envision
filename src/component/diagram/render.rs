@@ -75,7 +75,7 @@ pub(super) fn render_diagram(
                 state
                     .title
                     .as_deref()
-                    .map(|t| format!(" {} ", t))
+                    .map(|t| format!(" {t} "))
                     .unwrap_or_default(),
             );
 
@@ -137,10 +137,10 @@ pub(super) fn render_diagram(
     }
 
     // Info bar at bottom showing selected node details
-    if let Some(sel_idx) = state.selected {
-        if let Some(node) = state.nodes.get(sel_idx) {
-            render_info_bar(ctx.frame, node, inner, ctx.disabled, ctx.theme);
-        }
+    if let Some(sel_idx) = state.selected
+        && let Some(node) = state.nodes.get(sel_idx)
+    {
+        render_info_bar(ctx.frame, node, inner, ctx.disabled, ctx.theme);
     }
 }
 
@@ -211,10 +211,8 @@ fn render_edges(
         }
 
         // Edge label at midpoint
-        if show_labels {
-            if let Some(label) = edge.and_then(|e| e.label()) {
-                render_edge_label(buf, path, params, label, style);
-            }
+        if show_labels && let Some(label) = edge.and_then(|e| e.label()) {
+            render_edge_label(buf, path, params, label, style);
         }
     }
 }
@@ -264,7 +262,7 @@ fn draw_line_segment(
                 if dir_right { "\u{25b6}" } else { "\u{25c0}" } // ▶ or ◀
             } else if ls.is_dotted {
                 "\u{00b7}" // ·
-            } else if ls.is_dashed && (sx % 3 == 0) {
+            } else if ls.is_dashed && sx.is_multiple_of(3) {
                 " "
             } else {
                 "\u{2500}" // ─
@@ -289,7 +287,7 @@ fn draw_line_segment(
                 if dir_down { "\u{25bc}" } else { "\u{25b2}" } // ▼ or ▲
             } else if ls.is_dotted {
                 "\u{00b7}" // ·
-            } else if ls.is_dashed && (sy % 3 == 0) {
+            } else if ls.is_dashed && sy.is_multiple_of(3) {
                 " "
             } else {
                 "\u{2502}" // │
@@ -338,11 +336,14 @@ fn render_edge_label(
 
 /// Writes a single character to the buffer at (x, y) if within bounds.
 fn set_cell(buf: &mut Buffer, x: u16, y: u16, ch: &str, style: Style, area: Rect) {
-    if x >= area.x && x < area.right() && y >= area.y && y < area.bottom() {
-        if let Some(cell) = buf.cell_mut(Position::new(x, y)) {
-            cell.set_symbol(ch);
-            cell.set_style(style);
-        }
+    if x >= area.x
+        && x < area.right()
+        && y >= area.y
+        && y < area.bottom()
+        && let Some(cell) = buf.cell_mut(Position::new(x, y))
+    {
+        cell.set_symbol(ch);
+        cell.set_style(style);
     }
 }
 

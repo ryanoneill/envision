@@ -60,7 +60,7 @@ impl App for FormApp {
                     state.submitted = true;
                     let summary_parts: Vec<String> = values
                         .iter()
-                        .map(|(id, val)| format!("  {}: {:?}", id, val))
+                        .map(|(id, val)| format!("  {id}: {val:?}"))
                         .collect();
                     state.submission_summary = Some(summary_parts.join("\n"));
                 }
@@ -81,7 +81,7 @@ impl App for FormApp {
                 .submission_summary
                 .as_deref()
                 .unwrap_or("(empty submission)");
-            let content = format!("Form submitted successfully!\n\n{}", text);
+            let content = format!("Form submitted successfully!\n\n{text}");
             let widget = ratatui::widgets::Paragraph::new(content).block(
                 ratatui::widgets::Block::default()
                     .borders(ratatui::widgets::Borders::ALL)
@@ -104,10 +104,10 @@ impl App for FormApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if key.code == Key::Esc {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && key.code == Key::Esc
+        {
+            return Some(Msg::Quit);
         }
         Form::handle_event(&state.form, event, &EventContext::new().focused(true)).map(Msg::Form)
     }

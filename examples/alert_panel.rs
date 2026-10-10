@@ -80,10 +80,8 @@ impl App for AlertPanelApp {
             .selected_metric()
             .map(|m| m.name().to_string())
             .unwrap_or_else(|| "None".into());
-        let status = format!(
-            " Selected: {} | Arrow keys: navigate, Enter: select, q: quit",
-            selected
-        );
+        let status =
+            format!(" Selected: {selected} | Arrow keys: navigate, Enter: select, q: quit");
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[1],
@@ -91,10 +89,10 @@ impl App for AlertPanelApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
         AlertPanel::handle_event(&state.panel, event, &EventContext::new().focused(true))
             .map(Msg::Panel)

@@ -644,7 +644,7 @@ fn test_set_rows_preserves_valid_selection_after_navigation() {
 #[test]
 fn test_set_rows_clamps_selection_after_navigation() {
     let rows: Vec<TestRow> = (0..10)
-        .map(|i| TestRow::new(&format!("Row {}", i), &format!("{}", i)))
+        .map(|i| TestRow::new(&format!("Row {i}"), &format!("{i}")))
         .collect();
     let mut state = TableState::new(rows, test_columns());
 
@@ -705,7 +705,7 @@ fn test_large_table_navigation() {
         Column::new("Name", Constraint::Length(10)).sortable(),
     ];
     let rows: Vec<TestRow> = (0..1000)
-        .map(|i| TestRow::new(&format!("{}", i), &format!("Row {}", i)))
+        .map(|i| TestRow::new(&format!("{i}"), &format!("Row {i}")))
         .collect();
     let mut state = TableState::new(rows, columns);
 
@@ -930,7 +930,7 @@ fn new_table_message_variants_derive_traits() {
     let m = TableMessage::SortAsc(0);
     let m2 = m.clone();
     assert_eq!(m, m2);
-    let _ = format!("{:?}", m); // Debug
+    let _ = format!("{m:?}"); // Debug
 }
 
 #[test]

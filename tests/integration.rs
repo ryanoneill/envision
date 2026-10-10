@@ -130,7 +130,7 @@ fn test_input_field_type_and_submit() {
 
 #[test]
 fn test_selectable_list_navigation_200_items() {
-    let items: Vec<String> = (0..200).map(|i| format!("Item {}", i)).collect();
+    let items: Vec<String> = (0..200).map(|i| format!("Item {i}")).collect();
     let mut state = SelectableListState::new(items);
 
     // Should start at index 0
@@ -378,7 +378,7 @@ fn test_form_workflow_with_focus_manager() {
 
 #[test]
 fn test_selectable_list_stress_10000_items() {
-    let items: Vec<String> = (0..10_000).map(|i| format!("Item {}", i)).collect();
+    let items: Vec<String> = (0..10_000).map(|i| format!("Item {i}")).collect();
     let mut state = SelectableListState::new(items);
 
     // Should start at index 0
@@ -427,7 +427,7 @@ where
             let area = Rect::default(); // 0x0 area
             render_fn(frame, area, &theme);
         })
-        .unwrap_or_else(|e| panic!("{} panicked on zero-size area: {}", name, e));
+        .unwrap_or_else(|e| panic!("{name} panicked on zero-size area: {e}"));
 }
 
 #[derive(Clone)]

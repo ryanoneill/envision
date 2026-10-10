@@ -273,6 +273,6 @@ fn test_clone() {
 #[test]
 fn test_debug() {
     let grid = ChartGrid::new(1, 1);
-    let debug = format!("{:?}", grid);
+    let debug = format!("{grid:?}");
     assert!(debug.contains("ChartGrid"));
 }
