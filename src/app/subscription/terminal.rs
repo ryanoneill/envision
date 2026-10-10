@@ -73,9 +73,10 @@ where
                         match maybe_event {
                             Some(Ok(ct_event)) => {
                                 if let Some(event) = crate::input::convert::from_crossterm_event(ct_event)
-                                    && let Some(msg) = (handler)(event) {
-                                        yield msg;
-                                    }
+                                    && let Some(msg) = (handler)(event)
+                                {
+                                    yield msg;
+                                }
                             }
                             Some(Err(_)) => break,
                             None => break,
