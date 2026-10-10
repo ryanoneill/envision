@@ -121,7 +121,7 @@ async fn test_runtime_multiple_errors() {
 
     // Send multiple errors
     for i in 0..3 {
-        let err: BoxedError = Box::new(std::io::Error::other(format!("error {}", i)));
+        let err: BoxedError = Box::new(std::io::Error::other(format!("error {i}")));
         error_tx.send(err).await.unwrap();
     }
 

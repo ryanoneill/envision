@@ -163,10 +163,10 @@ impl<T: Clone> RadioGroupState<T> {
 
         if self.options.is_empty() {
             self.selected = None;
-        } else if let Some(idx) = self.selected {
-            if idx >= self.options.len() {
-                self.selected = Some(self.options.len() - 1);
-            }
+        } else if let Some(idx) = self.selected
+            && idx >= self.options.len()
+        {
+            self.selected = Some(self.options.len() - 1);
         }
     }
 
@@ -387,7 +387,7 @@ impl<T: Clone + std::fmt::Display + 'static> Component for RadioGroup<T> {
             .map(|(i, option)| {
                 let is_selected = state.selected == Some(i);
                 let indicator = if is_selected { "(•)" } else { "( )" };
-                let text = format!("{} {}", indicator, option);
+                let text = format!("{indicator} {option}");
 
                 let style = if ctx.disabled {
                     ctx.theme.disabled_style()

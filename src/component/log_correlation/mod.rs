@@ -245,10 +245,10 @@ impl LogStream {
     /// Returns true if an entry passes both the text and level filters.
     fn passes_filter(&self, entry: &CorrelationEntry) -> bool {
         // Level filter
-        if let Some(ref min_level) = self.min_level {
-            if entry.level < *min_level {
-                return false;
-            }
+        if let Some(ref min_level) = self.min_level
+            && entry.level < *min_level
+        {
+            return false;
         }
 
         // Text filter (case-insensitive)

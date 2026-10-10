@@ -176,12 +176,12 @@ impl EnvisionError {
 impl fmt::Display for EnvisionError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            EnvisionError::Io(err) => write!(f, "I/O error: {}", err),
+            EnvisionError::Io(err) => write!(f, "I/O error: {err}"),
             EnvisionError::Render { component, detail } => {
-                write!(f, "render error: component `{}`: {}", component, detail)
+                write!(f, "render error: component `{component}`: {detail}")
             }
             EnvisionError::Config { field, reason } => {
-                write!(f, "configuration error: field `{}`: {}", field, reason)
+                write!(f, "configuration error: field `{field}`: {reason}")
             }
             EnvisionError::Subscription {
                 subscription_type,
@@ -189,11 +189,10 @@ impl fmt::Display for EnvisionError {
             } => {
                 write!(
                     f,
-                    "subscription error: type `{}`: {}",
-                    subscription_type, detail
+                    "subscription error: type `{subscription_type}`: {detail}"
                 )
             }
-            EnvisionError::Other(err) => write!(f, "other error: {}", err),
+            EnvisionError::Other(err) => write!(f, "other error: {err}"),
         }
     }
 }
@@ -306,7 +305,7 @@ mod tests {
     #[test]
     fn debug_format() {
         let err = EnvisionError::config("key", "test");
-        let debug = format!("{:?}", err);
+        let debug = format!("{err:?}");
         assert!(debug.contains("Config"));
         assert!(debug.contains("test"));
     }

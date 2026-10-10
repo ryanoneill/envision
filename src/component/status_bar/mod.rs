@@ -773,48 +773,47 @@ impl Component for StatusBar {
             }
 
             StatusBarMessage::StartTimer { section, index } => {
-                if let Some(item) = state.get_item_mut(section, index) {
-                    if let StatusBarItemContent::ElapsedTime { running, .. } = &mut item.content {
-                        *running = true;
-                    }
+                if let Some(item) = state.get_item_mut(section, index)
+                    && let StatusBarItemContent::ElapsedTime { running, .. } = &mut item.content
+                {
+                    *running = true;
                 }
             }
 
             StatusBarMessage::StopTimer { section, index } => {
-                if let Some(item) = state.get_item_mut(section, index) {
-                    if let StatusBarItemContent::ElapsedTime { running, .. } = &mut item.content {
-                        *running = false;
-                    }
+                if let Some(item) = state.get_item_mut(section, index)
+                    && let StatusBarItemContent::ElapsedTime { running, .. } = &mut item.content
+                {
+                    *running = false;
                 }
             }
 
             StatusBarMessage::ResetTimer { section, index } => {
-                if let Some(item) = state.get_item_mut(section, index) {
-                    if let StatusBarItemContent::ElapsedTime {
+                if let Some(item) = state.get_item_mut(section, index)
+                    && let StatusBarItemContent::ElapsedTime {
                         elapsed_ms,
                         running,
                         ..
                     } = &mut item.content
-                    {
-                        *elapsed_ms = 0;
-                        *running = false;
-                    }
+                {
+                    *elapsed_ms = 0;
+                    *running = false;
                 }
             }
 
             StatusBarMessage::IncrementCounter { section, index } => {
-                if let Some(item) = state.get_item_mut(section, index) {
-                    if let StatusBarItemContent::Counter { value, .. } = &mut item.content {
-                        *value = value.saturating_add(1);
-                    }
+                if let Some(item) = state.get_item_mut(section, index)
+                    && let StatusBarItemContent::Counter { value, .. } = &mut item.content
+                {
+                    *value = value.saturating_add(1);
                 }
             }
 
             StatusBarMessage::DecrementCounter { section, index } => {
-                if let Some(item) = state.get_item_mut(section, index) {
-                    if let StatusBarItemContent::Counter { value, .. } = &mut item.content {
-                        *value = value.saturating_sub(1);
-                    }
+                if let Some(item) = state.get_item_mut(section, index)
+                    && let StatusBarItemContent::Counter { value, .. } = &mut item.content
+                {
+                    *value = value.saturating_sub(1);
                 }
             }
 
@@ -823,35 +822,35 @@ impl Component for StatusBar {
                 index,
                 value: new_value,
             } => {
-                if let Some(item) = state.get_item_mut(section, index) {
-                    if let StatusBarItemContent::Counter { value, .. } = &mut item.content {
-                        *value = new_value;
-                    }
+                if let Some(item) = state.get_item_mut(section, index)
+                    && let StatusBarItemContent::Counter { value, .. } = &mut item.content
+                {
+                    *value = new_value;
                 }
             }
 
             StatusBarMessage::ActivateHeartbeat { section, index } => {
-                if let Some(item) = state.get_item_mut(section, index) {
-                    if let StatusBarItemContent::Heartbeat { active, .. } = &mut item.content {
-                        *active = true;
-                    }
+                if let Some(item) = state.get_item_mut(section, index)
+                    && let StatusBarItemContent::Heartbeat { active, .. } = &mut item.content
+                {
+                    *active = true;
                 }
             }
 
             StatusBarMessage::DeactivateHeartbeat { section, index } => {
-                if let Some(item) = state.get_item_mut(section, index) {
-                    if let StatusBarItemContent::Heartbeat { active, .. } = &mut item.content {
-                        *active = false;
-                    }
+                if let Some(item) = state.get_item_mut(section, index)
+                    && let StatusBarItemContent::Heartbeat { active, .. } = &mut item.content
+                {
+                    *active = false;
                 }
             }
 
             StatusBarMessage::PulseHeartbeat { section, index } => {
-                if let Some(item) = state.get_item_mut(section, index) {
-                    if let StatusBarItemContent::Heartbeat { active, frame } = &mut item.content {
-                        *active = true;
-                        *frame = (*frame + 1) % 4;
-                    }
+                if let Some(item) = state.get_item_mut(section, index)
+                    && let StatusBarItemContent::Heartbeat { active, frame } = &mut item.content
+                {
+                    *active = true;
+                    *frame = (*frame + 1) % 4;
                 }
             }
         }

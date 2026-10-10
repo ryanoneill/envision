@@ -88,8 +88,7 @@ impl App for KeyHintsApp {
             AppMode::Edit => "EDIT",
         };
         let content = format!(
-            "Current mode: {}\n\nPress 'e' to switch to edit mode.\nPress Esc to return to normal mode.\nPress 'q' to quit.",
-            mode_label
+            "Current mode: {mode_label}\n\nPress 'e' to switch to edit mode.\nPress Esc to return to normal mode.\nPress 'q' to quit."
         );
         let widget = ratatui::widgets::Paragraph::new(content).block(
             ratatui::widgets::Block::default()

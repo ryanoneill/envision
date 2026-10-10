@@ -134,16 +134,16 @@ fn parse_hunk_header(header: &str) -> (usize, usize) {
         let parts: Vec<&str> = rest.splitn(3, ' ').collect();
         if parts.len() >= 2 {
             // Parse old range: -start[,count]
-            if let Some(old_range) = parts[0].strip_prefix('-') {
-                if let Some(start_str) = old_range.split(',').next() {
-                    old_start = start_str.parse().unwrap_or(1);
-                }
+            if let Some(old_range) = parts[0].strip_prefix('-')
+                && let Some(start_str) = old_range.split(',').next()
+            {
+                old_start = start_str.parse().unwrap_or(1);
             }
             // Parse new range: +start[,count]
-            if let Some(new_range) = parts[1].strip_prefix('+') {
-                if let Some(start_str) = new_range.split(',').next() {
-                    new_start = start_str.parse().unwrap_or(1);
-                }
+            if let Some(new_range) = parts[1].strip_prefix('+')
+                && let Some(start_str) = new_range.split(',').next()
+            {
+                new_start = start_str.parse().unwrap_or(1);
             }
         }
     }
@@ -346,10 +346,7 @@ fn build_hunk_from_group(
         }
     }
 
-    let header = format!(
-        "@@ -{},{} +{},{} @@",
-        old_start, old_count, new_start, new_count
-    );
+    let header = format!("@@ -{old_start},{old_count} +{new_start},{new_count} @@");
 
     // Prepend the header line
     let mut all_lines = vec![DiffLine {

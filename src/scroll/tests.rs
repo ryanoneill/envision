@@ -580,7 +580,7 @@ fn test_clone_and_eq() {
 #[test]
 fn test_debug_format() {
     let scroll = ScrollState::new(100);
-    let debug = format!("{:?}", scroll);
+    let debug = format!("{scroll:?}");
     assert!(debug.contains("ScrollState"));
     assert!(debug.contains("100"));
 }

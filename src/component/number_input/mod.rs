@@ -458,15 +458,15 @@ impl NumberInputState {
     /// Clamps a value to the configured bounds.
     fn clamp(&self, value: f64) -> f64 {
         let mut v = value;
-        if let Some(min) = self.min {
-            if v < min {
-                v = min;
-            }
+        if let Some(min) = self.min
+            && v < min
+        {
+            v = min;
         }
-        if let Some(max) = self.max {
-            if v > max {
-                v = max;
-            }
+        if let Some(max) = self.max
+            && v > max
+        {
+            v = max;
         }
         v
     }

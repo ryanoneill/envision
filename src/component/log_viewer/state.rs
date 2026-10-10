@@ -940,15 +940,14 @@ impl LogViewerState {
     /// fails, falls back to literal substring search.
     fn matches_search(&self, message: &str) -> bool {
         #[cfg(feature = "regex")]
-        if self.use_regex {
-            if let Ok(re) = regex::RegexBuilder::new(&self.search_text)
+        if self.use_regex
+            && let Ok(re) = regex::RegexBuilder::new(&self.search_text)
                 .case_insensitive(true)
                 .build()
-            {
-                return re.is_match(message);
-            }
-            // Fall through to literal search on invalid regex
+        {
+            return re.is_match(message);
         }
+        // Fall through to literal search on invalid regex
 
         // Default: case-insensitive substring search
         let search_lower = self.search_text.to_lowercase();

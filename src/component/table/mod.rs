@@ -285,28 +285,28 @@ impl<T: TableRow + 'static> Component for Table<T> {
                 }
             }
             TableMessage::IncreaseColumnWidth(col) => {
-                if let Some(column) = state.columns.get_mut(col) {
-                    if let Constraint::Length(w) = column.width() {
-                        let new_width = w.saturating_add(1);
+                if let Some(column) = state.columns.get_mut(col)
+                    && let Constraint::Length(w) = column.width()
+                {
+                    let new_width = w.saturating_add(1);
+                    column.set_width(Constraint::Length(new_width));
+                    return Some(TableOutput::ColumnResized {
+                        column: col,
+                        width: new_width,
+                    });
+                }
+            }
+            TableMessage::DecreaseColumnWidth(col) => {
+                if let Some(column) = state.columns.get_mut(col)
+                    && let Constraint::Length(w) = column.width()
+                {
+                    let new_width = w.saturating_sub(1).max(MIN_COLUMN_WIDTH);
+                    if new_width != w {
                         column.set_width(Constraint::Length(new_width));
                         return Some(TableOutput::ColumnResized {
                             column: col,
                             width: new_width,
                         });
-                    }
-                }
-            }
-            TableMessage::DecreaseColumnWidth(col) => {
-                if let Some(column) = state.columns.get_mut(col) {
-                    if let Constraint::Length(w) = column.width() {
-                        let new_width = w.saturating_sub(1).max(MIN_COLUMN_WIDTH);
-                        if new_width != w {
-                            column.set_width(Constraint::Length(new_width));
-                            return Some(TableOutput::ColumnResized {
-                                column: col,
-                                width: new_width,
-                            });
-                        }
                     }
                 }
             }

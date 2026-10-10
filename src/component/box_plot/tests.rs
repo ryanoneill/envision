@@ -121,7 +121,7 @@ fn test_data_clone() {
 #[test]
 fn test_data_debug() {
     let data = BoxPlotData::new("Test", 1.0, 2.0, 3.0, 4.0, 5.0);
-    let debug_str = format!("{:?}", data);
+    let debug_str = format!("{data:?}");
     assert!(debug_str.contains("Test"));
 }
 

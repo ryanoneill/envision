@@ -837,7 +837,7 @@ fn test_clone_without_matcher_uses_default_substring_match() {
 fn test_debug_with_matcher() {
     let state =
         SearchableListState::new(vec!["Apple".to_string()]).with_matcher(|_query, _item| Some(0));
-    let debug_output = format!("{:?}", state);
+    let debug_output = format!("{state:?}");
     assert!(debug_output.contains("SearchableListState"));
     assert!(debug_output.contains("matcher"));
 }
@@ -845,7 +845,7 @@ fn test_debug_with_matcher() {
 #[test]
 fn test_debug_without_matcher() {
     let state = SearchableListState::new(vec!["Apple".to_string()]);
-    let debug_output = format!("{:?}", state);
+    let debug_output = format!("{state:?}");
     assert!(debug_output.contains("SearchableListState"));
     assert!(debug_output.contains("matcher"));
 }

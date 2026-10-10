@@ -70,7 +70,7 @@ impl App for MetricsDashboardApp {
             .selected_widget()
             .map(|w| w.label().to_string())
             .unwrap_or_else(|| "None".into());
-        let status = format!(" Selected: {} | Arrow keys: navigate, q: quit", selected);
+        let status = format!(" Selected: {selected} | Arrow keys: navigate, q: quit");
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[1],
@@ -78,10 +78,10 @@ impl App for MetricsDashboardApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
         MetricsDashboard::handle_event(&state.dashboard, event, &EventContext::new().focused(true))
             .map(Msg::Dashboard)

@@ -688,7 +688,7 @@ fn format_value(v: f64) -> String {
     if v == v.floor() {
         format!("{}", v as i64)
     } else {
-        format!("{:.1}", v)
+        format!("{v:.1}")
     }
 }
 
@@ -792,7 +792,7 @@ impl Component for ResourceGauge {
             .border_style(border_style);
 
         if let Some(title) = &state.title {
-            block = block.title(format!(" {} ", title));
+            block = block.title(format!(" {title} "));
         }
 
         let inner = block.inner(ctx.area);
@@ -828,7 +828,7 @@ impl Component for ResourceGauge {
         if bar_width < 2 {
             // Too narrow for a bar — just show legend
             let text = if let Some(label) = &state.label {
-                format!("{} {}", label, legend)
+                format!("{label} {legend}")
             } else {
                 legend
             };
@@ -963,11 +963,14 @@ fn render_bar(buf: &mut Buffer, x: u16, y: u16, width: u16, params: &BarParams<'
 
 /// Writes a character to the buffer at (x, y) if within bounds.
 fn set_cell(buf: &mut Buffer, x: u16, y: u16, ch: &str, style: Style, area: Rect) {
-    if x >= area.x && x < area.right() && y >= area.y && y < area.bottom() {
-        if let Some(cell) = buf.cell_mut(Position::new(x, y)) {
-            cell.set_symbol(ch);
-            cell.set_style(style);
-        }
+    if x >= area.x
+        && x < area.right()
+        && y >= area.y
+        && y < area.bottom()
+        && let Some(cell) = buf.cell_mut(Position::new(x, y))
+    {
+        cell.set_symbol(ch);
+        cell.set_style(style);
     }
 }
 

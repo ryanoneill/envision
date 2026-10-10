@@ -438,7 +438,7 @@ impl Component for MarkdownRenderer {
 
             if let Some(title) = &state.title {
                 let suffix = if state.show_source { " [source]" } else { "" };
-                block = block.title(format!("{}{}", title, suffix));
+                block = block.title(format!("{title}{suffix}"));
             }
 
             let inner = block.inner(ctx.area);

@@ -67,8 +67,7 @@ async fn test_load_state_error_message_contains_path() {
     let msg = err.to_string();
     assert!(
         msg.contains(&path_str),
-        "error message should contain path, got: {}",
-        msg
+        "error message should contain path, got: {msg}"
     );
 }
 

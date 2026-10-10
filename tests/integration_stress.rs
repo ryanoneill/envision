@@ -40,7 +40,7 @@ fn make_stress_rows(count: u32) -> Vec<StressRow> {
     (0..count)
         .map(|i| StressRow {
             id: i,
-            name: format!("Item {}", i),
+            name: format!("Item {i}"),
             value: format!("val-{}", i % 100),
         })
         .collect()
@@ -66,7 +66,7 @@ where
         .draw(|frame| {
             render_fn(frame, frame.area(), &theme);
         })
-        .unwrap_or_else(|e| panic!("{} panicked during render: {}", name, e));
+        .unwrap_or_else(|e| panic!("{name} panicked during render: {e}"));
 }
 
 // ---------------------------------------------------------------------------
@@ -115,14 +115,13 @@ fn test_table_stress_10000_rows() {
 fn test_tree_stress_10000_nodes() {
     let roots: Vec<TreeNode<String>> = (0..100)
         .map(|r| {
-            let mut root = TreeNode::new(format!("Root {}", r), format!("root-{}", r));
+            let mut root = TreeNode::new(format!("Root {r}"), format!("root-{r}"));
             for c in 0..10 {
-                let mut child =
-                    TreeNode::new(format!("Child {}-{}", r, c), format!("child-{}-{}", r, c));
+                let mut child = TreeNode::new(format!("Child {r}-{c}"), format!("child-{r}-{c}"));
                 for g in 0..10 {
                     child.add_child(TreeNode::new(
-                        format!("Grand {}-{}-{}", r, c, g),
-                        format!("grand-{}-{}-{}", r, c, g),
+                        format!("Grand {r}-{c}-{g}"),
+                        format!("grand-{r}-{c}-{g}"),
                     ));
                 }
                 root.add_child(child);
@@ -171,7 +170,7 @@ fn test_tree_stress_10000_nodes() {
 
 #[test]
 fn test_loading_list_stress_10000_items() {
-    let items: Vec<String> = (0..10_000).map(|i| format!("Task {}", i)).collect();
+    let items: Vec<String> = (0..10_000).map(|i| format!("Task {i}")).collect();
     let mut state = LoadingListState::with_items(items, |s| s.clone());
 
     // LoadingList starts with no selection; select the first item
@@ -225,7 +224,7 @@ fn test_loading_list_stress_10000_items() {
 
 #[test]
 fn test_selectable_list_stress_50000_items() {
-    let items: Vec<String> = (0..50_000).map(|i| format!("Item {}", i)).collect();
+    let items: Vec<String> = (0..50_000).map(|i| format!("Item {i}")).collect();
     let mut state = SelectableListState::new(items);
 
     assert_eq!(state.selected_index(), Some(0));
@@ -268,7 +267,7 @@ fn test_selectable_list_stress_50000_items() {
 #[test]
 fn test_accordion_stress_1000_panels() {
     let panels: Vec<AccordionPanel> = (0..1_000)
-        .map(|i| AccordionPanel::new(format!("Panel {}", i), format!("Content for panel {}", i)))
+        .map(|i| AccordionPanel::new(format!("Panel {i}"), format!("Content for panel {i}")))
         .collect();
     let mut state = AccordionState::new(panels);
 
@@ -346,7 +345,7 @@ fn test_data_grid_stress_10000_rows() {
 
 #[test]
 fn test_rapid_input_10000_events() {
-    let items: Vec<String> = (0..100).map(|i| format!("Item {}", i)).collect();
+    let items: Vec<String> = (0..100).map(|i| format!("Item {i}")).collect();
     let mut state = SelectableListState::new(items);
 
     // Send 10,000 alternating Down/Up events via dispatch_event

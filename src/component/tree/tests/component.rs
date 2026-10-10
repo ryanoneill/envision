@@ -500,7 +500,7 @@ fn test_collapse_on_leaf_node() {
 fn test_large_tree_navigation() {
     // 100 flat nodes (siblings)
     let nodes: Vec<TreeNode<()>> = (0..100)
-        .map(|i| TreeNode::new(format!("Node {}", i), ()))
+        .map(|i| TreeNode::new(format!("Node {i}"), ()))
         .collect();
     let mut state = TreeState::new(nodes);
 
@@ -534,7 +534,7 @@ fn test_deep_tree_navigation() {
     // Build a tree 50 levels deep, starting with innermost leaf
     let mut node = TreeNode::new("Leaf", 49);
     for i in (0..49).rev() {
-        let mut parent = TreeNode::new(format!("Level {}", i), i);
+        let mut parent = TreeNode::new(format!("Level {i}"), i);
         parent.add_child(node);
         node = parent;
     }

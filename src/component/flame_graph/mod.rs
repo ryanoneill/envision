@@ -474,14 +474,14 @@ impl FlameGraphState {
     /// assert_eq!(state.current_view_root().unwrap().label(), "compute()");
     /// ```
     pub fn zoom_in(&mut self) -> bool {
-        if let Some(frame) = self.selected_frame() {
-            if !frame.children.is_empty() {
-                let label = frame.label.clone();
-                self.zoom_stack.push(label);
-                self.selected_depth = 0;
-                self.selected_index = 0;
-                return true;
-            }
+        if let Some(frame) = self.selected_frame()
+            && !frame.children.is_empty()
+        {
+            let label = frame.label.clone();
+            self.zoom_stack.push(label);
+            self.selected_depth = 0;
+            self.selected_index = 0;
+            return true;
         }
         false
     }
@@ -598,18 +598,18 @@ impl FlameGraphState {
         }
 
         // Find the first child of the currently selected frame
-        if let Some(selected) = self.selected_frame() {
-            if !selected.children.is_empty() {
-                // Find the index of the first child in the next depth level
-                let first_child_label = &selected.children[0].label;
-                let child_idx = frames_at_next
-                    .iter()
-                    .position(|f| &f.label == first_child_label)
-                    .unwrap_or(0);
-                self.selected_depth += 1;
-                self.selected_index = child_idx;
-                return true;
-            }
+        if let Some(selected) = self.selected_frame()
+            && !selected.children.is_empty()
+        {
+            // Find the index of the first child in the next depth level
+            let first_child_label = &selected.children[0].label;
+            let child_idx = frames_at_next
+                .iter()
+                .position(|f| &f.label == first_child_label)
+                .unwrap_or(0);
+            self.selected_depth += 1;
+            self.selected_index = child_idx;
+            return true;
         }
 
         // If selected frame has no children, go to first frame at next depth

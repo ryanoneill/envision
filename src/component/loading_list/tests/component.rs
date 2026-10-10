@@ -446,7 +446,7 @@ fn test_large_loading_list_navigation() {
     let items: Vec<TestItem> = (0..100)
         .map(|i| TestItem {
             id: i,
-            name: format!("Item {}", i),
+            name: format!("Item {i}"),
         })
         .collect();
     let mut state = LoadingListState::with_items(items, |i| i.name.clone());

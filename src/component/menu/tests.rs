@@ -386,7 +386,7 @@ fn test_view_empty() {
 #[test]
 fn test_large_menu_navigation() {
     let items: Vec<MenuItem> = (0..100)
-        .map(|i| MenuItem::new(format!("Item {}", i)))
+        .map(|i| MenuItem::new(format!("Item {i}")))
         .collect();
     let mut state = MenuState::new(items);
 

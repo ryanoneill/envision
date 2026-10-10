@@ -260,8 +260,8 @@ impl SerializableColor {
             SerializableColor::LightMagenta => "\x1b[95m".to_string(),
             SerializableColor::LightCyan => "\x1b[96m".to_string(),
             SerializableColor::White => "\x1b[97m".to_string(),
-            SerializableColor::Rgb { r, g, b } => format!("\x1b[38;2;{};{};{}m", r, g, b),
-            SerializableColor::Indexed(i) => format!("\x1b[38;5;{}m", i),
+            SerializableColor::Rgb { r, g, b } => format!("\x1b[38;2;{r};{g};{b}m"),
+            SerializableColor::Indexed(i) => format!("\x1b[38;5;{i}m"),
         }
     }
 
@@ -285,8 +285,8 @@ impl SerializableColor {
             SerializableColor::LightMagenta => "\x1b[105m".to_string(),
             SerializableColor::LightCyan => "\x1b[106m".to_string(),
             SerializableColor::White => "\x1b[107m".to_string(),
-            SerializableColor::Rgb { r, g, b } => format!("\x1b[48;2;{};{};{}m", r, g, b),
-            SerializableColor::Indexed(i) => format!("\x1b[48;5;{}m", i),
+            SerializableColor::Rgb { r, g, b } => format!("\x1b[48;2;{r};{g};{b}m"),
+            SerializableColor::Indexed(i) => format!("\x1b[48;5;{i}m"),
         }
     }
 }

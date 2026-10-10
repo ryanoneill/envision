@@ -143,11 +143,11 @@ pub(super) fn render_annotations(
             if cx >= graph_area.right() {
                 break;
             }
-            if let Some(cell) = buf.cell_mut(Position::new(cx, label_y)) {
-                if cell.symbol() == " " || cell.symbol().trim().is_empty() {
-                    cell.set_char(ch);
-                    cell.set_fg(ann.color);
-                }
+            if let Some(cell) = buf.cell_mut(Position::new(cx, label_y))
+                && (cell.symbol() == " " || cell.symbol().trim().is_empty())
+            {
+                cell.set_char(ch);
+                cell.set_fg(ann.color);
             }
         }
     }

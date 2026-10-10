@@ -213,14 +213,14 @@ fn demo_assertions() {
 
     match assertion.check(&harness) {
         Ok(()) => println!("All log levels present!"),
-        Err(e) => println!("Assertion failed: {}", e),
+        Err(e) => println!("Assertion failed: {e}"),
     }
 
     // Check for specific patterns
     let not_critical = Assertion::contains("CRITICAL").not();
     match not_critical.check(&harness) {
         Ok(()) => println!("No CRITICAL errors found!"),
-        Err(e) => println!("Unexpected: {}", e),
+        Err(e) => println!("Unexpected: {e}"),
     }
 
     // Any of multiple patterns
@@ -231,7 +231,7 @@ fn demo_assertions() {
     ]);
     match has_status.check(&harness) {
         Ok(()) => println!("Found a completion status!"),
-        Err(e) => println!("No status found: {}", e),
+        Err(e) => println!("No status found: {e}"),
     }
 
     println!("\nAll assertion demos complete!\n");

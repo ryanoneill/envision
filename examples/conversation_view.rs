@@ -155,10 +155,10 @@ impl App for ConversationApp {
     }
 
     fn handle_event_with_state(state: &Self::State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
 
         ConversationView::handle_event(

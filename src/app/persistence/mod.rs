@@ -73,7 +73,7 @@ pub async fn load_state<S: DeserializeOwned>(path: impl AsRef<Path>) -> Result<S
     serde_json::from_str(&contents).map_err(|e| {
         EnvisionError::config(
             path.display().to_string(),
-            format!("failed to deserialize state: {}", e),
+            format!("failed to deserialize state: {e}"),
         )
     })
 }

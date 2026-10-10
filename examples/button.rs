@@ -118,7 +118,7 @@ impl App for ButtonApp {
 
         // Last pressed info
         let info = match &state.last_pressed {
-            Some(name) => format!("  Last pressed: {}", name),
+            Some(name) => format!("  Last pressed: {name}"),
             None => "  No button pressed yet".to_string(),
         };
         let info_widget = ratatui::widgets::Paragraph::new(info).block(

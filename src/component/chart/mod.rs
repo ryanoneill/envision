@@ -588,13 +588,13 @@ impl Component for Chart {
             }
 
             // Render x-axis label
-            if x_label_height > 0 {
-                if let Some(ref label) = state.x_label {
-                    let p = Paragraph::new(label.as_str())
-                        .alignment(Alignment::Center)
-                        .style(Style::default().fg(Color::DarkGray));
-                    ctx.frame.render_widget(p, chunks[3]);
-                }
+            if x_label_height > 0
+                && let Some(ref label) = state.x_label
+            {
+                let p = Paragraph::new(label.as_str())
+                    .alignment(Alignment::Center)
+                    .style(Style::default().fg(Color::DarkGray));
+                ctx.frame.render_widget(p, chunks[3]);
             }
 
             chunks[1]
@@ -614,10 +614,10 @@ impl Component for Chart {
                 );
 
                 // Render crosshair value readout overlay
-                if state.show_crosshair {
-                    if let Some(pos) = state.cursor_position {
-                        render::render_crosshair_readout(state, ctx.frame, chart_area, pos);
-                    }
+                if state.show_crosshair
+                    && let Some(pos) = state.cursor_position
+                {
+                    render::render_crosshair_readout(state, ctx.frame, chart_area, pos);
                 }
             }
             ChartKind::BarVertical => render::render_bar_chart(

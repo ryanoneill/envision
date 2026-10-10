@@ -61,7 +61,7 @@ fn test_handle_event_ignored_when_unfocused() {
 fn test_dispatch_event() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
     state.set_selected_index(Some(5));
 
@@ -82,7 +82,7 @@ fn test_dispatch_event() {
 fn test_instance_methods() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
     state.set_selected_index(Some(3));
 
@@ -148,7 +148,7 @@ fn test_handle_event_ignored_when_disabled() {
 fn test_dispatch_event_ignored_when_disabled() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
     state.set_selected_index(Some(5));
 
@@ -269,7 +269,7 @@ fn test_dispatch_event_unfocused_returns_none() {
 fn test_dispatch_event_scroll_up() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
     state.set_selected_index(Some(5));
 
@@ -285,7 +285,7 @@ fn test_dispatch_event_scroll_up() {
 fn test_dispatch_event_scroll_up_vim_k() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
     state.set_selected_index(Some(5));
 
@@ -301,7 +301,7 @@ fn test_dispatch_event_scroll_up_vim_k() {
 fn test_dispatch_event_scroll_down_vim_j() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
     state.set_selected_index(Some(3));
 
@@ -317,7 +317,7 @@ fn test_dispatch_event_scroll_down_vim_j() {
 fn test_instance_dispatch_event_scroll_up() {
     let mut state = MultiProgressState::new();
     for i in 0..10 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
     state.set_selected_index(Some(5));
 
@@ -337,7 +337,7 @@ fn test_instance_dispatch_event_scroll_up() {
 fn test_update_scroll_down_ignored_when_disabled() {
     let mut state = MultiProgressState::new();
     for i in 0..5 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollDown);
@@ -348,7 +348,7 @@ fn test_update_scroll_down_ignored_when_disabled() {
 fn test_update_scroll_to_bottom_ignored_when_disabled() {
     let mut state = MultiProgressState::new();
     for i in 0..5 {
-        state.add(format!("id{}", i), format!("Item {}", i));
+        state.add(format!("id{i}"), format!("Item {i}"));
     }
 
     MultiProgress::update(&mut state, MultiProgressMessage::ScrollToBottom);

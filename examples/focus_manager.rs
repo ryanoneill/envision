@@ -109,7 +109,7 @@ impl App for FocusManagerApp {
                 } else {
                     Style::default()
                 };
-                Line::from(format!("{}{}", prefix, name)).style(style)
+                Line::from(format!("{prefix}{name}")).style(style)
             })
             .collect();
         frame.render_widget(

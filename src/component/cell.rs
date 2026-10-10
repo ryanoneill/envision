@@ -275,7 +275,7 @@ impl Cell {
     /// assert_eq!(c.text(), "840.16 ms");
     /// ```
     pub fn number(value: f64) -> Self {
-        Self::new(format!("{}", value)).with_sort_key(SortKey::F64(value))
+        Self::new(format!("{value}")).with_sort_key(SortKey::F64(value))
     }
 
     /// Signed-integer cell. Use only when the column's data is integer-valued —
@@ -290,18 +290,18 @@ impl Cell {
     /// assert_eq!(c.text(), "-42");
     /// ```
     pub fn int(value: i64) -> Self {
-        Self::new(format!("{}", value)).with_sort_key(SortKey::I64(value))
+        Self::new(format!("{value}")).with_sort_key(SortKey::I64(value))
     }
 
     /// Unsigned-integer cell. Use only for non-negative integer data —
     /// for naturally-`f64` data, use [`Cell::number`].
     pub fn uint(value: u64) -> Self {
-        Self::new(format!("{}", value)).with_sort_key(SortKey::U64(value))
+        Self::new(format!("{value}")).with_sort_key(SortKey::U64(value))
     }
 
     /// Boolean cell. Renders as `"true"` / `"false"`.
     pub fn bool(value: bool) -> Self {
-        Self::new(format!("{}", value)).with_sort_key(SortKey::Bool(value))
+        Self::new(format!("{value}")).with_sort_key(SortKey::Bool(value))
     }
 
     /// Duration cell. Display text is a compact form (`"3m12s"`, `"2h15m"`,
@@ -374,7 +374,7 @@ impl From<CompactString> for Cell {
 fn format_duration(d: std::time::Duration) -> String {
     let secs = d.as_secs();
     if secs < 60 {
-        format!("{}s", secs)
+        format!("{secs}s")
     } else if secs < 3600 {
         format!("{}m{}s", secs / 60, secs % 60)
     } else if secs < 86_400 {

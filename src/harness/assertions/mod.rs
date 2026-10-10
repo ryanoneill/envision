@@ -53,7 +53,7 @@ impl fmt::Display for AssertionError {
         writeln!(f, "  Expected: {}", self.expected)?;
         writeln!(f, "  Actual:   {}", self.actual)?;
         if let Some(ctx) = &self.context {
-            writeln!(f, "\nContext:\n{}", ctx)?;
+            writeln!(f, "\nContext:\n{ctx}")?;
         }
         Ok(())
     }
@@ -236,7 +236,7 @@ impl Assertion {
                 } else {
                     Err(AssertionError::new(
                         "Contains",
-                        format!("screen to contain '{}'", text),
+                        format!("screen to contain '{text}'"),
                         "text not found",
                     )
                     .with_context(harness.screen()))
@@ -249,7 +249,7 @@ impl Assertion {
                 } else {
                     Err(AssertionError::new(
                         "NotContains",
-                        format!("screen to NOT contain '{}'", text),
+                        format!("screen to NOT contain '{text}'"),
                         "text was found",
                     )
                     .with_context(harness.screen()))
@@ -268,13 +268,13 @@ impl Assertion {
                     }
                     Err(AssertionError::new(
                         "TextAt",
-                        format!("'{}' at ({}, {})", text, x, y),
-                        format!("found '{}'", actual),
+                        format!("'{text}' at ({x}, {y})"),
+                        format!("found '{actual}'"),
                     ))
                 } else {
                     Err(AssertionError::new(
                         "TextAt",
-                        format!("'{}' at ({}, {})", text, x, y),
+                        format!("'{text}' at ({x}, {y})"),
                         "position out of bounds",
                     ))
                 }
@@ -286,7 +286,7 @@ impl Assertion {
                 } else {
                     Err(AssertionError::new(
                         "WidgetExists",
-                        format!("widget '{}' to exist", id),
+                        format!("widget '{id}' to exist"),
                         "widget not found",
                     )
                     .with_context(harness.annotations().format_tree()))
@@ -299,7 +299,7 @@ impl Assertion {
                 } else {
                     Err(AssertionError::new(
                         "WidgetNotExists",
-                        format!("widget '{}' to NOT exist", id),
+                        format!("widget '{id}' to NOT exist"),
                         "widget was found",
                     )
                     .with_context(harness.annotations().format_tree()))
@@ -310,12 +310,12 @@ impl Assertion {
                 Some(region) if region.annotation.focused => Ok(()),
                 Some(_) => Err(AssertionError::new(
                     "WidgetFocused",
-                    format!("widget '{}' to be focused", id),
+                    format!("widget '{id}' to be focused"),
                     "widget is not focused",
                 )),
                 None => Err(AssertionError::new(
                     "WidgetFocused",
-                    format!("widget '{}' to be focused", id),
+                    format!("widget '{id}' to be focused"),
                     "widget not found",
                 )),
             },
@@ -324,12 +324,12 @@ impl Assertion {
                 Some(region) if region.annotation.disabled => Ok(()),
                 Some(_) => Err(AssertionError::new(
                     "WidgetDisabled",
-                    format!("widget '{}' to be disabled", id),
+                    format!("widget '{id}' to be disabled"),
                     "widget is not disabled",
                 )),
                 None => Err(AssertionError::new(
                     "WidgetDisabled",
-                    format!("widget '{}' to be disabled", id),
+                    format!("widget '{id}' to be disabled"),
                     "widget not found",
                 )),
             },
@@ -341,14 +341,14 @@ impl Assertion {
                     } else {
                         Err(AssertionError::new(
                             "WidgetValue",
-                            format!("widget '{}' to have value '{}'", id, value),
+                            format!("widget '{id}' to have value '{value}'"),
                             format!("value is {:?}", region.annotation.value),
                         ))
                     }
                 }
                 None => Err(AssertionError::new(
                     "WidgetValue",
-                    format!("widget '{}' to have value '{}'", id, value),
+                    format!("widget '{id}' to have value '{value}'"),
                     "widget not found",
                 )),
             },
@@ -360,8 +360,8 @@ impl Assertion {
                 } else {
                     Err(AssertionError::new(
                         "WidgetCount",
-                        format!("{} {:?} widgets", count, widget_type),
-                        format!("found {}", actual),
+                        format!("{count} {widget_type:?} widgets"),
+                        format!("found {actual}"),
                     ))
                 }
             }
@@ -376,7 +376,7 @@ impl Assertion {
                         "screen to match exactly",
                         "content differs",
                     )
-                    .with_context(format!("Expected:\n{}\n\nActual:\n{}", expected, actual)))
+                    .with_context(format!("Expected:\n{expected}\n\nActual:\n{actual}")))
                 }
             }
 
@@ -387,8 +387,8 @@ impl Assertion {
                 } else {
                     Err(AssertionError::new(
                         "RowEquals",
-                        format!("row {} to equal '{}'", row, content),
-                        format!("found '{}'", actual),
+                        format!("row {row} to equal '{content}'"),
+                        format!("found '{actual}'"),
                     ))
                 }
             }
@@ -400,8 +400,8 @@ impl Assertion {
                 } else {
                     Err(AssertionError::new(
                         "RowContains",
-                        format!("row {} to contain '{}'", row, text),
-                        format!("row content: '{}'", actual),
+                        format!("row {row} to contain '{text}'"),
+                        format!("row content: '{actual}'"),
                     ))
                 }
             }

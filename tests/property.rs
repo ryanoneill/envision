@@ -101,7 +101,7 @@ proptest! {
         item_count in 1usize..200,
         messages in prop::collection::vec(selectable_list_message_strategy(), 1..100),
     ) {
-        let items: Vec<String> = (0..item_count).map(|i| format!("Item {}", i)).collect();
+        let items: Vec<String> = (0..item_count).map(|i| format!("Item {i}")).collect();
         let mut state = SelectableListState::new(items);
 
         for msg in messages {
@@ -119,7 +119,7 @@ proptest! {
         item_count in 1usize..200,
         prefix_messages in prop::collection::vec(selectable_list_message_strategy(), 0..50),
     ) {
-        let items: Vec<String> = (0..item_count).map(|i| format!("Item {}", i)).collect();
+        let items: Vec<String> = (0..item_count).map(|i| format!("Item {i}")).collect();
         let mut state = SelectableListState::new(items);
 
         // Apply random prefix to get into an arbitrary state
@@ -247,7 +247,7 @@ proptest! {
         item_count in 2usize..50,
         messages in prop::collection::vec(radio_group_message_strategy(), 1..100),
     ) {
-        let items: Vec<String> = (0..item_count).map(|i| format!("Option {}", i)).collect();
+        let items: Vec<String> = (0..item_count).map(|i| format!("Option {i}")).collect();
         let mut state = RadioGroupState::new(items);
 
         for msg in messages {
@@ -271,7 +271,7 @@ proptest! {
         tab_count in 2usize..20,
         messages in prop::collection::vec(tabs_message_strategy(19), 1..100),
     ) {
-        let tabs: Vec<String> = (0..tab_count).map(|i| format!("Tab {}", i)).collect();
+        let tabs: Vec<String> = (0..tab_count).map(|i| format!("Tab {i}")).collect();
         let mut state = TabsState::new(tabs);
 
         for msg in messages {
@@ -289,7 +289,7 @@ proptest! {
         tab_count in 2usize..20,
         prefix_messages in prop::collection::vec(tabs_message_strategy(19), 0..50),
     ) {
-        let tabs: Vec<String> = (0..tab_count).map(|i| format!("Tab {}", i)).collect();
+        let tabs: Vec<String> = (0..tab_count).map(|i| format!("Tab {i}")).collect();
         let mut state = TabsState::new(tabs);
 
         for msg in prefix_messages {

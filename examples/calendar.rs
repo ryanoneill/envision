@@ -69,8 +69,7 @@ impl App for CalendarApp {
             None => "No date selected".to_string(),
         };
         let status = format!(
-            " {} | Arrows: navigate, PgUp/PgDn: month, Enter: select, q: quit",
-            selected_info
+            " {selected_info} | Arrows: navigate, PgUp/PgDn: month, Enter: select, q: quit"
         );
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
@@ -79,10 +78,10 @@ impl App for CalendarApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
         Calendar::handle_event(&state.calendar, event, &EventContext::new().focused(true))
             .map(Msg::Calendar)

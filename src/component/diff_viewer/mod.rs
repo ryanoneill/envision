@@ -678,10 +678,10 @@ impl DiffViewerState {
         for hunk in &self.hunks {
             // Add hunk header on both sides
             let header = hunk.lines.first().cloned();
-            if let Some(ref h) = header {
-                if h.line_type == DiffLineType::Header {
-                    pairs.push((Some(h.clone()), Some(h.clone())));
-                }
+            if let Some(ref h) = header
+                && h.line_type == DiffLineType::Header
+            {
+                pairs.push((Some(h.clone()), Some(h.clone())));
             }
 
             // Collect removed and added runs, pairing them together.

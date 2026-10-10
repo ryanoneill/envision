@@ -45,11 +45,10 @@ impl App for InputFieldApp {
             Msg::Input(m) => {
                 if let Some(InputFieldOutput::Submitted(value)) =
                     InputField::update(&mut state.input, m)
+                    && !value.is_empty()
                 {
-                    if !value.is_empty() {
-                        state.submitted.push(value);
-                        InputField::update(&mut state.input, InputFieldMessage::Clear);
-                    }
+                    state.submitted.push(value);
+                    InputField::update(&mut state.input, InputFieldMessage::Clear);
                 }
             }
             Msg::Quit => return Command::quit(),
@@ -103,10 +102,10 @@ impl App for InputFieldApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if key.code == Key::Esc {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && key.code == Key::Esc
+        {
+            return Some(Msg::Quit);
         }
         InputField::handle_event(&state.input, event, &EventContext::new().focused(true))
             .map(Msg::Input)

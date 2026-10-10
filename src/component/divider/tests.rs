@@ -162,7 +162,7 @@ fn test_orientation_clone() {
 #[test]
 fn test_orientation_debug() {
     let orientation = DividerOrientation::Horizontal;
-    let debug = format!("{:?}", orientation);
+    let debug = format!("{orientation:?}");
     assert_eq!(debug, "Horizontal");
 }
 

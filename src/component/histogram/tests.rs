@@ -563,8 +563,7 @@ fn test_adaptive_empty_data_produces_one_bin() {
         assert_eq!(
             bins.len(),
             1,
-            "method {:?} should produce 1 bin for empty data",
-            method
+            "method {method:?} should produce 1 bin for empty data"
         );
         assert_eq!(bins[0].2, 0);
     }
@@ -583,8 +582,7 @@ fn test_adaptive_single_point_produces_one_bin() {
         assert_eq!(
             bins.len(),
             1,
-            "method {:?} should produce 1 bin for single point",
-            method
+            "method {method:?} should produce 1 bin for single point"
         );
         assert_eq!(bins[0].2, 1);
     }
@@ -604,8 +602,7 @@ fn test_adaptive_all_same_value() {
         assert_eq!(
             bins.len(),
             1,
-            "method {:?} should produce 1 bin for same values",
-            method
+            "method {method:?} should produce 1 bin for same values"
         );
         assert_eq!(bins[0].2, 4);
     }

@@ -116,7 +116,7 @@ fn make_table_columns() -> Vec<Column> {
 fn make_flat_tree(child_count: usize) -> Vec<TreeNode<String>> {
     let mut root = TreeNode::new_expanded("Root", "root".to_string());
     for i in 0..child_count {
-        root.add_child(TreeNode::new(format!("Item {}", i), format!("item_{}", i)));
+        root.add_child(TreeNode::new(format!("Item {i}"), format!("item_{i}")));
     }
     vec![root]
 }
@@ -128,7 +128,7 @@ fn make_flat_tree(child_count: usize) -> Vec<TreeNode<String>> {
 /// Measures allocation count and bytes for a single SelectableList
 /// render with 1000 items at 80×24.
 fn bench_selectable_list_1000_view_allocs(c: &mut Criterion) {
-    let items: Vec<String> = (0..1000).map(|i| format!("Item {}", i)).collect();
+    let items: Vec<String> = (0..1000).map(|i| format!("Item {i}")).collect();
     let state = SelectableListState::new(items);
     let backend = CaptureBackend::new(80, 24);
     let mut terminal = Terminal::new(backend).unwrap();
@@ -156,8 +156,8 @@ fn bench_table_1000_view_allocs(c: &mut Criterion) {
     let rows: Vec<BenchRow> = (0..1000)
         .map(|i| BenchRow {
             id: i,
-            name: format!("User {}", i),
-            email: format!("user{}@example.com", i),
+            name: format!("User {i}"),
+            email: format!("user{i}@example.com"),
         })
         .collect();
     let columns = make_table_columns();
@@ -217,7 +217,7 @@ fn bench_state_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("state_creation");
 
     for item_count in [1000usize, 5000, 10000] {
-        let items: Vec<String> = (0..item_count).map(|i| format!("Item {}", i)).collect();
+        let items: Vec<String> = (0..item_count).map(|i| format!("Item {i}")).collect();
 
         group.bench_with_input(
             BenchmarkId::new("selectable_list", item_count),

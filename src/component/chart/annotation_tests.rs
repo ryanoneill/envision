@@ -24,7 +24,7 @@ fn test_annotation_clone() {
 #[test]
 fn test_annotation_debug() {
     let ann = ChartAnnotation::new(0.0, 0.0, "Origin", Color::White);
-    let debug = format!("{:?}", ann);
+    let debug = format!("{ann:?}");
     assert!(debug.contains("ChartAnnotation"));
     assert!(debug.contains("Origin"));
 }

@@ -428,7 +428,7 @@ fn render_horizontal(state: &DividerState, frame: &mut Frame, area: Rect, style:
 
     let text = match &state.label {
         Some(label) => {
-            let label_with_padding = format!(" {} ", label);
+            let label_with_padding = format!(" {label} ");
             let label_len = label_with_padding.len();
             if label_len >= width {
                 // Label too long, just show the label truncated

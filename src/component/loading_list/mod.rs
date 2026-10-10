@@ -859,14 +859,14 @@ impl<T: Clone> Component for LoadingList<T> {
             }
 
             LoadingListMessage::ClearError(index) => {
-                if let Some(item) = state.items.get_mut(index) {
-                    if item.is_error() {
-                        item.state = ItemState::Ready;
-                        return Some(LoadingListOutput::ItemStateChanged {
-                            index,
-                            state: ItemState::Ready,
-                        });
-                    }
+                if let Some(item) = state.items.get_mut(index)
+                    && item.is_error()
+                {
+                    item.state = ItemState::Ready;
+                    return Some(LoadingListOutput::ItemStateChanged {
+                        index,
+                        state: ItemState::Ready,
+                    });
                 }
                 None
             }
@@ -925,10 +925,10 @@ impl<T: Clone> Component for LoadingList<T> {
             }
 
             LoadingListMessage::Select => {
-                if let Some(index) = state.selected {
-                    if let Some(item) = state.items.get(index) {
-                        return Some(LoadingListOutput::Selected(item.data.clone()));
-                    }
+                if let Some(index) = state.selected
+                    && let Some(item) = state.items.get(index)
+                {
+                    return Some(LoadingListOutput::Selected(item.data.clone()));
                 }
                 None
             }

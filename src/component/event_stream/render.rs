@@ -90,20 +90,16 @@ fn render_event_list(
         let showing = visible.len();
         if let Some(title) = state.title() {
             if showing < total {
-                block = block.title(format!(
-                    " {} ({} events, showing {}) ",
-                    title, total, showing
-                ));
+                block = block.title(format!(" {title} ({total} events, showing {showing}) "));
             } else {
-                block = block.title(format!(" {} ({} events) ", title, total));
+                block = block.title(format!(" {title} ({total} events) "));
             }
         } else if showing < total {
             block = block.title(format!(
-                " Event Stream ({} events, showing {}) ",
-                total, showing
+                " Event Stream ({total} events, showing {showing}) "
             ));
         } else {
-            block = block.title(format!(" Event Stream ({} events) ", total));
+            block = block.title(format!(" Event Stream ({total} events) "));
         }
 
         let inner = block.inner(area);
@@ -248,7 +244,7 @@ fn render_event_row<'a>(
                     .fields
                     .iter()
                     .find(|(k, _)| k == col)
-                    .map(|(k, v)| format!("{}={}", k, v))
+                    .map(|(k, v)| format!("{k}={v}"))
             })
             .collect();
         if !field_parts.is_empty() {
@@ -259,7 +255,7 @@ fn render_event_row<'a>(
         let field_parts: Vec<String> = event
             .fields
             .iter()
-            .map(|(k, v)| format!("{}={}", k, v))
+            .map(|(k, v)| format!("{k}={v}"))
             .collect();
         parts.push(field_parts.join(" "));
     }

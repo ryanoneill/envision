@@ -71,12 +71,12 @@ fn build_title(state: &DiffViewerState) -> String {
 
     if let Some(ref title) = state.title {
         if added > 0 || removed > 0 {
-            format!(" {} (+{}, -{}) ", title, added, removed)
+            format!(" {title} (+{added}, -{removed}) ")
         } else {
-            format!(" {} ", title)
+            format!(" {title} ")
         }
     } else if added > 0 || removed > 0 {
-        format!(" Diff (+{}, -{}) ", added, removed)
+        format!(" Diff (+{added}, -{removed}) ")
     } else {
         " Diff ".to_string()
     }
@@ -175,15 +175,15 @@ fn build_unified_prefix(line: &super::DiffLine, show_line_numbers: bool, sigil: 
     if show_line_numbers {
         let old_num = line
             .old_line_num
-            .map(|n| format!("{:>4}", n))
+            .map(|n| format!("{n:>4}"))
             .unwrap_or_else(|| "    ".to_string());
         let new_num = line
             .new_line_num
-            .map(|n| format!("{:>4}", n))
+            .map(|n| format!("{n:>4}"))
             .unwrap_or_else(|| "    ".to_string());
-        format!("{} {} {}", old_num, new_num, sigil)
+        format!("{old_num} {new_num} {sigil}")
     } else {
-        format!("{}", sigil)
+        format!("{sigil}")
     }
 }
 
@@ -215,8 +215,8 @@ fn render_side_by_side(
 
             let hdr_style = header_style(theme);
 
-            let left_header = Paragraph::new(format!(" {}", left_label)).style(hdr_style);
-            let right_header = Paragraph::new(format!(" {}", right_label)).style(hdr_style);
+            let left_header = Paragraph::new(format!(" {left_label}")).style(hdr_style);
+            let right_header = Paragraph::new(format!(" {right_label}")).style(hdr_style);
 
             frame.render_widget(left_header, Rect::new(area.x, area.y, half_width, 1));
             frame.render_widget(right_header, Rect::new(right_x, area.y, right_width, 1));

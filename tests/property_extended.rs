@@ -202,7 +202,7 @@ proptest! {
         messages in prop::collection::vec(accordion_message_strategy(49), 1..100),
     ) {
         let panels: Vec<AccordionPanel> = (0..panel_count)
-            .map(|i| AccordionPanel::new(format!("Panel {}", i), format!("Content {}", i)))
+            .map(|i| AccordionPanel::new(format!("Panel {i}"), format!("Content {i}")))
             .collect();
         let mut state = AccordionState::new(panels);
 
@@ -221,7 +221,7 @@ proptest! {
         prefix_messages in prop::collection::vec(accordion_message_strategy(19), 0..50),
     ) {
         let panels: Vec<AccordionPanel> = (0..panel_count)
-            .map(|i| AccordionPanel::new(format!("Panel {}", i), format!("Content {}", i)))
+            .map(|i| AccordionPanel::new(format!("Panel {i}"), format!("Content {i}")))
             .collect();
         let mut state = AccordionState::new(panels);
 
@@ -262,7 +262,7 @@ proptest! {
         segment_count in 1usize..50,
         messages in prop::collection::vec(breadcrumb_message_strategy(49), 1..100),
     ) {
-        let labels: Vec<String> = (0..segment_count).map(|i| format!("Seg {}", i)).collect();
+        let labels: Vec<String> = (0..segment_count).map(|i| format!("Seg {i}")).collect();
         let mut state = BreadcrumbState::from_labels(labels);
 
         for msg in messages {
@@ -279,7 +279,7 @@ proptest! {
         segment_count in 2usize..20,
         prefix_messages in prop::collection::vec(breadcrumb_message_strategy(19), 0..50),
     ) {
-        let labels: Vec<String> = (0..segment_count).map(|i| format!("Seg {}", i)).collect();
+        let labels: Vec<String> = (0..segment_count).map(|i| format!("Seg {i}")).collect();
         let mut state = BreadcrumbState::from_labels(labels);
 
         for msg in prefix_messages {
@@ -320,7 +320,7 @@ proptest! {
         messages in prop::collection::vec(menu_message_strategy(49), 1..100),
     ) {
         let items: Vec<MenuItem> = (0..item_count)
-            .map(|i| MenuItem::new(format!("Item {}", i)))
+            .map(|i| MenuItem::new(format!("Item {i}")))
             .collect();
         let mut state = MenuState::new(items);
 
@@ -360,7 +360,7 @@ proptest! {
         messages in prop::collection::vec(table_message_strategy(), 1..100),
     ) {
         let rows: Vec<TestRow> = (0..row_count)
-            .map(|i| TestRow { name: format!("Row {}", i) })
+            .map(|i| TestRow { name: format!("Row {i}") })
             .collect();
         let columns = vec![Column::fixed("Name", 20)];
         let mut state = TableState::new(rows, columns);
@@ -381,7 +381,7 @@ proptest! {
         prefix_messages in prop::collection::vec(table_message_strategy(), 0..50),
     ) {
         let rows: Vec<TestRow> = (0..row_count)
-            .map(|i| TestRow { name: format!("Row {}", i) })
+            .map(|i| TestRow { name: format!("Row {i}") })
             .collect();
         let columns = vec![Column::fixed("Name", 20)];
         let mut state = TableState::new(rows, columns);
@@ -426,11 +426,11 @@ proptest! {
     ) {
         let roots: Vec<TreeNode<String>> = (0..root_count)
             .map(|i| {
-                let mut node = TreeNode::new(format!("Root {}", i), format!("data-{}", i));
+                let mut node = TreeNode::new(format!("Root {i}"), format!("data-{i}"));
                 for j in 0..children_per_root {
                     node.add_child(TreeNode::new(
-                        format!("Child {}-{}", i, j),
-                        format!("child-data-{}-{}", i, j),
+                        format!("Child {i}-{j}"),
+                        format!("child-data-{i}-{j}"),
                     ));
                 }
                 node
@@ -461,11 +461,11 @@ proptest! {
     ) {
         let roots: Vec<TreeNode<String>> = (0..root_count)
             .map(|i| {
-                let mut node = TreeNode::new(format!("Root {}", i), format!("data-{}", i));
+                let mut node = TreeNode::new(format!("Root {i}"), format!("data-{i}"));
                 for j in 0..children_per_root {
                     node.add_child(TreeNode::new(
-                        format!("Child {}-{}", i, j),
-                        format!("child-data-{}-{}", i, j),
+                        format!("Child {i}-{j}"),
+                        format!("child-data-{i}-{j}"),
                     ));
                 }
                 node
@@ -699,7 +699,7 @@ proptest! {
         option_count in 1usize..50,
         messages in prop::collection::vec(dropdown_message_strategy(), 1..100),
     ) {
-        let options: Vec<String> = (0..option_count).map(|i| format!("Option {}", i)).collect();
+        let options: Vec<String> = (0..option_count).map(|i| format!("Option {i}")).collect();
         let mut state = DropdownState::new(options);
 
         for msg in messages {
@@ -721,7 +721,7 @@ proptest! {
         option_count in 1usize..20,
         messages in prop::collection::vec(dropdown_message_strategy(), 1..50),
     ) {
-        let options: Vec<String> = (0..option_count).map(|i| format!("Option {}", i)).collect();
+        let options: Vec<String> = (0..option_count).map(|i| format!("Option {i}")).collect();
         let mut state = DropdownState::new(options);
 
         for msg in messages {
@@ -748,7 +748,7 @@ proptest! {
         option_count in 1usize..20,
         prefix_messages in prop::collection::vec(dropdown_message_strategy(), 0..30),
     ) {
-        let options: Vec<String> = (0..option_count).map(|i| format!("Option {}", i)).collect();
+        let options: Vec<String> = (0..option_count).map(|i| format!("Option {i}")).collect();
         let mut state = DropdownState::new(options);
 
         for msg in prefix_messages {
@@ -797,7 +797,7 @@ proptest! {
         prefix_messages in prop::collection::vec(scrollable_text_message_strategy(), 0..50),
     ) {
         let content: String = (0..line_count)
-            .map(|i| format!("Line {}", i))
+            .map(|i| format!("Line {i}"))
             .collect::<Vec<_>>()
             .join("\n");
         let mut state = ScrollableTextState::new().with_content(content);
@@ -869,7 +869,7 @@ proptest! {
         item_count in 1usize..100,
         messages in prop::collection::vec(loading_list_message_strategy(), 1..100),
     ) {
-        let items: Vec<String> = (0..item_count).map(|i| format!("Item {}", i)).collect();
+        let items: Vec<String> = (0..item_count).map(|i| format!("Item {i}")).collect();
         let mut state = LoadingListState::with_items(items, |s| s.clone());
 
         for msg in messages {
@@ -891,7 +891,7 @@ proptest! {
         item_count in 2usize..50,
         prefix_messages in prop::collection::vec(loading_list_message_strategy(), 0..50),
     ) {
-        let items: Vec<String> = (0..item_count).map(|i| format!("Item {}", i)).collect();
+        let items: Vec<String> = (0..item_count).map(|i| format!("Item {i}")).collect();
         let mut state = LoadingListState::with_items(items, |s| s.clone());
 
         for msg in prefix_messages {

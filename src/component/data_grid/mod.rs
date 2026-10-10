@@ -541,24 +541,25 @@ impl<T: TableRow + 'static> Component for DataGrid<T> {
         }
 
         // Show cursor when editing
-        if state.editing && ctx.focused {
-            if let Some(row_idx) = state.selected_row_index {
-                // Calculate cursor position for the edit cell
-                // This is approximate — exact positioning depends on column widths
-                let content_area = ctx.area.inner(Margin::new(1, 1));
-                let col_areas = Layout::default()
-                    .direction(Direction::Horizontal)
-                    .constraints(state.columns.iter().map(|c| c.width()).collect::<Vec<_>>())
-                    .split(content_area);
+        if state.editing
+            && ctx.focused
+            && let Some(row_idx) = state.selected_row_index
+        {
+            // Calculate cursor position for the edit cell
+            // This is approximate — exact positioning depends on column widths
+            let content_area = ctx.area.inner(Margin::new(1, 1));
+            let col_areas = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(state.columns.iter().map(|c| c.width()).collect::<Vec<_>>())
+                .split(content_area);
 
-                if let Some(col_area) = col_areas.get(state.selected_column) {
-                    // +2 for header row and margin
-                    let cursor_y = content_area.y + 2 + (row_idx as u16);
-                    let cursor_x = col_area.x + state.editor.cursor_display_position() as u16;
-                    if cursor_y < ctx.area.bottom() && cursor_x < col_area.right() {
-                        ctx.frame
-                            .set_cursor_position(Position::new(cursor_x, cursor_y));
-                    }
+            if let Some(col_area) = col_areas.get(state.selected_column) {
+                // +2 for header row and margin
+                let cursor_y = content_area.y + 2 + (row_idx as u16);
+                let cursor_x = col_area.x + state.editor.cursor_display_position() as u16;
+                if cursor_y < ctx.area.bottom() && cursor_x < col_area.right() {
+                    ctx.frame
+                        .set_cursor_position(Position::new(cursor_x, cursor_y));
                 }
             }
         }

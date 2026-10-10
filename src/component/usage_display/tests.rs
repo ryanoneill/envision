@@ -79,7 +79,7 @@ fn test_metric_clone() {
 #[test]
 fn test_metric_debug() {
     let metric = UsageMetric::new("CPU", "45%");
-    let debug_str = format!("{:?}", metric);
+    let debug_str = format!("{metric:?}");
     assert!(debug_str.contains("CPU"));
     assert!(debug_str.contains("45%"));
 }

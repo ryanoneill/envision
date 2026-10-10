@@ -763,7 +763,7 @@ pub(super) fn render_crosshair_readout(
     }
 
     let mut spans = vec![Span::styled(
-        format!("x:{}", cursor_pos),
+        format!("x:{cursor_pos}"),
         Style::default()
             .fg(Color::White)
             .add_modifier(Modifier::BOLD),
@@ -877,11 +877,11 @@ fn fill_area_below_curve(
 /// Fills a single column of cells with the area fill character.
 fn fill_column(buf: &mut Buffer, x: u16, y_start: u16, y_end: u16, color: Color) {
     for y in y_start..y_end {
-        if let Some(cell) = buf.cell_mut(Position::new(x, y)) {
-            if cell.symbol() == " " {
-                cell.set_char('\u{2591}');
-                cell.set_fg(color);
-            }
+        if let Some(cell) = buf.cell_mut(Position::new(x, y))
+            && cell.symbol() == " "
+        {
+            cell.set_char('\u{2591}');
+            cell.set_fg(color);
         }
     }
 }
@@ -954,11 +954,11 @@ fn render_grid_lines(
         if screen_y > area.y && screen_y < area.bottom().saturating_sub(1) {
             for x in area.x..area.right() {
                 let cell = frame.buffer_mut().cell_mut(Position::new(x, screen_y));
-                if let Some(cell) = cell {
-                    if cell.symbol() == " " {
-                        cell.set_char('·');
-                        cell.set_fg(Color::DarkGray);
-                    }
+                if let Some(cell) = cell
+                    && cell.symbol() == " "
+                {
+                    cell.set_char('·');
+                    cell.set_fg(Color::DarkGray);
                 }
             }
         }

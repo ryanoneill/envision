@@ -385,7 +385,7 @@ Envision follows The Elm Architecture (TEA) pattern:
 
 ## Minimum Supported Rust Version
 
-The minimum supported Rust version is **1.85** (edition 2024).
+The minimum supported Rust version is **1.88** (edition 2024).
 
 ## License
 
