@@ -1,6 +1,14 @@
 #![cfg(feature = "full")]
 //! Async integration tests exercising commands, message channels, subscriptions,
 //! and error handling.
+//!
+//! Every test whose outcome depends on a timer (a `tokio::time::sleep` inside
+//! an async command, a tick/timer subscription, ...) runs under
+//! `#[tokio::test(start_paused = true)]`. With the clock paused, tokio only
+//! auto-advances time when every task is idle, so when the test's own
+//! `sleep(d)` returns, every spawned task whose timers expire before `d` has
+//! already run to completion. This makes these tests independent of
+//! wall-clock speed (slow or overloaded CI runners).
 
 use std::time::Duration;
 
@@ -12,6 +20,9 @@ use ratatui::prelude::*;
 // ===========================================================================
 
 struct AsyncLoaderApp;
+
+/// Simulated latency of the `AsyncLoaderApp` load operation.
+const LOAD_DELAY: Duration = Duration::from_millis(10);
 
 #[derive(Clone, Default)]
 struct AsyncLoaderState {
@@ -39,7 +50,7 @@ impl App for AsyncLoaderApp {
             AsyncLoaderMsg::StartLoad => {
                 state.loading = true;
                 Command::perform_async(async {
-                    tokio::time::sleep(Duration::from_millis(10)).await;
+                    tokio::time::sleep(LOAD_DELAY).await;
                     Some(AsyncLoaderMsg::DataLoaded("hello world".into()))
                 })
             }
@@ -162,6 +173,9 @@ impl App for TickCounterApp {
 
 struct ChainedApp;
 
+/// Simulated latency of each step in the `ChainedApp` chain.
+const CHAIN_STEP_DELAY: Duration = Duration::from_millis(5);
+
 #[derive(Clone, Default)]
 struct ChainedState {
     step1_done: bool,
@@ -190,7 +204,7 @@ impl App for ChainedApp {
             ChainedMsg::StartChain => {
                 // Step 1: async operation
                 Command::perform_async(async {
-                    tokio::time::sleep(Duration::from_millis(5)).await;
+                    tokio::time::sleep(CHAIN_STEP_DELAY).await;
                     Some(ChainedMsg::Step1Complete)
                 })
             }
@@ -198,7 +212,7 @@ impl App for ChainedApp {
                 state.step1_done = true;
                 // Step 2: another async triggered by step 1
                 Command::perform_async(async {
-                    tokio::time::sleep(Duration::from_millis(5)).await;
+                    tokio::time::sleep(CHAIN_STEP_DELAY).await;
                     Some(ChainedMsg::Step2Complete("chain complete".into()))
                 })
             }
@@ -220,7 +234,7 @@ impl App for ChainedApp {
 // Tests: Command::perform_async
 // ===========================================================================
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_command_perform_async_updates_state() {
     let mut vt = Runtime::<AsyncLoaderApp, _>::virtual_builder(40, 10)
         .build()
@@ -233,30 +247,33 @@ async fn test_command_perform_async_updates_state() {
     vt.dispatch(AsyncLoaderMsg::StartLoad);
     assert!(vt.state().loading);
 
-    // Wait for the async task to complete
-    tokio::time::sleep(Duration::from_millis(50)).await;
+    // Advance the paused clock past the load delay; the spawned task's
+    // timer fires (and the task sends its message) before we resume.
+    tokio::time::sleep(LOAD_DELAY * 2).await;
     vt.process_pending();
 
     assert!(!vt.state().loading);
     assert_eq!(vt.state().data, Some("hello world".to_string()));
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_command_perform_async_chained() {
     let mut vt = Runtime::<ChainedApp, _>::virtual_builder(40, 10)
         .build()
         .unwrap();
 
-    // Start the chain
+    // Start the chain: spawns the step-1 task.
     vt.dispatch(ChainedMsg::StartChain);
 
-    // Wait for step 1 (longer sleep for CI timing variance)
-    tokio::time::sleep(Duration::from_millis(50)).await;
+    // Round 1: step 1's timer fires and its message is queued; processing
+    // it dispatches Step1Complete, which spawns the step-2 task.
+    tokio::time::sleep(CHAIN_STEP_DELAY * 2).await;
     vt.process_pending();
     assert!(vt.state().step1_done);
+    assert!(!vt.state().step2_done);
 
-    // Wait for step 2 (triggered by step 1)
-    tokio::time::sleep(Duration::from_millis(50)).await;
+    // Round 2: step 2's timer fires; processing dispatches Step2Complete.
+    tokio::time::sleep(CHAIN_STEP_DELAY * 2).await;
     vt.process_pending();
     assert!(vt.state().step2_done);
     assert_eq!(vt.state().final_result, Some("chain complete".to_string()));
@@ -389,7 +406,7 @@ async fn test_message_channel_from_spawned_task() {
 // Tests: Render after async operations
 // ===========================================================================
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_render_reflects_async_state() {
     let mut vt = Runtime::<AsyncLoaderApp, _>::virtual_builder(40, 10)
         .build()
@@ -402,14 +419,14 @@ async fn test_render_reflects_async_state() {
     vt.render().unwrap();
     assert!(vt.contains_text("Loading..."));
 
-    tokio::time::sleep(Duration::from_millis(50)).await;
+    tokio::time::sleep(LOAD_DELAY * 2).await;
     vt.process_pending();
     vt.render().unwrap();
     assert!(vt.contains_text("Data: hello world"));
     assert!(!vt.contains_text("Loading..."));
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_render_after_chained_async() {
     let mut vt = Runtime::<ChainedApp, _>::virtual_builder(60, 10)
         .build()
@@ -419,9 +436,17 @@ async fn test_render_after_chained_async() {
     assert!(vt.contains_text("pending"));
 
     vt.dispatch(ChainedMsg::StartChain);
-    tokio::time::sleep(Duration::from_millis(50)).await;
+
+    // The chain needs exactly two rounds: each round lets one step's timer
+    // fire, then `process_pending` dispatches its message (step 1's message
+    // spawns step 2's task).
+    tokio::time::sleep(CHAIN_STEP_DELAY * 2).await;
     vt.process_pending();
-    tokio::time::sleep(Duration::from_millis(50)).await;
+    vt.render().unwrap();
+    assert!(vt.state().step1_done);
+    assert!(vt.contains_text("pending"));
+
+    tokio::time::sleep(CHAIN_STEP_DELAY * 2).await;
     vt.process_pending();
 
     vt.render().unwrap();
@@ -539,7 +564,7 @@ mod app_harness_tests {
 // Tests: Subscriptions
 // ===========================================================================
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_tick_subscription_delivers_messages() {
     use envision::app::TickSubscription;
 
@@ -551,19 +576,15 @@ async fn test_tick_subscription_delivers_messages() {
     let sub = TickSubscription::new(Duration::from_millis(10), || TickCounterMsg::Tick);
     vt.subscribe(sub);
 
-    // Wait for several ticks to fire
+    // With the clock paused, the interval ticks at exactly t = 0, 10, 20,
+    // 30, 40 and 50ms before the test resumes at t = 55ms.
     tokio::time::sleep(Duration::from_millis(55)).await;
     vt.process_pending();
 
-    // Should have received multiple tick messages
-    assert!(
-        vt.state().count >= 3,
-        "Expected at least 3 ticks, got {}",
-        vt.state().count
-    );
+    assert_eq!(vt.state().count, 6);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_timer_subscription_fires_once() {
     use envision::app::TimerSubscription;
 
@@ -611,7 +632,7 @@ async fn test_channel_subscription_forwards_messages() {
     assert_eq!(vt.state().count, 3);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_subscription_cancellation() {
     use envision::app::TickSubscription;
 
@@ -622,30 +643,23 @@ async fn test_subscription_cancellation() {
     let sub = TickSubscription::new(Duration::from_millis(10), || TickCounterMsg::Tick);
     vt.subscribe(sub);
 
-    // Let some ticks fire
+    // With the clock paused, the interval ticks at exactly t = 0, 10, 20
+    // and 30ms before the test resumes at t = 35ms.
     tokio::time::sleep(Duration::from_millis(35)).await;
     vt.process_pending();
-    let count_before_quit = vt.state().count;
-    assert!(count_before_quit >= 1);
+    assert_eq!(vt.state().count, 4);
 
-    // Quit cancels subscriptions
+    // Quit cancels subscriptions. The subscription task observes the
+    // cancellation before the clock can advance to the next tick (t = 40ms).
     vt.quit();
 
-    // Drain any messages that were already in-flight before cancellation.
-    // On Windows CI, timing jitter means several messages may already be
-    // buffered in the channel, so we drain fully rather than asserting a
-    // tight bound on in-flight count.
-    tokio::time::sleep(Duration::from_millis(50)).await;
-    vt.process_pending();
-    let count_after_drain = vt.state().count;
-
-    // The key invariant: after draining, no NEW messages should arrive
-    // because the subscription has been cancelled.
+    // No new messages arrive once the subscription has been cancelled,
+    // however far time advances.
     tokio::time::sleep(Duration::from_millis(100)).await;
     vt.process_pending();
     assert_eq!(
         vt.state().count,
-        count_after_drain,
-        "Expected no new messages after cancellation drain"
+        4,
+        "Expected no new messages after cancellation"
     );
 }

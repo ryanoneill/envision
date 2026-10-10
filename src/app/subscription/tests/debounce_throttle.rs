@@ -1,6 +1,6 @@
 use super::*;
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_debounce_subscription() {
     let cancel = CancellationToken::new();
     let (tx, rx) = mpsc::channel(10);
@@ -17,8 +17,8 @@ async fn test_debounce_subscription() {
     // Give debounce time to process
     tokio::time::sleep(Duration::from_millis(100)).await;
 
-    // Should only get the last value
-    // Use a longer timeout to handle coverage instrumentation overhead
+    // Should only get the last value. The clock is paused, so the 50ms
+    // debounce deadline is always reached before the 500ms timeout.
     let msg = tokio::time::timeout(Duration::from_millis(500), stream.next()).await;
     assert_eq!(msg.unwrap(), Some(TestMsg::Value(3)));
 
@@ -47,7 +47,7 @@ async fn test_debounce_emits_pending_on_stream_end() {
     assert_eq!(msg, None);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_debounce_with_slow_messages() {
     let cancel = CancellationToken::new();
     let (tx, rx) = mpsc::channel(10);
@@ -62,7 +62,8 @@ async fn test_debounce_with_slow_messages() {
     // Wait longer than debounce
     tokio::time::sleep(Duration::from_millis(50)).await;
 
-    // Should get first message
+    // Should get first message. The clock is paused, so the 20ms debounce
+    // deadline is always reached before the 50ms timeout.
     let msg = tokio::time::timeout(Duration::from_millis(50), stream.next()).await;
     assert_eq!(msg.unwrap(), Some(TestMsg::Value(1)));
 

@@ -223,7 +223,7 @@ fn test_timer_after() {
     assert_eq!(timer.message, TestMsg::Timer);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_interval_immediate_subscription() {
     let cancel = CancellationToken::new();
     let sub = Box::new(IntervalImmediateSubscription::new(
@@ -233,22 +233,24 @@ async fn test_interval_immediate_subscription() {
 
     let mut stream = sub.into_stream(cancel.clone());
 
-    // Should fire immediately without waiting for interval
-    let start = std::time::Instant::now();
+    // Should fire immediately without waiting for interval. The clock is
+    // paused and only advances when the runtime would otherwise wait on a
+    // timer, so an immediate first message takes zero (virtual) time.
+    let start = tokio::time::Instant::now();
     let msg = stream.next().await;
     let elapsed = start.elapsed();
 
     assert_eq!(msg, Some(TestMsg::Tick));
-    // First message should be immediate (less than the interval)
-    assert!(
-        elapsed < Duration::from_millis(50),
+    assert_eq!(
+        elapsed,
+        Duration::ZERO,
         "First message should be immediate, took {elapsed:?}"
     );
 
     cancel.cancel();
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn test_interval_immediate_builder() {
     let cancel = CancellationToken::new();
     let sub =
@@ -256,13 +258,13 @@ async fn test_interval_immediate_builder() {
 
     let mut stream = sub.into_stream(cancel.clone());
 
-    // Should fire immediately
-    let start = std::time::Instant::now();
+    // Should fire immediately (zero virtual time with the clock paused)
+    let start = tokio::time::Instant::now();
     let msg = stream.next().await;
     let elapsed = start.elapsed();
 
     assert_eq!(msg, Some(TestMsg::Tick));
-    assert!(elapsed < Duration::from_millis(50));
+    assert_eq!(elapsed, Duration::ZERO);
 
     cancel.cancel();
 }
