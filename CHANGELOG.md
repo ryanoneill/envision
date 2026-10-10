@@ -35,6 +35,10 @@ See `MIGRATION.md` § *v0.17.x to v0.18.0* for the full before/after table.
 
 Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
 
+### Changed
+
+- Minimum supported Rust version is now 1.88 (was 1.85), required by ratatui 0.30. The CI MSRV job is now labelled `msrv` rather than by version number, so required-check names no longer change on future MSRV bumps.
+
 ### Known Deferred Findings
 
 > Supersedes the Known Deferred Findings block under `[0.17.0]`. The Cadence D item listed there — selection-accessor aliases, including `box_plot` — is **closed** by this release.

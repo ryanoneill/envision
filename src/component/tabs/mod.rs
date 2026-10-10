@@ -234,10 +234,10 @@ impl<T: Clone> TabsState<T> {
 
         if self.tabs.is_empty() {
             self.selected = None;
-        } else if let Some(idx) = self.selected {
-            if idx >= self.tabs.len() {
-                self.selected = Some(self.tabs.len() - 1);
-            }
+        } else if let Some(idx) = self.selected
+            && idx >= self.tabs.len()
+        {
+            self.selected = Some(self.tabs.len() - 1);
         }
     }
 
@@ -466,7 +466,7 @@ impl<T: Clone + Display + 'static> Component for Tabs<T> {
                 } else {
                     ctx.theme.normal_style()
                 };
-                Line::from(Span::styled(format!(" {} ", tab), style))
+                Line::from(Span::styled(format!(" {tab} "), style))
             })
             .collect();
 

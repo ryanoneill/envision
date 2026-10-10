@@ -394,23 +394,23 @@ impl Component for Histogram {
         };
 
         // Render y-axis label above the chart
-        if let Some(y_area) = y_label_area {
-            if let Some(ref label) = state.y_label {
-                let p = ratatui::widgets::Paragraph::new(label.as_str())
-                    .alignment(Alignment::Left)
-                    .style(Style::default().fg(Color::DarkGray));
-                ctx.frame.render_widget(p, y_area);
-            }
+        if let Some(y_area) = y_label_area
+            && let Some(ref label) = state.y_label
+        {
+            let p = ratatui::widgets::Paragraph::new(label.as_str())
+                .alignment(Alignment::Left)
+                .style(Style::default().fg(Color::DarkGray));
+            ctx.frame.render_widget(p, y_area);
         }
 
         // Render x-axis label below the chart
-        if let Some(x_area) = x_label_area {
-            if let Some(ref label) = state.x_label {
-                let p = ratatui::widgets::Paragraph::new(label.as_str())
-                    .alignment(Alignment::Center)
-                    .style(Style::default().fg(Color::DarkGray));
-                ctx.frame.render_widget(p, x_area);
-            }
+        if let Some(x_area) = x_label_area
+            && let Some(ref label) = state.x_label
+        {
+            let p = ratatui::widgets::Paragraph::new(label.as_str())
+                .alignment(Alignment::Center)
+                .style(Style::default().fg(Color::DarkGray));
+            ctx.frame.render_widget(p, x_area);
         }
 
         // Compute bins and render bar chart
@@ -433,7 +433,7 @@ impl Component for Histogram {
                     .label(Line::from(label))
                     .style(bar_style);
                 if state.show_counts {
-                    bar = bar.text_value(format!("{}", count));
+                    bar = bar.text_value(format!("{count}"));
                 }
                 bar
             })

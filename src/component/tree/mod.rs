@@ -848,55 +848,57 @@ impl<T: Clone + 'static> Component for Tree<T> {
                 None
             }
             TreeMessage::Expand => {
-                if let Some(node_info) = flat.get(selected) {
-                    if node_info.has_children && !node_info.is_expanded {
-                        let path = node_info.path.clone();
-                        if let Some(node) = state.get_node_mut(&path) {
-                            node.expand();
-                            state.scroll.set_content_length(state.flatten().len());
-                            return Some(TreeOutput::Expanded(path));
-                        }
+                if let Some(node_info) = flat.get(selected)
+                    && node_info.has_children
+                    && !node_info.is_expanded
+                {
+                    let path = node_info.path.clone();
+                    if let Some(node) = state.get_node_mut(&path) {
+                        node.expand();
+                        state.scroll.set_content_length(state.flatten().len());
+                        return Some(TreeOutput::Expanded(path));
                     }
                 }
                 None
             }
             TreeMessage::Collapse => {
-                if let Some(node_info) = flat.get(selected) {
-                    if node_info.has_children && node_info.is_expanded {
-                        let path = node_info.path.clone();
-                        if let Some(node) = state.get_node_mut(&path) {
-                            node.collapse();
-                            // Adjust selected index if needed
+                if let Some(node_info) = flat.get(selected)
+                    && node_info.has_children
+                    && node_info.is_expanded
+                {
+                    let path = node_info.path.clone();
+                    if let Some(node) = state.get_node_mut(&path) {
+                        node.collapse();
+                        // Adjust selected index if needed
+                        let new_flat = state.flatten();
+                        if selected >= new_flat.len() {
+                            state.selected_index = Some(new_flat.len().saturating_sub(1));
+                        }
+                        state.scroll.set_content_length(new_flat.len());
+                        return Some(TreeOutput::Collapsed(path));
+                    }
+                }
+                None
+            }
+            TreeMessage::Toggle => {
+                if let Some(node_info) = flat.get(selected)
+                    && node_info.has_children
+                {
+                    let path = node_info.path.clone();
+                    let was_expanded = node_info.is_expanded;
+                    if let Some(node) = state.get_node_mut(&path) {
+                        node.toggle();
+                        if was_expanded {
+                            // Adjust selected index if needed after collapse
                             let new_flat = state.flatten();
                             if selected >= new_flat.len() {
                                 state.selected_index = Some(new_flat.len().saturating_sub(1));
                             }
                             state.scroll.set_content_length(new_flat.len());
                             return Some(TreeOutput::Collapsed(path));
-                        }
-                    }
-                }
-                None
-            }
-            TreeMessage::Toggle => {
-                if let Some(node_info) = flat.get(selected) {
-                    if node_info.has_children {
-                        let path = node_info.path.clone();
-                        let was_expanded = node_info.is_expanded;
-                        if let Some(node) = state.get_node_mut(&path) {
-                            node.toggle();
-                            if was_expanded {
-                                // Adjust selected index if needed after collapse
-                                let new_flat = state.flatten();
-                                if selected >= new_flat.len() {
-                                    state.selected_index = Some(new_flat.len().saturating_sub(1));
-                                }
-                                state.scroll.set_content_length(new_flat.len());
-                                return Some(TreeOutput::Collapsed(path));
-                            } else {
-                                state.scroll.set_content_length(state.flatten().len());
-                                return Some(TreeOutput::Expanded(path));
-                            }
+                        } else {
+                            state.scroll.set_content_length(state.flatten().len());
+                            return Some(TreeOutput::Expanded(path));
                         }
                     }
                 }

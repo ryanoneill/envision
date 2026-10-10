@@ -84,7 +84,7 @@ fn test_compute_segments_empty() {
 #[test]
 fn test_debug_impl() {
     let state = FileBrowserState::new("/", sample_entries());
-    let debug = format!("{:?}", state);
+    let debug = format!("{state:?}");
     assert!(debug.contains("FileBrowserState"));
     assert!(debug.contains("current_path"));
     assert!(debug.contains("path_segments"));
@@ -117,14 +117,14 @@ fn test_debug_impl_with_provider() {
 
     let provider = Arc::new(TestProvider);
     let state = FileBrowserState::with_provider("/", provider);
-    let debug = format!("{:?}", state);
+    let debug = format!("{state:?}");
     assert!(debug.contains("<DirectoryProvider>"));
 }
 
 #[test]
 fn test_debug_impl_without_provider() {
     let state = FileBrowserState::new("/", vec![]);
-    let debug = format!("{:?}", state);
+    let debug = format!("{state:?}");
     assert!(debug.contains("provider: None"));
 }
 

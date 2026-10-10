@@ -70,7 +70,7 @@ impl App for RadioGroupApp {
             .selected_item()
             .cloned()
             .unwrap_or_else(|| "None".into());
-        let content = ratatui::widgets::Paragraph::new(format!("  Your selection: {}", selected))
+        let content = ratatui::widgets::Paragraph::new(format!("  Your selection: {selected}"))
             .block(
                 ratatui::widgets::Block::default()
                     .borders(ratatui::widgets::Borders::ALL)
@@ -86,10 +86,10 @@ impl App for RadioGroupApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
         RadioGroup::<String>::handle_event(&state.size, event, &EventContext::new().focused(true))
             .map(Msg::Size)

@@ -120,7 +120,7 @@ fn test_select_x_labels_exact_fit() {
 
 #[test]
 fn test_select_x_labels_needs_reduction() {
-    let labels: Vec<String> = (0..10).map(|i| format!("L{}", i)).collect();
+    let labels: Vec<String> = (0..10).map(|i| format!("L{i}")).collect();
     let result = super::render::select_x_labels(&labels, 3);
     assert_eq!(result.len(), 3);
     // First and last are always included
@@ -184,8 +184,7 @@ fn test_render_line_chart_with_x_labels() {
     // The custom labels should appear somewhere in the rendered output
     assert!(
         output.contains("00:00") || output.contains("24:00"),
-        "Expected custom X labels in output, got:\n{}",
-        output
+        "Expected custom X labels in output, got:\n{output}"
     );
 }
 
@@ -204,8 +203,7 @@ fn test_render_area_chart_with_x_labels() {
     let output = terminal.backend().to_string();
     assert!(
         output.contains("Mon") || output.contains("Fri"),
-        "Expected custom X labels in output, got:\n{}",
-        output
+        "Expected custom X labels in output, got:\n{output}"
     );
 }
 
@@ -224,8 +222,7 @@ fn test_render_scatter_chart_with_x_labels() {
     let output = terminal.backend().to_string();
     assert!(
         output.contains("T1") || output.contains("T3"),
-        "Expected custom X labels in output, got:\n{}",
-        output
+        "Expected custom X labels in output, got:\n{output}"
     );
 }
 
@@ -247,15 +244,14 @@ fn test_render_without_x_labels_uses_numeric_ticks() {
     // Numeric ticks should appear (e.g., "0", "1", "2", etc.)
     assert!(
         output.contains('0') || output.contains('1'),
-        "Expected numeric tick labels in output, got:\n{}",
-        output
+        "Expected numeric tick labels in output, got:\n{output}"
     );
 }
 
 #[test]
 fn test_render_x_labels_many_labels_are_reduced() {
     // Provide many labels; the renderer should show a subset
-    let labels: Vec<String> = (0..50).map(|i| format!("T{:02}", i)).collect();
+    let labels: Vec<String> = (0..50).map(|i| format!("T{i:02}")).collect();
     let values: Vec<f64> = (0..50).map(|i| (i as f64) * 2.0).collect();
     let state = ChartState::line(vec![DataSeries::new("Series", values)]).with_x_labels(labels);
 

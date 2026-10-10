@@ -106,7 +106,7 @@ impl App for RouterApp {
             PaneDirection::Vertical,
             vec![
                 PaneConfig::new("screen")
-                    .with_title(format!(" {} ", title))
+                    .with_title(format!(" {title} "))
                     .with_proportion(1.0),
             ],
         );

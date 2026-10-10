@@ -225,7 +225,7 @@ fn test_view_focused() {
 
 #[test]
 fn test_large_select_navigation() {
-    let options: Vec<String> = (0..100).map(|i| format!("Option {}", i)).collect();
+    let options: Vec<String> = (0..100).map(|i| format!("Option {i}")).collect();
     let mut state = SelectState::new(options);
 
     // Open the select

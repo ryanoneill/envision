@@ -84,8 +84,7 @@ impl App for LogViewerApp {
             "OFF"
         };
         let status = format!(
-            " {} entries | follow:{} regex:{} | /: search, f: follow, 1-4: levels, q: quit",
-            visible, follow, regex
+            " {visible} entries | follow:{follow} regex:{regex} | /: search, f: follow, 1-4: levels, q: quit"
         );
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
@@ -94,10 +93,11 @@ impl App for LogViewerApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if key.code == Key::Char('q') && !state.viewer.is_search_focused() {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && key.code == Key::Char('q')
+            && !state.viewer.is_search_focused()
+        {
+            return Some(Msg::Quit);
         }
         LogViewer::handle_event(&state.viewer, event, &EventContext::new().focused(true))
             .map(Msg::Viewer)

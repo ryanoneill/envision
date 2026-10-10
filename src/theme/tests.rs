@@ -322,8 +322,7 @@ fn test_all_themes_distinct() {
         for j in (i + 1)..themes.len() {
             assert_ne!(
                 themes[i], themes[j],
-                "themes at indices {} and {} should differ",
-                i, j
+                "themes at indices {i} and {j} should differ"
             );
         }
     }
@@ -820,9 +819,7 @@ fn test_severity_style_fg_matches_severity_color() {
         assert_eq!(
             style.fg,
             Some(theme.severity_color(sev)),
-            "severity_style({:?}).fg must equal severity_color({:?})",
-            sev,
-            sev
+            "severity_style({sev:?}).fg must equal severity_color({sev:?})"
         );
     }
 }
@@ -887,8 +884,7 @@ fn test_palette_completeness_per_theme() {
         assert_ne!(
             theme.color(NamedColor::Red),
             theme.color(NamedColor::Green),
-            "{}: Red and Green collapsed — palette likely uninitialized",
-            name,
+            "{name}: Red and Green collapsed — palette likely uninitialized",
         );
     }
 }

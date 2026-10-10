@@ -180,10 +180,10 @@ impl SelectState {
         self.options = options.into_iter().map(|s| s.into()).collect();
 
         // Reset selection if out of bounds
-        if let Some(idx) = self.selected_index {
-            if idx >= self.options.len() {
-                self.selected_index = None;
-            }
+        if let Some(idx) = self.selected_index
+            && idx >= self.options.len()
+        {
+            self.selected_index = None;
         }
 
         // Reset highlight if out of bounds
@@ -515,7 +515,7 @@ impl Component for Select {
         // Display selected value or placeholder
         let display_text = if let Some(value) = state.selected_item() {
             let arrow = if state.is_open { "▲" } else { "▼" };
-            format!("{} {}", value, arrow)
+            format!("{value} {arrow}")
         } else {
             let arrow = if state.is_open { "▲" } else { "▼" };
             format!("{} {}", state.placeholder, arrow)
@@ -559,7 +559,7 @@ impl Component for Select {
                         } else {
                             "  "
                         };
-                        let text = format!("{}{}", prefix, opt);
+                        let text = format!("{prefix}{opt}");
                         let item_style = if idx == state.highlighted_index {
                             ctx.theme.selected_style(ctx.focused)
                         } else {

@@ -117,7 +117,7 @@ fn test_handle_clone_copy() {
 fn test_handle_debug_format() {
     let mut state = ConversationViewState::new();
     let handle = state.push_user("Hello");
-    let debug = format!("{:?}", handle);
+    let debug = format!("{handle:?}");
     assert!(debug.starts_with("MessageHandle("));
 }
 

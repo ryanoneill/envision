@@ -60,30 +60,25 @@ fn test_filter_shows_ancestors() {
     let labels: Vec<&str> = flat.iter().map(|n| n.label.as_str()).collect();
     assert!(
         labels.contains(&"Documents"),
-        "Expected Documents ancestor, got: {:?}",
-        labels
+        "Expected Documents ancestor, got: {labels:?}"
     );
     assert!(
         labels.contains(&"readme.md"),
-        "Expected readme.md match, got: {:?}",
-        labels
+        "Expected readme.md match, got: {labels:?}"
     );
     // Should NOT include guide.md (sibling that doesn't match)
     assert!(
         !labels.contains(&"guide.md"),
-        "Should not include guide.md, got: {:?}",
-        labels
+        "Should not include guide.md, got: {labels:?}"
     );
     // Should NOT include Projects or Downloads
     assert!(
         !labels.contains(&"Projects"),
-        "Should not include Projects, got: {:?}",
-        labels
+        "Should not include Projects, got: {labels:?}"
     );
     assert!(
         !labels.contains(&"Downloads"),
-        "Should not include Downloads, got: {:?}",
-        labels
+        "Should not include Downloads, got: {labels:?}"
     );
 }
 
@@ -222,24 +217,20 @@ fn test_filter_deep_match() {
     let labels: Vec<&str> = flat.iter().map(|n| n.label.as_str()).collect();
     assert!(
         labels.contains(&"Projects"),
-        "Expected Projects ancestor, got: {:?}",
-        labels
+        "Expected Projects ancestor, got: {labels:?}"
     );
     assert!(
         labels.contains(&"envision"),
-        "Expected envision ancestor, got: {:?}",
-        labels
+        "Expected envision ancestor, got: {labels:?}"
     );
     assert!(
         labels.contains(&"src"),
-        "Expected src match, got: {:?}",
-        labels
+        "Expected src match, got: {labels:?}"
     );
     // "tests" is a sibling of "src" but doesn't match — should NOT be shown
     assert!(
         !labels.contains(&"tests"),
-        "Should not include tests sibling, got: {:?}",
-        labels
+        "Should not include tests sibling, got: {labels:?}"
     );
 }
 
@@ -313,18 +304,15 @@ fn test_filter_multiple_matches() {
     let labels: Vec<&str> = flat.iter().map(|n| n.label.as_str()).collect();
     assert!(
         labels.contains(&"Documents"),
-        "Expected Documents, got: {:?}",
-        labels
+        "Expected Documents, got: {labels:?}"
     );
     assert!(
         labels.contains(&"readme.md"),
-        "Expected readme.md, got: {:?}",
-        labels
+        "Expected readme.md, got: {labels:?}"
     );
     assert!(
         labels.contains(&"guide.md"),
-        "Expected guide.md, got: {:?}",
-        labels
+        "Expected guide.md, got: {labels:?}"
     );
 }
 
@@ -354,23 +342,19 @@ fn test_filter_parent_match_shows_matching_children_only() {
     let labels: Vec<&str> = flat.iter().map(|n| n.label.as_str()).collect();
     assert!(
         labels.contains(&"Documents"),
-        "Expected Documents, got: {:?}",
-        labels
+        "Expected Documents, got: {labels:?}"
     );
     assert!(
         labels.contains(&"readme.md"),
-        "Expected readme.md (contains 'd'), got: {:?}",
-        labels
+        "Expected readme.md (contains 'd'), got: {labels:?}"
     );
     assert!(
         labels.contains(&"guide.md"),
-        "Expected guide.md (contains 'd'), got: {:?}",
-        labels
+        "Expected guide.md (contains 'd'), got: {labels:?}"
     );
     assert!(
         labels.contains(&"Downloads"),
-        "Expected Downloads, got: {:?}",
-        labels
+        "Expected Downloads, got: {labels:?}"
     );
 }
 

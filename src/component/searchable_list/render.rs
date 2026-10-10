@@ -87,7 +87,7 @@ pub(super) fn render_searchable_list<T: Clone + Display>(
         .filtered_indices
         .iter()
         .filter_map(|&i| state.items.get(i))
-        .map(|item| ListItem::new(format!("{}", item)))
+        .map(|item| ListItem::new(format!("{item}")))
         .collect();
 
     let highlight_style = if disabled {

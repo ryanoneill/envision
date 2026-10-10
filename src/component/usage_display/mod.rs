@@ -403,7 +403,7 @@ impl UsageDisplay {
         let mut spans = Vec::new();
 
         if let Some(icon) = &metric.icon {
-            spans.push(Span::styled(format!("{} ", icon), theme.normal_style()));
+            spans.push(Span::styled(format!("{icon} "), theme.normal_style()));
         }
 
         spans.push(Span::styled(
@@ -460,7 +460,7 @@ impl UsageDisplay {
         } else {
             let mut block = Block::default().borders(Borders::ALL);
             if let Some(title) = &state.title {
-                block = block.title(format!(" {} ", title));
+                block = block.title(format!(" {title} "));
             }
             let inner = block.inner(area);
             frame.render_widget(block, area);
@@ -501,7 +501,7 @@ impl UsageDisplay {
         } else {
             let mut block = Block::default().borders(Borders::ALL);
             if let Some(title) = &state.title {
-                block = block.title(format!(" {} ", title));
+                block = block.title(format!(" {title} "));
             }
             let inner = block.inner(area);
             frame.render_widget(block, area);
@@ -545,7 +545,7 @@ impl UsageDisplay {
         ))
         .with_id("usage_display")
         .with_meta("metric_count", state.metrics.len().to_string())
-        .with_meta("layout", format!("grid({})", columns));
+        .with_meta("layout", format!("grid({columns})"));
         let annotated = crate::annotation::Annotate::new(paragraph, annotation);
         frame.render_widget(annotated, inner);
     }

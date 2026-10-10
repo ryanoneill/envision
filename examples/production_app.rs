@@ -43,7 +43,7 @@ impl AppConfig {
     /// Builds a sample configuration as if parsed from CLI args.
     fn from_simulated_args() -> Self {
         Self {
-            files: (1..=20).map(|i| format!("document_{:02}.pdf", i)).collect(),
+            files: (1..=20).map(|i| format!("document_{i:02}.pdf")).collect(),
             output_dir: "/tmp/processed".into(),
         }
     }
@@ -139,13 +139,13 @@ impl App for ProcessorApp {
         match msg {
             ProcessorMsg::FileStarted(name) => {
                 state.current_file = Some(name.clone());
-                state.log.info(format!("Processing: {}", name));
+                state.log.info(format!("Processing: {name}"));
             }
             ProcessorMsg::FileCompleted(name) => {
                 state.processed += 1;
                 let fraction = state.processed as f32 / state.total_files as f32;
                 state.progress.set_progress(fraction);
-                state.log.success(format!("Completed: {}", name));
+                state.log.success(format!("Completed: {name}"));
                 state.current_file = None;
             }
             ProcessorMsg::AllDone => {
@@ -217,7 +217,7 @@ impl App for ProcessorApp {
 
         // -- Current file indicator --
         let current_text = match &state.current_file {
-            Some(name) => format!("  Working on: {}", name),
+            Some(name) => format!("  Working on: {name}"),
             None if state.all_done => "  Status: All files processed".to_string(),
             None if state.processed == 0 => "  Status: Waiting for worker...".to_string(),
             None => "  Status: Idle (between files)".to_string(),

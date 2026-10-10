@@ -378,9 +378,7 @@ fn test_timeline_events_spans_and_zoom() {
     let zoomed_width = after_zoom.1 - after_zoom.0;
     assert!(
         zoomed_width < initial_width,
-        "Zoom in should narrow the view: {} < {}",
-        zoomed_width,
-        initial_width
+        "Zoom in should narrow the view: {zoomed_width} < {initial_width}"
     );
 
     // Zoom out - should widen again
@@ -389,9 +387,7 @@ fn test_timeline_events_spans_and_zoom() {
     let zoomout_width = after_zoomout.1 - after_zoomout.0;
     assert!(
         zoomout_width > zoomed_width,
-        "Zoom out should widen: {} > {}",
-        zoomout_width,
-        zoomed_width
+        "Zoom out should widen: {zoomout_width} > {zoomed_width}"
     );
 
     // Render

@@ -34,7 +34,7 @@ pub(super) fn render_span_tree(
 
         let mut block = Block::default().borders(Borders::ALL).style(border_style);
         if let Some(title) = &state.title {
-            block = block.title(format!(" {} ", title));
+            block = block.title(format!(" {title} "));
         }
 
         let inner = block.inner(area);
@@ -193,7 +193,7 @@ fn format_time_axis(global_start: f64, global_end: f64, width: u16) -> String {
     let total_duration = global_end - global_start;
     if total_duration <= 0.0 {
         let label = format_time_value(global_start);
-        let mut result = format!(" {}", label);
+        let mut result = format!(" {label}");
         let pad = width.saturating_sub(result.len());
         for _ in 0..pad {
             result.push(' ');
@@ -208,7 +208,7 @@ fn format_time_axis(global_start: f64, global_end: f64, width: u16) -> String {
 
     // For very narrow widths, just show start and end
     if width < 20 {
-        let mut result = format!(" {}", start_label);
+        let mut result = format!(" {start_label}");
         let end_pos = width.saturating_sub(end_label.len());
         let pad = end_pos.saturating_sub(result.len());
         for _ in 0..pad {
@@ -272,12 +272,12 @@ fn format_time_value(value: f64) -> String {
         if secs == secs.round() {
             format!("{}s", secs as i64)
         } else {
-            format!("{:.1}s", secs)
+            format!("{secs:.1}s")
         }
     } else if value == value.round() {
         format!("{}ms", value as i64)
     } else {
-        format!("{:.1}ms", value)
+        format!("{value:.1}ms")
     }
 }
 

@@ -379,13 +379,13 @@ impl App for EventApp {
 
     fn handle_event(event: &crate::input::Event) -> Option<Self::Message> {
         use crate::input::Key;
-        if let Some(key) = event.as_key() {
-            if let Key::Char(c) = key.code {
-                if c == 'q' {
-                    return Some(EventMsg::Quit);
-                }
-                return Some(EventMsg::KeyPressed(c));
+        if let Some(key) = event.as_key()
+            && let Key::Char(c) = key.code
+        {
+            if c == 'q' {
+                return Some(EventMsg::Quit);
             }
+            return Some(EventMsg::KeyPressed(c));
         }
         None
     }

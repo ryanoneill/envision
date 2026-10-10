@@ -24,10 +24,10 @@ pub(super) fn update(state: &mut LineInputState, msg: LineInputMessage) -> Optio
                 .map(|(s, e)| state.buffer[s..e].chars().count())
                 .unwrap_or(0);
             let effective_len = state.buffer.chars().count() - selection_chars;
-            if let Some(max) = state.max_length {
-                if effective_len >= max {
-                    return None;
-                }
+            if let Some(max) = state.max_length
+                && effective_len >= max
+            {
+                return None;
             }
             if c.is_whitespace() {
                 state.undo_stack.break_group();

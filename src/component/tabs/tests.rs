@@ -369,7 +369,7 @@ fn test_single_tab() {
 
 #[test]
 fn test_large_tabs_navigation() {
-    let labels: Vec<String> = (0..50).map(|i| format!("Tab {}", i)).collect();
+    let labels: Vec<String> = (0..50).map(|i| format!("Tab {i}")).collect();
     let mut state = TabsState::new(labels);
 
     // Navigate to middle using Right

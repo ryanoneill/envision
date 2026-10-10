@@ -302,7 +302,7 @@ fn test_default_state() {
 
 #[test]
 fn test_large_list_navigation() {
-    let items: Vec<String> = (0..1000).map(|i| format!("Item {}", i)).collect();
+    let items: Vec<String> = (0..1000).map(|i| format!("Item {i}")).collect();
     let mut state = SelectableListState::new(items);
 
     // Start at 0

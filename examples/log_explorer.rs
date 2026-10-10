@@ -163,8 +163,7 @@ impl App for LogExplorer {
                                 ))]);
                             } else {
                                 state.status.set_center(vec![StatusBarItem::new(format!(
-                                    "Search: {}",
-                                    text
+                                    "Search: {text}"
                                 ))]);
                             }
                         }
@@ -221,10 +220,10 @@ impl App for LogExplorer {
             Msg::Tick => {
                 state.tick_count += 1;
                 // Simulate incoming data every few ticks
-                if state.tick_count % 3 == 0 {
+                if state.tick_count.is_multiple_of(3) {
                     return Command::message(Msg::SimulateLog);
                 }
-                if state.tick_count % 5 == 0 {
+                if state.tick_count.is_multiple_of(5) {
                     return Command::message(Msg::SimulateEvent);
                 }
             }
@@ -411,7 +410,7 @@ fn update_focus_status(state: &mut State) {
     };
     state
         .status
-        .set_center(vec![StatusBarItem::new(format!("Focus: {}", focus_name))]);
+        .set_center(vec![StatusBarItem::new(format!("Focus: {focus_name}"))]);
 }
 
 fn simulated_log_entry(counter: u64) -> (String, StatusLogLevel) {

@@ -72,10 +72,10 @@ where
                     maybe_event = reader.next() => {
                         match maybe_event {
                             Some(Ok(ct_event)) => {
-                                if let Some(event) = crate::input::convert::from_crossterm_event(ct_event) {
-                                    if let Some(msg) = (handler)(event) {
-                                        yield msg;
-                                    }
+                                if let Some(event) = crate::input::convert::from_crossterm_event(ct_event)
+                                    && let Some(msg) = (handler)(event)
+                                {
+                                    yield msg;
                                 }
                             }
                             Some(Err(_)) => break,

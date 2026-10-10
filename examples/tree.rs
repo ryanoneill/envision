@@ -79,7 +79,7 @@ impl App for TreeApp {
             .selected_item()
             .map(|n| n.label().to_string())
             .unwrap_or_else(|| "None".into());
-        let status = format!(" Selected: {}", selected);
+        let status = format!(" Selected: {selected}");
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[1],
@@ -87,10 +87,10 @@ impl App for TreeApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
         Tree::handle_event(&state.tree, event, &EventContext::new().focused(true)).map(Msg::Tree)
     }

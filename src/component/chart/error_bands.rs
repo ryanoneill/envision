@@ -81,11 +81,11 @@ pub(super) fn fill_error_bands(
                 .saturating_sub(1)
                 .saturating_sub((lower_frac * (graph_area.height as f64 - 1.0)) as u16);
             for y in upper_screen_y..=lower_screen_y.min(graph_area.bottom()) {
-                if let Some(cell) = buf.cell_mut(Position::new(screen_x, y)) {
-                    if cell.symbol() == " " {
-                        cell.set_char('\u{2591}');
-                        cell.set_fg(color);
-                    }
+                if let Some(cell) = buf.cell_mut(Position::new(screen_x, y))
+                    && cell.symbol() == " "
+                {
+                    cell.set_char('\u{2591}');
+                    cell.set_fg(color);
                 }
             }
         }

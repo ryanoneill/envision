@@ -436,12 +436,11 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
         }
         let item = self.items.remove(index);
         // Adjust selection if needed
-        if let Some(sel) = self.list_state.selected() {
-            if let Some(&orig_idx) = self.filtered_indices.get(sel) {
-                if orig_idx >= self.items.len() {
-                    // Selected item was at or past the end; will be fixed by apply_filter
-                }
-            }
+        if let Some(sel) = self.list_state.selected()
+            && let Some(&orig_idx) = self.filtered_indices.get(sel)
+            && orig_idx >= self.items.len()
+        {
+            // Selected item was at or past the end; will be fixed by apply_filter
         }
         self.apply_filter();
         Some(item)
@@ -498,7 +497,7 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
                 .items
                 .iter()
                 .enumerate()
-                .filter(|(_, item)| format!("{}", item).to_lowercase().contains(&filter_lower))
+                .filter(|(_, item)| format!("{item}").to_lowercase().contains(&filter_lower))
                 .map(|(i, _)| i)
                 .collect();
         }
@@ -506,11 +505,11 @@ impl<T: Clone + std::fmt::Display + 'static> SelectableListState<T> {
         self.scroll.set_content_length(self.filtered_indices.len());
 
         // Try to preserve the previously selected item
-        if let Some(prev_idx) = previously_selected {
-            if let Some(new_pos) = self.filtered_indices.iter().position(|&i| i == prev_idx) {
-                self.list_state.select(Some(new_pos));
-                return;
-            }
+        if let Some(prev_idx) = previously_selected
+            && let Some(new_pos) = self.filtered_indices.iter().position(|&i| i == prev_idx)
+        {
+            self.list_state.select(Some(new_pos));
+            return;
         }
 
         // Otherwise, select first visible item or none

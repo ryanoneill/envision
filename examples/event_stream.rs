@@ -173,8 +173,7 @@ impl App for EventStreamApp {
         let visible = state.stream.visible_events().len();
         let total = state.stream.event_count();
         let status = format!(
-            " {}/{} events | /: search, 1-5: level filter, f: auto-scroll, Up/Down: scroll, q: quit",
-            visible, total
+            " {visible}/{total} events | /: search, 1-5: level filter, f: auto-scroll, Up/Down: scroll, q: quit"
         );
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
@@ -183,10 +182,11 @@ impl App for EventStreamApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if key.code == Key::Char('q') && !state.stream.is_search_focused() {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && key.code == Key::Char('q')
+            && !state.stream.is_search_focused()
+        {
+            return Some(Msg::Quit);
         }
         EventStream::handle_event(&state.stream, event, &EventContext::new().focused(true))
             .map(Msg::Stream)

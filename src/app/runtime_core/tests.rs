@@ -52,10 +52,10 @@ impl App for TestApp {
     }
 
     fn handle_event(event: &Event) -> Option<Self::Message> {
-        if let Some(key) = event.as_key() {
-            if let Key::Char(c) = key.code {
-                return Some(TestMsg::Set(c.to_string()));
-            }
+        if let Some(key) = event.as_key()
+            && let Key::Char(c) = key.code
+        {
+            return Some(TestMsg::Set(c.to_string()));
         }
         None
     }

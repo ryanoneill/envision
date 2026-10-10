@@ -87,7 +87,7 @@ impl App for FileBrowserApp {
         let filter_display = if filter.is_empty() {
             String::new()
         } else {
-            format!(" | Filter: {}", filter)
+            format!(" | Filter: {filter}")
         };
         let status = format!(
             " Selected: {} | Entries: {}{} | q: quit",
@@ -102,12 +102,11 @@ impl App for FileBrowserApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc)
-                && state.browser.filter_text().is_empty()
-            {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+            && state.browser.filter_text().is_empty()
+        {
+            return Some(Msg::Quit);
         }
         FileBrowser::handle_event(&state.browser, event, &EventContext::new().focused(true))
             .map(Msg::Browser)

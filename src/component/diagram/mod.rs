@@ -438,14 +438,14 @@ impl Component for Diagram {
                 None
             }
             DiagramMessage::UpdateNodeStatus { id, status } => {
-                if let Some(old) = state.update_node_status(&id, status.clone()) {
-                    if old != status {
-                        return Some(DiagramOutput::StatusChanged {
-                            id,
-                            old,
-                            new_status: status,
-                        });
-                    }
+                if let Some(old) = state.update_node_status(&id, status.clone())
+                    && old != status
+                {
+                    return Some(DiagramOutput::StatusChanged {
+                        id,
+                        old,
+                        new_status: status,
+                    });
                 }
                 None
             }
@@ -562,21 +562,21 @@ impl Component for Diagram {
                 None
             }
             DiagramMessage::ToggleCluster => {
-                if let Some(node) = state.selected_node() {
-                    if let Some(cluster_id) = node.cluster_id() {
-                        let cluster_id = cluster_id.to_string();
-                        let collapsed = if state.collapsed_clusters.contains(&cluster_id) {
-                            state.collapsed_clusters.remove(&cluster_id);
-                            false
-                        } else {
-                            state.collapsed_clusters.insert(cluster_id.clone());
-                            true
-                        };
-                        return Some(DiagramOutput::ClusterToggled {
-                            id: cluster_id,
-                            collapsed,
-                        });
-                    }
+                if let Some(node) = state.selected_node()
+                    && let Some(cluster_id) = node.cluster_id()
+                {
+                    let cluster_id = cluster_id.to_string();
+                    let collapsed = if state.collapsed_clusters.contains(&cluster_id) {
+                        state.collapsed_clusters.remove(&cluster_id);
+                        false
+                    } else {
+                        state.collapsed_clusters.insert(cluster_id.clone());
+                        true
+                    };
+                    return Some(DiagramOutput::ClusterToggled {
+                        id: cluster_id,
+                        collapsed,
+                    });
                 }
                 None
             }

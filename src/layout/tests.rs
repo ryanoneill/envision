@@ -350,7 +350,7 @@ mod app_shell_tests {
         let regions = shell.split(Rect::new(0, 0, 80, 5));
 
         let total = regions.header.height + regions.content.height + regions.footer.height;
-        assert!(total <= 5, "total height {} exceeds area height 5", total);
+        assert!(total <= 5, "total height {total} exceeds area height 5");
     }
 
     #[test]

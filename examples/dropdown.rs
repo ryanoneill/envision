@@ -67,7 +67,7 @@ impl App for DropdownApp {
         );
 
         let selected = state.language.selected_item().unwrap_or("None");
-        let status = format!(" Selected: {}", selected);
+        let status = format!(" Selected: {selected}");
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[1],
@@ -75,10 +75,11 @@ impl App for DropdownApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if key.code == Key::Esc && !state.language.is_open() {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && key.code == Key::Esc
+            && !state.language.is_open()
+        {
+            return Some(Msg::Quit);
         }
         Dropdown::handle_event(&state.language, event, &EventContext::new().focused(true))
             .map(Msg::Language)

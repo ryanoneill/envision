@@ -485,10 +485,10 @@ impl SpanTreeState {
         self.expanded.remove(id);
         // Clamp selection if it went out of bounds
         let visible = self.flatten().len();
-        if let Some(idx) = self.selected_index {
-            if idx >= visible {
-                self.selected_index = Some(visible.saturating_sub(1));
-            }
+        if let Some(idx) = self.selected_index
+            && idx >= visible
+        {
+            self.selected_index = Some(visible.saturating_sub(1));
         }
         self.scroll.set_content_length(visible);
     }
@@ -754,20 +754,39 @@ impl Component for SpanTree {
                         None
                     }
                     SpanTreeMessage::Expand => {
-                        if let Some(span) = flat.get(selected) {
-                            if span.has_children && !span.is_expanded {
-                                let id = span.id.clone();
-                                state.expanded.insert(id.clone());
-                                state.scroll.set_content_length(state.flatten().len());
-                                return Some(SpanTreeOutput::Expanded(id));
-                            }
+                        if let Some(span) = flat.get(selected)
+                            && span.has_children
+                            && !span.is_expanded
+                        {
+                            let id = span.id.clone();
+                            state.expanded.insert(id.clone());
+                            state.scroll.set_content_length(state.flatten().len());
+                            return Some(SpanTreeOutput::Expanded(id));
                         }
                         None
                     }
                     SpanTreeMessage::Collapse => {
-                        if let Some(span) = flat.get(selected) {
-                            if span.has_children && span.is_expanded {
-                                let id = span.id.clone();
+                        if let Some(span) = flat.get(selected)
+                            && span.has_children
+                            && span.is_expanded
+                        {
+                            let id = span.id.clone();
+                            state.expanded.remove(&id);
+                            let new_flat = state.flatten();
+                            if selected >= new_flat.len() {
+                                state.selected_index = Some(new_flat.len().saturating_sub(1));
+                            }
+                            state.scroll.set_content_length(new_flat.len());
+                            return Some(SpanTreeOutput::Collapsed(id));
+                        }
+                        None
+                    }
+                    SpanTreeMessage::Toggle => {
+                        if let Some(span) = flat.get(selected)
+                            && span.has_children
+                        {
+                            let id = span.id.clone();
+                            if span.is_expanded {
                                 state.expanded.remove(&id);
                                 let new_flat = state.flatten();
                                 if selected >= new_flat.len() {
@@ -775,28 +794,10 @@ impl Component for SpanTree {
                                 }
                                 state.scroll.set_content_length(new_flat.len());
                                 return Some(SpanTreeOutput::Collapsed(id));
-                            }
-                        }
-                        None
-                    }
-                    SpanTreeMessage::Toggle => {
-                        if let Some(span) = flat.get(selected) {
-                            if span.has_children {
-                                let id = span.id.clone();
-                                if span.is_expanded {
-                                    state.expanded.remove(&id);
-                                    let new_flat = state.flatten();
-                                    if selected >= new_flat.len() {
-                                        state.selected_index =
-                                            Some(new_flat.len().saturating_sub(1));
-                                    }
-                                    state.scroll.set_content_length(new_flat.len());
-                                    return Some(SpanTreeOutput::Collapsed(id));
-                                } else {
-                                    state.expanded.insert(id.clone());
-                                    state.scroll.set_content_length(state.flatten().len());
-                                    return Some(SpanTreeOutput::Expanded(id));
-                                }
+                            } else {
+                                state.expanded.insert(id.clone());
+                                state.scroll.set_content_length(state.flatten().len());
+                                return Some(SpanTreeOutput::Expanded(id));
                             }
                         }
                         None

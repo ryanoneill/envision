@@ -231,8 +231,8 @@ impl WidgetType {
 impl std::fmt::Display for WidgetType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            WidgetType::Custom(name) => write!(f, "{}", name),
-            other => write!(f, "{:?}", other),
+            WidgetType::Custom(name) => write!(f, "{name}"),
+            other => write!(f, "{other:?}"),
         }
     }
 }
@@ -601,11 +601,11 @@ impl Annotation {
         parts.push(format!("{:?}", self.widget_type));
 
         if let Some(label) = &self.label {
-            parts.push(format!("\"{}\"", label));
+            parts.push(format!("\"{label}\""));
         }
 
         if let Some(id) = &self.id {
-            parts.push(format!("#{}", id));
+            parts.push(format!("#{id}"));
         }
 
         if self.focused {

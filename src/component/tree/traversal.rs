@@ -177,11 +177,11 @@ impl<T: Clone> TreeState<T> {
             return;
         }
 
-        if let Some(path) = prev_path {
-            if let Some(new_idx) = flat.iter().position(|n| n.path == path) {
-                self.selected_index = Some(new_idx);
-                return;
-            }
+        if let Some(path) = prev_path
+            && let Some(new_idx) = flat.iter().position(|n| n.path == path)
+        {
+            self.selected_index = Some(new_idx);
+            return;
         }
 
         self.selected_index = Some(0);

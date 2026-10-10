@@ -487,7 +487,7 @@ impl Component for StepIndicator {
                     ctx.theme.border_style()
                 });
             if let Some(title) = &state.title {
-                block = block.title(format!(" {} ", title));
+                block = block.title(format!(" {title} "));
             }
             let inner = block.inner(ctx.area);
             ctx.frame.render_widget(block, ctx.area);
@@ -605,13 +605,13 @@ fn render_vertical(
             style,
         )));
 
-        if state.show_descriptions {
-            if let Some(desc) = &step.description {
-                lines.push(Line::from(Span::styled(
-                    format!("  {}", desc),
-                    theme.normal_style(),
-                )));
-            }
+        if state.show_descriptions
+            && let Some(desc) = &step.description
+        {
+            lines.push(Line::from(Span::styled(
+                format!("  {desc}"),
+                theme.normal_style(),
+            )));
         }
     }
 

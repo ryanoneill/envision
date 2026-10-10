@@ -75,10 +75,10 @@ fn demo_basic_annotations() {
             region.area.height
         );
         if let Some(label) = &region.annotation.label {
-            println!("    Label: {}", label);
+            println!("    Label: {label}");
         }
         if let Some(id) = &region.annotation.id {
-            println!("    ID: {}", id);
+            println!("    ID: {id}");
         }
     }
     println!();
@@ -214,7 +214,7 @@ fn demo_annotation_registry() {
                             Style::default()
                         };
                         let prefix = if *selected { "> " } else { "  " };
-                        ListItem::new(format!("{}{}", prefix, text)).style(style)
+                        ListItem::new(format!("{prefix}{text}")).style(style)
                     })
                     .collect();
 

@@ -499,10 +499,10 @@ impl TabBarState {
         if self.tabs.is_empty() {
             self.active = None;
             self.scroll_offset = 0;
-        } else if let Some(idx) = self.active {
-            if idx >= self.tabs.len() {
-                self.active = Some(self.tabs.len() - 1);
-            }
+        } else if let Some(idx) = self.active
+            && idx >= self.tabs.len()
+        {
+            self.active = Some(self.tabs.len() - 1);
         }
     }
 
@@ -552,15 +552,15 @@ impl TabBarState {
 
     /// Ensures the active tab is visible by adjusting the scroll offset.
     fn ensure_active_visible(&mut self) {
-        if let Some(active) = self.active {
-            if active < self.scroll_offset {
-                self.scroll_offset = active;
-            }
-            // The exact right bound depends on the render width, which we
-            // do not know here.  We do a best-effort adjustment: if the
-            // active index is beyond what we can see, bump the offset.
-            // The view function will do a tighter clamp.
+        if let Some(active) = self.active
+            && active < self.scroll_offset
+        {
+            self.scroll_offset = active;
         }
+        // The exact right bound depends on the render width, which we
+        // do not know here.  We do a best-effort adjustment: if the
+        // active index is beyond what we can see, bump the offset.
+        // The view function will do a tighter clamp.
     }
 }
 

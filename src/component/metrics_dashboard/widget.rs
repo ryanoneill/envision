@@ -204,7 +204,7 @@ impl MetricWidget {
     pub fn display_value(&self) -> String {
         match &self.kind {
             MetricKind::Counter { value } => value.to_string(),
-            MetricKind::Gauge { value, max } => format!("{}/{}", value, max),
+            MetricKind::Gauge { value, max } => format!("{value}/{max}"),
             MetricKind::Status { up } => {
                 if *up {
                     "UP".to_string()
