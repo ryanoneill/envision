@@ -7,7 +7,7 @@ you get started.
 
 ### Prerequisites
 
-- Rust 1.81 or later (check `rust-version` in `Cargo.toml` for the current MSRV)
+- Rust 1.88 or later (check `rust-version` in `Cargo.toml` for the current MSRV)
 - Git with GPG signing configured
 
 ### Setup
