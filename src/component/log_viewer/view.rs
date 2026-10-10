@@ -58,7 +58,7 @@ pub(super) fn render_filter_bar(state: &LogViewerState, ctx: &mut RenderContext<
 
     let spans = vec![
         Span::styled(
-            format!("1:{} Info ", info_marker),
+            format!("1:{info_marker} Info "),
             if ctx.disabled {
                 filter_style
             } else {
@@ -66,7 +66,7 @@ pub(super) fn render_filter_bar(state: &LogViewerState, ctx: &mut RenderContext<
             },
         ),
         Span::styled(
-            format!("2:{} Success ", success_marker),
+            format!("2:{success_marker} Success "),
             if ctx.disabled {
                 filter_style
             } else {
@@ -74,7 +74,7 @@ pub(super) fn render_filter_bar(state: &LogViewerState, ctx: &mut RenderContext<
             },
         ),
         Span::styled(
-            format!("3:{} Warning ", warning_marker),
+            format!("3:{warning_marker} Warning "),
             if ctx.disabled {
                 filter_style
             } else {
@@ -82,7 +82,7 @@ pub(super) fn render_filter_bar(state: &LogViewerState, ctx: &mut RenderContext<
             },
         ),
         Span::styled(
-            format!("4:{} Error", error_marker),
+            format!("4:{error_marker} Error"),
             if ctx.disabled {
                 filter_style
             } else {
@@ -133,9 +133,9 @@ pub(super) fn render_log(state: &LogViewerState, ctx: &mut RenderContext<'_, '_>
             let match_count = visible.len();
             let total_count = state.len();
             if match_count < total_count {
-                block = block.title(format!("{} ({}/{})", title, match_count, total_count));
+                block = block.title(format!("{title} ({match_count}/{total_count})"));
             } else {
-                block = block.title(format!("{} ({})", title, total_count));
+                block = block.title(format!("{title} ({total_count})"));
             }
         }
 
@@ -164,11 +164,11 @@ pub(super) fn render_log(state: &LogViewerState, ctx: &mut RenderContext<'_, '_>
             text.push_str(entry.level().prefix());
             text.push(' ');
 
-            if state.show_timestamps() {
-                if let Some(ts) = entry.timestamp() {
-                    text.push_str(ts);
-                    text.push(' ');
-                }
+            if state.show_timestamps()
+                && let Some(ts) = entry.timestamp()
+            {
+                text.push_str(ts);
+                text.push(' ');
             }
 
             text.push_str(entry.message());

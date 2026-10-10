@@ -22,10 +22,10 @@ fn bench_selectable_list_view(c: &mut Criterion) {
     let mut group = c.benchmark_group("selectable_list_view");
 
     for item_count in [100, 1000] {
-        let items: Vec<String> = (0..item_count).map(|i| format!("Item {}", i)).collect();
+        let items: Vec<String> = (0..item_count).map(|i| format!("Item {i}")).collect();
 
         for (width, height) in [(80, 24), (120, 40)] {
-            let label = format!("{}_items/{}x{}", item_count, width, height);
+            let label = format!("{item_count}_items/{width}x{height}");
 
             group.bench_with_input(
                 BenchmarkId::new("render", &label),
@@ -88,13 +88,13 @@ fn bench_table_view(c: &mut Criterion) {
         let rows: Vec<BenchRow> = (0..row_count)
             .map(|i| BenchRow {
                 id: i,
-                name: format!("User {}", i),
-                email: format!("user{}@example.com", i),
+                name: format!("User {i}"),
+                email: format!("user{i}@example.com"),
             })
             .collect();
 
         for (width, height) in [(80, 24), (120, 40)] {
-            let label = format!("{}_rows/{}x{}", row_count, width, height);
+            let label = format!("{row_count}_rows/{width}x{height}");
 
             group.bench_with_input(
                 BenchmarkId::new("render", &label),
@@ -132,7 +132,7 @@ fn bench_table_view(c: &mut Criterion) {
 fn make_flat_tree(child_count: usize) -> Vec<TreeNode<String>> {
     let mut root = TreeNode::new_expanded("Root", "root".to_string());
     for i in 0..child_count {
-        root.add_child(TreeNode::new(format!("Item {}", i), format!("item_{}", i)));
+        root.add_child(TreeNode::new(format!("Item {i}"), format!("item_{i}")));
     }
     vec![root]
 }
@@ -141,12 +141,12 @@ fn make_flat_tree(child_count: usize) -> Vec<TreeNode<String>> {
 /// depth=3, breadth=10 gives ~1111 nodes; depth=2, breadth=10 gives ~111 nodes.
 fn make_nested_tree(depth: usize, breadth: usize) -> Vec<TreeNode<String>> {
     fn build(depth: usize, breadth: usize, prefix: &str) -> TreeNode<String> {
-        let label = format!("Node {}", prefix);
+        let label = format!("Node {prefix}");
         let data = prefix.to_string();
         let mut node = TreeNode::new_expanded(label, data);
         if depth > 0 {
             for i in 0..breadth {
-                let child_prefix = format!("{}.{}", prefix, i);
+                let child_prefix = format!("{prefix}.{i}");
                 node.add_child(build(depth - 1, breadth, &child_prefix));
             }
         }
@@ -163,7 +163,7 @@ fn bench_tree_view(c: &mut Criterion) {
         let roots = make_flat_tree(child_count);
 
         for (width, height) in [(80, 24), (120, 40)] {
-            let label = format!("{}_flat/{}x{}", child_count, width, height);
+            let label = format!("{child_count}_flat/{width}x{height}");
 
             group.bench_with_input(
                 BenchmarkId::new("render", &label),
@@ -261,7 +261,7 @@ fn bench_diagram_view(c: &mut Criterion) {
 
     for node_count in [10, 50, 100] {
         for (width, height) in [(80, 24), (120, 40)] {
-            let label = format!("{}_nodes/{}x{}", node_count, width, height);
+            let label = format!("{node_count}_nodes/{width}x{height}");
 
             group.bench_with_input(
                 BenchmarkId::new("render", &label),

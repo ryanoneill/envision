@@ -112,9 +112,9 @@ pub fn render(backend: &CaptureBackend, pretty: bool) -> String {
     };
 
     if pretty {
-        serde_json::to_string_pretty(&frame).unwrap_or_else(|e| format!("{{\"error\": \"{}\"}}", e))
+        serde_json::to_string_pretty(&frame).unwrap_or_else(|e| format!("{{\"error\": \"{e}\"}}"))
     } else {
-        serde_json::to_string(&frame).unwrap_or_else(|e| format!("{{\"error\": \"{}\"}}", e))
+        serde_json::to_string(&frame).unwrap_or_else(|e| format!("{{\"error\": \"{e}\"}}"))
     }
 }
 
@@ -124,7 +124,7 @@ pub fn render(backend: &CaptureBackend, pretty: bool) -> String {
 pub fn render_lines_only(backend: &CaptureBackend) -> String {
     let height = backend.height();
     let lines: Vec<String> = (0..height).map(|y| backend.row_content(y)).collect();
-    serde_json::to_string(&lines).unwrap_or_else(|e| format!("{{\"error\": \"{}\"}}", e))
+    serde_json::to_string(&lines).unwrap_or_else(|e| format!("{{\"error\": \"{e}\"}}"))
 }
 
 #[cfg(test)]

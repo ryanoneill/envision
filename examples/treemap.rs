@@ -89,10 +89,10 @@ impl App for TreemapApp {
     }
 
     fn handle_event(event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if let Key::Char('q') = key.code {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && let Key::Char('q') = key.code
+        {
+            return Some(Msg::Quit);
         }
         None
     }

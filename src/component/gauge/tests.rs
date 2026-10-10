@@ -425,7 +425,7 @@ fn test_gauge_variant_clone() {
 #[test]
 fn test_gauge_variant_debug() {
     let variant = GaugeVariant::Full;
-    assert_eq!(format!("{:?}", variant), "Full");
+    assert_eq!(format!("{variant:?}"), "Full");
 }
 
 // =========================================================================
@@ -448,7 +448,7 @@ fn test_threshold_zone_debug() {
         above: 0.5,
         color: Color::Yellow,
     };
-    let debug = format!("{:?}", zone);
+    let debug = format!("{zone:?}");
     assert!(debug.contains("0.5"));
     assert!(debug.contains("Yellow"));
 }

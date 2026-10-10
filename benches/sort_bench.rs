@@ -38,7 +38,7 @@ fn bench_sort_10k_rows(c: &mut Criterion) {
         })
         .collect();
     let columns: Vec<Column> = (0..10)
-        .map(|i| Column::new(format!("C{}", i), Constraint::Length(8)).sortable())
+        .map(|i| Column::new(format!("C{i}"), Constraint::Length(8)).sortable())
         .collect();
 
     c.bench_function("sort_10k_rows_f64", |b| {

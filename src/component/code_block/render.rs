@@ -148,7 +148,7 @@ pub(super) fn render(
 /// Builds the title string for the border.
 fn build_title(state: &CodeBlockState) -> String {
     match (&state.title, &state.language) {
-        (Some(title), _) => format!(" {} ", title),
+        (Some(title), _) => format!(" {title} "),
         (None, lang) if *lang != super::highlight::Language::Plain => {
             format!(" {} ", lang.name())
         }
@@ -177,7 +177,7 @@ fn render_gutter(
         Style::default().fg(Color::DarkGray)
     };
 
-    let gutter_text = format!("{:>5} ", line_num);
+    let gutter_text = format!("{line_num:>5} ");
     let paragraph = Paragraph::new(gutter_text).style(gutter_style);
     frame.render_widget(paragraph, area);
 }

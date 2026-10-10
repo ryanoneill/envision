@@ -131,14 +131,14 @@ impl StatusBarItemContent {
                 let seconds = total_seconds % 60;
 
                 if *long_format || hours > 0 {
-                    format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+                    format!("{hours:02}:{minutes:02}:{seconds:02}")
                 } else {
-                    format!("{:02}:{:02}", minutes, seconds)
+                    format!("{minutes:02}:{seconds:02}")
                 }
             }
             Self::Counter { value, label } => {
                 if let Some(label) = label {
-                    format!("{}: {}", label, value)
+                    format!("{label}: {value}")
                 } else {
                     value.to_string()
                 }

@@ -159,7 +159,7 @@ fn test_assertion_row_contains() {
 fn test_assertion_error_display() {
     let error = AssertionError::new("Test", "expected", "actual").with_context("Some context");
 
-    let display = format!("{}", error);
+    let display = format!("{error}");
     assert!(display.contains("Test"));
     assert!(display.contains("expected"));
     assert!(display.contains("actual"));
@@ -170,7 +170,7 @@ fn test_assertion_error_display() {
 fn test_assertion_error_display_without_context() {
     let error = AssertionError::new("Test", "expected", "actual");
 
-    let display = format!("{}", error);
+    let display = format!("{error}");
     assert!(display.contains("Test"));
     assert!(display.contains("expected"));
     assert!(display.contains("actual"));
@@ -446,7 +446,7 @@ fn test_assertion_error_is_std_error() {
 #[test]
 fn test_assertion_debug_impl() {
     let assertion = Assertion::contains("test");
-    let debug = format!("{:?}", assertion);
+    let debug = format!("{assertion:?}");
     assert!(debug.contains("Contains"));
     assert!(debug.contains("test"));
 }

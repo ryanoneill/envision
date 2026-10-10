@@ -56,7 +56,7 @@ pub(super) fn render_alert_panel(
 
         let title = state.title_with_counts();
         let outer_block = Block::default()
-            .title(format!(" {} ", title))
+            .title(format!(" {title} "))
             .borders(Borders::ALL)
             .border_style(outer_border_style);
 
@@ -164,7 +164,7 @@ fn render_metric_card(
     let display_val = metric.display_value();
 
     let status_line = Line::from(vec![
-        Span::styled(format!("{} ", indicator), state_style),
+        Span::styled(format!("{indicator} "), state_style),
         Span::styled(state_label.to_string(), state_style),
         Span::raw("  "),
         Span::styled(display_val, state_style),

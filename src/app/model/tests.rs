@@ -149,13 +149,13 @@ impl App for CustomApp {
     fn view(_state: &Self::State, _frame: &mut Frame) {}
 
     fn handle_event(event: &Event) -> Option<Self::Message> {
-        if let Some(key) = event.as_key() {
-            if let Key::Char(c) = key.code {
-                if c == 'q' {
-                    return Some(CustomMsg::Quit);
-                }
-                return Some(CustomMsg::KeyPressed(c));
+        if let Some(key) = event.as_key()
+            && let Key::Char(c) = key.code
+        {
+            if c == 'q' {
+                return Some(CustomMsg::Quit);
             }
+            return Some(CustomMsg::KeyPressed(c));
         }
         None
     }

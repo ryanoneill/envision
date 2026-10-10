@@ -138,7 +138,7 @@ impl App for CounterApp {
         let history_lines: Vec<Line> = state
             .history
             .iter()
-            .map(|s| Line::from(format!("  {}", s)))
+            .map(|s| Line::from(format!("  {s}")))
             .collect();
         let history = Paragraph::new(history_lines)
             .block(Block::default().borders(Borders::ALL).title("History"));

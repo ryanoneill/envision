@@ -106,7 +106,7 @@ impl App for ConfirmDialogApp {
         )];
         log_lines.push(Line::from(""));
         for result in &state.results {
-            log_lines.push(Line::from(format!("  {}", result)));
+            log_lines.push(Line::from(format!("  {result}")));
         }
         let log = ratatui::widgets::Paragraph::new(log_lines).block(
             ratatui::widgets::Block::default()

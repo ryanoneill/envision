@@ -344,10 +344,7 @@ pub fn assert_snapshot_eq(left: &Snapshot, right: &Snapshot) {
 pub fn assert_snapshot_text(snapshot: &Snapshot, expected: &str) {
     let actual = snapshot.to_plain();
     if actual != expected {
-        panic!(
-            "Snapshot text differs:\n\nExpected:\n{}\n\nActual:\n{}",
-            expected, actual
-        );
+        panic!("Snapshot text differs:\n\nExpected:\n{expected}\n\nActual:\n{actual}");
     }
 }
 
@@ -394,7 +391,7 @@ impl SnapshotTest {
             #[cfg(feature = "serialization")]
             SnapshotFormat::Json | SnapshotFormat::JsonPretty => "json",
         };
-        self.snapshot_dir.join(format!("{}.{}", name, ext))
+        self.snapshot_dir.join(format!("{name}.{ext}"))
     }
 
     /// Asserts that a snapshot matches the stored version.
@@ -427,8 +424,7 @@ impl SnapshotTest {
             std::fs::write(&new_path, &actual)?;
 
             return Err(std::io::Error::other(format!(
-                "Snapshot '{}' differs. New snapshot written to {:?}",
-                name, new_path
+                "Snapshot '{name}' differs. New snapshot written to {new_path:?}"
             ))
             .into());
         }

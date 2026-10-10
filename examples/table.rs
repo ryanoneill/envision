@@ -111,10 +111,7 @@ impl App for TableApp {
             .selected_item()
             .map(|l| l.name.clone())
             .unwrap_or_else(|| "None".into());
-        let status = format!(
-            " Selected: {} | j/k: navigate, s: sort by name, q: quit",
-            selected
-        );
+        let status = format!(" Selected: {selected} | j/k: navigate, s: sort by name, q: quit");
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[1],

@@ -109,10 +109,10 @@ fn test_stack_dismiss_action() {
     struct DismissOverlay;
     impl Overlay<i32> for DismissOverlay {
         fn handle_event(&mut self, event: &Event) -> OverlayAction<i32> {
-            if let Some(key) = event.as_key() {
-                if key.code == Key::Esc {
-                    return OverlayAction::Dismiss;
-                }
+            if let Some(key) = event.as_key()
+                && key.code == Key::Esc
+            {
+                return OverlayAction::Dismiss;
             }
             OverlayAction::Consumed
         }

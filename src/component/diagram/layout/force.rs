@@ -124,14 +124,14 @@ fn initialize_positions(
     node_height: f64,
 ) -> Vec<(f64, f64)> {
     // Try to reuse previous positions for stability
-    if let Some(prev) = hints.previous_layout {
-        if prev.node_positions().len() == n {
-            return prev
-                .node_positions()
-                .iter()
-                .map(|p| (p.x(), p.y()))
-                .collect();
-        }
+    if let Some(prev) = hints.previous_layout
+        && prev.node_positions().len() == n
+    {
+        return prev
+            .node_positions()
+            .iter()
+            .map(|p| (p.x(), p.y()))
+            .collect();
     }
 
     // Place nodes in a circle

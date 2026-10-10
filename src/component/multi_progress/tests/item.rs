@@ -142,7 +142,7 @@ fn test_item_clone() {
 #[test]
 fn test_item_debug() {
     let item = ProgressItem::new("id1", "Label");
-    let debug_str = format!("{:?}", item);
+    let debug_str = format!("{item:?}");
     assert!(debug_str.contains("id1"));
     assert!(debug_str.contains("Label"));
 }

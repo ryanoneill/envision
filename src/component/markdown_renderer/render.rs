@@ -183,7 +183,7 @@ impl<'t> MarkdownLineRenderer<'t> {
                 let level = self.heading_level.take().unwrap_or(1);
                 let prefix = "#".repeat(level as usize);
                 let mut heading_spans =
-                    vec![Span::styled(format!("{} ", prefix), self.heading_style())];
+                    vec![Span::styled(format!("{prefix} "), self.heading_style())];
                 heading_spans.extend(self.apply_heading_style_to_spans());
                 self.current_spans.clear();
                 self.lines.push(Line::from(heading_spans));
@@ -208,7 +208,7 @@ impl<'t> MarkdownLineRenderer<'t> {
                     if list.ordered {
                         let num = list.next_number;
                         list.next_number += 1;
-                        format!("  {}. ", num)
+                        format!("  {num}. ")
                     } else {
                         "  - ".to_string()
                     }
@@ -235,7 +235,7 @@ impl<'t> MarkdownLineRenderer<'t> {
                     for line_text in cb.content.trim_end_matches('\n').split('\n') {
                         let spans = vec![
                             Span::styled("│ ", border_style),
-                            Span::styled(format!("  {}", line_text), code_style),
+                            Span::styled(format!("  {line_text}"), code_style),
                         ];
                         self.lines.push(Line::from(spans));
                     }
@@ -264,7 +264,7 @@ impl<'t> MarkdownLineRenderer<'t> {
                 if let Some(url) = self.link_url.take() {
                     let link_style = Style::default().fg(self.theme.info);
                     self.current_spans
-                        .push(Span::styled(format!(" ({})", url), link_style));
+                        .push(Span::styled(format!(" ({url})"), link_style));
                 }
             }
             _ => {}
@@ -303,7 +303,7 @@ impl<'t> MarkdownLineRenderer<'t> {
             .fg(self.theme.warning)
             .add_modifier(Modifier::BOLD);
         self.current_spans
-            .push(Span::styled(format!("`{}`", code), style));
+            .push(Span::styled(format!("`{code}`"), style));
     }
 
     fn soft_break(&mut self) {
@@ -603,8 +603,8 @@ mod tests {
         let lines = render("# Title");
         assert!(!lines.is_empty());
         let text = plain_text(&lines[0]);
-        assert!(text.contains("# "), "expected heading prefix in: {}", text);
-        assert!(text.contains("Title"), "expected title in: {}", text);
+        assert!(text.contains("# "), "expected heading prefix in: {text}");
+        assert!(text.contains("Title"), "expected title in: {text}");
     }
 
     #[test]
@@ -745,8 +745,7 @@ mod tests {
             texts
                 .iter()
                 .any(|t| t.contains("1.") && t.contains("first")),
-            "texts: {:?}",
-            texts
+            "texts: {texts:?}"
         );
         assert!(
             texts
@@ -776,13 +775,11 @@ mod tests {
         let text = plain_text(&lines[0]);
         assert!(
             text.contains("click here"),
-            "link text should be present: {}",
-            text
+            "link text should be present: {text}"
         );
         assert!(
             text.contains("https://example.com"),
-            "url should be shown: {}",
-            text
+            "url should be shown: {text}"
         );
     }
 
@@ -807,8 +804,7 @@ mod tests {
         let text = plain_text(&lines[0]);
         assert!(
             text.contains("▎"),
-            "blockquote should have border prefix: {}",
-            text
+            "blockquote should have border prefix: {text}"
         );
         assert!(text.contains("This is a quote"));
     }

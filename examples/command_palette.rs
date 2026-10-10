@@ -136,7 +136,7 @@ impl App for CommandPaletteApp {
             .iter()
             .rev()
             .take(3)
-            .map(|s| Line::from(format!("  {}", s)))
+            .map(|s| Line::from(format!("  {s}")))
             .collect();
         let log = ratatui::widgets::Paragraph::new(log_lines).block(
             ratatui::widgets::Block::default()

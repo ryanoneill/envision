@@ -739,7 +739,7 @@ impl Tooltip {
             .style(Style::default().bg(state.bg_color));
 
         if let Some(title) = &state.title {
-            block = block.title(format!(" {} ", title));
+            block = block.title(format!(" {title} "));
         }
 
         let paragraph = Paragraph::new(state.content.as_str())

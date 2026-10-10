@@ -175,8 +175,7 @@ fn test_default_palette_colors_are_all_distinct() {
         for (j, color_j) in DEFAULT_PALETTE.iter().enumerate().skip(i + 1) {
             assert_ne!(
                 color_i, color_j,
-                "Palette colors at index {} and {} should be distinct",
-                i, j
+                "Palette colors at index {i} and {j} should be distinct"
             );
         }
     }

@@ -362,7 +362,7 @@ impl App for FileManager {
 fn update_status_items(status: &mut StatusBarState, entry: &FileEntry) {
     let size_str = match entry.size() {
         Some(s) if s >= 1024 => format!("{:.1} KB", s as f64 / 1024.0),
-        Some(s) => format!("{} B", s),
+        Some(s) => format!("{s} B"),
         None => "---".to_string(),
     };
     let kind = if entry.is_dir() { "Dir" } else { "File" };
@@ -386,7 +386,7 @@ fn rebuild_path(breadcrumb: &BreadcrumbState, up_to_idx: usize) -> String {
         .map(|s| s.label().to_string())
         .collect::<Vec<_>>()
         .join("/");
-    format!("/{}", path)
+    format!("/{path}")
 }
 
 fn sample_entries(path: &str) -> Vec<FileEntry> {
@@ -409,8 +409,8 @@ fn sample_entries(path: &str) -> Vec<FileEntry> {
             FileEntry::file("theme.rs", "/home/user/project/src/theme.rs").with_size(1800),
         ],
         _ => vec![
-            FileEntry::file("mod.rs", format!("{}/mod.rs", path)).with_size(640),
-            FileEntry::file("tests.rs", format!("{}/tests.rs", path)).with_size(2300),
+            FileEntry::file("mod.rs", format!("{path}/mod.rs")).with_size(640),
+            FileEntry::file("tests.rs", format!("{path}/tests.rs")).with_size(2300),
         ],
     }
 }

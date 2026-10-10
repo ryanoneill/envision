@@ -242,8 +242,7 @@ async fn test_interval_immediate_subscription() {
     // First message should be immediate (less than the interval)
     assert!(
         elapsed < Duration::from_millis(50),
-        "First message should be immediate, took {:?}",
-        elapsed
+        "First message should be immediate, took {elapsed:?}"
     );
 
     cancel.cancel();

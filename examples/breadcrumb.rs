@@ -52,14 +52,13 @@ impl App for BreadcrumbApp {
             Msg::Breadcrumb(m) => {
                 if let Some(BreadcrumbOutput::Selected(idx)) =
                     Breadcrumb::update(&mut state.breadcrumb, m)
+                    && let Some(segment) = state.breadcrumb.segments().get(idx)
                 {
-                    if let Some(segment) = state.breadcrumb.segments().get(idx) {
-                        state.selections.push(format!(
-                            "Navigated to: {} ({})",
-                            segment.label(),
-                            segment.data().unwrap_or("no path")
-                        ));
-                    }
+                    state.selections.push(format!(
+                        "Navigated to: {} ({})",
+                        segment.label(),
+                        segment.data().unwrap_or("no path")
+                    ));
                 }
             }
             Msg::Quit => return Command::quit(),
@@ -86,7 +85,7 @@ impl App for BreadcrumbApp {
         let log_lines: Vec<Line> = state
             .selections
             .iter()
-            .map(|s| Line::from(format!("  {}", s)))
+            .map(|s| Line::from(format!("  {s}")))
             .collect();
         let log = ratatui::widgets::Paragraph::new(log_lines).block(
             ratatui::widgets::Block::default()
@@ -96,10 +95,8 @@ impl App for BreadcrumbApp {
         frame.render_widget(log, chunks[1]);
 
         let focused_idx = state.breadcrumb.focused_index();
-        let status = format!(
-            " Focused: {} | Left/Right: navigate, Enter: select, q: quit",
-            focused_idx
-        );
+        let status =
+            format!(" Focused: {focused_idx} | Left/Right: navigate, Enter: select, q: quit");
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[2],
@@ -107,10 +104,10 @@ impl App for BreadcrumbApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
         Breadcrumb::handle_event(&state.breadcrumb, event, &EventContext::new().focused(true))
             .map(Msg::Breadcrumb)

@@ -76,7 +76,7 @@ impl App for MenuApp {
 
         let selected_text = state.last_selected.as_deref().unwrap_or("None");
         let content =
-            ratatui::widgets::Paragraph::new(format!("  Last activated: {}", selected_text)).block(
+            ratatui::widgets::Paragraph::new(format!("  Last activated: {selected_text}")).block(
                 ratatui::widgets::Block::default()
                     .borders(ratatui::widgets::Borders::ALL)
                     .title("Menu Demo"),
@@ -91,10 +91,10 @@ impl App for MenuApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if let Some(key) = event.as_key() {
-            if matches!(key.code, Key::Char('q') | Key::Esc) {
-                return Some(Msg::Quit);
-            }
+        if let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
         Menu::handle_event(&state.menu, event, &EventContext::new().focused(true)).map(Msg::Menu)
     }

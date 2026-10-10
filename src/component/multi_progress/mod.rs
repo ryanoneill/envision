@@ -701,10 +701,10 @@ impl Component for MultiProgress {
             }
 
             MultiProgressMessage::Select => {
-                if let Some(index) = state.selected {
-                    if index < state.items.len() {
-                        return Some(MultiProgressOutput::Selected(index));
-                    }
+                if let Some(index) = state.selected
+                    && index < state.items.len()
+                {
+                    return Some(MultiProgressOutput::Selected(index));
                 }
                 None
             }

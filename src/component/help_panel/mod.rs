@@ -742,7 +742,7 @@ impl Component for HelpPanel {
                 .border_style(border_style);
 
             if let Some(title) = &state.title {
-                block = block.title(format!(" {} ", title));
+                block = block.title(format!(" {title} "));
             }
 
             let inner = block.inner(ctx.area);

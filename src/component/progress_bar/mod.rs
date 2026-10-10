@@ -531,15 +531,15 @@ impl ProgressBarState {
 pub fn format_eta(duration: Duration) -> String {
     let total_secs = duration.as_secs();
     if total_secs < 60 {
-        format!("{}s", total_secs)
+        format!("{total_secs}s")
     } else if total_secs < 3600 {
         let mins = total_secs / 60;
         let secs = total_secs % 60;
-        format!("{}m {:02}s", mins, secs)
+        format!("{mins}m {secs:02}s")
     } else {
         let hours = total_secs / 3600;
         let mins = (total_secs % 3600) / 60;
-        format!("{}h {:02}m", hours, mins)
+        format!("{hours}h {mins:02}m")
     }
 }
 
@@ -664,17 +664,17 @@ fn build_label(state: &ProgressBarState) -> String {
         parts.push(format!("{}%", state.percentage()));
     }
 
-    if state.show_rate {
-        if let Some(rate) = &state.rate_text {
-            parts.push(format!("[{}]", rate));
-        }
+    if state.show_rate
+        && let Some(rate) = &state.rate_text
+    {
+        parts.push(format!("[{rate}]"));
     }
 
-    if state.show_eta {
-        if let Some(millis) = state.eta_millis {
-            let duration = Duration::from_millis(millis);
-            parts.push(format!("ETA: {}", format_eta(duration)));
-        }
+    if state.show_eta
+        && let Some(millis) = state.eta_millis
+    {
+        let duration = Duration::from_millis(millis);
+        parts.push(format!("ETA: {}", format_eta(duration)));
     }
 
     parts.join(" ")

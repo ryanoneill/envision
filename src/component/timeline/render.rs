@@ -404,7 +404,7 @@ pub(super) fn format_time(value: f64, view_range: f64) -> String {
 
     if abs_range < 1000.0 {
         // Sub-second range: show milliseconds
-        format!("{:.0}ms", value)
+        format!("{value:.0}ms")
     } else if abs_range < 60_000.0 {
         // Under a minute: show seconds
         format!("{:.1}s", value / 1000.0)

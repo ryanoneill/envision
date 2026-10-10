@@ -55,7 +55,7 @@ impl App for DialogApp {
                 if let Some(output) = Dialog::update(&mut state.dialog, m) {
                     match output {
                         DialogOutput::ButtonPressed(id) => {
-                            state.last_result = Some(format!("Pressed: {}", id));
+                            state.last_result = Some(format!("Pressed: {id}"));
                         }
                         DialogOutput::Closed => {
                             state.last_result = Some("Dialog closed".into());
@@ -77,7 +77,7 @@ impl App for DialogApp {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(area);
 
         let result_text = state.last_result.as_deref().unwrap_or("No action yet");
-        let content = ratatui::widgets::Paragraph::new(format!("  Result: {}", result_text)).block(
+        let content = ratatui::widgets::Paragraph::new(format!("  Result: {result_text}")).block(
             ratatui::widgets::Block::default()
                 .borders(ratatui::widgets::Borders::ALL)
                 .title("Dialog Demo"),

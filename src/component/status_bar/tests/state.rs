@@ -516,7 +516,7 @@ fn test_state_clone() {
 #[test]
 fn test_state_debug() {
     let state = StatusBarState::new();
-    let debug_str = format!("{:?}", state);
+    let debug_str = format!("{state:?}");
     assert!(debug_str.contains("StatusBarState"));
 }
 

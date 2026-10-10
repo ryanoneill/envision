@@ -52,9 +52,9 @@ where
 
         if let Some(title) = &pane.title {
             let span = if let Some(style) = pane.title_style {
-                ratatui::text::Span::styled(format!(" {} ", title), style)
+                ratatui::text::Span::styled(format!(" {title} "), style)
             } else {
-                ratatui::text::Span::raw(format!(" {} ", title))
+                ratatui::text::Span::raw(format!(" {title} "))
             };
             block = block.title(span);
         }

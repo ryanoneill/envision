@@ -55,7 +55,7 @@ impl App for AsyncLoaderApp {
         let text = if state.loading {
             "Loading...".to_string()
         } else if let Some(ref data) = state.data {
-            format!("Data: {}", data)
+            format!("Data: {data}")
         } else {
             "Idle".to_string()
         };
@@ -483,7 +483,7 @@ mod app_harness_tests {
             let text = if state.loading {
                 "Loading...".to_string()
             } else if let Some(ref data) = state.data {
-                format!("Data: {}", data)
+                format!("Data: {data}")
             } else {
                 "Idle".to_string()
             };

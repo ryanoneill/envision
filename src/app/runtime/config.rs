@@ -334,7 +334,7 @@ mod tests {
             .on_setup(Arc::new(|| Ok(())))
             .on_teardown(Arc::new(|| Ok(())));
 
-        let debug = format!("{:?}", config);
+        let debug = format!("{config:?}");
         assert!(debug.contains("on_setup"));
         assert!(debug.contains("on_teardown"));
         assert!(debug.contains("<hook>"));
@@ -343,7 +343,7 @@ mod tests {
     #[test]
     fn test_config_debug_without_hooks() {
         let config = RuntimeConfig::default();
-        let debug = format!("{:?}", config);
+        let debug = format!("{config:?}");
         assert!(debug.contains("on_setup: None"));
         assert!(debug.contains("on_teardown: None"));
     }

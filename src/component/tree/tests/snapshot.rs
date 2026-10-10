@@ -313,7 +313,7 @@ fn test_view_filtered_no_matches() {
 fn test_view_many_siblings() {
     let mut root = TreeNode::new_expanded("Root", ());
     for i in 1..=5 {
-        root.add_child(TreeNode::new(format!("Item {}", i), ()));
+        root.add_child(TreeNode::new(format!("Item {i}"), ()));
     }
 
     let state = TreeState::new(vec![root]);

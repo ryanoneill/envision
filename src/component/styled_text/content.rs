@@ -690,13 +690,13 @@ fn render_block(
         StyledBlock::CodeBlock { language, content } => {
             if let Some(lang) = language {
                 lines.push(RatLine::from(RatSpan::styled(
-                    format!("  [{}]", lang),
+                    format!("  [{lang}]"),
                     theme.disabled_style().add_modifier(Modifier::ITALIC),
                 )));
             }
             for line in content.lines() {
                 lines.push(RatLine::from(RatSpan::styled(
-                    format!("    {}", line),
+                    format!("    {line}"),
                     base_style,
                 )));
             }

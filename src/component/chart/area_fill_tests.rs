@@ -101,8 +101,7 @@ fn test_area_fill_does_not_overwrite_braille_dots() {
         if *line_char != ' ' && *line_char != '\u{2591}' {
             assert_eq!(
                 line_char, area_char,
-                "Area fill should not overwrite existing content: expected '{}', got '{}'",
-                line_char, area_char
+                "Area fill should not overwrite existing content: expected '{line_char}', got '{area_char}'"
             );
         }
     }

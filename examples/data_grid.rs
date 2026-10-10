@@ -101,7 +101,7 @@ impl App for DataGridApp {
             .selected_item()
             .map(|e| e.name.clone())
             .unwrap_or_else(|| "None".into());
-        let status = format!(" Selected: {}", selected);
+        let status = format!(" Selected: {selected}");
         frame.render_widget(
             ratatui::widgets::Paragraph::new(status).style(Style::default().fg(Color::DarkGray)),
             chunks[1],
@@ -109,12 +109,11 @@ impl App for DataGridApp {
     }
 
     fn handle_event_with_state(state: &State, event: &Event) -> Option<Msg> {
-        if !state.grid.is_editing() {
-            if let Some(key) = event.as_key() {
-                if matches!(key.code, Key::Char('q') | Key::Esc) {
-                    return Some(Msg::Quit);
-                }
-            }
+        if !state.grid.is_editing()
+            && let Some(key) = event.as_key()
+            && matches!(key.code, Key::Char('q') | Key::Esc)
+        {
+            return Some(Msg::Quit);
         }
         DataGrid::handle_event(&state.grid, event, &EventContext::new().focused(true))
             .map(Msg::Grid)

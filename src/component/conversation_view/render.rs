@@ -175,13 +175,13 @@ fn format_message<'a>(
     if state.show_role_labels {
         let mut header_spans = Vec::new();
 
-        if state.show_timestamps {
-            if let Some(ts) = msg.timestamp() {
-                header_spans.push(Span::styled(
-                    format!("[{}] ", ts),
-                    Style::default().fg(Color::DarkGray),
-                ));
-            }
+        if state.show_timestamps
+            && let Some(ts) = msg.timestamp()
+        {
+            header_spans.push(Span::styled(
+                format!("[{ts}] "),
+                Style::default().fg(Color::DarkGray),
+            ));
         }
 
         header_spans.push(Span::styled(
@@ -257,20 +257,20 @@ fn wrap_lines(text: &str, prefix: &str, width: usize) -> Vec<String> {
     let prefix_width = UnicodeWidthStr::width(prefix);
     let effective_width = width.saturating_sub(prefix_width);
     if effective_width == 0 {
-        return text.lines().map(|l| format!("{}{}", prefix, l)).collect();
+        return text.lines().map(|l| format!("{prefix}{l}")).collect();
     }
 
     let mut result = Vec::new();
     for line in text.lines() {
         let line_width = UnicodeWidthStr::width(line);
         if line_width <= effective_width {
-            result.push(format!("{}{}", prefix, line));
+            result.push(format!("{prefix}{line}"));
         } else {
             let mut remaining = line;
             while !remaining.is_empty() {
                 let rem_width = UnicodeWidthStr::width(remaining);
                 if rem_width <= effective_width {
-                    result.push(format!("{}{}", prefix, remaining));
+                    result.push(format!("{prefix}{remaining}"));
                     break;
                 }
                 let mut col = 0;
@@ -366,14 +366,14 @@ fn format_code_block<'a>(
 
     let lang_label = language.unwrap_or("code");
     lines.push(Line::from(vec![
-        Span::styled(format!("{}\u{2502} ", indent), border_style),
+        Span::styled(format!("{indent}\u{2502} "), border_style),
         Span::styled(
             lang_label.to_string(),
             Style::default().fg(Color::Cyan).add_modifier(Modifier::DIM),
         ),
     ]));
 
-    let code_prefix = format!("{}\u{2502} ", indent);
+    let code_prefix = format!("{indent}\u{2502} ");
     for line in code.lines() {
         lines.push(Line::from(vec![
             Span::styled(code_prefix.clone(), border_style),
@@ -400,15 +400,15 @@ fn format_tool_use_block<'a>(
         .fg(Color::Yellow)
         .add_modifier(Modifier::DIM);
 
-    let block_key = format!("tool:{}", name);
+    let block_key = format!("tool:{name}");
     let collapsed = state.collapsed_blocks.contains(&block_key);
     let toggle_char = if collapsed { "\u{25b8}" } else { "\u{25be}" };
 
-    let inner_indent = format!("{}  ", indent);
+    let inner_indent = format!("{indent}  ");
     lines.push(Line::from(vec![
-        Span::styled(format!("{}{} ", indent, toggle_char), dim_style),
+        Span::styled(format!("{indent}{toggle_char} "), dim_style),
         Span::styled(
-            format!("Tool: {}", name),
+            format!("Tool: {name}"),
             tool_style.add_modifier(Modifier::BOLD),
         ),
     ]));
@@ -422,7 +422,7 @@ fn format_tool_use_block<'a>(
             }
             _ => {
                 lines.push(Line::from(Span::styled(
-                    format!("{}(no input)", inner_indent),
+                    format!("{inner_indent}(no input)"),
                     dim_style,
                 )));
             }
@@ -431,7 +431,7 @@ fn format_tool_use_block<'a>(
             let output_style = Style::default()
                 .fg(Color::Yellow)
                 .add_modifier(Modifier::DIM | Modifier::ITALIC);
-            let out_prefix = format!("{}-> ", inner_indent);
+            let out_prefix = format!("{inner_indent}-> ");
             for wrapped in wrap_lines(out, &out_prefix, width) {
                 lines.push(Line::from(Span::styled(wrapped, output_style)));
             }
@@ -456,9 +456,9 @@ fn format_thinking_block<'a>(
     let collapsed = state.collapsed_blocks.contains("thinking");
     let toggle_char = if collapsed { "\u{25b8}" } else { "\u{25be}" };
 
-    let inner_indent = format!("{}  ", indent);
+    let inner_indent = format!("{indent}  ");
     lines.push(Line::from(vec![
-        Span::styled(format!("{}{} ", indent, toggle_char), thinking_style),
+        Span::styled(format!("{indent}{toggle_char} "), thinking_style),
         Span::styled("Thinking...", header_style),
     ]));
 
@@ -472,7 +472,7 @@ fn format_thinking_block<'a>(
 fn format_error_block<'a>(content: &str, width: usize, indent: &str, lines: &mut Vec<Line<'a>>) {
     let error_style = Style::default().fg(Color::Red).add_modifier(Modifier::BOLD);
 
-    let prefix = format!("{}\u{2716} Error: ", indent);
+    let prefix = format!("{indent}\u{2716} Error: ");
     for wrapped in wrap_lines(content, &prefix, width) {
         lines.push(Line::from(Span::styled(wrapped, error_style)));
     }

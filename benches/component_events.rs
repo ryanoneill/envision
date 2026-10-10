@@ -37,8 +37,8 @@ fn make_bench_rows(count: u32) -> Vec<BenchRow> {
     (0..count)
         .map(|i| BenchRow {
             id: i,
-            name: format!("User {}", i),
-            email: format!("user{}@example.com", i),
+            name: format!("User {i}"),
+            email: format!("user{i}@example.com"),
         })
         .collect()
 }
@@ -60,7 +60,7 @@ fn bench_handle_event(c: &mut Criterion) {
 
     for size in [100, 1000] {
         // ---- SelectableList ----
-        let items: Vec<String> = (0..size).map(|i| format!("Item {}", i)).collect();
+        let items: Vec<String> = (0..size).map(|i| format!("Item {i}")).collect();
         let event = Event::key(Key::Down);
 
         // Focused (processes the event)
@@ -125,7 +125,7 @@ fn bench_handle_event(c: &mut Criterion) {
         // ---- TextArea ----
         // Build multi-line content with `size` lines
         let content: String = (0..size)
-            .map(|i| format!("Line {} with some text content", i))
+            .map(|i| format!("Line {i} with some text content"))
             .collect::<Vec<_>>()
             .join("\n");
         let event = Event::key(Key::Down);
@@ -230,7 +230,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
 
     for size in [100, 1000] {
         // ---- SelectableList ----
-        let items: Vec<String> = (0..size).map(|i| format!("Item {}", i)).collect();
+        let items: Vec<String> = (0..size).map(|i| format!("Item {i}")).collect();
         let event = Event::key(Key::Down);
 
         group.bench_with_input(
@@ -266,7 +266,7 @@ fn bench_dispatch_event(c: &mut Criterion) {
 
         // ---- TextArea ----
         let content: String = (0..size)
-            .map(|i| format!("Line {} with some text content", i))
+            .map(|i| format!("Line {i} with some text content"))
             .collect::<Vec<_>>()
             .join("\n");
         let event_down = Event::key(Key::Down);
