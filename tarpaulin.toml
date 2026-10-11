@@ -1,26 +1,41 @@
 # Tarpaulin configuration for envision
+#
 # Run with: cargo tarpaulin
+#
+# This is the same invocation CI uses (the Coverage job in
+# .github/workflows/ci.yml), so a local run reproduces CI exactly. Reports are
+# written to coverage/: tarpaulin-report.html for local browsing and
+# cobertura.xml for the Codecov upload.
+#
+# Keep exactly ONE table in this file. Tarpaulin treats every table as a
+# separate coverage configuration and runs all of them in sequence (command
+# line flags are merged into each one; there is no flag to select a single
+# table). A second table therefore doubles the coverage run instead of
+# selecting an alternative. The only exception is the reserved `[report]`
+# table, which affects report output without starting a run.
+#
+# Tests that cannot run meaningfully under instrumentation are skipped via
+# `#[cfg_attr(tarpaulin, ignore = "...")]` (tarpaulin builds with
+# `--cfg tarpaulin`). This applies to every trybuild test (tests/trybuild_*.rs):
+# trybuild shells out to cargo to compile a fresh test crate and its full
+# dependency tree, which inherits the coverage instrumentation, can exceed
+# the per-test timeout on a cold cache, and contributes no line coverage of
+# the library. Those tests still run in every regular Test job. See the
+# "Coverage" section of CONTRIBUTING.md.
 
-[default]
+[coverage]
 # Output formats
-out = ["Html", "Json"]
+out = ["Html", "Xml", "Json"]
 output-dir = "coverage"
 
 # Test configuration
 all-features = true
+# One test at a time within each test binary, mirroring the
+# process-per-test isolation that cargo-nextest gives the regular Test jobs.
 test-threads = 1
 
 # Exclude test code from coverage
 exclude-files = ["tests/*", "examples/*"]
 
-# Timeout per test (seconds)
+# Maximum time without a response from a test before tarpaulin aborts
 timeout = "120s"
-
-# Skip functions that are hard to test
-# skip-clean = true
-
-[ci]
-# CI-specific settings
-out = ["Xml", "Json"]
-output-dir = "coverage"
-all-features = true
