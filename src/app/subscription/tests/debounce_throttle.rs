@@ -149,7 +149,10 @@ async fn test_throttle_allows_spaced_messages() {
     cancel.cancel();
 }
 
-#[tokio::test]
+// The clock is paused: with no pending timers it never advances, so all five
+// values arrive within the same instant regardless of how slowly the test
+// runs (e.g. under coverage instrumentation on a loaded runner).
+#[tokio::test(start_paused = true)]
 async fn test_throttle_drops_rapid_messages() {
     let cancel = CancellationToken::new();
     // Use a finite stream of values that arrive "instantly"

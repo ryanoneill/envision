@@ -131,6 +131,33 @@ fn test_handle_event_focused() {
 }
 ```
 
+### Coverage
+
+Coverage is measured with `cargo tarpaulin`, configured by `tarpaulin.toml`.
+Running `cargo tarpaulin` locally is the same invocation as the CI Coverage
+job. Keep that file to a single configuration table: tarpaulin runs every
+table as a separate coverage pass.
+
+Tests that drive the compiler rather than the library, such as trybuild tests
+(`tests/trybuild_*.rs`), must be skipped under tarpaulin. trybuild shells out to
+cargo to build a fresh crate, which adds no line coverage and can exceed the
+coverage run's per-test timeout. Mark every such test:
+
+```rust
+#[test]
+#[cfg_attr(
+    tarpaulin,
+    ignore = "trybuild invokes cargo; not meaningful under coverage instrumentation"
+)]
+fn compile_fail_example() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/trybuild_example/*.rs");
+}
+```
+
+The attribute only applies when tarpaulin builds with `--cfg tarpaulin`; the
+tests still run under `cargo test` and `cargo nextest run`.
+
 ## File Size Limit
 
 No source file should exceed 1000 lines. If a file is approaching this limit,

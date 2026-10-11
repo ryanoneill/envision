@@ -170,7 +170,9 @@ jobs:
           toolchain: stable
 
       - name: Install cargo-tarpaulin
-        run: cargo install cargo-tarpaulin
+        # --locked builds from tarpaulin's published Cargo.lock (supply-chain pinning, per its README).
+        # The version is pinned deliberately and bumped by hand after reviewing the release.
+        run: cargo install cargo-tarpaulin --version 0.37.5 --locked
 
       - name: Cache cargo registry
         uses: actions/cache@v4
@@ -184,7 +186,8 @@ jobs:
             ${{ runner.os }}-cargo-coverage-
 
       - name: Generate coverage
-        run: cargo tarpaulin --out xml --output-dir coverage
+        # All settings (features, outputs, timeout) live in tarpaulin.toml.
+        run: cargo tarpaulin
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
