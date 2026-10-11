@@ -188,6 +188,14 @@ pub use app::{
     terminal_events, tick,
 };
 pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
+/// The exact ratatui envision is built with.
+///
+/// Use `envision::ratatui::…` (including `envision::ratatui::crossterm`) to
+/// stay on envision's ratatui version. Depending on a different ratatui
+/// version directly produces errors like "expected `ratatui::Frame`, found
+/// `ratatui::Frame`". From v0.18.0, every ratatui 0.x bump is a breaking
+/// envision release.
+pub use ratatui;
 // Core component traits and utilities (always available)
 pub use component::{Component, EventContext, FocusManager, RenderContext, Toggleable};
 

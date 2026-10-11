@@ -10,3 +10,7 @@ pub mod output;
 pub use capture::{CaptureBackend, FrameSnapshot};
 pub use cell::EnhancedCell;
 pub use output::OutputFormat;
+
+/// ratatui's backend trait, implemented by [`CaptureBackend`] and by custom
+/// backends passed to [`Runtime::builder`](crate::Runtime::builder).
+pub use ratatui::backend::Backend;
