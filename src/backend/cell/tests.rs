@@ -102,14 +102,14 @@ fn test_enhanced_cell_reset() {
     cell.set_char('X');
     cell.fg = SerializableColor::Red;
     cell.modifiers.bold = true;
-    cell.skip = true;
+    cell.diff_option = SerializableDiffOption::Skip;
 
     cell.reset();
 
     assert_eq!(cell.symbol(), " ");
     assert_eq!(cell.fg, SerializableColor::Reset);
     assert!(cell.modifiers.is_empty());
-    assert!(!cell.skip);
+    assert_eq!(cell.diff_option, SerializableDiffOption::None);
 }
 
 #[test]
@@ -445,7 +445,7 @@ fn test_cell_serialization() {
         },
         underline_color: None,
         last_modified_frame: 5,
-        skip: false,
+        diff_option: SerializableDiffOption::None,
     };
 
     let json = serde_json::to_string(&cell).unwrap();
@@ -463,7 +463,7 @@ fn test_cell_serialization_with_underline_color() {
         modifiers: SerializableModifier::empty(),
         underline_color: Some(SerializableColor::Green),
         last_modified_frame: 0,
-        skip: true,
+        diff_option: SerializableDiffOption::Skip,
     };
 
     let json = serde_json::to_string(&cell).unwrap();

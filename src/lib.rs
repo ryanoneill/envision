@@ -188,7 +188,8 @@ pub use app::{
     terminal_events, tick,
 };
 pub use backend::{
-    CaptureBackend, EnhancedCell, FrameSnapshot, SerializableColor, SerializableModifier,
+    CaptureBackend, EnhancedCell, FrameSnapshot, SerializableColor, SerializableDiffOption,
+    SerializableModifier,
 };
 /// The exact ratatui envision is built with.
 ///
@@ -484,7 +485,7 @@ pub mod prelude {
     pub use crate::component::*;
 
     // Testing essentials
-    pub use crate::backend::{CaptureBackend, EnhancedCell};
+    pub use crate::backend::{CaptureBackend, EnhancedCell, SerializableDiffOption};
     pub use crate::harness::{
         AppHarness, Assertion, MessageSendError, MessageSender, Snapshot, TestHarness, TrySendError,
     };

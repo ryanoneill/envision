@@ -5,9 +5,13 @@
 //! `CompactString` stores up to 24 bytes inline, eliminating thousands of
 //! small allocations per render cycle.
 
+mod diff_option;
+pub(crate) mod width;
+
+pub use diff_option::SerializableDiffOption;
+
 use compact_str::CompactString;
 use ratatui::style::{Color, Modifier, Style};
-use unicode_width::UnicodeWidthStr;
 
 /// An enhanced cell that captures all styling information plus metadata.
 ///
@@ -25,6 +29,7 @@ use unicode_width::UnicodeWidthStr;
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
+#[cfg_attr(feature = "serialization", serde(from = "EnhancedCellRepr"))]
 pub struct EnhancedCell {
     /// The symbol (grapheme cluster) displayed in this cell
     symbol: CompactString,
@@ -44,8 +49,63 @@ pub struct EnhancedCell {
     /// Frame number when this cell was last modified
     last_modified_frame: u64,
 
-    /// Whether this cell should be skipped during rendering
+    /// How this cell participates in buffer diffing
+    #[cfg_attr(
+        feature = "serialization",
+        serde(default, skip_serializing_if = "SerializableDiffOption::is_none")
+    )]
+    diff_option: SerializableDiffOption,
+}
+
+/// Deserialization form accepting both v0.17 (`skip`) and v0.18 (`diff_option`) JSON.
+#[cfg(feature = "serialization")]
+#[derive(serde::Deserialize)]
+struct EnhancedCellRepr {
+    symbol: CompactString,
+    fg: SerializableColor,
+    bg: SerializableColor,
+    modifiers: SerializableModifier,
+    underline_color: Option<SerializableColor>,
+    last_modified_frame: u64,
+    #[serde(default)]
     skip: bool,
+    #[serde(default)]
+    diff_option: SerializableDiffOption,
+}
+
+#[cfg(feature = "serialization")]
+impl From<EnhancedCellRepr> for EnhancedCell {
+    fn from(r: EnhancedCellRepr) -> Self {
+        Self {
+            symbol: r.symbol,
+            fg: r.fg,
+            bg: r.bg,
+            modifiers: r.modifiers,
+            underline_color: r.underline_color,
+            last_modified_frame: r.last_modified_frame,
+            diff_option: effective_diff_option(r.diff_option, r.skip),
+        }
+    }
+}
+
+/// ratatui's `is_skip` rule (`ratatui-core-0.1.2/src/buffer/diff.rs:203-205`):
+/// the legacy skip flag is honoured only when no explicit option is set.
+fn effective_diff_option(
+    option: SerializableDiffOption,
+    legacy_skip: bool,
+) -> SerializableDiffOption {
+    if legacy_skip && option.is_none() {
+        SerializableDiffOption::Skip
+    } else {
+        option
+    }
+}
+
+/// Reads ratatui's diff option, folding in its deprecated `skip` flag exactly
+/// as ratatui's own diffing does (`is_skip`, `diff.rs:203-205`).
+#[allow(deprecated)] // the one sanctioned read of ratatui's deprecated `Cell::skip`
+fn captured_diff_option(cell: &ratatui::buffer::Cell) -> SerializableDiffOption {
+    effective_diff_option(cell.diff_option.into(), cell.skip)
 }
 
 impl EnhancedCell {
@@ -58,7 +118,7 @@ impl EnhancedCell {
             modifiers: SerializableModifier::empty(),
             underline_color: None,
             last_modified_frame: 0,
-            skip: false,
+            diff_option: SerializableDiffOption::None,
         }
     }
 
@@ -86,7 +146,7 @@ impl EnhancedCell {
             modifiers: SerializableModifier::from(style.add_modifier),
             underline_color: style.underline_color.map(SerializableColor::from),
             last_modified_frame: frame,
-            skip: cell.skip,
+            diff_option: captured_diff_option(cell),
         }
     }
 
@@ -106,9 +166,9 @@ impl EnhancedCell {
         self.symbol.push(c);
     }
 
-    /// Returns the display width of the symbol
+    /// Display width of the symbol in terminal cells, as ratatui computes it.
     pub fn symbol_width(&self) -> usize {
-        self.symbol.width()
+        usize::from(width::symbol_cell_width(&self.symbol))
     }
 
     /// Foreground colour.
@@ -134,6 +194,16 @@ impl EnhancedCell {
     /// Frame number at which this cell was last written.
     pub fn last_modified_frame(&self) -> u64 {
         self.last_modified_frame
+    }
+
+    /// How this cell participates in diffing.
+    pub fn diff_option(&self) -> SerializableDiffOption {
+        self.diff_option
+    }
+
+    /// Sets the diff option (mirrors ratatui's `Cell::set_diff_option`).
+    pub fn set_diff_option(&mut self, option: SerializableDiffOption) {
+        self.diff_option = option;
     }
 
     /// Sets the style from a ratatui Style
@@ -170,7 +240,7 @@ impl EnhancedCell {
         self.bg = SerializableColor::Reset;
         self.modifiers = SerializableModifier::empty();
         self.underline_color = None;
-        self.skip = false;
+        self.diff_option = SerializableDiffOption::None;
     }
 
     /// Returns true if this cell is empty (space with default styling)
