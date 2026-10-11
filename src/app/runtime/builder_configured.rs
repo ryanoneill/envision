@@ -14,6 +14,7 @@ use super::Runtime;
 use super::config::RuntimeConfig;
 use crate::app::model::App;
 use crate::error;
+use crate::error::EnvisionError;
 
 /// A `RuntimeBuilder` after [`with_args`](super::RuntimeBuilder::with_args) has been called.
 ///
@@ -75,7 +76,10 @@ impl<A: App, B: Backend> ConfiguredRuntimeBuilder<A, B> {
     ///
     /// Returns an error if creating the ratatui `Terminal` with the
     /// provided backend fails.
-    pub fn build(self) -> error::Result<Runtime<A, B>> {
+    pub fn build(self) -> error::Result<Runtime<A, B>>
+    where
+        EnvisionError: From<B::Error>,
+    {
         let (state, init_cmd) = A::init(self.args);
         let config = self.config.unwrap_or_default();
         Runtime::with_backend_state_and_config(self.backend, state, init_cmd, config)

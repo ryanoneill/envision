@@ -491,7 +491,8 @@ pub mod prelude {
 
     // Layout and style re-exports (replacing `pub use ratatui::prelude::*`)
     pub use crate::layout::{
-        Alignment, Constraint, Direction, Frame, Layout, Margin, Position, Rect, Size, Terminal,
+        Alignment, Constraint, Direction, Frame, HorizontalAlignment, Layout, Margin, Position,
+        Rect, Size, Terminal, VerticalAlignment,
     };
     pub use crate::style::{Color, Modifier, Style, Stylize};
 

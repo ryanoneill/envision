@@ -28,6 +28,8 @@ impl App for NoopApp {
 struct FailingBackend;
 
 impl Backend for FailingBackend {
+    type Error = io::Error;
+
     fn draw<'a, I>(&mut self, _content: I) -> io::Result<()>
     where
         I: Iterator<Item = (u16, u16, &'a Cell)>,
@@ -97,4 +99,16 @@ async fn accessor_needs_only_backend_bound() {
         .build()
         .unwrap();
     let _backend: &FailingBackend = backend_of(&runtime);
+}
+
+// RF-4: DualBackend<CaptureBackend> is a Runtime backend; both halves are
+// Infallible, so it builds, renders and ticks.
+#[tokio::test]
+async fn dual_backend_of_capture_runs_in_runtime() {
+    use envision::CaptureBackend;
+    use envision::adapter::DualBackend;
+    let dual = DualBackend::new(CaptureBackend::new(10, 3), CaptureBackend::new(10, 3));
+    let mut runtime = Runtime::<NoopApp, _>::builder(dual).build().unwrap();
+    runtime.render().unwrap();
+    runtime.tick().unwrap();
 }

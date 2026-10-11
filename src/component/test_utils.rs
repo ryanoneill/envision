@@ -20,7 +20,7 @@ use std::fmt::Write;
 /// ```
 pub fn setup_render(width: u16, height: u16) -> (Terminal<CaptureBackend>, Theme) {
     let backend = CaptureBackend::new(width, height);
-    let terminal = Terminal::new(backend).unwrap();
+    let Ok(terminal) = Terminal::new(backend);
     (terminal, Theme::default())
 }
 
@@ -44,7 +44,7 @@ where
     F: FnOnce(&mut Frame),
 {
     let (mut terminal, _theme) = setup_render(width, height);
-    terminal.draw(draw).unwrap();
+    let Ok(_completed) = terminal.draw(draw);
     terminal.backend().to_string()
 }
 

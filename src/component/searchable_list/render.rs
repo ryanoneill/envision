@@ -112,7 +112,7 @@ pub(super) fn render_searchable_list<T: Clone + Display>(
         inner
     };
 
-    let mut list_state = state.list_state.clone();
+    let mut list_state = state.list_state;
     frame.render_stateful_widget(list_widget, chunks[1], &mut list_state);
 
     // Render scrollbar when content exceeds viewport. In chrome-owned mode

@@ -206,7 +206,8 @@ pub(super) fn render_table<T: TableRow>(
     //
     // Skipped entirely when the table has no user columns.
     if !state.columns.is_empty() {
-        // Mirror the full ratatui 0.29 Table width formula so detection
+        // Mirror the full ratatui 0.30 Table width formula
+        // (`ratatui-widgets-0.3.2/src/table.rs:1041-1065`) so detection
         // matches what the renderer actually distributes columns over.
         // Every term below corresponds to a row in the spec's "Canonical
         // reservation contract" table.

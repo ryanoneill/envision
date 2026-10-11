@@ -1,10 +1,6 @@
 //! Dual backend implementation.
 
-use std::io;
-
 use ratatui::backend::{Backend, ClearType, WindowSize};
-
-use crate::error;
 use ratatui::buffer::Cell;
 use ratatui::layout::{Position, Size};
 
@@ -71,8 +67,8 @@ impl<P: Backend> DualBackend<P> {
     ///
     /// # Errors
     ///
-    /// Returns an error if querying the primary backend's terminal size fails.
-    pub fn with_auto_capture(primary: P) -> error::Result<Self> {
+    /// Returns the primary backend's error if querying its size fails.
+    pub fn with_auto_capture(primary: P) -> Result<Self, P::Error> {
         let size = primary.size()?;
         let capture = CaptureBackend::new(size.width, size.height);
         Ok(Self {
@@ -147,7 +143,9 @@ impl<P: Backend> DualBackend<P> {
 }
 
 impl<P: Backend> Backend for DualBackend<P> {
-    fn draw<'a, I>(&mut self, content: I) -> io::Result<()>
+    type Error = P::Error;
+
+    fn draw<'a, I>(&mut self, content: I) -> Result<(), P::Error>
     where
         I: Iterator<Item = (u16, u16, &'a Cell)>,
     {
@@ -158,61 +156,61 @@ impl<P: Backend> Backend for DualBackend<P> {
         self.primary
             .draw(cells.iter().map(|&(x, y, c)| (x, y, c)))?;
 
-        // Draw to capture
-        self.capture.draw(cells.into_iter())?;
+        // Draw to capture (infallible)
+        let Ok(()) = self.capture.draw(cells.into_iter());
 
         Ok(())
     }
 
-    fn hide_cursor(&mut self) -> io::Result<()> {
+    fn hide_cursor(&mut self) -> Result<(), P::Error> {
         self.primary.hide_cursor()?;
-        self.capture.hide_cursor()?;
+        let Ok(()) = self.capture.hide_cursor();
         Ok(())
     }
 
-    fn show_cursor(&mut self) -> io::Result<()> {
+    fn show_cursor(&mut self) -> Result<(), P::Error> {
         self.primary.show_cursor()?;
-        self.capture.show_cursor()?;
+        let Ok(()) = self.capture.show_cursor();
         Ok(())
     }
 
-    fn get_cursor_position(&mut self) -> io::Result<Position> {
+    fn get_cursor_position(&mut self) -> Result<Position, P::Error> {
         // Return primary's cursor position
         self.primary.get_cursor_position()
     }
 
-    fn set_cursor_position<Pos: Into<Position>>(&mut self, position: Pos) -> io::Result<()> {
+    fn set_cursor_position<Pos: Into<Position>>(&mut self, position: Pos) -> Result<(), P::Error> {
         let pos = position.into();
         self.primary.set_cursor_position(pos)?;
-        self.capture.set_cursor_position(pos)?;
+        let Ok(()) = self.capture.set_cursor_position(pos);
         Ok(())
     }
 
-    fn clear(&mut self) -> io::Result<()> {
+    fn clear(&mut self) -> Result<(), P::Error> {
         self.primary.clear()?;
-        self.capture.clear()?;
+        let Ok(()) = self.capture.clear();
         Ok(())
     }
 
-    fn clear_region(&mut self, clear_type: ClearType) -> io::Result<()> {
+    fn clear_region(&mut self, clear_type: ClearType) -> Result<(), P::Error> {
         self.primary.clear_region(clear_type)?;
-        self.capture.clear_region(clear_type)?;
+        let Ok(()) = self.capture.clear_region(clear_type);
         Ok(())
     }
 
-    fn size(&self) -> io::Result<Size> {
+    fn size(&self) -> Result<Size, P::Error> {
         // Return primary's size
         self.primary.size()
     }
 
-    fn window_size(&mut self) -> io::Result<WindowSize> {
+    fn window_size(&mut self) -> Result<WindowSize, P::Error> {
         // Return primary's window size
         self.primary.window_size()
     }
 
-    fn flush(&mut self) -> io::Result<()> {
+    fn flush(&mut self) -> Result<(), P::Error> {
         self.primary.flush()?;
-        self.capture.flush()?;
+        let Ok(()) = self.capture.flush();
         Ok(())
     }
 }
@@ -263,9 +261,8 @@ impl<P: Backend> DualBackendBuilder<P> {
     ///
     /// # Errors
     ///
-    /// Returns an error if querying the primary backend's terminal size fails
-    /// when no explicit capture size has been set.
-    pub fn build(self) -> error::Result<DualBackend<P>> {
+    /// Returns the primary backend's error if querying its size fails.
+    pub fn build(self) -> Result<DualBackend<P>, P::Error> {
         let size = self.primary.size()?;
         let width = self.width.unwrap_or(size.width);
         let height = self.height.unwrap_or(size.height);

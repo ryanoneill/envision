@@ -54,7 +54,7 @@ impl TestHarness {
     /// ```
     pub fn new(width: u16, height: u16) -> Self {
         let backend = CaptureBackend::new(width, height);
-        let terminal = Terminal::new(backend).expect("Failed to create terminal");
+        let Ok(terminal) = Terminal::new(backend);
 
         Self {
             terminal,
@@ -110,7 +110,7 @@ impl TestHarness {
         F: FnOnce(&mut ratatui::Frame),
     {
         self.annotations = with_annotations(|| {
-            self.terminal.draw(f).expect("Failed to draw");
+            let Ok(_completed) = self.terminal.draw(f);
         });
         self.frame_count += 1;
         Ok(())

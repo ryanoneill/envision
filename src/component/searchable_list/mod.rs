@@ -142,7 +142,7 @@ impl<T: Clone> Clone for SearchableListState<T> {
             filtered_indices: self.filtered_indices.clone(),
             filter_text: self.filter_text.clone(),
             selected: self.selected,
-            list_state: self.list_state.clone(),
+            list_state: self.list_state,
             scroll: self.scroll.clone(),
             internal_focus: self.internal_focus.clone(),
             placeholder: self.placeholder.clone(),

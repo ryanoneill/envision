@@ -46,7 +46,10 @@
 // Re-export ratatui layout types
 pub use ratatui::Frame;
 pub use ratatui::Terminal;
-pub use ratatui::layout::{Alignment, Constraint, Direction, Layout, Margin, Position, Rect, Size};
+pub use ratatui::layout::{
+    Alignment, Constraint, Direction, HorizontalAlignment, Layout, Margin, Position, Rect, Size,
+    VerticalAlignment,
+};
 
 /// Splits an area vertically (top to bottom) into N parts.
 ///

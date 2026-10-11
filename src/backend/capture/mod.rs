@@ -4,8 +4,8 @@
 //! all rendering operations for inspection, testing, and headless operation.
 
 use std::collections::VecDeque;
+use std::convert::Infallible;
 use std::fmt;
-use std::io;
 use std::sync::Arc;
 
 use ratatui::backend::{Backend, ClearType, WindowSize};
@@ -532,7 +532,9 @@ impl CaptureBackend {
 }
 
 impl Backend for CaptureBackend {
-    fn draw<'a, I>(&mut self, content: I) -> io::Result<()>
+    type Error = Infallible;
+
+    fn draw<'a, I>(&mut self, content: I) -> Result<(), Infallible>
     where
         I: Iterator<Item = (u16, u16, &'a Cell)>,
     {
@@ -545,33 +547,33 @@ impl Backend for CaptureBackend {
         Ok(())
     }
 
-    fn hide_cursor(&mut self) -> io::Result<()> {
+    fn hide_cursor(&mut self) -> Result<(), Infallible> {
         self.cursor_visible = false;
         Ok(())
     }
 
-    fn show_cursor(&mut self) -> io::Result<()> {
+    fn show_cursor(&mut self) -> Result<(), Infallible> {
         self.cursor_visible = true;
         Ok(())
     }
 
-    fn get_cursor_position(&mut self) -> io::Result<Position> {
+    fn get_cursor_position(&mut self) -> Result<Position, Infallible> {
         Ok(self.cursor_position)
     }
 
-    fn set_cursor_position<P: Into<Position>>(&mut self, position: P) -> io::Result<()> {
+    fn set_cursor_position<P: Into<Position>>(&mut self, position: P) -> Result<(), Infallible> {
         self.cursor_position = position.into();
         Ok(())
     }
 
-    fn clear(&mut self) -> io::Result<()> {
+    fn clear(&mut self) -> Result<(), Infallible> {
         for cell in &mut self.cells {
             cell.reset();
         }
         Ok(())
     }
 
-    fn clear_region(&mut self, clear_type: ClearType) -> io::Result<()> {
+    fn clear_region(&mut self, clear_type: ClearType) -> Result<(), Infallible> {
         let cells_len = self.cells.len();
         let (start, end) = match clear_type {
             ClearType::All => (0, cells_len),
@@ -602,11 +604,11 @@ impl Backend for CaptureBackend {
         Ok(())
     }
 
-    fn size(&self) -> io::Result<Size> {
+    fn size(&self) -> Result<Size, Infallible> {
         Ok(Size::new(self.width, self.height))
     }
 
-    fn window_size(&mut self) -> io::Result<WindowSize> {
+    fn window_size(&mut self) -> Result<WindowSize, Infallible> {
         // For a capture backend, we don't have real pixel dimensions
         // Use reasonable defaults (assuming ~8x16 pixels per cell)
         Ok(WindowSize {
@@ -615,7 +617,7 @@ impl Backend for CaptureBackend {
         })
     }
 
-    fn flush(&mut self) -> io::Result<()> {
+    fn flush(&mut self) -> Result<(), Infallible> {
         self.save_to_history();
         self.current_frame += 1;
         Ok(())
