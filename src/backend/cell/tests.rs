@@ -499,3 +499,51 @@ fn accessors_return_what_from_ratatui_cell_stored() {
     assert_eq!(cell.fg(), SerializableColor::Yellow);
     assert_eq!(cell.last_modified_frame(), 9);
 }
+
+// -------------------------------------------------------------------------
+// Crate-internal wide-glyph helpers (spec § 5)
+// -------------------------------------------------------------------------
+
+#[test]
+fn covered_width_follows_symbol_width() {
+    assert_eq!(EnhancedCell::with_symbol("a").covered_width(), 1);
+    assert_eq!(EnhancedCell::with_symbol("中").covered_width(), 2);
+    assert_eq!(EnhancedCell::with_symbol("ﾊﾟ").covered_width(), 2);
+    assert_eq!(EnhancedCell::with_symbol("").covered_width(), 0);
+}
+
+#[test]
+fn covered_width_prefers_forced_width() {
+    let mut cell = EnhancedCell::with_symbol("中");
+    cell.set_diff_option(SerializableDiffOption::ForcedWidth(
+        std::num::NonZeroU16::new(5).unwrap(),
+    ));
+    assert_eq!(cell.covered_width(), 5);
+}
+
+#[test]
+fn covered_width_ignores_other_diff_options() {
+    let mut cell = EnhancedCell::with_symbol("中");
+    cell.set_diff_option(SerializableDiffOption::Skip);
+    assert_eq!(cell.covered_width(), 2);
+    cell.set_diff_option(SerializableDiffOption::AlwaysUpdate);
+    assert_eq!(cell.covered_width(), 2);
+}
+
+#[test]
+fn is_blank_symbol_is_space_or_empty_regardless_of_style() {
+    assert!(EnhancedCell::new().is_blank_symbol());
+    assert!(EnhancedCell::with_symbol("").is_blank_symbol());
+    let mut styled = EnhancedCell::new();
+    styled.set_style(Style::new().bg(Color::Blue).add_modifier(Modifier::BOLD));
+    assert!(styled.is_blank_symbol());
+    assert!(!EnhancedCell::with_symbol("a").is_blank_symbol());
+    assert!(!EnhancedCell::with_symbol("  ").is_blank_symbol());
+}
+
+#[test]
+fn set_last_modified_frame_stamps_the_cell() {
+    let mut cell = EnhancedCell::new();
+    cell.set_last_modified_frame(42);
+    assert_eq!(cell.last_modified_frame(), 42);
+}

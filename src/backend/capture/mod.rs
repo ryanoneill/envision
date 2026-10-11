@@ -15,6 +15,8 @@ use ratatui::layout::{Position, Size};
 use super::cell::EnhancedCell;
 use super::output::OutputFormat;
 
+mod wide;
+
 /// A backend that captures rendered frames for inspection and testing.
 ///
 /// `CaptureBackend` implements ratatui's `Backend` trait, storing all rendering
@@ -540,8 +542,11 @@ impl Backend for CaptureBackend {
     {
         for (x, y, cell) in content {
             if x < self.width && y < self.height {
-                let idx = self.index_of(x, y);
-                self.cells[idx] = EnhancedCell::from_ratatui_cell(cell, self.current_frame);
+                self.write_cell(
+                    x,
+                    y,
+                    EnhancedCell::from_ratatui_cell(cell, self.current_frame),
+                );
             }
         }
         Ok(())

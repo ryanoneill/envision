@@ -206,6 +206,25 @@ impl EnhancedCell {
         self.diff_option = option;
     }
 
+    /// Stamps the frame number at which this cell was last written.
+    pub(crate) fn set_last_modified_frame(&mut self, frame: u64) {
+        self.last_modified_frame = frame;
+    }
+
+    /// Number of columns this cell covers on screen (spec § 5, "Width source"):
+    /// `ForcedWidth(n)` when set, otherwise ratatui's width of the symbol.
+    pub(crate) fn covered_width(&self) -> u16 {
+        match self.diff_option {
+            SerializableDiffOption::ForcedWidth(w) => w.get(),
+            _ => width::symbol_cell_width(&self.symbol),
+        }
+    }
+
+    /// True when the symbol is `" "` or empty, whatever the cell's style.
+    pub(crate) fn is_blank_symbol(&self) -> bool {
+        self.symbol.is_empty() || self.symbol == " "
+    }
+
     /// Sets the style from a ratatui Style
     pub fn set_style(&mut self, style: Style) {
         if let Some(fg) = style.fg {

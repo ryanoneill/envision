@@ -151,6 +151,53 @@ fn hostile_forced_width_draw_is_inert() {
     assert_eq!(b.row_content(1), "q   ");
 }
 
+// RF-1: clear() removes ownership. After a clear, column 0 is a blank, so a
+// later narrow write into the former continuation column blanks nothing.
+#[test]
+fn clear_removes_ownership() {
+    let mut b = CaptureBackend::new(4, 1);
+    draw(&mut b, &[(0, 0, cell("中"))]);
+    let Ok(()) = b.clear();
+    draw(&mut b, &[(1, 0, cell("z"))]);
+    assert_eq!(b.row_content(0), " z  ");
+    assert_eq!(b.cell(0, 0).unwrap().symbol(), " ");
+}
+
+// RF-2: cells blanked by the emulation count as changed in that frame's diff.
+// `flush` snapshots the frame just drawn, so the diff is taken before the next
+// flush: it compares the "中" draw against the snapshot holding "x".
+#[test]
+fn blanked_cells_are_stamped_and_diffed() {
+    let mut b = CaptureBackend::with_history(4, 1, 4);
+    draw(&mut b, &[(1, 0, cell("x"))]);
+    next_frame(&mut b);
+    draw(&mut b, &[(0, 0, cell("中"))]);
+    assert_eq!(
+        b.cell(1, 0).unwrap().last_modified_frame(),
+        b.current_frame()
+    );
+    let diff = b.diff_from_previous().expect("history enabled");
+    assert_eq!(
+        diff.changed_count(),
+        2,
+        "owner and blanked continuation both changed"
+    );
+}
+
+// RF-5: a ForcedWidth(5) glyph at column width-2 blanks only in-row cells and
+// never touches the next row.
+#[test]
+fn forced_width_past_row_end_is_clamped() {
+    let mut b = CaptureBackend::new(4, 2);
+    draw(&mut b, &[(3, 0, cell("z")), (0, 1, cell("y"))]);
+    let mut wide = cell("W");
+    wide.set_diff_option(CellDiffOption::ForcedWidth(NonZeroU16::new(5).unwrap()));
+    draw(&mut b, &[(2, 0, wide)]);
+    assert_eq!(b.row_content(0), "  W ");
+    assert_eq!(b.cell(3, 0).unwrap().symbol(), " ");
+    assert_eq!(b.row_content(1), "y   ", "next row untouched");
+}
+
 // ---- 11b: multi-frame through Terminal ----
 
 #[test]
