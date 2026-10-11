@@ -1,19 +1,18 @@
 ---
 source: src/component/canvas/tests.rs
-assertion_line: 632
 expression: terminal.backend().to_string()
 ---
 ┌Disabled Canvas───────────────────────┐
 │                                      │
 │                                      │
 │                                      │
-│                ⣀⣀⣀⣀⣀⡀                │
-│            ⣀⠴⠚⠉     ⠈⠙⠲⢄⡀            │
-│           ⡰⠃            ⠳⡀           │
-│           ⡇              ⡇           │
-│           ⠘⣆           ⢀⡞            │
-│             ⠙⠲⠤⣀⣀⣀⣀⣀⡠⠴⠚⠁             │
-│                                      │
+│                 ⢀⣀⣀⡀                 │
+│             ⣠⠖⠋⠉⠁  ⠈⠉⠙⠲⣄             │
+│           ⢠⠎            ⠱⡄           │
+│           ⢸              ⡧           │
+│           ⠘⢆            ⡰⠃           │
+│             ⠙⠦⣄⣀⡀  ⢀⣀⣠⠴⠋             │
+│                 ⠈⠉⠉⠁                 │
 │                                      │
 │                                      │
 │                                      │

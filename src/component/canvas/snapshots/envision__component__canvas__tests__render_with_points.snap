@@ -1,20 +1,19 @@
 ---
 source: src/component/canvas/tests.rs
-assertion_line: 672
 expression: terminal.backend().to_string()
 ---
 ┌Points────────────────────────────────┐
 │                                      │
-│                                 ⠐    │
+│                                  ⠂   │
 │                                      │
 │                                      │
 │                                      │
 │                                      │
-│                  ⠐                   │
+│                   ⠄                  │
 │                                      │
 │                                      │
 │                                      │
 │                                      │
-│   ⠐                                  │
+│    ⠄                                 │
 │                                      │
 └──────────────────────────────────────┘
