@@ -42,7 +42,45 @@ pub type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///     "configuration error: field `theme`: invalid theme name"
 /// );
 /// ```
+///
+/// # Matching
+///
+/// `EnvisionError` is `#[non_exhaustive]`: new variants may be added in minor
+/// releases, so a `match` outside this crate needs a wildcard arm.
+///
+/// ```rust
+/// use envision::EnvisionError;
+///
+/// fn describe(e: &EnvisionError) -> &'static str {
+///     match e {
+///         EnvisionError::Io(_) => "io",
+///         EnvisionError::Render { .. } => "render",
+///         EnvisionError::Config { .. } => "config",
+///         EnvisionError::Subscription { .. } => "subscription",
+///         EnvisionError::Other(_) => "other",
+///         _ => "unknown",
+///     }
+/// }
+/// # assert_eq!(describe(&EnvisionError::config("f", "r")), "config");
+/// ```
+///
+/// Omitting the wildcard arm does not compile:
+///
+/// ```compile_fail,E0004
+/// use envision::EnvisionError;
+///
+/// fn describe(e: &EnvisionError) -> &'static str {
+///     match e {
+///         EnvisionError::Io(_) => "io",
+///         EnvisionError::Render { .. } => "render",
+///         EnvisionError::Config { .. } => "config",
+///         EnvisionError::Subscription { .. } => "subscription",
+///         EnvisionError::Other(_) => "other",
+///     }
+/// }
+/// ```
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum EnvisionError {
     /// An I/O error occurred (terminal, file system, etc.).
     Io(std::io::Error),
@@ -215,6 +253,15 @@ impl From<std::io::Error> for EnvisionError {
     }
 }
 
+/// Lets `?` propagate results from infallible backends such as
+/// [`CaptureBackend`](crate::backend::CaptureBackend) into
+/// [`Result`](crate::error::Result). The body is unreachable by construction.
+impl From<std::convert::Infallible> for EnvisionError {
+    fn from(never: std::convert::Infallible) -> Self {
+        match never {}
+    }
+}
+
 /// A [`Result`] type alias using [`EnvisionError`].
 ///
 /// This is the standard result type returned by most Envision operations
@@ -234,6 +281,15 @@ pub type Result<T> = std::result::Result<T, EnvisionError>;
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn infallible_converts_via_question_mark() {
+        fn uses_question_mark() -> Result<u8> {
+            let value: std::result::Result<u8, std::convert::Infallible> = Ok(7);
+            Ok(value?)
+        }
+        assert_eq!(uses_question_mark().unwrap(), 7);
+    }
+
     use super::*;
 
     #[test]
