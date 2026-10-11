@@ -255,7 +255,7 @@ impl From<std::io::Error> for EnvisionError {
 
 /// Lets `?` propagate results from infallible backends such as
 /// [`CaptureBackend`](crate::backend::CaptureBackend) into
-/// [`Result`](crate::error::Result). The body is unreachable by construction.
+/// [`Result`]. The body is unreachable by construction.
 impl From<std::convert::Infallible> for EnvisionError {
     fn from(never: std::convert::Infallible) -> Self {
         match never {}
