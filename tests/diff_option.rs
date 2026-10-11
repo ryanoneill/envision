@@ -33,6 +33,17 @@ fn deprecated_skip_maps_to_skip() {
     assert_eq!(captured(&c), SerializableDiffOption::Skip);
 }
 
+// Test 8 / RF-3 (capture side): upstream honours deprecated `skip` only when
+// `diff_option` is None, so an explicit option wins.
+#[test]
+#[allow(deprecated)] // exercising the deprecated upstream field on purpose
+fn explicit_option_beats_deprecated_skip() {
+    let mut c = Cell::new("x");
+    c.set_skip(true);
+    c.set_diff_option(CellDiffOption::AlwaysUpdate);
+    assert_eq!(captured(&c), SerializableDiffOption::AlwaysUpdate);
+}
+
 #[cfg(feature = "serialization")]
 mod json {
     use super::*;
@@ -135,5 +146,8 @@ mod json {
         let snapshot: FrameSnapshot = serde_json::from_str(&json).unwrap();
         assert_eq!(snapshot.row_content(0).chars().count(), 3);
         let _ = snapshot.to_plain();
+        // Output size must not scale with the hostile width (the draw path is
+        // covered in tests/capture_wide_glyph.rs).
+        assert!(snapshot.to_ansi().len() < 4096);
     }
 }
