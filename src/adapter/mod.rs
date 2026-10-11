@@ -18,14 +18,16 @@
 //! let crossterm = CrosstermBackend::new(stdout());
 //! let dual = DualBackend::new(crossterm, capture);
 //!
-//! let mut terminal = Terminal::new(dual).unwrap();
+//! // The primary is fallible (`io::Error`), so `?` applies.
+//! let mut terminal = Terminal::new(dual)?;
 //!
 //! terminal.draw(|frame| {
 //!     // Rendering goes to both backends
-//! }).unwrap();
+//! })?;
 //!
 //! // Access the capture backend for inspection
 //! let text = terminal.backend().capture().to_string();
+//! # Ok::<(), std::io::Error>(())
 //! ```
 
 mod dual;

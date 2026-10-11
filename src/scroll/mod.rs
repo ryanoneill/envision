@@ -358,12 +358,10 @@ impl ScrollState {
 /// # let scroll = ScrollState::new(100);
 /// # let theme = Theme::default();
 /// # let area = Rect::new(0, 0, 80, 24);
-/// # let mut terminal = Terminal::new(
-/// #     envision::CaptureBackend::new(80, 24)
-/// # ).unwrap();
-/// # terminal.draw(|frame| {
+/// # let Ok(mut terminal) = Terminal::new(envision::CaptureBackend::new(80, 24));
+/// # let Ok(_) = terminal.draw(|frame| {
 /// render_scrollbar(&scroll, frame, area, &theme);
-/// # }).unwrap();
+/// # });
 /// ```
 pub fn render_scrollbar(scroll: &ScrollState, frame: &mut Frame, area: Rect, theme: &Theme) {
     if !scroll.can_scroll() {

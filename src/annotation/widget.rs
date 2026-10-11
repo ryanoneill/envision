@@ -155,16 +155,16 @@ thread_local! {
 /// use envision::backend::CaptureBackend;
 ///
 /// let backend = CaptureBackend::new(80, 24);
-/// let mut terminal = Terminal::new(backend).unwrap();
+/// let Ok(mut terminal) = Terminal::new(backend);
 ///
 /// let registry = with_annotations(|| {
-///     terminal.draw(|frame| {
+///     let Ok(_) = terminal.draw(|frame| {
 ///         let widget = Annotate::new(
 ///             Paragraph::new("Hello"),
 ///             Annotation::label("greeting"),
 ///         );
 ///         frame.render_widget(widget, frame.area());
-///     }).unwrap();
+///     });
 /// });
 ///
 /// assert_eq!(registry.len(), 1);

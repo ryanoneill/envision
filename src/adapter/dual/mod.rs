@@ -34,7 +34,9 @@ use crate::backend::CaptureBackend;
 /// let crossterm = CrosstermBackend::new(stdout());
 /// let dual = DualBackend::new(crossterm, capture);
 ///
-/// let mut terminal = Terminal::new(dual).unwrap();
+/// // `DualBackend<P>::Error` is `P::Error`: here `io::Error`.
+/// let mut terminal = Terminal::new(dual)?;
+/// # Ok::<(), std::io::Error>(())
 /// ```
 pub struct DualBackend<P: Backend> {
     /// The primary backend (real terminal)

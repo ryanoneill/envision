@@ -196,8 +196,12 @@ pub use backend::{
 /// Use `envision::ratatui::…` (including `envision::ratatui::crossterm`) to
 /// stay on envision's ratatui version. Depending on a different ratatui
 /// version directly produces errors like "expected `ratatui::Frame`, found
-/// `ratatui::Frame`". From v0.18.0, every ratatui 0.x bump is a breaking
-/// envision release.
+/// `ratatui::Frame`".
+///
+/// This re-export makes all of ratatui's public surface part of envision's
+/// API. This is a permanent policy: every ratatui 0.x bump is a breaking
+/// envision release, and envision never straddles two ratatui versions
+/// behind features.
 pub use ratatui;
 // Core component traits and utilities (always available)
 pub use component::{Component, EventContext, FocusManager, RenderContext, Toggleable};

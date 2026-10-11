@@ -89,8 +89,10 @@ impl TestHarness {
     ///
     /// # Errors
     ///
-    /// This method currently always succeeds, but returns `Result`
-    /// for API consistency with terminal rendering operations.
+    /// Never returns `Err`: the harness renders into a
+    /// [`CaptureBackend`](crate::backend::CaptureBackend), whose error type is
+    /// [`Infallible`](core::convert::Infallible). The `Result` is kept so
+    /// existing `?` call sites keep compiling.
     ///
     /// # Example
     ///

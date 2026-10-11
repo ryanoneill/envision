@@ -21,12 +21,12 @@ use super::registry::{AnnotationRegistry, RegionInfo, SerializableRect};
 /// use ratatui::Terminal;
 ///
 /// let backend = CaptureBackend::new(80, 24);
-/// let mut terminal = Terminal::new(backend).unwrap();
+/// let Ok(mut terminal) = Terminal::new(backend);
 ///
 /// let registry = with_annotations(|| {
-///     terminal.draw(|frame| {
+///     let Ok(_) = terminal.draw(|frame| {
 ///         // Render widgets with annotations...
-///     }).unwrap();
+///     });
 /// });
 ///
 /// let output = AnnotatedOutput::from_backend_and_registry(terminal.backend(), &registry);

@@ -38,11 +38,11 @@ mod wide;
 /// use ratatui::widgets::Paragraph;
 ///
 /// let backend = CaptureBackend::new(80, 24);
-/// let mut terminal = Terminal::new(backend).unwrap();
+/// let Ok(mut terminal) = Terminal::new(backend);
 ///
-/// terminal.draw(|frame| {
+/// let Ok(_) = terminal.draw(|frame| {
 ///     frame.render_widget(Paragraph::new("Hello!"), frame.area());
-/// }).unwrap();
+/// });
 ///
 /// // Get plain text output
 /// println!("{}", terminal.backend());
@@ -428,16 +428,16 @@ impl CaptureBackend {
     /// use ratatui::widgets::Paragraph;
     ///
     /// let backend = CaptureBackend::new(80, 24);
-    /// let mut terminal = Terminal::new(backend).unwrap();
+    /// let Ok(mut terminal) = Terminal::new(backend);
     ///
     /// let registry = with_annotations(|| {
-    ///     terminal.draw(|frame| {
+    ///     let Ok(_) = terminal.draw(|frame| {
     ///         let widget = Annotate::new(
     ///             Paragraph::new("Submit"),
     ///             Annotation::button("submit").with_label("Submit Order"),
     ///         );
     ///         frame.render_widget(widget, frame.area());
-    ///     }).unwrap();
+    ///     });
     /// });
     ///
     /// let output = terminal.backend().to_annotated_output(&registry);
@@ -476,16 +476,16 @@ impl CaptureBackend {
     /// use ratatui::widgets::Paragraph;
     ///
     /// let backend = CaptureBackend::new(80, 24);
-    /// let mut terminal = Terminal::new(backend).unwrap();
+    /// let Ok(mut terminal) = Terminal::new(backend);
     ///
     /// let registry = with_annotations(|| {
-    ///     terminal.draw(|frame| {
+    ///     let Ok(_) = terminal.draw(|frame| {
     ///         let widget = Annotate::new(
     ///             Paragraph::new("Hello"),
     ///             Annotation::button("btn"),
     ///         );
     ///         frame.render_widget(widget, frame.area());
-    ///     }).unwrap();
+    ///     });
     /// });
     ///
     /// let json = terminal.backend().to_semantic_json(&registry);

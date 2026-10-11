@@ -60,9 +60,9 @@ where
 /// use envision::component::test_utils::{setup_render, render_diff};
 ///
 /// let (mut terminal, theme) = setup_render(40, 5);
-/// terminal.draw(|frame| {
+/// let Ok(_) = terminal.draw(|frame| {
 ///     // draw your component here
-/// }).unwrap();
+/// });
 /// let diff = render_diff(terminal.backend(), "expected output here");
 /// assert!(diff.is_none(), "Visual regression:\n{}", diff.unwrap());
 /// ```
