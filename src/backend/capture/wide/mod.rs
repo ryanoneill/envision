@@ -2,7 +2,8 @@
 //!
 //! Widths come from `EnhancedCell::covered_width` (ratatui's width via the
 //! crate's single helper). No per-cell ownership state is stored: the owner of
-//! a column is found by scanning left over blank cells.
+//! a column is found by scanning left over blank cells, and only on rows whose
+//! `row_may_hold_owner` flag is set.
 
 use super::CaptureBackend;
 use crate::backend::cell::EnhancedCell;
@@ -14,6 +15,7 @@ impl CaptureBackend {
 
         // Rules 2 and 3: a write into a continuation column.
         if !cell.is_blank_symbol()
+            && self.row_may_hold_owner[usize::from(y)]
             && let Some(owner_x) = self.owner_of(x, y)
         {
             self.blank_owner_and_continuations(owner_x, y, frame); // rule 3
@@ -34,6 +36,7 @@ impl CaptureBackend {
 
         // Rule 1: a new owner's continuation cells become reset blanks.
         if new_width > 1 {
+            self.flag_row_may_hold_owner(y);
             let end = x.saturating_add(new_width).min(self.width);
             for cx in x.saturating_add(1)..end {
                 let mut blank = EnhancedCell::new();
@@ -41,6 +44,26 @@ impl CaptureBackend {
                 let cidx = self.index_of(cx, y);
                 self.cells[cidx] = blank;
             }
+        }
+    }
+
+    /// Records that row `y` may now hold a wide-glyph owner.
+    pub(super) fn flag_row_may_hold_owner(&mut self, y: u16) {
+        self.row_may_hold_owner[usize::from(y)] = true;
+    }
+
+    /// Unflags every row lying wholly inside the reset cell range
+    /// `[start, end)`. A row only partly reset keeps its flag, since an owner
+    /// may survive outside the range.
+    pub(super) fn unflag_rows_within(&mut self, start: usize, end: usize) {
+        let width = usize::from(self.width);
+        if width == 0 || start >= end {
+            return;
+        }
+        let first_whole_row = start.div_ceil(width);
+        let end_of_whole_rows = end / width;
+        for row in first_whole_row..end_of_whole_rows {
+            self.row_may_hold_owner[row] = false;
         }
     }
 
@@ -75,3 +98,6 @@ impl CaptureBackend {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

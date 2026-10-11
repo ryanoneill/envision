@@ -75,6 +75,16 @@ pub struct CaptureBackend {
 
     /// Maximum history size (0 = disabled)
     history_capacity: usize,
+
+    /// Per row: `true` when the row *may* hold a wide-glyph owner (spec § 5).
+    ///
+    /// Conservative: a row holding a non-blank cell that covers more than one
+    /// column is always flagged; a flagged row without one only costs a scan.
+    /// `write_cell` skips the leftward owner scan on unflagged rows. This adds
+    /// one byte per row — not per cell — to the backend's footprint, a
+    /// controller-approved deviation from spec § 5's "memory footprint
+    /// unchanged" (ruling R11). It is not part of [`FrameSnapshot`].
+    row_may_hold_owner: Vec<bool>,
 }
 
 /// A snapshot of a single frame's state.
@@ -247,6 +257,7 @@ impl CaptureBackend {
             current_frame: 0,
             history: VecDeque::new(),
             history_capacity: 0,
+            row_may_hold_owner: vec![false; usize::from(height)],
         }
     }
 
@@ -279,8 +290,12 @@ impl CaptureBackend {
     }
 
     /// Returns a mutable reference to the cell at the given position.
+    ///
+    /// The caller may store a wide glyph through the reference, so the row is
+    /// treated as possibly holding one from then on.
     pub fn cell_mut(&mut self, x: u16, y: u16) -> Option<&mut EnhancedCell> {
         if x < self.width && y < self.height {
+            self.flag_row_may_hold_owner(y);
             let idx = self.index_of(x, y);
             Some(&mut self.cells[idx])
         } else {
@@ -575,6 +590,7 @@ impl Backend for CaptureBackend {
         for cell in &mut self.cells {
             cell.reset();
         }
+        self.row_may_hold_owner.fill(false);
         Ok(())
     }
 
@@ -606,6 +622,7 @@ impl Backend for CaptureBackend {
         for cell in &mut self.cells[start..end] {
             cell.reset();
         }
+        self.unflag_rows_within(start, end);
         Ok(())
     }
 
