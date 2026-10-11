@@ -505,29 +505,40 @@ fn accessors_return_what_from_ratatui_cell_stored() {
 // -------------------------------------------------------------------------
 
 #[test]
-fn covered_width_follows_symbol_width() {
-    assert_eq!(EnhancedCell::with_symbol("a").covered_width(), 1);
-    assert_eq!(EnhancedCell::with_symbol("中").covered_width(), 2);
-    assert_eq!(EnhancedCell::with_symbol("ﾊﾟ").covered_width(), 2);
-    assert_eq!(EnhancedCell::with_symbol("").covered_width(), 0);
+fn owner_width_follows_symbol_width() {
+    assert_eq!(EnhancedCell::with_symbol("a").owner_width(), 1);
+    assert_eq!(EnhancedCell::with_symbol("中").owner_width(), 2);
+    assert_eq!(EnhancedCell::with_symbol("ﾊﾟ").owner_width(), 2);
 }
 
 #[test]
-fn covered_width_prefers_forced_width() {
+fn blank_cells_never_own_continuation_columns() {
+    // R13: blank (space or empty) is width 1, even with a ForcedWidth option.
+    assert_eq!(EnhancedCell::new().owner_width(), 1);
+    assert_eq!(EnhancedCell::with_symbol("").owner_width(), 1);
+    let mut blank = EnhancedCell::new();
+    blank.set_diff_option(SerializableDiffOption::ForcedWidth(
+        std::num::NonZeroU16::new(5).unwrap(),
+    ));
+    assert_eq!(blank.owner_width(), 1);
+}
+
+#[test]
+fn owner_width_prefers_forced_width() {
     let mut cell = EnhancedCell::with_symbol("中");
     cell.set_diff_option(SerializableDiffOption::ForcedWidth(
         std::num::NonZeroU16::new(5).unwrap(),
     ));
-    assert_eq!(cell.covered_width(), 5);
+    assert_eq!(cell.owner_width(), 5);
 }
 
 #[test]
-fn covered_width_ignores_other_diff_options() {
+fn owner_width_ignores_other_diff_options() {
     let mut cell = EnhancedCell::with_symbol("中");
     cell.set_diff_option(SerializableDiffOption::Skip);
-    assert_eq!(cell.covered_width(), 2);
+    assert_eq!(cell.owner_width(), 2);
     cell.set_diff_option(SerializableDiffOption::AlwaysUpdate);
-    assert_eq!(cell.covered_width(), 2);
+    assert_eq!(cell.owner_width(), 2);
 }
 
 #[test]

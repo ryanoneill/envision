@@ -17,16 +17,13 @@ fn draw(b: &mut CaptureBackend, cells: &[(u16, u16, &'static str)]) {
     let Ok(()) = b.draw(cells.iter().map(|(x, y, c)| (*x, *y, c)));
 }
 
-/// The flag's invariant: every row that holds a non-blank cell covering more
-/// than one column is flagged. (A flagged row without an owner is allowed: it
+/// The flag's invariant: every row that holds an owner (a cell whose
+/// `owner_width() > 1`; blank cells never qualify, ruling R13) is flagged. (A flagged row without an owner is allowed: it
 /// only costs a scan.)
 fn assert_flags_conservative(b: &CaptureBackend) {
     assert_eq!(b.row_may_hold_owner.len(), usize::from(b.height));
     for y in 0..b.height {
-        let holds_owner = (0..b.width).any(|x| {
-            let c = &b.cells[b.index_of(x, y)];
-            !c.is_blank_symbol() && c.covered_width() > 1
-        });
+        let holds_owner = (0..b.width).any(|x| b.cells[b.index_of(x, y)].owner_width() > 1);
         if holds_owner {
             assert!(
                 b.row_may_hold_owner[usize::from(y)],

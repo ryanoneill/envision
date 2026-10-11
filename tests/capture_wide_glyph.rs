@@ -198,6 +198,41 @@ fn forced_width_past_row_end_is_clamped() {
     assert_eq!(b.row_content(1), "y   ", "next row untouched");
 }
 
+// R13 (one owner definition): a blanked owner keeps its ForcedWidth (blanking
+// changes only the symbol), but a blank cell never owns continuation columns,
+// so a later narrow write over it must not blank its former range.
+#[test]
+fn blanked_forced_width_owner_no_longer_owns() {
+    let mut b = CaptureBackend::new(4, 1);
+    let mut hostile = cell("x");
+    hostile.set_diff_option(CellDiffOption::ForcedWidth(NonZeroU16::new(65535).unwrap()));
+    draw(&mut b, &[(0, 0, hostile)]);
+    draw(&mut b, &[(1, 0, cell("y"))]); // rule 3 blanks the owner
+    assert_eq!(b.row_content(0), " y  ");
+    draw(&mut b, &[(0, 0, cell("a"))]); // rule 4 must not fire: no owner
+    assert_eq!(b.row_content(0), "ay  ");
+}
+
+// R13 / R3: an incoming BLANK cell with ForcedWidth(3) is not an owner, so
+// rule 1 does not reset the columns it would otherwise cover.
+#[test]
+fn blank_forced_width_cell_does_not_claim_columns() {
+    let mut b = CaptureBackend::new(4, 1);
+    draw(
+        &mut b,
+        &[
+            (0, 0, cell("a")),
+            (1, 0, cell("b")),
+            (2, 0, cell("c")),
+            (3, 0, cell("d")),
+        ],
+    );
+    let mut blank = cell(" ");
+    blank.set_diff_option(CellDiffOption::ForcedWidth(NonZeroU16::new(3).unwrap()));
+    draw(&mut b, &[(0, 0, blank)]);
+    assert_eq!(b.row_content(0), " bcd");
+}
+
 // ---- 11b: multi-frame through Terminal ----
 
 #[test]

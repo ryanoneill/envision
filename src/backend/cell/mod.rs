@@ -211,9 +211,18 @@ impl EnhancedCell {
         self.last_modified_frame = frame;
     }
 
-    /// Number of columns this cell covers on screen (spec § 5, "Width source"):
-    /// `ForcedWidth(n)` when set, otherwise ratatui's width of the symbol.
-    pub(crate) fn covered_width(&self) -> u16 {
+    /// Number of columns this cell owns on screen: the single owner
+    /// definition for wide-glyph emulation (spec § 5, ruling R13).
+    ///
+    /// A blank cell (see [`is_blank_symbol`](Self::is_blank_symbol)) never owns
+    /// continuation columns and returns 1, even when it keeps a `ForcedWidth`
+    /// option. Blanking changes only the symbol, so a blanked owner can still
+    /// carry one. Otherwise the result is `ForcedWidth(n)` when set, or
+    /// ratatui's width of the symbol ("Width source").
+    pub(crate) fn owner_width(&self) -> u16 {
+        if self.is_blank_symbol() {
+            return 1;
+        }
         match self.diff_option {
             SerializableDiffOption::ForcedWidth(w) => w.get(),
             _ => width::symbol_cell_width(&self.symbol),

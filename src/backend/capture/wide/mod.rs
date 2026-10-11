@@ -1,7 +1,7 @@
 //! Terminal wide-glyph semantics for captured cells (spec § 5).
 //!
-//! Widths come from `EnhancedCell::covered_width` (ratatui's width via the
-//! crate's single helper). No per-cell ownership state is stored: the owner of
+//! Widths come from `EnhancedCell::owner_width` (ratatui's width via the
+//! crate's single helper; a blank cell never owns continuation columns). No per-cell ownership state is stored: the owner of
 //! a column is found by scanning left over blank cells, and only on rows whose
 //! `row_may_hold_owner` flag is set.
 
@@ -25,12 +25,12 @@ impl CaptureBackend {
 
         // Rule 4: replacing an owner blanks its former continuation cells.
         let idx = self.index_of(x, y);
-        let old_width = self.cells[idx].covered_width();
+        let old_width = self.cells[idx].owner_width();
         if old_width > 1 {
             self.blank_range(x.saturating_add(1), x.saturating_add(old_width), y, frame);
         }
 
-        let new_width = cell.covered_width();
+        let new_width = cell.owner_width();
         cell.set_last_modified_frame(frame);
         self.cells[idx] = cell;
 
@@ -76,7 +76,7 @@ impl CaptureBackend {
             candidate -= 1;
             let c = &self.cells[self.index_of(candidate, y)];
             if !c.is_blank_symbol() {
-                let reach = candidate.saturating_add(c.covered_width());
+                let reach = candidate.saturating_add(c.owner_width());
                 return (reach > x).then_some(candidate);
             }
         }
@@ -85,7 +85,7 @@ impl CaptureBackend {
 
     /// Rule 3: blank the owner and its continuation cells, keeping their style.
     fn blank_owner_and_continuations(&mut self, owner_x: u16, y: u16, frame: u64) {
-        let width = self.cells[self.index_of(owner_x, y)].covered_width();
+        let width = self.cells[self.index_of(owner_x, y)].owner_width();
         self.blank_range(owner_x, owner_x.saturating_add(width), y, frame);
     }
 

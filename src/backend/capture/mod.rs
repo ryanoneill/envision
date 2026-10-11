@@ -78,8 +78,9 @@ pub struct CaptureBackend {
 
     /// Per row: `true` when the row *may* hold a wide-glyph owner (spec § 5).
     ///
-    /// Conservative: a row holding a non-blank cell that covers more than one
-    /// column is always flagged; a flagged row without one only costs a scan.
+    /// Conservative: a row holding an owner — a cell whose
+    /// `EnhancedCell::owner_width() > 1` (blank cells never qualify, ruling
+    /// R13) — is always flagged; a flagged row without one only costs a scan.
     /// `write_cell` skips the leftward owner scan on unflagged rows. This adds
     /// one byte per row — not per cell — to the backend's footprint, a
     /// controller-approved deviation from spec § 5's "memory footprint
