@@ -2,7 +2,239 @@
 
 ## v0.17.x to v0.18.0
 
-Minimum supported Rust version is now 1.88.
+Minimum supported Rust version is now 1.88, required by ratatui 0.30 (see *ratatui 0.30 upgrade* below).
+
+### ratatui 0.30 upgrade
+
+The sections below follow the order in which a crate upgrading from v0.17 meets each change: dependency resolution first, then compile errors, then behaviour.
+
+#### 1. Minimum versions
+
+| | v0.17 | v0.18 |
+|---|---|---|
+| Rust (MSRV) | 1.85 | **1.88** |
+| `ratatui` | 0.29 | **0.30.2** |
+| `crossterm` | 0.28 | **0.29** |
+
+If your crate also depends on ratatui 0.29 directly, Cargo builds two ratatuis and types stop matching:
+
+```text
+expected `ratatui::Frame`, found `ratatui::Frame`
+note: perhaps two different versions of crate `ratatui` are being used?
+```
+
+(abridged)
+
+Either fix works:
+
+```rust
+// Fix A (preferred): import ratatui through envision; it is always envision's ratatui.
+use envision::ratatui::widgets::Paragraph; // was: use ratatui::widgets::Paragraph;
+```
+
+```toml
+# Fix B: keep a direct dependency, with a requirement compatible with envision's (>= 0.30.2, < 0.31).
+ratatui = "0.30.2" # was: "0.29"
+```
+
+ratatui's own changes are listed in its [0.30 breaking-changes notes](https://github.com/ratatui/ratatui/blob/main/BREAKING-CHANGES.md#v0300).
+
+**Policy:** from v0.18.0 on, every ratatui 0.x bump is a breaking envision release.
+
+#### 2. Security: `lru`
+
+This release removes RUSTSEC-2024-0436 (`paste`), RUSTSEC-2026-0002 and RUSTSEC-2026-0253 (`lru`) from envision's tree. ratatui-core 0.1.2 still admits `lru` 0.18.0 and 0.18.1, which RUSTSEC-2026-0253 covers. Make sure your lockfile has 0.18.2 or later:
+
+```bash
+cargo update -p lru
+```
+
+The advisory's code path (`LruCache::pop()` panicking during drop) is unreachable through ratatui, which only calls `get_or_insert`, `put` and `resize` on caches of plain data; see the CHANGELOG *Security* section for the evidence.
+
+#### 3. Backend errors
+
+`Backend` now has `type Error`. `CaptureBackend::Error` is `Infallible`, so `?` into an `io::Result` no longer compiles. Destructure instead:
+
+```rust
+// v0.17
+fn size_of(b: &CaptureBackend) -> std::io::Result<u16> { Ok(b.size()?.width) }
+// v0.18 — CaptureBackend cannot fail
+fn size_of(b: &CaptureBackend) -> u16 { let Ok(size) = b.size(); size.width }
+```
+
+The same applies to `Terminal<CaptureBackend>`:
+
+```rust
+// v0.17
+let mut terminal = Terminal::new(CaptureBackend::new(80, 24)).unwrap();
+terminal.draw(|frame| { /* ... */ }).unwrap();
+// v0.18
+let Ok(mut terminal) = Terminal::new(CaptureBackend::new(80, 24));
+let Ok(_) = terminal.draw(|frame| { /* ... */ });
+```
+
+`?` on these results still works inside a function returning `envision::Result`, because `EnvisionError: From<Infallible>`. `TestHarness::render` keeps its `envision::Result<()>` return type, but never returns `Err`.
+
+**Custom backends** declare their error type:
+
+```rust
+// v0.17
+impl Backend for MyBackend {
+    fn size(&self) -> std::io::Result<Size> { /* ... */ }
+    // ...
+}
+// v0.18
+impl Backend for MyBackend {
+    type Error = std::io::Error;
+    fn size(&self) -> Result<Size, Self::Error> { /* ... */ }
+    // ...
+}
+```
+
+`Backend` is now re-exported as `envision::backend::Backend`.
+
+**Runtime bound.** `RuntimeCore::render`, `Runtime::with_backend_state_and_config`, `Runtime::render`, `Runtime::tick`, `Runtime::run`, `Runtime::run_ticks`, `RuntimeBuilder::build` and `ConfiguredRuntimeBuilder::build` require `EnvisionError: From<B::Error>`. `std::io::Error` (crossterm, termion, termwiz, termina) already satisfies it. Generic code that calls one of these methods must repeat the bound:
+
+```rust
+// v0.17
+fn redraw<B: Backend>(runtime: &mut Runtime<MyApp, B>) -> envision::Result<()> {
+    runtime.render()
+}
+// v0.18 — error[E0277] without the `where` clause
+fn redraw<B: Backend>(runtime: &mut Runtime<MyApp, B>) -> envision::Result<()>
+where
+    EnvisionError: From<B::Error>,
+{
+    runtime.render()
+}
+```
+
+If your backend's error type comes from another crate, the orphan rule (E0117) stops you implementing `From` for it. Wrap it in a local newtype and return that from your backend:
+
+```rust
+#[derive(Debug)]
+struct MyError(std::fmt::Error); // a foreign error type, wrapped locally
+
+impl std::fmt::Display for MyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+impl std::error::Error for MyError {}
+
+impl From<MyError> for EnvisionError {
+    fn from(e: MyError) -> Self {
+        EnvisionError::other(e)
+    }
+}
+
+impl Backend for MyBackend {
+    type Error = MyError;
+    // ...
+}
+```
+
+If the backend itself is third-party, wrap it in a local newtype backend whose methods forward to it and map its errors into your error newtype.
+
+**`DualBackend`.** `DualBackend<P>::Error` is `P::Error`. `DualBackend::with_auto_capture` and `DualBackendBuilder::build` now return `Result<_, P::Error>`:
+
+```rust
+// v0.17: envision::Result<DualBackend<P>>
+// v0.18: Result<DualBackend<P>, P::Error>
+let dual = DualBackend::with_auto_capture(CrosstermBackend::new(stdout()))?;
+```
+
+`?` keeps working where `P::Error` converts into your function's error type: unchanged for `io::Error` into `envision::Result` or `io::Result`. A custom primary needs the `From` impl above.
+
+#### 4. `EnvisionError` is `#[non_exhaustive]`
+
+```rust
+// v0.17 — exhaustive; v0.18: error[E0004]
+match err {
+    EnvisionError::Io(_) => {}
+    EnvisionError::Render { .. } => {}
+    EnvisionError::Config { .. } => {}
+    EnvisionError::Subscription { .. } => {}
+    EnvisionError::Other(_) => {}
+}
+// v0.18
+match err {
+    EnvisionError::Io(_) => {}
+    EnvisionError::Render { .. } => {}
+    EnvisionError::Config { .. } => {}
+    EnvisionError::Subscription { .. } => {}
+    EnvisionError::Other(_) => {}
+    _ => {}
+}
+```
+
+#### 5. `EnhancedCell`
+
+Fields are private; use the accessors. `skip` is replaced by `diff_option`.
+
+| v0.17 | v0.18 |
+|---|---|
+| `cell.fg` | `cell.fg()` |
+| `cell.bg` | `cell.bg()` |
+| `cell.modifiers` | `cell.modifiers()` |
+| `cell.underline_color` | `cell.underline_color()` |
+| `cell.last_modified_frame` | `cell.last_modified_frame()` |
+| `cell.skip` | `cell.diff_option() == SerializableDiffOption::Skip` |
+| `cell.skip = true` | `cell.set_diff_option(SerializableDiffOption::Skip)` |
+| `cell.fg = c` (and other style fields) | `cell.set_style(Style::default().fg(c))` |
+
+```rust
+// v0.17
+cell.fg == SerializableColor::Red && !cell.skip
+// v0.18
+cell.fg() == SerializableColor::Red && cell.diff_option() != SerializableDiffOption::Skip
+```
+
+`SerializableColor`, `SerializableModifier` and `SerializableDiffOption` are exported from `envision::backend` and the crate root; `SerializableDiffOption` is also in the prelude. `SerializableDiffOption` is `#[non_exhaustive]`, so a `match` on it needs a `_ =>` arm.
+
+**JSON golden files.** v0.17 files, including `"skip": true` cells, still load without loss. New files omit `skip` and write `diff_option` only when it is not `none` (`"skip"`, `"always_update"`, `{"forced_width": n}`), so every v0.17 JSON golden changes once. To update them:
+
+1. Run your tests. `SnapshotTest` writes `<name>.json.new` beside each golden that no longer matches.
+2. Diff each `.new` file against its golden. If the only change is the removed `"skip":false` entries, move the `.new` file into place (or rerun that test with `with_update(true)`).
+3. Investigate any other change; it is probably one of the rendering changes in section 6. Do not regenerate every golden at once, which would hide them.
+
+#### 6. Rendering
+
+- **Charts and canvases** shift by up to one braille sub-cell (ratatui now rounds grid coordinates), and lines with an out-of-bounds endpoint are now drawn clipped instead of dropped. Review your own chart snapshots with `cargo insta review`.
+- **Wide glyphs.** `CaptureBackend` now clears the columns a wide glyph covers, as a terminal does. Single-frame captures are unchanged; multi-frame captures with CJK or emoji may differ from v0.17, where they could show stale characters.
+- **Widths.** `EnhancedCell::symbol_width()` returns ratatui's width. It differs from v0.17 only where ratatui and `unicode-width` (now 0.2.2) disagree, such as halfwidth katakana with a voiced sound mark (`"ﾊﾟ"`: 2, was 1). envision's component text layout still measures with `unicode-width`.
+
+#### 7. Re-exports and ratatui features
+
+New: `envision::ratatui` (including `envision::ratatui::crossterm`), `envision::backend::Backend`, and `HorizontalAlignment` / `VerticalAlignment` in `envision::layout` and the prelude.
+
+envision no longer enables ratatui's `widget-calendar` and `macros` features.
+
+- **First choice for all ratatui types:** `envision::ratatui`.
+- **To use the trimmed features**, add a direct dependency compatible with envision's; Cargo unifies it, so the feature also appears under `envision::ratatui`:
+
+  ```toml
+  ratatui = { version = "0.30.2", features = ["widget-calendar"] } # or ["macros"]
+  ```
+
+  A requirement that resolves to a different ratatui brings back the two-versions error from section 1.
+- If you already use `ratatui = { …, default-features = false }` and relied on envision enabling either feature, name it explicitly now.
+
+**Supported ratatui features.** envision enables `crossterm_0_29`, `underline-color` and `layout-cache` (plus `serde` with `serialization`). Additive features such as `widget-calendar` and `macros` are compatible. `scrolling-regions` is not yet supported: enabling it anywhere in your graph stops envision compiling (E0046), as with v0.17. `unstable-*` features are untested.
+
+#### 8. Upstream changes visible through envision
+
+Through envision's own re-exports:
+
+- `Frame::render_widget_ref` was removed (it is behind ratatui's `unstable-widget-ref` feature); use `render_widget(&widget, area)`.
+- `Terminal::new` and `Terminal::draw` return `B::Error` (section 3).
+- `Alignment` is a type alias for `HorizontalAlignment`.
+- ratatui's `Style` serialization omits `None` colours and empty modifiers, so serialized `KeyHintsState` and `TitleCardState` JSON is shorter. Old JSON still loads.
+
+Only through `envision::ratatui`:
+
+- `ListState` is `Copy`; `.clone()` on it now trips `clippy::clone_on_copy`.
+- `Flex::SpaceAround` changed meaning, and `Flex::SpaceEvenly` was added. 0.29's `SpaceAround` layout is now spelled `SpaceEvenly`.
 
 ### Selection accessors completed on `selected_index()`
 

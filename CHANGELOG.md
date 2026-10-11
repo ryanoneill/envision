@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+The ratatui 0.30 upgrade comes first; `MIGRATION.md` § *v0.17.x to v0.18.0* has before/after code for each compile break.
+
+#### ratatui 0.30.2 and crossterm 0.29
+
+envision now depends on `ratatui = "0.30.2"` and `crossterm = "0.29"`, and requires Rust 1.88 (see *Changed*). The `0.30.2` floor is what was tested: 0.30.0 lacks the `CellDiffOption` API envision mirrors and still pulls a flagged `lru`. If your crate also depends on ratatui 0.29 directly, Cargo builds two ratatuis and you get errors like "expected `ratatui::Frame`, found `ratatui::Frame`". Fix it either by importing ratatui through `envision::ratatui` (new in this release, see *Added*) or by moving your own requirement to one compatible with envision's (`>= 0.30.2, < 0.31`). ratatui's own changes are listed in its [0.30 breaking-changes notes](https://github.com/ratatui/ratatui/blob/main/BREAKING-CHANGES.md#v0300). **Policy:** because `envision::ratatui` makes all of ratatui's surface part of envision's API, every future ratatui 0.x bump is a breaking envision release, and envision never straddles two ratatui versions behind features.
+
+#### Backend error types
+
+ratatui 0.30's `Backend` trait has an associated `type Error`, and every method returns `Result<_, Self::Error>`.
+
+- `CaptureBackend::Error` is `core::convert::Infallible`: a capture buffer cannot fail. Its `Backend` methods return `Result<_, Infallible>`, so `?` into an `io::Result` function no longer compiles. Write `let Ok(size) = backend.size();` (and `let Ok(mut terminal) = Terminal::new(backend);`). This is a permanent commitment; changing it later would be a breaking change.
+- `DualBackend<P>::Error` is `P::Error`; the capture half cannot fail. `DualBackend::with_auto_capture` and `DualBackendBuilder::build` now return `Result<_, P::Error>` instead of `envision::Result`, so `?` into `envision::Result` needs `EnvisionError: From<P::Error>` (true for `io::Error`).
+- Custom `Backend` impls must declare `type Error`.
+- Exactly eight methods carry the bound `EnvisionError: From<B::Error>`, as a method-level `where` clause: `RuntimeCore::render`, `Runtime::with_backend_state_and_config`, `Runtime::render`, `Runtime::tick`, `Runtime::run`, `Runtime::run_ticks`, `RuntimeBuilder::build` and `ConfiguredRuntimeBuilder::build`. Accessors such as `Runtime::backend()` stay unbounded, and the `Runtime`, `RuntimeBuilder`, `ConfiguredRuntimeBuilder` and `DualBackend` structs gain no bounds. A generic function that calls a bounded method must repeat the bound (E0277 otherwise). Backends whose error is `std::io::Error` (crossterm, termion, termwiz, termina) satisfy it, and terminal I/O failures still surface as `EnvisionError::Io`. A backend whose error type is defined in another crate cannot add the `From` impl (orphan rule, E0117): wrap the error in a local newtype, and wrap the backend too if the backend itself is third-party.
+- `EnvisionError` implements `From<Infallible>`, so `?` on a `Result<_, Infallible>` works inside functions returning `envision::Result`.
+- `TestHarness::render` still returns `envision::Result<()>`, so existing `?` call sites compile, but its `Err` arm is now unreachable.
+
+#### `EnvisionError` is `#[non_exhaustive]`
+
+An exhaustive `match` on `EnvisionError` outside envision needs a `_ =>` arm (E0004 otherwise). Future variants, such as one carrying error context, can then be added without a breaking release. Constructing the existing variants is unaffected.
+
+#### `EnhancedCell`: private fields, `diff_option` replaces `skip`
+
+- Every field is private. Read them with `fg()`, `bg()`, `modifiers()`, `underline_color()` and `last_modified_frame()` (all by value); write styles with the existing `set_style`. Field reads and writes no longer compile.
+- ratatui 0.30.1 deprecated `Cell::skip` in favour of `Cell::diff_option`. The `skip: bool` field is replaced by `diff_option()` / `set_diff_option()`, which use the new `SerializableDiffOption` (`None`, `Skip`, `AlwaysUpdate`, `ForcedWidth(NonZeroU16)`; `#[non_exhaustive]`, unlike `SerializableColor`, because ratatui's enum is still growing). A cell captured from a widget that still calls the deprecated `set_skip(true)` maps to `Skip`, following ratatui's own diff rule.
+- JSON: v0.17 files, including cells with `"skip": true`, load without loss. New files never write `skip`, and write `diff_option` (snake_case: `"skip"`, `"always_update"`, `{"forced_width": n}`) only when it is not `none`. Every v0.17 JSON golden file therefore changes once, because each cell's `"skip":false` disappears. `SnapshotTest` writes `<name>.json.new` beside each mismatching golden: diff each `.new` against its golden and move it into place. Use `with_update(true)` only for files whose sole change is the dropped `"skip":false`; blanket regeneration would hide the rendering changes listed under *Changed*.
+
+#### ratatui default features trimmed
+
+envision now depends on ratatui with `default-features = false` and enables only `crossterm_0_29`, `underline-color` and `layout-cache` (plus `serde` under envision's `serialization` feature). ratatui's `widget-calendar` and `macros` are no longer enabled by envision, which removes 7 crates (6 on Windows) from envision's compiled graph. Consumers on ratatui's defaults are unaffected, because Cargo unifies features. A consumer on `ratatui = { …, default-features = false }` who relied on envision enabling either feature must now name it. To use them, add a direct dependency compatible with envision's, e.g. `ratatui = { version = "0.30.2", features = ["widget-calendar"] }`; the feature then also appears under `envision::ratatui`. A requirement that resolves to a different ratatui reintroduces the two-versions error above.
+
 #### Selection accessors completed on `selected_index()`
 
 Cadence A unified selection accessors across six components. This release finishes the getter/setter half: every component whose selection accessor was spelled `selected` now spells it `selected_index`, and every corresponding mutator is `set_selected_index`. The `with_selected` builder leg is untouched and remains deferred.
@@ -35,9 +66,34 @@ See `MIGRATION.md` § *v0.17.x to v0.18.0* for the full before/after table.
 
 Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
 
+#### ratatui re-exports
+
+- `envision::ratatui` re-exports the exact ratatui envision is built with, including `envision::ratatui::crossterm`. Use it for every ratatui type: it can never resolve to a second ratatui version. See the policy under *Breaking Changes*.
+- `envision::backend::Backend` re-exports ratatui's `Backend` trait, which appears in envision's bounds and which custom-backend authors implement.
+- `HorizontalAlignment` and `VerticalAlignment` join `Alignment` in `envision::layout` and the prelude.
+- `SerializableDiffOption` (also in the prelude), `SerializableColor` and `SerializableModifier` are exported from `envision::backend` and the crate root. The last two are what the new `EnhancedCell` accessors return.
+
+**Supported ratatui features.** Features enabled on `ratatui` anywhere in a consumer's graph unify into envision's build. envision enables `crossterm_0_29`, `underline-color` and `layout-cache` (and `serde` with `serialization`). Additive features such as `widget-calendar` and `macros`, which every earlier envision release enabled, are compatible. `scrolling-regions` is not yet supported: enabling it makes envision fail to compile (E0046: `CaptureBackend` and `DualBackend` lack `scroll_region_up` / `scroll_region_down`), as it did with ratatui 0.29; support is planned in a later PR of this upgrade programme (`docs/superpowers/specs/2026-10-09-ratatui-0.30-upgrade-design.md`, PR 5). `unstable-*` features are untested and carry no envision guarantee.
+
+### Security
+
+- The ratatui 0.30 upgrade removes three advisories from envision's dependency tree, all previously pulled in by ratatui 0.29: RUSTSEC-2024-0436 (`paste`, unmaintained), RUSTSEC-2026-0002 (`lru` `IterMut` violates Stacked Borrows, unsound) and RUSTSEC-2026-0253 (`lru` use-after-free in `LruCache::pop()` on panic, unsound).
+- **Residual exposure for consumers.** ratatui-core 0.1.2 requires `lru = "0.18"`, which admits 0.18.0 and 0.18.1; both are still within RUSTSEC-2026-0253 (fixed in 0.18.2). A normal resolution picks the newest `lru` (0.18.5 at release), but a stale lockfile or `-Zminimal-versions` can select an affected one. Run `cargo update -p lru` to be sure. The advisory is unreachable through ratatui: ratatui-core calls only `get_or_insert`, `put` and `resize` on its layout cache, never `pop()` or `iter_mut()`, and its keys and values (`(Rect, Layout)`, `(Segments, Spacers)`, `Vec<Rect>`) are plain data whose `Drop` cannot panic. `lru` is a non-optional ratatui-core dependency, so disabling `layout-cache` would not remove it. envision will raise its ratatui floor once a ratatui release requires `lru >= 0.18.2`.
+
 ### Changed
 
 - Minimum supported Rust version is now 1.88 (was 1.85), required by ratatui 0.30. The CI MSRV job is now labelled `msrv` rather than by version number, so required-check names no longer change on future MSRV bumps.
+
+#### Rendering under ratatui 0.30
+
+- **Charts and canvases.** ratatui 0.30 rounds canvas grid coordinates (0.29 truncated), so chart, canvas and braille output shifts by up to one sub-cell. It also clips line segments with an out-of-bounds endpoint and draws the visible part, where 0.29 dropped the whole line. 14 of envision's chart/canvas snapshots changed, all from rounding; none of envision's own tests has a clipped segment, but consumers' charts with out-of-bounds endpoints will now draw them. Run `cargo insta review` on your own chart snapshots.
+- **Wide glyphs in `CaptureBackend`.** ratatui 0.30's buffer diff no longer re-sends the cells after a wide glyph when it is replaced, because a real terminal clears them itself. `CaptureBackend::draw` now applies terminal semantics: writing a wide glyph resets the columns it covers; a blank write into a covered column (as ratatui sends for VS16 emoji) keeps the glyph; a non-blank write into a covered column blanks the glyph (the blanked cell keeps its style); and writing a narrow cell over a wide glyph blanks its former columns. Single-frame captures are unchanged from v0.17 in text, ANSI and JSON. Multi-frame captures containing CJK or emoji may differ from v0.17, which was wrong: it could show stale characters the screen did not. `CaptureBackend` draws are about 6–8% slower (roughly 1 ns per written cell) for the width checks this needs.
+- **Widths.** ratatui 0.30 no longer pins `unicode-width` (now 0.2.2). `EnhancedCell::symbol_width()` now returns ratatui's width, the same width the capture emulation and ratatui's diff use, so captured cells are self-consistent. It differs from v0.17 only where ratatui and `unicode-width` disagree, e.g. halfwidth katakana with a voiced sound mark (`"ﾊﾟ"` is now 2, was 1). Single-byte symbols, including control bytes, are 1 and never trigger ratatui's debug assertion. Component text-layout width maths (e.g. `line_input`, `text_area`, `tab_bar`, `big_text`, `conversation_view`, `markdown_renderer`, `input_field`) still uses `unicode-width`, so it can disagree with ratatui's cell placement on such sequences.
+
+#### Upstream changes visible through envision
+
+- Through envision's own re-exports: `Frame::render_widget_ref` is gone (now behind ratatui's `unstable-widget-ref`); `Terminal::new` and `Terminal::draw` return `B::Error`; `Alignment` is a type alias for `HorizontalAlignment`; ratatui's `Style` serialization omits `None` colours and empty modifiers, which changes serialized `KeyHintsState` and `TitleCardState` JSON (old JSON still loads).
+- Only through `envision::ratatui`: `ListState` is `Copy`, so `.clone()` on it trips `clippy::clone_on_copy`; `Flex::SpaceAround` changed meaning and `Flex::SpaceEvenly` was added (0.29's `SpaceAround` layout is now `SpaceEvenly`).
 
 ### Known Deferred Findings
 
@@ -50,6 +106,9 @@ Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
 - **`accordion::selected_index()` remains a convenience alias for `focused_index()`.** It performs real work (Option-normalizing the empty case) so it is not redundant, but the indirection stands.
 - **`compact_str` adoption is sporadic** — 2 non-test source files (`src/component/cell.rs`, `src/backend/cell/mod.rs`). Needs a commit-or-drop decision.
 - **Naming outliers** — `is_checked`, `label_text` (the `tab_bar` setter outlier previously grouped here is closed by this release). Plus `restore_terminal` → `restore`, `AppShell` placement in the README component table, five files near the 1000-line cap, and snapshot-coverage concentration in ~20 of 74 components.
+- **Backend errors lose operation context.** A failure in `Terminal::new` and a failure in a draw both surface as the same `EnvisionError::Io` message; the source error is preserved, but not which operation failed. A context-carrying variant is now a non-breaking addition thanks to `#[non_exhaustive]`.
+- **ANSI and text export do not sanitise control bytes kept in cell symbols.** A symbol set to e.g. `"\x1b"` is written through verbatim. This predates the ratatui 0.30 upgrade and is grouped with hyperlink support (#125), which needs the same sanitising for OSC 8 sequences.
+- **`cargo clippy --all-targets --no-default-features` fails** on `benches/capture_backend.rs`, which calls `to_json` without the `serialization` feature. Pre-existing; CI's no-default-features job does not build benches.
 
 ## [0.17.0] - 2026-07-26
 

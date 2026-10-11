@@ -55,12 +55,16 @@ Add envision to your project:
 cargo add envision
 ```
 
+envision re-exports the ratatui it is built with as `envision::ratatui`
+(including `envision::ratatui::crossterm`). Import ratatui types through it,
+so your code and envision always agree on one ratatui version.
+
 ### Basic Capture Backend
 
 ```rust
 use envision::backend::CaptureBackend;
-use ratatui::Terminal;
-use ratatui::widgets::Paragraph;
+use envision::ratatui::Terminal;
+use envision::ratatui::widgets::Paragraph;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a headless terminal
@@ -82,7 +86,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 use envision::prelude::*;
-use ratatui::widgets::Paragraph;
+use envision::ratatui::widgets::Paragraph;
 
 struct MyApp;
 
@@ -125,7 +129,7 @@ impl App for MyApp {
 
 ```rust
 use envision::prelude::*;
-use ratatui::widgets::Paragraph;
+use envision::ratatui::widgets::Paragraph;
 
 struct MyApp;
 
@@ -180,7 +184,7 @@ test_my_app();
 
 ```rust
 use envision::prelude::*;
-use ratatui::widgets::Paragraph;
+use envision::ratatui::widgets::Paragraph;
 
 let mut harness = TestHarness::new(80, 24);
 
