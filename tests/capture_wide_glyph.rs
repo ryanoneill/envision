@@ -17,7 +17,7 @@ use envision::ratatui::style::{Color, Style};
 use envision::ratatui::widgets::{Block, List, ListItem, ListState, Paragraph};
 use envision::{CaptureBackend, EnhancedCell};
 
-fn cell(sym: &str) -> Cell {
+fn cell(sym: &'static str) -> Cell {
     Cell::new(sym)
 }
 
@@ -139,7 +139,7 @@ fn hostile_forced_width_draw_is_inert() {
     draw(&mut b, &[(0, 1, cell("q"))]);
     draw(&mut b, &[(0, 0, hostile())]);
     draw(&mut b, &[(1, 0, cell("y"))]);
-    assert_eq!(b.row_content(0).chars().count(), 4);
+    assert_eq!(b.row_content(0), " y  ");
     assert_eq!(b.row_content(1), "q   ");
 
     // Rules 1 then 4: owner at column 0, then a narrow write over it.
@@ -174,6 +174,9 @@ fn vs16_emoji_wide_to_narrow_across_frames() {
     t.draw(|f| f.render_widget(Paragraph::new("a"), f.area()))
         .unwrap();
     assert_eq!(t.backend().row_content(0), "a   ");
+    // The VS16 draw stamps frame 0, Terminal::draw flushes to frame 1, and rule 4
+    // restamps column 1 in the "a" draw (without it the column stays at 0).
+    assert_eq!(t.backend().cell(1, 0).unwrap().last_modified_frame(), 1);
 }
 
 // Rule 2: narrow -> VS16 where the old trailing column is not blank.
