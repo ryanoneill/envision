@@ -187,7 +187,9 @@ pub use app::{
     UnboundedChannelSubscription, Update, UpdateResult, VirtualRuntime, batch, interval_immediate,
     terminal_events, tick,
 };
-pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
+pub use backend::{
+    CaptureBackend, EnhancedCell, FrameSnapshot, SerializableColor, SerializableModifier,
+};
 /// The exact ratatui envision is built with.
 ///
 /// Use `envision::ratatui::…` (including `envision::ratatui::crossterm`) to

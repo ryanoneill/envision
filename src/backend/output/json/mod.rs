@@ -71,28 +71,28 @@ pub fn render(backend: &CaptureBackend, pretty: bool) -> String {
         for x in 0..width {
             if let Some(cell) = backend.cell(x, y) {
                 // Only include cells with styling or non-space content
-                let has_styling = cell.fg != crate::backend::cell::SerializableColor::Reset
-                    || cell.bg != crate::backend::cell::SerializableColor::Reset
-                    || !cell.modifiers.is_empty();
+                let has_styling = cell.fg() != crate::backend::cell::SerializableColor::Reset
+                    || cell.bg() != crate::backend::cell::SerializableColor::Reset
+                    || !cell.modifiers().is_empty();
 
                 if has_styling && cell.symbol() != " " {
                     styled_cells.push(JsonStyledCell {
                         x,
                         y,
                         symbol: cell.symbol().to_string(),
-                        fg: if cell.fg != crate::backend::cell::SerializableColor::Reset {
-                            Some(format!("{:?}", cell.fg))
+                        fg: if cell.fg() != crate::backend::cell::SerializableColor::Reset {
+                            Some(format!("{:?}", cell.fg()))
                         } else {
                             None
                         },
-                        bg: if cell.bg != crate::backend::cell::SerializableColor::Reset {
-                            Some(format!("{:?}", cell.bg))
+                        bg: if cell.bg() != crate::backend::cell::SerializableColor::Reset {
+                            Some(format!("{:?}", cell.bg()))
                         } else {
                             None
                         },
-                        bold: cell.modifiers.bold,
-                        italic: cell.modifiers.italic,
-                        underlined: cell.modifiers.underlined,
+                        bold: cell.modifiers().bold,
+                        italic: cell.modifiers().italic,
+                        underlined: cell.modifiers().underlined,
                     });
                 }
             }

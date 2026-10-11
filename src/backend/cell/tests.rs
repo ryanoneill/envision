@@ -470,3 +470,32 @@ fn test_cell_serialization_with_underline_color() {
     let deserialized: EnhancedCell = serde_json::from_str(&json).unwrap();
     assert_eq!(cell, deserialized);
 }
+
+#[test]
+fn accessors_return_what_set_style_stored() {
+    use ratatui::style::{Color, Modifier, Style};
+    let mut cell = EnhancedCell::new();
+    cell.set_style(
+        Style::new()
+            .fg(Color::Red)
+            .bg(Color::Blue)
+            .add_modifier(Modifier::BOLD)
+            .underline_color(Color::Green),
+    );
+    assert_eq!(cell.fg(), SerializableColor::Red);
+    assert_eq!(cell.bg(), SerializableColor::Blue);
+    assert!(cell.modifiers().bold);
+    assert_eq!(cell.underline_color(), Some(SerializableColor::Green));
+    assert_eq!(cell.last_modified_frame(), 0);
+}
+
+#[test]
+fn accessors_return_what_from_ratatui_cell_stored() {
+    use ratatui::style::{Color, Style};
+    let mut rc = ratatui::buffer::Cell::new("x");
+    rc.set_style(Style::new().fg(Color::Yellow));
+    let cell = EnhancedCell::from_ratatui_cell(&rc, 9);
+    assert_eq!(cell.symbol(), "x");
+    assert_eq!(cell.fg(), SerializableColor::Yellow);
+    assert_eq!(cell.last_modified_frame(), 9);
+}

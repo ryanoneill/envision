@@ -34,30 +34,30 @@ pub fn render(backend: &CaptureBackend) -> String {
             };
 
             // Check if we need to change styling
-            let need_fg_change = cell.fg != last_fg;
-            let need_bg_change = cell.bg != last_bg;
-            let need_mod_change = cell.modifiers != last_modifiers;
+            let need_fg_change = cell.fg() != last_fg;
+            let need_bg_change = cell.bg() != last_bg;
+            let need_mod_change = cell.modifiers() != last_modifiers;
 
             if need_fg_change || need_bg_change || need_mod_change {
                 // Reset and apply new styles
                 output.push_str(RESET);
 
                 // Apply modifiers first
-                if !cell.modifiers.is_empty() {
-                    output.push_str(&cell.modifiers.to_ansi());
+                if !cell.modifiers().is_empty() {
+                    output.push_str(&cell.modifiers().to_ansi());
                 }
 
                 // Apply colors
-                if cell.fg != SerializableColor::Reset {
-                    output.push_str(&cell.fg.to_ansi_fg());
+                if cell.fg() != SerializableColor::Reset {
+                    output.push_str(&cell.fg().to_ansi_fg());
                 }
-                if cell.bg != SerializableColor::Reset {
-                    output.push_str(&cell.bg.to_ansi_bg());
+                if cell.bg() != SerializableColor::Reset {
+                    output.push_str(&cell.bg().to_ansi_bg());
                 }
 
-                last_fg = cell.fg;
-                last_bg = cell.bg;
-                last_modifiers = cell.modifiers;
+                last_fg = cell.fg();
+                last_bg = cell.bg();
+                last_modifiers = cell.modifiers();
             }
 
             output.push_str(cell.symbol());
@@ -92,11 +92,11 @@ pub fn render_with_legend(backend: &CaptureBackend) -> String {
             let Some(cell) = backend.cell(x, y) else {
                 continue;
             };
-            if cell.fg != SerializableColor::Reset {
-                colors_used.insert(format!("FG: {:?}", cell.fg));
+            if cell.fg() != SerializableColor::Reset {
+                colors_used.insert(format!("FG: {:?}", cell.fg()));
             }
-            if cell.bg != SerializableColor::Reset {
-                colors_used.insert(format!("BG: {:?}", cell.bg));
+            if cell.bg() != SerializableColor::Reset {
+                colors_used.insert(format!("BG: {:?}", cell.bg()));
             }
         }
     }

@@ -188,25 +188,25 @@ impl FrameSnapshot {
             if end <= self.cells.len() {
                 for cell in &self.cells[start..end] {
                     // Apply foreground color
-                    if cell.fg != SerializableColor::Reset {
-                        output.push_str(&cell.fg.to_ansi_fg());
+                    if cell.fg() != SerializableColor::Reset {
+                        output.push_str(&cell.fg().to_ansi_fg());
                     }
 
                     // Apply background color
-                    if cell.bg != SerializableColor::Reset {
-                        output.push_str(&cell.bg.to_ansi_bg());
+                    if cell.bg() != SerializableColor::Reset {
+                        output.push_str(&cell.bg().to_ansi_bg());
                     }
 
                     // Apply modifiers
-                    output.push_str(&cell.modifiers.to_ansi());
+                    output.push_str(&cell.modifiers().to_ansi());
 
                     // Write the symbol
                     output.push_str(cell.symbol());
 
                     // Reset if we had any styling
-                    if cell.fg != SerializableColor::Reset
-                        || cell.bg != SerializableColor::Reset
-                        || !cell.modifiers.is_empty()
+                    if cell.fg() != SerializableColor::Reset
+                        || cell.bg() != SerializableColor::Reset
+                        || !cell.modifiers().is_empty()
                     {
                         output.push_str("\x1b[0m");
                     }

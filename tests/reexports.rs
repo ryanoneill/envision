@@ -17,3 +17,10 @@ fn backend_trait_is_reexported() {
     fn assert_backend<B: envision::backend::Backend>() {}
     assert_backend::<envision::CaptureBackend>();
 }
+
+#[test]
+fn serializable_style_types_are_nameable() {
+    let _color = envision::backend::SerializableColor::Red;
+    let _modifier: envision::SerializableModifier = envision::SerializableModifier::empty();
+    let _root_color: envision::SerializableColor = envision::SerializableColor::Reset;
+}

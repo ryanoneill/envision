@@ -211,19 +211,19 @@ fn test_frame_snapshot_to_plain() {
 
 #[test]
 fn test_frame_snapshot_to_ansi() {
-    use crate::backend::cell::SerializableColor;
+    use ratatui::style::{Color, Style};
 
     let mut backend = CaptureBackend::new(5, 2);
 
     // Set colored content
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('R');
-        cell.fg = SerializableColor::Red;
+        cell.set_style(Style::new().fg(Color::Red));
     }
     if let Some(cell) = backend.cell_mut(1, 0) {
         cell.set_char('G');
-        cell.fg = SerializableColor::Green;
-        cell.bg = SerializableColor::Blue;
+        cell.set_style(Style::new().fg(Color::Green));
+        cell.set_style(Style::new().bg(Color::Blue));
     }
 
     let snapshot = backend.snapshot();
@@ -238,16 +238,13 @@ fn test_frame_snapshot_to_ansi() {
 
 #[test]
 fn test_frame_snapshot_to_ansi_with_modifiers() {
-    use crate::backend::cell::SerializableModifier;
+    use ratatui::style::{Modifier, Style};
 
     let mut backend = CaptureBackend::new(5, 1);
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('B');
-        cell.modifiers = SerializableModifier {
-            bold: true,
-            ..Default::default()
-        };
+        cell.set_style(Style::new().add_modifier(Modifier::BOLD));
     }
 
     let snapshot = backend.snapshot();

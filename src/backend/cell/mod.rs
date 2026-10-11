@@ -15,6 +15,11 @@ use unicode_width::UnicodeWidthStr;
 /// - Is fully serializable for snapshots and JSON export
 /// - Tracks when the cell was last modified (frame number)
 /// - Can store optional semantic annotations
+///
+/// Style fields are private; read them through [`fg`](Self::fg),
+/// [`bg`](Self::bg), [`modifiers`](Self::modifiers),
+/// [`underline_color`](Self::underline_color) and
+/// [`last_modified_frame`](Self::last_modified_frame).
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(
     feature = "serialization",
@@ -25,22 +30,22 @@ pub struct EnhancedCell {
     symbol: CompactString,
 
     /// Foreground color
-    pub fg: SerializableColor,
+    fg: SerializableColor,
 
     /// Background color
-    pub bg: SerializableColor,
+    bg: SerializableColor,
 
     /// Text modifiers (bold, italic, etc.)
-    pub modifiers: SerializableModifier,
+    modifiers: SerializableModifier,
 
     /// Underline color (if different from foreground)
-    pub underline_color: Option<SerializableColor>,
+    underline_color: Option<SerializableColor>,
 
     /// Frame number when this cell was last modified
-    pub last_modified_frame: u64,
+    last_modified_frame: u64,
 
     /// Whether this cell should be skipped during rendering
-    pub skip: bool,
+    skip: bool,
 }
 
 impl EnhancedCell {
@@ -106,6 +111,31 @@ impl EnhancedCell {
         self.symbol.width()
     }
 
+    /// Foreground colour.
+    pub fn fg(&self) -> SerializableColor {
+        self.fg
+    }
+
+    /// Background colour.
+    pub fn bg(&self) -> SerializableColor {
+        self.bg
+    }
+
+    /// Text modifiers (bold, italic, ...).
+    pub fn modifiers(&self) -> SerializableModifier {
+        self.modifiers
+    }
+
+    /// Underline colour, if one was set separately from the foreground.
+    pub fn underline_color(&self) -> Option<SerializableColor> {
+        self.underline_color
+    }
+
+    /// Frame number at which this cell was last written.
+    pub fn last_modified_frame(&self) -> u64 {
+        self.last_modified_frame
+    }
+
     /// Sets the style from a ratatui Style
     pub fn set_style(&mut self, style: Style) {
         if let Some(fg) = style.fg {
@@ -166,24 +196,50 @@ impl Default for EnhancedCell {
 )]
 #[cfg_attr(feature = "serialization", serde(rename_all = "snake_case"))]
 pub enum SerializableColor {
+    /// The terminal default colour.
     Reset,
+    /// The `Black` ANSI colour.
     Black,
+    /// The `Red` ANSI colour.
     Red,
+    /// The `Green` ANSI colour.
     Green,
+    /// The `Yellow` ANSI colour.
     Yellow,
+    /// The `Blue` ANSI colour.
     Blue,
+    /// The `Magenta` ANSI colour.
     Magenta,
+    /// The `Cyan` ANSI colour.
     Cyan,
+    /// The `Gray` ANSI colour.
     Gray,
+    /// The `DarkGray` ANSI colour.
     DarkGray,
+    /// The `LightRed` ANSI colour.
     LightRed,
+    /// The `LightGreen` ANSI colour.
     LightGreen,
+    /// The `LightYellow` ANSI colour.
     LightYellow,
+    /// The `LightBlue` ANSI colour.
     LightBlue,
+    /// The `LightMagenta` ANSI colour.
     LightMagenta,
+    /// The `LightCyan` ANSI colour.
     LightCyan,
+    /// The `White` ANSI colour.
     White,
-    Rgb { r: u8, g: u8, b: u8 },
+    /// A 24-bit RGB colour.
+    Rgb {
+        /// Red channel.
+        r: u8,
+        /// Green channel.
+        g: u8,
+        /// Blue channel.
+        b: u8,
+    },
+    /// An entry in the 256-colour palette.
     Indexed(u8),
 }
 
@@ -298,14 +354,23 @@ impl SerializableColor {
     derive(serde::Serialize, serde::Deserialize)
 )]
 pub struct SerializableModifier {
+    /// Bold text.
     pub bold: bool,
+    /// Dimmed text.
     pub dim: bool,
+    /// Italic text.
     pub italic: bool,
+    /// Underlined text.
     pub underlined: bool,
+    /// Slowly blinking text.
     pub slow_blink: bool,
+    /// Rapidly blinking text.
     pub rapid_blink: bool,
+    /// Foreground and background swapped.
     pub reversed: bool,
+    /// Concealed text.
     pub hidden: bool,
+    /// Strikethrough text.
     pub crossed_out: bool,
 }
 

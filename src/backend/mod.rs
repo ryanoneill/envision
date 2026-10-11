@@ -8,7 +8,7 @@ mod cell;
 pub mod output;
 
 pub use capture::{CaptureBackend, FrameSnapshot};
-pub use cell::EnhancedCell;
+pub use cell::{EnhancedCell, SerializableColor, SerializableModifier};
 pub use output::OutputFormat;
 
 /// ratatui's backend trait, implemented by [`CaptureBackend`] and by custom
