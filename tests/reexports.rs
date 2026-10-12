@@ -24,3 +24,11 @@ fn serializable_style_types_are_nameable() {
     let _modifier: envision::SerializableModifier = envision::SerializableModifier::empty();
     let _root_color: envision::SerializableColor = envision::SerializableColor::Reset;
 }
+
+#[test]
+fn serializable_style_types_are_in_the_prelude() {
+    use envision::prelude::{SerializableColor, SerializableDiffOption, SerializableModifier};
+    let _color = SerializableColor::Red;
+    let _modifier = SerializableModifier::empty();
+    let _option = SerializableDiffOption::None;
+}

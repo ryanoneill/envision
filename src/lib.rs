@@ -489,7 +489,10 @@ pub mod prelude {
     pub use crate::component::*;
 
     // Testing essentials
-    pub use crate::backend::{CaptureBackend, EnhancedCell, SerializableDiffOption};
+    pub use crate::backend::{
+        CaptureBackend, EnhancedCell, SerializableColor, SerializableDiffOption,
+        SerializableModifier,
+    };
     pub use crate::harness::{
         AppHarness, Assertion, MessageSendError, MessageSender, Snapshot, TestHarness, TrySendError,
     };
