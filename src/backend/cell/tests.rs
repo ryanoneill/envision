@@ -558,3 +558,24 @@ fn set_last_modified_frame_stamps_the_cell() {
     cell.set_last_modified_frame(42);
     assert_eq!(cell.last_modified_frame(), 42);
 }
+
+// Characterization test: GOLDEN was captured from the output of the code as
+// built against compact_str 0.8 (run once with GOLDEN = "" and copy `left`).
+// It must stay byte-identical across the compact_str 0.9 upgrade.
+#[cfg(feature = "serialization")]
+const GOLDEN: &str = r#"{"symbol":"中","fg":"red","bg":{"rgb":{"r":1,"g":2,"b":3}},"modifiers":{"bold":true,"dim":false,"italic":false,"underlined":false,"slow_blink":false,"rapid_blink":false,"reversed":false,"hidden":false,"crossed_out":false},"underline_color":{"indexed":42},"last_modified_frame":0}"#;
+
+#[cfg(feature = "serialization")]
+#[test]
+fn enhanced_cell_json_is_byte_stable() {
+    let mut cell = EnhancedCell::with_symbol("中");
+    cell.set_style(
+        Style::new()
+            .fg(Color::Red)
+            .bg(Color::Rgb(1, 2, 3))
+            .add_modifier(Modifier::BOLD)
+            .underline_color(Color::Indexed(42)),
+    );
+    let json = serde_json::to_string(&cell).unwrap();
+    assert_eq!(json, GOLDEN);
+}
