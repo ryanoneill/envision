@@ -68,7 +68,10 @@ fn owner_over_older_owner_blanks_its_tail() {
     let mut b = CaptureBackend::new(5, 1);
     let mut older = cell("中");
     older.set_style(Style::new().bg(Color::Blue));
-    draw(&mut b, &[(1, 0, older)]);
+    let mut trailing = cell(" ");
+    trailing.set_style(Style::new().bg(Color::Blue));
+    // Rule 2: the styled blank recorded in the continuation column survives.
+    draw(&mut b, &[(1, 0, older), (2, 0, trailing)]);
     next_frame(&mut b);
     next_frame(&mut b);
     let frame = b.current_frame();
@@ -77,6 +80,37 @@ fn owner_over_older_owner_blanks_its_tail() {
     let tail = b.cell(2, 0).unwrap();
     assert_eq!(tail.symbol(), " ");
     assert_eq!(tail.last_modified_frame(), frame);
+    // Rule 4 blanks, it does not reset: the tail's recorded style survives.
+    assert_eq!(tail.bg(), SerializableColor::Blue);
+}
+
+// Chain of nested owners (rules 1 + 4, ruling R15). "中" owns columns 1-2 and
+// a ForcedWidth(3) "W" owns 3-5. A ForcedWidth(5) "V" at column 0 covers 0-4:
+// rule 1 resets columns 1-4; as it passes over the owner at 1, rule 4 blanks
+// that owner's continuation (column 2); over the owner at 3, rule 4 blanks its
+// continuations (4-5). Column 5 lies beyond the new owner's reach, so only
+// the rule-4 blanking (symbol " ", current frame) clears it, not rule 1.
+#[test]
+fn owner_over_chain_of_nested_owners_blanks_every_tail() {
+    let mut b = CaptureBackend::new(8, 1);
+    let mut wide = cell("W");
+    wide.set_diff_option(CellDiffOption::ForcedWidth(NonZeroU16::new(3).unwrap()));
+    draw(&mut b, &[(1, 0, cell("中")), (3, 0, wide)]);
+    next_frame(&mut b);
+    next_frame(&mut b);
+    let frame = b.current_frame();
+    let mut cover = cell("V");
+    cover.set_diff_option(CellDiffOption::ForcedWidth(NonZeroU16::new(5).unwrap()));
+    draw(&mut b, &[(0, 0, cover)]);
+    assert_eq!(b.row_content(0), "V       ");
+    for x in 0..=5 {
+        assert_eq!(
+            b.cell(x, 0).unwrap().last_modified_frame(),
+            frame,
+            "col {x}"
+        );
+    }
+    assert!(b.cell(6, 0).unwrap().last_modified_frame() < frame);
 }
 
 // Rule 3: the blanked owner is stamped with the frame of the overwriting draw.
