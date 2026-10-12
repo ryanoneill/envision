@@ -92,6 +92,7 @@ Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
 ### Changed
 
 - Minimum supported Rust version is now 1.88 (was 1.85), required by ratatui 0.30. The CI MSRV job is now labelled `msrv` rather than by version number, so required-check names no longer change on future MSRV bumps.
+- Dev-dependencies: `criterion` 0.8, `proptest` 1.12, `rand` 0.10.1 (the floor clears RUSTSEC-2026-0097, which affects `rand` 0.10.0). CI bench baselines now update on every `main` run; previously a fixed cache key froze them at the first save.
 
 #### Rendering under ratatui 0.30
 

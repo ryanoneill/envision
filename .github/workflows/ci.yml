@@ -305,12 +305,12 @@ jobs:
             ${{ runner.os }}-cargo-bench-
 
       - name: Restore baseline
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: target/criterion
-          key: criterion-baseline-backend-${{ github.base_ref || 'main' }}
+          key: criterion-baseline-backend-main-${{ github.run_id }}
           restore-keys: |
-            criterion-baseline-backend-main
+            criterion-baseline-backend-main-
 
       - name: Run benchmarks
         run: cargo bench --bench capture_backend --all-features
@@ -320,7 +320,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: target/criterion
-          key: criterion-baseline-backend-main
+          key: criterion-baseline-backend-main-${{ github.run_id }}
 
       - name: Upload benchmark results
         if: always()
@@ -355,12 +355,12 @@ jobs:
             ${{ runner.os }}-cargo-bench-
 
       - name: Restore baseline
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: target/criterion
-          key: criterion-baseline-runtime-${{ github.base_ref || 'main' }}
+          key: criterion-baseline-runtime-main-${{ github.run_id }}
           restore-keys: |
-            criterion-baseline-runtime-main
+            criterion-baseline-runtime-main-
 
       - name: Run benchmarks
         run: cargo bench --bench runtime --all-features
@@ -370,7 +370,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: target/criterion
-          key: criterion-baseline-runtime-main
+          key: criterion-baseline-runtime-main-${{ github.run_id }}
 
       - name: Upload benchmark results
         if: always()
@@ -405,12 +405,12 @@ jobs:
             ${{ runner.os }}-cargo-bench-
 
       - name: Restore baseline
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: target/criterion
-          key: criterion-baseline-component-view-${{ github.base_ref || 'main' }}
+          key: criterion-baseline-component-view-main-${{ github.run_id }}
           restore-keys: |
-            criterion-baseline-component-view-main
+            criterion-baseline-component-view-main-
 
       - name: Run benchmarks
         run: cargo bench --bench component_view --all-features
@@ -420,7 +420,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: target/criterion
-          key: criterion-baseline-component-view-main
+          key: criterion-baseline-component-view-main-${{ github.run_id }}
 
       - name: Upload benchmark results
         if: always()
@@ -455,12 +455,12 @@ jobs:
             ${{ runner.os }}-cargo-bench-
 
       - name: Restore baseline
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: target/criterion
-          key: criterion-baseline-component-events-${{ github.base_ref || 'main' }}
+          key: criterion-baseline-component-events-main-${{ github.run_id }}
           restore-keys: |
-            criterion-baseline-component-events-main
+            criterion-baseline-component-events-main-
 
       - name: Run benchmarks
         run: cargo bench --bench component_events --all-features
@@ -470,7 +470,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: target/criterion
-          key: criterion-baseline-component-events-main
+          key: criterion-baseline-component-events-main-${{ github.run_id }}
 
       - name: Upload benchmark results
         if: always()

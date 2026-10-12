@@ -10,7 +10,7 @@ use criterion::{Criterion, criterion_group, criterion_main};
 use envision::component::cell::Cell;
 use envision::component::{Column, Component, Table, TableMessage, TableRow, TableState};
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 use ratatui::layout::Constraint;
 
 #[derive(Clone)]

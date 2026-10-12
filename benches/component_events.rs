@@ -4,13 +4,14 @@
 //! (Event -> Message -> State update) for SelectableList, Table, InputField,
 //! and TextArea components with various data sizes.
 
-use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use envision::component::{
     Cell, Column, Component, EventContext, InputField, InputFieldState, SelectableList,
     SelectableListState, Table, TableRow, TableState, TextArea, TextAreaState,
 };
 use envision::input::{Event, Key};
 use ratatui::layout::Constraint;
+use std::hint::black_box;
 
 // ========================================
 // Table Row Type
