@@ -150,8 +150,8 @@ thread_local! {
 ///
 /// ```rust
 /// use envision::annotation::{with_annotations, Annotate, Annotation};
-/// use ratatui::widgets::Paragraph;
-/// use ratatui::Terminal;
+/// use envision::ratatui::widgets::Paragraph;
+/// use envision::ratatui::Terminal;
 /// use envision::backend::CaptureBackend;
 ///
 /// let backend = CaptureBackend::new(80, 24);

@@ -18,7 +18,7 @@ use super::registry::{AnnotationRegistry, RegionInfo, SerializableRect};
 /// ```rust
 /// use envision::annotation::{AnnotatedOutput, AnnotationRegistry, Annotation, with_annotations};
 /// use envision::backend::CaptureBackend;
-/// use ratatui::Terminal;
+/// use envision::ratatui::Terminal;
 ///
 /// let backend = CaptureBackend::new(80, 24);
 /// let Ok(mut terminal) = Terminal::new(backend);

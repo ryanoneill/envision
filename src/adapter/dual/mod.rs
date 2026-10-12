@@ -26,8 +26,8 @@ use crate::backend::CaptureBackend;
 /// // requires stdout access for CrosstermBackend
 /// use envision::adapter::DualBackend;
 /// use envision::backend::CaptureBackend;
-/// use ratatui::backend::CrosstermBackend;
-/// use ratatui::Terminal;
+/// use envision::ratatui::backend::CrosstermBackend;
+/// use envision::ratatui::Terminal;
 /// use std::io::stdout;
 ///
 /// let capture = CaptureBackend::new(80, 24);

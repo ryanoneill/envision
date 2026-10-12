@@ -34,8 +34,8 @@ mod wide;
 ///
 /// ```rust
 /// use envision::backend::CaptureBackend;
-/// use ratatui::Terminal;
-/// use ratatui::widgets::Paragraph;
+/// use envision::ratatui::Terminal;
+/// use envision::ratatui::widgets::Paragraph;
 ///
 /// let backend = CaptureBackend::new(80, 24);
 /// let Ok(mut terminal) = Terminal::new(backend);
@@ -424,8 +424,8 @@ impl CaptureBackend {
     /// ```rust
     /// use envision::annotation::{Annotate, Annotation, with_annotations};
     /// use envision::backend::CaptureBackend;
-    /// use ratatui::Terminal;
-    /// use ratatui::widgets::Paragraph;
+    /// use envision::ratatui::Terminal;
+    /// use envision::ratatui::widgets::Paragraph;
     ///
     /// let backend = CaptureBackend::new(80, 24);
     /// let Ok(mut terminal) = Terminal::new(backend);
@@ -472,8 +472,8 @@ impl CaptureBackend {
     /// ```rust
     /// use envision::annotation::{Annotate, Annotation, with_annotations};
     /// use envision::backend::CaptureBackend;
-    /// use ratatui::Terminal;
-    /// use ratatui::widgets::Paragraph;
+    /// use envision::ratatui::Terminal;
+    /// use envision::ratatui::widgets::Paragraph;
     ///
     /// let backend = CaptureBackend::new(80, 24);
     /// let Ok(mut terminal) = Terminal::new(backend);

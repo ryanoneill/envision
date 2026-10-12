@@ -78,7 +78,7 @@ impl EventContext {
 /// use envision::component::{Component, RenderContext};
 /// use envision::theme::Theme;
 /// use envision::backend::CaptureBackend;
-/// use ratatui::Terminal;
+/// use envision::ratatui::Terminal;
 ///
 /// let backend = CaptureBackend::new(80, 24);
 /// let Ok(mut terminal) = Terminal::new(backend);

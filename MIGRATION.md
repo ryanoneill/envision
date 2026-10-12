@@ -93,7 +93,7 @@ impl Backend for MyBackend {
 
 `Backend` is now re-exported as `envision::backend::Backend`.
 
-**Runtime bound.** `RuntimeCore::render`, `Runtime::with_backend_state_and_config`, `Runtime::render`, `Runtime::tick`, `Runtime::run`, `Runtime::run_ticks`, `RuntimeBuilder::build` and `ConfiguredRuntimeBuilder::build` require `EnvisionError: From<B::Error>`. `std::io::Error` (crossterm, termion, termwiz, termina) already satisfies it. Generic code that calls one of these methods must repeat the bound:
+**Runtime bound.** Six public methods, `Runtime::render`, `Runtime::tick`, `Runtime::run`, `Runtime::run_ticks`, `RuntimeBuilder::build` and `ConfiguredRuntimeBuilder::build`, require `EnvisionError: From<B::Error>`. `std::io::Error` (crossterm, termion, termwiz, termina) already satisfies it. Generic code that calls one of these methods must repeat the bound:
 
 ```rust
 // v0.17
@@ -181,7 +181,15 @@ Fields are private; use the accessors. `skip` is replaced by `diff_option`.
 | `cell.last_modified_frame` | `cell.last_modified_frame()` |
 | `cell.skip` | `cell.diff_option() == SerializableDiffOption::Skip` |
 | `cell.skip = true` | `cell.set_diff_option(SerializableDiffOption::Skip)` |
-| `cell.fg = c` (and other style fields) | `cell.set_style(Style::default().fg(c))` |
+| `cell.fg = c` | `cell.set_style(Style::default().fg(c.into()))` |
+| `cell.bg = c` | `cell.set_style(Style::default().bg(c.into()))` |
+| `cell.underline_color = Some(c)` | `cell.set_style(Style::default().underline_color(c.into()))` |
+
+`set_style` merges into the cell rather than replacing it: it changes only the colours the `Style` sets, adds `add_modifier` and removes `sub_modifier`, and never clears `underline_color`. So some v0.17 field writes have no one-line equivalent:
+
+- `cell.modifiers = m`: clear, then add, in two calls: `cell.set_style(Style::default().remove_modifier(Modifier::all()));` then `cell.set_style(Style::default().add_modifier(m.into()));`.
+- `cell.underline_color = None`: not possible on an existing cell. Build a fresh one instead (`EnhancedCell::new()` or `EnhancedCell::with_symbol(..)`, whose underline colour is `None`), then `set_style` the rest.
+- `cell.last_modified_frame = n`: no longer possible. The frame stamp is written only by `CaptureBackend`; the field is now encapsulated, and its setter is crate-internal.
 
 ```rust
 // v0.17
@@ -202,7 +210,7 @@ cell.fg() == SerializableColor::Red && cell.diff_option() != SerializableDiffOpt
 
 - **Charts and canvases** shift by up to one braille sub-cell (ratatui now rounds grid coordinates), and lines with an out-of-bounds endpoint are now drawn clipped instead of dropped. Review your own chart snapshots with `cargo insta review`.
 - **Wide glyphs.** `CaptureBackend` now clears the columns a wide glyph covers, as a terminal does. Single-frame captures are unchanged; multi-frame captures with CJK or emoji may differ from v0.17, where they could show stale characters.
-- **Widths.** `EnhancedCell::symbol_width()` returns ratatui's width. It differs from v0.17 only where ratatui and `unicode-width` (now 0.2.2) disagree, such as halfwidth katakana with a voiced sound mark (`"ﾊﾟ"`: 2, was 1). envision's component text layout still measures with `unicode-width`.
+- **Widths.** `EnhancedCell::symbol_width()` returns ratatui's width. It differs from v0.17 only where ratatui and `unicode-width` (now 0.2.2) disagree, such as halfwidth katakana with a voiced sound mark (`"ﾊﾟ"`: 2, was 1). envision's component text-layout width maths (e.g. `line_input`, `text_area`, `tab_bar`) still uses `unicode-width`, so it can disagree with ratatui on such sequences.
 
 #### 7. Re-exports and ratatui features
 
@@ -220,7 +228,7 @@ envision no longer enables ratatui's `widget-calendar` and `macros` features.
   A requirement that resolves to a different ratatui brings back the two-versions error from section 1.
 - If you already use `ratatui = { …, default-features = false }` and relied on envision enabling either feature, name it explicitly now.
 
-**Supported ratatui features.** envision enables `crossterm_0_29`, `underline-color` and `layout-cache` (plus `serde` with `serialization`). Additive features such as `widget-calendar` and `macros` are compatible. `scrolling-regions` is not yet supported: enabling it anywhere in your graph stops envision compiling (E0046), as with v0.17. `unstable-*` features are untested.
+**Supported ratatui features.** envision enables `crossterm_0_29`, `underline-color` and `layout-cache` (plus `serde` with `serialization`). Additive features such as `widget-calendar` and `macros` are compatible. `scrolling-regions` is not yet supported: enabling it anywhere in your dependency graph makes envision fail to compile (E0046 — `CaptureBackend`/`DualBackend` lack `scroll_region_up`/`scroll_region_down`), as was already the case in v0.17. `unstable-*` features are untested.
 
 #### 8. Upstream changes visible through envision
 
