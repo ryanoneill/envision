@@ -3,7 +3,7 @@
 //! Tests rendering of SelectableList, Table, and Tree components
 //! with varying data sizes (100 and 1000 items) and terminal sizes.
 
-use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use envision::backend::CaptureBackend;
 use envision::component::RenderContext;
 use envision::component::{
@@ -13,6 +13,7 @@ use envision::component::{
 use envision::theme::Theme;
 use ratatui::Terminal;
 use ratatui::layout::Constraint;
+use std::hint::black_box;
 
 // ========================================
 // SelectableList Benchmarks

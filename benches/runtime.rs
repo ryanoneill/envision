@@ -1,10 +1,11 @@
 //! Benchmarks for runtime performance.
 
-use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use envision::app::{
     App, Command, CommandHandler, Runtime, RuntimeConfig, TickSubscription, TimerSubscription,
 };
 use ratatui::widgets::Paragraph;
+use std::hint::black_box;
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
