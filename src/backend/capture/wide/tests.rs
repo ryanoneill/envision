@@ -18,8 +18,8 @@ fn draw(b: &mut CaptureBackend, cells: &[(u16, u16, &'static str)]) {
 }
 
 /// The flag's invariant: every row that holds an owner (a cell whose
-/// `owner_width() > 1`; blank cells never qualify, ruling R13) is flagged. (A flagged row without an owner is allowed: it
-/// only costs a scan.)
+/// `owner_width() > 1`; blank cells never qualify, ruling R13) is flagged.
+/// (A flagged row without an owner is allowed: it only costs a scan.)
 fn assert_flags_conservative(b: &CaptureBackend) {
     assert_eq!(b.row_may_hold_owner.len(), usize::from(b.height));
     for y in 0..b.height {

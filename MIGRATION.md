@@ -37,6 +37,14 @@ use envision::ratatui::widgets::Paragraph; // was: use ratatui::widgets::Paragra
 ratatui = "0.30.2" # was: "0.29"
 ```
 
+**A direct `crossterm` dependency must move to 0.29 too**, or be replaced by `envision::ratatui::crossterm`. Unlike ratatui, a leftover crossterm 0.28 compiles silently: Cargo builds both crossterms, each with its own event reader and raw-mode state. That matters for `TerminalHook` code that calls `crossterm::execute!` or reads events, which would then talk to a different crossterm than envision's terminal.
+
+```toml
+crossterm = "0.29" # was: "0.28"
+```
+
+**Third-party ratatui widget crates** (e.g. `tui-*` crates, `ratatui-image`) must release a version that supports ratatui 0.30. `envision::ratatui` cannot change the ratatui requirement inside another crate; until it supports 0.30, its widgets hit the two-versions error above.
+
 ratatui's own changes are listed in its [0.30 breaking-changes notes](https://github.com/ratatui/ratatui/blob/main/BREAKING-CHANGES.md#v0300).
 
 **Policy:** from v0.18.0 on, every ratatui 0.x bump is a breaking envision release.
@@ -214,7 +222,7 @@ cell.fg() == SerializableColor::Red && cell.diff_option() != SerializableDiffOpt
 
 #### 7. Re-exports and ratatui features
 
-New: `envision::ratatui` (including `envision::ratatui::crossterm`), `envision::backend::Backend`, and `HorizontalAlignment` / `VerticalAlignment` in `envision::layout` and the prelude.
+New: `envision::ratatui` (including `envision::ratatui::crossterm`), `envision::backend::Backend`, `HorizontalAlignment` / `VerticalAlignment` in `envision::layout` and the prelude, and `SerializableDiffOption` / `SerializableColor` / `SerializableModifier` in the prelude.
 
 envision no longer enables ratatui's `widget-calendar` and `macros` features.
 

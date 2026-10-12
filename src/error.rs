@@ -401,6 +401,8 @@ pub type Result<T> = std::result::Result<T, EnvisionError>;
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn infallible_converts_via_question_mark() {
         fn uses_question_mark() -> Result<u8> {
@@ -409,8 +411,6 @@ mod tests {
         }
         assert_eq!(uses_question_mark().unwrap(), 7);
     }
-
-    use super::*;
 
     #[test]
     fn io_error_display() {
