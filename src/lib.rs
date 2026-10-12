@@ -203,6 +203,15 @@ pub use backend::{
 /// envision release, and envision never straddles two ratatui versions
 /// behind features.
 pub use ratatui;
+
+/// The exact `compact_str` envision is built with.
+///
+/// `CompactString` appears in envision's public API (`SortKey::String`,
+/// `From<CompactString> for Cell`, and `impl Into<CompactString>` parameters).
+/// Use `envision::compact_str::CompactString` to name it. envision tracks the
+/// `compact_str` major used by ratatui-core; a change of that major is a
+/// breaking envision release.
+pub use compact_str;
 // Core component traits and utilities (always available)
 pub use component::{Component, EventContext, FocusManager, RenderContext, Toggleable};
 

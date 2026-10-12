@@ -58,6 +58,10 @@ The motivation is that `selected` was ambiguous about return type. Four differen
 
 See `MIGRATION.md` § *v0.17.x to v0.18.0* for the full before/after table.
 
+#### `compact_str` 0.8 to 0.9
+
+envision now depends on `compact_str = "0.9"`, the major used by ratatui-core. Code that names `CompactString` (for example `SortKey::String(..)` or `Cell::from(CompactString)`) must use 0.9, or name it through `envision::compact_str` (see *Added*). Passing `&str` or `String` to `Cell::new`, and matching `SortKey::String(s)` with `s.as_str()`, are unaffected. `compact_str` is kept (rather than dropped) because ratatui-core already depends on 0.9, so it adds no extra crate, and it stores cell symbols without heap allocation. The JSON wire format of `EnhancedCell` is byte-identical and pinned by a golden test.
+
 ### Added
 
 #### Harness types available from the prelude
@@ -65,6 +69,10 @@ See `MIGRATION.md` § *v0.17.x to v0.18.0* for the full before/after table.
 `envision::prelude::*` now re-exports the seven harness types available at the crate root. Previously only `AppHarness`, `MessageSender`, and `TestHarness` were included, so consumers matching on `TrySendError::{Full, Closed}`, destructuring `MessageSendError`, or using `Assertion` / `Snapshot` needed a second explicit import.
 
 Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
+
+#### compact_str re-export
+
+- `envision::compact_str` re-exports the exact `compact_str` envision is built with, so `envision::compact_str::CompactString` always names the type in envision's public API. **Policy:** envision tracks the `compact_str` major used by ratatui-core; a change of that major is a breaking envision release.
 
 #### ratatui re-exports
 
@@ -106,7 +114,6 @@ Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
 - **The `with_selected` builder leg was not renamed.** `menu`, `tabs`, `tree`, `loading_list`, `selectable_list`, `radio_group`, `table`, and `tab_bar` still expose `with_selected(i)` alongside `set_selected_index()` and `selected_index()`, so one type now carries two spellings of the same concept. Renaming it to `with_selected_index` is a second breaking change that belongs in its own cadence, not bolted onto this one.
 - **Three `selected_item()` one-line aliases survive** — `file_browser::selected_item()` → `selected_entry()`, `tree::selected_item()` → `selected_node()`, `accordion::selected_item()` → `focused_panel()`. These are the same "pure redundancy" shape this release deleted twelve times, kept only because `selected_item()` is the canonical cross-component spelling Cadence A established. Delete-or-keep is an open question.
 - **`accordion::selected_index()` remains a convenience alias for `focused_index()`.** It performs real work (Option-normalizing the empty case) so it is not redundant, but the indirection stands.
-- **`compact_str` adoption is sporadic** — 2 non-test source files (`src/component/cell.rs`, `src/backend/cell/mod.rs`). Needs a commit-or-drop decision.
 - **Naming outliers** — `is_checked`, `label_text` (the `tab_bar` setter outlier previously grouped here is closed by this release). Plus `restore_terminal` → `restore`, `AppShell` placement in the README component table, five files near the 1000-line cap, and snapshot-coverage concentration in ~20 of 74 components.
 - **Backend errors lose operation context.** A failure in `Terminal::new` and a failure in a draw both surface as the same `EnvisionError::Io` message; the source error is preserved, but not which operation failed. A context-carrying variant is now a non-breaking addition thanks to `#[non_exhaustive]`.
 - **Security: captured output can inject terminal escape sequences.** ANSI/text export (`to_ansi`, `to_plain`, `row_content`, and symbols decoded from captured JSON) emit control or escape bytes kept in captured cell symbols (e.g. `"\x1b"`) verbatim, so printing captured output to a terminal can run attacker-chosen escape sequences. (Raw JSON text is not a vector: `serde_json` escapes control characters.) Pre-existing; tracked separately from hyperlink support. #125 (OSC 8 hyperlinks) will need the same sanitising.
