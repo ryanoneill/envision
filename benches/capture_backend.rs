@@ -1,11 +1,12 @@
 //! Benchmarks for CaptureBackend performance.
 
-use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
 use envision::backend::CaptureBackend;
 use ratatui::backend::Backend;
 use ratatui::buffer::Cell;
 use ratatui::layout::Position;
 use ratatui::style::{Color, Modifier, Style};
+use std::hint::black_box;
 
 /// Benchmark creating new backends of various sizes.
 fn bench_backend_creation(c: &mut Criterion) {

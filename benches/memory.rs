@@ -29,7 +29,7 @@
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use envision::backend::CaptureBackend;
 use envision::component::RenderContext;
 use envision::component::{
@@ -39,6 +39,7 @@ use envision::component::{
 use envision::theme::Theme;
 use ratatui::Terminal;
 use ratatui::layout::Constraint;
+use std::hint::black_box;
 
 // ============================================================
 // Counting allocator
