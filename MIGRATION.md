@@ -15,6 +15,7 @@ The sections below follow the order in which a crate upgrading from v0.17 meets 
 | Rust (MSRV) | 1.85 | **1.88** |
 | `ratatui` | 0.29 | **0.30.2** |
 | `crossterm` | 0.28 | **0.29** |
+| `compact_str` | 0.8 | **0.9** |
 
 If your crate also depends on ratatui 0.29 directly, Cargo builds two ratatuis and types stop matching:
 
@@ -222,7 +223,7 @@ cell.fg() == SerializableColor::Red && cell.diff_option() != SerializableDiffOpt
 
 #### 7. Re-exports and ratatui features
 
-New: `envision::ratatui` (including `envision::ratatui::crossterm`), `envision::backend::Backend`, `HorizontalAlignment` / `VerticalAlignment` in `envision::layout` and the prelude, and `SerializableDiffOption` / `SerializableColor` / `SerializableModifier` in the prelude.
+New: `envision::compact_str`, `envision::ratatui` (including `envision::ratatui::crossterm`), `envision::backend::Backend`, `HorizontalAlignment` / `VerticalAlignment` in `envision::layout` and the prelude, and `SerializableDiffOption` / `SerializableColor` / `SerializableModifier` in the prelude.
 
 envision no longer enables ratatui's `widget-calendar` and `macros` features.
 
@@ -237,6 +238,22 @@ envision no longer enables ratatui's `widget-calendar` and `macros` features.
 - If you already use `ratatui = { …, default-features = false }` and relied on envision enabling either feature, name it explicitly now.
 
 **Supported ratatui features.** envision enables `crossterm_0_29`, `underline-color` and `layout-cache` (plus `serde` with `serialization`). Additive features such as `widget-calendar` and `macros` are compatible. `scrolling-regions` is not yet supported: enabling it anywhere in your dependency graph makes envision fail to compile (E0046 — `CaptureBackend`/`DualBackend` lack `scroll_region_up`/`scroll_region_down`), as was already the case in v0.17. `unstable-*` features are untested.
+
+#### `CompactString` type identity
+
+`CompactString` appears in envision's public API (`SortKey::String`, `From<CompactString> for Cell`, `Cell::new(impl Into<CompactString>)`), and v0.18 moves it from `compact_str` 0.8 to 0.9 to match ratatui-core. A `CompactString` from your own `compact_str = "0.8"` is a different type from envision's.
+
+```rust
+// Before (v0.17): your own compact_str = "0.8"
+use compact_str::CompactString;
+let cell = Cell::from(CompactString::from("abc"));
+
+// After (v0.18): name the type through envision (or move your dependency to 0.9)
+use envision::compact_str::CompactString;
+let cell = Cell::from(CompactString::from("abc"));
+```
+
+Passing `&str`, `String` or `&String` to `Cell::new` is unchanged, and a plain `match` on `SortKey::String(s)` using `s.as_str()` still compiles.
 
 #### 8. Upstream changes visible through envision
 
