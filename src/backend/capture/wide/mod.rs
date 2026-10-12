@@ -1,9 +1,10 @@
 //! Terminal wide-glyph semantics for captured cells (spec § 5).
 //!
 //! Widths come from `EnhancedCell::owner_width` (ratatui's width via the
-//! crate's single helper; a blank cell never owns continuation columns). No per-cell ownership state is stored: the owner of
-//! a column is found by scanning left over blank cells, and only on rows whose
-//! `row_may_hold_owner` flag is set.
+//! crate's single helper; a blank cell never owns continuation columns). No
+//! per-cell ownership state is stored: the owner of a column is found by
+//! scanning left over blank cells, and only on rows whose `row_may_hold_owner`
+//! flag is set.
 
 use super::CaptureBackend;
 use crate::backend::cell::EnhancedCell;
@@ -24,11 +25,8 @@ impl CaptureBackend {
         // the owner stays intact and the written style is recorded.)
 
         // Rule 4: replacing an owner blanks its former continuation cells.
+        self.blank_former_continuations(x, y, frame);
         let idx = self.index_of(x, y);
-        let old_width = self.cells[idx].owner_width();
-        if old_width > 1 {
-            self.blank_range(x.saturating_add(1), x.saturating_add(old_width), y, frame);
-        }
 
         let new_width = cell.owner_width();
         cell.set_last_modified_frame(frame);
@@ -39,6 +37,11 @@ impl CaptureBackend {
             self.flag_row_may_hold_owner(y);
             let end = x.saturating_add(new_width).min(self.width);
             for cx in x.saturating_add(1)..end {
+                // Ruling R15 / spec § 5: a continuation column that held an
+                // owner replaces that owner, so rule 4 applies to it too;
+                // otherwise its continuation columns beyond `end` keep a stale
+                // frame.
+                self.blank_former_continuations(cx, y, frame);
                 let mut blank = EnhancedCell::new();
                 blank.set_last_modified_frame(frame);
                 let cidx = self.index_of(cx, y);
@@ -81,6 +84,15 @@ impl CaptureBackend {
             }
         }
         None
+    }
+
+    /// Rule 4: if the cell at `(x, y)` is an owner, blanks its continuation
+    /// cells (clamped to the row), keeping their style.
+    fn blank_former_continuations(&mut self, x: u16, y: u16, frame: u64) {
+        let old_width = self.cells[self.index_of(x, y)].owner_width();
+        if old_width > 1 {
+            self.blank_range(x.saturating_add(1), x.saturating_add(old_width), y, frame);
+        }
     }
 
     /// Rule 3: blank the owner and its continuation cells, keeping their style.

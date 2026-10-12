@@ -59,6 +59,26 @@ fn narrow_over_owner_blanks_former_continuation() {
     assert_eq!(b.cell(1, 0).unwrap().last_modified_frame(), frame);
 }
 
+// Rules 1 and 4 together (ruling R15): a new owner whose continuation range
+// covers an older owner ("中" at column 1) replaces that owner, so the older
+// owner's own continuation column (2), beyond the new owner's reach, is
+// blanked and stamped per rule 4 rather than left stale.
+#[test]
+fn owner_over_older_owner_blanks_its_tail() {
+    let mut b = CaptureBackend::new(5, 1);
+    let mut older = cell("中");
+    older.set_style(Style::new().bg(Color::Blue));
+    draw(&mut b, &[(1, 0, older)]);
+    next_frame(&mut b);
+    next_frame(&mut b);
+    let frame = b.current_frame();
+    draw(&mut b, &[(0, 0, cell("日"))]);
+    assert_eq!(b.row_content(0), "日    ");
+    let tail = b.cell(2, 0).unwrap();
+    assert_eq!(tail.symbol(), " ");
+    assert_eq!(tail.last_modified_frame(), frame);
+}
+
 // Rule 3: the blanked owner is stamped with the frame of the overwriting draw.
 #[test]
 fn non_blank_into_continuation_blanks_owner() {
