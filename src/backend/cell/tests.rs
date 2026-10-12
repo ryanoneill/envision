@@ -102,14 +102,14 @@ fn test_enhanced_cell_reset() {
     cell.set_char('X');
     cell.fg = SerializableColor::Red;
     cell.modifiers.bold = true;
-    cell.skip = true;
+    cell.diff_option = SerializableDiffOption::Skip;
 
     cell.reset();
 
     assert_eq!(cell.symbol(), " ");
     assert_eq!(cell.fg, SerializableColor::Reset);
     assert!(cell.modifiers.is_empty());
-    assert!(!cell.skip);
+    assert_eq!(cell.diff_option, SerializableDiffOption::None);
 }
 
 #[test]
@@ -445,7 +445,7 @@ fn test_cell_serialization() {
         },
         underline_color: None,
         last_modified_frame: 5,
-        skip: false,
+        diff_option: SerializableDiffOption::None,
     };
 
     let json = serde_json::to_string(&cell).unwrap();
@@ -463,10 +463,98 @@ fn test_cell_serialization_with_underline_color() {
         modifiers: SerializableModifier::empty(),
         underline_color: Some(SerializableColor::Green),
         last_modified_frame: 0,
-        skip: true,
+        diff_option: SerializableDiffOption::Skip,
     };
 
     let json = serde_json::to_string(&cell).unwrap();
     let deserialized: EnhancedCell = serde_json::from_str(&json).unwrap();
     assert_eq!(cell, deserialized);
+}
+
+#[test]
+fn accessors_return_what_set_style_stored() {
+    use ratatui::style::{Color, Modifier, Style};
+    let mut cell = EnhancedCell::new();
+    cell.set_style(
+        Style::new()
+            .fg(Color::Red)
+            .bg(Color::Blue)
+            .add_modifier(Modifier::BOLD)
+            .underline_color(Color::Green),
+    );
+    assert_eq!(cell.fg(), SerializableColor::Red);
+    assert_eq!(cell.bg(), SerializableColor::Blue);
+    assert!(cell.modifiers().bold);
+    assert_eq!(cell.underline_color(), Some(SerializableColor::Green));
+    assert_eq!(cell.last_modified_frame(), 0);
+}
+
+#[test]
+fn accessors_return_what_from_ratatui_cell_stored() {
+    use ratatui::style::{Color, Style};
+    let mut rc = ratatui::buffer::Cell::new("x");
+    rc.set_style(Style::new().fg(Color::Yellow));
+    let cell = EnhancedCell::from_ratatui_cell(&rc, 9);
+    assert_eq!(cell.symbol(), "x");
+    assert_eq!(cell.fg(), SerializableColor::Yellow);
+    assert_eq!(cell.last_modified_frame(), 9);
+}
+
+// -------------------------------------------------------------------------
+// Crate-internal wide-glyph helpers (spec § 5)
+// -------------------------------------------------------------------------
+
+#[test]
+fn owner_width_follows_symbol_width() {
+    assert_eq!(EnhancedCell::with_symbol("a").owner_width(), 1);
+    assert_eq!(EnhancedCell::with_symbol("中").owner_width(), 2);
+    assert_eq!(EnhancedCell::with_symbol("ﾊﾟ").owner_width(), 2);
+}
+
+#[test]
+fn blank_cells_never_own_continuation_columns() {
+    // R13: blank (space or empty) is width 1, even with a ForcedWidth option.
+    assert_eq!(EnhancedCell::new().owner_width(), 1);
+    assert_eq!(EnhancedCell::with_symbol("").owner_width(), 1);
+    let mut blank = EnhancedCell::new();
+    blank.set_diff_option(SerializableDiffOption::ForcedWidth(
+        std::num::NonZeroU16::new(5).unwrap(),
+    ));
+    assert_eq!(blank.owner_width(), 1);
+}
+
+#[test]
+fn owner_width_prefers_forced_width() {
+    let mut cell = EnhancedCell::with_symbol("中");
+    cell.set_diff_option(SerializableDiffOption::ForcedWidth(
+        std::num::NonZeroU16::new(5).unwrap(),
+    ));
+    assert_eq!(cell.owner_width(), 5);
+}
+
+#[test]
+fn owner_width_ignores_other_diff_options() {
+    let mut cell = EnhancedCell::with_symbol("中");
+    cell.set_diff_option(SerializableDiffOption::Skip);
+    assert_eq!(cell.owner_width(), 2);
+    cell.set_diff_option(SerializableDiffOption::AlwaysUpdate);
+    assert_eq!(cell.owner_width(), 2);
+}
+
+#[test]
+fn is_blank_symbol_is_space_or_empty_regardless_of_style() {
+    assert!(EnhancedCell::new().is_blank_symbol());
+    assert!(EnhancedCell::with_symbol("").is_blank_symbol());
+    let mut styled = EnhancedCell::new();
+    styled.set_style(Style::new().bg(Color::Blue).add_modifier(Modifier::BOLD));
+    assert!(styled.is_blank_symbol());
+    assert!(!EnhancedCell::with_symbol("a").is_blank_symbol());
+    assert!(!EnhancedCell::with_symbol("  ").is_blank_symbol());
+}
+
+#[test]
+fn set_last_modified_frame_stamps_the_cell() {
+    let mut cell = EnhancedCell::new();
+    cell.set_last_modified_frame(42);
+    assert_eq!(cell.last_modified_frame(), 42);
 }

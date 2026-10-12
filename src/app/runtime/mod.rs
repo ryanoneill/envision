@@ -81,6 +81,7 @@ pub use config::{RuntimeConfig, TerminalHook};
 use std::io::Stdout;
 
 use crate::error;
+use crate::error::EnvisionError;
 use std::pin::Pin;
 
 use ratatui::Terminal;
@@ -207,7 +208,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
         state: A::State,
         init_cmd: Command<A::Message>,
         config: RuntimeConfig,
-    ) -> error::Result<Self> {
+    ) -> error::Result<Self>
+    where
+        EnvisionError: From<B::Error>,
+    {
         let terminal = Terminal::new(backend)?;
 
         let (message_tx, message_rx) = mpsc::channel(config.message_channel_capacity);
@@ -589,7 +593,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # Errors
     ///
     /// Returns an error if drawing to the terminal backend fails.
-    pub fn render(&mut self) -> error::Result<()> {
+    pub fn render(&mut self) -> error::Result<()>
+    where
+        EnvisionError: From<B::Error>,
+    {
         self.core.render()
     }
 
@@ -653,7 +660,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// vt.tick()?; // processes the 'j' event and re-renders
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```
-    pub fn tick(&mut self) -> error::Result<()> {
+    pub fn tick(&mut self) -> error::Result<()>
+    where
+        EnvisionError: From<B::Error>,
+    {
         #[cfg(feature = "tracing")]
         let _span = tracing::debug_span!("tick").entered();
 
@@ -712,7 +722,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// # Errors
     ///
     /// Returns an error if rendering to the terminal backend fails.
-    pub async fn run(&mut self) -> error::Result<()> {
+    pub async fn run(&mut self) -> error::Result<()>
+    where
+        EnvisionError: From<B::Error>,
+    {
         #[cfg(feature = "tracing")]
         tracing::info!("starting runtime event loop");
 
@@ -810,7 +823,10 @@ impl<A: App, B: Backend> Runtime<A, B> {
     /// vt.run_ticks(5)?;
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```
-    pub fn run_ticks(&mut self, ticks: usize) -> error::Result<()> {
+    pub fn run_ticks(&mut self, ticks: usize) -> error::Result<()>
+    where
+        EnvisionError: From<B::Error>,
+    {
         for _ in 0..ticks {
             if self.core.should_quit {
                 break;

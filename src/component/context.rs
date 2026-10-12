@@ -78,16 +78,16 @@ impl EventContext {
 /// use envision::component::{Component, RenderContext};
 /// use envision::theme::Theme;
 /// use envision::backend::CaptureBackend;
-/// use ratatui::Terminal;
+/// use envision::ratatui::Terminal;
 ///
 /// let backend = CaptureBackend::new(80, 24);
-/// let mut terminal = Terminal::new(backend).unwrap();
+/// let Ok(mut terminal) = Terminal::new(backend);
 /// let theme = Theme::default();
-/// terminal.draw(|frame| {
+/// let Ok(_) = terminal.draw(|frame| {
 ///     let area = frame.area();
 ///     let mut ctx = RenderContext::new(frame, area, &theme).focused(true);
 ///     // Pass `&mut ctx` to a component's `view` method.
-/// }).unwrap();
+/// });
 /// ```
 pub struct RenderContext<'frame, 'buf> {
     /// The ratatui frame to render into.

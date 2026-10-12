@@ -187,7 +187,22 @@ pub use app::{
     UnboundedChannelSubscription, Update, UpdateResult, VirtualRuntime, batch, interval_immediate,
     terminal_events, tick,
 };
-pub use backend::{CaptureBackend, EnhancedCell, FrameSnapshot};
+pub use backend::{
+    CaptureBackend, EnhancedCell, FrameSnapshot, SerializableColor, SerializableDiffOption,
+    SerializableModifier,
+};
+/// The exact ratatui envision is built with.
+///
+/// Use `envision::ratatui::…` (including `envision::ratatui::crossterm`) to
+/// stay on envision's ratatui version. Depending on a different ratatui
+/// version directly produces errors like "expected `ratatui::Frame`, found
+/// `ratatui::Frame`".
+///
+/// This re-export makes all of ratatui's public surface part of envision's
+/// API. This is a permanent policy: every ratatui 0.x bump is a breaking
+/// envision release, and envision never straddles two ratatui versions
+/// behind features.
+pub use ratatui;
 // Core component traits and utilities (always available)
 pub use component::{Component, EventContext, FocusManager, RenderContext, Toggleable};
 
@@ -474,14 +489,18 @@ pub mod prelude {
     pub use crate::component::*;
 
     // Testing essentials
-    pub use crate::backend::{CaptureBackend, EnhancedCell};
+    pub use crate::backend::{
+        CaptureBackend, EnhancedCell, SerializableColor, SerializableDiffOption,
+        SerializableModifier,
+    };
     pub use crate::harness::{
         AppHarness, Assertion, MessageSendError, MessageSender, Snapshot, TestHarness, TrySendError,
     };
 
     // Layout and style re-exports (replacing `pub use ratatui::prelude::*`)
     pub use crate::layout::{
-        Alignment, Constraint, Direction, Frame, Layout, Margin, Position, Rect, Size, Terminal,
+        Alignment, Constraint, Direction, Frame, HorizontalAlignment, Layout, Margin, Position,
+        Rect, Size, Terminal, VerticalAlignment,
     };
     pub use crate::style::{Color, Modifier, Style, Stylize};
 

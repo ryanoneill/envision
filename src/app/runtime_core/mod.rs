@@ -8,6 +8,7 @@ use ratatui::Terminal;
 use ratatui::backend::Backend;
 
 use super::model::App;
+use crate::error::EnvisionError;
 use crate::input::EventQueue;
 use crate::overlay::{Overlay, OverlayAction, OverlayStack};
 use crate::theme::Theme;
@@ -31,7 +32,10 @@ impl<A: App, B: Backend> RuntimeCore<A, B> {
     /// Renders the current state to the terminal.
     ///
     /// Renders the main app view first, then any active overlays on top.
-    pub(crate) fn render(&mut self) -> crate::error::Result<()> {
+    pub(crate) fn render(&mut self) -> crate::error::Result<()>
+    where
+        EnvisionError: From<B::Error>,
+    {
         #[cfg(feature = "tracing")]
         let _span = tracing::debug_span!("render").entered();
 

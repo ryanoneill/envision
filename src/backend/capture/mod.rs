@@ -4,8 +4,8 @@
 //! all rendering operations for inspection, testing, and headless operation.
 
 use std::collections::VecDeque;
+use std::convert::Infallible;
 use std::fmt;
-use std::io;
 use std::sync::Arc;
 
 use ratatui::backend::{Backend, ClearType, WindowSize};
@@ -14,6 +14,8 @@ use ratatui::layout::{Position, Size};
 
 use super::cell::EnhancedCell;
 use super::output::OutputFormat;
+
+mod wide;
 
 /// A backend that captures rendered frames for inspection and testing.
 ///
@@ -32,15 +34,15 @@ use super::output::OutputFormat;
 ///
 /// ```rust
 /// use envision::backend::CaptureBackend;
-/// use ratatui::Terminal;
-/// use ratatui::widgets::Paragraph;
+/// use envision::ratatui::Terminal;
+/// use envision::ratatui::widgets::Paragraph;
 ///
 /// let backend = CaptureBackend::new(80, 24);
-/// let mut terminal = Terminal::new(backend).unwrap();
+/// let Ok(mut terminal) = Terminal::new(backend);
 ///
-/// terminal.draw(|frame| {
+/// let Ok(_) = terminal.draw(|frame| {
 ///     frame.render_widget(Paragraph::new("Hello!"), frame.area());
-/// }).unwrap();
+/// });
 ///
 /// // Get plain text output
 /// println!("{}", terminal.backend());
@@ -73,6 +75,17 @@ pub struct CaptureBackend {
 
     /// Maximum history size (0 = disabled)
     history_capacity: usize,
+
+    /// Per row: `true` when the row *may* hold a wide-glyph owner (spec § 5).
+    ///
+    /// Conservative: a row holding an owner — a cell whose
+    /// `EnhancedCell::owner_width() > 1` (blank cells never qualify, ruling
+    /// R13) — is always flagged; a flagged row without one only costs a scan.
+    /// `write_cell` skips the leftward owner scan on unflagged rows. This adds
+    /// one byte per row — not per cell — to the backend's footprint, a
+    /// controller-approved deviation from spec § 5's "memory footprint
+    /// unchanged" (ruling R11). It is not part of [`FrameSnapshot`].
+    row_may_hold_owner: Vec<bool>,
 }
 
 /// A snapshot of a single frame's state.
@@ -188,25 +201,25 @@ impl FrameSnapshot {
             if end <= self.cells.len() {
                 for cell in &self.cells[start..end] {
                     // Apply foreground color
-                    if cell.fg != SerializableColor::Reset {
-                        output.push_str(&cell.fg.to_ansi_fg());
+                    if cell.fg() != SerializableColor::Reset {
+                        output.push_str(&cell.fg().to_ansi_fg());
                     }
 
                     // Apply background color
-                    if cell.bg != SerializableColor::Reset {
-                        output.push_str(&cell.bg.to_ansi_bg());
+                    if cell.bg() != SerializableColor::Reset {
+                        output.push_str(&cell.bg().to_ansi_bg());
                     }
 
                     // Apply modifiers
-                    output.push_str(&cell.modifiers.to_ansi());
+                    output.push_str(&cell.modifiers().to_ansi());
 
                     // Write the symbol
                     output.push_str(cell.symbol());
 
                     // Reset if we had any styling
-                    if cell.fg != SerializableColor::Reset
-                        || cell.bg != SerializableColor::Reset
-                        || !cell.modifiers.is_empty()
+                    if cell.fg() != SerializableColor::Reset
+                        || cell.bg() != SerializableColor::Reset
+                        || !cell.modifiers().is_empty()
                     {
                         output.push_str("\x1b[0m");
                     }
@@ -245,6 +258,7 @@ impl CaptureBackend {
             current_frame: 0,
             history: VecDeque::new(),
             history_capacity: 0,
+            row_may_hold_owner: vec![false; usize::from(height)],
         }
     }
 
@@ -277,8 +291,12 @@ impl CaptureBackend {
     }
 
     /// Returns a mutable reference to the cell at the given position.
+    ///
+    /// The caller may store a wide glyph through the reference, so the row is
+    /// treated as possibly holding one from then on.
     pub fn cell_mut(&mut self, x: u16, y: u16) -> Option<&mut EnhancedCell> {
         if x < self.width && y < self.height {
+            self.flag_row_may_hold_owner(y);
             let idx = self.index_of(x, y);
             Some(&mut self.cells[idx])
         } else {
@@ -406,20 +424,20 @@ impl CaptureBackend {
     /// ```rust
     /// use envision::annotation::{Annotate, Annotation, with_annotations};
     /// use envision::backend::CaptureBackend;
-    /// use ratatui::Terminal;
-    /// use ratatui::widgets::Paragraph;
+    /// use envision::ratatui::Terminal;
+    /// use envision::ratatui::widgets::Paragraph;
     ///
     /// let backend = CaptureBackend::new(80, 24);
-    /// let mut terminal = Terminal::new(backend).unwrap();
+    /// let Ok(mut terminal) = Terminal::new(backend);
     ///
     /// let registry = with_annotations(|| {
-    ///     terminal.draw(|frame| {
+    ///     let Ok(_) = terminal.draw(|frame| {
     ///         let widget = Annotate::new(
     ///             Paragraph::new("Submit"),
     ///             Annotation::button("submit").with_label("Submit Order"),
     ///         );
     ///         frame.render_widget(widget, frame.area());
-    ///     }).unwrap();
+    ///     });
     /// });
     ///
     /// let output = terminal.backend().to_annotated_output(&registry);
@@ -454,20 +472,20 @@ impl CaptureBackend {
     /// ```rust
     /// use envision::annotation::{Annotate, Annotation, with_annotations};
     /// use envision::backend::CaptureBackend;
-    /// use ratatui::Terminal;
-    /// use ratatui::widgets::Paragraph;
+    /// use envision::ratatui::Terminal;
+    /// use envision::ratatui::widgets::Paragraph;
     ///
     /// let backend = CaptureBackend::new(80, 24);
-    /// let mut terminal = Terminal::new(backend).unwrap();
+    /// let Ok(mut terminal) = Terminal::new(backend);
     ///
     /// let registry = with_annotations(|| {
-    ///     terminal.draw(|frame| {
+    ///     let Ok(_) = terminal.draw(|frame| {
     ///         let widget = Annotate::new(
     ///             Paragraph::new("Hello"),
     ///             Annotation::button("btn"),
     ///         );
     ///         frame.render_widget(widget, frame.area());
-    ///     }).unwrap();
+    ///     });
     /// });
     ///
     /// let json = terminal.backend().to_semantic_json(&registry);
@@ -532,46 +550,52 @@ impl CaptureBackend {
 }
 
 impl Backend for CaptureBackend {
-    fn draw<'a, I>(&mut self, content: I) -> io::Result<()>
+    type Error = Infallible;
+
+    fn draw<'a, I>(&mut self, content: I) -> Result<(), Infallible>
     where
         I: Iterator<Item = (u16, u16, &'a Cell)>,
     {
         for (x, y, cell) in content {
             if x < self.width && y < self.height {
-                let idx = self.index_of(x, y);
-                self.cells[idx] = EnhancedCell::from_ratatui_cell(cell, self.current_frame);
+                self.write_cell(
+                    x,
+                    y,
+                    EnhancedCell::from_ratatui_cell(cell, self.current_frame),
+                );
             }
         }
         Ok(())
     }
 
-    fn hide_cursor(&mut self) -> io::Result<()> {
+    fn hide_cursor(&mut self) -> Result<(), Infallible> {
         self.cursor_visible = false;
         Ok(())
     }
 
-    fn show_cursor(&mut self) -> io::Result<()> {
+    fn show_cursor(&mut self) -> Result<(), Infallible> {
         self.cursor_visible = true;
         Ok(())
     }
 
-    fn get_cursor_position(&mut self) -> io::Result<Position> {
+    fn get_cursor_position(&mut self) -> Result<Position, Infallible> {
         Ok(self.cursor_position)
     }
 
-    fn set_cursor_position<P: Into<Position>>(&mut self, position: P) -> io::Result<()> {
+    fn set_cursor_position<P: Into<Position>>(&mut self, position: P) -> Result<(), Infallible> {
         self.cursor_position = position.into();
         Ok(())
     }
 
-    fn clear(&mut self) -> io::Result<()> {
+    fn clear(&mut self) -> Result<(), Infallible> {
         for cell in &mut self.cells {
             cell.reset();
         }
+        self.row_may_hold_owner.fill(false);
         Ok(())
     }
 
-    fn clear_region(&mut self, clear_type: ClearType) -> io::Result<()> {
+    fn clear_region(&mut self, clear_type: ClearType) -> Result<(), Infallible> {
         let cells_len = self.cells.len();
         let (start, end) = match clear_type {
             ClearType::All => (0, cells_len),
@@ -599,14 +623,15 @@ impl Backend for CaptureBackend {
         for cell in &mut self.cells[start..end] {
             cell.reset();
         }
+        self.unflag_rows_within(start, end);
         Ok(())
     }
 
-    fn size(&self) -> io::Result<Size> {
+    fn size(&self) -> Result<Size, Infallible> {
         Ok(Size::new(self.width, self.height))
     }
 
-    fn window_size(&mut self) -> io::Result<WindowSize> {
+    fn window_size(&mut self) -> Result<WindowSize, Infallible> {
         // For a capture backend, we don't have real pixel dimensions
         // Use reasonable defaults (assuming ~8x16 pixels per cell)
         Ok(WindowSize {
@@ -615,7 +640,7 @@ impl Backend for CaptureBackend {
         })
     }
 
-    fn flush(&mut self) -> io::Result<()> {
+    fn flush(&mut self) -> Result<(), Infallible> {
         self.save_to_history();
         self.current_frame += 1;
         Ok(())

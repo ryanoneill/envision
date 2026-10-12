@@ -78,12 +78,12 @@ mod tests {
 
     #[test]
     fn test_output_format_render_ansi() {
-        use crate::backend::cell::SerializableColor;
+        use ratatui::style::{Color, Style};
 
         let mut backend = CaptureBackend::new(5, 1);
         if let Some(cell) = backend.cell_mut(0, 0) {
             cell.set_char('R');
-            cell.fg = SerializableColor::Red;
+            cell.set_style(Style::new().fg(Color::Red));
         }
 
         let output = OutputFormat::Ansi.render(&backend);

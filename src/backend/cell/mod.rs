@@ -5,9 +5,13 @@
 //! `CompactString` stores up to 24 bytes inline, eliminating thousands of
 //! small allocations per render cycle.
 
+mod diff_option;
+pub(crate) mod width;
+
+pub use diff_option::SerializableDiffOption;
+
 use compact_str::CompactString;
 use ratatui::style::{Color, Modifier, Style};
-use unicode_width::UnicodeWidthStr;
 
 /// An enhanced cell that captures all styling information plus metadata.
 ///
@@ -15,32 +19,93 @@ use unicode_width::UnicodeWidthStr;
 /// - Is fully serializable for snapshots and JSON export
 /// - Tracks when the cell was last modified (frame number)
 /// - Can store optional semantic annotations
+///
+/// Style fields are private; read them through [`fg`](Self::fg),
+/// [`bg`](Self::bg), [`modifiers`](Self::modifiers),
+/// [`underline_color`](Self::underline_color) and
+/// [`last_modified_frame`](Self::last_modified_frame).
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(
     feature = "serialization",
     derive(serde::Serialize, serde::Deserialize)
 )]
+#[cfg_attr(feature = "serialization", serde(from = "EnhancedCellRepr"))]
 pub struct EnhancedCell {
     /// The symbol (grapheme cluster) displayed in this cell
     symbol: CompactString,
 
     /// Foreground color
-    pub fg: SerializableColor,
+    fg: SerializableColor,
 
     /// Background color
-    pub bg: SerializableColor,
+    bg: SerializableColor,
 
     /// Text modifiers (bold, italic, etc.)
-    pub modifiers: SerializableModifier,
+    modifiers: SerializableModifier,
 
     /// Underline color (if different from foreground)
-    pub underline_color: Option<SerializableColor>,
+    underline_color: Option<SerializableColor>,
 
     /// Frame number when this cell was last modified
-    pub last_modified_frame: u64,
+    last_modified_frame: u64,
 
-    /// Whether this cell should be skipped during rendering
-    pub skip: bool,
+    /// How this cell participates in buffer diffing
+    #[cfg_attr(
+        feature = "serialization",
+        serde(default, skip_serializing_if = "SerializableDiffOption::is_none")
+    )]
+    diff_option: SerializableDiffOption,
+}
+
+/// Deserialization form accepting both v0.17 (`skip`) and v0.18 (`diff_option`) JSON.
+#[cfg(feature = "serialization")]
+#[derive(serde::Deserialize)]
+struct EnhancedCellRepr {
+    symbol: CompactString,
+    fg: SerializableColor,
+    bg: SerializableColor,
+    modifiers: SerializableModifier,
+    underline_color: Option<SerializableColor>,
+    last_modified_frame: u64,
+    #[serde(default)]
+    skip: bool,
+    #[serde(default)]
+    diff_option: SerializableDiffOption,
+}
+
+#[cfg(feature = "serialization")]
+impl From<EnhancedCellRepr> for EnhancedCell {
+    fn from(r: EnhancedCellRepr) -> Self {
+        Self {
+            symbol: r.symbol,
+            fg: r.fg,
+            bg: r.bg,
+            modifiers: r.modifiers,
+            underline_color: r.underline_color,
+            last_modified_frame: r.last_modified_frame,
+            diff_option: effective_diff_option(r.diff_option, r.skip),
+        }
+    }
+}
+
+/// ratatui's `is_skip` rule (`ratatui-core-0.1.2/src/buffer/diff.rs:203-205`):
+/// the legacy skip flag is honoured only when no explicit option is set.
+fn effective_diff_option(
+    option: SerializableDiffOption,
+    legacy_skip: bool,
+) -> SerializableDiffOption {
+    if legacy_skip && option.is_none() {
+        SerializableDiffOption::Skip
+    } else {
+        option
+    }
+}
+
+/// Reads ratatui's diff option, folding in its deprecated `skip` flag exactly
+/// as ratatui's own diffing does (`is_skip`, `diff.rs:203-205`).
+#[allow(deprecated)] // the one sanctioned read of ratatui's deprecated `Cell::skip`
+fn captured_diff_option(cell: &ratatui::buffer::Cell) -> SerializableDiffOption {
+    effective_diff_option(cell.diff_option.into(), cell.skip)
 }
 
 impl EnhancedCell {
@@ -53,7 +118,7 @@ impl EnhancedCell {
             modifiers: SerializableModifier::empty(),
             underline_color: None,
             last_modified_frame: 0,
-            skip: false,
+            diff_option: SerializableDiffOption::None,
         }
     }
 
@@ -81,7 +146,7 @@ impl EnhancedCell {
             modifiers: SerializableModifier::from(style.add_modifier),
             underline_color: style.underline_color.map(SerializableColor::from),
             last_modified_frame: frame,
-            skip: cell.skip,
+            diff_option: captured_diff_option(cell),
         }
     }
 
@@ -101,9 +166,72 @@ impl EnhancedCell {
         self.symbol.push(c);
     }
 
-    /// Returns the display width of the symbol
+    /// Display width of the symbol in terminal cells, as ratatui computes it.
     pub fn symbol_width(&self) -> usize {
-        self.symbol.width()
+        usize::from(width::symbol_cell_width(&self.symbol))
+    }
+
+    /// Foreground colour.
+    pub fn fg(&self) -> SerializableColor {
+        self.fg
+    }
+
+    /// Background colour.
+    pub fn bg(&self) -> SerializableColor {
+        self.bg
+    }
+
+    /// Text modifiers (bold, italic, ...).
+    pub fn modifiers(&self) -> SerializableModifier {
+        self.modifiers
+    }
+
+    /// Underline colour, if one was set separately from the foreground.
+    pub fn underline_color(&self) -> Option<SerializableColor> {
+        self.underline_color
+    }
+
+    /// Frame number at which this cell was last written.
+    pub fn last_modified_frame(&self) -> u64 {
+        self.last_modified_frame
+    }
+
+    /// How this cell participates in diffing.
+    pub fn diff_option(&self) -> SerializableDiffOption {
+        self.diff_option
+    }
+
+    /// Sets the diff option (mirrors ratatui's `Cell::set_diff_option`).
+    pub fn set_diff_option(&mut self, option: SerializableDiffOption) {
+        self.diff_option = option;
+    }
+
+    /// Stamps the frame number at which this cell was last written.
+    pub(crate) fn set_last_modified_frame(&mut self, frame: u64) {
+        self.last_modified_frame = frame;
+    }
+
+    /// Number of columns this cell owns on screen: the single owner
+    /// definition for wide-glyph emulation (spec § 5, ruling R13).
+    ///
+    /// A blank cell (see [`is_blank_symbol`](Self::is_blank_symbol)) never owns
+    /// continuation columns and returns 1, even when it keeps a `ForcedWidth`
+    /// option. Blanking changes only the symbol, so a blanked owner can still
+    /// carry one. Otherwise the result is `ForcedWidth(n)` when set, or
+    /// ratatui's width of the symbol ("Width source").
+    pub(crate) fn owner_width(&self) -> u16 {
+        if self.is_blank_symbol() {
+            return 1;
+        }
+        match self.diff_option {
+            SerializableDiffOption::ForcedWidth(w) => w.get(),
+            _ => width::symbol_cell_width(&self.symbol),
+        }
+    }
+
+    /// True when the symbol is `" "` or empty, whatever the cell's style.
+    pub(crate) fn is_blank_symbol(&self) -> bool {
+        self.symbol.is_empty() || self.symbol == " "
     }
 
     /// Sets the style from a ratatui Style
@@ -140,7 +268,7 @@ impl EnhancedCell {
         self.bg = SerializableColor::Reset;
         self.modifiers = SerializableModifier::empty();
         self.underline_color = None;
-        self.skip = false;
+        self.diff_option = SerializableDiffOption::None;
     }
 
     /// Returns true if this cell is empty (space with default styling)
@@ -166,24 +294,50 @@ impl Default for EnhancedCell {
 )]
 #[cfg_attr(feature = "serialization", serde(rename_all = "snake_case"))]
 pub enum SerializableColor {
+    /// The terminal default colour.
     Reset,
+    /// The `Black` ANSI colour.
     Black,
+    /// The `Red` ANSI colour.
     Red,
+    /// The `Green` ANSI colour.
     Green,
+    /// The `Yellow` ANSI colour.
     Yellow,
+    /// The `Blue` ANSI colour.
     Blue,
+    /// The `Magenta` ANSI colour.
     Magenta,
+    /// The `Cyan` ANSI colour.
     Cyan,
+    /// The `Gray` ANSI colour.
     Gray,
+    /// The `DarkGray` ANSI colour.
     DarkGray,
+    /// The `LightRed` ANSI colour.
     LightRed,
+    /// The `LightGreen` ANSI colour.
     LightGreen,
+    /// The `LightYellow` ANSI colour.
     LightYellow,
+    /// The `LightBlue` ANSI colour.
     LightBlue,
+    /// The `LightMagenta` ANSI colour.
     LightMagenta,
+    /// The `LightCyan` ANSI colour.
     LightCyan,
+    /// The `White` ANSI colour.
     White,
-    Rgb { r: u8, g: u8, b: u8 },
+    /// A 24-bit RGB colour.
+    Rgb {
+        /// Red channel.
+        r: u8,
+        /// Green channel.
+        g: u8,
+        /// Blue channel.
+        b: u8,
+    },
+    /// An entry in the 256-colour palette.
     Indexed(u8),
 }
 
@@ -298,14 +452,23 @@ impl SerializableColor {
     derive(serde::Serialize, serde::Deserialize)
 )]
 pub struct SerializableModifier {
+    /// Bold text.
     pub bold: bool,
+    /// Dimmed text.
     pub dim: bool,
+    /// Italic text.
     pub italic: bool,
+    /// Underlined text.
     pub underlined: bool,
+    /// Slowly blinking text.
     pub slow_blink: bool,
+    /// Rapidly blinking text.
     pub rapid_blink: bool,
+    /// Foreground and background swapped.
     pub reversed: bool,
+    /// Concealed text.
     pub hidden: bool,
+    /// Strikethrough text.
     pub crossed_out: bool,
 }
 

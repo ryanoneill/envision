@@ -9,8 +9,8 @@
 //! // requires stdout access
 //! use envision::adapter::DualBackend;
 //! use envision::backend::CaptureBackend;
-//! use ratatui::backend::CrosstermBackend;
-//! use ratatui::Terminal;
+//! use envision::ratatui::backend::CrosstermBackend;
+//! use envision::ratatui::Terminal;
 //! use std::io::stdout;
 //!
 //! // Create a dual backend that writes to both terminal and capture
@@ -18,14 +18,16 @@
 //! let crossterm = CrosstermBackend::new(stdout());
 //! let dual = DualBackend::new(crossterm, capture);
 //!
-//! let mut terminal = Terminal::new(dual).unwrap();
+//! // The primary is fallible (`io::Error`), so `?` applies.
+//! let mut terminal = Terminal::new(dual)?;
 //!
 //! terminal.draw(|frame| {
 //!     // Rendering goes to both backends
-//! }).unwrap();
+//! })?;
 //!
 //! // Access the capture backend for inspection
 //! let text = terminal.backend().capture().to_string();
+//! # Ok::<(), std::io::Error>(())
 //! ```
 
 mod dual;

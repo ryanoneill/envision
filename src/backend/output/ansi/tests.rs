@@ -1,5 +1,5 @@
 use super::*;
-use crate::backend::cell::SerializableColor;
+use ratatui::style::{Color, Modifier, Style};
 
 #[test]
 fn test_ansi_render_plain() {
@@ -23,7 +23,7 @@ fn test_ansi_render_colored() {
     // Set a red 'R'
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('R');
-        cell.fg = SerializableColor::Red;
+        cell.set_style(Style::new().fg(Color::Red));
     }
 
     let output = render(&backend);
@@ -39,7 +39,7 @@ fn test_ansi_render_styled() {
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('B');
-        cell.modifiers.bold = true;
+        cell.set_style(Style::new().add_modifier(Modifier::BOLD));
     }
 
     let output = render(&backend);
@@ -56,7 +56,7 @@ fn test_ansi_render_multi_row() {
     for (i, c) in "ABC".chars().enumerate() {
         if let Some(cell) = backend.cell_mut(i as u16, 0) {
             cell.set_char(c);
-            cell.fg = SerializableColor::Red;
+            cell.set_style(Style::new().fg(Color::Red));
         }
     }
 
@@ -64,7 +64,7 @@ fn test_ansi_render_multi_row() {
     for (i, c) in "123".chars().enumerate() {
         if let Some(cell) = backend.cell_mut(i as u16, 1) {
             cell.set_char(c);
-            cell.fg = SerializableColor::Blue;
+            cell.set_style(Style::new().fg(Color::Blue));
         }
     }
 
@@ -82,7 +82,7 @@ fn test_ansi_render_with_background() {
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('B');
-        cell.bg = SerializableColor::Blue;
+        cell.set_style(Style::new().bg(Color::Blue));
     }
 
     let output = render(&backend);
@@ -96,8 +96,8 @@ fn test_ansi_render_combined_colors() {
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('X');
-        cell.fg = SerializableColor::Yellow;
-        cell.bg = SerializableColor::Magenta;
+        cell.set_style(Style::new().fg(Color::Yellow));
+        cell.set_style(Style::new().bg(Color::Magenta));
     }
 
     let output = render(&backend);
@@ -114,7 +114,7 @@ fn test_ansi_render_no_style_change() {
     for i in 0..3 {
         if let Some(cell) = backend.cell_mut(i, 0) {
             cell.set_char('X');
-            cell.fg = SerializableColor::Red;
+            cell.set_style(Style::new().fg(Color::Red));
         }
     }
 
@@ -131,17 +131,17 @@ fn test_ansi_render_style_changes() {
     // First cell red
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('R');
-        cell.fg = SerializableColor::Red;
+        cell.set_style(Style::new().fg(Color::Red));
     }
     // Second cell green
     if let Some(cell) = backend.cell_mut(1, 0) {
         cell.set_char('G');
-        cell.fg = SerializableColor::Green;
+        cell.set_style(Style::new().fg(Color::Green));
     }
     // Third cell blue
     if let Some(cell) = backend.cell_mut(2, 0) {
         cell.set_char('B');
-        cell.fg = SerializableColor::Blue;
+        cell.set_style(Style::new().fg(Color::Blue));
     }
 
     let output = render(&backend);
@@ -152,17 +152,13 @@ fn test_ansi_render_style_changes() {
 
 #[test]
 fn test_ansi_render_multiple_modifiers() {
-    use crate::backend::cell::SerializableModifier;
+    use ratatui::style::{Modifier, Style};
 
     let mut backend = CaptureBackend::new(2, 1);
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('A');
-        cell.modifiers = SerializableModifier {
-            bold: true,
-            italic: true,
-            ..Default::default()
-        };
+        cell.set_style(Style::new().add_modifier(Modifier::BOLD | Modifier::ITALIC));
     }
 
     let output = render(&backend);
@@ -177,11 +173,11 @@ fn test_ansi_render_with_legend() {
     // Set some colored cells
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('R');
-        cell.fg = SerializableColor::Red;
+        cell.set_style(Style::new().fg(Color::Red));
     }
     if let Some(cell) = backend.cell_mut(1, 0) {
         cell.set_char('G');
-        cell.fg = SerializableColor::Green;
+        cell.set_style(Style::new().fg(Color::Green));
     }
 
     let output = render_with_legend(&backend);
@@ -201,7 +197,7 @@ fn test_ansi_render_with_legend_includes_bg() {
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('X');
-        cell.bg = SerializableColor::Blue;
+        cell.set_style(Style::new().bg(Color::Blue));
     }
 
     let output = render_with_legend(&backend);
@@ -231,11 +227,7 @@ fn test_ansi_render_rgb_color() {
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('X');
-        cell.fg = SerializableColor::Rgb {
-            r: 255,
-            g: 128,
-            b: 64,
-        };
+        cell.set_style(Style::new().fg(Color::Rgb(255, 128, 64)));
     }
 
     let output = render(&backend);
@@ -249,7 +241,7 @@ fn test_ansi_render_indexed_color() {
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('X');
-        cell.fg = SerializableColor::Indexed(42);
+        cell.set_style(Style::new().fg(Color::Indexed(42)));
     }
 
     let output = render(&backend);
@@ -263,7 +255,7 @@ fn test_ansi_render_underline_modifier() {
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('U');
-        cell.modifiers.underlined = true;
+        cell.set_style(Style::new().add_modifier(Modifier::UNDERLINED));
     }
 
     let output = render(&backend);
@@ -277,7 +269,7 @@ fn test_ansi_render_dim_modifier() {
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('D');
-        cell.modifiers.dim = true;
+        cell.set_style(Style::new().add_modifier(Modifier::DIM));
     }
 
     let output = render(&backend);
@@ -308,11 +300,11 @@ fn test_ansi_render_bright_colors() {
 
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('L');
-        cell.fg = SerializableColor::LightRed;
+        cell.set_style(Style::new().fg(Color::LightRed));
     }
     if let Some(cell) = backend.cell_mut(1, 0) {
         cell.set_char('B');
-        cell.bg = SerializableColor::LightBlue;
+        cell.set_style(Style::new().bg(Color::LightBlue));
     }
 
     let output = render(&backend);

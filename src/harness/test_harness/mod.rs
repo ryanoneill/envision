@@ -54,7 +54,7 @@ impl TestHarness {
     /// ```
     pub fn new(width: u16, height: u16) -> Self {
         let backend = CaptureBackend::new(width, height);
-        let terminal = Terminal::new(backend).expect("Failed to create terminal");
+        let Ok(terminal) = Terminal::new(backend);
 
         Self {
             terminal,
@@ -89,8 +89,10 @@ impl TestHarness {
     ///
     /// # Errors
     ///
-    /// This method currently always succeeds, but returns `Result`
-    /// for API consistency with terminal rendering operations.
+    /// Never returns `Err`: the harness renders into a
+    /// [`CaptureBackend`](crate::backend::CaptureBackend), whose error type is
+    /// [`Infallible`](core::convert::Infallible). The `Result` is kept so
+    /// existing `?` call sites keep compiling.
     ///
     /// # Example
     ///
@@ -110,7 +112,7 @@ impl TestHarness {
         F: FnOnce(&mut ratatui::Frame),
     {
         self.annotations = with_annotations(|| {
-            self.terminal.draw(f).expect("Failed to draw");
+            let Ok(_completed) = self.terminal.draw(f);
         });
         self.frame_count += 1;
         Ok(())

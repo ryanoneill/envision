@@ -133,6 +133,6 @@ pub(super) fn render(
         .style(list_style)
         .highlight_style(highlight_style);
 
-    let mut ls = state.list_state.clone();
+    let mut ls = state.list_state;
     frame.render_stateful_widget(list, list_area, &mut ls);
 }

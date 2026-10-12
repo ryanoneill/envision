@@ -1,5 +1,5 @@
 use super::*;
-use crate::backend::cell::SerializableColor;
+use ratatui::style::{Color, Modifier, Style};
 
 #[test]
 fn test_json_render() {
@@ -40,8 +40,8 @@ fn test_json_styled_cells() {
     // Add a styled cell
     if let Some(cell) = backend.cell_mut(0, 0) {
         cell.set_char('X');
-        cell.fg = SerializableColor::Red;
-        cell.modifiers.bold = true;
+        cell.set_style(Style::new().fg(Color::Red));
+        cell.set_style(Style::new().add_modifier(Modifier::BOLD));
     }
 
     let output = render(&backend, false);

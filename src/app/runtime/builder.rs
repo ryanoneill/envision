@@ -125,6 +125,7 @@ use super::config::RuntimeConfig;
 use crate::app::model::App;
 use crate::backend::CaptureBackend;
 use crate::error;
+use crate::error::EnvisionError;
 
 /// A builder for constructing [`Runtime`] instances.
 ///
@@ -395,7 +396,10 @@ where
     /// let runtime = Runtime::<MyApp, _>::virtual_builder(80, 24).build()?;
     /// # Ok::<(), envision::EnvisionError>(())
     /// ```
-    pub fn build(self) -> error::Result<Runtime<A, B>> {
+    pub fn build(self) -> error::Result<Runtime<A, B>>
+    where
+        EnvisionError: From<B::Error>,
+    {
         use crate::app::model::optional_args::sealed::Sealed;
         let args = <A::Args as Sealed>::default_optional_args();
         self.with_args(args).build()
