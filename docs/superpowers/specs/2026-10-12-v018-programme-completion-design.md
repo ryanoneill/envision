@@ -57,9 +57,13 @@ The maintainer's goal is unchanged: **the library should be as free of security 
 - **`criterion::black_box` is deprecated: 87 sites in 5 benches** (`component_view.rs`, `memory.rs`, `runtime.rs`, `component_events.rs`, `capture_backend.rs`) (claudio, CI/QA). Replace them with `std::hint::black_box`.
 - **rand 0.10:** `random`/`random_range` moved to `rand::RngExt`. `benches/sort_bench.rs` imports `use rand::{RngExt, SeedableRng}`. No other file uses rand.
 
-**Bench baselines.** CI saves criterion baselines under a fixed key (`criterion-baseline-*-main`, `ci.yml:320-323` and siblings). Actions caches are immutable, so the save never overwrites: baselines are frozen at the first-ever run (CI/QA).
-- Fix: the save key gains `-${{ github.run_id }}`, and restore uses the prefix (`restore-keys: criterion-baseline-<bench>-main-`). The newest baseline then wins.
-- This is in scope here because PR 7 is what invalidates the old baselines.
+**Bench baselines.** Today the restore steps use `actions/cache@v4` with primary key `criterion-baseline-<bench>-${{ github.base_ref || 'main' }}` (`ci.yml:311` and siblings). The save on `main` uses the same fixed key (`:320-323`). Actions caches are immutable, so baselines are frozen at the first-ever save. An exact primary-key match also beats `restore-keys`, so adding a prefix alone would change nothing (CI/QA, round 2).
+
+Fix, per bench job:
+- **Restore:** `actions/cache/restore@v4` with `key: criterion-baseline-<bench>-main-${{ github.run_id }}` and `restore-keys: criterion-baseline-<bench>-main-`. The trailing dash means the old unsuffixed key never matches.
+- **Save** (pushes to `main` only): `actions/cache/save@v4` with `key: criterion-baseline-<bench>-main-${{ github.run_id }}`.
+
+This is in scope here because PR 7 is what invalidates the old baselines.
 
 **Acceptance:**
 - `cargo bench --all-features --no-run` builds every bench, with zero warnings.
@@ -67,7 +71,7 @@ The maintainer's goal is unchanged: **the library should be as free of security 
 - The full suite is green.
 - `cargo audit --deny warnings` exits 0.
 - On 1.88, the msrv feature-set `--tests` build resolves and builds; verified in round 1.
-- The CI bench jobs pass, and the new cache key saves.
+- The CI bench jobs pass. **After merge, the second `main` run's restore log names a `-<run_id>` key**, proving new baselines are actually used. This is checked post-merge and recorded in the PR.
 
 **Not in scope:** the dev-only `itertools` 0.13/0.14 duplicate (criterion vs ratatui), which the gate ignores. Also out: the pre-existing `capture_backend` bench failing without `serialization` (Known Deferred Findings).
 
@@ -154,9 +158,15 @@ Each gains them behind `#[cfg(feature = "scrolling-regions")]`, so they compile 
   - Known Deferred Findings (`:115`).
 - **MIGRATION:**
   - § 7 (`MIGRATION.md:239`): describe the feature and the direct-enable hazard with its fix. Remove "as was already the case in v0.17".
-  - § 3 (Custom backends): add a recipe for implementing `scroll_region_up`/`down` behind a forwarded feature, for backend authors who want to support it.
+  - § 3 (Custom backends): add a recipe for implementing `scroll_region_up`/`down` behind a forwarded feature, for backend authors who want to support it. Also note that enabling `envision/scrolling-regions` alongside a **direct** `ratatui-termion`/`-termwiz`/`-termina` dependency requires that crate's own `scrolling-regions` feature as well; otherwise that crate fails with E0046 (API reviewer).
   - § 6: note that inline-viewport captures now change with `append_lines`.
 - The `insert_before` behaviour and legacy-Windows note.
+
+### Implementation notes (PR 5 specialist, round 2)
+
+- **Extra cursor round-trip.** `DualBackend::append_lines` adds a `get_cursor_position` call on the primary, which is a real terminal round-trip with crossterm. The rustdoc says so. A failed read propagates **before** either half is changed.
+- **Clippy with the feature off.** CI's clippy job runs only `--all-features`, so locally also run `cargo clippy --all-targets --features <the default set> -- -D warnings`, so the feature-off cfg arms get clippy coverage.
+- **trybuild.** trybuild passes the crate's enabled features to the fixture project (trybuild 1.0.119 `run.rs:131-165`; adversarial). Still, run `tests/trybuild_pass.rs` with and without the feature.
 
 ### Tests (TDD)
 
@@ -233,8 +243,8 @@ all-features = true          # optional backends evaluated as compiled; no `targ
 
 [advisories]
 version = 2
-unmaintained = "all"         # default is direct-deps-only scope; "all" covers transitive (e.g. lru)
-unsound = "all"
+unmaintained = "all"         # explicit (already the default)
+unsound = "all"              # default is direct-deps-only scope; "all" covers transitive (e.g. lru)
 yanked = "deny"
 unused-ignored-advisory = "deny"
 ignore = []                  # exceptions only per the advisory policy below
@@ -259,7 +269,7 @@ A removal *version* is not required, because ecosystem-wide splits (`syn` 2/3, `
 Expected entries on the post-4 tree, to be re-derived from `cargo deny check bans`:
 - `hashbrown` 0.16 vs 0.17: ratatui-core via `kasuari` vs `lru`.
 - `miniz_oxide` 0.8 vs 0.9: `arboard` → `image` → `png` vs `flate2`.
-- `syn` 2 vs 3: proc-macro build dependencies.
+- `syn` 2 vs 3: via proc-macros. Build dependencies **are** in the gate's scope (only dev dependencies are excluded), so this needs a skip (claudio).
 - `windows-sys` 0.60 vs 0.61: `arboard` 3.6.1 vs `rustix`/`errno` (security, adversarial, CI/QA).
 
 Where an upstream issue is the right tracking link and none exists, a draft is prepared and **filed only with maintainer approval**. Until then, the ecosystem-search link with an "at each release" trigger satisfies the policy, so the gate does not block on public actions.
@@ -274,7 +284,8 @@ Where an upstream issue is the right tracking link and none exists, a draft is p
 - **`cargo-deny` job:** `cargo install cargo-deny --locked --version 0.20.2`, then `cargo deny --locked check -D warnings advisories bans sources`.
   - It does not use `EmbarkStudios/cargo-deny-action`. That action's Dockerfile fetches the release tarball with no checksum, runs an unpinned `apk add`, and uses a Rust 1.85 image (security).
   - The version is pinned and bumped by hand, as for tarpaulin in #523.
-  - It runs on PRs, on pushes to `main`, and on a **daily `schedule:`**, so advisories published after a merge are seen (security, CI/QA).
+  - It runs on PRs and on pushes to `main` (all three checks).
+  - A **daily `schedule:`** run checks `advisories` only, so a red scheduled run always means "new advisory". New transitive duplicates surface on the next PR (security, CI/QA).
 - **`minimal-versions` job:**
   1. `cargo +nightly-YYYY-MM-DD update -Zdirect-minimal-versions`;
   2. `cargo build --all-features --all-targets`;
@@ -310,7 +321,9 @@ When a ratatui release containing it ships, envision raises its `ratatui` floor 
 ## R — release preparation (one PR)
 
 The adversarial reviewer found that publishing today would ship a degraded package.
-- **docs.rs:** add `[package.metadata.docs.rs] all-features = true` and `rustdoc-args = ["--cfg", "docsrs"]`. That way `tracing`, `test-utils` (AppHarness) and `scrolling-regions` APIs appear on docs.rs, with `doc_cfg` annotations where the crate already uses them.
+- **docs.rs:** add `[package.metadata.docs.rs] all-features = true`, so `tracing`, `test-utils` (AppHarness) and `scrolling-regions` APIs appear on docs.rs.
+  - envision uses no `doc_cfg`/`docsrs` today, and this PR does not introduce it.
+  - Instead, the rustdoc of every feature-gated item states its feature in prose, e.g. "Requires the `scrolling-regions` feature." That applies to `CaptureBackend`'s and `DualBackend`'s type docs for the scroll methods (adversarial, API reviewer).
 - **Package contents:** add an `exclude` (or `include`) list so internal material is not published: `docs/superpowers/`, `docs/audits/`, `fastbreak.toml`, `tarpaulin.toml`, `.claude/`, `.superpowers/`. Verify with `cargo package --list`. Excluded paths must not break `include_str!` doctests (README stays included).
 - **Version and docs:**
   - `version = "0.18.0"`;
