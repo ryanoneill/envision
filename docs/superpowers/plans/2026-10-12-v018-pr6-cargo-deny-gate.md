@@ -77,7 +77,7 @@ unknown-git = "deny"
   1. Search the upstream tracker (`gh search issues --repo <owner>/<repo> "<crate> <ver>"`, or `gh api`) for an issue or PR tracking the old version.
   2. If one exists, link it, with the re-check trigger "the upstream release that merges <link>".
   3. If none exists **and** the split is ecosystem-wide (`syn` 2/3, `windows-sys`), link a tracker search URL or the ecosystem tracking issue, with the trigger "re-check at each envision release".
-  4. If none exists for a crate-specific split, **do not file anything**. Write the issue draft into the PR description for the maintainer to approve. Meanwhile use the tracker-search link with an "at each release" trigger.
+  4. If none exists for a crate-specific split, use a tracker-search link with the trigger "re-check at each envision release". **No upstream issues are filed or drafted.** This is the maintainer's decision (2026-10-12), and it satisfies the spec's skip policy.
 
 Expected entries:
 - `hashbrown@0.16`: via `kasuari` (ratatui-core) vs `lru`.
@@ -181,7 +181,6 @@ Use the nightly date from PR 6a, and pin cargo-audit to the version installed lo
 - [ ] **Step 1:** Add CHANGELOG `[Unreleased]` → `### Changed` lines: the supply-chain policy, its CI gates, and the advisory response policy. Make a signed commit.
 - [ ] **Step 2:** Merge `origin/main`, push, and open a PR. The body includes:
   - the skip table with links and triggers;
-  - any upstream issue drafts awaiting the maintainer;
   - the stale-skip demonstration;
   - CI run links;
   - `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
