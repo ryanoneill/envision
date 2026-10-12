@@ -37,11 +37,7 @@ fn serializable_style_types_are_in_the_prelude() {
 fn compact_str_is_reexported_and_matches_cell_api() {
     let s: envision::compact_str::CompactString = "abc".into();
     let cell = envision::component::cell::Cell::from(s.clone());
-    match cell.sort_key() {
-        None => {}
-        Some(envision::component::cell::SortKey::String(v)) => assert_eq!(v.as_str(), "abc"),
-        other => panic!("unexpected sort key {other:?}"),
-    }
+    assert_eq!(cell.text(), "abc");
     let key = envision::component::cell::SortKey::String(s);
     match key {
         envision::component::cell::SortKey::String(v) => assert_eq!(v.as_str(), "abc"),

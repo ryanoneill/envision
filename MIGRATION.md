@@ -246,10 +246,12 @@ envision no longer enables ratatui's `widget-calendar` and `macros` features.
 ```rust
 // Before (v0.17): your own compact_str = "0.8"
 use compact_str::CompactString;
+use envision::component::cell::Cell;
 let cell = Cell::from(CompactString::from("abc"));
 
 // After (v0.18): name the type through envision (or move your dependency to 0.9)
 use envision::compact_str::CompactString;
+use envision::component::cell::Cell;
 let cell = Cell::from(CompactString::from("abc"));
 ```
 

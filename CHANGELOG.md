@@ -60,7 +60,7 @@ See `MIGRATION.md` § *v0.17.x to v0.18.0* for the full before/after table.
 
 #### `compact_str` 0.8 to 0.9
 
-envision now depends on `compact_str = "0.9"`, the major used by ratatui-core. Code that names `CompactString` (for example `SortKey::String(..)` or `Cell::from(CompactString)`) must use 0.9, or name it through `envision::compact_str` (see *Added*). Passing `&str` or `String` to `Cell::new`, and matching `SortKey::String(s)` with `s.as_str()`, are unaffected. The JSON wire format of `EnhancedCell` is byte-identical and pinned by a golden test.
+envision now depends on `compact_str = "0.9"`, the major used by ratatui-core. Code that names `CompactString` (for example `SortKey::String(..)` or `Cell::from(CompactString)`) must use 0.9, or name it through `envision::compact_str` (see *Added*). Passing `&str` or `String` to `Cell::new`, and matching `SortKey::String(s)` with `s.as_str()`, are unaffected. `compact_str` is kept (rather than dropped) because ratatui-core already depends on 0.9, so it adds no extra crate, and it stores cell symbols without heap allocation. The JSON wire format of `EnhancedCell` is byte-identical and pinned by a golden test.
 
 ### Added
 
