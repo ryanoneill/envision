@@ -5,14 +5,20 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "17 6 * * *"   # daily advisories check (deny job only)
 
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
 
+# The daily schedule exists only for the cargo-deny advisories check. Every
+# other job is gated with `github.event_name != 'schedule'` so the scheduled
+# run does not execute the full matrix.
 jobs:
   test:
     name: Test (${{ matrix.os }}, ${{ matrix.rust }})
+    if: github.event_name != 'schedule'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -83,6 +89,7 @@ jobs:
 
   no-default-features:
     name: No Default Features
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -119,6 +126,7 @@ jobs:
 
   clippy:
     name: Clippy
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -145,6 +153,7 @@ jobs:
 
   fmt:
     name: Format
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -160,6 +169,7 @@ jobs:
 
   coverage:
     name: Coverage
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -198,6 +208,7 @@ jobs:
 
   docs:
     name: Documentation
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -238,8 +249,82 @@ jobs:
         with:
           path: target/doc
 
+  cargo-deny:
+    # Not gated by `changes`: a skipped job satisfies a required check.
+    name: Cargo Deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Install cargo-deny (pinned, --locked)
+        # Not EmbarkStudios/cargo-deny-action: its image fetches an unchecksummed
+        # tarball. The version is pinned deliberately and bumped by hand.
+        run: cargo install cargo-deny --locked --version 0.20.2
+
+      - name: Check advisories, bans and sources
+        if: github.event_name != 'schedule'
+        run: cargo deny --locked check -D warnings advisories bans sources
+
+      - name: Check advisories (scheduled)
+        # Advisories only, so a red scheduled run always means "new advisory".
+        if: github.event_name == 'schedule'
+        run: cargo deny --locked check -D warnings advisories
+
+  minimal-versions:
+    # Not gated by `changes`: a skipped job satisfies a required check.
+    name: Minimal Versions
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (stable + pinned nightly)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Install pinned nightly (for -Zdirect-minimal-versions)
+        # Pinned by date and bumped deliberately; trybuild .stderr drift is handled in the bump PR.
+        run: rustup toolchain install nightly-2025-11-21 --profile minimal
+
+      - name: Cache cargo registry
+        # Keyed on Cargo.toml, not Cargo.lock: this job regenerates the lockfile.
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-minver-nightly-2025-11-21-${{ hashFiles('Cargo.toml') }}
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
+
+      - name: Install cargo-audit (pinned, --locked)
+        run: cargo install cargo-audit --locked --version 0.22.0
+
+      - name: Minimise direct dependencies
+        run: cargo +nightly-2025-11-21 update -Zdirect-minimal-versions
+
+      - name: Build
+        run: cargo build --all-features --all-targets
+
+      - name: Test
+        run: cargo nextest run --all-features --profile ci
+
+      - name: Audit
+        run: cargo audit --deny warnings
+
   changes:
     name: Detect Changes
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: read
@@ -283,7 +368,7 @@ jobs:
   bench-backend:
     name: Bench Backend
     needs: changes
-    if: needs.changes.outputs.backend == 'true'
+    if: github.event_name != 'schedule' && needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -333,7 +418,7 @@ jobs:
   bench-runtime:
     name: Bench Runtime
     needs: changes
-    if: needs.changes.outputs.runtime == 'true'
+    if: github.event_name != 'schedule' && needs.changes.outputs.runtime == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -383,7 +468,7 @@ jobs:
   bench-component-view:
     name: Bench Component View
     needs: changes
-    if: needs.changes.outputs.component-view == 'true'
+    if: github.event_name != 'schedule' && needs.changes.outputs.component-view == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -433,7 +518,7 @@ jobs:
   bench-component-events:
     name: Bench Component Events
     needs: changes
-    if: needs.changes.outputs.component-events == 'true'
+    if: github.event_name != 'schedule' && needs.changes.outputs.component-events == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -482,7 +567,7 @@ jobs:
 
   deploy-docs:
     name: Deploy Documentation
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.event_name != 'schedule' && github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: docs
     runs-on: ubuntu-latest
     permissions:
