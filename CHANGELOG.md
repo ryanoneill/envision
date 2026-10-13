@@ -93,6 +93,17 @@ Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
 
 - Minimum supported Rust version is now 1.88 (was 1.85), required by ratatui 0.30. The CI MSRV job is now labelled `msrv` rather than by version number, so required-check names no longer change on future MSRV bumps.
 - Dev-dependencies: `criterion` 0.8, `proptest` 1.12, `rand` 0.10.1 (the floor clears RUSTSEC-2026-0097, which affects `rand` 0.10.0). CI bench baselines now update on every `main` run; previously a fixed cache key froze them at the first save.
+- **Minimum dependency versions raised.** envision's declared floors admitted versions that fail to build, fail to resolve, or carry advisories. Each new floor is the lowest version that builds, passes the test suite and passes `cargo audit` under `-Zdirect-minimal-versions`; where an advisory applies, it is the lowest version from which no release in the range is affected. This is consumer-visible: if your `Cargo.lock` pins any of these crates below the new floor, run `cargo update -p <crate>`.
+  - `tokio` 1 → 1.44.2: RUSTSEC-2021-0072, RUSTSEC-2021-0124, RUSTSEC-2023-0001, RUSTSEC-2023-0005 and RUSTSEC-2025-0023 (1.39.0–1.44.1 are affected by the last); 1.0.x also fails to build `tokio-util` 0.7.
+  - `regex` 1 → 1.5.5: RUSTSEC-2022-0013; also the lowest version compatible with criterion 0.8's `^1.5.1`.
+  - `tracing` 0.1 → 0.1.40: RUSTSEC-2023-0078 (0.1.38–0.1.39); 0.1.24 and earlier do not build envision.
+  - `futures-util` 0.3 → 0.3.7: RUSTSEC-2020-0059 and RUSTSEC-2020-0062.
+  - `arboard` 3 → 3.1.0: 3.0.0 pulls the unmaintained `adler` (RUSTSEC-2025-0056).
+  - `serde` 1.0 → 1.0.228: older versions do not resolve against ratatui's `serde_core` 1.0.228.
+  - `serde_json` 1.0 → 1.0.100: older versions do not resolve against criterion 0.8.
+  - `async-stream` 0.3 → 0.3.4: older versions do not build envision's edition-2024 `stream!` bodies.
+  - `tokio-stream` 0.1 → 0.1.1: 0.1.0 lacks the `wrappers` module.
+  - Dev-dependency `trybuild` 1 → 1.0.86: older versions cannot read an `edition = "2024"` manifest.
 
 #### Rendering under ratatui 0.30
 
