@@ -21,8 +21,9 @@ wildcards = "deny"
 # re-check trigger. Entries use the caret form `name:^x.y.z`: each skip exists
 # because of a major-version split, so routine patch bumps of the skipped crate
 # must still match. (The spec intends caret; cargo-deny's `name@x.y.z` form is
-# an exact match.) Once the split goes away the skip no longer matches, and
-# `-D warnings` turns the unmatched skip into a failure.
+# an exact match.) Once the split goes away the skip becomes unmatched (the
+# skipped version is gone) or unnecessary (only one version remains), and
+# `-D warnings` turns either into a failure.
 skip = [
   { crate = "hashbrown:^0.16.1", reason = "ratatui-core: kasuari 0.4.12 pins 0.16, lru 0.18 uses 0.17. Fixed upstream by ratatui/kasuari#55 (merged, unreleased). Tracking: https://github.com/ratatui/kasuari/pull/56 (release PR for kasuari 0.4.13). Re-check: the kasuari release that merges https://github.com/ratatui/kasuari/pull/56." },
   { crate = "miniz_oxide:^0.8.9", reason = "arboard -> image -> png 0.18.1 depends on 0.8 directly, flate2 uses 0.9. Fixed upstream by image-rs/image-png#710 (merged, unreleased; removes png's direct miniz_oxide dependency). Tracking: https://github.com/image-rs/image-png/pull/710. Re-check: the png release that contains https://github.com/image-rs/image-png/pull/710." },
