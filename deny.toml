@@ -1,0 +1,33 @@
+# Supply-chain policy (spec 2026-10-12 § PR 6). Run:
+#   cargo deny --locked check -D warnings advisories bans sources
+
+[graph]
+all-features = true          # optional backends evaluated as compiled; no `targets` → all platforms
+
+[advisories]
+version = 2
+unmaintained = "all"         # explicit (already the default)
+unsound = "all"              # default is direct-deps-only scope; "all" covers transitive (e.g. lru)
+yanked = "deny"
+unused-ignored-advisory = "deny"
+# Exceptions only when no fixed version exists: advisory ID, linked tracking
+# issue, reason and re-check date; reviewed like code (spec § PR 6 policy).
+ignore = []
+
+[bans]
+multiple-versions = "deny"   # dev-only duplicates are out of scope (multiple-versions-include-dev = false)
+wildcards = "deny"
+# Skip only the older version. Each reason carries a tracking link and a
+# re-check trigger. In cargo-deny 0.20 `name@version` matches that exact
+# version, so a lockfile bump of a skipped crate (or the duplicate going away)
+# surfaces as an unmatched skip, which `-D warnings` turns into a failure.
+skip = [
+  { crate = "hashbrown@0.16.1", reason = "ratatui-core: kasuari 0.4.12 pins 0.16, lru 0.18 uses 0.17. Fixed upstream by ratatui/kasuari#55 (merged, unreleased). Tracking: https://github.com/ratatui/kasuari/pull/56 (release PR for kasuari 0.4.13). Re-check: the kasuari release that merges https://github.com/ratatui/kasuari/pull/56." },
+  { crate = "miniz_oxide@0.8.9", reason = "arboard -> image -> png 0.18.1 depends on 0.8 directly, flate2 uses 0.9. Fixed upstream by image-rs/image-png#710 (merged, unreleased; removes png's direct miniz_oxide dependency). Tracking: https://github.com/image-rs/image-png/pull/710. Re-check: the png release that contains https://github.com/image-rs/image-png/pull/710." },
+  { crate = "syn@2.0.119", reason = "Ecosystem-wide syn 2/3 split across proc-macros (build dependencies are in scope): strum_macros, tracing-attributes, darling, derive_more-impl, instability, async-stream-impl and zerocopy-derive use 2; serde_derive, thiserror-impl, tokio-macros and futures-macro use 3. No removal version exists. Tracking: https://github.com/search?q=%22syn+3%22+in%3Atitle&type=issues. Re-check: re-check at each envision release." },
+  { crate = "windows-sys@0.60.2", reason = "arboard 3.6.1 uses 0.60, rustix/errno/mio use 0.61. Ecosystem-wide windows-sys split; 1Password/arboard#220 (merged, unreleased) moves arboard to 0.62, which changes rather than removes the split. Tracking: https://github.com/1Password/arboard/pull/220. Re-check: re-check at each envision release, and on the arboard release that contains https://github.com/1Password/arboard/pull/220." },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
