@@ -139,7 +139,7 @@ job. Keep that file to a single configuration table: tarpaulin runs every
 table as a separate coverage pass.
 
 Tests that drive the compiler rather than the library, such as trybuild tests
-(`tests/trybuild_*.rs`), must be skipped under tarpaulin. trybuild shells out to
+(`tests/trybuild.rs`), must be skipped under tarpaulin. trybuild shells out to
 cargo to build a fresh crate, which adds no line coverage and can exceed the
 coverage run's per-test timeout. Mark every such test:
 
@@ -149,11 +149,16 @@ coverage run's per-test timeout. Mark every such test:
     tarpaulin,
     ignore = "trybuild invokes cargo; not meaningful under coverage instrumentation"
 )]
-fn compile_fail_example() {
+fn trybuild_cases() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/trybuild_example/*.rs");
 }
 ```
+
+Add new trybuild cases to the single `TestCases` in `tests/trybuild.rs`; do
+not create additional trybuild test binaries. Every `TestCases` in every test
+binary shares one project directory (`target/tests/trybuild/envision`), so
+separate binaries race when a runner such as nextest runs them in parallel.
 
 The attribute only applies when tarpaulin builds with `--cfg tarpaulin`; the
 tests still run under `cargo test` and `cargo nextest run`.
