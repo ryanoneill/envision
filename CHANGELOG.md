@@ -106,6 +106,9 @@ Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
   - `async-stream` 0.3 → 0.3.4: older versions do not build envision's edition-2024 `stream!` bodies.
   - `tokio-stream` 0.1 → 0.1.1: 0.1.0 lacks the `wrappers` module.
   - Dev-dependency `trybuild` 1 → 1.0.86: older versions cannot read an `edition = "2024"` manifest.
+- **Supply-chain policy (`deny.toml`).** `cargo deny` now checks advisories (including unmaintained, unsound and yanked crates, across the whole graph), bans (duplicate versions and wildcard requirements in normal and build dependencies; dev-only duplicates are out of scope) and sources (crates.io only). Each allowed duplicate is skipped by its older version only, with a tracking link and a re-check trigger; a skip that no longer matches fails the check.
+- **CI supply-chain gates.** A `Cargo Deny` job (pinned cargo-deny 0.20.2) runs `cargo deny --locked check -D warnings advisories bans sources` on every PR and push to `main`, and a daily scheduled run checks advisories only, so a red scheduled run means a new advisory. A `Minimal Versions` job resolves envision's direct dependencies to their declared floors (`-Zdirect-minimal-versions` on a pinned nightly), then builds, runs the test suite and runs `cargo audit`, so the floors raised above cannot regress.
+- **Advisory response policy.** When a new advisory turns the gate red, the fix is forward: update the dependency or raise its floor. An `ignore` entry is added only when no fixed version exists, with the advisory ID, a tracking issue, a reason and a re-check date, and is reviewed like code; `unused-ignored-advisory = "deny"` removes it once it is no longer needed.
 
 #### Rendering under ratatui 0.30
 
