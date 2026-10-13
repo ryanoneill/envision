@@ -91,6 +91,8 @@ Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
 
 ### Changed
 
+- Test-suite: trybuild cases consolidated into one test binary, fixing a race on trybuild's shared project directory under parallel test runners.
+
 - Minimum supported Rust version is now 1.88 (was 1.85), required by ratatui 0.30. The CI MSRV job is now labelled `msrv` rather than by version number, so required-check names no longer change on future MSRV bumps.
 - Dev-dependencies: `criterion` 0.8, `proptest` 1.12, `rand` 0.10.1 (the floor clears RUSTSEC-2026-0097, which affects `rand` 0.10.0). CI bench baselines now update on every `main` run; previously a fixed cache key froze them at the first save.
 - **Minimum dependency versions raised.** envision's declared floors admitted versions that fail to build, fail to resolve, or carry advisories. Each new floor is the lowest version that builds, passes the test suite and passes `cargo audit` under `-Zdirect-minimal-versions`; where an advisory applies, it is the lowest version from which no release in the range is affected. This is consumer-visible: if your `Cargo.lock` pins any of these crates below the new floor, run `cargo update -p <crate>`.
@@ -129,7 +131,7 @@ Added: `Assertion`, `MessageSendError`, `Snapshot`, `TrySendError`.
 - **Backend errors lose operation context.** A failure in `Terminal::new` and a failure in a draw both surface as the same `EnvisionError::Io` message; the source error is preserved, but not which operation failed. A context-carrying variant is now a non-breaking addition thanks to `#[non_exhaustive]`.
 - **Security: captured output can inject terminal escape sequences.** ANSI/text export (`to_ansi`, `to_plain`, `row_content`, and symbols decoded from captured JSON) emit control or escape bytes kept in captured cell symbols (e.g. `"\x1b"`) verbatim, so printing captured output to a terminal can run attacker-chosen escape sequences. (Raw JSON text is not a vector: `serde_json` escapes control characters.) Pre-existing; tracked separately from hyperlink support. #125 (OSC 8 hyperlinks) will need the same sanitising.
 - **Rustdoc and `examples/` still import `use ratatui::…` directly** (≈256 rustdoc lines, 23 examples; `examples/annotations.rs` calls `.unwrap()` on `Terminal::new`'s `Infallible` result). To migrate to `envision::ratatui` in a follow-up.
-- **New integration-test binaries** from this upgrade (`canvas_rounding`, `cell_width`, `reexports`, `trybuild_pass`, …) could be consolidated into one binary to cut CI link time.
+- **New integration-test binaries** from this upgrade (`canvas_rounding`, `cell_width`, `reexports`, `trybuild`, …) could be consolidated into one binary to cut CI link time.
 - **`EnhancedCell::style()` omits `underline_color`**, so it is not the inverse of `set_style`. Pre-existing.
 - **ratatui's `scrolling-regions` feature is not supported.** Enabling it anywhere in a dependency graph makes envision fail to compile (E0046 — `CaptureBackend`/`DualBackend` lack `scroll_region_up`/`scroll_region_down`), as was already the case in v0.17.
 - **`cargo clippy --all-targets --no-default-features` fails** on `benches/capture_backend.rs`, which calls `to_json` without the `serialization` feature. Pre-existing; CI's no-default-features job does not build benches.

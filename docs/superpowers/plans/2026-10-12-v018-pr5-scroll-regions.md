@@ -391,7 +391,7 @@ In `DualBackend`:
 
 In the **in-repo backends**, add `#[cfg(feature = "scrolling-regions")]` no-op impls returning `Ok(())`, in their error type. In the `src/error.rs` doctests, add them as hidden `# ` lines with the same cfg attribute.
 
-**Verify that cfg works in doctests and in trybuild fixtures:** run `cargo test --doc --features scrolling-regions,serialization,full error` and `cargo nextest run --features scrolling-regions,serialization,full --test trybuild_pass`, and the same without the feature. If rustdoc does not pass crate features into doctests, STOP and report. The controller will rule; do not delete the doctests. Also run `cargo +nightly test --doc --features scrolling-regions,serialization,full error`, and confirm the `compile_fail,E0277` doctest still fails only with E0277.
+**Verify that cfg works in doctests and in trybuild fixtures:** run `cargo test --doc --features scrolling-regions,serialization,full error` and `cargo nextest run --features scrolling-regions,serialization,full --test trybuild`, and the same without the feature. If rustdoc does not pass crate features into doctests, STOP and report. The controller will rule; do not delete the doctests. Also run `cargo +nightly test --doc --features scrolling-regions,serialization,full error`, and confirm the `compile_fail,E0277` doctest still fails only with E0277.
 
 Update rustdoc: `CaptureBackend` and `DualBackend` type docs gain the line "`scroll_region_up`/`scroll_region_down` require the `scrolling-regions` feature."
 
